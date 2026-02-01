@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo, useMemo } from 'react';
+import React, { useState, useCallback, memo, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,10 +13,13 @@ import {
   Modal,
   Alert,
   Linking,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import axios from 'axios';
+import Constants from 'expo-constants';
 import {
   Property,
   PropertyPurpose,
@@ -25,7 +28,9 @@ import {
   FACILITIES_LIST,
   PropertyType,
 } from '../../src/types/property';
-import { MOCK_PROPERTIES, GERMAN_CITIES, BERLIN_AREAS } from '../../src/data/propertyData';
+
+// API URL
+const API_URL = Constants.expoConfig?.extra?.EXPO_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
 const { width } = Dimensions.get('window');
 
