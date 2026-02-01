@@ -1066,7 +1066,7 @@ export default function PropertyDetailScreen() {
     if (!property) return;
     
     try {
-      await axios.post(`${API_URL}/api/property/offers`, {
+      await api.post('/property/offers', {
         propertyId: property.id,
         offeredPrice,
         message,
@@ -1084,7 +1084,7 @@ export default function PropertyDetailScreen() {
     if (!property) return;
     
     try {
-      await axios.post(`${API_URL}/api/property/book-viewing`, {
+      await api.post('/property/book-viewing', {
         propertyId: property.id,
         preferredDate: date,
         preferredTime: time,
