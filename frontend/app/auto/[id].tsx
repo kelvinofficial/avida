@@ -545,6 +545,9 @@ export default function AutoListingDetailScreen() {
         {/* Safety */}
         <SafetySection />
 
+        {/* Similar Listings - Two column layout for auto category */}
+        <SimilarListings propertyId={listing.id} category="other" />
+
         {/* Spacer for bottom actions */}
         <View style={{ height: 100 }} />
       </ScrollView>
