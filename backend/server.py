@@ -15,6 +15,33 @@ import socketio
 from collections import defaultdict
 import time
 import base64
+import asyncio
+
+# Expo Push Notifications
+try:
+    from exponent_server_sdk import (
+        DeviceNotRegisteredError,
+        PushClient,
+        PushMessage,
+        PushServerError,
+        PushTicketError,
+    )
+    EXPO_PUSH_AVAILABLE = True
+except ImportError:
+    EXPO_PUSH_AVAILABLE = False
+    logging.warning("Expo server SDK not available. Push notifications disabled.")
+
+# SendGrid Email
+try:
+    from sendgrid import SendGridAPIClient
+    from sendgrid.helpers.mail import Mail, Email, To, Content
+    SENDGRID_AVAILABLE = True
+except ImportError:
+    SENDGRID_AVAILABLE = False
+    logging.warning("SendGrid not available. Email notifications disabled.")
+
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
