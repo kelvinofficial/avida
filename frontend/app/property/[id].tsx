@@ -1161,10 +1161,7 @@ export default function PropertyDetailScreen() {
   };
 
   const handleChat = () => {
-    Alert.alert('Start Chat', `Send a message to ${property.seller.name}?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Chat', onPress: () => {} },
-    ]);
+    router.push(`/property/chat/${property.id}`);
   };
 
   return (
