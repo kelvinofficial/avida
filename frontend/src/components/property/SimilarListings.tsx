@@ -520,7 +520,12 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
       setLoading(true);
       setError(null);
       
-      const response = await api.get(`/property/similar/${propertyId}`, {
+      // Use the appropriate endpoint based on category
+      const endpoint = isPropertyCategory 
+        ? `/property/similar/${propertyId}`
+        : `/listings/similar/${propertyId}`;
+      
+      const response = await api.get(endpoint, {
         params: { limit: 10, include_sponsored: true, same_city_only: sameCityOnly, same_price_range: samePriceRange }
       });
       
@@ -531,7 +536,7 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
     } finally {
       setLoading(false);
     }
-  }, [propertyId, sameCityOnly, samePriceRange]);
+  }, [propertyId, sameCityOnly, samePriceRange, isPropertyCategory]);
 
   useEffect(() => {
     if (propertyId) fetchSimilarListings();
