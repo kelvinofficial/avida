@@ -847,7 +847,7 @@ export default function PropertyDetailScreen() {
           <TouchableOpacity style={styles.headerBtn} onPress={handleShare}>
             <Ionicons name="share-outline" size={24} color={COLORS.text} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.headerBtn} onPress={() => setIsFavorited(!isFavorited)}>
+          <TouchableOpacity style={styles.headerBtn} onPress={handleToggleFavorite}>
             <Ionicons name={isFavorited ? 'heart' : 'heart-outline'} size={24} color={isFavorited ? COLORS.error : COLORS.text} />
           </TouchableOpacity>
         </View>
