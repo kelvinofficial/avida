@@ -800,10 +800,7 @@ export default function PropertyScreen() {
   };
 
   const handleChat = (property: Property) => {
-    Alert.alert('Start Chat', `Send a message to ${property.seller.name}?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Chat', onPress: () => router.push(`/property/${property.id}`) },
-    ]);
+    router.push(`/property/chat/${property.id}`);
   };
 
   const onRefresh = useCallback(() => {
