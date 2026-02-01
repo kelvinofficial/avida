@@ -333,7 +333,7 @@ export default function PostPropertyScreen() {
         ],
       };
 
-      const response = await axios.post(`${API_URL}/api/property/listings`, payload);
+      const response = await api.post('/property/listings', payload);
       
       Alert.alert(
         'Success!',
