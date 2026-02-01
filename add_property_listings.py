@@ -82,6 +82,8 @@ AGENTS = [
         "listingsCount": 45,
         "memberSince": "2020-03-15",
         "responseTime": "within 1 hour",
+        "allowsOffers": True,
+        "preferredContact": "whatsapp",
     },
     {
         "id": "agent_2",
@@ -93,6 +95,8 @@ AGENTS = [
         "listingsCount": 120,
         "memberSince": "2019-01-10",
         "responseTime": "within 2 hours",
+        "allowsOffers": True,
+        "preferredContact": "call",
     },
     {
         "id": "agent_3",
@@ -103,6 +107,8 @@ AGENTS = [
         "rating": 4.8,
         "listingsCount": 35,
         "memberSince": "2021-06-20",
+        "allowsOffers": False,
+        "preferredContact": "whatsapp",
     },
     {
         "id": "owner_1",
@@ -111,14 +117,19 @@ AGENTS = [
         "phone": "+49 30 98765432",
         "isVerified": True,
         "memberSince": "2021-06-10",
+        "allowsOffers": True,
+        "preferredContact": "call",
     },
     {
         "id": "owner_2",
         "name": "Anna Schmidt",
         "type": "owner",
         "phone": "+49 151 87654321",
+        "whatsapp": "+49 151 87654321",
         "isVerified": False,
         "memberSince": "2023-01-20",
+        "allowsOffers": False,
+        "preferredContact": "whatsapp",
     },
     {
         "id": "owner_3",
@@ -127,6 +138,8 @@ AGENTS = [
         "phone": "+49 172 11223344",
         "isVerified": True,
         "memberSince": "2022-08-15",
+        "allowsOffers": True,
+        "preferredContact": "whatsapp",
     },
 ]
 
