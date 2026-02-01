@@ -1308,6 +1308,71 @@ async def get_filter_options():
         "cities": ["Berlin", "Hamburg", "Munich", "Cologne", "Frankfurt", "Stuttgart", "Düsseldorf", "Leipzig"]
     }
 
+# ==================== AUTO FAVORITES ENDPOINTS ====================
+
+@api_router.post("/auto/favorites/{listing_id}")
+async def add_auto_favorite(listing_id: str, request: Request):
+    """Add an auto listing to favorites"""
+    user = await get_current_user(request)
+    
+    # Allow guest favorites (stored in session/local) or authenticated favorites
+    user_id = user.user_id if user else "guest"
+    
+    # Check if listing exists
+    listing = await db.auto_listings.find_one({"id": listing_id})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    
+    # Check if already favorited
+    existing = await db.auto_favorites.find_one({"user_id": user_id, "listing_id": listing_id})
+    if existing:
+        return {"message": "Already favorited", "favorited": True}
+    
+    await db.auto_favorites.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "listing_id": listing_id,
+        "listing_title": listing.get("title"),
+        "listing_price": listing.get("price"),
+        "listing_image": listing.get("images", [""])[0] if listing.get("images") else "",
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Update favorites count on the listing
+    await db.auto_listings.update_one({"id": listing_id}, {"$inc": {"favorites_count": 1}})
+    
+    return {"message": "Added to favorites", "favorited": True}
+
+@api_router.delete("/auto/favorites/{listing_id}")
+async def remove_auto_favorite(listing_id: str, request: Request):
+    """Remove an auto listing from favorites"""
+    user = await get_current_user(request)
+    user_id = user.user_id if user else "guest"
+    
+    result = await db.auto_favorites.delete_one({"user_id": user_id, "listing_id": listing_id})
+    
+    if result.deleted_count > 0:
+        await db.auto_listings.update_one({"id": listing_id}, {"$inc": {"favorites_count": -1}})
+    
+    return {"message": "Removed from favorites", "favorited": False}
+
+@api_router.get("/auto/favorites")
+async def get_auto_favorites(request: Request):
+    """Get user's favorite auto listings"""
+    user = await get_current_user(request)
+    user_id = user.user_id if user else "guest"
+    
+    favorites = await db.auto_favorites.find({"user_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    # Get full listing details
+    listing_ids = [f["listing_id"] for f in favorites]
+    listings = await db.auto_listings.find({"id": {"$in": listing_ids}, "status": "active"}, {"_id": 0}).to_list(100)
+    
+    return {
+        "favorites": favorites,
+        "listings": listings
+    }
+
 # ==================== HEALTH CHECK ====================
 
 @api_router.get("/")
