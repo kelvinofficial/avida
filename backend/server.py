@@ -2005,6 +2005,243 @@ async def get_property_areas(city: str):
     results = await db.properties.aggregate(pipeline).to_list(50)
     return results
 
+@api_router.post("/property/listings")
+async def create_property_listing(request: Request):
+    """Create a new property listing"""
+    body = await request.json()
+    
+    # Validate required fields
+    required_fields = ['title', 'purpose', 'type', 'price', 'location']
+    for field in required_fields:
+        if field not in body:
+            raise HTTPException(status_code=400, detail=f"{field} is required")
+    
+    # Get user (or use guest seller)
+    user = await get_current_user(request)
+    seller_id = user.user_id if user else f"seller_{uuid.uuid4().hex[:8]}"
+    seller_name = user.name if user else body.get('sellerName', 'Property Seller')
+    
+    # Create property
+    property_id = f"prop_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc).isoformat()
+    
+    property_data = {
+        "id": property_id,
+        "title": body['title'],
+        "description": body.get('description', ''),
+        "purpose": body['purpose'],  # buy or rent
+        "type": body['type'],
+        "price": body['price'],
+        "currency": body.get('currency', 'EUR'),
+        "priceNegotiable": body.get('priceNegotiable', True),
+        "pricePerMonth": body.get('pricePerMonth', body['purpose'] == 'rent'),
+        "location": body['location'],
+        "bedrooms": body.get('bedrooms'),
+        "bathrooms": body.get('bathrooms'),
+        "toilets": body.get('toilets'),
+        "size": body.get('size'),
+        "sizeUnit": body.get('sizeUnit', 'sqm'),
+        "floorNumber": body.get('floorNumber'),
+        "totalFloors": body.get('totalFloors'),
+        "yearBuilt": body.get('yearBuilt'),
+        "furnishing": body.get('furnishing', 'unfurnished'),
+        "condition": body.get('condition', 'old'),
+        "facilities": body.get('facilities', {}),
+        "images": body.get('images', []),
+        "verification": {
+            "isVerified": False,
+            "docsChecked": False,
+            "addressConfirmed": False,
+            "ownerVerified": False,
+        },
+        "seller": {
+            "id": seller_id,
+            "name": seller_name,
+            "type": body.get('sellerType', 'owner'),
+            "phone": body.get('sellerPhone', ''),
+            "isVerified": False,
+        },
+        "status": "active",
+        "featured": False,
+        "sponsored": False,
+        "boosted": False,
+        "boostExpiry": None,
+        "views": 0,
+        "favorites": 0,
+        "inquiries": 0,
+        "highlights": [],
+        "createdAt": now,
+        "updatedAt": now,
+    }
+    
+    await db.properties.insert_one(property_data)
+    
+    return {"message": "Property listing created successfully", "property": {**property_data, "_id": None}}
+
+@api_router.put("/property/listings/{property_id}")
+async def update_property_listing(property_id: str, request: Request):
+    """Update an existing property listing"""
+    body = await request.json()
+    
+    # Verify property exists
+    existing = await db.properties.find_one({"id": property_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Update allowed fields
+    update_fields = {}
+    allowed_fields = [
+        'title', 'description', 'price', 'priceNegotiable', 'location',
+        'bedrooms', 'bathrooms', 'toilets', 'size', 'furnishing', 'condition',
+        'facilities', 'images'
+    ]
+    
+    for field in allowed_fields:
+        if field in body:
+            update_fields[field] = body[field]
+    
+    update_fields['updatedAt'] = datetime.now(timezone.utc).isoformat()
+    
+    await db.properties.update_one({"id": property_id}, {"$set": update_fields})
+    
+    updated = await db.properties.find_one({"id": property_id}, {"_id": 0})
+    return {"message": "Property updated successfully", "property": updated}
+
+@api_router.delete("/property/listings/{property_id}")
+async def delete_property_listing(property_id: str, request: Request):
+    """Delete (deactivate) a property listing"""
+    existing = await db.properties.find_one({"id": property_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Soft delete - change status to inactive
+    await db.properties.update_one(
+        {"id": property_id},
+        {"$set": {"status": "inactive", "updatedAt": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Property listing deleted successfully"}
+
+# ==================== BOOST & MONETIZATION ====================
+
+@api_router.post("/property/boost/{property_id}")
+async def boost_property_listing(property_id: str, request: Request):
+    """Boost a property listing for increased visibility"""
+    body = await request.json()
+    boost_days = body.get('days', 7)  # Default 7 days
+    
+    existing = await db.properties.find_one({"id": property_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Calculate boost expiry
+    boost_expiry = (datetime.now(timezone.utc) + timedelta(days=boost_days)).isoformat()
+    
+    # Pricing (simulated)
+    boost_prices = {7: 9.99, 14: 14.99, 30: 24.99}
+    price = boost_prices.get(boost_days, 9.99)
+    
+    await db.properties.update_one(
+        {"id": property_id},
+        {"$set": {
+            "boosted": True,
+            "boostExpiry": boost_expiry,
+            "updatedAt": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Record boost purchase
+    boost_record = {
+        "id": f"boost_{uuid.uuid4().hex[:12]}",
+        "propertyId": property_id,
+        "days": boost_days,
+        "price": price,
+        "currency": "EUR",
+        "expiresAt": boost_expiry,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.property_boosts.insert_one(boost_record)
+    
+    return {
+        "message": f"Property boosted for {boost_days} days",
+        "boost": {**boost_record, "_id": None},
+        "price": price
+    }
+
+@api_router.post("/property/feature/{property_id}")
+async def feature_property_listing(property_id: str, request: Request):
+    """Feature a property listing in premium placements"""
+    body = await request.json()
+    feature_days = body.get('days', 7)  # Default 7 days
+    
+    existing = await db.properties.find_one({"id": property_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Calculate feature expiry
+    feature_expiry = (datetime.now(timezone.utc) + timedelta(days=feature_days)).isoformat()
+    
+    # Pricing (simulated)
+    feature_prices = {7: 29.99, 14: 49.99, 30: 79.99}
+    price = feature_prices.get(feature_days, 29.99)
+    
+    await db.properties.update_one(
+        {"id": property_id},
+        {"$set": {
+            "featured": True,
+            "sponsored": True,
+            "featureExpiry": feature_expiry,
+            "updatedAt": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Record feature purchase
+    feature_record = {
+        "id": f"feature_{uuid.uuid4().hex[:12]}",
+        "propertyId": property_id,
+        "days": feature_days,
+        "price": price,
+        "currency": "EUR",
+        "expiresAt": feature_expiry,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.property_features.insert_one(feature_record)
+    
+    return {
+        "message": f"Property featured for {feature_days} days",
+        "feature": {**feature_record, "_id": None},
+        "price": price
+    }
+
+@api_router.get("/property/my-listings")
+async def get_my_property_listings(request: Request):
+    """Get listings created by the current user"""
+    user = await get_current_user(request)
+    user_id = user.user_id if user else "guest"
+    
+    listings = await db.properties.find(
+        {"seller.id": user_id},
+        {"_id": 0}
+    ).sort("createdAt", -1).to_list(100)
+    
+    return {"listings": listings, "total": len(listings)}
+
+@api_router.get("/property/boost-prices")
+async def get_boost_prices():
+    """Get boost pricing options"""
+    return {
+        "boost": [
+            {"days": 7, "price": 9.99, "currency": "EUR", "label": "1 Week Boost"},
+            {"days": 14, "price": 14.99, "currency": "EUR", "label": "2 Week Boost"},
+            {"days": 30, "price": 24.99, "currency": "EUR", "label": "1 Month Boost"},
+        ],
+        "feature": [
+            {"days": 7, "price": 29.99, "currency": "EUR", "label": "1 Week Featured"},
+            {"days": 14, "price": 49.99, "currency": "EUR", "label": "2 Week Featured"},
+            {"days": 30, "price": 79.99, "currency": "EUR", "label": "1 Month Featured"},
+        ]
+    }
+
 # ==================== HEALTH CHECK ====================
 
 @api_router.get("/")
