@@ -706,28 +706,56 @@ export default function PropertyScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  
+  // API state
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [typeCounts, setTypeCounts] = useState<Record<string, number>>({});
 
-  // Filter properties
-  const filteredProperties = useMemo(() => {
-    return MOCK_PROPERTIES.filter((p) => {
-      if (p.purpose !== purpose) return false;
-      if (filters.priceMin && p.price < filters.priceMin) return false;
-      if (filters.priceMax && p.price > filters.priceMax) return false;
-      if (filters.bedroomsMin && (p.bedrooms || 0) < filters.bedroomsMin) return false;
-      if (filters.furnishing && p.furnishing !== filters.furnishing) return false;
-      if (filters.condition && p.condition !== filters.condition) return false;
-      if (filters.verifiedOnly && !p.verification.isVerified) return false;
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        const match =
-          p.title.toLowerCase().includes(q) ||
-          p.location.city.toLowerCase().includes(q) ||
-          p.location.area.toLowerCase().includes(q);
-        if (!match) return false;
-      }
-      return true;
-    });
+  // Fetch properties from API
+  const fetchProperties = useCallback(async () => {
+    try {
+      setLoading(true);
+      const params: Record<string, any> = {
+        purpose,
+        limit: 50,
+      };
+      
+      if (filters.priceMin) params.price_min = filters.priceMin;
+      if (filters.priceMax) params.price_max = filters.priceMax;
+      if (filters.bedroomsMin) params.bedrooms_min = filters.bedroomsMin;
+      if (filters.furnishing) params.furnishing = filters.furnishing;
+      if (filters.condition) params.condition = filters.condition;
+      if (filters.verifiedOnly) params.verified_only = true;
+      if (filters.type) params.property_type = filters.type;
+      if (searchQuery) params.search = searchQuery;
+      
+      const response = await axios.get(`${API_URL}/api/property/listings`, { params });
+      setProperties(response.data.listings || []);
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [purpose, filters, searchQuery]);
+
+  // Fetch type counts
+  const fetchTypeCounts = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/property/type-counts`, {
+        params: { purpose }
+      });
+      setTypeCounts(response.data || {});
+    } catch (error) {
+      console.error('Error fetching type counts:', error);
+    }
+  }, [purpose]);
+
+  // Initial fetch and refetch on changes
+  useEffect(() => {
+    fetchProperties();
+    fetchTypeCounts();
+  }, [fetchProperties, fetchTypeCounts]);
 
   const getSearchPlaceholder = () => {
     return purpose === 'buy'
@@ -735,13 +763,34 @@ export default function PropertyScreen() {
       : 'Find apartments, houses, short lets';
   };
 
-  const toggleFavorite = (id: string) => {
-    setFavorites((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) newSet.delete(id);
-      else newSet.add(id);
-      return newSet;
-    });
+  const toggleFavorite = async (id: string) => {
+    try {
+      const isFav = favorites.has(id);
+      if (isFav) {
+        await axios.delete(`${API_URL}/api/property/favorites/${id}`);
+        setFavorites((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(id);
+          return newSet;
+        });
+      } else {
+        await axios.post(`${API_URL}/api/property/favorites/${id}`);
+        setFavorites((prev) => {
+          const newSet = new Set(prev);
+          newSet.add(id);
+          return newSet;
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      // Optimistic update fallback
+      setFavorites((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(id)) newSet.delete(id);
+        else newSet.add(id);
+        return newSet;
+      });
+    }
   };
 
   const handleCall = (property: Property) => {
@@ -759,12 +808,14 @@ export default function PropertyScreen() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000);
-  }, []);
+    Promise.all([fetchProperties(), fetchTypeCounts()]).finally(() => {
+      setRefreshing(false);
+    });
+  }, [fetchProperties, fetchTypeCounts]);
 
-  // Property type counts
+  // Property type counts from API
   const getTypeCount = (typeId: string) => {
-    return MOCK_PROPERTIES.filter((p) => p.type === typeId && p.purpose === purpose).length;
+    return typeCounts[typeId] || 0;
   };
 
   // Render header
