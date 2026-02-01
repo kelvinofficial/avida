@@ -101,6 +101,7 @@ export default function RootLayout() {
         <Stack.Screen name="post/category" options={{ presentation: 'card' }} />
         <Stack.Screen name="login" options={{ presentation: 'modal' }} />
         <Stack.Screen name="auto/index" options={{ presentation: 'card' }} />
+        <Stack.Screen name="auto/[id]" options={{ presentation: 'card' }} />
       </Stack>
     </>
   );
