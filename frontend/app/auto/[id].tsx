@@ -453,9 +453,32 @@ export default function AutoListingDetailScreen() {
 
   const handleWhatsApp = () => {
     if (!listing) return;
-    const phone = listing.seller?.phone?.replace(/[^0-9]/g, '') || '4912345678';
+    const phone = listing.seller?.whatsapp || listing.seller?.phone || '';
+    if (!phone) {
+      Alert.alert('Error', 'WhatsApp number not available');
+      return;
+    }
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
     const message = encodeURIComponent(`Hi, I'm interested in your "${listing.title}" listed for ${formatPrice(listing.price)}. Is it still available?`);
-    Linking.openURL(`https://wa.me/${phone}?text=${message}`);
+    Linking.openURL(`https://wa.me/${cleanPhone}?text=${message}`);
+  };
+
+  const handleSubmitOffer = async () => {
+    if (!listing || !offerPrice) return;
+    
+    try {
+      const response = await api.post('/auto/conversations', {
+        listing_id: listing.id,
+        message: `I'd like to make an offer of ${formatPrice(parseInt(offerPrice))} for your ${listing.title}.${offerMessage ? `\n\nMessage: ${offerMessage}` : ''}`,
+      });
+      router.push({ pathname: '/auto/chat/[id]', params: { id: response.data.id, title: listing.seller?.name || 'Chat', listingId: listing.id } });
+      Alert.alert('Offer Sent', `Your offer of ${formatPrice(parseInt(offerPrice))} has been sent to the seller.`);
+      setShowOfferModal(false);
+      setOfferPrice('');
+      setOfferMessage('');
+    } catch (err) {
+      Alert.alert('Error', 'Failed to send offer. Please try again.');
+    }
   };
 
   if (loading) {
