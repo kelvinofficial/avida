@@ -126,9 +126,9 @@ export default function AutoListingDetailScreen() {
                 message: `Hi, I'm interested in your ${listing.title} listed for ${formatPrice(listing.price)}. Is it still available?`,
               });
               
-              // Navigate to chat
+              // Navigate to auto chat screen
               router.push({
-                pathname: '/chat/[id]',
+                pathname: '/auto/chat/[id]',
                 params: { 
                   id: response.data.id,
                   title: listing.seller?.name || 'Chat',
