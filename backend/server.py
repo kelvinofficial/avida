@@ -666,9 +666,13 @@ async def get_listing(listing_id: str, request: Request):
             "user_id": seller["user_id"],
             "name": seller["name"],
             "picture": seller.get("picture"),
+            "phone": seller.get("phone"),
+            "whatsapp": seller.get("whatsapp"),
             "rating": seller.get("rating", 0),
             "verified": seller.get("verified", False),
-            "created_at": seller.get("created_at")
+            "created_at": seller.get("created_at"),
+            "allowsOffers": seller.get("allowsOffers", True),
+            "preferredContact": seller.get("preferredContact", "whatsapp")
         } if seller else None,
         "is_favorited": is_favorited
     }
