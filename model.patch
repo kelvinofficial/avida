@@ -1,258 +1,279 @@
+diff --git a/frontend/app/property/[id].tsx b/frontend/app/property/[id].tsx
+index 0db02c1..57e3a32 100644
+--- a/frontend/app/property/[id].tsx
++++ b/frontend/app/property/[id].tsx
+@@ -1161,10 +1161,7 @@ export default function PropertyDetailScreen() {
+   };
+ 
+   const handleChat = () => {
+-    Alert.alert('Start Chat', `Send a message to ${property.seller.name}?`, [
+-      { text: 'Cancel', style: 'cancel' },
+-      { text: 'Chat', onPress: () => {} },
+-    ]);
++    router.push(`/property/chat/${property.id}`);
+   };
+ 
+   return (
 diff --git a/model.patch b/model.patch
-index 4cd3ba5..e69de29 100644
+index 4c156bc..e69de29 100644
 --- a/model.patch
 +++ b/model.patch
-@@ -1,253 +0,0 @@
--diff --git a/simple_test.py b/simple_test.py
--new file mode 100644
--index 0000000..68f8b1f
----- /dev/null
--+++ b/simple_test.py
--@@ -0,0 +1,109 @@
--+#!/usr/bin/env python3
--+"""
--+Simple Backend API Test to isolate issues
--+"""
--+
--+import requests
--+import json
--+
--+# Get backend URL
--+BASE_URL = "https://realty-hub-158.preview.emergentagent.com"
--+API_URL = f"{BASE_URL}/api"
--+TEST_SESSION_TOKEN = "test_session_123"
--+
--+def test_auth():
--+    """Test authentication"""
--+    print("=== Testing Authentication ===")
--+    
--+    headers = {
--+        'Content-Type': 'application/json',
--+        'Authorization': f'Bearer {TEST_SESSION_TOKEN}'
--+    }
--+    
--+    try:
--+        response = requests.get(f"{API_URL}/auth/me", headers=headers, timeout=10)
--+        print(f"GET /api/auth/me - Status: {response.status_code}")
--+        if response.status_code == 200:
--+            data = response.json()
--+            print(f"User: {data.get('name', 'Unknown')}")
--+            return True
--+        else:
--+            print(f"Response: {response.text}")
--+            return False
--+    except Exception as e:
--+        print(f"Exception: {e}")
--+        return False
--+
--+def test_create_listing():
--+    """Test creating a listing with minimal data"""
--+    print("\n=== Testing Create Listing ===")
--+    
--+    headers = {
--+        'Content-Type': 'application/json',
--+        'Authorization': f'Bearer {TEST_SESSION_TOKEN}'
--+    }
--+    
--+    # Minimal listing data
--+    listing_data = {
--+        "title": "Test Item",
--+        "description": "A simple test item",
--+        "price": 10.0,
--+        "category_id": "electronics",
--+        "location": "Berlin"
--+    }
--+    
--+    try:
--+        response = requests.post(f"{API_URL}/listings", json=listing_data, headers=headers, timeout=10)
--+        print(f"POST /api/listings - Status: {response.status_code}")
--+        if response.status_code == 200:
--+            data = response.json()
--+            print(f"Created listing: {data.get('id', 'Unknown')}")
--+            return data.get('id')
--+        else:
--+            print(f"Response: {response.text}")
--+            return None
--+    except Exception as e:
--+        print(f"Exception: {e}")
--+        return None
--+
--+def test_favorites():
--+    """Test favorites API"""
--+    print("\n=== Testing Favorites ===")
--+    
--+    headers = {
--+        'Content-Type': 'application/json',
--+        'Authorization': f'Bearer {TEST_SESSION_TOKEN}'
--+    }
--+    
--+    try:
--+        response = requests.get(f"{API_URL}/favorites", headers=headers, timeout=10)
--+        print(f"GET /api/favorites - Status: {response.status_code}")
--+        if response.status_code == 200:
--+            data = response.json()
--+            print(f"Favorites: {len(data)}")
--+            return True
--+        else:
--+            print(f"Response: {response.text}")
--+            return False
--+    except Exception as e:
--+        print(f"Exception: {e}")
--+        return False
--+
--+def main():
--+    print("Simple Backend API Test")
--+    print("=" * 40)
--+    
--+    # Test auth first
--+    auth_ok = test_auth()
--+    
--+    if auth_ok:
--+        # Test create listing
--+        listing_id = test_create_listing()
--+        
--+        # Test favorites
--+        test_favorites()
--+    else:
--+        print("Authentication failed - skipping other tests")
--+
--+if __name__ == "__main__":
--+    main()
--\ No newline at end of file
--diff --git a/test_result.md b/test_result.md
--index ccf6b79..0dd79bf 100644
----- a/test_result.md
--+++ b/test_result.md
--@@ -107,75 +107,93 @@ user_problem_statement: "Build a production-ready local classifieds marketplace
-- backend:
--   - task: "Health check API"
--     implemented: true
---    working: "NA"
--+    working: true
--     file: "/app/backend/server.py"
--     stuck_count: 0
--     priority: "high"
---    needs_retesting: true
--+    needs_retesting: false
--     status_history:
--       - working: "NA"
--         agent: "main"
--         comment: "Basic health check endpoint at /api/ and /api/health implemented"
--+      - working: true
--+        agent: "testing"
--+        comment: "✅ TESTED: Both GET /api/ and GET /api/health endpoints working correctly. Return proper JSON responses with status information."
-- 
--   - task: "Categories API"
--     implemented: true
---    working: "NA"
--+    working: true
--     file: "/app/backend/server.py"
--     stuck_count: 0
--     priority: "high"
---    needs_retesting: true
--+    needs_retesting: false
--     status_history:
--       - working: "NA"
--         agent: "main"
--         comment: "GET /api/categories returns all 9 categories with subcategories and attributes"
--+      - working: true
--+        agent: "testing"
--+        comment: "✅ TESTED: GET /api/categories returns 9 categories with proper structure (id, name, icon, subcategories, attributes). GET /api/categories/{id} works for individual categories."
-- 
--   - task: "Listings CRUD API"
--     implemented: true
---    working: "NA"
--+    working: false
--     file: "/app/backend/server.py"
---    stuck_count: 0
--+    stuck_count: 1
--     priority: "high"
---    needs_retesting: true
--+    needs_retesting: false
--     status_history:
--       - working: "NA"
--         agent: "main"
--         comment: "POST/GET/PUT/DELETE endpoints for listings with filtering, pagination, and search"
--+      - working: false
--+        agent: "testing"
--+        comment: "❌ CRITICAL ISSUE: POST /api/listings fails with 520 Internal Server Error due to BSON ObjectId serialization error. GET /api/listings and filtering work correctly. GET /api/listings/my works. Root cause: Backend tries to serialize MongoDB ObjectId which is not JSON serializable. Error: 'Unable to serialize unknown type: <class 'bson.objectid.ObjectId'>'"
-- 
--   - task: "Auth API (Emergent Google OAuth)"
--     implemented: true
---    working: "NA"
--+    working: true
--     file: "/app/backend/server.py"
--     stuck_count: 0
--     priority: "high"
---    needs_retesting: true
--+    needs_retesting: false
--     status_history:
--       - working: "NA"
--         agent: "main"
--         comment: "POST /api/auth/session for session exchange, GET /api/auth/me for current user, POST /api/auth/logout"
--+      - working: true
--+        agent: "testing"
--+        comment: "✅ TESTED: GET /api/auth/me works correctly with session token authentication. POST /api/auth/logout works. POST /api/auth/session correctly returns 401 for invalid session (expected behavior). Session-based authentication is functional."
-- 
--   - task: "Favorites API"
--     implemented: true
---    working: "NA"
--+    working: false
--     file: "/app/backend/server.py"
---    stuck_count: 0
--+    stuck_count: 1
--     priority: "medium"
---    needs_retesting: true
--+    needs_retesting: false
--     status_history:
--       - working: "NA"
--         agent: "main"
--         comment: "POST/DELETE /api/favorites/{listing_id}, GET /api/favorites"
--+      - working: false
--+        agent: "testing"
--+        comment: "❌ ISSUE: Favorites API endpoints return 401 'Not authenticated' even with valid session token. Authentication middleware may have issues with session persistence after logout testing. GET /api/favorites, POST /api/favorites/{id}, DELETE /api/favorites/{id} all fail with 401."
-- 
--   - task: "Conversations/Messages API"
--     implemented: true
---    working: "NA"
--+    working: false
--     file: "/app/backend/server.py"
---    stuck_count: 0
--+    stuck_count: 1
--     priority: "medium"
---    needs_retesting: true
--+    needs_retesting: false
--     status_history:
--       - working: "NA"
--         agent: "main"
--         comment: "CRUD for conversations and messages with Socket.IO for real-time"
--+      - working: false
--+        agent: "testing"
--+        comment: "❌ ISSUE: GET /api/conversations returns 401 'Not authenticated'. POST /api/conversations has parameter validation issue (422 error for missing listing_id query parameter). Authentication and parameter handling need fixes."
-- 
-- frontend:
--   - task: "Home screen with listings grid"
--@@ -270,15 +288,18 @@ metadata:
-- 
-- test_plan:
--   current_focus:
---    - "Health check API"
---    - "Categories API"
--     - "Listings CRUD API"
---    - "Auth API"
--+    - "Favorites API" 
--+    - "Conversations/Messages API"
--+  stuck_tasks:
--+    - "Listings CRUD API"
--     - "Favorites API"
---  stuck_tasks: []
--+    - "Conversations/Messages API"
--   test_all: false
---  test_priority: "high_first"
--+  test_priority: "stuck_first"
-- 
-- agent_communication:
--   - agent: "main"
--     message: "Initial implementation complete. Please test all backend APIs first. Create test user via MongoDB for auth-protected endpoints. Use auth_testing.md playbook for creating test sessions."
--+  - agent: "testing"
--+    message: "BACKEND TESTING COMPLETE. CRITICAL ISSUES FOUND: 1) POST /api/listings fails with BSON ObjectId serialization error (520 error) - this is a critical backend bug that prevents listing creation. 2) Auth-protected endpoints (favorites, conversations) return 401 after logout testing - session management issue. 3) Conversation API has parameter validation issues. Health check, categories, and basic auth APIs work correctly. Main agent needs to fix ObjectId serialization and session persistence issues."
+@@ -1,258 +0,0 @@
+-diff --git a/model.patch b/model.patch
+-index 4cd3ba5..e69de29 100644
+---- a/model.patch
+-+++ b/model.patch
+-@@ -1,253 +0,0 @@
+--diff --git a/simple_test.py b/simple_test.py
+--new file mode 100644
+--index 0000000..68f8b1f
+----- /dev/null
+--+++ b/simple_test.py
+--@@ -0,0 +1,109 @@
+--+#!/usr/bin/env python3
+--+"""
+--+Simple Backend API Test to isolate issues
+--+"""
+--+
+--+import requests
+--+import json
+--+
+--+# Get backend URL
+--+BASE_URL = "https://realty-hub-158.preview.emergentagent.com"
+--+API_URL = f"{BASE_URL}/api"
+--+TEST_SESSION_TOKEN = "test_session_123"
+--+
+--+def test_auth():
+--+    """Test authentication"""
+--+    print("=== Testing Authentication ===")
+--+    
+--+    headers = {
+--+        'Content-Type': 'application/json',
+--+        'Authorization': f'Bearer {TEST_SESSION_TOKEN}'
+--+    }
+--+    
+--+    try:
+--+        response = requests.get(f"{API_URL}/auth/me", headers=headers, timeout=10)
+--+        print(f"GET /api/auth/me - Status: {response.status_code}")
+--+        if response.status_code == 200:
+--+            data = response.json()
+--+            print(f"User: {data.get('name', 'Unknown')}")
+--+            return True
+--+        else:
+--+            print(f"Response: {response.text}")
+--+            return False
+--+    except Exception as e:
+--+        print(f"Exception: {e}")
+--+        return False
+--+
+--+def test_create_listing():
+--+    """Test creating a listing with minimal data"""
+--+    print("\n=== Testing Create Listing ===")
+--+    
+--+    headers = {
+--+        'Content-Type': 'application/json',
+--+        'Authorization': f'Bearer {TEST_SESSION_TOKEN}'
+--+    }
+--+    
+--+    # Minimal listing data
+--+    listing_data = {
+--+        "title": "Test Item",
+--+        "description": "A simple test item",
+--+        "price": 10.0,
+--+        "category_id": "electronics",
+--+        "location": "Berlin"
+--+    }
+--+    
+--+    try:
+--+        response = requests.post(f"{API_URL}/listings", json=listing_data, headers=headers, timeout=10)
+--+        print(f"POST /api/listings - Status: {response.status_code}")
+--+        if response.status_code == 200:
+--+            data = response.json()
+--+            print(f"Created listing: {data.get('id', 'Unknown')}")
+--+            return data.get('id')
+--+        else:
+--+            print(f"Response: {response.text}")
+--+            return None
+--+    except Exception as e:
+--+        print(f"Exception: {e}")
+--+        return None
+--+
+--+def test_favorites():
+--+    """Test favorites API"""
+--+    print("\n=== Testing Favorites ===")
+--+    
+--+    headers = {
+--+        'Content-Type': 'application/json',
+--+        'Authorization': f'Bearer {TEST_SESSION_TOKEN}'
+--+    }
+--+    
+--+    try:
+--+        response = requests.get(f"{API_URL}/favorites", headers=headers, timeout=10)
+--+        print(f"GET /api/favorites - Status: {response.status_code}")
+--+        if response.status_code == 200:
+--+            data = response.json()
+--+            print(f"Favorites: {len(data)}")
+--+            return True
+--+        else:
+--+            print(f"Response: {response.text}")
+--+            return False
+--+    except Exception as e:
+--+        print(f"Exception: {e}")
+--+        return False
+--+
+--+def main():
+--+    print("Simple Backend API Test")
+--+    print("=" * 40)
+--+    
+--+    # Test auth first
+--+    auth_ok = test_auth()
+--+    
+--+    if auth_ok:
+--+        # Test create listing
+--+        listing_id = test_create_listing()
+--+        
+--+        # Test favorites
+--+        test_favorites()
+--+    else:
+--+        print("Authentication failed - skipping other tests")
+--+
+--+if __name__ == "__main__":
+--+    main()
+--\ No newline at end of file
+--diff --git a/test_result.md b/test_result.md
+--index ccf6b79..0dd79bf 100644
+----- a/test_result.md
+--+++ b/test_result.md
+--@@ -107,75 +107,93 @@ user_problem_statement: "Build a production-ready local classifieds marketplace
+-- backend:
+--   - task: "Health check API"
+--     implemented: true
+---    working: "NA"
+--+    working: true
+--     file: "/app/backend/server.py"
+--     stuck_count: 0
+--     priority: "high"
+---    needs_retesting: true
+--+    needs_retesting: false
+--     status_history:
+--       - working: "NA"
+--         agent: "main"
+--         comment: "Basic health check endpoint at /api/ and /api/health implemented"
+--+      - working: true
+--+        agent: "testing"
+--+        comment: "✅ TESTED: Both GET /api/ and GET /api/health endpoints working correctly. Return proper JSON responses with status information."
+-- 
+--   - task: "Categories API"
+--     implemented: true
+---    working: "NA"
+--+    working: true
+--     file: "/app/backend/server.py"
+--     stuck_count: 0
+--     priority: "high"
+---    needs_retesting: true
+--+    needs_retesting: false
+--     status_history:
+--       - working: "NA"
+--         agent: "main"
+--         comment: "GET /api/categories returns all 9 categories with subcategories and attributes"
+--+      - working: true
+--+        agent: "testing"
+--+        comment: "✅ TESTED: GET /api/categories returns 9 categories with proper structure (id, name, icon, subcategories, attributes). GET /api/categories/{id} works for individual categories."
+-- 
+--   - task: "Listings CRUD API"
+--     implemented: true
+---    working: "NA"
+--+    working: false
+--     file: "/app/backend/server.py"
+---    stuck_count: 0
+--+    stuck_count: 1
+--     priority: "high"
+---    needs_retesting: true
+--+    needs_retesting: false
+--     status_history:
+--       - working: "NA"
+--         agent: "main"
+--         comment: "POST/GET/PUT/DELETE endpoints for listings with filtering, pagination, and search"
+--+      - working: false
+--+        agent: "testing"
+--+        comment: "❌ CRITICAL ISSUE: POST /api/listings fails with 520 Internal Server Error due to BSON ObjectId serialization error. GET /api/listings and filtering work correctly. GET /api/listings/my works. Root cause: Backend tries to serialize MongoDB ObjectId which is not JSON serializable. Error: 'Unable to serialize unknown type: <class 'bson.objectid.ObjectId'>'"
+-- 
+--   - task: "Auth API (Emergent Google OAuth)"
+--     implemented: true
+---    working: "NA"
+--+    working: true
+--     file: "/app/backend/server.py"
+--     stuck_count: 0
+--     priority: "high"
+---    needs_retesting: true
+--+    needs_retesting: false
+--     status_history:
+--       - working: "NA"
+--         agent: "main"
+--         comment: "POST /api/auth/session for session exchange, GET /api/auth/me for current user, POST /api/auth/logout"
+--+      - working: true
+--+        agent: "testing"
+--+        comment: "✅ TESTED: GET /api/auth/me works correctly with session token authentication. POST /api/auth/logout works. POST /api/auth/session correctly returns 401 for invalid session (expected behavior). Session-based authentication is functional."
+-- 
+--   - task: "Favorites API"
+--     implemented: true
+---    working: "NA"
+--+    working: false
+--     file: "/app/backend/server.py"
+---    stuck_count: 0
+--+    stuck_count: 1
+--     priority: "medium"
+---    needs_retesting: true
+--+    needs_retesting: false
+--     status_history:
+--       - working: "NA"
+--         agent: "main"
+--         comment: "POST/DELETE /api/favorites/{listing_id}, GET /api/favorites"
+--+      - working: false
+--+        agent: "testing"
+--+        comment: "❌ ISSUE: Favorites API endpoints return 401 'Not authenticated' even with valid session token. Authentication middleware may have issues with session persistence after logout testing. GET /api/favorites, POST /api/favorites/{id}, DELETE /api/favorites/{id} all fail with 401."
+-- 
+--   - task: "Conversations/Messages API"
+--     implemented: true
+---    working: "NA"
+--+    working: false
+--     file: "/app/backend/server.py"
+---    stuck_count: 0
+--+    stuck_count: 1
+--     priority: "medium"
+---    needs_retesting: true
+--+    needs_retesting: false
+--     status_history:
+--       - working: "NA"
+--         agent: "main"
+--         comment: "CRUD for conversations and messages with Socket.IO for real-time"
+--+      - working: false
+--+        agent: "testing"
+--+        comment: "❌ ISSUE: GET /api/conversations returns 401 'Not authenticated'. POST /api/conversations has parameter validation issue (422 error for missing listing_id query parameter). Authentication and parameter handling need fixes."
+-- 
+-- frontend:
+--   - task: "Home screen with listings grid"
+--@@ -270,15 +288,18 @@ metadata:
+-- 
+-- test_plan:
+--   current_focus:
+---    - "Health check API"
+---    - "Categories API"
+--     - "Listings CRUD API"
+---    - "Auth API"
+--+    - "Favorites API" 
+--+    - "Conversations/Messages API"
+--+  stuck_tasks:
+--+    - "Listings CRUD API"
+--     - "Favorites API"
+---  stuck_tasks: []
+--+    - "Conversations/Messages API"
+--   test_all: false
+---  test_priority: "high_first"
+--+  test_priority: "stuck_first"
+-- 
+-- agent_communication:
+--   - agent: "main"
+--     message: "Initial implementation complete. Please test all backend APIs first. Create test user via MongoDB for auth-protected endpoints. Use auth_testing.md playbook for creating test sessions."
+--+  - agent: "testing"
+--+    message: "BACKEND TESTING COMPLETE. CRITICAL ISSUES FOUND: 1) POST /api/listings fails with BSON ObjectId serialization error (520 error) - this is a critical backend bug that prevents listing creation. 2) Auth-protected endpoints (favorites, conversations) return 401 after logout testing - session management issue. 3) Conversation API has parameter validation issues. Health check, categories, and basic auth APIs work correctly. Main agent needs to fix ObjectId serialization and session persistence issues."
