@@ -1417,9 +1417,6 @@ async def create_auto_conversation(request: Request):
                 "read": False,
             },
         ]
-            "read": False,
-        },
-    ]
     
     conversation = {
         "id": conversation_id,
