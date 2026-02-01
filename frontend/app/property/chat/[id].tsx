@@ -18,11 +18,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import axios from 'axios';
-import Constants from 'expo-constants';
+import { api } from '../../../src/utils/api';
 import { format, isToday, isYesterday } from 'date-fns';
-
-const API_URL = Constants.expoConfig?.extra?.EXPO_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
 const COLORS = {
   primary: '#2E7D32',
