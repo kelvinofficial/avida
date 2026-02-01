@@ -1256,6 +1256,9 @@ export default function PropertyDetailScreen() {
         {/* Map & Location */}
         <MapSection property={property} />
 
+        {/* Similar Listings */}
+        <SimilarListings propertyId={property.id} />
+
         {/* Spacer for bottom actions */}
         <View style={{ height: 120 }} />
       </ScrollView>
