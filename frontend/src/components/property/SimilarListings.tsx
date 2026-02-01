@@ -355,7 +355,7 @@ const propertyCardStyles = StyleSheet.create({
   },
 });
 
-// ============ OTHER CATEGORY CARD (Two Column - Image on Left) ============
+// ============ OTHER CATEGORY CARD (Vertical - Matches Auto Page Design) ============
 const OtherCategoryCard = memo(({ 
   listing, index, onPress, onFavorite, isFavorited, sourceId 
 }: { 
@@ -363,47 +363,118 @@ const OtherCategoryCard = memo(({
 }) => {
   useEffect(() => { trackEvent('impression', sourceId, listing.id, listing.isSponsored, index); }, []);
 
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
+  const imageCount = listing.images?.length || 0;
+
   return (
     <TouchableOpacity 
-      style={[otherCardStyles.container, listing.isSponsored && otherCardStyles.sponsoredContainer]}
+      style={[
+        otherCardStyles.container, 
+        listing.isSponsored && otherCardStyles.sponsoredContainer,
+        listing.featured && otherCardStyles.featuredContainer,
+      ]}
       onPress={onPress}
       activeOpacity={0.9}
     >
-      {/* Image Left Column */}
+      {/* Image Container */}
       <View style={otherCardStyles.imageContainer}>
         <Image source={{ uri: listing.images?.[0] }} style={otherCardStyles.image} />
         
-        {listing.isSponsored && (
-          <View style={otherCardStyles.sponsoredLabel}>
-            <Text style={otherCardStyles.sponsoredText}>Ad</Text>
-          </View>
-        )}
-        
-        <TouchableOpacity style={otherCardStyles.favoriteBtn} onPress={onFavorite}>
-          <Ionicons name={isFavorited ? 'heart' : 'heart-outline'} size={16} color={isFavorited ? COLORS.error : '#fff'} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Content Right Column */}
-      <View style={otherCardStyles.content}>
-        <Text style={otherCardStyles.price}>
-          €{listing.price?.toLocaleString()}
-        </Text>
-        
-        <Text style={otherCardStyles.title} numberOfLines={2}>{listing.title}</Text>
-
-        <View style={otherCardStyles.locationRow}>
-          <Ionicons name="location-outline" size={12} color={COLORS.textSecondary} />
-          <Text style={otherCardStyles.location} numberOfLines={1}>{listing.location?.city}</Text>
-        </View>
-
-        <View style={otherCardStyles.bottomRow}>
-          {listing.verification?.isVerified && (
-            <View style={otherCardStyles.badge}>
-              <Ionicons name="shield-checkmark" size={10} color={COLORS.verified} />
+        {/* Badges */}
+        <View style={otherCardStyles.badgeRow}>
+          {listing.isSponsored && (
+            <View style={otherCardStyles.sponsoredBadge}>
+              <Text style={otherCardStyles.sponsoredText}>Ad</Text>
             </View>
           )}
-          <Text style={otherCardStyles.postedDate}>{getRelativeTime(listing.createdAt || new Date().toISOString())}</Text>
+          {listing.featured && !listing.isSponsored && (
+            <View style={otherCardStyles.featuredBadge}>
+              <Text style={otherCardStyles.featuredText}>Featured</Text>
+            </View>
+          )}
+        </View>
+        
+        {/* Favorite button */}
+        <TouchableOpacity style={otherCardStyles.favoriteBtn} onPress={onFavorite}>
+          <Ionicons name={isFavorited ? 'heart' : 'heart-outline'} size={18} color={isFavorited ? COLORS.error : '#fff'} />
+        </TouchableOpacity>
+
+        {/* Image count */}
+        {imageCount > 0 && (
+          <View style={otherCardStyles.imageCountBadge}>
+            <Ionicons name="camera" size={10} color="#fff" />
+            <Text style={otherCardStyles.imageCountText}>{imageCount}</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Content */}
+      <View style={otherCardStyles.content}>
+        {/* Price row */}
+        <View style={otherCardStyles.priceRow}>
+          <Text style={otherCardStyles.price}>{formatPrice(listing.price || 0)}</Text>
+          {listing.negotiable && (
+            <View style={otherCardStyles.negotiableBadge}>
+              <Text style={otherCardStyles.negotiableText}>Neg.</Text>
+            </View>
+          )}
+        </View>
+        
+        {/* Title */}
+        <Text style={otherCardStyles.title} numberOfLines={2}>{listing.title}</Text>
+
+        {/* Specs row (for auto-like listings) */}
+        {(listing.details?.bedrooms || listing.details?.size) && (
+          <View style={otherCardStyles.specsRow}>
+            {listing.details?.bedrooms && (
+              <>
+                <Text style={otherCardStyles.specText}>{listing.details.bedrooms} bed</Text>
+                <View style={otherCardStyles.specDot} />
+              </>
+            )}
+            {listing.details?.size && (
+              <Text style={otherCardStyles.specText}>{listing.details.size} m²</Text>
+            )}
+          </View>
+        )}
+
+        {/* Location */}
+        <View style={otherCardStyles.locationRow}>
+          <Ionicons name="location" size={11} color={COLORS.textSecondary} />
+          <Text style={otherCardStyles.location} numberOfLines={1}>
+            {listing.location?.city || listing.location?.area || 'Location'}
+          </Text>
+        </View>
+
+        {/* Seller/Verification badge */}
+        <View style={otherCardStyles.sellerRow}>
+          {listing.seller?.isVerified && (
+            <View style={otherCardStyles.verifiedBadge}>
+              <Ionicons name="shield-checkmark" size={9} color={COLORS.primary} />
+              <Text style={otherCardStyles.verifiedText}>Verified</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Quick actions */}
+        <View style={otherCardStyles.actionsRow}>
+          <TouchableOpacity style={otherCardStyles.actionButton}>
+            <Ionicons name="chatbubble-outline" size={14} color={COLORS.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity style={otherCardStyles.actionButton}>
+            <Ionicons name="call-outline" size={14} color={COLORS.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity style={[otherCardStyles.actionButton, otherCardStyles.whatsappButton]}>
+            <Ionicons name="logo-whatsapp" size={14} color="#25D366" />
+          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>
@@ -418,6 +489,182 @@ const otherCardStyles = StyleSheet.create({
     marginBottom: 12,
     overflow: 'hidden',
     borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  sponsoredContainer: {
+    borderColor: COLORS.sponsoredBorder,
+    borderWidth: 2,
+  },
+  featuredContainer: {
+    borderColor: COLORS.primary,
+    borderWidth: 2,
+  },
+  imageContainer: {
+    position: 'relative',
+    width: '100%',
+    height: OTHER_IMAGE_HEIGHT,
+    backgroundColor: COLORS.background,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  badgeRow: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    flexDirection: 'row',
+    gap: 4,
+  },
+  sponsoredBadge: {
+    backgroundColor: COLORS.warning,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  sponsoredText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '700',
+  },
+  featuredBadge: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  featuredText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '700',
+  },
+  favoriteBtn: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageCountBadge: {
+    position: 'absolute',
+    bottom: 6,
+    left: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  imageCountText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  content: {
+    padding: 10,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  price: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  negotiableBadge: {
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 3,
+  },
+  negotiableText: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  title: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: COLORS.text,
+    marginTop: 4,
+    lineHeight: 18,
+  },
+  specsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  specText: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+  },
+  specDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: COLORS.textSecondary,
+    marginHorizontal: 5,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginTop: 6,
+  },
+  location: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    flex: 1,
+  },
+  sellerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 6,
+  },
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 3,
+  },
+  verifiedText: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  actionButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  whatsappButton: {
+    backgroundColor: '#E8F5E9',
+  },
+});
     borderColor: COLORS.border,
     flexDirection: 'row',
   },
