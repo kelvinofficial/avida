@@ -351,7 +351,7 @@ export default function PropertyChatScreen() {
   // Fetch property details
   const fetchProperty = useCallback(async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/property/listings/${id}`);
+      const response = await api.get(`/property/listings/${id}`);
       setProperty(response.data);
       // Initialize with dummy messages
       setMessages(INITIAL_MESSAGES.map(m => ({
