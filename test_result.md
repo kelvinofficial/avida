@@ -288,15 +288,18 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Health check API"
-    - "Categories API"
     - "Listings CRUD API"
-    - "Auth API"
+    - "Favorites API" 
+    - "Conversations/Messages API"
+  stuck_tasks:
+    - "Listings CRUD API"
     - "Favorites API"
-  stuck_tasks: []
+    - "Conversations/Messages API"
   test_all: false
-  test_priority: "high_first"
+  test_priority: "stuck_first"
 
 agent_communication:
   - agent: "main"
     message: "Initial implementation complete. Please test all backend APIs first. Create test user via MongoDB for auth-protected endpoints. Use auth_testing.md playbook for creating test sessions."
+  - agent: "testing"
+    message: "BACKEND TESTING COMPLETE. CRITICAL ISSUES FOUND: 1) POST /api/listings fails with BSON ObjectId serialization error (520 error) - this is a critical backend bug that prevents listing creation. 2) Auth-protected endpoints (favorites, conversations) return 401 after logout testing - session management issue. 3) Conversation API has parameter validation issues. Health check, categories, and basic auth APIs work correctly. Main agent needs to fix ObjectId serialization and session persistence issues."
