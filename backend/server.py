@@ -650,19 +650,26 @@ async def get_listing(listing_id: str, request: Request):
     # Increment views
     await db.listings.update_one({"id": listing_id}, {"$inc": {"views": 1}})
     
-    # Get seller info
-    seller = await db.users.find_one({"user_id": listing["user_id"]}, {"_id": 0})
+    # Check if listing already has embedded seller data (from auto/property listings)
+    embedded_seller = listing.get("seller")
     
-    # Check if favorited by current user
-    is_favorited = False
-    user = await get_current_user(request)
-    if user:
-        favorite = await db.favorites.find_one({"user_id": user.user_id, "listing_id": listing_id})
-        is_favorited = favorite is not None
-    
-    return {
-        **listing,
-        "seller": {
+    # If no embedded seller, look up from users collection
+    if embedded_seller:
+        seller_data = {
+            "user_id": embedded_seller.get("user_id"),
+            "name": embedded_seller.get("name"),
+            "picture": embedded_seller.get("picture"),
+            "phone": embedded_seller.get("phone"),
+            "whatsapp": embedded_seller.get("whatsapp"),
+            "rating": embedded_seller.get("rating", 0),
+            "verified": embedded_seller.get("verified", False),
+            "created_at": embedded_seller.get("created_at") or embedded_seller.get("memberSince"),
+            "allowsOffers": embedded_seller.get("allowsOffers", True),
+            "preferredContact": embedded_seller.get("preferredContact", "whatsapp")
+        }
+    else:
+        seller = await db.users.find_one({"user_id": listing["user_id"]}, {"_id": 0})
+        seller_data = {
             "user_id": seller["user_id"],
             "name": seller["name"],
             "picture": seller.get("picture"),
@@ -673,7 +680,18 @@ async def get_listing(listing_id: str, request: Request):
             "created_at": seller.get("created_at"),
             "allowsOffers": seller.get("allowsOffers", True),
             "preferredContact": seller.get("preferredContact", "whatsapp")
-        } if seller else None,
+        } if seller else None
+    
+    # Check if favorited by current user
+    is_favorited = False
+    user = await get_current_user(request)
+    if user:
+        favorite = await db.favorites.find_one({"user_id": user.user_id, "listing_id": listing_id})
+        is_favorited = favorite is not None
+    
+    return {
+        **listing,
+        "seller": seller_data,
         "is_favorited": is_favorited
     }
 
