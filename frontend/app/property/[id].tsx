@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, memo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,12 +13,52 @@ import {
   TextInput,
   Modal,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import axios from 'axios';
+import Constants from 'expo-constants';
 import { Property, FACILITIES_LIST } from '../../src/types/property';
-import { MOCK_PROPERTIES, generateHighlights } from '../../src/data/propertyData';
+
+// API URL
+const API_URL = Constants.expoConfig?.extra?.EXPO_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL || '';
+
+// Generate highlights from property data
+const generateHighlights = (property: Property) => {
+  const highlights: { id: string; icon: string; label: string }[] = [];
+  
+  if (property.condition === 'new') {
+    highlights.push({ id: 'new', icon: 'sparkles', label: 'Newly Built' });
+  }
+  if (property.condition === 'renovated') {
+    highlights.push({ id: 'renovated', icon: 'hammer', label: 'Renovated' });
+  }
+  if (property.furnishing === 'furnished') {
+    highlights.push({ id: 'furnished', icon: 'bed', label: 'Furnished' });
+  }
+  if (property.facilities?.gatedEstate) {
+    highlights.push({ id: 'gated', icon: 'shield-checkmark', label: 'Gated Estate' });
+  }
+  if (property.facilities?.parking) {
+    highlights.push({ id: 'parking', icon: 'car', label: 'Parking' });
+  }
+  if (property.facilities?.security) {
+    highlights.push({ id: 'security', icon: 'lock-closed', label: '24hr Security' });
+  }
+  if (property.facilities?.swimmingPool) {
+    highlights.push({ id: 'pool', icon: 'water', label: 'Swimming Pool' });
+  }
+  if (property.facilities?.gym) {
+    highlights.push({ id: 'gym', icon: 'fitness', label: 'Gym Access' });
+  }
+  if (property.verification?.isVerified) {
+    highlights.push({ id: 'verified', icon: 'checkmark-circle', label: 'Verified' });
+  }
+  
+  return highlights.slice(0, 6);
+};
 
 const { width } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
