@@ -355,7 +355,7 @@ const propertyCardStyles = StyleSheet.create({
   },
 });
 
-// ============ OTHER CATEGORY CARD (Vertical - Matches Auto Page Design) ============
+// ============ OTHER CATEGORY CARD (Horizontal - Image Left, Info Right) ============
 const OtherCategoryCard = memo(({ 
   listing, index, onPress, onFavorite, isFavorited, sourceId 
 }: { 
@@ -384,23 +384,21 @@ const OtherCategoryCard = memo(({
       onPress={onPress}
       activeOpacity={0.9}
     >
-      {/* Image Container */}
-      <View style={otherCardStyles.imageContainer}>
+      {/* LEFT COLUMN - Image */}
+      <View style={otherCardStyles.imageColumn}>
         <Image source={{ uri: listing.images?.[0] }} style={otherCardStyles.image} />
         
-        {/* Badges */}
-        <View style={otherCardStyles.badgeRow}>
-          {listing.isSponsored && (
-            <View style={otherCardStyles.sponsoredBadge}>
-              <Text style={otherCardStyles.sponsoredText}>Ad</Text>
-            </View>
-          )}
-          {listing.featured && !listing.isSponsored && (
-            <View style={otherCardStyles.featuredBadge}>
-              <Text style={otherCardStyles.featuredText}>Featured</Text>
-            </View>
-          )}
-        </View>
+        {/* Badges on image */}
+        {listing.isSponsored && (
+          <View style={otherCardStyles.sponsoredBadge}>
+            <Text style={otherCardStyles.sponsoredText}>Ad</Text>
+          </View>
+        )}
+        {listing.featured && !listing.isSponsored && (
+          <View style={otherCardStyles.featuredBadge}>
+            <Text style={otherCardStyles.featuredText}>Featured</Text>
+          </View>
+        )}
         
         {/* Favorite button */}
         <TouchableOpacity style={otherCardStyles.favoriteBtn} onPress={onFavorite}>
@@ -408,7 +406,7 @@ const OtherCategoryCard = memo(({
         </TouchableOpacity>
 
         {/* Image count */}
-        {imageCount > 0 && (
+        {imageCount > 1 && (
           <View style={otherCardStyles.imageCountBadge}>
             <Ionicons name="camera" size={10} color="#fff" />
             <Text style={otherCardStyles.imageCountText}>{imageCount}</Text>
@@ -416,8 +414,8 @@ const OtherCategoryCard = memo(({
         )}
       </View>
 
-      {/* Content */}
-      <View style={otherCardStyles.content}>
+      {/* RIGHT COLUMN - Content */}
+      <View style={otherCardStyles.contentColumn}>
         {/* Price row */}
         <View style={otherCardStyles.priceRow}>
           <Text style={otherCardStyles.price}>{formatPrice(listing.price || 0)}</Text>
@@ -431,49 +429,35 @@ const OtherCategoryCard = memo(({
         {/* Title */}
         <Text style={otherCardStyles.title} numberOfLines={2}>{listing.title}</Text>
 
-        {/* Specs row (for auto-like listings) */}
-        {(listing.details?.bedrooms || listing.details?.size) && (
-          <View style={otherCardStyles.specsRow}>
-            {listing.details?.bedrooms && (
-              <>
-                <Text style={otherCardStyles.specText}>{listing.details.bedrooms} bed</Text>
-                <View style={otherCardStyles.specDot} />
-              </>
-            )}
-            {listing.details?.size && (
-              <Text style={otherCardStyles.specText}>{listing.details.size} m²</Text>
-            )}
-          </View>
-        )}
-
         {/* Location */}
         <View style={otherCardStyles.locationRow}>
-          <Ionicons name="location" size={11} color={COLORS.textSecondary} />
+          <Ionicons name="location" size={12} color={COLORS.textSecondary} />
           <Text style={otherCardStyles.location} numberOfLines={1}>
             {listing.location?.city || listing.location?.area || 'Location'}
           </Text>
         </View>
 
-        {/* Seller/Verification badge */}
-        <View style={otherCardStyles.sellerRow}>
+        {/* Bottom row - Verified + Time */}
+        <View style={otherCardStyles.bottomRow}>
           {listing.seller?.isVerified && (
             <View style={otherCardStyles.verifiedBadge}>
-              <Ionicons name="shield-checkmark" size={9} color={COLORS.primary} />
+              <Ionicons name="shield-checkmark" size={10} color={COLORS.primary} />
               <Text style={otherCardStyles.verifiedText}>Verified</Text>
             </View>
           )}
+          <Text style={otherCardStyles.timeText}>{getRelativeTime(listing.createdAt || new Date().toISOString())}</Text>
         </View>
 
         {/* Quick actions */}
         <View style={otherCardStyles.actionsRow}>
           <TouchableOpacity style={otherCardStyles.actionButton}>
-            <Ionicons name="chatbubble-outline" size={14} color={COLORS.primary} />
+            <Ionicons name="chatbubble-outline" size={16} color={COLORS.primary} />
           </TouchableOpacity>
           <TouchableOpacity style={otherCardStyles.actionButton}>
-            <Ionicons name="call-outline" size={14} color={COLORS.primary} />
+            <Ionicons name="call-outline" size={16} color={COLORS.primary} />
           </TouchableOpacity>
           <TouchableOpacity style={[otherCardStyles.actionButton, otherCardStyles.whatsappButton]}>
-            <Ionicons name="logo-whatsapp" size={14} color="#25D366" />
+            <Ionicons name="logo-whatsapp" size={16} color="#25D366" />
           </TouchableOpacity>
         </View>
       </View>
@@ -485,11 +469,12 @@ const otherCardStyles = StyleSheet.create({
   container: {
     width: OTHER_CARD_WIDTH,
     backgroundColor: COLORS.surface,
-    borderRadius: 10,
+    borderRadius: 12,
     marginBottom: 12,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: COLORS.border,
+    flexDirection: 'row',
   },
   sponsoredContainer: {
     borderColor: COLORS.sponsoredBorder,
@@ -499,24 +484,21 @@ const otherCardStyles = StyleSheet.create({
     borderColor: COLORS.primary,
     borderWidth: 2,
   },
-  imageContainer: {
+  // Left column - Image
+  imageColumn: {
     position: 'relative',
-    width: '100%',
-    height: OTHER_IMAGE_HEIGHT,
-    backgroundColor: COLORS.background,
+    width: OTHER_IMAGE_SIZE,
+    height: OTHER_IMAGE_SIZE,
   },
   image: {
     width: '100%',
     height: '100%',
+    backgroundColor: COLORS.background,
   },
-  badgeRow: {
+  sponsoredBadge: {
     position: 'absolute',
     top: 6,
     left: 6,
-    flexDirection: 'row',
-    gap: 4,
-  },
-  sponsoredBadge: {
     backgroundColor: COLORS.warning,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -528,6 +510,9 @@ const otherCardStyles = StyleSheet.create({
     fontWeight: '700',
   },
   featuredBadge: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
     backgroundColor: COLORS.primary,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -566,8 +551,11 @@ const otherCardStyles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
   },
-  content: {
-    padding: 10,
+  // Right column - Content
+  contentColumn: {
+    flex: 1,
+    padding: 12,
+    justifyContent: 'space-between',
   },
   priceRow: {
     flexDirection: 'row',
@@ -575,7 +563,7 @@ const otherCardStyles = StyleSheet.create({
     gap: 6,
   },
   price: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
     color: COLORS.primary,
   },
@@ -591,43 +579,27 @@ const otherCardStyles = StyleSheet.create({
     color: COLORS.primary,
   },
   title: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '500',
     color: COLORS.text,
     marginTop: 4,
     lineHeight: 18,
   },
-  specsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  specText: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-  },
-  specDot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: COLORS.textSecondary,
-    marginHorizontal: 5,
-  },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
     marginTop: 6,
   },
   location: {
-    fontSize: 11,
+    fontSize: 12,
     color: COLORS.textSecondary,
     flex: 1,
   },
-  sellerRow: {
+  bottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     marginTop: 6,
   },
   verifiedBadge: {
@@ -635,28 +607,29 @@ const otherCardStyles = StyleSheet.create({
     alignItems: 'center',
     gap: 3,
     backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderRadius: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
   },
   verifiedText: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '600',
     color: COLORS.primary,
+  },
+  timeText: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
   },
   actionsRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: 8,
     marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
   },
   actionButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: COLORS.background,
     justifyContent: 'center',
     alignItems: 'center',
