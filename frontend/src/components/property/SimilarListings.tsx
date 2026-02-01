@@ -24,9 +24,9 @@ const HORIZONTAL_PADDING = 16;
 const PROPERTY_CARD_WIDTH = SCREEN_WIDTH - HORIZONTAL_PADDING * 2;
 const PROPERTY_IMAGE_HEIGHT = 180;
 
-// Other categories - Single column with vertical cards (matches Auto page design)
+// Other categories - Single column with horizontal cards (image left, info right)
 const OTHER_CARD_WIDTH = SCREEN_WIDTH - HORIZONTAL_PADDING * 2;
-const OTHER_IMAGE_HEIGHT = 160;
+const OTHER_IMAGE_SIZE = 120;
 
 const COLORS = {
   primary: '#2E7D32',
