@@ -12,6 +12,8 @@ import {
   Platform,
   Keyboard,
   Alert,
+  Animated,
+  Easing,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -19,6 +21,133 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../../src/utils/theme';
 import { api } from '../../../src/utils/api';
 import { format, isToday, isYesterday } from 'date-fns';
+
+// Typing Indicator Component with animated dots
+const TypingIndicator = ({ sellerName }: { sellerName: string }) => {
+  const dot1 = useRef(new Animated.Value(0)).current;
+  const dot2 = useRef(new Animated.Value(0)).current;
+  const dot3 = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const animateDot = (dot: Animated.Value, delay: number) => {
+      return Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(dot, {
+            toValue: 1,
+            duration: 300,
+            easing: Easing.ease,
+            useNativeDriver: true,
+          }),
+          Animated.timing(dot, {
+            toValue: 0,
+            duration: 300,
+            easing: Easing.ease,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+    };
+
+    const animation1 = animateDot(dot1, 0);
+    const animation2 = animateDot(dot2, 150);
+    const animation3 = animateDot(dot3, 300);
+
+    animation1.start();
+    animation2.start();
+    animation3.start();
+
+    return () => {
+      animation1.stop();
+      animation2.stop();
+      animation3.stop();
+    };
+  }, []);
+
+  const getDotStyle = (dot: Animated.Value) => ({
+    transform: [
+      {
+        translateY: dot.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, -6],
+        }),
+      },
+    ],
+    opacity: dot.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.4, 1],
+    }),
+  });
+
+  return (
+    <View style={typingStyles.container}>
+      <View style={typingStyles.avatarPlaceholder}>
+        <Ionicons name="person" size={14} color={theme.colors.onSurfaceVariant} />
+      </View>
+      <View style={typingStyles.bubble}>
+        <Text style={typingStyles.name}>{sellerName}</Text>
+        <View style={typingStyles.dotsContainer}>
+          <Animated.View style={[typingStyles.dot, getDotStyle(dot1)]} />
+          <Animated.View style={[typingStyles.dot, getDotStyle(dot2)]} />
+          <Animated.View style={[typingStyles.dot, getDotStyle(dot3)]} />
+        </View>
+        <Text style={typingStyles.typingText}>typing...</Text>
+      </View>
+    </View>
+  );
+};
+
+const typingStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginBottom: 8,
+    paddingHorizontal: 16,
+  },
+  avatarPlaceholder: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: theme.colors.surfaceVariant,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  bubble: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 16,
+    borderBottomLeftRadius: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.outlineVariant,
+    maxWidth: '70%',
+  },
+  name: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.colors.primary,
+    marginBottom: 4,
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    height: 20,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: theme.colors.primary,
+  },
+  typingText: {
+    fontSize: 11,
+    color: theme.colors.onSurfaceVariant,
+    fontStyle: 'italic',
+    marginTop: 2,
+  },
+});
 
 interface Message {
   id: string;
@@ -58,6 +187,7 @@ export default function AutoChatScreen() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string>('');
+  const [isSellerTyping, setIsSellerTyping] = useState(false);
   
   const flatListRef = useRef<FlatList>(null);
 
