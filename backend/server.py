@@ -2005,6 +2005,236 @@ async def get_property_areas(city: str):
     results = await db.properties.aggregate(pipeline).to_list(50)
     return results
 
+# ==================== SIMILAR LISTINGS ENGINE ====================
+
+def calculate_similarity_score(source: dict, target: dict) -> float:
+    """
+    Calculate weighted similarity score between two listings.
+    Returns a score from 0-100 where higher is more similar.
+    """
+    score = 0.0
+    
+    # Primary Signals (High Weight - 70%)
+    # Same type (25 points)
+    if source.get('type') == target.get('type'):
+        score += 25
+    elif source.get('type', '').split('_')[0] == target.get('type', '').split('_')[0]:
+        score += 15  # Same category family
+    
+    # Same purpose (20 points)
+    if source.get('purpose') == target.get('purpose'):
+        score += 20
+    
+    # Price range ±20% (15 points)
+    source_price = source.get('price', 0)
+    target_price = target.get('price', 0)
+    if source_price > 0 and target_price > 0:
+        price_diff = abs(source_price - target_price) / source_price
+        if price_diff <= 0.1:  # Within 10%
+            score += 15
+        elif price_diff <= 0.2:  # Within 20%
+            score += 10
+        elif price_diff <= 0.3:  # Within 30%
+            score += 5
+    
+    # Same condition (10 points)
+    if source.get('condition') == target.get('condition'):
+        score += 10
+    
+    # Secondary Signals (30%)
+    # Same city (10 points)
+    if source.get('location', {}).get('city') == target.get('location', {}).get('city'):
+        score += 10
+        # Same area bonus (5 points)
+        if source.get('location', {}).get('area') == target.get('location', {}).get('area'):
+            score += 5
+    
+    # Similar bedrooms ±1 (5 points)
+    source_beds = source.get('bedrooms', 0) or 0
+    target_beds = target.get('bedrooms', 0) or 0
+    if source_beds > 0 and target_beds > 0:
+        if source_beds == target_beds:
+            score += 5
+        elif abs(source_beds - target_beds) == 1:
+            score += 3
+    
+    # Similar size ±20% (5 points)
+    source_size = source.get('size', 0) or 0
+    target_size = target.get('size', 0) or 0
+    if source_size > 0 and target_size > 0:
+        size_diff = abs(source_size - target_size) / source_size
+        if size_diff <= 0.2:
+            score += 5
+        elif size_diff <= 0.3:
+            score += 3
+    
+    # Same furnishing (3 points)
+    if source.get('furnishing') == target.get('furnishing'):
+        score += 3
+    
+    # Verified seller bonus (2 points)
+    if target.get('verification', {}).get('isVerified'):
+        score += 2
+    
+    return min(score, 100)
+
+
+@api_router.get("/property/similar/{property_id}")
+async def get_similar_properties(
+    property_id: str,
+    limit: int = 10,
+    include_sponsored: bool = True,
+    same_city_only: bool = False,
+    same_price_range: bool = False
+):
+    """
+    Get similar property listings using weighted similarity scoring.
+    Includes organic + sponsored listings mix.
+    """
+    # Get source listing
+    source = await db.properties.find_one({"id": property_id}, {"_id": 0})
+    if not source:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Build query for candidates
+    query = {
+        "status": "active",
+        "id": {"$ne": property_id},  # Exclude current listing
+        "seller.id": {"$ne": source.get('seller', {}).get('id')},  # Exclude same seller
+    }
+    
+    # Apply filters
+    if same_city_only:
+        query["location.city"] = source.get('location', {}).get('city')
+    
+    if same_price_range:
+        source_price = source.get('price', 0)
+        query["price"] = {
+            "$gte": source_price * 0.8,
+            "$lte": source_price * 1.2
+        }
+    
+    # Get candidate listings
+    candidates = await db.properties.find(query, {"_id": 0}).to_list(100)
+    
+    # Calculate similarity scores
+    scored_listings = []
+    for listing in candidates:
+        score = calculate_similarity_score(source, listing)
+        if score > 20:  # Minimum threshold
+            scored_listings.append({
+                **listing,
+                "similarityScore": round(score, 1),
+                "isSponsored": False,
+                "sponsoredRank": None
+            })
+    
+    # Sort by similarity score
+    scored_listings.sort(key=lambda x: x['similarityScore'], reverse=True)
+    
+    # Get sponsored listings
+    sponsored_listings = []
+    if include_sponsored:
+        sponsored_query = {
+            "status": "active",
+            "id": {"$ne": property_id},
+            "$or": [
+                {"sponsored": True},
+                {"boosted": True},
+                {"featured": True}
+            ]
+        }
+        if same_city_only:
+            sponsored_query["location.city"] = source.get('location', {}).get('city')
+        
+        sponsored = await db.properties.find(sponsored_query, {"_id": 0}).limit(3).to_list(3)
+        for i, listing in enumerate(sponsored):
+            if listing['id'] not in [l['id'] for l in scored_listings[:limit]]:
+                sponsored_listings.append({
+                    **listing,
+                    "similarityScore": calculate_similarity_score(source, listing),
+                    "isSponsored": True,
+                    "sponsoredRank": i + 1
+                })
+    
+    # Mix organic + sponsored (max 1 sponsored per 5 organic)
+    final_listings = []
+    organic_count = 0
+    sponsored_inserted = 0
+    sponsored_idx = 0
+    
+    for listing in scored_listings[:limit]:
+        final_listings.append(listing)
+        organic_count += 1
+        
+        # Insert sponsored after every 5 organic
+        if organic_count % 5 == 0 and sponsored_idx < len(sponsored_listings):
+            final_listings.append(sponsored_listings[sponsored_idx])
+            sponsored_inserted += 1
+            sponsored_idx += 1
+    
+    # Fallback: If not enough results, expand criteria
+    if len(final_listings) < 4:
+        # Expand to same type only
+        fallback_query = {
+            "status": "active",
+            "id": {"$nin": [property_id] + [l['id'] for l in final_listings]},
+            "type": source.get('type')
+        }
+        fallback = await db.properties.find(fallback_query, {"_id": 0}).limit(6).to_list(6)
+        for listing in fallback:
+            if len(final_listings) < limit:
+                final_listings.append({
+                    **listing,
+                    "similarityScore": calculate_similarity_score(source, listing),
+                    "isSponsored": False,
+                    "sponsoredRank": None
+                })
+    
+    # Track analytics event
+    await db.similar_analytics.insert_one({
+        "id": str(uuid.uuid4()),
+        "sourceListingId": property_id,
+        "resultCount": len(final_listings),
+        "sponsoredCount": sponsored_inserted,
+        "filters": {
+            "sameCityOnly": same_city_only,
+            "samePriceRange": same_price_range
+        },
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {
+        "sourceId": property_id,
+        "sourceType": source.get('type'),
+        "sourceCity": source.get('location', {}).get('city'),
+        "listings": final_listings[:limit],
+        "total": len(final_listings),
+        "sponsoredCount": sponsored_inserted,
+        "algorithmVersion": "v1.0"
+    }
+
+
+@api_router.post("/property/similar/track")
+async def track_similar_listing_event(request: Request):
+    """Track analytics events for similar listings interactions"""
+    body = await request.json()
+    
+    event = {
+        "id": str(uuid.uuid4()),
+        "eventType": body.get('eventType'),  # impression, click, save, chat, share
+        "sourceListingId": body.get('sourceListingId'),
+        "targetListingId": body.get('targetListingId'),
+        "isSponsored": body.get('isSponsored', False),
+        "position": body.get('position'),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "sessionId": body.get('sessionId'),
+    }
+    
+    await db.similar_events.insert_one(event)
+    
+    return {"message": "Event tracked", "eventId": event['id']}
+
 @api_router.post("/property/listings")
 async def create_property_listing(request: Request):
     """Create a new property listing"""
