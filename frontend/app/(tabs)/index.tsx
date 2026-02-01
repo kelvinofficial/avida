@@ -594,6 +594,7 @@ export default function HomeScreen() {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         numColumns={2}
+        key="two-columns"
         columnWrapperStyle={styles.columnWrapper}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={
