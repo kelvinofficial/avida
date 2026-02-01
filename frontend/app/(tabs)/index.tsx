@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   RefreshControl,
   Image,
+  ScrollView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,14 +24,114 @@ import { formatDistanceToNow } from 'date-fns';
 
 const { width } = Dimensions.get('window');
 
-// Layout constants following Material Design
+// Layout constants
 const HORIZONTAL_PADDING = 16;
 const COLUMN_GAP = 12;
 const CARD_WIDTH = (width - HORIZONTAL_PADDING * 2 - COLUMN_GAP) / 2;
-const CARD_IMAGE_HEIGHT = CARD_WIDTH * 0.85; // Slightly less than 1:1 for better grid view
+const CARD_IMAGE_HEIGHT = CARD_WIDTH * 0.9;
 const BORDER_RADIUS = 12;
-const CHIP_HEIGHT = 40;
-const SEARCH_BAR_HEIGHT = 48;
+
+// Category colors - soft pastel palette
+const CATEGORY_STYLES: Record<string, { bg: string; icon: string }> = {
+  vehicles: { bg: '#E3F2FD', icon: '#1976D2' },      // Blue
+  electronics: { bg: '#F3E5F5', icon: '#7B1FA2' },   // Purple
+  fashion: { bg: '#FCE4EC', icon: '#C2185B' },       // Pink
+  home: { bg: '#E8F5E9', icon: '#388E3C' },          // Green
+  sports: { bg: '#FFF3E0', icon: '#F57C00' },        // Orange
+  jobs: { bg: '#E0F7FA', icon: '#0097A7' },          // Cyan
+  services: { bg: '#FFF8E1', icon: '#FFA000' },      // Amber
+  kids: { bg: '#FFEBEE', icon: '#D32F2F' },          // Red
+  pets: { bg: '#F1F8E9', icon: '#689F38' },          // Light Green
+  property: { bg: '#E8EAF6', icon: '#3F51B5' },      // Indigo
+  default: { bg: '#F5F5F5', icon: '#757575' },       // Grey
+};
+
+// Extended categories for the full grid
+const FULL_CATEGORIES = [
+  { id: 'vehicles', name: 'Auto', icon: 'car-sport' },
+  { id: 'mobile', name: 'Mobile', icon: 'phone-portrait' },
+  { id: 'property', name: 'Properties', icon: 'home' },
+  { id: 'electronics', name: 'Electronics', icon: 'laptop' },
+  { id: 'bikes', name: 'Bikes', icon: 'bicycle' },
+  { id: 'services', name: 'Services', icon: 'construct' },
+  { id: 'jobs', name: 'Jobs', icon: 'briefcase' },
+  { id: 'home', name: 'Furniture', icon: 'bed' },
+  { id: 'fashion', name: 'Fashion', icon: 'shirt' },
+  { id: 'beauty', name: 'Beauty', icon: 'sparkles' },
+  { id: 'sports', name: 'Leisure', icon: 'football' },
+  { id: 'kids', name: 'Kids', icon: 'happy' },
+  { id: 'pets', name: 'Animals', icon: 'paw' },
+  { id: 'industrial', name: 'Industrial', icon: 'cog' },
+];
+
+// ============ CATEGORY ICON COMPONENT ============
+interface CategoryIconProps {
+  id: string;
+  name: string;
+  icon: string;
+  onPress: () => void;
+  selected?: boolean;
+}
+
+const CategoryIcon = memo<CategoryIconProps>(({ id, name, icon, onPress, selected }) => {
+  const style = CATEGORY_STYLES[id] || CATEGORY_STYLES.default;
+  
+  return (
+    <TouchableOpacity 
+      style={categoryStyles.item} 
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View style={[
+        categoryStyles.iconCircle, 
+        { backgroundColor: style.bg },
+        selected && categoryStyles.iconCircleSelected
+      ]}>
+        <Ionicons name={icon as any} size={24} color={style.icon} />
+      </View>
+      <Text style={[
+        categoryStyles.label,
+        selected && categoryStyles.labelSelected
+      ]} numberOfLines={1}>
+        {name}
+      </Text>
+    </TouchableOpacity>
+  );
+});
+
+const categoryStyles = StyleSheet.create({
+  item: {
+    alignItems: 'center',
+    width: 72,
+    marginRight: 8,
+  },
+  iconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  iconCircleSelected: {
+    transform: [{ scale: 1.05 }],
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  label: {
+    fontSize: 11,
+    color: '#666',
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  labelSelected: {
+    color: '#333',
+    fontWeight: '600',
+  },
+});
 
 // ============ SKELETON LOADER ============
 const SkeletonCard = memo(() => (
@@ -39,10 +141,6 @@ const SkeletonCard = memo(() => (
       <View style={skeletonStyles.location} />
       <View style={skeletonStyles.title} />
       <View style={skeletonStyles.price} />
-      <View style={skeletonStyles.footer}>
-        <View style={skeletonStyles.time} />
-        <View style={skeletonStyles.views} />
-      </View>
     </View>
   </View>
 ));
@@ -50,58 +148,41 @@ const SkeletonCard = memo(() => (
 const skeletonStyles = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: '#fff',
     borderRadius: BORDER_RADIUS,
     overflow: 'hidden',
   },
   image: {
     width: '100%',
     height: CARD_IMAGE_HEIGHT,
-    backgroundColor: theme.colors.surfaceVariant,
+    backgroundColor: '#F0F0F0',
   },
   content: {
     padding: 12,
   },
   location: {
-    width: '60%',
+    width: '50%',
     height: 10,
-    backgroundColor: theme.colors.surfaceVariant,
+    backgroundColor: '#F0F0F0',
     borderRadius: 4,
     marginBottom: 8,
   },
   title: {
-    width: '90%',
+    width: '80%',
     height: 14,
-    backgroundColor: theme.colors.surfaceVariant,
+    backgroundColor: '#F0F0F0',
     borderRadius: 4,
     marginBottom: 8,
   },
   price: {
-    width: '50%',
-    height: 18,
-    backgroundColor: theme.colors.surfaceVariant,
-    borderRadius: 4,
-    marginBottom: 8,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  time: {
-    width: '30%',
-    height: 10,
-    backgroundColor: theme.colors.surfaceVariant,
-    borderRadius: 4,
-  },
-  views: {
-    width: '20%',
-    height: 10,
-    backgroundColor: theme.colors.surfaceVariant,
+    width: '40%',
+    height: 16,
+    backgroundColor: '#F0F0F0',
     borderRadius: 4,
   },
 });
 
-// ============ LISTING CARD COMPONENT ============
+// ============ LISTING CARD ============
 interface ListingCardProps {
   listing: Listing;
   onPress: () => void;
@@ -126,7 +207,6 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
     }
   };
 
-  // Handle image source - check if it's a URL or base64
   const getImageSource = () => {
     const img = listing.images?.[0];
     if (!img) return null;
@@ -139,25 +219,22 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
   const imageCount = listing.images?.length || 0;
 
   return (
-    <TouchableOpacity style={cardStyles.card} onPress={onPress} activeOpacity={0.9}>
-      {/* Image Container - 1:1 Aspect Ratio */}
+    <TouchableOpacity style={cardStyles.card} onPress={onPress} activeOpacity={0.95}>
       <View style={cardStyles.imageContainer}>
         {imageSource ? (
           <Image source={imageSource} style={cardStyles.image} resizeMode="cover" />
         ) : (
           <View style={cardStyles.placeholderImage}>
-            <Ionicons name="image-outline" size={32} color={theme.colors.outline} />
+            <Ionicons name="image-outline" size={32} color="#CCC" />
           </View>
         )}
 
-        {/* TOP Badge - Top Left */}
         {listing.featured && (
           <View style={cardStyles.topBadge}>
             <Text style={cardStyles.topBadgeText}>TOP</Text>
           </View>
         )}
 
-        {/* Favorite Button - Top Right (40dp touch target) */}
         {onFavorite && (
           <TouchableOpacity
             style={cardStyles.favoriteButton}
@@ -165,55 +242,46 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
               e.stopPropagation();
               onFavorite();
             }}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Ionicons
               name={isFavorited ? 'heart' : 'heart-outline'}
               size={20}
-              color={isFavorited ? theme.colors.error : '#fff'}
+              color={isFavorited ? '#E91E63' : '#fff'}
             />
           </TouchableOpacity>
         )}
 
-        {/* Photo Count Badge - Bottom Left */}
         {imageCount > 1 && (
           <View style={cardStyles.imageCountBadge}>
-            <Ionicons name="camera" size={12} color="#fff" />
+            <Ionicons name="camera" size={11} color="#fff" />
             <Text style={cardStyles.imageCountText}>{imageCount}</Text>
           </View>
         )}
       </View>
 
-      {/* Content Area */}
       <View style={cardStyles.content}>
-        {/* Location Row */}
         <View style={cardStyles.locationRow}>
-          <Ionicons name="location" size={12} color={theme.colors.onSurfaceVariant} />
+          <Ionicons name="location" size={11} color="#999" />
           <Text style={cardStyles.location} numberOfLines={1}>
             {listing.location}
           </Text>
         </View>
 
-        {/* Title - Max 2 lines with ellipsis */}
         <Text style={cardStyles.title} numberOfLines={2}>
           {listing.title}
         </Text>
 
-        {/* Price Row */}
         <View style={cardStyles.priceRow}>
           <Text style={cardStyles.price}>{formatPrice(listing.price)}</Text>
           {listing.negotiable && (
-            <View style={cardStyles.negotiableBadge}>
-              <Text style={cardStyles.negotiableText}>VB</Text>
-            </View>
+            <Text style={cardStyles.negotiable}>VB</Text>
           )}
         </View>
 
-        {/* Meta Row - Time left, Views right */}
         <View style={cardStyles.metaRow}>
           <Text style={cardStyles.time}>{getTimeAgo(listing.created_at)}</Text>
           <View style={cardStyles.viewsRow}>
-            <Ionicons name="eye-outline" size={12} color={theme.colors.onSurfaceVariant} />
+            <Ionicons name="eye-outline" size={11} color="#999" />
             <Text style={cardStyles.views}>{listing.views || 0}</Text>
           </View>
         </View>
@@ -225,7 +293,7 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
 const cardStyles = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: '#fff',
     borderRadius: BORDER_RADIUS,
     overflow: 'hidden',
     marginBottom: 16,
@@ -233,7 +301,7 @@ const cardStyles = StyleSheet.create({
   imageContainer: {
     width: '100%',
     height: CARD_IMAGE_HEIGHT,
-    backgroundColor: theme.colors.surfaceVariant,
+    backgroundColor: '#F5F5F5',
   },
   image: {
     width: '100%',
@@ -244,31 +312,30 @@ const cardStyles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.surfaceVariant,
+    backgroundColor: '#F5F5F5',
   },
   topBadge: {
     position: 'absolute',
     top: 8,
     left: 8,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#FF9800',
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 3,
     borderRadius: 4,
   },
   topBadgeText: {
     color: '#fff',
     fontSize: 10,
     fontWeight: '700',
-    letterSpacing: 0.5,
   },
   favoriteButton: {
     position: 'absolute',
     top: 8,
     right: 8,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -276,62 +343,60 @@ const cardStyles = StyleSheet.create({
     position: 'absolute',
     bottom: 8,
     left: 8,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     paddingHorizontal: 6,
-    paddingVertical: 3,
+    paddingVertical: 2,
     borderRadius: 4,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
   },
   imageCountText: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
   },
   content: {
-    padding: 12,
+    padding: 10,
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
     marginBottom: 4,
   },
   location: {
     fontSize: 11,
-    color: theme.colors.onSurfaceVariant,
+    color: '#999',
     flex: 1,
   },
   title: {
     fontSize: 13,
     fontWeight: '500',
-    color: theme.colors.onSurface,
-    lineHeight: 18,
+    color: '#333',
+    lineHeight: 17,
     marginBottom: 6,
-    height: 36, // Fixed height for 2 lines
+    height: 34,
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 6,
+    gap: 6,
+    marginBottom: 4,
   },
   price: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
-    color: theme.colors.primary,
+    color: '#2E7D32',
   },
-  negotiableBadge: {
-    backgroundColor: theme.colors.primaryContainer,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  negotiableText: {
+  negotiable: {
     fontSize: 10,
-    color: theme.colors.primary,
+    color: '#2E7D32',
     fontWeight: '600',
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 3,
   },
   metaRow: {
     flexDirection: 'row',
@@ -339,72 +404,17 @@ const cardStyles = StyleSheet.create({
     alignItems: 'center',
   },
   time: {
-    fontSize: 11,
-    color: theme.colors.onSurfaceVariant,
+    fontSize: 10,
+    color: '#999',
   },
   viewsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
   },
   views: {
-    fontSize: 11,
-    color: theme.colors.onSurfaceVariant,
-  },
-});
-
-// ============ CATEGORY CHIP COMPONENT ============
-interface CategoryChipProps {
-  id: string;
-  name: string;
-  icon: string;
-  selected: boolean;
-  onPress: () => void;
-}
-
-const CategoryChip = memo<CategoryChipProps>(({ name, icon, selected, onPress }) => (
-  <TouchableOpacity
-    style={[chipStyles.chip, selected && chipStyles.chipSelected]}
-    onPress={onPress}
-    activeOpacity={0.7}
-  >
-    <Ionicons
-      name={icon as any}
-      size={18}
-      color={selected ? '#fff' : theme.colors.primary}
-    />
-    <Text style={[chipStyles.label, selected && chipStyles.labelSelected]} numberOfLines={1}>
-      {name}
-    </Text>
-  </TouchableOpacity>
-));
-
-const chipStyles = StyleSheet.create({
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: CHIP_HEIGHT,
-    backgroundColor: theme.colors.surface,
-    borderRadius: CHIP_HEIGHT / 2,
-    paddingHorizontal: 16,
-    marginRight: 12,
-    gap: 6,
-    borderWidth: 1,
-    borderColor: theme.colors.outlineVariant,
-  },
-  chipSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: theme.colors.onSurface,
-  },
-  labelSelected: {
-    color: '#fff',
-    fontWeight: '600',
+    fontSize: 10,
+    color: '#999',
   },
 });
 
@@ -420,6 +430,8 @@ export default function HomeScreen() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [notificationCount] = useState(3);
+  const [currentCity] = useState('Berlin');
 
   const fetchData = useCallback(async (refresh = false) => {
     try {
@@ -449,9 +461,7 @@ export default function HomeScreen() {
         try {
           const favs = await favoritesApi.getAll();
           setFavorites(new Set(favs.map((f: Listing) => f.id)));
-        } catch (e) {
-          // Ignore favorites error
-        }
+        } catch (e) {}
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -500,56 +510,88 @@ export default function HomeScreen() {
     }
   };
 
+  const handleCategoryPress = (categoryId: string) => {
+    if (categoryId === 'vehicles') {
+      router.push('/auto');
+    } else {
+      setSelectedCategory(categoryId === selectedCategory ? null : categoryId);
+    }
+  };
+
   // ============ HEADER COMPONENT ============
   const renderHeader = () => (
-    <View style={styles.header}>
-      {/* App Bar - Logo left, Bell right, vertically centered */}
-      <View style={styles.appBar}>
-        <Text style={styles.appName}>LocalMarket</Text>
+    <View style={styles.headerContainer}>
+      {/* Top Bar */}
+      <View style={styles.topBar}>
+        {/* Logo - Left */}
+        <Text style={styles.logo}>avida</Text>
+
+        {/* Search Bar - Center */}
         <TouchableOpacity
-          style={styles.notificationButton}
-          onPress={() => isAuthenticated ? router.push('/messages') : router.push('/login')}
+          style={styles.searchBar}
+          onPress={() => router.push('/search')}
+          activeOpacity={0.8}
         >
-          <Ionicons name="notifications-outline" size={22} color={theme.colors.onSurface} />
-          {/* Optional notification badge */}
-          {/* <View style={styles.notificationBadge}><Text style={styles.notificationBadgeText}>3</Text></View> */}
+          <Ionicons name="search" size={18} color="#999" />
+          <Text style={styles.searchPlaceholder}>Search in your area</Text>
         </TouchableOpacity>
+
+        {/* Right Actions */}
+        <View style={styles.rightActions}>
+          {/* Location Selector */}
+          <TouchableOpacity style={styles.locationButton} activeOpacity={0.7}>
+            <Ionicons name="location" size={16} color="#2E7D32" />
+            <Text style={styles.locationText}>{currentCity}</Text>
+            <Ionicons name="chevron-down" size={14} color="#666" />
+          </TouchableOpacity>
+
+          {/* Notification Bell */}
+          <TouchableOpacity
+            style={styles.notificationButton}
+            onPress={() => isAuthenticated ? router.push('/messages') : router.push('/login')}
+          >
+            <Ionicons name="notifications-outline" size={22} color="#333" />
+            {notificationCount > 0 && (
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationBadgeText}>{notificationCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Search Bar - Full width, rounded, 48dp height */}
-      <TouchableOpacity
-        style={styles.searchBar}
-        onPress={() => router.push('/search')}
-        activeOpacity={0.8}
-      >
-        <Ionicons name="search" size={20} color={theme.colors.onSurfaceVariant} />
-        <Text style={styles.searchPlaceholder}>Search for anything...</Text>
-      </TouchableOpacity>
-
-      {/* Category Chips - Horizontal scrollable */}
-      <View style={styles.categoriesWrapper}>
-        <FlatList
+      {/* Category Icons Row */}
+      <View style={styles.categoriesSection}>
+        <ScrollView
           horizontal
-          data={[{ id: 'all', name: 'All', icon: 'apps' }, ...categories]}
-          keyExtractor={(item) => item.id}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoriesContent}
-          renderItem={({ item }) => (
-            <CategoryChip
-              id={item.id}
-              name={item.name.split('&')[0].trim()}
-              icon={item.icon || 'apps'}
-              selected={item.id === 'all' ? !selectedCategory : selectedCategory === item.id}
-              onPress={() => {
-                if (item.id === 'vehicles') {
-                  router.push('/auto');
-                } else {
-                  setSelectedCategory(item.id === 'all' ? null : item.id);
-                }
-              }}
+        >
+          {FULL_CATEGORIES.map((cat) => (
+            <CategoryIcon
+              key={cat.id}
+              id={cat.id}
+              name={cat.name}
+              icon={cat.icon}
+              selected={selectedCategory === cat.id}
+              onPress={() => handleCategoryPress(cat.id)}
             />
-          )}
-        />
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Section Title */}
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>
+          {selectedCategory 
+            ? FULL_CATEGORIES.find(c => c.id === selectedCategory)?.name || 'Listings'
+            : 'Recent Listings'}
+        </Text>
+        {selectedCategory && (
+          <TouchableOpacity onPress={() => setSelectedCategory(null)}>
+            <Text style={styles.clearFilter}>Clear filter</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -594,7 +636,7 @@ export default function HomeScreen() {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         numColumns={2}
-        key="two-columns"
+        key="grid-two-columns"
         columnWrapperStyle={styles.columnWrapper}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={
@@ -606,13 +648,18 @@ export default function HomeScreen() {
         }
         contentContainerStyle={styles.listContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.primary]} />
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh} 
+            colors={['#2E7D32']}
+            tintColor="#2E7D32"
+          />
         }
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={
           loading && listings.length > 0 ? (
-            <ActivityIndicator style={styles.footer} color={theme.colors.primary} />
+            <ActivityIndicator style={styles.footer} color="#2E7D32" />
           ) : null
         }
         removeClippedSubviews={true}
@@ -627,74 +674,115 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: '#F5F5F5',
   },
-  header: {
-    backgroundColor: theme.colors.surface,
+  headerContainer: {
+    backgroundColor: '#fff',
     paddingBottom: 12,
+    marginBottom: 8,
   },
-  appBar: {
+  topBar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: HORIZONTAL_PADDING,
-    height: 56,
+    paddingVertical: 12,
+    gap: 12,
   },
-  appName: {
-    fontSize: 22,
+  logo: {
+    fontSize: 26,
     fontWeight: '700',
-    color: theme.colors.primary,
-    letterSpacing: -0.5,
+    color: '#2E7D32',
+    letterSpacing: -1,
+  },
+  searchBar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 24,
+    height: 44,
+    paddingHorizontal: 14,
+    gap: 8,
+  },
+  searchPlaceholder: {
+    fontSize: 14,
+    color: '#999',
+    flex: 1,
+  },
+  rightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  locationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    gap: 4,
+  },
+  locationText: {
+    fontSize: 12,
+    color: '#333',
+    fontWeight: '500',
   },
   notificationButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: theme.colors.surfaceVariant,
+    backgroundColor: '#F5F5F5',
     justifyContent: 'center',
     alignItems: 'center',
   },
   notificationBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: theme.colors.error,
-    borderRadius: 8,
-    minWidth: 16,
-    height: 16,
+    top: 6,
+    right: 6,
+    backgroundColor: '#E53935',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: '#fff',
   },
   notificationBadgeText: {
     color: '#fff',
     fontSize: 10,
     fontWeight: '700',
   },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surfaceVariant,
-    borderRadius: SEARCH_BAR_HEIGHT / 2,
-    height: SEARCH_BAR_HEIGHT,
-    marginHorizontal: HORIZONTAL_PADDING,
-    paddingHorizontal: HORIZONTAL_PADDING,
-    gap: 10,
-  },
-  searchPlaceholder: {
-    fontSize: 15,
-    color: theme.colors.onSurfaceVariant,
-  },
-  categoriesWrapper: {
-    marginTop: 12,
+  categoriesSection: {
+    marginTop: 4,
   },
   categoriesContent: {
     paddingHorizontal: HORIZONTAL_PADDING,
+    paddingVertical: 8,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingTop: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#333',
+  },
+  clearFilter: {
+    fontSize: 13,
+    color: '#2E7D32',
+    fontWeight: '500',
   },
   listContent: {
     paddingHorizontal: HORIZONTAL_PADDING,
-    paddingTop: 16,
-    paddingBottom: 100, // Space for bottom nav
+    paddingTop: 8,
+    paddingBottom: 100,
   },
   columnWrapper: {
     justifyContent: 'space-between',
