@@ -763,14 +763,14 @@ export default function PropertyScreen() {
     try {
       const isFav = favorites.has(id);
       if (isFav) {
-        await axios.delete(`${API_URL}/api/property/favorites/${id}`);
+        await api.delete(`/property/favorites/${id}`);
         setFavorites((prev) => {
           const newSet = new Set(prev);
           newSet.delete(id);
           return newSet;
         });
       } else {
-        await axios.post(`${API_URL}/api/property/favorites/${id}`);
+        await api.post(`/property/favorites/${id}`);
         setFavorites((prev) => {
           const newSet = new Set(prev);
           newSet.add(id);
