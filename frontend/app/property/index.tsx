@@ -939,20 +939,28 @@ export default function PropertyScreen() {
       {/* Results Header */}
       <View style={styles.resultsHeader}>
         <Text style={styles.resultsTitle}>
-          {filteredProperties.length} Properties for {purpose === 'buy' ? 'Sale' : 'Rent'}
+          {properties.length} Properties for {purpose === 'buy' ? 'Sale' : 'Rent'}
         </Text>
         <TouchableOpacity style={styles.sortBtn}>
           <Ionicons name="swap-vertical" size={18} color={COLORS.primary} />
           <Text style={styles.sortText}>Sort</Text>
         </TouchableOpacity>
       </View>
+      
+      {/* Loading indicator */}
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Loading properties...</Text>
+        </View>
+      )}
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <FlatList
-        data={filteredProperties}
+        data={properties}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.cardContainer}>
@@ -967,6 +975,13 @@ export default function PropertyScreen() {
           </View>
         )}
         ListHeaderComponent={renderHeader}
+        ListEmptyComponent={!loading ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="home-outline" size={48} color={COLORS.textSecondary} />
+            <Text style={styles.emptyText}>No properties found</Text>
+            <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
+          </View>
+        ) : null}
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />
