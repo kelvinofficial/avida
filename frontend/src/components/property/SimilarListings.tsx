@@ -663,8 +663,8 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
       
       {listings.length === 0 ? (
         renderEmpty()
-      ) : isPropertyCategory ? (
-        // ONE COLUMN LAYOUT - Image on top (for Property category)
+      ) : (
+        // ONE COLUMN LAYOUT - All categories now use single column with image on top
         <ScrollView 
           style={styles.propertyList}
           contentContainerStyle={styles.propertyListContent}
@@ -683,21 +683,6 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
             />
           ))}
         </ScrollView>
-      ) : (
-        // TWO COLUMN LAYOUT - Image on left (for other categories)
-        <View style={styles.otherGrid}>
-          {listings.map((item, index) => (
-            <OtherCategoryCard
-              key={item.id}
-              listing={item}
-              index={index}
-              onPress={() => handlePress(item, index)}
-              onFavorite={() => toggleFavorite(item.id)}
-              isFavorited={favorites.has(item.id)}
-              sourceId={propertyId}
-            />
-          ))}
-        </View>
       )}
 
       {/* Tooltip Modal */}
