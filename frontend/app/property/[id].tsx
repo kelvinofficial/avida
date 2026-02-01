@@ -1087,12 +1087,10 @@ export default function PropertyDetailScreen() {
           <Ionicons name="call-outline" size={20} color={COLORS.primary} />
           <Text style={styles.actionText}>Call</Text>
         </TouchableOpacity>
-        {property.seller.whatsapp && (
-          <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#25D366' }]} onPress={handleWhatsApp}>
-            <Ionicons name="logo-whatsapp" size={20} color="#fff" />
-            <Text style={[styles.actionText, { color: '#fff' }]}>WhatsApp</Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#E3F2FD', borderColor: '#1565C0' }]} onPress={() => setShowBookingModal(true)}>
+          <Ionicons name="calendar-outline" size={20} color="#1565C0" />
+          <Text style={[styles.actionText, { color: '#1565C0' }]}>View</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={[styles.actionBtn, styles.actionBtnPrimary]} onPress={() => setShowOfferModal(true)}>
           <Ionicons name="pricetag" size={20} color="#fff" />
           <Text style={[styles.actionText, { color: '#fff' }]}>Offer</Text>
@@ -1100,7 +1098,20 @@ export default function PropertyDetailScreen() {
       </View>
 
       {/* Offer Modal */}
-      <OfferModal visible={showOfferModal} onClose={() => setShowOfferModal(false)} property={property} />
+      <OfferModal
+        visible={showOfferModal}
+        onClose={() => setShowOfferModal(false)}
+        property={property}
+        onSubmit={handleSubmitOffer}
+      />
+
+      {/* Booking Modal */}
+      <BookingModal
+        visible={showBookingModal}
+        onClose={() => setShowBookingModal(false)}
+        property={property}
+        onSubmit={handleBookViewing}
+      />
     </SafeAreaView>
   );
 }
