@@ -195,6 +195,157 @@ class SessionDataResponse(BaseModel):
     picture: Optional[str] = None
     session_token: str
 
+# ==================== USER SETTINGS MODELS ====================
+
+class NotificationSettings(BaseModel):
+    push: bool = True
+    email: bool = True
+    messages: bool = True
+    offers: bool = True
+    price_drops: bool = True
+    saved_searches: bool = True
+    better_deals: bool = True
+    system_alerts: bool = True  # Cannot be disabled
+
+class QuietHours(BaseModel):
+    enabled: bool = False
+    start_time: str = "22:00"  # HH:MM format
+    end_time: str = "08:00"
+
+class AlertPreferences(BaseModel):
+    frequency: str = "instant"  # instant, daily, weekly
+    categories: List[str] = []  # Empty means all categories
+    radius_km: int = 50
+    price_threshold_percent: int = 10
+
+class PrivacySettings(BaseModel):
+    location_services: bool = True
+    show_online_status: bool = True
+    show_last_seen: bool = True
+    allow_profile_discovery: bool = True
+    allow_direct_messages: bool = True
+
+class AppPreferences(BaseModel):
+    language: str = "en"
+    currency: str = "EUR"
+    dark_mode: str = "system"  # system, light, dark
+    auto_download_media: bool = True
+
+class SecuritySettings(BaseModel):
+    two_factor_enabled: bool = False
+    app_lock_enabled: bool = False
+    app_lock_type: Optional[str] = None  # pin, biometric
+
+class UserSettings(BaseModel):
+    user_id: str
+    notifications: NotificationSettings = Field(default_factory=NotificationSettings)
+    quiet_hours: QuietHours = Field(default_factory=QuietHours)
+    alert_preferences: AlertPreferences = Field(default_factory=AlertPreferences)
+    privacy: PrivacySettings = Field(default_factory=PrivacySettings)
+    app_preferences: AppPreferences = Field(default_factory=AppPreferences)
+    security: SecuritySettings = Field(default_factory=SecuritySettings)
+    push_token: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class UserSettingsUpdate(BaseModel):
+    notifications: Optional[NotificationSettings] = None
+    quiet_hours: Optional[QuietHours] = None
+    alert_preferences: Optional[AlertPreferences] = None
+    privacy: Optional[PrivacySettings] = None
+    app_preferences: Optional[AppPreferences] = None
+    security: Optional[SecuritySettings] = None
+    push_token: Optional[str] = None
+
+# ==================== NOTIFICATION MODELS ====================
+
+class NotificationType:
+    CHAT_MESSAGE = "chat_message"
+    OFFER_RECEIVED = "offer_received"
+    OFFER_ACCEPTED = "offer_accepted"
+    OFFER_REJECTED = "offer_rejected"
+    PRICE_DROP = "price_drop"
+    SAVED_SEARCH_MATCH = "saved_search_match"
+    BETTER_DEAL = "better_deal"
+    SELLER_RESPONSE = "seller_response"
+    SECURITY_ALERT = "security_alert"
+    SYSTEM_ANNOUNCEMENT = "system_announcement"
+    LISTING_SOLD = "listing_sold"
+    LISTING_EXPIRED = "listing_expired"
+    NEW_FOLLOWER = "new_follower"
+
+class Notification(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    type: str  # NotificationType values
+    title: str
+    body: str
+    data_payload: Dict[str, Any] = {}  # Deep link data
+    read: bool = False
+    pushed: bool = False  # Whether push notification was sent
+    emailed: bool = False  # Whether email was sent
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class NotificationCreate(BaseModel):
+    type: str
+    title: str
+    body: str
+    data_payload: Dict[str, Any] = {}
+
+# ==================== BLOCKED USER MODELS ====================
+
+class BlockedUser(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str  # The user who blocked
+    blocked_user_id: str  # The user who was blocked
+    reason: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class BlockUserRequest(BaseModel):
+    blocked_user_id: str
+    reason: Optional[str] = None
+
+# ==================== ACTIVE SESSIONS MODEL ====================
+
+class ActiveSession(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    session_token: str
+    device_name: str = "Unknown Device"
+    device_type: str = "unknown"  # mobile, tablet, desktop, web
+    ip_address: Optional[str] = None
+    location: Optional[str] = None
+    last_active: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    is_current: bool = False
+
+# ==================== PROFILE UPDATE MODELS ====================
+
+class ProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    location: Optional[str] = None
+    bio: Optional[str] = None
+    picture: Optional[str] = None  # Base64 or URL
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+class DeleteAccountRequest(BaseModel):
+    reason: str
+    password: str
+
+# ==================== STATS MODELS ====================
+
+class UserStats(BaseModel):
+    active_listings: int = 0
+    sold_listings: int = 0
+    total_favorites: int = 0
+    total_views: int = 0
+    purchases: int = 0
+    sales_count: int = 0
+
 # ==================== RATE LIMITING ====================
 
 def check_rate_limit(key: str, action: str) -> bool:
