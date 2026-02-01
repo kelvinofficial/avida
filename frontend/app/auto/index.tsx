@@ -428,7 +428,7 @@ const MOCK_AUTO_LISTINGS: AutoListing[] = [
     price: 38900,
     negotiable: false,
     category_id: 'vehicles',
-    images: [],
+    images: [CAR_IMAGES[10]],
     location: 'Nuremberg, Germany',
     city: 'Nuremberg',
     distance: 45,
