@@ -387,6 +387,9 @@ export default function AutoListingDetailScreen() {
   const [isFavorited, setIsFavorited] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [offerPrice, setOfferPrice] = useState('');
+  const [offerMessage, setOfferMessage] = useState('');
 
   const fetchListing = useCallback(async () => {
     try {
