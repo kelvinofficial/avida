@@ -1027,7 +1027,7 @@ export default function PropertyDetailScreen() {
   const fetchProperty = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/api/property/listings/${id}`);
+      const response = await api.get(`/property/listings/${id}`);
       setProperty(response.data);
     } catch (error) {
       console.error('Error fetching property:', error);
@@ -1049,9 +1049,9 @@ export default function PropertyDetailScreen() {
     
     try {
       if (isFavorited) {
-        await axios.delete(`${API_URL}/api/property/favorites/${property.id}`);
+        await api.delete(`/property/favorites/${property.id}`);
       } else {
-        await axios.post(`${API_URL}/api/property/favorites/${property.id}`);
+        await api.post(`/property/favorites/${property.id}`);
       }
       setIsFavorited(!isFavorited);
     } catch (error) {
