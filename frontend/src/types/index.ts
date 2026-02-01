@@ -52,9 +52,13 @@ export interface Listing {
     user_id: string;
     name: string;
     picture?: string;
+    phone?: string;
+    whatsapp?: string;
     rating: number;
     verified: boolean;
     created_at: string;
+    allowsOffers?: boolean;
+    preferredContact?: 'whatsapp' | 'call';
   };
   is_favorited?: boolean;
 }
