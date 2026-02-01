@@ -1108,15 +1108,15 @@ async def get_auto_listings(
         sort_field = "price"
         sort_order = -1
     elif sort == "mileage_asc":
-        sort_field = "attributes.mileage"
+        sort_field = "mileage"
         sort_order = 1
     elif sort == "year_desc":
-        sort_field = "attributes.year"
+        sort_field = "year"
         sort_order = -1
     
     skip = (page - 1) * limit
-    total = await db.listings.count_documents(query)
-    listings = await db.listings.find(query, {"_id": 0}).sort(sort_field, sort_order).skip(skip).limit(limit).to_list(limit)
+    total = await db.auto_listings.count_documents(query)
+    listings = await db.auto_listings.find(query, {"_id": 0}).sort(sort_field, sort_order).skip(skip).limit(limit).to_list(limit)
     
     return {
         "listings": listings,
@@ -1125,17 +1125,32 @@ async def get_auto_listings(
         "pages": (total + limit - 1) // limit if total > 0 else 0
     }
 
+@api_router.get("/auto/listings/{listing_id}")
+async def get_auto_listing(listing_id: str):
+    """Get a single auto listing by ID"""
+    listing = await db.auto_listings.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Auto listing not found")
+    
+    # Increment views
+    await db.auto_listings.update_one(
+        {"id": listing_id},
+        {"$inc": {"views": 1}}
+    )
+    
+    return listing
+
 @api_router.get("/auto/featured")
 async def get_featured_auto(limit: int = 10):
     """Get featured auto listings"""
-    query = {"status": "active", "category_id": "vehicles", "featured": True}
-    listings = await db.listings.find(query, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    query = {"status": "active", "featured": True}
+    listings = await db.auto_listings.find(query, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
     return listings
 
 @api_router.get("/auto/recommended")
 async def get_recommended_auto(request: Request, limit: int = 10):
     """Get recommended auto listings (personalized if authenticated)"""
-    query = {"status": "active", "category_id": "vehicles"}
+    query = {"status": "active"}
     
     # If authenticated, could personalize based on user history
     user = await get_current_user(request)
@@ -1143,8 +1158,122 @@ async def get_recommended_auto(request: Request, limit: int = 10):
         # For now, just return newest listings - could enhance with ML
         pass
     
-    listings = await db.listings.find(query, {"_id": 0}).sort("views", -1).limit(limit).to_list(limit)
+    listings = await db.auto_listings.find(query, {"_id": 0}).sort("views", -1).limit(limit).to_list(limit)
     return listings
+
+# Chat/Conversation Endpoints for Auto
+@api_router.post("/auto/conversations")
+async def create_auto_conversation(request: Request):
+    """Create a new conversation for an auto listing"""
+    body = await request.json()
+    listing_id = body.get("listing_id")
+    initial_message = body.get("message", "")
+    
+    if not listing_id:
+        raise HTTPException(status_code=400, detail="listing_id is required")
+    
+    # Get the listing
+    listing = await db.auto_listings.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    
+    # Get current user (or use anonymous)
+    user = await get_current_user(request)
+    buyer_id = user.get("user_id") if user else f"guest_{uuid.uuid4().hex[:8]}"
+    buyer_name = user.get("name") if user else "Interested Buyer"
+    
+    # Create conversation
+    conversation_id = f"conv_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc)
+    
+    conversation = {
+        "id": conversation_id,
+        "listing_id": listing_id,
+        "listing_title": listing.get("title"),
+        "listing_image": listing.get("images", [""])[0] if listing.get("images") else "",
+        "listing_price": listing.get("price"),
+        "seller_id": listing.get("user_id"),
+        "seller_name": listing.get("seller", {}).get("name", "Seller"),
+        "seller_phone": listing.get("seller", {}).get("phone", ""),
+        "buyer_id": buyer_id,
+        "buyer_name": buyer_name,
+        "messages": [],
+        "last_message": initial_message if initial_message else "Started conversation",
+        "last_message_at": now,
+        "created_at": now,
+        "updated_at": now,
+        "unread_count": 0,
+    }
+    
+    # Add initial message if provided
+    if initial_message:
+        conversation["messages"].append({
+            "id": f"msg_{uuid.uuid4().hex[:8]}",
+            "sender_id": buyer_id,
+            "sender_name": buyer_name,
+            "content": initial_message,
+            "timestamp": now,
+            "read": False,
+        })
+        conversation["unread_count"] = 1
+    
+    await db.auto_conversations.insert_one(conversation)
+    
+    # Remove _id before returning
+    conversation.pop("_id", None)
+    
+    return conversation
+
+@api_router.get("/auto/conversations/{conversation_id}")
+async def get_auto_conversation(conversation_id: str):
+    """Get a conversation by ID"""
+    conversation = await db.auto_conversations.find_one({"id": conversation_id}, {"_id": 0})
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return conversation
+
+@api_router.post("/auto/conversations/{conversation_id}/messages")
+async def send_auto_message(conversation_id: str, request: Request):
+    """Send a message in a conversation"""
+    body = await request.json()
+    content = body.get("content", "")
+    
+    if not content:
+        raise HTTPException(status_code=400, detail="Message content is required")
+    
+    # Get current user
+    user = await get_current_user(request)
+    sender_id = user.get("user_id") if user else f"guest_{uuid.uuid4().hex[:8]}"
+    sender_name = user.get("name") if user else "User"
+    
+    now = datetime.now(timezone.utc)
+    message = {
+        "id": f"msg_{uuid.uuid4().hex[:8]}",
+        "sender_id": sender_id,
+        "sender_name": sender_name,
+        "content": content,
+        "timestamp": now,
+        "read": False,
+    }
+    
+    # Update conversation
+    result = await db.auto_conversations.update_one(
+        {"id": conversation_id},
+        {
+            "$push": {"messages": message},
+            "$set": {
+                "last_message": content,
+                "last_message_at": now,
+                "updated_at": now,
+            },
+            "$inc": {"unread_count": 1}
+        }
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    return message
 
 @api_router.get("/auto/popular-searches")
 async def get_popular_searches():
