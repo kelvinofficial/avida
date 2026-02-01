@@ -253,18 +253,51 @@ export default function AutoCategoryScreen() {
     trackEvent('filters_cleared');
   };
 
-  const toggleFavorite = (listingId: string) => {
+  const toggleFavorite = async (listingId: string) => {
+    const isCurrentlyFavorited = favorites.has(listingId);
+    
+    // Optimistic update
     setFavorites((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(listingId)) {
         newSet.delete(listingId);
-        trackEvent('favorite_removed', { listingId });
       } else {
         newSet.add(listingId);
-        trackEvent('favorite_added', { listingId });
       }
       return newSet;
     });
+
+    try {
+      if (isCurrentlyFavorited) {
+        await api.delete(`/auto/favorites/${listingId}`);
+        trackEvent('favorite_removed', { listingId });
+      } else {
+        await api.post(`/auto/favorites/${listingId}`);
+        trackEvent('favorite_added', { listingId });
+        // Show success feedback
+        Alert.alert('Saved!', 'This listing has been added to your favorites.');
+      }
+    } catch (error: any) {
+      // Revert on error
+      setFavorites((prev) => {
+        const newSet = new Set(prev);
+        if (isCurrentlyFavorited) {
+          newSet.add(listingId);
+        } else {
+          newSet.delete(listingId);
+        }
+        return newSet;
+      });
+      
+      if (error.response?.status === 401) {
+        Alert.alert('Login Required', 'Please login to save favorites.', [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Login', onPress: () => router.push('/login') },
+        ]);
+      } else {
+        console.error('Error toggling favorite:', error);
+      }
+    }
   };
 
   const handleListingPress = (listing: AutoListing) => {
