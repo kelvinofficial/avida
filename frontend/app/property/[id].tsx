@@ -1263,24 +1263,32 @@ export default function PropertyDetailScreen() {
         <View style={{ height: 120 }} />
       </ScrollView>
 
-      {/* Bottom Actions */}
+      {/* Bottom Actions - Dynamic based on seller preferences */}
       <View style={styles.bottomActions}>
+        {/* Chat button - Always shown */}
         <TouchableOpacity style={styles.actionBtn} onPress={handleChat}>
           <Ionicons name="chatbubble-outline" size={20} color={COLORS.primary} />
           <Text style={styles.actionText}>Chat</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionBtn} onPress={handleCall}>
-          <Ionicons name="call-outline" size={20} color={COLORS.primary} />
-          <Text style={styles.actionText}>Call</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#E3F2FD', borderColor: '#1565C0' }]} onPress={() => setShowBookingModal(true)}>
-          <Ionicons name="calendar-outline" size={20} color="#1565C0" />
-          <Text style={[styles.actionText, { color: '#1565C0' }]}>View</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionBtn, styles.actionBtnPrimary]} onPress={() => setShowOfferModal(true)}>
-          <Ionicons name="pricetag" size={20} color="#fff" />
-          <Text style={[styles.actionText, { color: '#fff' }]}>Offer</Text>
-        </TouchableOpacity>
+        
+        {/* Make Offer button - Only if seller allows offers */}
+        {property.seller?.allowsOffers && (
+          <TouchableOpacity style={[styles.actionBtn, styles.actionBtnPrimary]} onPress={() => setShowOfferModal(true)}>
+            <Ionicons name="pricetag" size={20} color="#fff" />
+            <Text style={[styles.actionText, { color: '#fff' }]}>Make Offer</Text>
+          </TouchableOpacity>
+        )}
+        
+        {/* Contact button - WhatsApp OR Call based on preference */}
+        {property.seller?.preferredContact === 'call' ? (
+          <TouchableOpacity style={styles.iconOnlyBtn} onPress={handleCall}>
+            <Ionicons name="call" size={22} color={COLORS.primary} />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={[styles.iconOnlyBtn, { backgroundColor: '#25D366', borderColor: '#25D366' }]} onPress={handleWhatsApp}>
+            <Ionicons name="logo-whatsapp" size={22} color="#fff" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Offer Modal */}
