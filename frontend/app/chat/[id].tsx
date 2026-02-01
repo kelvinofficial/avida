@@ -20,7 +20,7 @@ import { theme } from '../../src/utils/theme';
 import { conversationsApi } from '../../src/utils/api';
 import { Conversation, Message } from '../../src/types';
 import { useAuthStore } from '../../src/store/authStore';
-import { formatDistanceToNow } from 'date-fns';
+import { format, isToday, isYesterday, formatDistanceToNow } from 'date-fns';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
@@ -110,8 +110,17 @@ export default function ChatScreen() {
     Keyboard.dismiss();
 
     try {
-      const message = await conversationsApi.sendMessage(id!, content);
-      // Message will be added via socket
+      await conversationsApi.sendMessage(id!, content);
+      // Message will be added via socket or we add it optimistically
+      setMessages((prev) => [...prev, {
+        id: `temp_${Date.now()}`,
+        conversation_id: id!,
+        sender_id: user?.user_id || '',
+        content,
+        read: false,
+        created_at: new Date().toISOString(),
+      }]);
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (error) {
       console.error('Error sending message:', error);
       setNewMessage(content); // Restore message on error
@@ -130,35 +139,65 @@ export default function ChatScreen() {
     }
   };
 
-  const formatTime = (date: string) => {
+  const formatMessageTime = (date: string) => {
     try {
       const d = new Date(date);
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      if (isToday(d)) {
+        return format(d, 'HH:mm');
+      } else if (isYesterday(d)) {
+        return 'Yesterday ' + format(d, 'HH:mm');
+      }
+      return format(d, 'MMM d, HH:mm');
     } catch {
       return '';
     }
   };
 
-  const renderMessage = ({ item }: { item: Message }) => {
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('de-DE', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 0,
+    }).format(price);
+  };
+
+  const renderMessage = ({ item, index }: { item: Message; index: number }) => {
     const isMine = item.sender_id === user?.user_id;
+    const showAvatar = !isMine && (index === 0 || messages[index - 1]?.sender_id !== item.sender_id);
 
     return (
-      <View style={[styles.messageBubble, isMine ? styles.myMessage : styles.theirMessage]}>
-        <Text style={[styles.messageText, isMine && styles.myMessageText]}>
-          {item.content}
-        </Text>
-        <View style={styles.messageFooter}>
-          <Text style={[styles.messageTime, isMine && styles.myMessageTime]}>
-            {formatTime(item.created_at)}
-          </Text>
-          {isMine && (
-            <Ionicons
-              name={item.read ? 'checkmark-done' : 'checkmark'}
-              size={14}
-              color={isMine ? 'rgba(255,255,255,0.7)' : theme.colors.onSurfaceVariant}
-              style={styles.readIcon}
+      <View style={[styles.messageRow, isMine && styles.messageRowMine]}>
+        {!isMine && showAvatar && (
+          conversation?.other_user?.picture ? (
+            <Image
+              source={{ uri: conversation.other_user.picture }}
+              style={styles.messageAvatar}
             />
-          )}
+          ) : (
+            <View style={styles.messageAvatarPlaceholder}>
+              <Ionicons name="person" size={14} color={theme.colors.onSurfaceVariant} />
+            </View>
+          )
+        )}
+        {!isMine && !showAvatar && <View style={styles.avatarSpacer} />}
+        
+        <View style={[styles.messageBubble, isMine ? styles.myMessage : styles.theirMessage]}>
+          <Text style={[styles.messageText, isMine && styles.myMessageText]}>
+            {item.content}
+          </Text>
+          <View style={styles.messageFooter}>
+            <Text style={[styles.messageTime, isMine && styles.myMessageTime]}>
+              {formatMessageTime(item.created_at)}
+            </Text>
+            {isMine && (
+              <Ionicons
+                name={item.read ? 'checkmark-done' : 'checkmark'}
+                size={14}
+                color={isMine ? 'rgba(255,255,255,0.7)' : theme.colors.onSurfaceVariant}
+                style={styles.readIcon}
+              />
+            )}
+          </View>
         </View>
       </View>
     );
@@ -193,54 +232,52 @@ export default function ChatScreen() {
           style={styles.headerContent}
           onPress={() => conversation?.listing && router.push(`/listing/${conversation.listing.id}`)}
         >
-          <View style={styles.headerInfo}>
-            {conversation?.other_user?.picture ? (
-              <Image
-                source={{ uri: conversation.other_user.picture }}
-                style={styles.avatar}
-              />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Ionicons name="person" size={20} color={theme.colors.onSurfaceVariant} />
-              </View>
-            )}
-            <View style={styles.headerText}>
-              <Text style={styles.userName} numberOfLines={1}>
-                {conversation?.other_user?.name || 'User'}
-              </Text>
-              {isTyping && (
-                <Text style={styles.typingIndicator}>typing...</Text>
-              )}
+          {conversation?.other_user?.picture ? (
+            <Image
+              source={{ uri: conversation.other_user.picture }}
+              style={styles.headerAvatar}
+            />
+          ) : (
+            <View style={styles.headerAvatarPlaceholder}>
+              <Ionicons name="person" size={20} color={theme.colors.onSurfaceVariant} />
             </View>
+          )}
+          <View style={styles.headerText}>
+            <Text style={styles.headerName} numberOfLines={1}>
+              {conversation?.other_user?.name || 'User'}
+            </Text>
+            {isTyping ? (
+              <Text style={styles.typingIndicator}>typing...</Text>
+            ) : (
+              <Text style={styles.headerStatus}>Active</Text>
+            )}
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.listingPreview}
-          onPress={() => conversation?.listing && router.push(`/listing/${conversation.listing.id}`)}
-        >
-          {imageSource ? (
-            <Image source={imageSource} style={styles.listingImage} />
-          ) : (
-            <View style={styles.listingImagePlaceholder}>
-              <Ionicons name="image-outline" size={16} color={theme.colors.outline} />
-            </View>
-          )}
+        <TouchableOpacity style={styles.headerButton}>
+          <Ionicons name="ellipsis-vertical" size={20} color={theme.colors.onSurface} />
         </TouchableOpacity>
       </View>
 
-      {/* Listing Info Banner */}
+      {/* Listing Banner */}
       {conversation?.listing && (
         <TouchableOpacity
           style={styles.listingBanner}
           onPress={() => router.push(`/listing/${conversation.listing!.id}`)}
+          activeOpacity={0.8}
         >
-          <Text style={styles.listingTitle} numberOfLines={1}>
-            {conversation.listing.title}
-          </Text>
-          <Text style={styles.listingPrice}>
-            ${conversation.listing.price}
-          </Text>
+          {imageSource && (
+            <Image source={imageSource} style={styles.listingBannerImage} />
+          )}
+          <View style={styles.listingBannerInfo}>
+            <Text style={styles.listingBannerTitle} numberOfLines={1}>
+              {conversation.listing.title}
+            </Text>
+            <Text style={styles.listingBannerPrice}>
+              {formatPrice(conversation.listing.price)}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceVariant} />
         </TouchableOpacity>
       )}
 
@@ -258,24 +295,63 @@ export default function ChatScreen() {
           onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
           ListEmptyComponent={
             <View style={styles.emptyChat}>
-              <Ionicons name="chatbubbles-outline" size={48} color={theme.colors.outline} />
-              <Text style={styles.emptyChatText}>No messages yet</Text>
-              <Text style={styles.emptyChatSubtext}>Send a message to start the conversation</Text>
+              <View style={styles.emptyChatIcon}>
+                <Ionicons name="chatbubbles-outline" size={48} color={theme.colors.primary} />
+              </View>
+              <Text style={styles.emptyChatText}>Start the conversation!</Text>
+              <Text style={styles.emptyChatSubtext}>
+                Send a message to inquire about this item
+              </Text>
             </View>
           }
         />
 
+        {/* Typing indicator */}
+        {isTyping && (
+          <View style={styles.typingBubble}>
+            <View style={styles.typingDots}>
+              <View style={[styles.typingDot, styles.typingDot1]} />
+              <View style={[styles.typingDot, styles.typingDot2]} />
+              <View style={[styles.typingDot, styles.typingDot3]} />
+            </View>
+          </View>
+        )}
+
+        {/* Quick Replies */}
+        {messages.length === 0 && (
+          <View style={styles.quickReplies}>
+            {['Is this still available?', 'What\'s the lowest price?', 'Can I see more photos?'].map((text) => (
+              <TouchableOpacity
+                key={text}
+                style={styles.quickReplyButton}
+                onPress={() => {
+                  setNewMessage(text);
+                }}
+              >
+                <Text style={styles.quickReplyText}>{text}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
         {/* Input */}
         <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Type a message..."
-            placeholderTextColor={theme.colors.onSurfaceVariant}
-            value={newMessage}
-            onChangeText={handleTyping}
-            multiline
-            maxLength={1000}
-          />
+          <TouchableOpacity style={styles.attachButton}>
+            <Ionicons name="camera" size={24} color={theme.colors.primary} />
+          </TouchableOpacity>
+          
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.input}
+              placeholder="Type a message..."
+              placeholderTextColor={theme.colors.onSurfaceVariant}
+              value={newMessage}
+              onChangeText={handleTyping}
+              multiline
+              maxLength={1000}
+            />
+          </View>
+          
           <TouchableOpacity
             style={[
               styles.sendButton,
@@ -311,29 +387,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: theme.spacing.md,
     backgroundColor: theme.colors.surface,
-    ...theme.elevation.level1,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.outlineVariant,
   },
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerContent: {
     flex: 1,
-    marginHorizontal: theme.spacing.sm,
-  },
-  headerInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginHorizontal: theme.spacing.sm,
   },
-  avatar: {
+  headerAvatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
   },
-  avatarPlaceholder: {
+  headerAvatarPlaceholder: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -343,52 +417,56 @@ const styles = StyleSheet.create({
   },
   headerText: {
     marginLeft: theme.spacing.sm,
+    flex: 1,
   },
-  userName: {
+  headerName: {
     fontSize: 16,
     fontWeight: '600',
     color: theme.colors.onSurface,
+  },
+  headerStatus: {
+    fontSize: 12,
+    color: theme.colors.primary,
   },
   typingIndicator: {
     fontSize: 12,
     color: theme.colors.primary,
     fontStyle: 'italic',
   },
-  listingPreview: {
-    width: 48,
-    height: 48,
-    borderRadius: theme.borderRadius.sm,
-    overflow: 'hidden',
-  },
-  listingImage: {
-    width: '100%',
-    height: '100%',
-  },
-  listingImagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: theme.colors.surfaceVariant,
+  headerButton: {
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
   listingBanner: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     padding: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
-    backgroundColor: theme.colors.primaryContainer,
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.outlineVariant,
   },
-  listingTitle: {
+  listingBannerImage: {
+    width: 48,
+    height: 48,
+    borderRadius: theme.borderRadius.sm,
+  },
+  listingBannerInfo: {
     flex: 1,
-    fontSize: 13,
-    color: theme.colors.onPrimaryContainer,
+    marginLeft: theme.spacing.md,
   },
-  listingPrice: {
+  listingBannerTitle: {
     fontSize: 14,
+    fontWeight: '500',
+    color: theme.colors.onSurface,
+  },
+  listingBannerPrice: {
+    fontSize: 16,
     fontWeight: '700',
     color: theme.colors.primary,
-    marginLeft: theme.spacing.md,
+    marginTop: 2,
   },
   chatContainer: {
     flex: 1,
@@ -397,22 +475,47 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
     flexGrow: 1,
   },
+  messageRow: {
+    flexDirection: 'row',
+    marginBottom: theme.spacing.sm,
+    alignItems: 'flex-end',
+  },
+  messageRowMine: {
+    justifyContent: 'flex-end',
+  },
+  messageAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    marginRight: theme.spacing.sm,
+  },
+  messageAvatarPlaceholder: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: theme.colors.surfaceVariant,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: theme.spacing.sm,
+  },
+  avatarSpacer: {
+    width: 36,
+  },
   messageBubble: {
-    maxWidth: '80%',
+    maxWidth: '75%',
     padding: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.lg,
-    marginBottom: theme.spacing.sm,
   },
   myMessage: {
-    alignSelf: 'flex-end',
     backgroundColor: theme.colors.primary,
     borderBottomRightRadius: 4,
   },
   theirMessage: {
-    alignSelf: 'flex-start',
-    backgroundColor: theme.colors.surfaceVariant,
+    backgroundColor: theme.colors.surface,
     borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.colors.outlineVariant,
   },
   messageText: {
     fontSize: 15,
@@ -444,15 +547,75 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: theme.spacing.xxl,
   },
+  emptyChatIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: theme.colors.primaryContainer,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: theme.spacing.md,
+  },
   emptyChatText: {
-    fontSize: 16,
-    color: theme.colors.onSurfaceVariant,
-    marginTop: theme.spacing.md,
+    fontSize: 18,
+    fontWeight: '600',
+    color: theme.colors.onSurface,
   },
   emptyChatSubtext: {
-    fontSize: 13,
+    fontSize: 14,
     color: theme.colors.onSurfaceVariant,
     marginTop: theme.spacing.xs,
+    textAlign: 'center',
+  },
+  typingBubble: {
+    paddingHorizontal: theme.spacing.md + 36,
+    paddingBottom: theme.spacing.sm,
+  },
+  typingDots: {
+    flexDirection: 'row',
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.outlineVariant,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.lg,
+    alignSelf: 'flex-start',
+    gap: 4,
+  },
+  typingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: theme.colors.onSurfaceVariant,
+    opacity: 0.4,
+  },
+  typingDot1: {
+    opacity: 0.4,
+  },
+  typingDot2: {
+    opacity: 0.6,
+  },
+  typingDot3: {
+    opacity: 0.8,
+  },
+  quickReplies: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: theme.spacing.md,
+    gap: theme.spacing.sm,
+  },
+  quickReplyButton: {
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.full,
+  },
+  quickReplyText: {
+    fontSize: 13,
+    color: theme.colors.primary,
+    fontWeight: '500',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -461,17 +624,25 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.outlineVariant,
+    gap: theme.spacing.sm,
   },
-  input: {
+  attachButton: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  inputWrapper: {
     flex: 1,
     backgroundColor: theme.colors.surfaceVariant,
     borderRadius: theme.borderRadius.lg,
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
+  },
+  input: {
     fontSize: 15,
     color: theme.colors.onSurface,
     maxHeight: 100,
-    marginRight: theme.spacing.sm,
+    paddingVertical: theme.spacing.sm,
   },
   sendButton: {
     width: 44,
