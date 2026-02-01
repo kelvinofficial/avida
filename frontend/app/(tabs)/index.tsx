@@ -24,29 +24,37 @@ import { formatDistanceToNow } from 'date-fns';
 
 const { width } = Dimensions.get('window');
 
-// Layout constants
+// Layout constants - Material 3 compliant
 const HORIZONTAL_PADDING = 16;
 const COLUMN_GAP = 12;
 const CARD_WIDTH = (width - HORIZONTAL_PADDING * 2 - COLUMN_GAP) / 2;
 const CARD_IMAGE_HEIGHT = CARD_WIDTH * 0.9;
 const BORDER_RADIUS = 12;
+const ROW_1_HEIGHT = 56; // Material TopAppBar small
+const ROW_2_HEIGHT = 48;
+const ICON_SIZE = 24;
+const TOUCH_TARGET = 48;
 
-// Category colors - soft pastel palette
+// Category colors - soft pastel palette (Material 3)
 const CATEGORY_STYLES: Record<string, { bg: string; icon: string }> = {
-  vehicles: { bg: '#E3F2FD', icon: '#1976D2' },      // Blue
-  electronics: { bg: '#F3E5F5', icon: '#7B1FA2' },   // Purple
-  fashion: { bg: '#FCE4EC', icon: '#C2185B' },       // Pink
-  home: { bg: '#E8F5E9', icon: '#388E3C' },          // Green
-  sports: { bg: '#FFF3E0', icon: '#F57C00' },        // Orange
-  jobs: { bg: '#E0F7FA', icon: '#0097A7' },          // Cyan
-  services: { bg: '#FFF8E1', icon: '#FFA000' },      // Amber
-  kids: { bg: '#FFEBEE', icon: '#D32F2F' },          // Red
-  pets: { bg: '#F1F8E9', icon: '#689F38' },          // Light Green
-  property: { bg: '#E8EAF6', icon: '#3F51B5' },      // Indigo
-  default: { bg: '#F5F5F5', icon: '#757575' },       // Grey
+  vehicles: { bg: '#E3F2FD', icon: '#1976D2' },
+  electronics: { bg: '#F3E5F5', icon: '#7B1FA2' },
+  fashion: { bg: '#FCE4EC', icon: '#C2185B' },
+  home: { bg: '#E8F5E9', icon: '#388E3C' },
+  sports: { bg: '#FFF3E0', icon: '#F57C00' },
+  jobs: { bg: '#E0F7FA', icon: '#0097A7' },
+  services: { bg: '#FFF8E1', icon: '#FFA000' },
+  kids: { bg: '#FFEBEE', icon: '#D32F2F' },
+  pets: { bg: '#F1F8E9', icon: '#689F38' },
+  property: { bg: '#E8EAF6', icon: '#3F51B5' },
+  mobile: { bg: '#EDE7F6', icon: '#512DA8' },
+  bikes: { bg: '#E0F2F1', icon: '#00796B' },
+  beauty: { bg: '#FBE9E7', icon: '#E64A19' },
+  industrial: { bg: '#ECEFF1', icon: '#546E7A' },
+  default: { bg: '#F5F5F5', icon: '#757575' },
 };
 
-// Extended categories for the full grid
+// Extended categories
 const FULL_CATEGORIES = [
   { id: 'vehicles', name: 'Auto', icon: 'car-sport' },
   { id: 'mobile', name: 'Mobile', icon: 'phone-portrait' },
@@ -81,13 +89,15 @@ const CategoryIcon = memo<CategoryIconProps>(({ id, name, icon, onPress, selecte
       style={categoryStyles.item} 
       onPress={onPress}
       activeOpacity={0.7}
+      accessibilityLabel={`${name} category`}
+      accessibilityRole="button"
     >
       <View style={[
         categoryStyles.iconCircle, 
         { backgroundColor: style.bg },
         selected && categoryStyles.iconCircleSelected
       ]}>
-        <Ionicons name={icon as any} size={24} color={style.icon} />
+        <Ionicons name={icon as any} size={22} color={style.icon} />
       </View>
       <Text style={[
         categoryStyles.label,
@@ -102,24 +112,19 @@ const CategoryIcon = memo<CategoryIconProps>(({ id, name, icon, onPress, selecte
 const categoryStyles = StyleSheet.create({
   item: {
     alignItems: 'center',
-    width: 72,
+    width: 68,
     marginRight: 8,
   },
   iconCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 6,
   },
   iconCircleSelected: {
-    transform: [{ scale: 1.05 }],
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    transform: [{ scale: 1.08 }],
   },
   label: {
     fontSize: 11,
@@ -157,29 +162,10 @@ const skeletonStyles = StyleSheet.create({
     height: CARD_IMAGE_HEIGHT,
     backgroundColor: '#F0F0F0',
   },
-  content: {
-    padding: 12,
-  },
-  location: {
-    width: '50%',
-    height: 10,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 4,
-    marginBottom: 8,
-  },
-  title: {
-    width: '80%',
-    height: 14,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 4,
-    marginBottom: 8,
-  },
-  price: {
-    width: '40%',
-    height: 16,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 4,
-  },
+  content: { padding: 12 },
+  location: { width: '50%', height: 10, backgroundColor: '#F0F0F0', borderRadius: 4, marginBottom: 8 },
+  title: { width: '80%', height: 14, backgroundColor: '#F0F0F0', borderRadius: 4, marginBottom: 8 },
+  price: { width: '40%', height: 16, backgroundColor: '#F0F0F0', borderRadius: 4 },
 });
 
 // ============ LISTING CARD ============
@@ -242,6 +228,7 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
               e.stopPropagation();
               onFavorite();
             }}
+            accessibilityLabel={isFavorited ? "Remove from favorites" : "Add to favorites"}
           >
             <Ionicons
               name={isFavorited ? 'heart' : 'heart-outline'}
@@ -262,22 +249,13 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
       <View style={cardStyles.content}>
         <View style={cardStyles.locationRow}>
           <Ionicons name="location" size={11} color="#999" />
-          <Text style={cardStyles.location} numberOfLines={1}>
-            {listing.location}
-          </Text>
+          <Text style={cardStyles.location} numberOfLines={1}>{listing.location}</Text>
         </View>
-
-        <Text style={cardStyles.title} numberOfLines={2}>
-          {listing.title}
-        </Text>
-
+        <Text style={cardStyles.title} numberOfLines={2}>{listing.title}</Text>
         <View style={cardStyles.priceRow}>
           <Text style={cardStyles.price}>{formatPrice(listing.price)}</Text>
-          {listing.negotiable && (
-            <Text style={cardStyles.negotiable}>VB</Text>
-          )}
+          {listing.negotiable && <Text style={cardStyles.negotiable}>VB</Text>}
         </View>
-
         <View style={cardStyles.metaRow}>
           <Text style={cardStyles.time}>{getTimeAgo(listing.created_at)}</Text>
           <View style={cardStyles.viewsRow}>
@@ -303,10 +281,7 @@ const cardStyles = StyleSheet.create({
     height: CARD_IMAGE_HEIGHT,
     backgroundColor: '#F5F5F5',
   },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
+  image: { width: '100%', height: '100%' },
   placeholderImage: {
     width: '100%',
     height: '100%',
@@ -323,11 +298,7 @@ const cardStyles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 4,
   },
-  topBadgeText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '700',
-  },
+  topBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
   favoriteButton: {
     position: 'absolute',
     top: 8,
@@ -351,44 +322,13 @@ const cardStyles = StyleSheet.create({
     alignItems: 'center',
     gap: 3,
   },
-  imageCountText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  content: {
-    padding: 10,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    marginBottom: 4,
-  },
-  location: {
-    fontSize: 11,
-    color: '#999',
-    flex: 1,
-  },
-  title: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#333',
-    lineHeight: 17,
-    marginBottom: 6,
-    height: 34,
-  },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
-  },
-  price: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#2E7D32',
-  },
+  imageCountText: { color: '#fff', fontSize: 10, fontWeight: '600' },
+  content: { padding: 10 },
+  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginBottom: 4 },
+  location: { fontSize: 11, color: '#999', flex: 1 },
+  title: { fontSize: 13, fontWeight: '500', color: '#333', lineHeight: 17, marginBottom: 6, height: 34 },
+  priceRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
+  price: { fontSize: 15, fontWeight: '700', color: '#2E7D32' },
   negotiable: {
     fontSize: 10,
     color: '#2E7D32',
@@ -398,24 +338,10 @@ const cardStyles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 3,
   },
-  metaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  time: {
-    fontSize: 10,
-    color: '#999',
-  },
-  viewsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  views: {
-    fontSize: 10,
-    color: '#999',
-  },
+  metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  time: { fontSize: 10, color: '#999' },
+  viewsRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  views: { fontSize: 10, color: '#999' },
 });
 
 // ============ MAIN HOME SCREEN ============
@@ -518,49 +444,76 @@ export default function HomeScreen() {
     }
   };
 
-  // ============ HEADER COMPONENT ============
+  // Get truncated city name for small screens
+  const getTruncatedCity = (city: string) => {
+    return width < 375 ? city.substring(0, 3) : city;
+  };
+
+  // ============ HEADER COMPONENT (2 ROWS) ============
   const renderHeader = () => (
     <View style={styles.headerContainer}>
-      {/* Top Bar */}
-      <View style={styles.topBar}>
-        {/* Logo - Left */}
+      {/* ========== ROW 1: BRAND + NOTIFICATIONS ========== */}
+      <View style={styles.row1}>
+        {/* Logo - Left aligned */}
         <Text style={styles.logo}>avida</Text>
-
-        {/* Search Bar - Center */}
+        
+        {/* Spacer */}
+        <View style={styles.row1Spacer} />
+        
+        {/* Notification Bell - Right aligned */}
         <TouchableOpacity
-          style={styles.searchBar}
-          onPress={() => router.push('/search')}
-          activeOpacity={0.8}
+          style={styles.notificationButton}
+          onPress={() => isAuthenticated ? router.push('/messages') : router.push('/login')}
+          accessibilityLabel="Notifications"
+          accessibilityRole="button"
+          accessibilityHint={`You have ${notificationCount} notifications`}
         >
-          <Ionicons name="search" size={18} color="#999" />
-          <Text style={styles.searchPlaceholder}>Search in your area</Text>
+          <Ionicons name="notifications-outline" size={ICON_SIZE} color="#333" />
+          {notificationCount > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationBadgeText}>
+                {notificationCount > 9 ? '9+' : notificationCount}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
-
-        {/* Right Actions */}
-        <View style={styles.rightActions}>
-          {/* Location Selector */}
-          <TouchableOpacity style={styles.locationButton} activeOpacity={0.7}>
-            <Ionicons name="location" size={16} color="#2E7D32" />
-            <Text style={styles.locationText}>{currentCity}</Text>
-            <Ionicons name="chevron-down" size={14} color="#666" />
-          </TouchableOpacity>
-
-          {/* Notification Bell */}
-          <TouchableOpacity
-            style={styles.notificationButton}
-            onPress={() => isAuthenticated ? router.push('/messages') : router.push('/login')}
-          >
-            <Ionicons name="notifications-outline" size={22} color="#333" />
-            {notificationCount > 0 && (
-              <View style={styles.notificationBadge}>
-                <Text style={styles.notificationBadgeText}>{notificationCount}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        </View>
       </View>
 
-      {/* Category Icons Row */}
+      {/* ========== ROW 2: SEARCH + LOCATION ========== */}
+      <View style={styles.row2}>
+        {/* Search Field - 65-70% width */}
+        <TouchableOpacity
+          style={styles.searchField}
+          onPress={() => router.push('/search')}
+          activeOpacity={0.8}
+          accessibilityLabel="Search for items"
+          accessibilityRole="search"
+        >
+          <Ionicons name="search" size={20} color="#666" />
+          <Text style={styles.searchPlaceholder} numberOfLines={1}>
+            Search in your area
+          </Text>
+        </TouchableOpacity>
+
+        {/* Location Chip - 30-35% width */}
+        <TouchableOpacity
+          style={styles.locationChip}
+          activeOpacity={0.7}
+          accessibilityLabel="Change location"
+          accessibilityRole="button"
+        >
+          <Ionicons name="location" size={16} color="#2E7D32" />
+          <Text style={styles.locationText} numberOfLines={1}>
+            {getTruncatedCity(currentCity)}
+          </Text>
+          <Ionicons name="chevron-down" size={14} color="#666" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Soft divider */}
+      <View style={styles.headerDivider} />
+
+      {/* ========== CATEGORY ICONS ROW ========== */}
       <View style={styles.categoriesSection}>
         <ScrollView
           horizontal
@@ -580,7 +533,7 @@ export default function HomeScreen() {
         </ScrollView>
       </View>
 
-      {/* Section Title */}
+      {/* ========== SECTION HEADER ========== */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>
           {selectedCategory 
@@ -588,8 +541,11 @@ export default function HomeScreen() {
             : 'Recent Listings'}
         </Text>
         {selectedCategory && (
-          <TouchableOpacity onPress={() => setSelectedCategory(null)}>
-            <Text style={styles.clearFilter}>Clear filter</Text>
+          <TouchableOpacity 
+            onPress={() => setSelectedCategory(null)}
+            accessibilityLabel="Clear category filter"
+          >
+            <Text style={styles.clearFilter}>Clear</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -676,63 +632,33 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
+  
+  // ========== HEADER CONTAINER ==========
   headerContainer: {
     backgroundColor: '#fff',
-    paddingBottom: 12,
     marginBottom: 8,
   },
-  topBar: {
+
+  // ========== ROW 1: BRAND + NOTIFICATIONS ==========
+  row1: {
     flexDirection: 'row',
     alignItems: 'center',
+    height: ROW_1_HEIGHT,
     paddingHorizontal: HORIZONTAL_PADDING,
-    paddingVertical: 12,
-    gap: 12,
   },
   logo: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '700',
     color: '#2E7D32',
-    letterSpacing: -1,
+    letterSpacing: -0.5,
   },
-  searchBar: {
+  row1Spacer: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 24,
-    height: 44,
-    paddingHorizontal: 14,
-    gap: 8,
-  },
-  searchPlaceholder: {
-    fontSize: 14,
-    color: '#999',
-    flex: 1,
-  },
-  rightActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  locationButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    gap: 4,
-  },
-  locationText: {
-    fontSize: 12,
-    color: '#333',
-    fontWeight: '500',
   },
   notificationButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#F5F5F5',
+    width: TOUCH_TARGET,
+    height: TOUCH_TARGET,
+    borderRadius: TOUCH_TARGET / 2,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -746,7 +672,7 @@ const styles = StyleSheet.create({
     height: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 4,
+    paddingHorizontal: 5,
     borderWidth: 2,
     borderColor: '#fff',
   },
@@ -755,22 +681,75 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
   },
+
+  // ========== ROW 2: SEARCH + LOCATION ==========
+  row2: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: ROW_2_HEIGHT,
+    paddingHorizontal: HORIZONTAL_PADDING,
+    gap: 10,
+  },
+  searchField: {
+    flex: 0.68, // 68% width
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F0F0',
+    borderRadius: 12,
+    height: 44,
+    paddingHorizontal: 14,
+    gap: 10,
+  },
+  searchPlaceholder: {
+    flex: 1,
+    fontSize: 14,
+    color: '#888',
+  },
+  locationChip: {
+    flex: 0.32, // 32% width
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F0F0F0',
+    borderRadius: 20,
+    height: 40,
+    paddingHorizontal: 10,
+    gap: 4,
+  },
+  locationText: {
+    fontSize: 13,
+    color: '#333',
+    fontWeight: '500',
+    maxWidth: 60,
+  },
+
+  // ========== HEADER DIVIDER ==========
+  headerDivider: {
+    height: 1,
+    backgroundColor: '#F0F0F0',
+    marginTop: 12,
+  },
+
+  // ========== CATEGORIES ==========
   categoriesSection: {
-    marginTop: 4,
+    marginTop: 12,
   },
   categoriesContent: {
     paddingHorizontal: HORIZONTAL_PADDING,
     paddingVertical: 8,
   },
+
+  // ========== SECTION HEADER ==========
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: HORIZONTAL_PADDING,
-    paddingTop: 12,
+    paddingTop: 8,
+    paddingBottom: 12,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
     color: '#333',
   },
@@ -779,6 +758,8 @@ const styles = StyleSheet.create({
     color: '#2E7D32',
     fontWeight: '500',
   },
+
+  // ========== LISTING GRID ==========
   listContent: {
     paddingHorizontal: HORIZONTAL_PADDING,
     paddingTop: 8,
@@ -796,6 +777,8 @@ const styles = StyleSheet.create({
   cardRight: {
     marginLeft: COLUMN_GAP / 2,
   },
+
+  // ========== SKELETON ==========
   skeletonGrid: {
     paddingHorizontal: HORIZONTAL_PADDING,
     paddingTop: 16,
@@ -804,6 +787,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 16,
   },
+
+  // ========== FOOTER ==========
   footer: {
     paddingVertical: 20,
   },
