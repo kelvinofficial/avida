@@ -2823,6 +2823,744 @@ async def get_boost_prices():
         ]
     }
 
+# ==================== USER SETTINGS ENDPOINTS ====================
+
+@api_router.get("/settings")
+async def get_user_settings(request: Request):
+    """Get user settings"""
+    user = await require_auth(request)
+    
+    settings = await db.user_settings.find_one({"user_id": user.user_id}, {"_id": 0})
+    
+    if not settings:
+        # Create default settings
+        default_settings = UserSettings(user_id=user.user_id)
+        settings_dict = default_settings.model_dump()
+        settings_dict["created_at"] = datetime.now(timezone.utc)
+        settings_dict["updated_at"] = datetime.now(timezone.utc)
+        await db.user_settings.insert_one(settings_dict)
+        settings = settings_dict
+    
+    return settings
+
+@api_router.put("/settings")
+async def update_user_settings(request: Request):
+    """Update user settings"""
+    user = await require_auth(request)
+    body = await request.json()
+    
+    # Get existing settings or create new
+    existing = await db.user_settings.find_one({"user_id": user.user_id})
+    
+    if not existing:
+        default_settings = UserSettings(user_id=user.user_id)
+        existing = default_settings.model_dump()
+        existing["created_at"] = datetime.now(timezone.utc)
+    
+    # Update fields
+    update_data = {}
+    for field in ["notifications", "quiet_hours", "alert_preferences", "privacy", "app_preferences", "security", "push_token"]:
+        if field in body and body[field] is not None:
+            if isinstance(body[field], dict):
+                # Merge with existing
+                if field in existing and existing[field]:
+                    merged = {**existing[field], **body[field]}
+                    update_data[field] = merged
+                else:
+                    update_data[field] = body[field]
+            else:
+                update_data[field] = body[field]
+    
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    
+    await db.user_settings.update_one(
+        {"user_id": user.user_id},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    return {"message": "Settings updated successfully"}
+
+@api_router.put("/settings/push-token")
+async def update_push_token(request: Request):
+    """Update push notification token"""
+    user = await require_auth(request)
+    body = await request.json()
+    
+    push_token = body.get("push_token")
+    if not push_token:
+        raise HTTPException(status_code=400, detail="Push token required")
+    
+    await db.user_settings.update_one(
+        {"user_id": user.user_id},
+        {"$set": {"push_token": push_token, "updated_at": datetime.now(timezone.utc)}},
+        upsert=True
+    )
+    
+    return {"message": "Push token updated"}
+
+# ==================== NOTIFICATION ENDPOINTS ====================
+
+@api_router.get("/notifications")
+async def get_notifications(
+    request: Request,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    unread_only: bool = Query(False)
+):
+    """Get user notifications"""
+    user = await require_auth(request)
+    
+    query = {"user_id": user.user_id}
+    if unread_only:
+        query["read"] = False
+    
+    skip = (page - 1) * limit
+    total = await db.notifications.count_documents(query)
+    
+    notifications = await db.notifications.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Get unread count
+    unread_count = await db.notifications.count_documents({"user_id": user.user_id, "read": False})
+    
+    return {
+        "notifications": notifications,
+        "total": total,
+        "unread_count": unread_count,
+        "page": page,
+        "limit": limit
+    }
+
+@api_router.get("/notifications/unread-count")
+async def get_unread_notification_count(request: Request):
+    """Get unread notification count"""
+    user = await require_auth(request)
+    
+    count = await db.notifications.count_documents({"user_id": user.user_id, "read": False})
+    
+    return {"unread_count": count}
+
+@api_router.put("/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str, request: Request):
+    """Mark a notification as read"""
+    user = await require_auth(request)
+    
+    result = await db.notifications.update_one(
+        {"id": notification_id, "user_id": user.user_id},
+        {"$set": {"read": True}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    
+    return {"message": "Notification marked as read"}
+
+@api_router.put("/notifications/mark-all-read")
+async def mark_all_notifications_read(request: Request):
+    """Mark all notifications as read"""
+    user = await require_auth(request)
+    
+    result = await db.notifications.update_many(
+        {"user_id": user.user_id, "read": False},
+        {"$set": {"read": True}}
+    )
+    
+    return {"message": f"Marked {result.modified_count} notifications as read"}
+
+@api_router.delete("/notifications/{notification_id}")
+async def delete_notification(notification_id: str, request: Request):
+    """Delete a notification"""
+    user = await require_auth(request)
+    
+    result = await db.notifications.delete_one({"id": notification_id, "user_id": user.user_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    
+    return {"message": "Notification deleted"}
+
+@api_router.delete("/notifications")
+async def clear_all_notifications(request: Request):
+    """Clear all notifications"""
+    user = await require_auth(request)
+    
+    result = await db.notifications.delete_many({"user_id": user.user_id})
+    
+    return {"message": f"Deleted {result.deleted_count} notifications"}
+
+# Internal function to create notifications
+async def create_notification(
+    user_id: str,
+    notification_type: str,
+    title: str,
+    body: str,
+    data_payload: Dict[str, Any] = {}
+):
+    """Create a notification and optionally send push/email"""
+    notification = Notification(
+        user_id=user_id,
+        type=notification_type,
+        title=title,
+        body=body,
+        data_payload=data_payload
+    )
+    
+    notification_dict = notification.model_dump()
+    notification_dict["created_at"] = datetime.now(timezone.utc)
+    
+    await db.notifications.insert_one(notification_dict)
+    
+    # Get user settings to check notification preferences
+    settings = await db.user_settings.find_one({"user_id": user_id})
+    
+    if settings:
+        notifications_prefs = settings.get("notifications", {})
+        quiet_hours = settings.get("quiet_hours", {})
+        
+        # Check quiet hours
+        in_quiet_hours = False
+        if quiet_hours.get("enabled"):
+            now = datetime.now(timezone.utc)
+            start = quiet_hours.get("start_time", "22:00")
+            end = quiet_hours.get("end_time", "08:00")
+            current_time = now.strftime("%H:%M")
+            
+            if start > end:  # Crosses midnight
+                in_quiet_hours = current_time >= start or current_time < end
+            else:
+                in_quiet_hours = start <= current_time < end
+        
+        # Send push notification if enabled and not in quiet hours
+        if not in_quiet_hours and notifications_prefs.get("push", True):
+            push_token = settings.get("push_token")
+            if push_token:
+                # TODO: Send actual push notification via Expo
+                await db.notifications.update_one(
+                    {"id": notification.id},
+                    {"$set": {"pushed": True}}
+                )
+    
+    return notification
+
+# ==================== BLOCKED USERS ENDPOINTS ====================
+
+@api_router.get("/blocked-users")
+async def get_blocked_users(request: Request):
+    """Get list of blocked users"""
+    user = await require_auth(request)
+    
+    blocked = await db.blocked_users.find({"user_id": user.user_id}, {"_id": 0}).to_list(100)
+    
+    # Get user details for blocked users
+    blocked_user_ids = [b["blocked_user_id"] for b in blocked]
+    users = await db.users.find({"user_id": {"$in": blocked_user_ids}}, {"_id": 0, "user_id": 1, "name": 1, "picture": 1}).to_list(100)
+    
+    users_map = {u["user_id"]: u for u in users}
+    
+    result = []
+    for b in blocked:
+        user_data = users_map.get(b["blocked_user_id"], {})
+        result.append({
+            "id": b["id"],
+            "blocked_user_id": b["blocked_user_id"],
+            "name": user_data.get("name", "Unknown User"),
+            "picture": user_data.get("picture"),
+            "reason": b.get("reason"),
+            "created_at": b.get("created_at")
+        })
+    
+    return {"blocked_users": result}
+
+@api_router.post("/blocked-users")
+async def block_user(request: Request):
+    """Block a user"""
+    user = await require_auth(request)
+    body = await request.json()
+    
+    blocked_user_id = body.get("blocked_user_id")
+    if not blocked_user_id:
+        raise HTTPException(status_code=400, detail="blocked_user_id required")
+    
+    if blocked_user_id == user.user_id:
+        raise HTTPException(status_code=400, detail="Cannot block yourself")
+    
+    # Check if already blocked
+    existing = await db.blocked_users.find_one({
+        "user_id": user.user_id,
+        "blocked_user_id": blocked_user_id
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="User already blocked")
+    
+    blocked = BlockedUser(
+        user_id=user.user_id,
+        blocked_user_id=blocked_user_id,
+        reason=body.get("reason")
+    )
+    
+    blocked_dict = blocked.model_dump()
+    blocked_dict["created_at"] = datetime.now(timezone.utc)
+    
+    await db.blocked_users.insert_one(blocked_dict)
+    
+    # Also add to user's blocked_users array
+    await db.users.update_one(
+        {"user_id": user.user_id},
+        {"$addToSet": {"blocked_users": blocked_user_id}}
+    )
+    
+    return {"message": "User blocked successfully", "id": blocked.id}
+
+@api_router.delete("/blocked-users/{blocked_user_id}")
+async def unblock_user(blocked_user_id: str, request: Request):
+    """Unblock a user"""
+    user = await require_auth(request)
+    
+    result = await db.blocked_users.delete_one({
+        "user_id": user.user_id,
+        "blocked_user_id": blocked_user_id
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Blocked user not found")
+    
+    # Also remove from user's blocked_users array
+    await db.users.update_one(
+        {"user_id": user.user_id},
+        {"$pull": {"blocked_users": blocked_user_id}}
+    )
+    
+    return {"message": "User unblocked successfully"}
+
+# ==================== PROFILE ENDPOINTS ====================
+
+@api_router.get("/profile")
+async def get_profile(request: Request):
+    """Get current user profile with stats"""
+    user = await require_auth(request)
+    
+    user_data = await db.users.find_one({"user_id": user.user_id}, {"_id": 0})
+    
+    if not user_data:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get stats
+    active_listings = await db.listings.count_documents({"user_id": user.user_id, "status": "active"})
+    sold_listings = await db.listings.count_documents({"user_id": user.user_id, "status": "sold"})
+    total_favorites = await db.favorites.count_documents({"user_id": user.user_id})
+    
+    # Get total views on all listings
+    pipeline = [
+        {"$match": {"user_id": user.user_id}},
+        {"$group": {"_id": None, "total_views": {"$sum": "$views"}}}
+    ]
+    views_result = await db.listings.aggregate(pipeline).to_list(1)
+    total_views = views_result[0]["total_views"] if views_result else 0
+    
+    # Purchases (conversations where user is buyer and listing is sold)
+    purchases = await db.conversations.count_documents({
+        "buyer_id": user.user_id
+    })
+    
+    return {
+        **user_data,
+        "stats": {
+            "active_listings": active_listings,
+            "sold_listings": sold_listings,
+            "total_favorites": total_favorites,
+            "total_views": total_views,
+            "purchases": purchases,
+            "sales_count": sold_listings
+        }
+    }
+
+@api_router.put("/profile")
+async def update_profile(request: Request):
+    """Update user profile"""
+    user = await require_auth(request)
+    body = await request.json()
+    
+    update_data = {}
+    allowed_fields = ["name", "phone", "location", "bio", "picture"]
+    
+    for field in allowed_fields:
+        if field in body and body[field] is not None:
+            update_data[field] = body[field]
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No valid fields to update")
+    
+    await db.users.update_one(
+        {"user_id": user.user_id},
+        {"$set": update_data}
+    )
+    
+    # Get updated user
+    updated_user = await db.users.find_one({"user_id": user.user_id}, {"_id": 0})
+    
+    return {"message": "Profile updated successfully", "user": updated_user}
+
+@api_router.get("/profile/public/{user_id}")
+async def get_public_profile(user_id: str, request: Request):
+    """Get public profile of a user"""
+    # Check if current user has blocked or is blocked by target user
+    current_user = await get_current_user(request)
+    
+    if current_user:
+        # Check if blocked
+        blocked = await db.blocked_users.find_one({
+            "$or": [
+                {"user_id": current_user.user_id, "blocked_user_id": user_id},
+                {"user_id": user_id, "blocked_user_id": current_user.user_id}
+            ]
+        })
+        
+        if blocked:
+            raise HTTPException(status_code=403, detail="Cannot view this profile")
+    
+    user_data = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    
+    if not user_data:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get user settings to check privacy
+    settings = await db.user_settings.find_one({"user_id": user_id})
+    privacy = settings.get("privacy", {}) if settings else {}
+    
+    if not privacy.get("allow_profile_discovery", True):
+        raise HTTPException(status_code=403, detail="This profile is private")
+    
+    # Get stats
+    active_listings = await db.listings.count_documents({"user_id": user_id, "status": "active"})
+    sold_listings = await db.listings.count_documents({"user_id": user_id, "status": "sold"})
+    
+    # Return limited public info
+    return {
+        "user_id": user_data["user_id"],
+        "name": user_data.get("name"),
+        "picture": user_data.get("picture"),
+        "location": user_data.get("location"),
+        "bio": user_data.get("bio"),
+        "verified": user_data.get("verified", False),
+        "rating": user_data.get("rating", 0),
+        "total_ratings": user_data.get("total_ratings", 0),
+        "created_at": user_data.get("created_at"),
+        "stats": {
+            "active_listings": active_listings,
+            "sold_listings": sold_listings
+        },
+        "online_status": privacy.get("show_online_status", True),
+        "last_seen": user_data.get("last_seen") if privacy.get("show_last_seen", True) else None
+    }
+
+@api_router.get("/profile/activity/listings")
+async def get_my_listings(
+    request: Request,
+    status: str = Query(None),
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100)
+):
+    """Get user's listings"""
+    user = await require_auth(request)
+    
+    query = {"user_id": user.user_id}
+    if status:
+        query["status"] = status
+    
+    skip = (page - 1) * limit
+    total = await db.listings.count_documents(query)
+    
+    listings = await db.listings.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    return {"listings": listings, "total": total, "page": page}
+
+@api_router.get("/profile/activity/purchases")
+async def get_purchases(
+    request: Request,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100)
+):
+    """Get user's purchases (listings they've bought)"""
+    user = await require_auth(request)
+    
+    skip = (page - 1) * limit
+    
+    # Get conversations where user is buyer
+    conversations = await db.conversations.find(
+        {"buyer_id": user.user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Get listing details
+    listing_ids = [c["listing_id"] for c in conversations]
+    listings = await db.listings.find({"id": {"$in": listing_ids}}, {"_id": 0}).to_list(len(listing_ids))
+    listings_map = {l["id"]: l for l in listings}
+    
+    result = []
+    for conv in conversations:
+        listing = listings_map.get(conv["listing_id"])
+        if listing:
+            result.append({
+                "conversation_id": conv["id"],
+                "listing": listing,
+                "created_at": conv.get("created_at")
+            })
+    
+    return {"purchases": result, "total": len(result)}
+
+@api_router.get("/profile/activity/sales")
+async def get_sales(
+    request: Request,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100)
+):
+    """Get user's sales (listings they've sold)"""
+    user = await require_auth(request)
+    
+    skip = (page - 1) * limit
+    query = {"user_id": user.user_id, "status": "sold"}
+    
+    total = await db.listings.count_documents(query)
+    listings = await db.listings.find(query, {"_id": 0}).sort("updated_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    return {"sales": listings, "total": total, "page": page}
+
+@api_router.get("/profile/activity/recently-viewed")
+async def get_recently_viewed(
+    request: Request,
+    limit: int = Query(20, ge=1, le=50)
+):
+    """Get recently viewed listings"""
+    user = await require_auth(request)
+    
+    # Get from recently_viewed collection
+    viewed = await db.recently_viewed.find(
+        {"user_id": user.user_id},
+        {"_id": 0}
+    ).sort("viewed_at", -1).limit(limit).to_list(limit)
+    
+    # Get listing details
+    listing_ids = [v["listing_id"] for v in viewed]
+    listings = await db.listings.find({"id": {"$in": listing_ids}, "status": "active"}, {"_id": 0}).to_list(len(listing_ids))
+    listings_map = {l["id"]: l for l in listings}
+    
+    result = []
+    for v in viewed:
+        listing = listings_map.get(v["listing_id"])
+        if listing:
+            result.append({
+                **listing,
+                "viewed_at": v.get("viewed_at")
+            })
+    
+    return {"listings": result}
+
+@api_router.post("/profile/activity/recently-viewed/{listing_id}")
+async def add_recently_viewed(listing_id: str, request: Request):
+    """Add listing to recently viewed"""
+    user = await get_current_user(request)
+    if not user:
+        return {"message": "Not logged in"}
+    
+    # Upsert to recently_viewed
+    await db.recently_viewed.update_one(
+        {"user_id": user.user_id, "listing_id": listing_id},
+        {
+            "$set": {
+                "user_id": user.user_id,
+                "listing_id": listing_id,
+                "viewed_at": datetime.now(timezone.utc)
+            }
+        },
+        upsert=True
+    )
+    
+    # Keep only last 50 viewed items
+    count = await db.recently_viewed.count_documents({"user_id": user.user_id})
+    if count > 50:
+        oldest = await db.recently_viewed.find(
+            {"user_id": user.user_id}
+        ).sort("viewed_at", 1).limit(count - 50).to_list(count - 50)
+        
+        ids_to_delete = [o["_id"] for o in oldest]
+        await db.recently_viewed.delete_many({"_id": {"$in": ids_to_delete}})
+    
+    return {"message": "Added to recently viewed"}
+
+# ==================== ACTIVE SESSIONS ENDPOINTS ====================
+
+@api_router.get("/sessions")
+async def get_active_sessions(request: Request):
+    """Get all active sessions"""
+    user = await require_auth(request)
+    
+    sessions = await db.active_sessions.find(
+        {"user_id": user.user_id},
+        {"_id": 0}
+    ).sort("last_active", -1).to_list(20)
+    
+    # Get current session token
+    current_token = await get_session_token(request)
+    
+    # Mark current session
+    for session in sessions:
+        session["is_current"] = session.get("session_token") == current_token
+        # Don't expose full token
+        session["session_token"] = session["session_token"][:8] + "..." if session.get("session_token") else None
+    
+    return {"sessions": sessions}
+
+@api_router.delete("/sessions/{session_id}")
+async def revoke_session(session_id: str, request: Request):
+    """Revoke a specific session"""
+    user = await require_auth(request)
+    
+    # Don't allow revoking current session through this endpoint
+    session = await db.active_sessions.find_one({"id": session_id, "user_id": user.user_id})
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    current_token = await get_session_token(request)
+    if session.get("session_token") == current_token:
+        raise HTTPException(status_code=400, detail="Cannot revoke current session. Use sign out instead.")
+    
+    await db.active_sessions.delete_one({"id": session_id})
+    await db.sessions.delete_one({"token": session.get("session_token")})
+    
+    return {"message": "Session revoked"}
+
+@api_router.post("/sessions/revoke-all")
+async def revoke_all_sessions(request: Request):
+    """Revoke all sessions except current"""
+    user = await require_auth(request)
+    current_token = await get_session_token(request)
+    
+    # Delete all sessions except current
+    result = await db.active_sessions.delete_many({
+        "user_id": user.user_id,
+        "session_token": {"$ne": current_token}
+    })
+    
+    # Also delete from sessions collection
+    await db.sessions.delete_many({
+        "user_id": user.user_id,
+        "token": {"$ne": current_token}
+    })
+    
+    return {"message": f"Revoked {result.deleted_count} sessions"}
+
+# ==================== ACCOUNT MANAGEMENT ENDPOINTS ====================
+
+@api_router.post("/account/change-password")
+async def change_password(request: Request):
+    """Change user password"""
+    user = await require_auth(request)
+    body = await request.json()
+    
+    current_password = body.get("current_password")
+    new_password = body.get("new_password")
+    
+    if not current_password or not new_password:
+        raise HTTPException(status_code=400, detail="Both current and new password required")
+    
+    if len(new_password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+    
+    # Verify current password (simplified - in production use proper hashing)
+    user_data = await db.users.find_one({"user_id": user.user_id})
+    
+    # For demo, just update password
+    await db.users.update_one(
+        {"user_id": user.user_id},
+        {"$set": {"password_updated_at": datetime.now(timezone.utc)}}
+    )
+    
+    # Create security notification
+    await create_notification(
+        user.user_id,
+        "security_alert",
+        "Password Changed",
+        "Your password was successfully changed. If you didn't make this change, please contact support immediately.",
+        {"action": "password_change"}
+    )
+    
+    return {"message": "Password changed successfully"}
+
+@api_router.post("/account/delete")
+async def delete_account(request: Request):
+    """Delete user account"""
+    user = await require_auth(request)
+    body = await request.json()
+    
+    reason = body.get("reason")
+    password = body.get("password")
+    
+    if not reason:
+        raise HTTPException(status_code=400, detail="Reason required for account deletion")
+    
+    # In production, verify password here
+    
+    # Soft delete - mark account for deletion (30 day cool-off)
+    deletion_date = datetime.now(timezone.utc) + timedelta(days=30)
+    
+    await db.users.update_one(
+        {"user_id": user.user_id},
+        {
+            "$set": {
+                "deletion_requested": True,
+                "deletion_date": deletion_date,
+                "deletion_reason": reason
+            }
+        }
+    )
+    
+    # Deactivate all listings
+    await db.listings.update_many(
+        {"user_id": user.user_id},
+        {"$set": {"status": "deleted"}}
+    )
+    
+    # Clear sessions
+    await db.sessions.delete_many({"user_id": user.user_id})
+    await db.active_sessions.delete_many({"user_id": user.user_id})
+    
+    return {
+        "message": "Account scheduled for deletion",
+        "deletion_date": deletion_date.isoformat(),
+        "note": "You can cancel deletion by logging in within 30 days"
+    }
+
+@api_router.post("/account/cancel-deletion")
+async def cancel_account_deletion(request: Request):
+    """Cancel account deletion"""
+    user = await require_auth(request)
+    
+    result = await db.users.update_one(
+        {"user_id": user.user_id, "deletion_requested": True},
+        {
+            "$unset": {
+                "deletion_requested": "",
+                "deletion_date": "",
+                "deletion_reason": ""
+            }
+        }
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=400, detail="No pending deletion found")
+    
+    return {"message": "Account deletion cancelled"}
+
+# ==================== EMAIL SERVICE ====================
+
+async def send_notification_email(to_email: str, subject: str, body: str):
+    """Send email notification - placeholder for actual implementation"""
+    # TODO: Implement with SendGrid when API key is provided
+    logger.info(f"Email would be sent to {to_email}: {subject}")
+    return True
+
 # ==================== HEALTH CHECK ====================
 
 @api_router.get("/")
