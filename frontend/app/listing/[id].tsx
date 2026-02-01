@@ -290,6 +290,170 @@ const safetyStyles = StyleSheet.create({
   reportText: { fontSize: 14, fontWeight: '600', color: COLORS.error },
 });
 
+// ============ HIGHLIGHTS SECTION ============
+const generateHighlights = (listing: Listing, category: Category | null) => {
+  const highlights: { id: string; icon: string; label: string }[] = [];
+  
+  if (listing.condition === 'new') {
+    highlights.push({ id: 'new', icon: 'sparkles', label: 'Brand New' });
+  }
+  if (listing.condition === 'like_new') {
+    highlights.push({ id: 'like_new', icon: 'star', label: 'Like New' });
+  }
+  if (listing.negotiable) {
+    highlights.push({ id: 'negotiable', icon: 'pricetag', label: 'Negotiable' });
+  }
+  if (listing.featured) {
+    highlights.push({ id: 'featured', icon: 'ribbon', label: 'Featured' });
+  }
+  if (listing.seller?.verified) {
+    highlights.push({ id: 'verified', icon: 'shield-checkmark', label: 'Verified Seller' });
+  }
+  if (category) {
+    highlights.push({ id: 'category', icon: 'grid', label: category.name });
+  }
+  
+  return highlights.slice(0, 6);
+};
+
+const HighlightsSection = memo(({ highlights }: { highlights: { id: string; icon: string; label: string }[] }) => {
+  if (highlights.length === 0) return null;
+  
+  return (
+    <View style={highlightStyles.container}>
+      <Text style={highlightStyles.title}>Highlights</Text>
+      <View style={highlightStyles.grid}>
+        {highlights.map((item) => (
+          <View key={item.id} style={highlightStyles.item}>
+            <View style={highlightStyles.iconContainer}>
+              <Ionicons name={item.icon as any} size={16} color={COLORS.primary} />
+            </View>
+            <Text style={highlightStyles.label}>{item.label}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+});
+
+const highlightStyles = StyleSheet.create({
+  container: { backgroundColor: COLORS.surface, padding: HORIZONTAL_PADDING, marginBottom: 8 },
+  title: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 14 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  item: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: COLORS.primaryLight, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 },
+  iconContainer: { width: 24, height: 24, borderRadius: 12, backgroundColor: COLORS.surface, justifyContent: 'center', alignItems: 'center' },
+  label: { fontSize: 12, fontWeight: '600', color: COLORS.primary },
+});
+
+// ============ LOCATION SECTION ============
+const LocationSection = memo(({ listing }: { listing: Listing }) => (
+  <View style={locationStyles.container}>
+    <Text style={locationStyles.title}>Location</Text>
+    
+    {/* Map Placeholder */}
+    <View style={locationStyles.mapPlaceholder}>
+      <View style={locationStyles.mapContent}>
+        <Ionicons name="map" size={40} color={COLORS.primary} />
+        <Text style={locationStyles.mapText}>{listing.location}</Text>
+      </View>
+      
+      {/* Map Pin Overlay */}
+      <View style={locationStyles.pinOverlay}>
+        <View style={locationStyles.pin}>
+          <Ionicons name="location" size={24} color="#fff" />
+        </View>
+      </View>
+      
+      {/* Fake Map Grid Lines */}
+      <View style={locationStyles.gridLines}>
+        {[...Array(5)].map((_, i) => (
+          <View key={`h-${i}`} style={[locationStyles.gridLine, { top: `${(i + 1) * 20}%` }]} />
+        ))}
+        {[...Array(5)].map((_, i) => (
+          <View key={`v-${i}`} style={[locationStyles.gridLineVertical, { left: `${(i + 1) * 20}%` }]} />
+        ))}
+      </View>
+    </View>
+    
+    {/* Address Details */}
+    <View style={locationStyles.addressBox}>
+      <Ionicons name="location-outline" size={20} color={COLORS.primary} />
+      <View style={locationStyles.addressText}>
+        <Text style={locationStyles.addressMain}>{listing.location}</Text>
+      </View>
+    </View>
+    
+    {/* Action Buttons */}
+    <View style={locationStyles.actions}>
+      <TouchableOpacity style={locationStyles.actionBtn}>
+        <Ionicons name="navigate-outline" size={18} color={COLORS.primary} />
+        <Text style={locationStyles.actionText}>Get Directions</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={locationStyles.actionBtn}>
+        <Ionicons name="share-outline" size={18} color={COLORS.primary} />
+        <Text style={locationStyles.actionText}>Share Location</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+));
+
+const locationStyles = StyleSheet.create({
+  container: { backgroundColor: COLORS.surface, padding: HORIZONTAL_PADDING, marginBottom: 8 },
+  title: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 16 },
+  mapPlaceholder: {
+    height: 160,
+    backgroundColor: COLORS.primaryLight,
+    borderRadius: 12,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  mapContent: { alignItems: 'center', zIndex: 10 },
+  mapText: { fontSize: 14, fontWeight: '600', color: COLORS.primary, marginTop: 8, textAlign: 'center', paddingHorizontal: 16 },
+  pinOverlay: { position: 'absolute', top: '30%', alignSelf: 'center' },
+  pin: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  gridLines: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  gridLine: { position: 'absolute', left: 0, right: 0, height: 1, backgroundColor: 'rgba(46, 125, 50, 0.1)' },
+  gridLineVertical: { position: 'absolute', top: 0, bottom: 0, width: 1, backgroundColor: 'rgba(46, 125, 50, 0.1)' },
+  addressBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginTop: 16,
+    padding: 14,
+    backgroundColor: COLORS.background,
+    borderRadius: 10,
+  },
+  addressText: { flex: 1 },
+  addressMain: { fontSize: 15, fontWeight: '600', color: COLORS.text },
+  actions: { flexDirection: 'row', gap: 12, marginTop: 12 },
+  actionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    gap: 6,
+  },
+  actionText: { fontSize: 13, fontWeight: '600', color: COLORS.primary },
+});
+
 // ============ REPORT MODAL ============
 const ReportModal = memo(({ visible, onClose, onReport }: { visible: boolean; onClose: () => void; onReport: (reason: string) => void }) => (
   <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
