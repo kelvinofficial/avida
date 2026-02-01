@@ -28,6 +28,7 @@ import { BrandGrid } from '../../src/components/auto/BrandGrid';
 import { FilterTabs } from '../../src/components/auto/FilterTabs';
 import { ExploreCards } from '../../src/components/auto/ExploreCards';
 import { AutoListingCard } from '../../src/components/auto/AutoListingCard';
+import { HorizontalListingCard } from '../../src/components/auto/HorizontalListingCard';
 import { AdvancedFiltersSheet } from '../../src/components/auto/AdvancedFiltersSheet';
 import { NativeAdCard } from '../../src/components/auto/NativeAdCard';
 import { RecommendationSection } from '../../src/components/auto/RecommendationSection';
@@ -35,6 +36,25 @@ import { CityPickerModal } from '../../src/components/auto/CityPickerModal';
 import { PriceRangeModal } from '../../src/components/auto/PriceRangeModal';
 import { SortModal } from '../../src/components/auto/SortModal';
 import { MakeModelModal } from '../../src/components/auto/MakeModelModal';
+
+// Real car images from Unsplash
+const CAR_IMAGES = [
+  'https://images.unsplash.com/photo-1765171103306-44c89d9808a1?w=400&q=80', // BMW
+  'https://images.unsplash.com/photo-1636378182990-3bc1fd5c8307?w=400&q=80', // Mercedes white
+  'https://images.unsplash.com/photo-1638731042137-4569fadabc3d?w=400&q=80', // Mercedes black
+  'https://images.unsplash.com/photo-1627855660287-98188dab870f?w=400&q=80', // Porsche white
+  'https://images.unsplash.com/photo-1603395626261-8811305660e8?w=400&q=80', // Porsche 911
+  'https://images.unsplash.com/photo-1654425210135-78ab49d8507a?w=400&q=80', // BMW i8
+  'https://images.unsplash.com/photo-1600872254796-9ee1791c2b87?w=400&q=80', // Porsche road
+  'https://images.unsplash.com/photo-1636378182946-a5e6a2726503?w=400&q=80', // Mercedes forest
+  'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&q=80', // BMW M4
+  'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&q=80', // Classic car
+  'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=400&q=80', // Ferrari
+  'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=400&q=80', // Lamborghini
+  'https://images.unsplash.com/photo-1542362567-b07e54358753?w=400&q=80', // Tesla
+  'https://images.unsplash.com/photo-1619682817481-e994891cd1f5?w=400&q=80', // Audi
+  'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&q=80', // VW Golf
+];
 
 const { width } = Dimensions.get('window');
 
