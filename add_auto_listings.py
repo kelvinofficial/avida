@@ -621,7 +621,7 @@ AUTO_LISTINGS = [
 
 async def main():
     client = AsyncIOMotorClient(MONGO_URL)
-    db = client.marketplace
+    db = client.classifieds_db  # Match the database name in server.py
     
     print("Connecting to MongoDB...")
     
