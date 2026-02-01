@@ -1638,6 +1638,373 @@ async def get_auto_favorites(request: Request):
         "listings": listings
     }
 
+# ==================== PROPERTY ENDPOINTS ====================
+
+# Property Models
+class PropertyLocation(BaseModel):
+    country: str = "Germany"
+    city: str
+    area: str
+    estate: Optional[str] = None
+    address: Optional[str] = None
+    landmark: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+
+class PropertyFacilities(BaseModel):
+    electricity24hr: bool = False
+    waterSupply: bool = False
+    generator: bool = False
+    furnished: bool = False
+    airConditioning: bool = False
+    wardrobe: bool = False
+    kitchenCabinets: bool = False
+    security: bool = False
+    cctv: bool = False
+    gatedEstate: bool = False
+    parking: bool = False
+    balcony: bool = False
+    swimmingPool: bool = False
+    gym: bool = False
+    elevator: bool = False
+    wifi: bool = False
+
+class PropertyVerification(BaseModel):
+    isVerified: bool = False
+    docsChecked: bool = False
+    addressConfirmed: bool = False
+    ownerVerified: bool = False
+    agentVerified: bool = False
+    verifiedAt: Optional[str] = None
+
+class PropertySeller(BaseModel):
+    id: str
+    name: str
+    type: str  # 'owner' or 'agent'
+    phone: Optional[str] = None
+    whatsapp: Optional[str] = None
+    isVerified: bool = False
+    rating: Optional[float] = None
+    listingsCount: Optional[int] = None
+    memberSince: Optional[str] = None
+    responseTime: Optional[str] = None
+
+class PropertyOffer(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    propertyId: str
+    buyerId: str
+    buyerName: str
+    offeredPrice: float
+    message: Optional[str] = None
+    status: str = "pending"  # pending, accepted, rejected, countered
+    counterPrice: Optional[float] = None
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class BookViewing(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    propertyId: str
+    userId: str
+    userName: str
+    userPhone: str
+    preferredDate: str
+    preferredTime: str
+    message: Optional[str] = None
+    status: str = "pending"  # pending, confirmed, cancelled
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+@api_router.get("/property/listings")
+async def get_property_listings(
+    purpose: Optional[str] = None,  # buy, rent
+    property_type: Optional[str] = None,
+    city: Optional[str] = None,
+    area: Optional[str] = None,
+    price_min: Optional[float] = None,
+    price_max: Optional[float] = None,
+    bedrooms_min: Optional[int] = None,
+    bedrooms_max: Optional[int] = None,
+    bathrooms_min: Optional[int] = None,
+    size_min: Optional[float] = None,
+    size_max: Optional[float] = None,
+    furnishing: Optional[str] = None,
+    condition: Optional[str] = None,
+    verified_only: Optional[bool] = None,
+    search: Optional[str] = None,
+    sort: str = "newest",
+    page: int = 1,
+    limit: int = 20
+):
+    """Get property listings with filters"""
+    query = {"status": "active"}
+    
+    if purpose:
+        query["purpose"] = purpose
+    if property_type:
+        query["type"] = property_type
+    if city:
+        query["location.city"] = {"$regex": city, "$options": "i"}
+    if area:
+        query["location.area"] = {"$regex": area, "$options": "i"}
+    if price_min:
+        query["price"] = {"$gte": price_min}
+    if price_max:
+        if "price" in query:
+            query["price"]["$lte"] = price_max
+        else:
+            query["price"] = {"$lte": price_max}
+    if bedrooms_min:
+        query["bedrooms"] = {"$gte": bedrooms_min}
+    if bedrooms_max:
+        if "bedrooms" in query:
+            query["bedrooms"]["$lte"] = bedrooms_max
+        else:
+            query["bedrooms"] = {"$lte": bedrooms_max}
+    if bathrooms_min:
+        query["bathrooms"] = {"$gte": bathrooms_min}
+    if size_min:
+        query["size"] = {"$gte": size_min}
+    if size_max:
+        if "size" in query:
+            query["size"]["$lte"] = size_max
+        else:
+            query["size"] = {"$lte": size_max}
+    if furnishing:
+        query["furnishing"] = furnishing
+    if condition:
+        query["condition"] = condition
+    if verified_only:
+        query["verification.isVerified"] = True
+    if search:
+        query["$or"] = [
+            {"title": {"$regex": search, "$options": "i"}},
+            {"description": {"$regex": search, "$options": "i"}},
+            {"location.area": {"$regex": search, "$options": "i"}},
+            {"location.city": {"$regex": search, "$options": "i"}}
+        ]
+    
+    # Sorting
+    sort_field = "createdAt"
+    sort_order = -1
+    if sort == "price_asc":
+        sort_field = "price"
+        sort_order = 1
+    elif sort == "price_desc":
+        sort_field = "price"
+        sort_order = -1
+    elif sort == "oldest":
+        sort_order = 1
+    elif sort == "popular":
+        sort_field = "views"
+        sort_order = -1
+    
+    skip = (page - 1) * limit
+    total = await db.properties.count_documents(query)
+    listings = await db.properties.find(query, {"_id": 0}).sort(sort_field, sort_order).skip(skip).limit(limit).to_list(limit)
+    
+    return {
+        "listings": listings,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit if total > 0 else 0
+    }
+
+@api_router.get("/property/listings/{property_id}")
+async def get_property_listing(property_id: str):
+    """Get single property listing by ID"""
+    listing = await db.properties.find_one({"id": property_id}, {"_id": 0})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Increment views
+    await db.properties.update_one({"id": property_id}, {"$inc": {"views": 1}})
+    
+    return listing
+
+@api_router.get("/property/featured")
+async def get_featured_properties(limit: int = 10):
+    """Get featured property listings"""
+    query = {"status": "active", "featured": True}
+    listings = await db.properties.find(query, {"_id": 0}).sort("createdAt", -1).limit(limit).to_list(limit)
+    return listings
+
+@api_router.get("/property/type-counts")
+async def get_property_type_counts(purpose: Optional[str] = None):
+    """Get listing counts by property type"""
+    match_stage = {"status": "active"}
+    if purpose:
+        match_stage["purpose"] = purpose
+    
+    pipeline = [
+        {"$match": match_stage},
+        {"$group": {"_id": "$type", "count": {"$sum": 1}}},
+        {"$project": {"type": "$_id", "count": 1, "_id": 0}}
+    ]
+    
+    results = await db.properties.aggregate(pipeline).to_list(100)
+    return {item["type"]: item["count"] for item in results}
+
+@api_router.post("/property/offers")
+async def create_property_offer(request: Request):
+    """Submit an offer for a property"""
+    body = await request.json()
+    property_id = body.get("propertyId")
+    offered_price = body.get("offeredPrice")
+    message = body.get("message", "")
+    
+    if not property_id or not offered_price:
+        raise HTTPException(status_code=400, detail="propertyId and offeredPrice are required")
+    
+    # Verify property exists
+    property_listing = await db.properties.find_one({"id": property_id}, {"_id": 0})
+    if not property_listing:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Get user (or use guest)
+    user = await get_current_user(request)
+    buyer_id = user.user_id if user else f"guest_{uuid.uuid4().hex[:8]}"
+    buyer_name = user.name if user else "Interested Buyer"
+    
+    offer = {
+        "id": f"offer_{uuid.uuid4().hex[:12]}",
+        "propertyId": property_id,
+        "buyerId": buyer_id,
+        "buyerName": buyer_name,
+        "offeredPrice": offered_price,
+        "message": message,
+        "status": "pending",
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+    }
+    
+    await db.property_offers.insert_one(offer)
+    
+    # Update inquiries count
+    await db.properties.update_one({"id": property_id}, {"$inc": {"inquiries": 1}})
+    
+    return {"message": "Offer submitted successfully", "offer": {**offer, "_id": None}}
+
+@api_router.post("/property/book-viewing")
+async def book_property_viewing(request: Request):
+    """Book a viewing for a property"""
+    body = await request.json()
+    property_id = body.get("propertyId")
+    preferred_date = body.get("preferredDate")
+    preferred_time = body.get("preferredTime")
+    user_phone = body.get("userPhone", "")
+    message = body.get("message", "")
+    
+    if not property_id or not preferred_date or not preferred_time:
+        raise HTTPException(status_code=400, detail="propertyId, preferredDate, and preferredTime are required")
+    
+    # Verify property exists
+    property_listing = await db.properties.find_one({"id": property_id}, {"_id": 0})
+    if not property_listing:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Get user (or use guest)
+    user = await get_current_user(request)
+    user_id = user.user_id if user else f"guest_{uuid.uuid4().hex[:8]}"
+    user_name = user.name if user else "Interested Buyer"
+    
+    booking = {
+        "id": f"booking_{uuid.uuid4().hex[:12]}",
+        "propertyId": property_id,
+        "userId": user_id,
+        "userName": user_name,
+        "userPhone": user_phone,
+        "preferredDate": preferred_date,
+        "preferredTime": preferred_time,
+        "message": message,
+        "status": "pending",
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+    }
+    
+    await db.property_bookings.insert_one(booking)
+    
+    # Update inquiries count
+    await db.properties.update_one({"id": property_id}, {"$inc": {"inquiries": 1}})
+    
+    return {"message": "Viewing booked successfully", "booking": {**booking, "_id": None}}
+
+@api_router.post("/property/favorites/{property_id}")
+async def add_property_favorite(property_id: str, request: Request):
+    """Add a property to favorites"""
+    user = await get_current_user(request)
+    user_id = user.user_id if user else "guest"
+    
+    # Check if property exists
+    property_listing = await db.properties.find_one({"id": property_id})
+    if not property_listing:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Check if already favorited
+    existing = await db.property_favorites.find_one({"user_id": user_id, "property_id": property_id})
+    if existing:
+        return {"message": "Already favorited", "favorited": True}
+    
+    await db.property_favorites.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "property_id": property_id,
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Update favorites count
+    await db.properties.update_one({"id": property_id}, {"$inc": {"favorites": 1}})
+    
+    return {"message": "Added to favorites", "favorited": True}
+
+@api_router.delete("/property/favorites/{property_id}")
+async def remove_property_favorite(property_id: str, request: Request):
+    """Remove a property from favorites"""
+    user = await get_current_user(request)
+    user_id = user.user_id if user else "guest"
+    
+    result = await db.property_favorites.delete_one({"user_id": user_id, "property_id": property_id})
+    
+    if result.deleted_count > 0:
+        await db.properties.update_one({"id": property_id}, {"$inc": {"favorites": -1}})
+    
+    return {"message": "Removed from favorites", "favorited": False}
+
+@api_router.get("/property/favorites")
+async def get_property_favorites(request: Request):
+    """Get user's favorite properties"""
+    user = await get_current_user(request)
+    user_id = user.user_id if user else "guest"
+    
+    favorites = await db.property_favorites.find({"user_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    property_ids = [f["property_id"] for f in favorites]
+    
+    listings = await db.properties.find({"id": {"$in": property_ids}, "status": "active"}, {"_id": 0}).to_list(100)
+    
+    return {
+        "favorites": favorites,
+        "listings": listings
+    }
+
+@api_router.get("/property/cities")
+async def get_property_cities():
+    """Get available cities with property counts"""
+    pipeline = [
+        {"$match": {"status": "active"}},
+        {"$group": {"_id": "$location.city", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$project": {"city": "$_id", "count": 1, "_id": 0}}
+    ]
+    results = await db.properties.aggregate(pipeline).to_list(50)
+    return results
+
+@api_router.get("/property/areas/{city}")
+async def get_property_areas(city: str):
+    """Get available areas within a city"""
+    pipeline = [
+        {"$match": {"status": "active", "location.city": {"$regex": city, "$options": "i"}}},
+        {"$group": {"_id": "$location.area", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$project": {"area": "$_id", "count": 1, "_id": 0}}
+    ]
+    results = await db.properties.aggregate(pipeline).to_list(50)
+    return results
+
 # ==================== HEALTH CHECK ====================
 
 @api_router.get("/")
