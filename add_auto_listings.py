@@ -65,10 +65,13 @@ AUTO_LISTINGS = [
             "user_id": "seller_1",
             "name": "AutoHaus Berlin",
             "phone": "+49301234567",
+            "whatsapp": "+49301234567",
             "rating": 4.8,
             "verified": True,
             "sellerType": "dealer",
             "memberSince": "2020-01-15",
+            "allowsOffers": True,
+            "preferredContact": "whatsapp",
         },
     },
     {
