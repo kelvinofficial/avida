@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,13 +10,14 @@ import {
   Dimensions,
   TouchableOpacity,
   Alert,
+  Linking,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { theme } from '../../src/utils/theme';
 import { AutoFilters, AutoListing } from '../../src/types/auto';
-import { autoApi } from '../../src/utils/autoApi';
 import { CAR_BRANDS, EXPLORE_CARDS, CITIES } from '../../src/data/autoData';
 
 // Components
@@ -30,10 +31,14 @@ import { AutoListingCard } from '../../src/components/auto/AutoListingCard';
 import { AdvancedFiltersSheet } from '../../src/components/auto/AdvancedFiltersSheet';
 import { NativeAdCard } from '../../src/components/auto/NativeAdCard';
 import { RecommendationSection } from '../../src/components/auto/RecommendationSection';
+import { CityPickerModal } from '../../src/components/auto/CityPickerModal';
+import { PriceRangeModal } from '../../src/components/auto/PriceRangeModal';
+import { SortModal } from '../../src/components/auto/SortModal';
+import { MakeModelModal } from '../../src/components/auto/MakeModelModal';
 
 const { width } = Dimensions.get('window');
 
-// Mock data for demo
+// Mock data for demo - 15 sample car listings
 const MOCK_AUTO_LISTINGS: AutoListing[] = [
   {
     id: 'auto_1',
@@ -219,7 +224,7 @@ const MOCK_AUTO_LISTINGS: AutoListing[] = [
     year: 2022,
     mileage: 22000,
     fuelType: 'Hybrid',
-    transmission: 'CVT',
+    transmission: 'Automatic',
     bodyType: 'Sedan',
     condition: 'used',
     accidentFree: true,
@@ -435,6 +440,206 @@ const MOCK_AUTO_LISTINGS: AutoListing[] = [
       memberSince: '2020-08-15',
     },
   },
+  {
+    id: 'auto_11',
+    user_id: 'seller_11',
+    title: 'Kia EV6 GT-Line - Future Electric',
+    description: 'Award-winning electric crossover',
+    price: 47500,
+    negotiable: true,
+    category_id: 'vehicles',
+    images: [],
+    location: 'Dresden, Germany',
+    city: 'Dresden',
+    distance: 35,
+    status: 'active',
+    featured: false,
+    boosted: false,
+    views: 145,
+    favorites_count: 29,
+    created_at: new Date(Date.now() - 36000000).toISOString(),
+    updated_at: new Date(Date.now() - 36000000).toISOString(),
+    make: 'Kia',
+    model: 'EV6',
+    year: 2023,
+    mileage: 10000,
+    fuelType: 'Electric',
+    transmission: 'Automatic',
+    bodyType: 'SUV',
+    condition: 'used',
+    accidentFree: true,
+    inspectionAvailable: true,
+    exchangePossible: false,
+    financingAvailable: true,
+    seller: {
+      user_id: 'seller_11',
+      name: 'Kia Dresden',
+      rating: 4.7,
+      verified: true,
+      sellerType: 'dealer',
+      memberSince: '2021-03-01',
+    },
+  },
+  {
+    id: 'auto_12',
+    user_id: 'seller_12',
+    title: 'Nissan GT-R NISMO - Track Monster',
+    description: 'Japanese supercar with racing DNA',
+    price: 125000,
+    negotiable: true,
+    category_id: 'vehicles',
+    images: [],
+    location: 'Munich, Germany',
+    city: 'Munich',
+    distance: 10,
+    status: 'active',
+    featured: true,
+    boosted: false,
+    views: 534,
+    favorites_count: 98,
+    created_at: new Date(Date.now() - 39600000).toISOString(),
+    updated_at: new Date(Date.now() - 39600000).toISOString(),
+    make: 'Nissan',
+    model: 'GT-R NISMO',
+    year: 2021,
+    mileage: 8500,
+    fuelType: 'Petrol',
+    transmission: 'Automatic',
+    bodyType: 'Coupe',
+    condition: 'used',
+    accidentFree: true,
+    inspectionAvailable: true,
+    exchangePossible: false,
+    financingAvailable: true,
+    seller: {
+      user_id: 'seller_12',
+      name: 'Supercar Gallery Munich',
+      rating: 5.0,
+      verified: true,
+      sellerType: 'certified',
+      memberSince: '2016-07-20',
+    },
+  },
+  {
+    id: 'auto_13',
+    user_id: 'seller_13',
+    title: 'VW ID.4 Pro - Family Electric',
+    description: 'Spacious electric SUV for families',
+    price: 35900,
+    negotiable: true,
+    category_id: 'vehicles',
+    images: [],
+    location: 'Hanover, Germany',
+    city: 'Hanover',
+    distance: 22,
+    status: 'active',
+    featured: false,
+    boosted: false,
+    views: 112,
+    favorites_count: 19,
+    created_at: new Date(Date.now() - 43200000).toISOString(),
+    updated_at: new Date(Date.now() - 43200000).toISOString(),
+    make: 'Volkswagen',
+    model: 'ID.4',
+    year: 2023,
+    mileage: 18000,
+    fuelType: 'Electric',
+    transmission: 'Automatic',
+    bodyType: 'SUV',
+    condition: 'used',
+    accidentFree: true,
+    inspectionAvailable: false,
+    exchangePossible: true,
+    financingAvailable: true,
+    seller: {
+      user_id: 'seller_13',
+      name: 'VW Zentrum Hanover',
+      rating: 4.6,
+      verified: true,
+      sellerType: 'dealer',
+      memberSince: '2019-11-15',
+    },
+  },
+  {
+    id: 'auto_14',
+    user_id: 'seller_14',
+    title: 'BMW M4 Competition - Ultimate Driving',
+    description: 'High-performance coupe with track capability',
+    price: 72500,
+    negotiable: false,
+    category_id: 'vehicles',
+    images: [],
+    location: 'Stuttgart, Germany',
+    city: 'Stuttgart',
+    distance: 28,
+    status: 'active',
+    featured: true,
+    boosted: true,
+    views: 389,
+    favorites_count: 76,
+    created_at: new Date(Date.now() - 46800000).toISOString(),
+    updated_at: new Date(Date.now() - 46800000).toISOString(),
+    make: 'BMW',
+    model: 'M4',
+    year: 2022,
+    mileage: 12000,
+    fuelType: 'Petrol',
+    transmission: 'Automatic',
+    bodyType: 'Coupe',
+    condition: 'used',
+    accidentFree: true,
+    inspectionAvailable: true,
+    exchangePossible: false,
+    financingAvailable: true,
+    seller: {
+      user_id: 'seller_14',
+      name: 'BMW Stuttgart Premium',
+      rating: 4.9,
+      verified: true,
+      sellerType: 'certified',
+      memberSince: '2018-02-10',
+    },
+  },
+  {
+    id: 'auto_15',
+    user_id: 'seller_15',
+    title: 'Audi e-tron GT - Electric Luxury',
+    description: 'Premium electric gran turismo',
+    price: 85000,
+    negotiable: true,
+    category_id: 'vehicles',
+    images: [],
+    location: 'Berlin, Germany',
+    city: 'Berlin',
+    distance: 7,
+    status: 'active',
+    featured: false,
+    boosted: false,
+    views: 267,
+    favorites_count: 52,
+    created_at: new Date(Date.now() - 50400000).toISOString(),
+    updated_at: new Date(Date.now() - 50400000).toISOString(),
+    make: 'Audi',
+    model: 'e-tron GT',
+    year: 2023,
+    mileage: 6000,
+    fuelType: 'Electric',
+    transmission: 'Automatic',
+    bodyType: 'Sedan',
+    condition: 'used',
+    accidentFree: true,
+    inspectionAvailable: true,
+    exchangePossible: true,
+    financingAvailable: true,
+    seller: {
+      user_id: 'seller_15',
+      name: 'Audi Berlin Electric',
+      rating: 4.8,
+      verified: true,
+      sellerType: 'dealer',
+      memberSince: '2020-09-01',
+    },
+  },
 ];
 
 const CATEGORY_TABS = [
@@ -450,116 +655,212 @@ const FILTER_TABS = [
   { id: 'price', label: 'Price' },
 ];
 
+// Analytics tracking helper
+const trackEvent = (eventName: string, data?: any) => {
+  console.log(`[Analytics] ${eventName}:`, data);
+};
+
 export default function AutoCategoryScreen() {
   const router = useRouter();
   
   // State
   const [activeTab, setActiveTab] = useState('motors');
-  const [listings, setListings] = useState<AutoListing[]>(MOCK_AUTO_LISTINGS);
+  const [allListings] = useState<AutoListing[]>(MOCK_AUTO_LISTINGS);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState<AutoFilters>({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
+  
+  // Modal states
   const [showFiltersSheet, setShowFiltersSheet] = useState(false);
+  const [showCityPicker, setShowCityPicker] = useState(false);
+  const [showPriceRange, setShowPriceRange] = useState(false);
+  const [showSortModal, setShowSortModal] = useState(false);
+  const [showMakeModelModal, setShowMakeModelModal] = useState(false);
+  const [makeModelMode, setMakeModelMode] = useState<'make' | 'model'>('make');
+  
+  // Filter states
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [nearMeEnabled, setNearMeEnabled] = useState(false);
   const [radius, setRadius] = useState(50);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
-  const [recentSearches] = useState(['BMW 3 Series', 'Mercedes C-Class', 'Audi A4']);
+  
+  // Search history
+  const [recentSearches, setRecentSearches] = useState(['BMW 3 Series', 'Mercedes C-Class', 'Audi A4']);
   const [popularSearches] = useState(['Tesla Model 3', 'VW Golf', 'BMW X5', 'Porsche 911']);
-  const [page, setPage] = useState(1);
 
-  // Filter listings based on filters
-  const filteredListings = listings.filter((listing) => {
-    if (selectedBrand && listing.make.toLowerCase() !== selectedBrand.toLowerCase()) {
-      return false;
+  // Filter and sort listings
+  const filteredListings = useMemo(() => {
+    let result = [...allListings];
+    
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((listing) =>
+        listing.title.toLowerCase().includes(query) ||
+        listing.make.toLowerCase().includes(query) ||
+        listing.model.toLowerCase().includes(query) ||
+        listing.city.toLowerCase().includes(query)
+      );
     }
-    if (selectedCity && listing.city !== selectedCity) {
-      return false;
+    
+    // Brand filter
+    if (selectedBrand) {
+      const brandName = CAR_BRANDS.find(b => b.id === selectedBrand)?.name || selectedBrand;
+      result = result.filter((listing) =>
+        listing.make.toLowerCase() === brandName.toLowerCase() ||
+        listing.make.toLowerCase() === selectedBrand.toLowerCase()
+      );
     }
-    if (filters.fuelType && listing.fuelType !== filters.fuelType) {
-      return false;
+    
+    // Model filter
+    if (selectedModel) {
+      result = result.filter((listing) =>
+        listing.model.toLowerCase().includes(selectedModel.toLowerCase())
+      );
     }
-    if (filters.transmission && listing.transmission !== filters.transmission) {
-      return false;
+    
+    // City filter
+    if (selectedCity) {
+      result = result.filter((listing) => listing.city === selectedCity);
     }
-    if (filters.bodyType && listing.bodyType !== filters.bodyType) {
-      return false;
+    
+    // Near me filter with radius
+    if (nearMeEnabled) {
+      result = result.filter((listing) => (listing.distance || 0) <= radius);
     }
-    if (filters.condition && listing.condition !== filters.condition) {
-      return false;
+    
+    // Advanced filters
+    if (filters.fuelType) {
+      result = result.filter((listing) => listing.fuelType === filters.fuelType);
     }
-    if (filters.priceMin && listing.price < filters.priceMin) {
-      return false;
+    if (filters.transmission) {
+      result = result.filter((listing) => listing.transmission === filters.transmission);
     }
-    if (filters.priceMax && listing.price > filters.priceMax) {
-      return false;
+    if (filters.bodyType) {
+      result = result.filter((listing) => listing.bodyType === filters.bodyType);
     }
-    if (filters.verifiedSeller && !listing.seller?.verified) {
-      return false;
+    if (filters.condition) {
+      result = result.filter((listing) => listing.condition === filters.condition);
     }
-    if (filters.accidentFree && !listing.accidentFree) {
-      return false;
+    if (filters.priceMin !== undefined) {
+      result = result.filter((listing) => listing.price >= (filters.priceMin || 0));
     }
-    return true;
-  });
+    if (filters.priceMax !== undefined) {
+      result = result.filter((listing) => listing.price <= (filters.priceMax || Infinity));
+    }
+    if (filters.verifiedSeller) {
+      result = result.filter((listing) => listing.seller?.verified);
+    }
+    if (filters.accidentFree) {
+      result = result.filter((listing) => listing.accidentFree);
+    }
+    if (filters.mileageMax !== undefined) {
+      result = result.filter((listing) => listing.mileage <= (filters.mileageMax || Infinity));
+    }
+    
+    // Sorting
+    switch (sortBy) {
+      case 'price_asc':
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case 'price_desc':
+        result.sort((a, b) => b.price - a.price);
+        break;
+      case 'mileage_asc':
+        result.sort((a, b) => a.mileage - b.mileage);
+        break;
+      case 'year_desc':
+        result.sort((a, b) => b.year - a.year);
+        break;
+      case 'oldest':
+        result.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        break;
+      case 'newest':
+      default:
+        result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+    }
+    
+    return result;
+  }, [allListings, searchQuery, selectedBrand, selectedModel, selectedCity, nearMeEnabled, radius, filters, sortBy]);
 
-  // Featured listings
-  const featuredListings = filteredListings.filter((l) => l.featured);
-  const recommendedListings = filteredListings.slice(0, 6);
-  const verifiedListings = filteredListings.filter((l) => l.seller?.verified);
+  // Derived data
+  const featuredListings = useMemo(() => 
+    filteredListings.filter((l) => l.featured).slice(0, 6), 
+    [filteredListings]
+  );
+  const verifiedListings = useMemo(() => 
+    filteredListings.filter((l) => l.seller?.verified).slice(0, 6), 
+    [filteredListings]
+  );
+  const lowMileageListings = useMemo(() => 
+    [...filteredListings].sort((a, b) => a.mileage - b.mileage).slice(0, 6),
+    [filteredListings]
+  );
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
+    trackEvent('pull_to_refresh');
     setTimeout(() => setRefreshing(false), 1000);
   }, []);
 
   const handleSearch = (query: string) => {
-    console.log('Search:', query);
-    // Filter based on search query
-    const filtered = MOCK_AUTO_LISTINGS.filter(
-      (l) =>
-        l.title.toLowerCase().includes(query.toLowerCase()) ||
-        l.make.toLowerCase().includes(query.toLowerCase()) ||
-        l.model.toLowerCase().includes(query.toLowerCase())
-    );
-    setListings(filtered.length > 0 ? filtered : MOCK_AUTO_LISTINGS);
+    setSearchQuery(query);
+    trackEvent('search', { query });
+    
+    // Add to recent searches
+    if (query && !recentSearches.includes(query)) {
+      setRecentSearches((prev) => [query, ...prev.slice(0, 4)]);
+    }
   };
 
   const handleBrandSelect = (brandId: string | null) => {
     setSelectedBrand(brandId);
-    setFilters((prev) => ({ ...prev, make: brandId || undefined }));
+    setSelectedModel(null);
+    trackEvent('brand_select', { brandId });
   };
 
   const handleFilterTabPress = (tabId: string) => {
-    if (tabId === 'make') {
-      // Show brand selector - already visible
-      Alert.alert('Select Make', 'Scroll horizontally to browse brands');
-    } else if (tabId === 'city') {
-      // Show city picker
-      Alert.alert(
-        'Select City',
-        'Choose a city',
-        CITIES.slice(0, 6).map((city) => ({
-          text: city,
-          onPress: () => setSelectedCity(city),
-        }))
-      );
-    } else if (tabId === 'price') {
-      setShowFiltersSheet(true);
-    } else {
-      setShowFiltersSheet(true);
+    trackEvent('filter_tab_press', { tabId });
+    
+    switch (tabId) {
+      case 'make':
+        setMakeModelMode('make');
+        setShowMakeModelModal(true);
+        break;
+      case 'model':
+        if (selectedBrand) {
+          setMakeModelMode('model');
+          setShowMakeModelModal(true);
+        } else {
+          Alert.alert('Select Make First', 'Please select a car make before choosing a model');
+        }
+        break;
+      case 'city':
+        setShowCityPicker(true);
+        break;
+      case 'price':
+        setShowPriceRange(true);
+        break;
     }
   };
 
   const handleApplyFilters = (newFilters: AutoFilters) => {
     setFilters(newFilters);
+    trackEvent('filters_applied', newFilters);
   };
 
   const handleClearFilters = () => {
     setFilters({});
     setSelectedBrand(null);
+    setSelectedModel(null);
     setSelectedCity(null);
+    setSearchQuery('');
+    trackEvent('filters_cleared');
   };
 
   const toggleFavorite = (listingId: string) => {
@@ -567,20 +868,91 @@ export default function AutoCategoryScreen() {
       const newSet = new Set(prev);
       if (newSet.has(listingId)) {
         newSet.delete(listingId);
+        trackEvent('favorite_removed', { listingId });
       } else {
         newSet.add(listingId);
+        trackEvent('favorite_added', { listingId });
       }
       return newSet;
     });
   };
 
   const handleListingPress = (listing: AutoListing) => {
+    trackEvent('listing_view', { listingId: listing.id, title: listing.title });
     router.push(`/listing/${listing.id}`);
   };
 
+  const handleChat = (listing: AutoListing) => {
+    trackEvent('chat_initiated', { listingId: listing.id });
+    Alert.alert('Start Chat', `Chat with ${listing.seller?.name || 'Seller'} about "${listing.title}"?`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Chat', onPress: () => router.push(`/chat/${listing.id}`) },
+    ]);
+  };
+
+  const handleCall = (listing: AutoListing) => {
+    trackEvent('call_initiated', { listingId: listing.id });
+    Alert.alert('Call Seller', `Call ${listing.seller?.name || 'Seller'}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Call', onPress: () => Linking.openURL('tel:+4912345678') },
+    ]);
+  };
+
+  const handleWhatsApp = (listing: AutoListing) => {
+    trackEvent('whatsapp_initiated', { listingId: listing.id });
+    const message = encodeURIComponent(`Hi, I'm interested in your "${listing.title}" listed for €${listing.price.toLocaleString()}`);
+    Linking.openURL(`https://wa.me/4912345678?text=${message}`);
+  };
+
+  const handleNearMeToggle = () => {
+    if (!nearMeEnabled) {
+      // Simulate GPS detection
+      Alert.alert(
+        'Enable Location',
+        'Allow LocalMarket to access your location to find cars near you?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Allow',
+            onPress: () => {
+              setNearMeEnabled(true);
+              trackEvent('near_me_enabled');
+              Alert.alert('Location Detected', 'Showing cars within 50km of Berlin');
+            },
+          },
+        ]
+      );
+    } else {
+      setNearMeEnabled(false);
+      trackEvent('near_me_disabled');
+    }
+  };
+
+  const handleExploreCardPress = (card: typeof EXPLORE_CARDS[0]) => {
+    trackEvent('explore_card_press', { cardId: card.id, title: card.title });
+    Alert.alert(card.title, card.subtitle + '\n\nThis feature is coming soon!');
+  };
+
+  const handleBrandLongPress = (brandId: string) => {
+    const brand = CAR_BRANDS.find((b) => b.id === brandId);
+    Alert.alert(
+      `Follow ${brand?.name}`,
+      'Get notified about new listings from this brand?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Follow',
+          onPress: () => {
+            trackEvent('brand_followed', { brandId });
+            Alert.alert('Following!', `You'll get notifications for new ${brand?.name} listings`);
+          },
+        },
+      ]
+    );
+  };
+
   const renderListItem = ({ item, index }: { item: AutoListing; index: number }) => {
-    // Insert native ad every 6 items
-    const showAd = (index + 1) % 6 === 0;
+    const showAd = (index + 1) % 7 === 0;
     
     return (
       <View style={[styles.cardWrapper, index % 2 === 0 ? styles.cardLeft : styles.cardRight]}>
@@ -588,8 +960,8 @@ export default function AutoCategoryScreen() {
           listing={item}
           onPress={() => handleListingPress(item)}
           onFavorite={() => toggleFavorite(item.id)}
-          onChat={() => console.log('Chat')}
-          onCall={() => console.log('Call')}
+          onChat={() => handleChat(item)}
+          onCall={() => handleCall(item)}
           isFavorited={favorites.has(item.id)}
         />
         {showAd && index % 2 === 1 && (
@@ -599,6 +971,20 @@ export default function AutoCategoryScreen() {
         )}
       </View>
     );
+  };
+
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (selectedBrand) count++;
+    if (selectedModel) count++;
+    if (selectedCity) count++;
+    if (filters.priceMin || filters.priceMax) count++;
+    Object.keys(filters).forEach((key) => {
+      if (!['priceMin', 'priceMax'].includes(key) && filters[key as keyof AutoFilters]) {
+        count++;
+      }
+    });
+    return count;
   };
 
   const renderHeader = () => (
@@ -631,17 +1017,8 @@ export default function AutoCategoryScreen() {
         selectedCity={selectedCity}
         nearMeEnabled={nearMeEnabled}
         radius={radius}
-        onSelectCity={() =>
-          Alert.alert(
-            'Select City',
-            'Choose a city',
-            CITIES.slice(0, 6).map((city) => ({
-              text: city,
-              onPress: () => setSelectedCity(city),
-            }))
-          )
-        }
-        onToggleNearMe={() => setNearMeEnabled(!nearMeEnabled)}
+        onSelectCity={() => setShowCityPicker(true)}
+        onToggleNearMe={handleNearMeToggle}
         onChangeRadius={setRadius}
       />
 
@@ -650,16 +1027,30 @@ export default function AutoCategoryScreen() {
         brands={CAR_BRANDS}
         selectedBrand={selectedBrand}
         onSelectBrand={handleBrandSelect}
-        onLongPressBrand={(brandId) => Alert.alert('Follow Brand', `Follow ${brandId} for updates?`)}
+        onLongPressBrand={handleBrandLongPress}
       />
 
       {/* Filter Tabs */}
       <FilterTabs
         tabs={FILTER_TABS.map((tab) => ({
           ...tab,
-          value: tab.id === 'make' && selectedBrand ? selectedBrand : undefined,
+          value: tab.id === 'make' && selectedBrand 
+            ? CAR_BRANDS.find(b => b.id === selectedBrand)?.name 
+            : tab.id === 'model' && selectedModel 
+            ? selectedModel 
+            : tab.id === 'city' && selectedCity
+            ? selectedCity
+            : tab.id === 'price' && (filters.priceMin || filters.priceMax)
+            ? `€${filters.priceMin || 0} - ${filters.priceMax ? '€' + filters.priceMax : 'Any'}`
+            : undefined,
         }))}
-        activeFilters={filters}
+        activeFilters={{ 
+          make: selectedBrand, 
+          model: selectedModel, 
+          city: selectedCity,
+          price: filters.priceMin || filters.priceMax ? true : undefined,
+          ...filters 
+        }}
         onTabPress={handleFilterTabPress}
         onMoreFilters={() => setShowFiltersSheet(true)}
       />
@@ -667,7 +1058,7 @@ export default function AutoCategoryScreen() {
       {/* Explore Cards */}
       <ExploreCards
         cards={EXPLORE_CARDS}
-        onPressCard={(card) => Alert.alert(card.title, card.subtitle)}
+        onPressCard={handleExploreCardPress}
       />
 
       {/* Promoted Dealers Ad */}
@@ -682,7 +1073,10 @@ export default function AutoCategoryScreen() {
           onPressListing={handleListingPress}
           onFavorite={toggleFavorite}
           favorites={favorites}
-          onPressSeeAll={() => console.log('See all featured')}
+          onPressSeeAll={() => {
+            trackEvent('see_all_featured');
+            setSortBy('newest');
+          }}
         />
       )}
 
@@ -694,23 +1088,59 @@ export default function AutoCategoryScreen() {
           onPressListing={handleListingPress}
           onFavorite={toggleFavorite}
           favorites={favorites}
-          onPressSeeAll={() => console.log('See all verified')}
+          onPressSeeAll={() => {
+            trackEvent('see_all_verified');
+            setFilters((prev) => ({ ...prev, verifiedSeller: true }));
+          }}
+        />
+      )}
+
+      {lowMileageListings.length > 0 && (
+        <RecommendationSection
+          title="Low Mileage Cars"
+          icon="speedometer"
+          listings={lowMileageListings}
+          onPressListing={handleListingPress}
+          onFavorite={toggleFavorite}
+          favorites={favorites}
+          onPressSeeAll={() => {
+            trackEvent('see_all_low_mileage');
+            setSortBy('mileage_asc');
+          }}
         />
       )}
 
       {/* Banner Ad */}
       <NativeAdCard type="banner" />
 
-      {/* Section Header */}
+      {/* Section Header with Sort */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>
           All Listings ({filteredListings.length})
         </Text>
-        <TouchableOpacity style={styles.sortButton}>
+        <TouchableOpacity style={styles.sortButton} onPress={() => setShowSortModal(true)}>
           <Ionicons name="swap-vertical" size={16} color={theme.colors.primary} />
-          <Text style={styles.sortText}>Sort</Text>
+          <Text style={styles.sortText}>
+            {sortBy === 'newest' ? 'Newest' : 
+             sortBy === 'price_asc' ? 'Price ↑' : 
+             sortBy === 'price_desc' ? 'Price ↓' : 
+             sortBy === 'mileage_asc' ? 'Mileage ↑' :
+             sortBy === 'year_desc' ? 'Year' : 'Sort'}
+          </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Active Filters Badge */}
+      {getActiveFilterCount() > 0 && (
+        <View style={styles.activeFiltersRow}>
+          <Text style={styles.activeFiltersText}>
+            {getActiveFilterCount()} filter{getActiveFilterCount() > 1 ? 's' : ''} active
+          </Text>
+          <TouchableOpacity onPress={handleClearFilters}>
+            <Text style={styles.clearFiltersText}>Clear All</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 
@@ -728,7 +1158,7 @@ export default function AutoCategoryScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.headerButton}
-            onPress={() => Alert.alert('Safety Tips', 'Always meet in public places and verify seller identity')}
+            onPress={() => Alert.alert('Safety Tips', '• Always meet in public places\n• Verify seller identity\n• Inspect car before payment\n• Use secure payment methods\n• Get a professional inspection')}
           >
             <Ionicons name="shield-checkmark-outline" size={22} color={theme.colors.primary} />
           </TouchableOpacity>
@@ -755,23 +1185,75 @@ export default function AutoCategoryScreen() {
             <Ionicons name="car-outline" size={64} color={theme.colors.outline} />
             <Text style={styles.emptyTitle}>No listings found</Text>
             <Text style={styles.emptySubtitle}>Try adjusting your filters</Text>
+            <TouchableOpacity style={styles.clearButton} onPress={handleClearFilters}>
+              <Text style={styles.clearButtonText}>Clear Filters</Text>
+            </TouchableOpacity>
           </View>
         }
         ListFooterComponent={
           loading ? (
             <ActivityIndicator style={styles.loader} color={theme.colors.primary} />
-          ) : null
+          ) : (
+            <View style={styles.footerPadding} />
+          )
         }
         onEndReachedThreshold={0.5}
       />
 
-      {/* Advanced Filters Sheet */}
+      {/* Modals */}
       <AdvancedFiltersSheet
         visible={showFiltersSheet}
         onClose={() => setShowFiltersSheet(false)}
         filters={filters}
         onApplyFilters={handleApplyFilters}
         onClearFilters={handleClearFilters}
+      />
+
+      <CityPickerModal
+        visible={showCityPicker}
+        onClose={() => setShowCityPicker(false)}
+        selectedCity={selectedCity}
+        onSelectCity={(city) => {
+          setSelectedCity(city);
+          trackEvent('city_selected', { city });
+        }}
+      />
+
+      <PriceRangeModal
+        visible={showPriceRange}
+        onClose={() => setShowPriceRange(false)}
+        minPrice={filters.priceMin}
+        maxPrice={filters.priceMax}
+        onApply={(min, max) => {
+          setFilters((prev) => ({ ...prev, priceMin: min, priceMax: max }));
+          trackEvent('price_range_applied', { min, max });
+        }}
+      />
+
+      <SortModal
+        visible={showSortModal}
+        onClose={() => setShowSortModal(false)}
+        selectedSort={sortBy}
+        onSelectSort={(sort) => {
+          setSortBy(sort);
+          trackEvent('sort_changed', { sort });
+        }}
+      />
+
+      <MakeModelModal
+        visible={showMakeModelModal}
+        onClose={() => setShowMakeModelModal(false)}
+        mode={makeModelMode}
+        selectedMake={selectedBrand}
+        selectedModel={selectedModel}
+        onSelectMake={(make) => {
+          setSelectedBrand(make);
+          trackEvent('make_selected', { make });
+        }}
+        onSelectModel={(model) => {
+          setSelectedModel(model);
+          trackEvent('model_selected', { model });
+        }}
       />
     </SafeAreaView>
   );
@@ -833,11 +1315,36 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    backgroundColor: theme.colors.primaryContainer,
+    borderRadius: theme.borderRadius.full,
   },
   sortText: {
-    fontSize: 14,
+    fontSize: 13,
     color: theme.colors.primary,
     fontWeight: '500',
+  },
+  activeFiltersRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    backgroundColor: theme.colors.primaryContainer,
+    marginHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+  },
+  activeFiltersText: {
+    fontSize: 13,
+    color: theme.colors.primary,
+    fontWeight: '500',
+  },
+  clearFiltersText: {
+    fontSize: 13,
+    color: theme.colors.primary,
+    fontWeight: '600',
   },
   listContent: {
     paddingHorizontal: theme.spacing.md,
@@ -870,7 +1377,22 @@ const styles = StyleSheet.create({
     color: theme.colors.onSurfaceVariant,
     marginTop: theme.spacing.xs,
   },
+  clearButton: {
+    marginTop: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.full,
+  },
+  clearButtonText: {
+    color: theme.colors.onPrimary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
   loader: {
     paddingVertical: theme.spacing.lg,
+  },
+  footerPadding: {
+    height: theme.spacing.xxl,
   },
 });
