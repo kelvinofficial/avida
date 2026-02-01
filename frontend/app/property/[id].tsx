@@ -574,15 +574,15 @@ const verifyStyles = StyleSheet.create({
 });
 
 // ============ OFFER MODAL ============
-const OfferModal = memo<{ visible: boolean; onClose: () => void; property: Property }>(
-  ({ visible, onClose, property }) => {
+const OfferModal = memo<{ visible: boolean; onClose: () => void; property: Property; onSubmit: (price: number, message: string) => void }>(
+  ({ visible, onClose, property, onSubmit }) => {
     const [offerPrice, setOfferPrice] = useState('');
     const [message, setMessage] = useState('');
 
     const handleSubmit = () => {
-      Alert.alert('Offer Sent!', `Your offer of €${offerPrice} has been sent to ${property.seller.name}.`, [
-        { text: 'OK', onPress: onClose },
-      ]);
+      if (offerPrice) {
+        onSubmit(parseInt(offerPrice), message);
+      }
     };
 
     return (
@@ -635,6 +635,151 @@ const OfferModal = memo<{ visible: boolean; onClose: () => void; property: Prope
     );
   }
 );
+
+// ============ BOOKING MODAL ============
+const BookingModal = memo<{ visible: boolean; onClose: () => void; property: Property; onSubmit: (date: string, time: string, phone: string, message: string) => void }>(
+  ({ visible, onClose, property, onSubmit }) => {
+    const [selectedDate, setSelectedDate] = useState('');
+    const [selectedTime, setSelectedTime] = useState('');
+    const [phone, setPhone] = useState('');
+    const [message, setMessage] = useState('');
+
+    const dates = [
+      'Today',
+      'Tomorrow',
+      'This Weekend',
+    ];
+
+    const times = [
+      '09:00', '10:00', '11:00', '12:00',
+      '14:00', '15:00', '16:00', '17:00',
+    ];
+
+    const handleSubmit = () => {
+      if (selectedDate && selectedTime) {
+        onSubmit(selectedDate, selectedTime, phone, message);
+      }
+    };
+
+    return (
+      <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={offerStyles.container}>
+          <View style={offerStyles.header}>
+            <TouchableOpacity onPress={onClose}>
+              <Ionicons name="close" size={24} color={COLORS.text} />
+            </TouchableOpacity>
+            <Text style={offerStyles.headerTitle}>Book a Viewing</Text>
+            <View style={{ width: 24 }} />
+          </View>
+
+          <ScrollView style={offerStyles.content}>
+            <Text style={offerStyles.label}>Preferred Date</Text>
+            <View style={bookingStyles.optionRow}>
+              {dates.map((date) => (
+                <TouchableOpacity
+                  key={date}
+                  style={[bookingStyles.optionChip, selectedDate === date && bookingStyles.optionChipActive]}
+                  onPress={() => setSelectedDate(date)}
+                >
+                  <Text style={[bookingStyles.optionText, selectedDate === date && bookingStyles.optionTextActive]}>{date}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={[offerStyles.label, { marginTop: 20 }]}>Preferred Time</Text>
+            <View style={bookingStyles.timeGrid}>
+              {times.map((time) => (
+                <TouchableOpacity
+                  key={time}
+                  style={[bookingStyles.timeChip, selectedTime === time && bookingStyles.optionChipActive]}
+                  onPress={() => setSelectedTime(time)}
+                >
+                  <Text style={[bookingStyles.optionText, selectedTime === time && bookingStyles.optionTextActive]}>{time}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={[offerStyles.label, { marginTop: 20 }]}>Your Phone Number</Text>
+            <TextInput
+              style={bookingStyles.phoneInput}
+              placeholder="+49 XXX XXXXXXX"
+              keyboardType="phone-pad"
+              value={phone}
+              onChangeText={setPhone}
+            />
+
+            <Text style={[offerStyles.label, { marginTop: 20 }]}>Message (optional)</Text>
+            <TextInput
+              style={offerStyles.messageInput}
+              placeholder="Any special requests or questions..."
+              multiline
+              numberOfLines={3}
+              value={message}
+              onChangeText={setMessage}
+            />
+          </ScrollView>
+
+          <View style={offerStyles.footer}>
+            <TouchableOpacity
+              style={[offerStyles.submitBtn, (!selectedDate || !selectedTime) && offerStyles.submitBtnDisabled]}
+              onPress={handleSubmit}
+              disabled={!selectedDate || !selectedTime}
+            >
+              <Ionicons name="calendar" size={20} color="#fff" />
+              <Text style={[offerStyles.submitText, { marginLeft: 8 }]}>Request Viewing</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </Modal>
+    );
+  }
+);
+
+const bookingStyles = StyleSheet.create({
+  optionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  optionChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: COLORS.background,
+  },
+  optionChipActive: {
+    backgroundColor: COLORS.primary,
+  },
+  optionText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.text,
+  },
+  optionTextActive: {
+    color: '#fff',
+  },
+  timeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  timeChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: COLORS.background,
+    minWidth: 70,
+    alignItems: 'center',
+  },
+  phoneInput: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    height: 48,
+    fontSize: 15,
+  },
+});
 
 const offerStyles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.surface },
