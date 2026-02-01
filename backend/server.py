@@ -1461,10 +1461,20 @@ async def send_auto_message(conversation_id: str, request: Request):
     if not content:
         raise HTTPException(status_code=400, detail="Message content is required")
     
+    # Get conversation first to determine sender context
+    conversation = await db.auto_conversations.find_one({"id": conversation_id})
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
     # Get current user
     user = await get_current_user(request)
-    sender_id = user.get("user_id") if user else f"guest_{uuid.uuid4().hex[:8]}"
-    sender_name = user.get("name") if user else "User"
+    if user:
+        sender_id = user.user_id
+        sender_name = user.name
+    else:
+        # Use the buyer_id from the conversation for consistency
+        sender_id = conversation.get("buyer_id", f"guest_{uuid.uuid4().hex[:8]}")
+        sender_name = conversation.get("buyer_name", "User")
     
     now = datetime.now(timezone.utc)
     message = {
