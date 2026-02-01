@@ -195,8 +195,8 @@ export default function AutoCategoryScreen() {
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
     trackEvent('pull_to_refresh');
-    setTimeout(() => setRefreshing(false), 1000);
-  }, []);
+    fetchListings();
+  }, [fetchListings]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
