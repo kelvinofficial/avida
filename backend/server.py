@@ -1164,7 +1164,7 @@ async def get_recommended_auto(request: Request, limit: int = 10):
 # Chat/Conversation Endpoints for Auto
 @api_router.post("/auto/conversations")
 async def create_auto_conversation(request: Request):
-    """Create a new conversation for an auto listing"""
+    """Create a new conversation for an auto listing with dummy messages"""
     body = await request.json()
     listing_id = body.get("listing_id")
     initial_message = body.get("message", "")
@@ -1179,12 +1179,68 @@ async def create_auto_conversation(request: Request):
     
     # Get current user (or use anonymous)
     user = await get_current_user(request)
-    buyer_id = user.get("user_id") if user else f"guest_{uuid.uuid4().hex[:8]}"
-    buyer_name = user.get("name") if user else "Interested Buyer"
+    buyer_id = user.user_id if user else f"guest_{uuid.uuid4().hex[:8]}"
+    buyer_name = user.name if user else "Interested Buyer"
+    
+    seller_id = listing.get("user_id", "seller_unknown")
+    seller_name = listing.get("seller", {}).get("name", "Seller")
+    seller_phone = listing.get("seller", {}).get("phone", "+49123456789")
     
     # Create conversation
     conversation_id = f"conv_{uuid.uuid4().hex[:12]}"
     now = datetime.now(timezone.utc)
+    
+    # Generate dummy messages for demo
+    dummy_messages = [
+        {
+            "id": f"msg_{uuid.uuid4().hex[:8]}",
+            "sender_id": buyer_id,
+            "sender_name": buyer_name,
+            "content": initial_message if initial_message else f"Hi, I'm interested in the {listing.get('make')} {listing.get('model')}. Is it still available?",
+            "timestamp": now - timedelta(minutes=30),
+            "read": True,
+        },
+        {
+            "id": f"msg_{uuid.uuid4().hex[:8]}",
+            "sender_id": seller_id,
+            "sender_name": seller_name,
+            "content": f"Hello! Yes, the {listing.get('make')} {listing.get('model')} is still available. Would you like to schedule a viewing?",
+            "timestamp": now - timedelta(minutes=25),
+            "read": True,
+        },
+        {
+            "id": f"msg_{uuid.uuid4().hex[:8]}",
+            "sender_id": buyer_id,
+            "sender_name": buyer_name,
+            "content": "That would be great! Is it possible to see it this weekend?",
+            "timestamp": now - timedelta(minutes=20),
+            "read": True,
+        },
+        {
+            "id": f"msg_{uuid.uuid4().hex[:8]}",
+            "sender_id": seller_id,
+            "sender_name": seller_name,
+            "content": "Sure! I'm available Saturday afternoon between 2-5 PM. Does that work for you?",
+            "timestamp": now - timedelta(minutes=15),
+            "read": True,
+        },
+        {
+            "id": f"msg_{uuid.uuid4().hex[:8]}",
+            "sender_id": buyer_id,
+            "sender_name": buyer_name,
+            "content": "Perfect! Saturday at 3 PM works. Can you send me the exact address?",
+            "timestamp": now - timedelta(minutes=10),
+            "read": True,
+        },
+        {
+            "id": f"msg_{uuid.uuid4().hex[:8]}",
+            "sender_id": seller_id,
+            "sender_name": seller_name,
+            "content": f"Great! The address is {listing.get('location', 'Berlin')}. I'll send you the exact location. See you Saturday! 🚗",
+            "timestamp": now - timedelta(minutes=5),
+            "read": False,
+        },
+    ]
     
     conversation = {
         "id": conversation_id,
@@ -1192,30 +1248,18 @@ async def create_auto_conversation(request: Request):
         "listing_title": listing.get("title"),
         "listing_image": listing.get("images", [""])[0] if listing.get("images") else "",
         "listing_price": listing.get("price"),
-        "seller_id": listing.get("user_id"),
-        "seller_name": listing.get("seller", {}).get("name", "Seller"),
-        "seller_phone": listing.get("seller", {}).get("phone", ""),
+        "seller_id": seller_id,
+        "seller_name": seller_name,
+        "seller_phone": seller_phone,
         "buyer_id": buyer_id,
         "buyer_name": buyer_name,
-        "messages": [],
-        "last_message": initial_message if initial_message else "Started conversation",
+        "messages": dummy_messages,
+        "last_message": dummy_messages[-1]["content"],
         "last_message_at": now,
-        "created_at": now,
+        "created_at": now - timedelta(minutes=30),
         "updated_at": now,
-        "unread_count": 0,
+        "unread_count": 1,
     }
-    
-    # Add initial message if provided
-    if initial_message:
-        conversation["messages"].append({
-            "id": f"msg_{uuid.uuid4().hex[:8]}",
-            "sender_id": buyer_id,
-            "sender_name": buyer_name,
-            "content": initial_message,
-            "timestamp": now,
-            "read": False,
-        })
-        conversation["unread_count"] = 1
     
     await db.auto_conversations.insert_one(conversation)
     
