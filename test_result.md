@@ -107,75 +107,93 @@ user_problem_statement: "Build a production-ready local classifieds marketplace 
 backend:
   - task: "Health check API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Basic health check endpoint at /api/ and /api/health implemented"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Both GET /api/ and GET /api/health endpoints working correctly. Return proper JSON responses with status information."
 
   - task: "Categories API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "GET /api/categories returns all 9 categories with subcategories and attributes"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: GET /api/categories returns 9 categories with proper structure (id, name, icon, subcategories, attributes). GET /api/categories/{id} works for individual categories."
 
   - task: "Listings CRUD API"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "POST/GET/PUT/DELETE endpoints for listings with filtering, pagination, and search"
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE: POST /api/listings fails with 520 Internal Server Error due to BSON ObjectId serialization error. GET /api/listings and filtering work correctly. GET /api/listings/my works. Root cause: Backend tries to serialize MongoDB ObjectId which is not JSON serializable. Error: 'Unable to serialize unknown type: <class 'bson.objectid.ObjectId'>'"
 
   - task: "Auth API (Emergent Google OAuth)"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "POST /api/auth/session for session exchange, GET /api/auth/me for current user, POST /api/auth/logout"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: GET /api/auth/me works correctly with session token authentication. POST /api/auth/logout works. POST /api/auth/session correctly returns 401 for invalid session (expected behavior). Session-based authentication is functional."
 
   - task: "Favorites API"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "POST/DELETE /api/favorites/{listing_id}, GET /api/favorites"
+      - working: false
+        agent: "testing"
+        comment: "❌ ISSUE: Favorites API endpoints return 401 'Not authenticated' even with valid session token. Authentication middleware may have issues with session persistence after logout testing. GET /api/favorites, POST /api/favorites/{id}, DELETE /api/favorites/{id} all fail with 401."
 
   - task: "Conversations/Messages API"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "CRUD for conversations and messages with Socket.IO for real-time"
+      - working: false
+        agent: "testing"
+        comment: "❌ ISSUE: GET /api/conversations returns 401 'Not authenticated'. POST /api/conversations has parameter validation issue (422 error for missing listing_id query parameter). Authentication and parameter handling need fixes."
 
 frontend:
   - task: "Home screen with listings grid"
