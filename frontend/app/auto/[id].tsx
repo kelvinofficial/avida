@@ -65,6 +65,32 @@ export default function AutoListingDetailScreen() {
     return new Intl.NumberFormat('de-DE').format(mileage) + ' km';
   };
 
+  const handleToggleFavorite = async () => {
+    if (!listing) return;
+    
+    const wasiFavorited = isFavorited;
+    setIsFavorited(!isFavorited); // Optimistic update
+    
+    try {
+      if (wasiFavorited) {
+        await api.delete(`/auto/favorites/${listing.id}`);
+      } else {
+        await api.post(`/auto/favorites/${listing.id}`);
+        Alert.alert('Saved!', 'This listing has been added to your favorites.');
+      }
+    } catch (error: any) {
+      setIsFavorited(wasiFavorited); // Revert on error
+      if (error.response?.status === 401) {
+        Alert.alert('Login Required', 'Please login to save favorites.', [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Login', onPress: () => router.push('/login') },
+        ]);
+      } else {
+        console.error('Error toggling favorite:', error);
+      }
+    }
+  };
+
   const handleShare = async () => {
     if (!listing) return;
     try {
@@ -79,19 +105,7 @@ export default function AutoListingDetailScreen() {
   const handleCall = () => {
     if (!listing) return;
     const phone = listing.seller?.phone || '+4912345678';
-    Alert.alert(
-      'Call Seller',
-      `Call ${listing.seller?.name}?\n\n${phone}`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Call', 
-          onPress: () => {
-            Linking.openURL(`tel:${phone}`);
-          }
-        },
-      ]
-    );
+    Linking.openURL(`tel:${phone}`);
   };
 
   const handleChat = async () => {
