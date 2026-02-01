@@ -436,6 +436,11 @@ export default function AutoChatScreen() {
               </Text>
             </View>
           }
+          ListFooterComponent={
+            isSellerTyping ? (
+              <TypingIndicator sellerName={conversation?.seller_name || 'Seller'} />
+            ) : null
+          }
         />
 
         {/* Quick Replies */}
