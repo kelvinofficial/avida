@@ -1367,6 +1367,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.md,
     paddingBottom: theme.spacing.xl,
   },
+  listItemWrapper: {
+    marginBottom: theme.spacing.xs,
+  },
   cardWrapper: {
     flex: 1,
   },
