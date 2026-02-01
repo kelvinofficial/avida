@@ -1503,6 +1503,41 @@ async def send_auto_message(conversation_id: str, request: Request):
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Conversation not found")
     
+    # Simulate seller auto-reply after a short delay (for demo purposes)
+    # In production, this would be handled by actual sellers
+    import random
+    auto_replies = [
+        "Thanks for your message! I'll get back to you shortly. 👍",
+        "Got it! Let me check and I'll reply soon.",
+        "Noted! I'm currently with another customer but will respond within the hour.",
+        "Thank you for your interest! What specific questions do you have?",
+        "Hi! Yes, the car is still available. When would you like to view it?",
+        "Great question! Let me find that information for you.",
+        "I appreciate your message. The vehicle has been very well maintained! 🚗",
+        "Thanks! Feel free to call me directly if you'd like to discuss further.",
+    ]
+    
+    # 70% chance of auto-reply for demo
+    if random.random() < 0.7:
+        seller_reply = {
+            "id": f"msg_{uuid.uuid4().hex[:8]}",
+            "sender_id": conversation.get("seller_id"),
+            "sender_name": conversation.get("seller_name"),
+            "content": random.choice(auto_replies),
+            "timestamp": now + timedelta(seconds=2),
+            "read": False,
+        }
+        await db.auto_conversations.update_one(
+            {"id": conversation_id},
+            {
+                "$push": {"messages": seller_reply},
+                "$set": {
+                    "last_message": seller_reply["content"],
+                    "last_message_at": seller_reply["timestamp"],
+                },
+            }
+        )
+    
     return message
 
 @api_router.get("/auto/popular-searches")
