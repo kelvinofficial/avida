@@ -537,8 +537,9 @@ async def create_listing(listing: ListingCreate, request: Request):
         raise HTTPException(status_code=400, detail="Invalid category")
     
     # Create listing
+    listing_id = str(uuid.uuid4())
     new_listing = {
-        "id": str(uuid.uuid4()),
+        "id": listing_id,
         "user_id": user.user_id,
         "title": listing.title,
         "description": listing.description,
@@ -559,7 +560,9 @@ async def create_listing(listing: ListingCreate, request: Request):
     }
     
     await db.listings.insert_one(new_listing)
-    return new_listing
+    # Return the listing without _id
+    created_listing = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+    return created_listing
 
 @api_router.get("/listings")
 async def get_listings(
