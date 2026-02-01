@@ -219,7 +219,7 @@ export default function AutoListingDetailScreen() {
             <Ionicons name="share-outline" size={24} color={theme.colors.onSurface} />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => setIsFavorited(!isFavorited)}
+            onPress={handleToggleFavorite}
             style={styles.headerButton}
           >
             <Ionicons
