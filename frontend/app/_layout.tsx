@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View, ActivityIndicator, Platform } from 'react-native';
+import { View, ActivityIndicator, Platform, Text } from 'react-native';
 import * as Linking from 'expo-linking';
-import * as WebBrowser from 'expo-web-browser';
 import { useAuthStore, saveUserData } from '../src/store/authStore';
 import { authApi } from '../src/utils/api';
 import { theme } from '../src/utils/theme';
@@ -11,13 +10,17 @@ import { theme } from '../src/utils/theme';
 export default function RootLayout() {
   const { loadStoredAuth, isLoading, setUser, setToken } = useAuthStore();
   const [processingAuth, setProcessingAuth] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     loadStoredAuth();
   }, []);
 
   // Handle deep link auth callback
   useEffect(() => {
+    if (!mounted) return;
+    
     const handleUrl = async (url: string) => {
       if (!url) return;
       
@@ -59,24 +62,24 @@ export default function RootLayout() {
 
     // Web: Check hash on mount
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      const hash = window.location.hash;
-      const search = window.location.search;
       const fullUrl = window.location.href;
       handleUrl(fullUrl);
       
       // Clean URL after processing
-      if (hash.includes('session_id') || search.includes('session_id')) {
+      if (fullUrl.includes('session_id')) {
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
 
     return () => subscription.remove();
-  }, [processingAuth]);
+  }, [mounted, processingAuth]);
 
-  if (isLoading || processingAuth) {
+  // Show loading only briefly
+  if (!mounted || (isLoading && !processingAuth)) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text style={{ marginTop: 16, color: theme.colors.onSurfaceVariant }}>Loading...</Text>
       </View>
     );
   }
