@@ -726,7 +726,7 @@ export default function PropertyScreen() {
       if (filters.type) params.property_type = filters.type;
       if (searchQuery) params.search = searchQuery;
       
-      const response = await axios.get(`${API_URL}/api/property/listings`, { params });
+      const response = await api.get('/property/listings', { params });
       setProperties(response.data.listings || []);
     } catch (error) {
       console.error('Error fetching properties:', error);
@@ -738,7 +738,7 @@ export default function PropertyScreen() {
   // Fetch type counts
   const fetchTypeCounts = useCallback(async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/property/type-counts`, {
+      const response = await api.get('/property/type-counts', {
         params: { purpose }
       });
       setTypeCounts(response.data || {});
