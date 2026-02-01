@@ -378,7 +378,11 @@ export default function AutoChatScreen() {
             <Text style={styles.headerName} numberOfLines={1}>
               {conversation?.seller_name || title || 'Seller'}
             </Text>
-            <Text style={styles.headerStatus}>Active now</Text>
+            {isSellerTyping ? (
+              <Text style={styles.headerTyping}>typing...</Text>
+            ) : (
+              <Text style={styles.headerStatus}>Active now</Text>
+            )}
           </View>
         </View>
 
