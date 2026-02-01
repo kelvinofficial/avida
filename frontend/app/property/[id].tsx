@@ -691,21 +691,107 @@ export default function PropertyDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [property, setProperty] = useState<Property | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
 
-  useEffect(() => {
-    const found = MOCK_PROPERTIES.find((p) => p.id === id);
-    if (found) {
-      setProperty(found);
+  // Fetch property from API
+  const fetchProperty = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/api/property/listings/${id}`);
+      setProperty(response.data);
+    } catch (error) {
+      console.error('Error fetching property:', error);
+      Alert.alert('Error', 'Failed to load property details');
+    } finally {
+      setLoading(false);
     }
   }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchProperty();
+    }
+  }, [id, fetchProperty]);
+
+  // Toggle favorite
+  const handleToggleFavorite = async () => {
+    if (!property) return;
+    
+    try {
+      if (isFavorited) {
+        await axios.delete(`${API_URL}/api/property/favorites/${property.id}`);
+      } else {
+        await axios.post(`${API_URL}/api/property/favorites/${property.id}`);
+      }
+      setIsFavorited(!isFavorited);
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      // Optimistic update
+      setIsFavorited(!isFavorited);
+    }
+  };
+
+  // Submit offer
+  const handleSubmitOffer = async (offeredPrice: number, message: string) => {
+    if (!property) return;
+    
+    try {
+      await axios.post(`${API_URL}/api/property/offers`, {
+        propertyId: property.id,
+        offeredPrice,
+        message,
+      });
+      Alert.alert('Offer Sent!', `Your offer of €${offeredPrice.toLocaleString()} has been sent to ${property.seller.name}.`);
+      setShowOfferModal(false);
+    } catch (error) {
+      console.error('Error submitting offer:', error);
+      Alert.alert('Error', 'Failed to submit offer. Please try again.');
+    }
+  };
+
+  // Book viewing
+  const handleBookViewing = async (date: string, time: string, phone: string, message: string) => {
+    if (!property) return;
+    
+    try {
+      await axios.post(`${API_URL}/api/property/book-viewing`, {
+        propertyId: property.id,
+        preferredDate: date,
+        preferredTime: time,
+        userPhone: phone,
+        message,
+      });
+      Alert.alert('Viewing Booked!', `Your viewing request for ${date} at ${time} has been sent to ${property.seller.name}.`);
+      setShowBookingModal(false);
+    } catch (error) {
+      console.error('Error booking viewing:', error);
+      Alert.alert('Error', 'Failed to book viewing. Please try again.');
+    }
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loading}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Loading property...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (!property) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loading}>
-          <Text style={styles.loadingText}>Loading...</Text>
+          <Ionicons name="home-outline" size={48} color={COLORS.textSecondary} />
+          <Text style={styles.loadingText}>Property not found</Text>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Text style={styles.backButtonText}>Go Back</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
