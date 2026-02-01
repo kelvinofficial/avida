@@ -155,8 +155,8 @@ export default function BoostPropertyScreen() {
     try {
       setLoading(true);
       const [propertyRes, pricesRes] = await Promise.all([
-        axios.get(`${API_URL}/api/property/listings/${id}`),
-        axios.get(`${API_URL}/api/property/boost-prices`),
+        api.get(`/property/listings/${id}`),
+        api.get('/property/boost-prices'),
       ]);
       
       setProperty(propertyRes.data);
