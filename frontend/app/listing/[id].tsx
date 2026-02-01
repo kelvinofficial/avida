@@ -752,17 +752,33 @@ export default function ListingDetailScreen() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Bottom Actions */}
+      {/* Bottom Actions - Dynamic based on seller preferences */}
       {listing.user_id !== user?.user_id && (
         <View style={styles.bottomActions}>
+          {/* Chat button - Always shown */}
           <TouchableOpacity style={styles.actionBtn} onPress={handleChat}>
             <Ionicons name="chatbubble-outline" size={20} color={COLORS.primary} />
             <Text style={styles.actionText}>Chat</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionBtn, styles.primaryBtn]} onPress={handleChat}>
-            <Ionicons name="send" size={20} color="#fff" />
-            <Text style={[styles.actionText, { color: '#fff' }]}>Send Message</Text>
-          </TouchableOpacity>
+          
+          {/* Make Offer button - Only if seller allows offers */}
+          {listing.seller?.allowsOffers && (
+            <TouchableOpacity style={[styles.actionBtn, styles.primaryBtn]} onPress={() => setShowOfferModal(true)}>
+              <Ionicons name="pricetag" size={20} color="#fff" />
+              <Text style={[styles.actionText, { color: '#fff' }]}>Make Offer</Text>
+            </TouchableOpacity>
+          )}
+          
+          {/* Contact button - WhatsApp OR Call based on preference */}
+          {listing.seller?.preferredContact === 'call' ? (
+            <TouchableOpacity style={styles.iconOnlyBtn} onPress={handleCall}>
+              <Ionicons name="call" size={22} color={COLORS.primary} />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={[styles.iconOnlyBtn, { backgroundColor: '#25D366', borderColor: '#25D366' }]} onPress={handleWhatsApp}>
+              <Ionicons name="logo-whatsapp" size={22} color="#fff" />
+            </TouchableOpacity>
+          )}
         </View>
       )}
 
@@ -772,6 +788,54 @@ export default function ListingDetailScreen() {
         onClose={() => setShowReportModal(false)}
         onReport={handleReport}
       />
+
+      {/* Offer Modal */}
+      <Modal visible={showOfferModal} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setShowOfferModal(false)}>
+              <Ionicons name="close" size={24} color={COLORS.text} />
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Make an Offer</Text>
+            <View style={{ width: 24 }} />
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            <Text style={styles.modalLabel}>Your Offer</Text>
+            <View style={styles.priceInputContainer}>
+              <Text style={styles.currencySymbol}>€</Text>
+              <TextInput
+                style={styles.priceInput}
+                placeholder="Enter amount"
+                keyboardType="numeric"
+                value={offerPrice}
+                onChangeText={setOfferPrice}
+              />
+            </View>
+            <Text style={styles.priceHint}>Listed price: {formatPrice(listing.price)}</Text>
+
+            <Text style={[styles.modalLabel, { marginTop: 20 }]}>Message (optional)</Text>
+            <TextInput
+              style={styles.messageInput}
+              placeholder="Add a message to the seller..."
+              multiline
+              numberOfLines={4}
+              value={offerMessage}
+              onChangeText={setOfferMessage}
+            />
+          </ScrollView>
+
+          <View style={styles.modalFooter}>
+            <TouchableOpacity
+              style={[styles.submitBtn, !offerPrice && styles.submitBtnDisabled]}
+              onPress={handleSubmitOffer}
+              disabled={!offerPrice}
+            >
+              <Text style={styles.submitBtnText}>Submit Offer</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
