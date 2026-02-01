@@ -1257,7 +1257,7 @@ export default function PropertyDetailScreen() {
         <MapSection property={property} />
 
         {/* Similar Listings */}
-        <SimilarListings propertyId={property.id} />
+        <SimilarListings propertyId={property.id} category="property" />
 
         {/* Spacer for bottom actions */}
         <View style={{ height: 120 }} />
