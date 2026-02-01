@@ -899,7 +899,7 @@ export default function AutoCategoryScreen() {
 
   const handleListingPress = (listing: AutoListing) => {
     trackEvent('listing_view', { listingId: listing.id, title: listing.title });
-    router.push(`/listing/${listing.id}`);
+    router.push(`/auto/${listing.id}`);
   };
 
   const handleChat = (listing: AutoListing) => {
