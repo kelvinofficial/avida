@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -34,6 +35,7 @@ export default function HomeScreen() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [location, setLocation] = useState('Berlin');
 
   const fetchData = useCallback(async (refresh = false) => {
     try {
@@ -113,64 +115,57 @@ export default function HomeScreen() {
   };
 
   const renderHeader = () => (
-    <View style={styles.header}>
-      <View style={styles.headerTop}>
-        <View>
-          <Text style={styles.appName}>LocalMarket</Text>
-          <Text style={styles.tagline}>Buy & Sell Nearby</Text>
-        </View>
+    <View>
+      {/* Search Section */}
+      <View style={styles.searchSection}>
         <TouchableOpacity
-          style={styles.notificationButton}
-          onPress={() => isAuthenticated ? router.push('/(tabs)/messages') : router.push('/login')}
+          style={styles.searchBar}
+          onPress={() => router.push('/(tabs)/search')}
+          activeOpacity={0.8}
         >
-          <Ionicons name="notifications-outline" size={24} color={theme.colors.onSurface} />
+          <Ionicons name="search" size={20} color={theme.colors.onSurfaceVariant} />
+          <Text style={styles.searchPlaceholder}>Search in your area</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.locationButton}>
+          <Ionicons name="location" size={16} color={theme.colors.primary} />
+          <Text style={styles.locationText}>{location}</Text>
+          <Ionicons name="chevron-down" size={16} color={theme.colors.onSurfaceVariant} />
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity
-        style={styles.searchBar}
-        onPress={() => router.push('/(tabs)/search')}
-        activeOpacity={0.8}
-      >
-        <Ionicons name="search" size={20} color={theme.colors.onSurfaceVariant} />
-        <Text style={styles.searchPlaceholder}>Search for anything...</Text>
-      </TouchableOpacity>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.categoriesContainer}
-      >
-        <TouchableOpacity
-          style={[
-            styles.allCategoryChip,
-            !selectedCategory && styles.allCategoryChipSelected,
-          ]}
-          onPress={() => setSelectedCategory(null)}
+      {/* Categories */}
+      <View style={styles.categoriesSection}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoriesContainer}
         >
-          <Ionicons
-            name="apps"
-            size={18}
-            color={!selectedCategory ? theme.colors.onPrimary : theme.colors.primary}
-          />
-          <Text
-            style={[
-              styles.allCategoryText,
-              !selectedCategory && styles.allCategoryTextSelected,
-            ]}
-          >
-            All
-          </Text>
+          {categories.map((cat) => (
+            <CategoryChip
+              key={cat.id}
+              category={cat}
+              selected={selectedCategory === cat.id}
+              onPress={() => setSelectedCategory(cat.id === selectedCategory ? null : cat.id)}
+            />
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Gallery Header */}
+      <View style={styles.galleryHeader}>
+        <View style={styles.galleryTitleRow}>
+          <Text style={styles.galleryTitle}>Gallery</Text>
+          <Text style={styles.listingCount}>{listings.length} listings</Text>
+        </View>
+        <TouchableOpacity 
+          style={styles.filterButton}
+          onPress={() => router.push('/(tabs)/search')}
+        >
+          <Ionicons name="options-outline" size={18} color={theme.colors.primary} />
+          <Text style={styles.filterText}>Filter</Text>
         </TouchableOpacity>
-        {categories.map((cat) => (
-          <CategoryChip
-            key={cat.id}
-            category={cat}
-            selected={selectedCategory === cat.id}
-            onPress={() => setSelectedCategory(cat.id === selectedCategory ? null : cat.id)}
-          />
-        ))}
-      </ScrollView>
+      </View>
     </View>
   );
 
@@ -241,76 +236,88 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  header: {
-    paddingHorizontal: theme.spacing.md,
-    paddingBottom: theme.spacing.md,
+  searchSection: {
     backgroundColor: theme.colors.surface,
-    ...theme.elevation.level1,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.md,
-  },
-  appName: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-  tagline: {
-    fontSize: 12,
-    color: theme.colors.onSurfaceVariant,
-  },
-  notificationButton: {
-    width: 44,
-    height: 44,
-    borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.surfaceVariant,
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.outlineVariant,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.surfaceVariant,
-    borderRadius: theme.borderRadius.full,
+    borderRadius: theme.borderRadius.lg,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm + 4,
-    marginBottom: theme.spacing.md,
     gap: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
   },
   searchPlaceholder: {
-    fontSize: 14,
+    fontSize: 15,
     color: theme.colors.onSurfaceVariant,
+    flex: 1,
+  },
+  locationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'flex-start',
+  },
+  locationText: {
+    fontSize: 14,
+    color: theme.colors.onSurface,
+    fontWeight: '500',
+  },
+  categoriesSection: {
+    backgroundColor: theme.colors.surface,
+    paddingVertical: theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.outlineVariant,
   },
   categoriesContainer: {
-    paddingRight: theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
   },
-  allCategoryChip: {
+  galleryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
+    marginBottom: theme.spacing.sm,
+  },
+  galleryTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: theme.spacing.sm,
+  },
+  galleryTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: theme.colors.onSurface,
+  },
+  listingCount: {
+    fontSize: 13,
+    color: theme.colors.onSurfaceVariant,
+  },
+  filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.primaryContainer,
-    borderRadius: theme.borderRadius.full,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
-    marginRight: theme.spacing.sm,
-    gap: theme.spacing.xs,
+    borderRadius: theme.borderRadius.full,
+    gap: 6,
   },
-  allCategoryChipSelected: {
-    backgroundColor: theme.colors.primary,
-  },
-  allCategoryText: {
-    fontSize: 13,
-    fontWeight: '500',
+  filterText: {
+    fontSize: 14,
     color: theme.colors.primary,
-  },
-  allCategoryTextSelected: {
-    color: theme.colors.onPrimary,
+    fontWeight: '600',
   },
   listContent: {
     paddingHorizontal: theme.spacing.md,
-    paddingBottom: theme.spacing.xl,
+    paddingBottom: 100,
   },
   cardWrapper: {
     flex: 1,
