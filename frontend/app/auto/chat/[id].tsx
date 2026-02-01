@@ -256,7 +256,6 @@ export default function AutoChatScreen() {
           console.error('Error fetching updated messages:', err);
         }
       }, 2500); // Typing for ~1.7 seconds before reply appears
-      }, 500);
       
     } catch (error) {
       console.error('Error sending message:', error);
