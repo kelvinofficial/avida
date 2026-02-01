@@ -573,6 +573,192 @@ const verifyStyles = StyleSheet.create({
   },
 });
 
+// ============ MAP PLACEHOLDER SECTION ============
+const MapSection = memo<{ property: Property }>(({ property }) => (
+  <View style={mapStyles.container}>
+    <Text style={mapStyles.title}>Location</Text>
+    
+    {/* Map Placeholder */}
+    <View style={mapStyles.mapPlaceholder}>
+      <View style={mapStyles.mapContent}>
+        <Ionicons name="map" size={40} color={COLORS.primary} />
+        <Text style={mapStyles.mapText}>{property.location.area}, {property.location.city}</Text>
+        <Text style={mapStyles.mapSubtext}>{property.location.country}</Text>
+      </View>
+      
+      {/* Map Pin Overlay */}
+      <View style={mapStyles.pinOverlay}>
+        <View style={mapStyles.pin}>
+          <Ionicons name="location" size={24} color="#fff" />
+        </View>
+      </View>
+      
+      {/* Fake Map Grid Lines */}
+      <View style={mapStyles.gridLines}>
+        {[...Array(5)].map((_, i) => (
+          <View key={`h-${i}`} style={[mapStyles.gridLine, { top: `${(i + 1) * 20}%` }]} />
+        ))}
+        {[...Array(5)].map((_, i) => (
+          <View key={`v-${i}`} style={[mapStyles.gridLineVertical, { left: `${(i + 1) * 20}%` }]} />
+        ))}
+      </View>
+    </View>
+    
+    {/* Address Details */}
+    <View style={mapStyles.addressBox}>
+      <Ionicons name="location-outline" size={20} color={COLORS.primary} />
+      <View style={mapStyles.addressText}>
+        <Text style={mapStyles.addressMain}>
+          {property.location.address || property.location.area}
+        </Text>
+        <Text style={mapStyles.addressSub}>
+          {property.location.city}, {property.location.country}
+        </Text>
+        {property.location.landmark && (
+          <Text style={mapStyles.landmark}>Near: {property.location.landmark}</Text>
+        )}
+      </View>
+    </View>
+    
+    {/* Action Buttons */}
+    <View style={mapStyles.actions}>
+      <TouchableOpacity style={mapStyles.actionBtn}>
+        <Ionicons name="navigate-outline" size={18} color={COLORS.primary} />
+        <Text style={mapStyles.actionText}>Get Directions</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={mapStyles.actionBtn}>
+        <Ionicons name="share-outline" size={18} color={COLORS.primary} />
+        <Text style={mapStyles.actionText}>Share Location</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+));
+
+const mapStyles = StyleSheet.create({
+  container: {
+    backgroundColor: COLORS.surface,
+    padding: HORIZONTAL_PADDING,
+    marginBottom: 8,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 16,
+  },
+  mapPlaceholder: {
+    height: 180,
+    backgroundColor: '#E8F5E9',
+    borderRadius: 12,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  mapContent: {
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  mapText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.primary,
+    marginTop: 8,
+  },
+  mapSubtext: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  pinOverlay: {
+    position: 'absolute',
+    top: '30%',
+    alignSelf: 'center',
+  },
+  pin: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  gridLines: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  gridLine: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: 'rgba(46, 125, 50, 0.1)',
+  },
+  gridLineVertical: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 1,
+    backgroundColor: 'rgba(46, 125, 50, 0.1)',
+  },
+  addressBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginTop: 16,
+    padding: 14,
+    backgroundColor: COLORS.background,
+    borderRadius: 10,
+  },
+  addressText: {
+    flex: 1,
+  },
+  addressMain: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  addressSub: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  landmark: {
+    fontSize: 12,
+    color: COLORS.primary,
+    marginTop: 4,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 12,
+  },
+  actionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    gap: 6,
+  },
+  actionText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+});
+
 // ============ OFFER MODAL ============
 const OfferModal = memo<{ visible: boolean; onClose: () => void; property: Property; onSubmit: (price: number, message: string) => void }>(
   ({ visible, onClose, property, onSubmit }) => {
