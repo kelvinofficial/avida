@@ -1,29 +1,383 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  Image,
   TouchableOpacity,
+  Image,
   Dimensions,
-  Linking,
   Alert,
+  Linking,
   Share,
+  TextInput,
+  Modal,
   FlatList,
   ActivityIndicator,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../src/utils/theme';
-import { AutoListing } from '../../src/types/auto';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { api } from '../../src/utils/api';
+import { AutoListing } from '../../src/types/auto';
 import { ImageViewerModal } from '../../src/components/auto/ImageViewerModal';
+import SimilarListings from '../../src/components/property/SimilarListings';
 
-const { width } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const HORIZONTAL_PADDING = 16;
 
+const COLORS = {
+  primary: '#2E7D32',
+  primaryLight: '#E8F5E9',
+  surface: '#FFFFFF',
+  background: '#F5F5F5',
+  text: '#1A1A1A',
+  textSecondary: '#666666',
+  border: '#E0E0E0',
+  error: '#D32F2F',
+  warning: '#F57C00',
+  verified: '#1565C0',
+  gold: '#FFB800',
+};
+
+// Generate highlights from listing data
+const generateHighlights = (listing: AutoListing) => {
+  const highlights: { id: string; icon: string; label: string }[] = [];
+  
+  if (listing.condition === 'new') {
+    highlights.push({ id: 'new', icon: 'sparkles', label: 'Brand New' });
+  }
+  if (listing.accidentFree) {
+    highlights.push({ id: 'accident_free', icon: 'shield-checkmark', label: 'Accident Free' });
+  }
+  if (listing.inspectionAvailable) {
+    highlights.push({ id: 'inspection', icon: 'document-text', label: 'Inspection Report' });
+  }
+  if (listing.financingAvailable) {
+    highlights.push({ id: 'financing', icon: 'card', label: 'Financing Available' });
+  }
+  if (listing.exchangePossible) {
+    highlights.push({ id: 'exchange', icon: 'repeat', label: 'Exchange OK' });
+  }
+  if (listing.seller?.verified) {
+    highlights.push({ id: 'verified', icon: 'checkmark-circle', label: 'Verified Seller' });
+  }
+  
+  return highlights.slice(0, 6);
+};
+
+// ============ IMAGE CAROUSEL ============
+const ImageCarousel = memo(({ 
+  images, 
+  onImagePress, 
+  badges 
+}: { 
+  images: string[]; 
+  onImagePress: (index: number) => void; 
+  badges: { featured?: boolean; boosted?: boolean };
+}) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  return (
+    <View style={carouselStyles.container}>
+      <FlatList
+        data={images.length > 0 ? images : ['placeholder']}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={(e) => {
+          const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+          setCurrentIndex(index);
+        }}
+        renderItem={({ item, index }) => (
+          <TouchableOpacity activeOpacity={0.95} onPress={() => onImagePress(index)}>
+            {item === 'placeholder' ? (
+              <View style={[carouselStyles.image, carouselStyles.placeholder]}>
+                <Ionicons name="car" size={64} color={COLORS.textSecondary} />
+              </View>
+            ) : (
+              <Image source={{ uri: item }} style={carouselStyles.image} resizeMode="cover" />
+            )}
+          </TouchableOpacity>
+        )}
+        keyExtractor={(_, index) => index.toString()}
+      />
+      
+      {/* Badges */}
+      <View style={carouselStyles.badgeRow}>
+        {badges.featured && (
+          <View style={[carouselStyles.badge, { backgroundColor: COLORS.gold }]}>
+            <Ionicons name="star" size={12} color="#fff" />
+            <Text style={carouselStyles.badgeText}>Featured</Text>
+          </View>
+        )}
+        {badges.boosted && (
+          <View style={[carouselStyles.badge, { backgroundColor: COLORS.primary }]}>
+            <Ionicons name="rocket" size={12} color="#fff" />
+            <Text style={carouselStyles.badgeText}>Boosted</Text>
+          </View>
+        )}
+      </View>
+      
+      {/* Image Count */}
+      {images.length > 0 && (
+        <View style={carouselStyles.imageCount}>
+          <Ionicons name="camera" size={14} color="#fff" />
+          <Text style={carouselStyles.imageCountText}>{currentIndex + 1}/{images.length}</Text>
+        </View>
+      )}
+      
+      {/* Zoom Hint */}
+      <View style={carouselStyles.zoomHint}>
+        <Ionicons name="expand" size={14} color="#fff" />
+        <Text style={carouselStyles.zoomHintText}>Tap to zoom</Text>
+      </View>
+      
+      {/* Indicators */}
+      {images.length > 1 && (
+        <View style={carouselStyles.indicators}>
+          {images.map((_, index) => (
+            <View
+              key={index}
+              style={[carouselStyles.indicator, currentIndex === index && carouselStyles.indicatorActive]}
+            />
+          ))}
+        </View>
+      )}
+    </View>
+  );
+});
+
+const carouselStyles = StyleSheet.create({
+  container: { position: 'relative', height: 280, backgroundColor: COLORS.background },
+  image: { width: SCREEN_WIDTH, height: 280 },
+  placeholder: { justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
+  badgeRow: { position: 'absolute', top: 12, left: 12, flexDirection: 'row', gap: 8 },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6 },
+  badgeText: { fontSize: 11, fontWeight: '700', color: '#fff' },
+  imageCount: { position: 'absolute', top: 12, right: 12, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12 },
+  imageCountText: { fontSize: 12, color: '#fff', fontWeight: '600' },
+  zoomHint: { position: 'absolute', bottom: 40, right: 12, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
+  zoomHintText: { fontSize: 11, color: '#fff' },
+  indicators: { position: 'absolute', bottom: 12, alignSelf: 'center', flexDirection: 'row', gap: 6 },
+  indicator: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.5)' },
+  indicatorActive: { backgroundColor: '#fff', width: 20 },
+});
+
+// ============ HIGHLIGHTS SECTION ============
+const HighlightsSection = memo(({ highlights }: { highlights: { id: string; icon: string; label: string }[] }) => {
+  if (highlights.length === 0) return null;
+  
+  return (
+    <View style={highlightStyles.container}>
+      <Text style={highlightStyles.title}>Vehicle Highlights</Text>
+      <View style={highlightStyles.grid}>
+        {highlights.map((item) => (
+          <View key={item.id} style={highlightStyles.item}>
+            <View style={highlightStyles.iconContainer}>
+              <Ionicons name={item.icon as any} size={18} color={COLORS.primary} />
+            </View>
+            <Text style={highlightStyles.label}>{item.label}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+});
+
+const highlightStyles = StyleSheet.create({
+  container: { backgroundColor: COLORS.surface, padding: HORIZONTAL_PADDING, marginBottom: 8 },
+  title: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 14 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  item: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: COLORS.primaryLight, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 },
+  iconContainer: { width: 24, height: 24, borderRadius: 12, backgroundColor: COLORS.surface, justifyContent: 'center', alignItems: 'center' },
+  label: { fontSize: 12, fontWeight: '600', color: COLORS.primary },
+});
+
+// ============ KEY DETAILS SECTION ============
+const KeyDetailsSection = memo(({ listing }: { listing: AutoListing }) => {
+  const formatMileage = (mileage: number) => new Intl.NumberFormat('de-DE').format(mileage) + ' km';
+  
+  const details = [
+    { label: 'Make', value: listing.make, icon: 'car-sport-outline' },
+    { label: 'Model', value: listing.model, icon: 'car-outline' },
+    { label: 'Year', value: listing.year?.toString(), icon: 'calendar-outline' },
+    { label: 'Mileage', value: formatMileage(listing.mileage || 0), icon: 'speedometer-outline' },
+    { label: 'Fuel Type', value: listing.fuelType, icon: 'flash-outline' },
+    { label: 'Transmission', value: listing.transmission, icon: 'cog-outline' },
+    { label: 'Body Type', value: listing.bodyType, icon: 'cube-outline' },
+    { label: 'Condition', value: listing.condition === 'new' ? 'New' : 'Used', icon: 'checkmark-circle-outline' },
+    { label: 'Color', value: listing.color || 'Not specified', icon: 'color-palette-outline' },
+    { label: 'Doors', value: listing.doors?.toString() || 'N/A', icon: 'enter-outline' },
+  ].filter(d => d.value);
+
+  return (
+    <View style={detailStyles.container}>
+      <Text style={detailStyles.title}>Vehicle Details</Text>
+      <View style={detailStyles.grid}>
+        {details.map((item, index) => (
+          <View key={index} style={detailStyles.item}>
+            <View style={detailStyles.iconBox}>
+              <Ionicons name={item.icon as any} size={18} color={COLORS.primary} />
+            </View>
+            <View style={detailStyles.textBox}>
+              <Text style={detailStyles.label}>{item.label}</Text>
+              <Text style={detailStyles.value}>{item.value}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+});
+
+const detailStyles = StyleSheet.create({
+  container: { backgroundColor: COLORS.surface, padding: HORIZONTAL_PADDING, marginBottom: 8 },
+  title: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 14 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap' },
+  item: { width: '50%', flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, paddingRight: 8 },
+  iconBox: { width: 36, height: 36, borderRadius: 8, backgroundColor: COLORS.primaryLight, justifyContent: 'center', alignItems: 'center' },
+  textBox: { flex: 1 },
+  label: { fontSize: 11, color: COLORS.textSecondary },
+  value: { fontSize: 14, fontWeight: '600', color: COLORS.text, marginTop: 1 },
+});
+
+// ============ DESCRIPTION SECTION ============
+const DescriptionSection = memo(({ description }: { description: string }) => {
+  const [expanded, setExpanded] = useState(false);
+  const isLong = description.length > 200;
+
+  return (
+    <View style={descStyles.container}>
+      <Text style={descStyles.title}>Description</Text>
+      <Text style={descStyles.text} numberOfLines={expanded ? undefined : 4}>
+        {description}
+      </Text>
+      {isLong && (
+        <TouchableOpacity onPress={() => setExpanded(!expanded)}>
+          <Text style={descStyles.readMore}>{expanded ? 'Show less' : 'Read more'}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+});
+
+const descStyles = StyleSheet.create({
+  container: { backgroundColor: COLORS.surface, padding: HORIZONTAL_PADDING, marginBottom: 8 },
+  title: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 10 },
+  text: { fontSize: 14, lineHeight: 22, color: COLORS.textSecondary },
+  readMore: { marginTop: 8, fontSize: 14, fontWeight: '600', color: COLORS.primary },
+});
+
+// ============ SELLER SECTION ============
+const SellerSection = memo(({ listing }: { listing: AutoListing }) => (
+  <View style={sellerStyles.container}>
+    <Text style={sellerStyles.title}>Listed by</Text>
+    <View style={sellerStyles.card}>
+      <View style={sellerStyles.avatar}>
+        <Ionicons name="person" size={28} color={COLORS.primary} />
+      </View>
+      <View style={sellerStyles.info}>
+        <View style={sellerStyles.nameRow}>
+          <Text style={sellerStyles.name}>{listing.seller?.name || 'Private Seller'}</Text>
+          {listing.seller?.verified && (
+            <View style={sellerStyles.verifiedBadge}>
+              <Ionicons name="checkmark-circle" size={14} color="#fff" />
+              <Text style={sellerStyles.verifiedText}>Verified</Text>
+            </View>
+          )}
+        </View>
+        <View style={sellerStyles.badges}>
+          {listing.seller?.sellerType === 'dealer' && (
+            <View style={[sellerStyles.typeBadge, { backgroundColor: '#E3F2FD' }]}>
+              <Text style={[sellerStyles.typeBadgeText, { color: COLORS.verified }]}>Dealer</Text>
+            </View>
+          )}
+          {listing.seller?.sellerType === 'certified' && (
+            <View style={[sellerStyles.typeBadge, { backgroundColor: COLORS.primaryLight }]}>
+              <Ionicons name="ribbon" size={12} color={COLORS.primary} />
+              <Text style={[sellerStyles.typeBadgeText, { color: COLORS.primary }]}>Certified</Text>
+            </View>
+          )}
+        </View>
+        {listing.seller?.rating && (
+          <View style={sellerStyles.ratingRow}>
+            <Ionicons name="star" size={14} color={COLORS.gold} />
+            <Text style={sellerStyles.rating}>{listing.seller.rating}</Text>
+            <Text style={sellerStyles.ratingLabel}>rating</Text>
+          </View>
+        )}
+        <Text style={sellerStyles.memberSince}>
+          Member since {listing.seller?.memberSince?.split('-')[0] || '2023'}
+        </Text>
+      </View>
+    </View>
+  </View>
+));
+
+const sellerStyles = StyleSheet.create({
+  container: { backgroundColor: COLORS.surface, padding: HORIZONTAL_PADDING, marginBottom: 8 },
+  title: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 14 },
+  card: { flexDirection: 'row', gap: 14 },
+  avatar: { width: 56, height: 56, borderRadius: 28, backgroundColor: COLORS.primaryLight, justifyContent: 'center', alignItems: 'center' },
+  info: { flex: 1 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  name: { fontSize: 16, fontWeight: '700', color: COLORS.text },
+  verifiedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: COLORS.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4 },
+  verifiedText: { fontSize: 10, fontWeight: '700', color: '#fff' },
+  badges: { flexDirection: 'row', gap: 8, marginTop: 6 },
+  typeBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4 },
+  typeBadgeText: { fontSize: 11, fontWeight: '600' },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6 },
+  rating: { fontSize: 14, fontWeight: '700', color: COLORS.text },
+  ratingLabel: { fontSize: 13, color: COLORS.textSecondary },
+  memberSince: { fontSize: 12, color: COLORS.textSecondary, marginTop: 4 },
+});
+
+// ============ SAFETY SECTION ============
+const SafetySection = memo(() => (
+  <View style={safetyStyles.container}>
+    <View style={safetyStyles.header}>
+      <Ionicons name="shield-checkmark" size={20} color={COLORS.primary} />
+      <Text style={safetyStyles.title}>Safety Tips</Text>
+    </View>
+    <View style={safetyStyles.tips}>
+      <View style={safetyStyles.tip}>
+        <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+        <Text style={safetyStyles.tipText}>Meet in a public place</Text>
+      </View>
+      <View style={safetyStyles.tip}>
+        <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+        <Text style={safetyStyles.tipText}>Verify vehicle documents</Text>
+      </View>
+      <View style={safetyStyles.tip}>
+        <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+        <Text style={safetyStyles.tipText}>Get a professional inspection</Text>
+      </View>
+      <View style={safetyStyles.tip}>
+        <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+        <Text style={safetyStyles.tipText}>Use secure payment methods</Text>
+      </View>
+    </View>
+    <TouchableOpacity style={safetyStyles.reportBtn}>
+      <Ionicons name="flag-outline" size={16} color={COLORS.error} />
+      <Text style={safetyStyles.reportText}>Report this listing</Text>
+    </TouchableOpacity>
+  </View>
+));
+
+const safetyStyles = StyleSheet.create({
+  container: { backgroundColor: COLORS.surface, padding: HORIZONTAL_PADDING, marginBottom: 8 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  title: { fontSize: 16, fontWeight: '700', color: COLORS.text },
+  tips: { gap: 8 },
+  tip: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  tipText: { fontSize: 13, color: COLORS.textSecondary },
+  reportBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: COLORS.error },
+  reportText: { fontSize: 14, fontWeight: '600', color: COLORS.error },
+});
+
+// ============ MAIN SCREEN ============
 export default function AutoListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -31,15 +385,10 @@ export default function AutoListingDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFavorited, setIsFavorited] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  useEffect(() => {
-    fetchListing();
-  }, [id]);
-
-  const fetchListing = async () => {
+  const fetchListing = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -51,125 +400,67 @@ export default function AutoListingDetailScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id) fetchListing();
+  }, [id, fetchListing]);
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('de-DE', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
-
-  const formatMileage = (mileage: number) => {
-    return new Intl.NumberFormat('de-DE').format(mileage) + ' km';
+    return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
   };
 
   const handleToggleFavorite = async () => {
     if (!listing) return;
-    
-    const wasiFavorited = isFavorited;
-    setIsFavorited(!isFavorited); // Optimistic update
+    const wasFavorited = isFavorited;
+    setIsFavorited(!isFavorited);
     
     try {
-      if (wasiFavorited) {
-        await api.delete(`/auto/favorites/${listing.id}`);
-      } else {
-        await api.post(`/auto/favorites/${listing.id}`);
-        Alert.alert('Saved!', 'This listing has been added to your favorites.');
-      }
+      if (wasFavorited) await api.delete(`/auto/favorites/${listing.id}`);
+      else await api.post(`/auto/favorites/${listing.id}`);
     } catch (error: any) {
-      setIsFavorited(wasiFavorited); // Revert on error
-      if (error.response?.status === 401) {
-        Alert.alert('Login Required', 'Please login to save favorites.', [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Login', onPress: () => router.push('/login') },
-        ]);
-      } else {
-        console.error('Error toggling favorite:', error);
-      }
+      setIsFavorited(wasFavorited);
     }
   };
 
   const handleShare = async () => {
     if (!listing) return;
     try {
-      await Share.share({
-        message: `Check out this ${listing.title} for ${formatPrice(listing.price)}!`,
-      });
-    } catch (error) {
-      console.error(error);
-    }
+      await Share.share({ message: `Check out this ${listing.title} for ${formatPrice(listing.price)}!` });
+    } catch (error) {}
   };
 
   const handleCall = () => {
     if (!listing) return;
-    const phone = listing.seller?.phone || '+4912345678';
-    Linking.openURL(`tel:${phone}`);
+    Linking.openURL(`tel:${listing.seller?.phone || '+4912345678'}`);
   };
 
   const handleChat = async () => {
     if (!listing) return;
-    
-    Alert.alert(
-      'Start Conversation',
-      `Send a message to ${listing.seller?.name} about this ${listing.make} ${listing.model}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Start Chat',
-          onPress: async () => {
-            try {
-              // Create a new conversation
-              const response = await api.post('/auto/conversations', {
-                listing_id: listing.id,
-                message: `Hi, I'm interested in your ${listing.title} listed for ${formatPrice(listing.price)}. Is it still available?`,
-              });
-              
-              // Navigate to auto chat screen
-              router.push({
-                pathname: '/auto/chat/[id]',
-                params: { 
-                  id: response.data.id,
-                  title: listing.seller?.name || 'Chat',
-                  listingId: listing.id,
-                }
-              });
-            } catch (err) {
-              console.error('Error creating conversation:', err);
-              Alert.alert('Error', 'Failed to start conversation. Please try again.');
-            }
-          },
-        },
-      ]
-    );
+    try {
+      const response = await api.post('/auto/conversations', {
+        listing_id: listing.id,
+        message: `Hi, I'm interested in your ${listing.title} listed for ${formatPrice(listing.price)}. Is it still available?`,
+      });
+      router.push({ pathname: '/auto/chat/[id]', params: { id: response.data.id, title: listing.seller?.name || 'Chat', listingId: listing.id } });
+    } catch (err) {
+      Alert.alert('Error', 'Failed to start conversation. Please try again.');
+    }
   };
 
   const handleWhatsApp = () => {
     if (!listing) return;
     const phone = listing.seller?.phone?.replace(/[^0-9]/g, '') || '4912345678';
-    const message = encodeURIComponent(
-      `Hi, I'm interested in your "${listing.title}" listed for ${formatPrice(listing.price)}. Is it still available?`
-    );
+    const message = encodeURIComponent(`Hi, I'm interested in your "${listing.title}" listed for ${formatPrice(listing.price)}. Is it still available?`);
     Linking.openURL(`https://wa.me/${phone}?text=${message}`);
-  };
-
-  const openImageViewer = (index: number) => {
-    setSelectedImageIndex(index);
-    setShowImageViewer(true);
   };
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
-            <Ionicons name="arrow-back" size={24} color={theme.colors.onSurface} />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={styles.loadingText}>Loading listing...</Text>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loading}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Loading vehicle...</Text>
         </View>
       </SafeAreaView>
     );
@@ -177,18 +468,10 @@ export default function AutoListingDetailScreen() {
 
   if (error || !listing) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
-            <Ionicons name="arrow-back" size={24} color={theme.colors.onSurface} />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.errorContainer}>
-          <Ionicons name="car-outline" size={64} color={theme.colors.outline} />
-          <Text style={styles.errorText}>{error || 'Listing not found'}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={fetchListing}>
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </TouchableOpacity>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loading}>
+          <Ionicons name="car-outline" size={48} color={COLORS.textSecondary} />
+          <Text style={styles.loadingText}>{error || 'Listing not found'}</Text>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>Go Back</Text>
           </TouchableOpacity>
@@ -197,263 +480,88 @@ export default function AutoListingDetailScreen() {
     );
   }
 
-  const SpecItem = ({ icon, label, value }: { icon: string; label: string; value: string }) => (
-    <View style={styles.specItem}>
-      <Ionicons name={icon as any} size={20} color={theme.colors.primary} />
-      <View>
-        <Text style={styles.specLabel}>{label}</Text>
-        <Text style={styles.specValue}>{value}</Text>
-      </View>
-    </View>
-  );
+  const highlights = generateHighlights(listing);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
-          <Ionicons name="arrow-back" size={24} color={theme.colors.onSurface} />
-        </TouchableOpacity>
-        <View style={styles.headerActions}>
-          <TouchableOpacity onPress={handleShare} style={styles.headerButton}>
-            <Ionicons name="share-outline" size={24} color={theme.colors.onSurface} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleToggleFavorite}
-            style={styles.headerButton}
-          >
-            <Ionicons
-              name={isFavorited ? 'heart' : 'heart-outline'}
-              size={24}
-              color={isFavorited ? theme.colors.error : theme.colors.onSurface}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Image Carousel */}
+        <ImageCarousel
+          images={listing.images || []}
+          onImagePress={(index) => { setSelectedImageIndex(index); setShowImageViewer(true); }}
+          badges={{ featured: listing.featured, boosted: listing.boosted }}
+        />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Image Gallery */}
-        <TouchableOpacity 
-          style={styles.imageGallery}
-          activeOpacity={0.9}
-          onPress={() => openImageViewer(currentImageIndex)}
-        >
-          <FlatList
-            data={listing.images || []}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={(e) => {
-              const index = Math.round(e.nativeEvent.contentOffset.x / width);
-              setCurrentImageIndex(index);
-            }}
-            renderItem={({ item, index }) => (
-              <TouchableOpacity 
-                activeOpacity={0.9}
-                onPress={() => openImageViewer(index)}
-              >
-                <Image source={{ uri: item }} style={styles.mainImage} resizeMode="cover" />
-              </TouchableOpacity>
-            )}
-            keyExtractor={(item, index) => index.toString()}
-            ListEmptyComponent={
-              <View style={[styles.mainImage, styles.placeholderImage]}>
-                <Ionicons name="car" size={64} color={theme.colors.outline} />
-              </View>
-            }
-          />
-          
-          {/* Tap to zoom hint */}
-          <View style={styles.zoomHint}>
-            <Ionicons name="expand" size={16} color="#fff" />
-            <Text style={styles.zoomHintText}>Tap to zoom</Text>
+        {/* Header Actions (floating) */}
+        <View style={styles.floatingHeader}>
+          <TouchableOpacity style={styles.headerBtn} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={22} color={COLORS.text} />
+          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={styles.headerBtn} onPress={handleShare}>
+              <Ionicons name="share-outline" size={22} color={COLORS.text} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.headerBtn} onPress={handleToggleFavorite}>
+              <Ionicons name={isFavorited ? 'heart' : 'heart-outline'} size={22} color={isFavorited ? COLORS.error : COLORS.text} />
+            </TouchableOpacity>
           </View>
-          
-          {listing.images && listing.images.length > 1 && (
-            <View style={styles.imageIndicators}>
-              {listing.images.map((_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.imageIndicator,
-                    currentImageIndex === index && styles.imageIndicatorActive,
-                  ]}
-                />
-              ))}
-            </View>
-          )}
-          
-          {/* Badges */}
-          <View style={styles.badgeContainer}>
-            {listing.featured && (
-              <View style={styles.featuredBadge}>
-                <Ionicons name="star" size={14} color="#fff" />
-                <Text style={styles.badgeText}>Featured</Text>
-              </View>
-            )}
-            {listing.boosted && (
-              <View style={styles.boostedBadge}>
-                <Ionicons name="rocket" size={14} color="#fff" />
-                <Text style={styles.badgeText}>Boosted</Text>
-              </View>
-            )}
-          </View>
-          
-          {/* Image count */}
-          {listing.images && listing.images.length > 0 && (
-            <View style={styles.imageCountBadge}>
-              <Ionicons name="camera" size={14} color="#fff" />
-              <Text style={styles.imageCountText}>{listing.images.length}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        </View>
 
         {/* Price & Title */}
         <View style={styles.mainInfo}>
           <View style={styles.priceRow}>
             <Text style={styles.price}>{formatPrice(listing.price)}</Text>
-            {listing.negotiable && (
-              <View style={styles.negotiableBadge}>
-                <Text style={styles.negotiableText}>Negotiable</Text>
-              </View>
-            )}
+            {listing.negotiable && <Text style={styles.negotiable}>Negotiable</Text>}
           </View>
           <Text style={styles.title}>{listing.title}</Text>
           <View style={styles.locationRow}>
-            <Ionicons name="location" size={16} color={theme.colors.onSurfaceVariant} />
-            <Text style={styles.location}>
-              {listing.city} • {listing.distance} km away
-            </Text>
+            <Ionicons name="location-outline" size={16} color={COLORS.textSecondary} />
+            <Text style={styles.location}>{listing.city} • {listing.distance || 0} km away</Text>
           </View>
           <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Ionicons name="eye-outline" size={16} color={theme.colors.onSurfaceVariant} />
-              <Text style={styles.statText}>{listing.views} views</Text>
+            <View style={styles.stat}>
+              <Ionicons name="eye-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.statText}>{listing.views || 0} views</Text>
             </View>
-            <View style={styles.statItem}>
-              <Ionicons name="heart-outline" size={16} color={theme.colors.onSurfaceVariant} />
-              <Text style={styles.statText}>{listing.favorites_count} favorites</Text>
+            <View style={styles.stat}>
+              <Ionicons name="heart-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.statText}>{listing.favorites_count || 0} saves</Text>
             </View>
           </View>
         </View>
 
-        {/* Key Specs */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Vehicle Details</Text>
-          <View style={styles.specsGrid}>
-            <SpecItem icon="calendar-outline" label="Year" value={listing.year?.toString() || 'N/A'} />
-            <SpecItem icon="speedometer-outline" label="Mileage" value={formatMileage(listing.mileage || 0)} />
-            <SpecItem icon="flash-outline" label="Fuel" value={listing.fuelType || 'N/A'} />
-            <SpecItem icon="cog-outline" label="Transmission" value={listing.transmission || 'N/A'} />
-            <SpecItem icon="car-outline" label="Body Type" value={listing.bodyType || 'N/A'} />
-            <SpecItem icon="checkmark-circle-outline" label="Condition" value={listing.condition === 'new' ? 'New' : 'Used'} />
-          </View>
-        </View>
+        {/* Highlights */}
+        <HighlightsSection highlights={highlights} />
 
-        {/* Features */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Features & Trust</Text>
-          <View style={styles.featuresGrid}>
-            {listing.accidentFree && (
-              <View style={styles.featureItem}>
-                <Ionicons name="shield-checkmark" size={20} color={theme.colors.primary} />
-                <Text style={styles.featureText}>Accident Free</Text>
-              </View>
-            )}
-            {listing.inspectionAvailable && (
-              <View style={styles.featureItem}>
-                <Ionicons name="document-text" size={20} color={theme.colors.primary} />
-                <Text style={styles.featureText}>Inspection Available</Text>
-              </View>
-            )}
-            {listing.exchangePossible && (
-              <View style={styles.featureItem}>
-                <Ionicons name="repeat" size={20} color={theme.colors.primary} />
-                <Text style={styles.featureText}>Exchange Possible</Text>
-              </View>
-            )}
-            {listing.financingAvailable && (
-              <View style={styles.featureItem}>
-                <Ionicons name="card" size={20} color={theme.colors.primary} />
-                <Text style={styles.featureText}>Financing Available</Text>
-              </View>
-            )}
-          </View>
-        </View>
+        {/* Key Details */}
+        <KeyDetailsSection listing={listing} />
 
         {/* Description */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.description}>{listing.description}</Text>
-        </View>
+        {listing.description && <DescriptionSection description={listing.description} />}
 
-        {/* Seller Info */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Seller</Text>
-          <View style={styles.sellerCard}>
-            <View style={styles.sellerAvatar}>
-              <Ionicons name="person" size={24} color={theme.colors.primary} />
-            </View>
-            <View style={styles.sellerInfo}>
-              <View style={styles.sellerNameRow}>
-                <Text style={styles.sellerName}>{listing.seller?.name}</Text>
-                {listing.seller?.verified && (
-                  <Ionicons name="shield-checkmark" size={16} color={theme.colors.primary} />
-                )}
-              </View>
-              <View style={styles.sellerBadges}>
-                {listing.seller?.sellerType === 'dealer' && (
-                  <View style={styles.dealerBadge}>
-                    <Text style={styles.dealerBadgeText}>Dealer</Text>
-                  </View>
-                )}
-                {listing.seller?.sellerType === 'certified' && (
-                  <View style={styles.certifiedBadge}>
-                    <Ionicons name="ribbon" size={12} color="#fff" />
-                    <Text style={styles.certifiedBadgeText}>Certified</Text>
-                  </View>
-                )}
-              </View>
-              <View style={styles.sellerRating}>
-                <Ionicons name="star" size={14} color="#FFB800" />
-                <Text style={styles.ratingText}>{listing.seller?.rating} rating</Text>
-              </View>
-              <Text style={styles.memberSince}>
-                Member since {listing.seller?.memberSince?.split('-')[0]}
-              </Text>
-            </View>
-          </View>
-        </View>
+        {/* Seller */}
+        <SellerSection listing={listing} />
 
-        {/* Safety Tips */}
-        <View style={styles.safetySection}>
-          <View style={styles.safetyHeader}>
-            <Ionicons name="shield-checkmark" size={20} color={theme.colors.primary} />
-            <Text style={styles.safetyTitle}>Safety Tips</Text>
-          </View>
-          <Text style={styles.safetyText}>
-            • Meet in a public place{'\n'}
-            • Verify vehicle documents{'\n'}
-            • Get a professional inspection{'\n'}
-            • Use secure payment methods
-          </Text>
-        </View>
+        {/* Safety */}
+        <SafetySection />
 
-        <View style={{ height: 120 }} />
+        {/* Spacer for bottom actions */}
+        <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Bottom CTA */}
-      <View style={styles.bottomCTA}>
-        <TouchableOpacity style={styles.callButton} onPress={handleCall}>
-          <Ionicons name="call" size={20} color={theme.colors.primary} />
-          <Text style={styles.callButtonText}>Call</Text>
+      {/* Bottom Actions */}
+      <View style={styles.bottomActions}>
+        <TouchableOpacity style={styles.actionBtn} onPress={handleChat}>
+          <Ionicons name="chatbubble-outline" size={20} color={COLORS.primary} />
+          <Text style={styles.actionText}>Chat</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.chatButton} onPress={handleChat}>
-          <Ionicons name="chatbubble" size={20} color="#fff" />
-          <Text style={styles.chatButtonText}>Chat</Text>
+        <TouchableOpacity style={styles.actionBtn} onPress={handleCall}>
+          <Ionicons name="call-outline" size={20} color={COLORS.primary} />
+          <Text style={styles.actionText}>Call</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.whatsappButton} onPress={handleWhatsApp}>
+        <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#25D366' }]} onPress={handleWhatsApp}>
           <Ionicons name="logo-whatsapp" size={20} color="#fff" />
+          <Text style={[styles.actionText, { color: '#fff' }]}>WhatsApp</Text>
         </TouchableOpacity>
       </View>
 
@@ -471,421 +579,143 @@ export default function AutoListingDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: COLORS.background,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.outlineVariant,
-  },
-  headerButton: {
-    padding: 4,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: theme.spacing.md,
-  },
-  content: {
-    flex: 1,
-  },
-  loadingContainer: {
+  loading: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 40,
   },
   loadingText: {
-    marginTop: theme.spacing.md,
     fontSize: 16,
-    color: theme.colors.onSurfaceVariant,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: theme.spacing.xl,
-  },
-  errorText: {
-    fontSize: 16,
-    color: theme.colors.onSurfaceVariant,
-    marginTop: theme.spacing.md,
-    textAlign: 'center',
-  },
-  retryButton: {
-    marginTop: theme.spacing.lg,
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.sm,
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.full,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginTop: 12,
   },
   backButton: {
-    marginTop: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.sm,
+    marginTop: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: COLORS.primary,
+    borderRadius: 8,
   },
   backButtonText: {
-    color: theme.colors.primary,
-    fontSize: 16,
+    color: '#fff',
     fontWeight: '600',
+    fontSize: 14,
   },
-  imageGallery: {
-    position: 'relative',
-    height: 280,
-    backgroundColor: theme.colors.surfaceVariant,
+  floatingHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    zIndex: 10,
   },
-  mainImage: {
-    width: width,
-    height: 280,
-  },
-  placeholderImage: {
+  headerBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.9)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.surfaceVariant,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  zoomHint: {
-    position: 'absolute',
-    bottom: theme.spacing.md,
-    right: theme.spacing.md,
+  headerRight: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: theme.borderRadius.sm,
-    gap: 4,
-  },
-  zoomHintText: {
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: '500',
-  },
-  imageIndicators: {
-    position: 'absolute',
-    bottom: theme.spacing.md,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    gap: 6,
-  },
-  imageIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.5)',
-  },
-  imageIndicatorActive: {
-    backgroundColor: '#fff',
-    width: 24,
-  },
-  badgeContainer: {
-    position: 'absolute',
-    top: theme.spacing.md,
-    left: theme.spacing.md,
-    flexDirection: 'row',
-    gap: theme.spacing.xs,
-  },
-  featuredBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: 4,
-    borderRadius: theme.borderRadius.sm,
-    gap: 4,
-  },
-  boostedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.warning,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: 4,
-    borderRadius: theme.borderRadius.sm,
-    gap: 4,
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  imageCountBadge: {
-    position: 'absolute',
-    top: theme.spacing.md,
-    right: theme.spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: theme.borderRadius.sm,
-    gap: 4,
-  },
-  imageCountText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
+    gap: 10,
   },
   mainInfo: {
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: COLORS.surface,
+    padding: HORIZONTAL_PADDING,
+    marginBottom: 8,
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
+    gap: 10,
   },
   price: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700',
-    color: theme.colors.onSurface,
+    color: COLORS.primary,
   },
-  negotiableBadge: {
-    backgroundColor: theme.colors.primaryContainer,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: 4,
-    borderRadius: theme.borderRadius.sm,
-  },
-  negotiableText: {
-    color: theme.colors.primary,
+  negotiable: {
     fontSize: 12,
-    fontWeight: '600',
+    color: COLORS.primary,
+    fontWeight: '500',
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
   },
   title: {
     fontSize: 18,
     fontWeight: '600',
-    color: theme.colors.onSurface,
-    marginTop: theme.spacing.sm,
+    color: COLORS.text,
+    marginTop: 6,
+    lineHeight: 24,
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginTop: theme.spacing.sm,
+    marginTop: 10,
   },
   location: {
     fontSize: 14,
-    color: theme.colors.onSurfaceVariant,
+    color: COLORS.textSecondary,
   },
   statsRow: {
     flexDirection: 'row',
-    gap: theme.spacing.lg,
-    marginTop: theme.spacing.sm,
+    gap: 16,
+    marginTop: 12,
   },
-  statItem: {
+  stat: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
   statText: {
     fontSize: 13,
-    color: theme.colors.onSurfaceVariant,
+    color: COLORS.textSecondary,
   },
-  section: {
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
-    marginTop: theme.spacing.sm,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.onSurface,
-    marginBottom: theme.spacing.md,
-  },
-  specsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  specItem: {
-    width: '50%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
-  },
-  specLabel: {
-    fontSize: 12,
-    color: theme.colors.onSurfaceVariant,
-  },
-  specValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.onSurface,
-  },
-  featuresGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.sm,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: theme.colors.primaryContainer,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: 6,
-    borderRadius: theme.borderRadius.full,
-  },
-  featureText: {
-    fontSize: 12,
-    color: theme.colors.primary,
-    fontWeight: '500',
-  },
-  description: {
-    fontSize: 14,
-    color: theme.colors.onSurface,
-    lineHeight: 22,
-  },
-  sellerCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.md,
-  },
-  sellerAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: theme.colors.primaryContainer,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sellerInfo: {
-    flex: 1,
-  },
-  sellerNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  sellerName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.onSurface,
-  },
-  sellerBadges: {
-    flexDirection: 'row',
-    gap: 6,
-    marginTop: 4,
-  },
-  dealerBadge: {
-    backgroundColor: theme.colors.secondaryContainer,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  dealerBadgeText: {
-    fontSize: 11,
-    color: theme.colors.onSecondaryContainer,
-    fontWeight: '600',
-  },
-  certifiedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.tertiary,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    gap: 2,
-  },
-  certifiedBadgeText: {
-    fontSize: 11,
-    color: '#fff',
-    fontWeight: '600',
-  },
-  sellerRating: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 4,
-  },
-  ratingText: {
-    fontSize: 13,
-    color: theme.colors.onSurfaceVariant,
-  },
-  memberSince: {
-    fontSize: 12,
-    color: theme.colors.onSurfaceVariant,
-    marginTop: 2,
-  },
-  safetySection: {
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.primaryContainer,
-    marginTop: theme.spacing.sm,
-    marginHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-  },
-  safetyHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
-  },
-  safetyTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  safetyText: {
-    fontSize: 13,
-    color: theme.colors.onPrimaryContainer,
-    lineHeight: 20,
-  },
-  bottomCTA: {
+  bottomActions: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     flexDirection: 'row',
-    padding: theme.spacing.md,
-    paddingBottom: Platform.OS === 'ios' ? 34 : theme.spacing.md,
-    backgroundColor: theme.colors.surface,
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingVertical: 12,
+    paddingBottom: 24,
+    backgroundColor: COLORS.surface,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.outlineVariant,
-    gap: theme.spacing.sm,
+    borderTopColor: COLORS.border,
+    gap: 10,
   },
-  callButton: {
+  actionBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
     gap: 6,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    borderWidth: 2,
-    borderColor: theme.colors.primary,
   },
-  callButtonText: {
-    fontSize: 16,
+  actionText: {
+    fontSize: 14,
     fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  chatButton: {
-    flex: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.primary,
-  },
-  chatButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  whatsappButton: {
-    width: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: '#25D366',
+    color: COLORS.primary,
   },
 });
