@@ -19,6 +19,13 @@ import { Property } from '../../types/property';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH * 0.42;
+const HORIZONTAL_PADDING = 16;
+
+// Property category - One column, vertical layout
+const PROPERTY_CARD_WIDTH = SCREEN_WIDTH - HORIZONTAL_PADDING * 2;
+
+// Other categories - Two column horizontal layout
+const OTHER_CARD_HEIGHT = 120;
 
 const COLORS = {
   primary: '#2E7D32',
