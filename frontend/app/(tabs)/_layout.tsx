@@ -68,7 +68,8 @@ export default function TabLayout() {
             </View>
           ),
         }}
-        listeners={{\n          tabPress: (e) => {
+        listeners={{
+          tabPress: (e) => {
             e.preventDefault();
             handlePostPress();
           },
