@@ -377,9 +377,9 @@ export default function PostPropertyScreen() {
 
   // Get all property types flattened
   const allPropertyTypes = [
-    ...Object.entries(PROPERTY_TYPE_CATEGORIES).flatMap(([category, types]) => 
-      types.map(t => ({ ...t, category, label: t.name }))
-    )
+    ...(PROPERTY_TYPE_CATEGORIES.residential || []).map(t => ({ ...t, label: t.name })),
+    ...(PROPERTY_TYPE_CATEGORIES.land || []).map(t => ({ ...t, label: t.name })),
+    ...(PROPERTY_TYPE_CATEGORIES.commercial || []).map(t => ({ ...t, label: t.name })),
   ];
 
   const renderStep = () => {
