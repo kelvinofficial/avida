@@ -453,7 +453,9 @@ const styles = StyleSheet.create({
   // ========== HEADER (NO BOX, PLAIN SURFACE) ==========
   headerWrapper: {
     backgroundColor: '#fff',
-    // NO border radius, NO margin - spans full width
+    // NO border radius, NO margin - spans full width edge to edge
+    marginHorizontal: 0,
+    borderRadius: 0,
   },
 
   // ROW 1
