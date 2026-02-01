@@ -92,17 +92,38 @@ export default function AutoChatScreen() {
     setNewMessage('');
     Keyboard.dismiss();
 
+    // Optimistic update - add the message immediately
+    const tempMessage: Message = {
+      id: `temp_${Date.now()}`,
+      sender_id: currentUserId,
+      sender_name: 'You',
+      content,
+      timestamp: new Date().toISOString(),
+      read: false,
+    };
+    setMessages((prev) => [...prev, tempMessage]);
+    setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+
     try {
-      const response = await api.post(`/auto/conversations/${id}/messages`, {
+      await api.post(`/auto/conversations/${id}/messages`, {
         content,
       });
       
-      // Add the new message to the list
-      const sentMessage = response.data;
-      setMessages((prev) => [...prev, sentMessage]);
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+      // Fetch updated conversation to get seller's auto-reply
+      setTimeout(async () => {
+        try {
+          const response = await api.get(`/auto/conversations/${id}`);
+          setMessages(response.data.messages || []);
+          setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+        } catch (err) {
+          console.error('Error fetching updated messages:', err);
+        }
+      }, 500);
+      
     } catch (error) {
       console.error('Error sending message:', error);
+      // Remove the temp message on error
+      setMessages((prev) => prev.filter(m => m.id !== tempMessage.id));
       setNewMessage(content); // Restore message on error
       Alert.alert('Error', 'Failed to send message');
     } finally {
