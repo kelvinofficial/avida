@@ -107,10 +107,13 @@ AUTO_LISTINGS = [
             "user_id": "seller_2",
             "name": "Premium Cars Munich",
             "phone": "+49891234567",
+            "whatsapp": "+49891234567",
             "rating": 4.9,
             "verified": True,
             "sellerType": "certified",
             "memberSince": "2019-05-20",
+            "allowsOffers": False,
+            "preferredContact": "call",
         },
     },
     {
