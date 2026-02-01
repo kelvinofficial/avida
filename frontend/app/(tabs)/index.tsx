@@ -170,7 +170,14 @@ export default function HomeScreen() {
             key={cat.id}
             category={cat}
             selected={selectedCategory === cat.id}
-            onPress={() => setSelectedCategory(cat.id === selectedCategory ? null : cat.id)}
+            onPress={() => {
+              // Navigate to dedicated Auto page for vehicles category
+              if (cat.id === 'vehicles') {
+                router.push('/auto');
+              } else {
+                setSelectedCategory(cat.id === selectedCategory ? null : cat.id);
+              }
+            }}
           />
         ))}
       </ScrollView>
