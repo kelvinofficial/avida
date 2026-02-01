@@ -449,7 +449,7 @@ export default function HomeScreen() {
     return width < 375 ? city.substring(0, 3) : city;
   };
 
-  // ============ HEADER COMPONENT (2 ROWS) ============
+  // ========== HEADER COMPONENT (2 ROWS) ============
   const renderHeader = () => (
     <View style={styles.headerContainer}>
       {/* ========== ROW 1: BRAND + NOTIFICATIONS ========== */}
@@ -458,7 +458,7 @@ export default function HomeScreen() {
         <Text style={styles.logo}>avida</Text>
         
         {/* Spacer */}
-        <View style={styles.row1Spacer} />
+        <View style={{ flex: 1 }} />
         
         {/* Notification Bell - Right aligned */}
         <TouchableOpacity
@@ -481,7 +481,7 @@ export default function HomeScreen() {
 
       {/* ========== ROW 2: SEARCH + LOCATION ========== */}
       <View style={styles.row2}>
-        {/* Search Field - 65-70% width */}
+        {/* Search Field - Takes most space */}
         <TouchableOpacity
           style={styles.searchField}
           onPress={() => router.push('/search')}
@@ -495,7 +495,7 @@ export default function HomeScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* Location Chip - 30-35% width */}
+        {/* Location Chip */}
         <TouchableOpacity
           style={styles.locationChip}
           activeOpacity={0.7}
