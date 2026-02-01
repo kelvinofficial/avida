@@ -58,7 +58,7 @@ const CAR_IMAGES = [
 
 const { width } = Dimensions.get('window');
 
-// Mock data for demo - 15 sample car listings
+// Mock data for demo - 15 sample car listings with real images
 const MOCK_AUTO_LISTINGS: AutoListing[] = [
   {
     id: 'auto_1',
@@ -68,7 +68,7 @@ const MOCK_AUTO_LISTINGS: AutoListing[] = [
     price: 28500,
     negotiable: true,
     category_id: 'vehicles',
-    images: [],
+    images: [CAR_IMAGES[0], CAR_IMAGES[8]],
     location: 'Berlin, Germany',
     city: 'Berlin',
     distance: 5,
@@ -108,7 +108,7 @@ const MOCK_AUTO_LISTINGS: AutoListing[] = [
     price: 32900,
     negotiable: true,
     category_id: 'vehicles',
-    images: [],
+    images: [CAR_IMAGES[1], CAR_IMAGES[2], CAR_IMAGES[7]],
     location: 'Munich, Germany',
     city: 'Munich',
     distance: 12,
