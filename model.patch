@@ -39,7 +39,7 @@ index 4c156bc..e69de29 100644
 --+import json
 --+
 --+# Get backend URL
---+BASE_URL = "https://realty-hub-158.preview.emergentagent.com"
+--+BASE_URL = "https://avida-uiredesign.preview.emergentagent.com"
 --+API_URL = f"{BASE_URL}/api"
 --+TEST_SESSION_TOKEN = "test_session_123"
 --+
