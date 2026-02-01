@@ -623,6 +623,7 @@ export default function ListingDetailScreen() {
   }
 
   const images = listing.images || [];
+  const highlights = generateHighlights(listing, category);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -676,6 +677,9 @@ export default function ListingDetailScreen() {
           </View>
         </View>
 
+        {/* Highlights */}
+        <HighlightsSection highlights={highlights} />
+
         {/* Key Details */}
         <KeyDetailsSection listing={listing} category={category} />
 
@@ -685,8 +689,14 @@ export default function ListingDetailScreen() {
         {/* Seller */}
         <SellerSection listing={listing} />
 
+        {/* Location */}
+        <LocationSection listing={listing} />
+
         {/* Safety */}
         <SafetySection onReport={() => setShowReportModal(true)} />
+
+        {/* Similar Listings - Two column layout for general listings */}
+        <SimilarListings propertyId={id!} category="other" />
 
         {/* Spacer for bottom actions */}
         <View style={{ height: 100 }} />
