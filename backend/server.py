@@ -1062,28 +1062,28 @@ async def get_auto_listings(
     page: int = 1,
     limit: int = 20
 ):
-    """Get auto listings with advanced filters"""
-    query = {"status": "active", "category_id": "vehicles"}
+    """Get auto listings with advanced filters from database"""
+    query = {"status": "active"}
     
     if make:
-        query["attributes.make"] = {"$regex": make, "$options": "i"}
+        query["make"] = {"$regex": make, "$options": "i"}
     if model:
-        query["attributes.model"] = {"$regex": model, "$options": "i"}
+        query["model"] = {"$regex": model, "$options": "i"}
     if year_min:
-        query["attributes.year"] = {"$gte": year_min}
+        query["year"] = {"$gte": year_min}
     if year_max:
-        if "attributes.year" in query:
-            query["attributes.year"]["$lte"] = year_max
+        if "year" in query:
+            query["year"]["$lte"] = year_max
         else:
-            query["attributes.year"] = {"$lte": year_max}
+            query["year"] = {"$lte": year_max}
     if mileage_max:
-        query["attributes.mileage"] = {"$lte": mileage_max}
+        query["mileage"] = {"$lte": mileage_max}
     if fuel_type:
-        query["attributes.fuel_type"] = fuel_type
+        query["fuelType"] = fuel_type
     if transmission:
-        query["attributes.transmission"] = transmission
+        query["transmission"] = transmission
     if body_type:
-        query["attributes.body_type"] = body_type
+        query["bodyType"] = body_type
     if condition:
         query["condition"] = condition
     if price_min:
@@ -1093,8 +1093,10 @@ async def get_auto_listings(
             query["price"]["$lte"] = price_max
         else:
             query["price"] = {"$lte": price_max}
+    if verified_seller:
+        query["seller.verified"] = True
     if city:
-        query["location"] = {"$regex": city, "$options": "i"}
+        query["city"] = {"$regex": city, "$options": "i"}
     
     # Sorting
     sort_field = "created_at"
