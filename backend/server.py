@@ -730,6 +730,184 @@ async def delete_listing(listing_id: str, request: Request):
     await db.listings.update_one({"id": listing_id}, {"$set": {"status": "deleted"}})
     return {"message": "Listing deleted"}
 
+# ==================== SIMILAR LISTINGS ENDPOINT ====================
+
+def calculate_generic_similarity(source: dict, candidate: dict) -> float:
+    """Calculate similarity score for generic listings"""
+    score = 0.0
+    
+    # Category match (40 points)
+    if source.get('category_id') == candidate.get('category_id'):
+        score += 40
+    
+    # Price similarity (30 points) - closer price = higher score
+    source_price = source.get('price', 0)
+    candidate_price = candidate.get('price', 0)
+    if source_price > 0 and candidate_price > 0:
+        price_ratio = min(source_price, candidate_price) / max(source_price, candidate_price)
+        score += price_ratio * 30
+    
+    # Location match (20 points)
+    source_location = source.get('location', '') or source.get('city', '')
+    candidate_location = candidate.get('location', '') or candidate.get('city', '')
+    if source_location and candidate_location:
+        # Check if same city
+        source_city = source_location.split(',')[0].strip().lower()
+        candidate_city = candidate_location.split(',')[0].strip().lower()
+        if source_city == candidate_city:
+            score += 20
+        elif source_city in candidate_city or candidate_city in source_city:
+            score += 10
+    
+    # Condition match (10 points)
+    if source.get('condition') == candidate.get('condition'):
+        score += 10
+    
+    return score
+
+@api_router.get("/listings/similar/{listing_id}")
+async def get_similar_listings(
+    listing_id: str,
+    limit: int = 10,
+    include_sponsored: bool = True,
+    same_city_only: bool = False,
+    same_price_range: bool = False
+):
+    """
+    Get similar listings using weighted similarity scoring.
+    Works for all listing types (auto, electronics, etc.)
+    """
+    # Get source listing
+    source = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+    if not source:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    
+    # Build query for candidates
+    query = {
+        "status": "active",
+        "id": {"$ne": listing_id},  # Exclude current listing
+        "user_id": {"$ne": source.get('user_id')},  # Exclude same seller
+    }
+    
+    # Apply filters
+    if same_city_only:
+        source_location = source.get('location', '') or source.get('city', '')
+        if source_location:
+            source_city = source_location.split(',')[0].strip()
+            query["$or"] = [
+                {"location": {"$regex": source_city, "$options": "i"}},
+                {"city": source_city}
+            ]
+    
+    if same_price_range:
+        source_price = source.get('price', 0)
+        if source_price > 0:
+            query["price"] = {
+                "$gte": source_price * 0.7,
+                "$lte": source_price * 1.3
+            }
+    
+    # Prefer same category
+    if source.get('category_id'):
+        query["category_id"] = source.get('category_id')
+    
+    # Get candidate listings
+    candidates = await db.listings.find(query, {"_id": 0}).limit(50).to_list(50)
+    
+    # If not enough candidates, expand search to all categories
+    if len(candidates) < 5:
+        expanded_query = {
+            "status": "active",
+            "id": {"$ne": listing_id},
+            "user_id": {"$ne": source.get('user_id')},
+        }
+        candidates = await db.listings.find(expanded_query, {"_id": 0}).limit(50).to_list(50)
+    
+    # Calculate similarity scores
+    scored_listings = []
+    for listing in candidates:
+        score = calculate_generic_similarity(source, listing)
+        if score > 15:  # Minimum threshold
+            # Get seller data if embedded
+            seller_data = listing.get('seller')
+            if seller_data:
+                listing['seller'] = {
+                    "user_id": seller_data.get("user_id"),
+                    "name": seller_data.get("name"),
+                    "verified": seller_data.get("verified", False),
+                    "rating": seller_data.get("rating", 0),
+                }
+            
+            scored_listings.append({
+                **listing,
+                "similarityScore": round(score, 1),
+                "isSponsored": False,
+                "sponsoredRank": None
+            })
+    
+    # Sort by similarity score
+    scored_listings.sort(key=lambda x: x['similarityScore'], reverse=True)
+    
+    # Get sponsored/featured listings
+    sponsored_listings = []
+    if include_sponsored:
+        sponsored_query = {
+            "status": "active",
+            "id": {"$ne": listing_id},
+            "$or": [
+                {"sponsored": True},
+                {"boosted": True},
+                {"featured": True}
+            ]
+        }
+        
+        sponsored = await db.listings.find(sponsored_query, {"_id": 0}).limit(3).to_list(3)
+        existing_ids = {l['id'] for l in scored_listings[:limit]}
+        
+        for i, listing in enumerate(sponsored):
+            if listing['id'] not in existing_ids:
+                seller_data = listing.get('seller')
+                if seller_data:
+                    listing['seller'] = {
+                        "user_id": seller_data.get("user_id"),
+                        "name": seller_data.get("name"),
+                        "verified": seller_data.get("verified", False),
+                        "rating": seller_data.get("rating", 0),
+                    }
+                
+                sponsored_listings.append({
+                    **listing,
+                    "similarityScore": calculate_generic_similarity(source, listing),
+                    "isSponsored": True,
+                    "sponsoredRank": i + 1
+                })
+    
+    # Mix organic + sponsored
+    final_listings = []
+    organic_count = 0
+    sponsored_idx = 0
+    
+    for listing in scored_listings[:limit]:
+        final_listings.append(listing)
+        organic_count += 1
+        
+        # Insert sponsored after every 5 organic
+        if organic_count % 5 == 0 and sponsored_idx < len(sponsored_listings):
+            final_listings.append(sponsored_listings[sponsored_idx])
+            sponsored_idx += 1
+    
+    # Add remaining sponsored if we have space
+    while len(final_listings) < limit and sponsored_idx < len(sponsored_listings):
+        final_listings.append(sponsored_listings[sponsored_idx])
+        sponsored_idx += 1
+    
+    return {
+        "listings": final_listings[:limit],
+        "total": len(final_listings),
+        "sourceCategory": source.get('category_id'),
+        "sponsoredCount": len([l for l in final_listings if l.get('isSponsored')])
+    }
+
 # ==================== FAVORITES ENDPOINTS ====================
 
 @api_router.post("/favorites/{listing_id}")
