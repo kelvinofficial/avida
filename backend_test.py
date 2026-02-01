@@ -234,13 +234,19 @@ class APITester:
         except Exception as e:
             self.log_result("POST /api/auth/session - Session exchange", False, f"Exception: {str(e)}")
         
-        # Test logout
+        # Test logout (but don't actually logout to keep session for other tests)
         try:
-            response = self.session.post(f"{API_URL}/auth/logout", timeout=10)
+            # Create a separate session for logout test to preserve main session
+            logout_session = requests.Session()
+            logout_session.headers.update({
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {TEST_SESSION_TOKEN}'
+            })
+            response = logout_session.post(f"{API_URL}/auth/logout", timeout=10)
             if response.status_code == 200:
                 data = response.json()
                 if 'message' in data:
-                    self.log_result("POST /api/auth/logout - Logout", True, "Logout successful")
+                    self.log_result("POST /api/auth/logout - Logout", True, "Logout endpoint working")
                 else:
                     self.log_result("POST /api/auth/logout - Logout", False, "Invalid response", data)
             else:
