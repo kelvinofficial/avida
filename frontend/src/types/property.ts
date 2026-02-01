@@ -83,6 +83,8 @@ export interface PropertySeller {
   listingsCount?: number;
   memberSince?: string;
   responseTime?: string;
+  allowsOffers?: boolean;
+  preferredContact?: 'whatsapp' | 'call';
 }
 
 export interface Property {
