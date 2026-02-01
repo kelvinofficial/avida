@@ -18,8 +18,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import axios from 'axios';
-import Constants from 'expo-constants';
+import { api } from '../../src/utils/api';
 import {
   Property,
   PropertyPurpose,
@@ -28,9 +27,6 @@ import {
   FACILITIES_LIST,
   PropertyType,
 } from '../../src/types/property';
-
-// API URL
-const API_URL = Constants.expoConfig?.extra?.EXPO_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
 const { width } = Dimensions.get('window');
 
