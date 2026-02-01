@@ -10,7 +10,6 @@ import {
   RefreshControl,
   Image,
   ScrollView,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,41 +23,52 @@ import { formatDistanceToNow } from 'date-fns';
 
 const { width } = Dimensions.get('window');
 
-// Layout constants - Material 3 compliant
+// ============ LAYOUT CONSTANTS - Material 3 ============
 const HORIZONTAL_PADDING = 16;
 const COLUMN_GAP = 12;
 const CARD_WIDTH = (width - HORIZONTAL_PADDING * 2 - COLUMN_GAP) / 2;
 const CARD_IMAGE_HEIGHT = CARD_WIDTH * 0.9;
 const BORDER_RADIUS = 12;
-const ROW_1_HEIGHT = 56; // Material TopAppBar small
-const ROW_2_HEIGHT = 48;
+
+// Header constants
+const ROW_1_HEIGHT = 52;
 const ICON_SIZE = 24;
 const TOUCH_TARGET = 48;
 
-// Category colors - soft pastel palette (Material 3)
+// Category icon constants - ROUNDED SQUARES
+const CATEGORY_ICON_SIZE = 64;
+const CATEGORY_ICON_RADIUS = 16;
+const CATEGORY_INNER_ICON = 28;
+const CATEGORY_GAP = 12;
+
+// Calculate how many categories fit in view (4 visible)
+const VISIBLE_CATEGORIES = 4;
+const CATEGORY_ITEM_WIDTH = (width - HORIZONTAL_PADDING * 2 - CATEGORY_GAP * (VISIBLE_CATEGORIES - 1)) / VISIBLE_CATEGORIES;
+
+// ============ CATEGORY COLORS ============
 const CATEGORY_STYLES: Record<string, { bg: string; icon: string }> = {
-  vehicles: { bg: '#E3F2FD', icon: '#1976D2' },
+  vehicles: { bg: '#E3F2FD', icon: '#1565C0' },
   electronics: { bg: '#F3E5F5', icon: '#7B1FA2' },
   fashion: { bg: '#FCE4EC', icon: '#C2185B' },
-  home: { bg: '#E8F5E9', icon: '#388E3C' },
-  sports: { bg: '#FFF3E0', icon: '#F57C00' },
-  jobs: { bg: '#E0F7FA', icon: '#0097A7' },
-  services: { bg: '#FFF8E1', icon: '#FFA000' },
-  kids: { bg: '#FFEBEE', icon: '#D32F2F' },
-  pets: { bg: '#F1F8E9', icon: '#689F38' },
-  property: { bg: '#E8EAF6', icon: '#3F51B5' },
-  mobile: { bg: '#EDE7F6', icon: '#512DA8' },
-  bikes: { bg: '#E0F2F1', icon: '#00796B' },
-  beauty: { bg: '#FBE9E7', icon: '#E64A19' },
-  industrial: { bg: '#ECEFF1', icon: '#546E7A' },
-  default: { bg: '#F5F5F5', icon: '#757575' },
+  home: { bg: '#E8F5E9', icon: '#2E7D32' },
+  sports: { bg: '#FFF3E0', icon: '#EF6C00' },
+  jobs: { bg: '#E0F7FA', icon: '#00838F' },
+  services: { bg: '#FFF8E1', icon: '#FF8F00' },
+  kids: { bg: '#FFEBEE', icon: '#C62828' },
+  pets: { bg: '#F1F8E9', icon: '#558B2F' },
+  property: { bg: '#E8EAF6', icon: '#3949AB' },
+  mobile: { bg: '#EDE7F6', icon: '#5E35B1' },
+  bikes: { bg: '#E0F2F1', icon: '#00695C' },
+  beauty: { bg: '#FBE9E7', icon: '#D84315' },
+  industrial: { bg: '#ECEFF1', icon: '#455A64' },
+  default: { bg: '#F5F5F5', icon: '#616161' },
 };
 
-// Extended categories
+// ============ CATEGORIES DATA ============
 const FULL_CATEGORIES = [
   { id: 'vehicles', name: 'Auto', icon: 'car-sport' },
   { id: 'mobile', name: 'Mobile', icon: 'phone-portrait' },
-  { id: 'property', name: 'Properties', icon: 'home' },
+  { id: 'property', name: 'Property', icon: 'home' },
   { id: 'electronics', name: 'Electronics', icon: 'laptop' },
   { id: 'bikes', name: 'Bikes', icon: 'bicycle' },
   { id: 'services', name: 'Services', icon: 'construct' },
@@ -69,10 +79,10 @@ const FULL_CATEGORIES = [
   { id: 'sports', name: 'Leisure', icon: 'football' },
   { id: 'kids', name: 'Kids', icon: 'happy' },
   { id: 'pets', name: 'Animals', icon: 'paw' },
-  { id: 'industrial', name: 'Industrial', icon: 'cog' },
+  { id: 'industrial', name: 'Industry', icon: 'cog' },
 ];
 
-// ============ CATEGORY ICON COMPONENT ============
+// ============ CATEGORY ICON COMPONENT - ROUNDED SQUARE ============
 interface CategoryIconProps {
   id: string;
   name: string;
@@ -93,11 +103,11 @@ const CategoryIcon = memo<CategoryIconProps>(({ id, name, icon, onPress, selecte
       accessibilityRole="button"
     >
       <View style={[
-        categoryStyles.iconCircle, 
+        categoryStyles.iconContainer,
         { backgroundColor: style.bg },
-        selected && categoryStyles.iconCircleSelected
+        selected && categoryStyles.iconContainerSelected
       ]}>
-        <Ionicons name={icon as any} size={22} color={style.icon} />
+        <Ionicons name={icon as any} size={CATEGORY_INNER_ICON} color={style.icon} />
       </View>
       <Text style={[
         categoryStyles.label,
@@ -112,22 +122,26 @@ const CategoryIcon = memo<CategoryIconProps>(({ id, name, icon, onPress, selecte
 const categoryStyles = StyleSheet.create({
   item: {
     alignItems: 'center',
-    width: 68,
-    marginRight: 8,
+    width: CATEGORY_ITEM_WIDTH,
   },
-  iconCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  iconContainer: {
+    width: CATEGORY_ICON_SIZE,
+    height: CATEGORY_ICON_SIZE,
+    borderRadius: CATEGORY_ICON_RADIUS,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
   },
-  iconCircleSelected: {
-    transform: [{ scale: 1.08 }],
+  iconContainerSelected: {
+    // Slight shadow for selected state
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
   label: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#666',
     textAlign: 'center',
     fontWeight: '500',
@@ -151,17 +165,8 @@ const SkeletonCard = memo(() => (
 ));
 
 const skeletonStyles = StyleSheet.create({
-  card: {
-    width: CARD_WIDTH,
-    backgroundColor: '#fff',
-    borderRadius: BORDER_RADIUS,
-    overflow: 'hidden',
-  },
-  image: {
-    width: '100%',
-    height: CARD_IMAGE_HEIGHT,
-    backgroundColor: '#F0F0F0',
-  },
+  card: { width: CARD_WIDTH, backgroundColor: '#fff', borderRadius: BORDER_RADIUS, overflow: 'hidden' },
+  image: { width: '100%', height: CARD_IMAGE_HEIGHT, backgroundColor: '#F0F0F0' },
   content: { padding: 12 },
   location: { width: '50%', height: 10, backgroundColor: '#F0F0F0', borderRadius: 4, marginBottom: 8 },
   title: { width: '80%', height: 14, backgroundColor: '#F0F0F0', borderRadius: 4, marginBottom: 8 },
@@ -177,27 +182,17 @@ interface ListingCardProps {
 }
 
 const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFavorited = false }) => {
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('de-DE', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
+  const formatPrice = (price: number) => 
+    new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
 
   const getTimeAgo = (date: string) => {
-    try {
-      return formatDistanceToNow(new Date(date), { addSuffix: false });
-    } catch {
-      return '';
-    }
+    try { return formatDistanceToNow(new Date(date), { addSuffix: false }); } catch { return ''; }
   };
 
   const getImageSource = () => {
     const img = listing.images?.[0];
     if (!img) return null;
-    if (img.startsWith('http')) return { uri: img };
-    if (img.startsWith('data:')) return { uri: img };
+    if (img.startsWith('http') || img.startsWith('data:')) return { uri: img };
     return { uri: `data:image/jpeg;base64,${img}` };
   };
 
@@ -214,30 +209,14 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
             <Ionicons name="image-outline" size={32} color="#CCC" />
           </View>
         )}
-
         {listing.featured && (
-          <View style={cardStyles.topBadge}>
-            <Text style={cardStyles.topBadgeText}>TOP</Text>
-          </View>
+          <View style={cardStyles.topBadge}><Text style={cardStyles.topBadgeText}>TOP</Text></View>
         )}
-
         {onFavorite && (
-          <TouchableOpacity
-            style={cardStyles.favoriteButton}
-            onPress={(e) => {
-              e.stopPropagation();
-              onFavorite();
-            }}
-            accessibilityLabel={isFavorited ? "Remove from favorites" : "Add to favorites"}
-          >
-            <Ionicons
-              name={isFavorited ? 'heart' : 'heart-outline'}
-              size={20}
-              color={isFavorited ? '#E91E63' : '#fff'}
-            />
+          <TouchableOpacity style={cardStyles.favoriteButton} onPress={(e) => { e.stopPropagation(); onFavorite(); }}>
+            <Ionicons name={isFavorited ? 'heart' : 'heart-outline'} size={20} color={isFavorited ? '#E91E63' : '#fff'} />
           </TouchableOpacity>
         )}
-
         {imageCount > 1 && (
           <View style={cardStyles.imageCountBadge}>
             <Ionicons name="camera" size={11} color="#fff" />
@@ -245,7 +224,6 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
           </View>
         )}
       </View>
-
       <View style={cardStyles.content}>
         <View style={cardStyles.locationRow}>
           <Ionicons name="location" size={11} color="#999" />
@@ -269,59 +247,14 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
 });
 
 const cardStyles = StyleSheet.create({
-  card: {
-    width: CARD_WIDTH,
-    backgroundColor: '#fff',
-    borderRadius: BORDER_RADIUS,
-    overflow: 'hidden',
-    marginBottom: 16,
-  },
-  imageContainer: {
-    width: '100%',
-    height: CARD_IMAGE_HEIGHT,
-    backgroundColor: '#F5F5F5',
-  },
+  card: { width: CARD_WIDTH, backgroundColor: '#fff', borderRadius: BORDER_RADIUS, overflow: 'hidden', marginBottom: 16 },
+  imageContainer: { width: '100%', height: CARD_IMAGE_HEIGHT, backgroundColor: '#F5F5F5' },
   image: { width: '100%', height: '100%' },
-  placeholderImage: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-  },
-  topBadge: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    backgroundColor: '#FF9800',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-  },
+  placeholderImage: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5F5F5' },
+  topBadge: { position: 'absolute', top: 8, left: 8, backgroundColor: '#FF9800', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4 },
   topBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
-  favoriteButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  imageCountBadge: {
-    position: 'absolute',
-    bottom: 8,
-    left: 8,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
+  favoriteButton: { position: 'absolute', top: 8, right: 8, width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'center', alignItems: 'center' },
+  imageCountBadge: { position: 'absolute', bottom: 8, left: 8, backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, flexDirection: 'row', alignItems: 'center', gap: 3 },
   imageCountText: { color: '#fff', fontSize: 10, fontWeight: '600' },
   content: { padding: 10 },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginBottom: 4 },
@@ -329,15 +262,7 @@ const cardStyles = StyleSheet.create({
   title: { fontSize: 13, fontWeight: '500', color: '#333', lineHeight: 17, marginBottom: 6, height: 34 },
   priceRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
   price: { fontSize: 15, fontWeight: '700', color: '#2E7D32' },
-  negotiable: {
-    fontSize: 10,
-    color: '#2E7D32',
-    fontWeight: '600',
-    backgroundColor: '#E8F5E9',
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderRadius: 3,
-  },
+  negotiable: { fontSize: 10, color: '#2E7D32', fontWeight: '600', backgroundColor: '#E8F5E9', paddingHorizontal: 5, paddingVertical: 2, borderRadius: 3 },
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   time: { fontSize: 10, color: '#999' },
   viewsRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
@@ -361,156 +286,83 @@ export default function HomeScreen() {
 
   const fetchData = useCallback(async (refresh = false) => {
     try {
-      if (refresh) {
-        setPage(1);
-        setHasMore(true);
-      }
-
+      if (refresh) { setPage(1); setHasMore(true); }
       const [listingsRes, categoriesRes] = await Promise.all([
-        listingsApi.getAll({
-          category: selectedCategory || undefined,
-          page: refresh ? 1 : page,
-          limit: 20,
-        }),
+        listingsApi.getAll({ category: selectedCategory || undefined, page: refresh ? 1 : page, limit: 20 }),
         categoriesApi.getAll(),
       ]);
-
-      if (refresh) {
-        setListings(listingsRes.listings);
-      } else {
-        setListings((prev) => [...prev, ...listingsRes.listings]);
-      }
+      if (refresh) { setListings(listingsRes.listings); }
+      else { setListings((prev) => [...prev, ...listingsRes.listings]); }
       setHasMore(listingsRes.page < listingsRes.pages);
       setCategories(categoriesRes);
-
       if (isAuthenticated) {
-        try {
-          const favs = await favoritesApi.getAll();
-          setFavorites(new Set(favs.map((f: Listing) => f.id)));
-        } catch (e) {}
+        try { const favs = await favoritesApi.getAll(); setFavorites(new Set(favs.map((f: Listing) => f.id))); } catch (e) {}
       }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+    } catch (error) { console.error('Error fetching data:', error); }
+    finally { setLoading(false); setRefreshing(false); }
   }, [selectedCategory, page, isAuthenticated]);
 
-  useEffect(() => {
-    fetchData(true);
-  }, [selectedCategory]);
+  useEffect(() => { fetchData(true); }, [selectedCategory]);
 
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    fetchData(true);
-  }, [fetchData]);
+  const onRefresh = useCallback(() => { setRefreshing(true); fetchData(true); }, [fetchData]);
 
-  const loadMore = () => {
-    if (!loading && hasMore) {
-      setPage((prev) => prev + 1);
-      fetchData();
-    }
-  };
+  const loadMore = () => { if (!loading && hasMore) { setPage((prev) => prev + 1); fetchData(); } };
 
   const toggleFavorite = async (listingId: string) => {
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
-    }
-
+    if (!isAuthenticated) { router.push('/login'); return; }
     try {
       if (favorites.has(listingId)) {
         await favoritesApi.remove(listingId);
-        setFavorites((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(listingId);
-          return newSet;
-        });
+        setFavorites((prev) => { const newSet = new Set(prev); newSet.delete(listingId); return newSet; });
       } else {
         await favoritesApi.add(listingId);
         setFavorites((prev) => new Set(prev).add(listingId));
       }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-    }
+    } catch (error) { console.error('Error toggling favorite:', error); }
   };
 
   const handleCategoryPress = (categoryId: string) => {
-    if (categoryId === 'vehicles') {
-      router.push('/auto');
-    } else {
-      setSelectedCategory(categoryId === selectedCategory ? null : categoryId);
-    }
+    if (categoryId === 'vehicles') { router.push('/auto'); }
+    else { setSelectedCategory(categoryId === selectedCategory ? null : categoryId); }
   };
 
-  // Get truncated city name for small screens
-  const getTruncatedCity = (city: string) => {
-    return width < 375 ? city.substring(0, 3) : city;
-  };
-
-  // ========== HEADER COMPONENT (2 ROWS) ============
+  // ============ HEADER COMPONENT ============
   const renderHeader = () => (
-    <View style={styles.headerContainer}>
-      {/* ========== ROW 1: BRAND + NOTIFICATIONS ========== */}
+    <View style={styles.headerWrapper}>
+      {/* ROW 1: BRAND + NOTIFICATIONS */}
       <View style={styles.row1}>
-        {/* Logo - Left aligned */}
         <Text style={styles.logo}>avida</Text>
-        
-        {/* Notification Bell - Right aligned (row1 has justifyContent: space-between) */}
         <TouchableOpacity
           style={styles.notificationButton}
           onPress={() => isAuthenticated ? router.push('/messages') : router.push('/login')}
           accessibilityLabel="Notifications"
-          accessibilityRole="button"
-          accessibilityHint={`You have ${notificationCount} notifications`}
         >
           <Ionicons name="notifications-outline" size={ICON_SIZE} color="#333" />
           {notificationCount > 0 && (
             <View style={styles.notificationBadge}>
-              <Text style={styles.notificationBadgeText}>
-                {notificationCount > 9 ? '9+' : notificationCount}
-              </Text>
+              <Text style={styles.notificationBadgeText}>{notificationCount > 9 ? '9+' : notificationCount}</Text>
             </View>
           )}
         </TouchableOpacity>
       </View>
 
-      {/* ========== ROW 2: SEARCH + LOCATION ========== */}
+      {/* ROW 2: SEARCH + LOCATION */}
       <View style={styles.row2}>
-        {/* Search Field - Takes most space */}
-        <TouchableOpacity
-          style={styles.searchField}
-          onPress={() => router.push('/search')}
-          activeOpacity={0.8}
-          accessibilityLabel="Search for items"
-          accessibilityRole="search"
-        >
+        <TouchableOpacity style={styles.searchField} onPress={() => router.push('/search')} activeOpacity={0.8}>
           <Ionicons name="search" size={20} color="#666" />
-          <Text style={styles.searchPlaceholder} numberOfLines={1}>
-            Search in your area
-          </Text>
+          <Text style={styles.searchPlaceholder}>Search in your area</Text>
         </TouchableOpacity>
-
-        {/* Location Chip */}
-        <TouchableOpacity
-          style={styles.locationChip}
-          activeOpacity={0.7}
-          accessibilityLabel="Change location"
-          accessibilityRole="button"
-        >
+        <TouchableOpacity style={styles.locationChip} activeOpacity={0.7}>
           <Ionicons name="location" size={16} color="#2E7D32" />
-          <Text style={styles.locationText} numberOfLines={1}>
-            {getTruncatedCity(currentCity)}
-          </Text>
+          <Text style={styles.locationText} numberOfLines={1}>{currentCity}</Text>
           <Ionicons name="chevron-down" size={14} color="#666" />
         </TouchableOpacity>
       </View>
 
-      {/* Soft divider */}
-      <View style={styles.headerDivider} />
+      {/* FULL-WIDTH DIVIDER */}
+      <View style={styles.divider} />
 
-      {/* ========== CATEGORY ICONS ROW ========== */}
+      {/* CATEGORY ICONS - ROUNDED SQUARES */}
       <View style={styles.categoriesSection}>
         <ScrollView
           horizontal
@@ -530,18 +382,13 @@ export default function HomeScreen() {
         </ScrollView>
       </View>
 
-      {/* ========== SECTION HEADER ========== */}
+      {/* SECTION TITLE */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>
-          {selectedCategory 
-            ? FULL_CATEGORIES.find(c => c.id === selectedCategory)?.name || 'Listings'
-            : 'Recent Listings'}
+          {selectedCategory ? FULL_CATEGORIES.find(c => c.id === selectedCategory)?.name || 'Listings' : 'Recent Listings'}
         </Text>
         {selectedCategory && (
-          <TouchableOpacity 
-            onPress={() => setSelectedCategory(null)}
-            accessibilityLabel="Clear category filter"
-          >
+          <TouchableOpacity onPress={() => setSelectedCategory(null)}>
             <Text style={styles.clearFilter}>Clear</Text>
           </TouchableOpacity>
         )}
@@ -549,7 +396,6 @@ export default function HomeScreen() {
     </View>
   );
 
-  // ============ RENDER ITEM ============
   const renderItem = ({ item, index }: { item: Listing; index: number }) => (
     <View style={[styles.cardWrapper, index % 2 === 0 ? styles.cardLeft : styles.cardRight]}>
       <ListingCard
@@ -561,22 +407,13 @@ export default function HomeScreen() {
     </View>
   );
 
-  // ============ LOADING STATE ============
   if (loading && listings.length === 0) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         {renderHeader()}
         <View style={styles.skeletonGrid}>
-          <View style={styles.skeletonRow}>
-            <SkeletonCard />
-            <View style={{ width: COLUMN_GAP }} />
-            <SkeletonCard />
-          </View>
-          <View style={styles.skeletonRow}>
-            <SkeletonCard />
-            <View style={{ width: COLUMN_GAP }} />
-            <SkeletonCard />
-          </View>
+          <View style={styles.skeletonRow}><SkeletonCard /><View style={{ width: COLUMN_GAP }} /><SkeletonCard /></View>
+          <View style={styles.skeletonRow}><SkeletonCard /><View style={{ width: COLUMN_GAP }} /><SkeletonCard /></View>
         </View>
       </SafeAreaView>
     );
@@ -592,29 +429,12 @@ export default function HomeScreen() {
         key="grid-two-columns"
         columnWrapperStyle={styles.columnWrapper}
         ListHeaderComponent={renderHeader}
-        ListEmptyComponent={
-          <EmptyState
-            icon="pricetags-outline"
-            title="No listings yet"
-            description="Be the first to post an ad in your area!"
-          />
-        }
+        ListEmptyComponent={<EmptyState icon="pricetags-outline" title="No listings yet" description="Be the first to post an ad in your area!" />}
         contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
-            onRefresh={onRefresh} 
-            colors={['#2E7D32']}
-            tintColor="#2E7D32"
-          />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2E7D32']} tintColor="#2E7D32" />}
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          loading && listings.length > 0 ? (
-            <ActivityIndicator style={styles.footer} color="#2E7D32" />
-          ) : null
-        }
+        ListFooterComponent={loading && listings.length > 0 ? <ActivityIndicator style={styles.footer} color="#2E7D32" /> : null}
         removeClippedSubviews={true}
         maxToRenderPerBatch={10}
         windowSize={5}
@@ -629,14 +449,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
-  
-  // ========== HEADER CONTAINER ==========
-  headerContainer: {
+
+  // ========== HEADER (NO BOX, PLAIN SURFACE) ==========
+  headerWrapper: {
     backgroundColor: '#fff',
-    marginBottom: 8,
+    // NO border radius, NO margin - spans full width
   },
 
-  // ========== ROW 1: BRAND + NOTIFICATIONS ==========
+  // ROW 1
   row1: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -653,7 +473,6 @@ const styles = StyleSheet.create({
   notificationButton: {
     width: TOUCH_TARGET,
     height: TOUCH_TARGET,
-    borderRadius: TOUCH_TARGET / 2,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -677,12 +496,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // ========== ROW 2: SEARCH + LOCATION ==========
+  // ROW 2
   row2: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: HORIZONTAL_PADDING,
-    paddingBottom: 8,
+    paddingBottom: 12,
     gap: 10,
   },
   searchField: {
@@ -703,59 +522,58 @@ const styles = StyleSheet.create({
   locationChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: '#F0F0F0',
     borderRadius: 22,
     height: 44,
     paddingHorizontal: 12,
     gap: 4,
+    minWidth: 96, // Minimum width to prevent aggressive truncation
   },
   locationText: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#333',
     fontWeight: '500',
   },
 
-  // ========== HEADER DIVIDER ==========
-  headerDivider: {
+  // DIVIDER - Full width
+  divider: {
     height: 1,
-    backgroundColor: '#F0F0F0',
-    marginTop: 12,
+    backgroundColor: '#EBEBEB',
+    marginHorizontal: 0, // Edge to edge
   },
 
-  // ========== CATEGORIES ==========
+  // CATEGORIES
   categoriesSection: {
-    marginTop: 12,
+    paddingTop: 16,
   },
   categoriesContent: {
     paddingHorizontal: HORIZONTAL_PADDING,
-    paddingVertical: 8,
+    gap: CATEGORY_GAP,
   },
 
-  // ========== SECTION HEADER ==========
+  // SECTION HEADER
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: HORIZONTAL_PADDING,
-    paddingTop: 8,
+    paddingTop: 20,
     paddingBottom: 12,
   },
   sectionTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '700',
     color: '#333',
   },
   clearFilter: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#2E7D32',
     fontWeight: '500',
   },
 
-  // ========== LISTING GRID ==========
+  // LISTINGS GRID
   listContent: {
     paddingHorizontal: HORIZONTAL_PADDING,
-    paddingTop: 8,
     paddingBottom: 100,
   },
   columnWrapper: {
@@ -771,7 +589,7 @@ const styles = StyleSheet.create({
     marginLeft: COLUMN_GAP / 2,
   },
 
-  // ========== SKELETON ==========
+  // SKELETON
   skeletonGrid: {
     paddingHorizontal: HORIZONTAL_PADDING,
     paddingTop: 16,
@@ -781,7 +599,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  // ========== FOOTER ==========
+  // FOOTER
   footer: {
     paddingVertical: 20,
   },
