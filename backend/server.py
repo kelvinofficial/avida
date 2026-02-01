@@ -1190,54 +1190,233 @@ async def create_auto_conversation(request: Request):
     conversation_id = f"conv_{uuid.uuid4().hex[:12]}"
     now = datetime.now(timezone.utc)
     
-    # Generate dummy messages for demo
-    dummy_messages = [
-        {
-            "id": f"msg_{uuid.uuid4().hex[:8]}",
-            "sender_id": buyer_id,
-            "sender_name": buyer_name,
-            "content": initial_message if initial_message else f"Hi, I'm interested in the {listing.get('make')} {listing.get('model')}. Is it still available?",
-            "timestamp": now - timedelta(minutes=30),
-            "read": True,
-        },
-        {
-            "id": f"msg_{uuid.uuid4().hex[:8]}",
-            "sender_id": seller_id,
-            "sender_name": seller_name,
-            "content": f"Hello! Yes, the {listing.get('make')} {listing.get('model')} is still available. Would you like to schedule a viewing?",
-            "timestamp": now - timedelta(minutes=25),
-            "read": True,
-        },
-        {
-            "id": f"msg_{uuid.uuid4().hex[:8]}",
-            "sender_id": buyer_id,
-            "sender_name": buyer_name,
-            "content": "That would be great! Is it possible to see it this weekend?",
-            "timestamp": now - timedelta(minutes=20),
-            "read": True,
-        },
-        {
-            "id": f"msg_{uuid.uuid4().hex[:8]}",
-            "sender_id": seller_id,
-            "sender_name": seller_name,
-            "content": "Sure! I'm available Saturday afternoon between 2-5 PM. Does that work for you?",
-            "timestamp": now - timedelta(minutes=15),
-            "read": True,
-        },
-        {
-            "id": f"msg_{uuid.uuid4().hex[:8]}",
-            "sender_id": buyer_id,
-            "sender_name": buyer_name,
-            "content": "Perfect! Saturday at 3 PM works. Can you send me the exact address?",
-            "timestamp": now - timedelta(minutes=10),
-            "read": True,
-        },
-        {
-            "id": f"msg_{uuid.uuid4().hex[:8]}",
-            "sender_id": seller_id,
-            "sender_name": seller_name,
-            "content": f"Great! The address is {listing.get('location', 'Berlin')}. I'll send you the exact location. See you Saturday! 🚗",
-            "timestamp": now - timedelta(minutes=5),
+    # Generate dummy messages for demo - multiple templates for variety
+    import random
+    template_type = random.choice(['viewing', 'price_negotiation', 'questions', 'test_drive'])
+    
+    if template_type == 'viewing':
+        dummy_messages = [
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": buyer_id,
+                "sender_name": buyer_name,
+                "content": initial_message if initial_message else f"Hi, I'm interested in the {listing.get('make')} {listing.get('model')}. Is it still available?",
+                "timestamp": now - timedelta(minutes=30),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": seller_id,
+                "sender_name": seller_name,
+                "content": f"Hello! Yes, the {listing.get('make')} {listing.get('model')} is still available. Would you like to schedule a viewing?",
+                "timestamp": now - timedelta(minutes=25),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": buyer_id,
+                "sender_name": buyer_name,
+                "content": "That would be great! Is it possible to see it this weekend?",
+                "timestamp": now - timedelta(minutes=20),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": seller_id,
+                "sender_name": seller_name,
+                "content": "Sure! I'm available Saturday afternoon between 2-5 PM. Does that work for you?",
+                "timestamp": now - timedelta(minutes=15),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": buyer_id,
+                "sender_name": buyer_name,
+                "content": "Perfect! Saturday at 3 PM works. Can you send me the exact address?",
+                "timestamp": now - timedelta(minutes=10),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": seller_id,
+                "sender_name": seller_name,
+                "content": f"Great! The address is {listing.get('location', 'Berlin')}. I'll send you the exact location. See you Saturday! 🚗",
+                "timestamp": now - timedelta(minutes=5),
+                "read": False,
+            },
+        ]
+    elif template_type == 'price_negotiation':
+        price = listing.get('price', 25000)
+        offer = int(price * 0.9)
+        counter = int(price * 0.95)
+        dummy_messages = [
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": buyer_id,
+                "sender_name": buyer_name,
+                "content": f"Hi! I saw your {listing.get('make')} {listing.get('model')} listing. What's your best price?",
+                "timestamp": now - timedelta(minutes=45),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": seller_id,
+                "sender_name": seller_name,
+                "content": f"Hello! The listed price of €{price:,} is already competitive for this model. Are you a serious buyer?",
+                "timestamp": now - timedelta(minutes=40),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": buyer_id,
+                "sender_name": buyer_name,
+                "content": f"Yes, I'm ready to buy today if we can agree on a price. Would you consider €{offer:,}?",
+                "timestamp": now - timedelta(minutes=35),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": seller_id,
+                "sender_name": seller_name,
+                "content": f"That's a bit low for me. I could do €{counter:,} if you can pick it up this week. 🤝",
+                "timestamp": now - timedelta(minutes=30),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": buyer_id,
+                "sender_name": buyer_name,
+                "content": "Deal! Can I come see it tomorrow to finalize everything?",
+                "timestamp": now - timedelta(minutes=25),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": seller_id,
+                "sender_name": seller_name,
+                "content": "Perfect! Come by anytime after 10 AM. I'll have all the paperwork ready. 📝",
+                "timestamp": now - timedelta(minutes=20),
+                "read": False,
+            },
+        ]
+    elif template_type == 'questions':
+        dummy_messages = [
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": buyer_id,
+                "sender_name": buyer_name,
+                "content": f"Hi! I have a few questions about the {listing.get('make')} {listing.get('model')}.",
+                "timestamp": now - timedelta(minutes=60),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": seller_id,
+                "sender_name": seller_name,
+                "content": "Of course! I'm happy to answer any questions you have.",
+                "timestamp": now - timedelta(minutes=55),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": buyer_id,
+                "sender_name": buyer_name,
+                "content": f"Has the car ever been in an accident? And when was the last service?",
+                "timestamp": now - timedelta(minutes=50),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": seller_id,
+                "sender_name": seller_name,
+                "content": f"The car is accident-free with a clean history! Last service was done 2 months ago at the authorized dealer. I have all records. ✅",
+                "timestamp": now - timedelta(minutes=45),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": buyer_id,
+                "sender_name": buyer_name,
+                "content": "That's great! What about the tires and brake condition?",
+                "timestamp": now - timedelta(minutes=40),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": seller_id,
+                "sender_name": seller_name,
+                "content": "Tires are about 70% life remaining, and brakes were just replaced during the last service. Car is in excellent condition! 💯",
+                "timestamp": now - timedelta(minutes=35),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": buyer_id,
+                "sender_name": buyer_name,
+                "content": "Sounds good! Can I schedule an inspection?",
+                "timestamp": now - timedelta(minutes=30),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": seller_id,
+                "sender_name": seller_name,
+                "content": "Absolutely! I'm confident in the car's condition. Let me know when works for you.",
+                "timestamp": now - timedelta(minutes=25),
+                "read": False,
+            },
+        ]
+    else:  # test_drive
+        dummy_messages = [
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": buyer_id,
+                "sender_name": buyer_name,
+                "content": f"Hello! I love the look of your {listing.get('make')} {listing.get('model')}. Can I arrange a test drive?",
+                "timestamp": now - timedelta(minutes=50),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": seller_id,
+                "sender_name": seller_name,
+                "content": "Hi there! Thanks for your interest. Yes, test drives are welcome. Do you have a valid license?",
+                "timestamp": now - timedelta(minutes=45),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": buyer_id,
+                "sender_name": buyer_name,
+                "content": "Yes, I have a full license. I've been driving for 8 years.",
+                "timestamp": now - timedelta(minutes=40),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": seller_id,
+                "sender_name": seller_name,
+                "content": "Perfect! How about tomorrow at 2 PM? The car drives like a dream, you'll love it! 🚙💨",
+                "timestamp": now - timedelta(minutes=35),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": buyer_id,
+                "sender_name": buyer_name,
+                "content": "Tomorrow works! Where should I meet you?",
+                "timestamp": now - timedelta(minutes=30),
+                "read": True,
+            },
+            {
+                "id": f"msg_{uuid.uuid4().hex[:8]}",
+                "sender_id": seller_id,
+                "sender_name": seller_name,
+                "content": f"Let's meet at my showroom in {listing.get('city', 'Berlin')}. I'll send you the exact address. Bring your license! 📍",
+                "timestamp": now - timedelta(minutes=25),
+                "read": False,
+            },
+        ]
             "read": False,
         },
     ]
