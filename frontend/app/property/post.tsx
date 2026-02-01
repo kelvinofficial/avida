@@ -14,11 +14,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import axios from 'axios';
-import Constants from 'expo-constants';
+import { api } from '../../src/utils/api';
 import { PROPERTY_TYPE_CATEGORIES, FACILITIES_LIST } from '../../src/types/property';
-
-const API_URL = Constants.expoConfig?.extra?.EXPO_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
 const COLORS = {
   primary: '#2E7D32',
