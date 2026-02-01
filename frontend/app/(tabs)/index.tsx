@@ -643,17 +643,15 @@ const styles = StyleSheet.create({
   row1: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     height: ROW_1_HEIGHT,
     paddingHorizontal: HORIZONTAL_PADDING,
   },
   logo: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '700',
     color: '#2E7D32',
     letterSpacing: -0.5,
-  },
-  row1Spacer: {
-    flex: 1,
   },
   notificationButton: {
     width: TOUCH_TARGET,
@@ -664,8 +662,8 @@ const styles = StyleSheet.create({
   },
   notificationBadge: {
     position: 'absolute',
-    top: 6,
-    right: 6,
+    top: 4,
+    right: 4,
     backgroundColor: '#E53935',
     borderRadius: 10,
     minWidth: 18,
@@ -686,12 +684,12 @@ const styles = StyleSheet.create({
   row2: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: ROW_2_HEIGHT,
     paddingHorizontal: HORIZONTAL_PADDING,
+    paddingBottom: 8,
     gap: 10,
   },
   searchField: {
-    flex: 0.68, // 68% width
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F0F0F0',
@@ -706,21 +704,19 @@ const styles = StyleSheet.create({
     color: '#888',
   },
   locationChip: {
-    flex: 0.32, // 32% width
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F0F0F0',
-    borderRadius: 20,
-    height: 40,
-    paddingHorizontal: 10,
+    borderRadius: 22,
+    height: 44,
+    paddingHorizontal: 12,
     gap: 4,
   },
   locationText: {
     fontSize: 13,
     color: '#333',
     fontWeight: '500',
-    maxWidth: 60,
   },
 
   // ========== HEADER DIVIDER ==========
