@@ -50,6 +50,7 @@ interface SimilarListing extends Property {
 
 interface SimilarListingsProps {
   propertyId: string;
+  category?: 'property' | 'auto' | 'electronics' | 'other';
   onListingPress?: (listing: SimilarListing) => void;
 }
 
