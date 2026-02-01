@@ -1,29 +1,329 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  Image,
   TouchableOpacity,
-  ActivityIndicator,
-  Alert,
+  Image,
   Dimensions,
+  Alert,
   Share,
   Modal,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { theme, CATEGORY_COLORS, CATEGORY_ICON_COLORS } from '../../src/utils/theme';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { listingsApi, favoritesApi, conversationsApi, reportsApi, categoriesApi } from '../../src/utils/api';
 import { Listing, Category } from '../../src/types';
 import { useAuthStore } from '../../src/store/authStore';
-import { formatDistanceToNow, format } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 
-const { width } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const HORIZONTAL_PADDING = 16;
 
+const COLORS = {
+  primary: '#2E7D32',
+  primaryLight: '#E8F5E9',
+  surface: '#FFFFFF',
+  background: '#F5F5F5',
+  text: '#1A1A1A',
+  textSecondary: '#666666',
+  border: '#E0E0E0',
+  error: '#D32F2F',
+  warning: '#F57C00',
+  verified: '#1565C0',
+  gold: '#FFB800',
+};
+
+// ============ IMAGE CAROUSEL ============
+const ImageCarousel = memo(({ 
+  images, 
+  onImagePress, 
+  featured 
+}: { 
+  images: string[]; 
+  onImagePress: (index: number) => void; 
+  featured?: boolean;
+}) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const getImageUri = (img: string) => {
+    if (img.startsWith('data:') || img.startsWith('http')) return img;
+    return `data:image/jpeg;base64,${img}`;
+  };
+
+  return (
+    <View style={carouselStyles.container}>
+      <FlatList
+        data={images.length > 0 ? images : ['placeholder']}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={(e) => {
+          const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+          setCurrentIndex(index);
+        }}
+        renderItem={({ item, index }) => (
+          <TouchableOpacity activeOpacity={0.95} onPress={() => onImagePress(index)}>
+            {item === 'placeholder' ? (
+              <View style={[carouselStyles.image, carouselStyles.placeholder]}>
+                <Ionicons name="image-outline" size={64} color={COLORS.textSecondary} />
+              </View>
+            ) : (
+              <Image source={{ uri: getImageUri(item) }} style={carouselStyles.image} resizeMode="cover" />
+            )}
+          </TouchableOpacity>
+        )}
+        keyExtractor={(_, index) => index.toString()}
+      />
+      
+      {/* Featured Badge */}
+      {featured && (
+        <View style={carouselStyles.featuredBadge}>
+          <Ionicons name="star" size={12} color="#fff" />
+          <Text style={carouselStyles.featuredText}>Featured</Text>
+        </View>
+      )}
+      
+      {/* Image Count */}
+      {images.length > 0 && (
+        <View style={carouselStyles.imageCount}>
+          <Ionicons name="camera" size={14} color="#fff" />
+          <Text style={carouselStyles.imageCountText}>{currentIndex + 1}/{images.length}</Text>
+        </View>
+      )}
+      
+      {/* Tap to zoom */}
+      <View style={carouselStyles.zoomHint}>
+        <Ionicons name="expand" size={14} color="#fff" />
+        <Text style={carouselStyles.zoomHintText}>Tap to zoom</Text>
+      </View>
+      
+      {/* Indicators */}
+      {images.length > 1 && (
+        <View style={carouselStyles.indicators}>
+          {images.map((_, index) => (
+            <View key={index} style={[carouselStyles.indicator, currentIndex === index && carouselStyles.indicatorActive]} />
+          ))}
+        </View>
+      )}
+    </View>
+  );
+});
+
+const carouselStyles = StyleSheet.create({
+  container: { position: 'relative', height: 280, backgroundColor: COLORS.background },
+  image: { width: SCREEN_WIDTH, height: 280 },
+  placeholder: { justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
+  featuredBadge: { position: 'absolute', top: 12, left: 12, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: COLORS.gold, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6 },
+  featuredText: { fontSize: 11, fontWeight: '700', color: '#fff' },
+  imageCount: { position: 'absolute', top: 12, right: 12, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12 },
+  imageCountText: { fontSize: 12, color: '#fff', fontWeight: '600' },
+  zoomHint: { position: 'absolute', bottom: 40, right: 12, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
+  zoomHintText: { fontSize: 11, color: '#fff' },
+  indicators: { position: 'absolute', bottom: 12, alignSelf: 'center', flexDirection: 'row', gap: 6 },
+  indicator: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.5)' },
+  indicatorActive: { backgroundColor: '#fff', width: 20 },
+});
+
+// ============ KEY DETAILS SECTION ============
+const KeyDetailsSection = memo(({ listing, category }: { listing: Listing; category: Category | null }) => {
+  const attributes = listing.attributes || {};
+  const details = Object.entries(attributes).map(([key, value]) => ({
+    label: key.replace(/_/g, ' '),
+    value: String(value),
+  }));
+
+  if (category) {
+    details.unshift({ label: 'Category', value: category.name });
+  }
+  if (listing.condition) {
+    details.push({ label: 'Condition', value: listing.condition });
+  }
+
+  if (details.length === 0) return null;
+
+  return (
+    <View style={detailStyles.container}>
+      <Text style={detailStyles.title}>Details</Text>
+      <View style={detailStyles.grid}>
+        {details.map((item, index) => (
+          <View key={index} style={detailStyles.item}>
+            <View style={detailStyles.iconBox}>
+              <Ionicons name="information-circle-outline" size={18} color={COLORS.primary} />
+            </View>
+            <View style={detailStyles.textBox}>
+              <Text style={detailStyles.label}>{item.label}</Text>
+              <Text style={detailStyles.value}>{item.value}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+});
+
+const detailStyles = StyleSheet.create({
+  container: { backgroundColor: COLORS.surface, padding: HORIZONTAL_PADDING, marginBottom: 8 },
+  title: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 14 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap' },
+  item: { width: '50%', flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, paddingRight: 8 },
+  iconBox: { width: 36, height: 36, borderRadius: 8, backgroundColor: COLORS.primaryLight, justifyContent: 'center', alignItems: 'center' },
+  textBox: { flex: 1 },
+  label: { fontSize: 11, color: COLORS.textSecondary, textTransform: 'capitalize' },
+  value: { fontSize: 14, fontWeight: '600', color: COLORS.text, marginTop: 1 },
+});
+
+// ============ DESCRIPTION SECTION ============
+const DescriptionSection = memo(({ description }: { description: string }) => {
+  const [expanded, setExpanded] = useState(false);
+  const isLong = description.length > 200;
+
+  return (
+    <View style={descStyles.container}>
+      <Text style={descStyles.title}>Description</Text>
+      <Text style={descStyles.text} numberOfLines={expanded ? undefined : 4}>{description}</Text>
+      {isLong && (
+        <TouchableOpacity onPress={() => setExpanded(!expanded)}>
+          <Text style={descStyles.readMore}>{expanded ? 'Show less' : 'Read more'}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+});
+
+const descStyles = StyleSheet.create({
+  container: { backgroundColor: COLORS.surface, padding: HORIZONTAL_PADDING, marginBottom: 8 },
+  title: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 10 },
+  text: { fontSize: 14, lineHeight: 22, color: COLORS.textSecondary },
+  readMore: { marginTop: 8, fontSize: 14, fontWeight: '600', color: COLORS.primary },
+});
+
+// ============ SELLER SECTION ============
+const SellerSection = memo(({ listing }: { listing: Listing }) => {
+  if (!listing.seller) return null;
+  
+  return (
+    <View style={sellerStyles.container}>
+      <Text style={sellerStyles.title}>Listed by</Text>
+      <View style={sellerStyles.card}>
+        {listing.seller.picture ? (
+          <Image source={{ uri: listing.seller.picture }} style={sellerStyles.avatar} />
+        ) : (
+          <View style={sellerStyles.avatarPlaceholder}>
+            <Ionicons name="person" size={28} color={COLORS.primary} />
+          </View>
+        )}
+        <View style={sellerStyles.info}>
+          <View style={sellerStyles.nameRow}>
+            <Text style={sellerStyles.name}>{listing.seller.name}</Text>
+            {listing.seller.verified && (
+              <View style={sellerStyles.verifiedBadge}>
+                <Ionicons name="checkmark-circle" size={14} color="#fff" />
+                <Text style={sellerStyles.verifiedText}>Verified</Text>
+              </View>
+            )}
+          </View>
+          <Text style={sellerStyles.memberSince}>
+            Member since {new Date(listing.seller.created_at).getFullYear()}
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+});
+
+const sellerStyles = StyleSheet.create({
+  container: { backgroundColor: COLORS.surface, padding: HORIZONTAL_PADDING, marginBottom: 8 },
+  title: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 14 },
+  card: { flexDirection: 'row', gap: 14 },
+  avatar: { width: 56, height: 56, borderRadius: 28 },
+  avatarPlaceholder: { width: 56, height: 56, borderRadius: 28, backgroundColor: COLORS.primaryLight, justifyContent: 'center', alignItems: 'center' },
+  info: { flex: 1, justifyContent: 'center' },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  name: { fontSize: 16, fontWeight: '700', color: COLORS.text },
+  verifiedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: COLORS.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4 },
+  verifiedText: { fontSize: 10, fontWeight: '700', color: '#fff' },
+  memberSince: { fontSize: 12, color: COLORS.textSecondary, marginTop: 4 },
+});
+
+// ============ SAFETY SECTION ============
+const SafetySection = memo(({ onReport }: { onReport: () => void }) => (
+  <View style={safetyStyles.container}>
+    <View style={safetyStyles.header}>
+      <Ionicons name="shield-checkmark" size={20} color={COLORS.primary} />
+      <Text style={safetyStyles.title}>Safety Tips</Text>
+    </View>
+    <View style={safetyStyles.tips}>
+      <View style={safetyStyles.tip}>
+        <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+        <Text style={safetyStyles.tipText}>Meet in a public place</Text>
+      </View>
+      <View style={safetyStyles.tip}>
+        <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+        <Text style={safetyStyles.tipText}>Don't send money before seeing the item</Text>
+      </View>
+      <View style={safetyStyles.tip}>
+        <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+        <Text style={safetyStyles.tipText}>Check the item thoroughly before paying</Text>
+      </View>
+    </View>
+    <TouchableOpacity style={safetyStyles.reportBtn} onPress={onReport}>
+      <Ionicons name="flag-outline" size={16} color={COLORS.error} />
+      <Text style={safetyStyles.reportText}>Report this listing</Text>
+    </TouchableOpacity>
+  </View>
+));
+
+const safetyStyles = StyleSheet.create({
+  container: { backgroundColor: COLORS.surface, padding: HORIZONTAL_PADDING, marginBottom: 8 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  title: { fontSize: 16, fontWeight: '700', color: COLORS.text },
+  tips: { gap: 8 },
+  tip: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  tipText: { fontSize: 13, color: COLORS.textSecondary },
+  reportBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: COLORS.error },
+  reportText: { fontSize: 14, fontWeight: '600', color: COLORS.error },
+});
+
+// ============ REPORT MODAL ============
+const ReportModal = memo(({ visible, onClose, onReport }: { visible: boolean; onClose: () => void; onReport: (reason: string) => void }) => (
+  <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
+    <TouchableOpacity style={reportStyles.overlay} activeOpacity={1} onPress={onClose}>
+      <View style={reportStyles.modal}>
+        <Text style={reportStyles.title}>Report Listing</Text>
+        <Text style={reportStyles.subtitle}>Why are you reporting this listing?</Text>
+        
+        {['Spam or scam', 'Prohibited item', 'Wrong category', 'Misleading information', 'Offensive content', 'Other'].map((reason) => (
+          <TouchableOpacity key={reason} style={reportStyles.option} onPress={() => onReport(reason)}>
+            <Text style={reportStyles.optionText}>{reason}</Text>
+            <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+          </TouchableOpacity>
+        ))}
+        
+        <TouchableOpacity style={reportStyles.cancelBtn} onPress={onClose}>
+          <Text style={reportStyles.cancelText}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
+  </Modal>
+));
+
+const reportStyles = StyleSheet.create({
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modal: { backgroundColor: COLORS.surface, borderRadius: 16, width: '100%', maxWidth: 360, padding: 20 },
+  title: { fontSize: 20, fontWeight: '700', color: COLORS.text, marginBottom: 4 },
+  subtitle: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 16 },
+  option: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  optionText: { fontSize: 15, color: COLORS.text },
+  cancelBtn: { marginTop: 16, paddingVertical: 12, alignItems: 'center' },
+  cancelText: { color: COLORS.error, fontWeight: '600', fontSize: 16 },
+});
+
+// ============ MAIN SCREEN ============
 export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -33,24 +333,15 @@ export default function ListingDetailScreen() {
   const [category, setCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showReportModal, setShowReportModal] = useState(false);
-  const [showImageViewer, setShowImageViewer] = useState(false);
-  const flatListRef = useRef<FlatList>(null);
 
-  useEffect(() => {
-    if (id) {
-      fetchListing();
-    }
-  }, [id]);
-
-  const fetchListing = async () => {
+  const fetchListing = useCallback(async () => {
     try {
+      setLoading(true);
       const data = await listingsApi.getOne(id!);
       setListing(data);
       setIsFavorited(data.is_favorited || false);
       
-      // Fetch category details
       try {
         const catData = await categoriesApi.getOne(data.category_id);
         setCategory(catData);
@@ -61,24 +352,46 @@ export default function ListingDetailScreen() {
     } finally {
       setLoading(false);
     }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) fetchListing();
+  }, [id, fetchListing]);
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
   };
 
-  const toggleFavorite = async () => {
+  const getTimeAgo = (date: string) => {
+    try {
+      return formatDistanceToNow(new Date(date), { addSuffix: true });
+    } catch {
+      return '';
+    }
+  };
+
+  const handleToggleFavorite = async () => {
     if (!isAuthenticated) {
       router.push('/login');
       return;
     }
 
+    const wasFavorited = isFavorited;
+    setIsFavorited(!isFavorited);
+
     try {
-      if (isFavorited) {
-        await favoritesApi.remove(id!);
-      } else {
-        await favoritesApi.add(id!);
-      }
-      setIsFavorited(!isFavorited);
+      if (wasFavorited) await favoritesApi.remove(id!);
+      else await favoritesApi.add(id!);
     } catch (error) {
-      console.error('Error toggling favorite:', error);
+      setIsFavorited(wasFavorited);
     }
+  };
+
+  const handleShare = async () => {
+    if (!listing) return;
+    try {
+      await Share.share({ message: `Check out: ${listing.title} - ${formatPrice(listing.price)}` });
+    } catch (error) {}
   };
 
   const handleChat = async () => {
@@ -96,18 +409,7 @@ export default function ListingDetailScreen() {
       const conversation = await conversationsApi.create(id!);
       router.push(`/chat/${conversation.id}`);
     } catch (error) {
-      console.error('Error creating conversation:', error);
       Alert.alert('Error', 'Failed to start chat');
-    }
-  };
-
-  const handleShare = async () => {
-    try {
-      await Share.share({
-        message: `Check out: ${listing?.title} - €${listing?.price}\n\nOn LocalMarket`,
-      });
-    } catch (error) {
-      console.error('Error sharing:', error);
     }
   };
 
@@ -126,40 +428,16 @@ export default function ListingDetailScreen() {
       setShowReportModal(false);
       Alert.alert('Report Submitted', 'Thank you for helping keep our community safe.');
     } catch (error) {
-      console.error('Error reporting:', error);
       Alert.alert('Error', 'Failed to submit report');
-    }
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('de-DE', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
-
-  const getTimeAgo = (date: string) => {
-    try {
-      return formatDistanceToNow(new Date(date), { addSuffix: true });
-    } catch {
-      return '';
-    }
-  };
-
-  const formatDate = (date: string) => {
-    try {
-      return format(new Date(date), 'MMM d, yyyy');
-    } catch {
-      return '';
     }
   };
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
+        <View style={styles.loading}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Loading listing...</Text>
         </View>
       </SafeAreaView>
     );
@@ -168,11 +446,11 @@ export default function ListingDetailScreen() {
   if (!listing) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Ionicons name="alert-circle-outline" size={64} color={theme.colors.outline} />
-          <Text style={styles.errorText}>Listing not found</Text>
-          <TouchableOpacity style={styles.backLink} onPress={() => router.back()}>
-            <Text style={styles.backLinkText}>Go back</Text>
+        <View style={styles.loading}>
+          <Ionicons name="alert-circle-outline" size={48} color={COLORS.textSecondary} />
+          <Text style={styles.loadingText}>Listing not found</Text>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Text style={styles.backButtonText}>Go Back</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -180,287 +458,95 @@ export default function ListingDetailScreen() {
   }
 
   const images = listing.images || [];
-  const currentImage = images[currentImageIndex];
-  const imageSource = currentImage
-    ? currentImage.startsWith('data:')
-      ? { uri: currentImage }
-      : { uri: `data:image/jpeg;base64,${currentImage}` }
-    : null;
-
-  const categoryColor = CATEGORY_COLORS[listing.category_id] || theme.colors.surfaceVariant;
-  const categoryIconColor = CATEGORY_ICON_COLORS[listing.category_id] || theme.colors.primary;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.headerButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={theme.colors.onSurface} />
-        </TouchableOpacity>
-        <View style={styles.headerActions}>
-          <TouchableOpacity style={styles.headerButton} onPress={handleShare}>
-            <Ionicons name="share-outline" size={24} color={theme.colors.onSurface} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.headerButton} onPress={toggleFavorite}>
-            <Ionicons
-              name={isFavorited ? 'heart' : 'heart-outline'}
-              size={24}
-              color={isFavorited ? theme.colors.error : theme.colors.onSurface}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false}>
         {/* Image Carousel */}
-        <TouchableOpacity 
-          style={styles.imageContainer}
-          activeOpacity={0.95}
-          onPress={() => setShowImageViewer(true)}
-        >
-          {imageSource ? (
-            <Image source={imageSource} style={styles.mainImage} resizeMode="cover" />
-          ) : (
-            <View style={styles.noImage}>
-              <Ionicons name="image-outline" size={64} color={theme.colors.outline} />
-              <Text style={styles.noImageText}>No Image</Text>
-            </View>
-          )}
-          
-          {/* Image counter */}
-          {images.length > 0 && (
-            <View style={styles.imageCounter}>
-              <Ionicons name="camera" size={14} color="#fff" />
-              <Text style={styles.imageCounterText}>{currentImageIndex + 1}/{images.length}</Text>
-            </View>
-          )}
-          
-          {/* Featured badge */}
-          {listing.featured && (
-            <View style={styles.featuredBadge}>
-              <Text style={styles.featuredText}>TOP</Text>
-            </View>
-          )}
+        <ImageCarousel
+          images={images}
+          onImagePress={() => {}}
+          featured={listing.featured}
+        />
 
-          {/* Navigation dots */}
-          {images.length > 1 && (
-            <View style={styles.pagination}>
-              {images.map((_, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.paginationDot,
-                    index === currentImageIndex && styles.paginationDotActive,
-                  ]}
-                  onPress={() => setCurrentImageIndex(index)}
-                />
-              ))}
-            </View>
-          )}
-        </TouchableOpacity>
+        {/* Header Actions (floating) */}
+        <View style={styles.floatingHeader}>
+          <TouchableOpacity style={styles.headerBtn} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={22} color={COLORS.text} />
+          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={styles.headerBtn} onPress={handleShare}>
+              <Ionicons name="share-outline" size={22} color={COLORS.text} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.headerBtn} onPress={handleToggleFavorite}>
+              <Ionicons name={isFavorited ? 'heart' : 'heart-outline'} size={22} color={isFavorited ? COLORS.error : COLORS.text} />
+            </TouchableOpacity>
+          </View>
+        </View>
 
-        {/* Thumbnails */}
-        {images.length > 1 && (
-          <ScrollView horizontal style={styles.thumbnails} showsHorizontalScrollIndicator={false}>
-            {images.map((img, index) => {
-              const thumbSource = img.startsWith('data:')
-                ? { uri: img }
-                : { uri: `data:image/jpeg;base64,${img}` };
-              return (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.thumbnail,
-                    index === currentImageIndex && styles.thumbnailActive,
-                  ]}
-                  onPress={() => setCurrentImageIndex(index)}
-                >
-                  <Image source={thumbSource} style={styles.thumbnailImage} />
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        )}
-
-        {/* Price Section */}
-        <View style={styles.priceSection}>
+        {/* Price & Title */}
+        <View style={styles.mainInfo}>
           <View style={styles.priceRow}>
             <Text style={styles.price}>{formatPrice(listing.price)}</Text>
-            {listing.negotiable && (
-              <View style={styles.negotiableBadge}>
-                <Text style={styles.negotiableText}>Negotiable</Text>
-              </View>
-            )}
+            {listing.negotiable && <Text style={styles.negotiable}>Negotiable</Text>}
           </View>
           <Text style={styles.title}>{listing.title}</Text>
-          
-          {/* Meta info */}
-          <View style={styles.metaRow}>
-            <View style={styles.metaItem}>
-              <Ionicons name="location" size={16} color={theme.colors.primary} />
-              <Text style={styles.metaText}>{listing.location}</Text>
-            </View>
-            <View style={styles.metaItem}>
-              <Ionicons name="time-outline" size={16} color={theme.colors.onSurfaceVariant} />
-              <Text style={styles.metaText}>{getTimeAgo(listing.created_at)}</Text>
-            </View>
+          <View style={styles.locationRow}>
+            <Ionicons name="location-outline" size={16} color={COLORS.textSecondary} />
+            <Text style={styles.location}>{listing.location}</Text>
           </View>
-          
-          {/* Stats */}
           <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Ionicons name="eye-outline" size={16} color={theme.colors.onSurfaceVariant} />
-              <Text style={styles.statText}>{listing.views} views</Text>
+            <View style={styles.stat}>
+              <Ionicons name="eye-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.statText}>{listing.views || 0} views</Text>
             </View>
-            <View style={styles.statItem}>
-              <Ionicons name="heart-outline" size={16} color={theme.colors.onSurfaceVariant} />
-              <Text style={styles.statText}>{listing.favorites_count} favorites</Text>
+            <View style={styles.stat}>
+              <Ionicons name="heart-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.statText}>{listing.favorites_count || 0} saves</Text>
+            </View>
+            <View style={styles.stat}>
+              <Ionicons name="time-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.statText}>{getTimeAgo(listing.created_at)}</Text>
             </View>
           </View>
         </View>
 
-        {/* Category & Condition */}
-        <View style={styles.section}>
-          <View style={styles.categoryConditionRow}>
-            {category && (
-              <View style={[styles.categoryBadge, { backgroundColor: categoryColor }]}>
-                <Ionicons name={category.icon as any} size={16} color={categoryIconColor} />
-                <Text style={[styles.categoryText, { color: categoryIconColor }]}>
-                  {category.name.split('&')[0].trim()}
-                </Text>
-              </View>
-            )}
-            {listing.condition && (
-              <View style={styles.conditionBadge}>
-                <Text style={styles.conditionText}>{listing.condition}</Text>
-              </View>
-            )}
-          </View>
-        </View>
+        {/* Key Details */}
+        <KeyDetailsSection listing={listing} category={category} />
 
         {/* Description */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.description}>{listing.description}</Text>
-        </View>
+        {listing.description && <DescriptionSection description={listing.description} />}
 
-        {/* Attributes */}
-        {Object.keys(listing.attributes || {}).length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Details</Text>
-            <View style={styles.attributesGrid}>
-              {Object.entries(listing.attributes).map(([key, value]) => (
-                <View key={key} style={styles.attributeItem}>
-                  <Text style={styles.attributeKey}>{key.replace(/_/g, ' ')}</Text>
-                  <Text style={styles.attributeValue}>{String(value)}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
+        {/* Seller */}
+        <SellerSection listing={listing} />
 
-        {/* Seller Info */}
-        {listing.seller && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Seller</Text>
-            <View style={styles.sellerCard}>
-              <View style={styles.sellerInfo}>
-                {listing.seller.picture ? (
-                  <Image source={{ uri: listing.seller.picture }} style={styles.sellerAvatar} />
-                ) : (
-                  <View style={styles.sellerAvatarPlaceholder}>
-                    <Ionicons name="person" size={24} color={theme.colors.onSurfaceVariant} />
-                  </View>
-                )}
-                <View style={styles.sellerDetails}>
-                  <View style={styles.sellerNameRow}>
-                    <Text style={styles.sellerName}>{listing.seller.name}</Text>
-                    {listing.seller.verified && (
-                      <View style={styles.verifiedBadge}>
-                        <Ionicons name="checkmark-circle" size={16} color={theme.colors.primary} />
-                      </View>
-                    )}
-                  </View>
-                  <Text style={styles.sellerMeta}>
-                    Member since {new Date(listing.seller.created_at).getFullYear()}
-                  </Text>
-                </View>
-              </View>
-              <TouchableOpacity style={styles.reportButton} onPress={() => setShowReportModal(true)}>
-                <Ionicons name="flag-outline" size={20} color={theme.colors.onSurfaceVariant} />
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
+        {/* Safety */}
+        <SafetySection onReport={() => setShowReportModal(true)} />
 
-        {/* Safety Tips */}
-        <View style={styles.safetySection}>
-          <View style={styles.safetyHeader}>
-            <Ionicons name="shield-checkmark" size={20} color={theme.colors.primary} />
-            <Text style={styles.safetyTitle}>Safety Tips</Text>
-          </View>
-          <Text style={styles.safetyText}>
-            • Meet in public places for transactions{'\n'}
-            • Don't send money before seeing the item{'\n'}
-            • Check the item thoroughly before paying
-          </Text>
-        </View>
-
-        <View style={styles.spacer} />
+        {/* Spacer for bottom actions */}
+        <View style={{ height: 100 }} />
       </ScrollView>
 
       {/* Bottom Actions */}
       {listing.user_id !== user?.user_id && (
         <View style={styles.bottomActions}>
-          <TouchableOpacity style={styles.callButton}>
-            <Ionicons name="call" size={20} color={theme.colors.primary} />
-            <Text style={styles.callButtonText}>Call</Text>
+          <TouchableOpacity style={styles.actionBtn} onPress={handleChat}>
+            <Ionicons name="chatbubble-outline" size={20} color={COLORS.primary} />
+            <Text style={styles.actionText}>Chat</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.chatButton} onPress={handleChat}>
-            <Ionicons name="chatbubble" size={20} color={theme.colors.onPrimary} />
-            <Text style={styles.chatButtonText}>Send Message</Text>
+          <TouchableOpacity style={[styles.actionBtn, styles.primaryBtn]} onPress={handleChat}>
+            <Ionicons name="send" size={20} color="#fff" />
+            <Text style={[styles.actionText, { color: '#fff' }]}>Send Message</Text>
           </TouchableOpacity>
         </View>
       )}
 
       {/* Report Modal */}
-      <Modal visible={showReportModal} animationType="fade" transparent>
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setShowReportModal(false)}
-        >
-          <View style={styles.reportModal}>
-            <Text style={styles.reportTitle}>Report Listing</Text>
-            <Text style={styles.reportSubtitle}>Why are you reporting this listing?</Text>
-            
-            {[
-              'Spam or scam',
-              'Prohibited item',
-              'Wrong category',
-              'Misleading information',
-              'Offensive content',
-              'Other',
-            ].map((reason) => (
-              <TouchableOpacity
-                key={reason}
-                style={styles.reportOption}
-                onPress={() => handleReport(reason)}
-              >
-                <Text style={styles.reportOptionText}>{reason}</Text>
-                <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceVariant} />
-              </TouchableOpacity>
-            ))}
-            
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setShowReportModal(false)}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+      <ReportModal
+        visible={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        onReport={handleReport}
+      />
     </SafeAreaView>
   );
 }
@@ -468,431 +554,147 @@ export default function ListingDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: COLORS.background,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.outlineVariant,
-  },
-  headerButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.surfaceVariant,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-  },
-  content: {
-    flex: 1,
-  },
-  loadingContainer: {
+  loading: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 40,
   },
-  errorText: {
+  loadingText: {
     fontSize: 16,
-    color: theme.colors.onSurfaceVariant,
-    marginTop: theme.spacing.md,
+    color: COLORS.textSecondary,
+    marginTop: 12,
   },
-  backLink: {
-    marginTop: theme.spacing.md,
+  backButton: {
+    marginTop: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: COLORS.primary,
+    borderRadius: 8,
   },
-  backLinkText: {
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
-  imageContainer: {
-    width: width,
-    height: width * 0.75,
-    backgroundColor: theme.colors.surfaceVariant,
-    position: 'relative',
-  },
-  mainImage: {
-    width: '100%',
-    height: '100%',
-  },
-  noImage: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  noImageText: {
-    color: theme.colors.onSurfaceVariant,
-    marginTop: theme.spacing.sm,
-  },
-  imageCounter: {
-    position: 'absolute',
-    bottom: theme.spacing.md,
-    right: theme.spacing.md,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  imageCounterText: {
+  backButtonText: {
     color: '#fff',
-    fontSize: 13,
     fontWeight: '600',
+    fontSize: 14,
   },
-  featuredBadge: {
+  floatingHeader: {
     position: 'absolute',
-    top: theme.spacing.md,
-    left: theme.spacing.md,
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  featuredText: {
-    color: theme.colors.onPrimary,
-    fontWeight: '700',
-    fontSize: 11,
-    letterSpacing: 0.5,
-  },
-  pagination: {
-    position: 'absolute',
-    bottom: theme.spacing.md,
+    top: 0,
     left: 0,
     right: 0,
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    zIndex: 10,
+  },
+  headerBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.9)',
     justifyContent: 'center',
-    gap: 6,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  paginationDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.5)',
+  headerRight: {
+    flexDirection: 'row',
+    gap: 10,
   },
-  paginationDotActive: {
-    backgroundColor: '#fff',
-    width: 20,
-  },
-  thumbnails: {
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    backgroundColor: theme.colors.surface,
-  },
-  thumbnail: {
-    width: 60,
-    height: 60,
-    borderRadius: theme.borderRadius.sm,
-    marginRight: theme.spacing.sm,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    overflow: 'hidden',
-  },
-  thumbnailActive: {
-    borderColor: theme.colors.primary,
-  },
-  thumbnailImage: {
-    width: '100%',
-    height: '100%',
-  },
-  priceSection: {
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.outlineVariant,
+  mainInfo: {
+    backgroundColor: COLORS.surface,
+    padding: HORIZONTAL_PADDING,
+    marginBottom: 8,
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
+    gap: 10,
   },
   price: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700',
-    color: theme.colors.onSurface,
+    color: COLORS.primary,
   },
-  negotiableBadge: {
-    backgroundColor: theme.colors.primaryContainer,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  negotiableText: {
+  negotiable: {
     fontSize: 12,
-    color: theme.colors.primary,
-    fontWeight: '600',
+    color: COLORS.primary,
+    fontWeight: '500',
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
   },
   title: {
     fontSize: 18,
     fontWeight: '600',
-    color: theme.colors.onSurface,
-    marginBottom: theme.spacing.md,
+    color: COLORS.text,
+    marginTop: 6,
     lineHeight: 24,
   },
-  metaRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.lg,
-    marginBottom: theme.spacing.sm,
-  },
-  metaItem: {
+  locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    marginTop: 10,
   },
-  metaText: {
-    fontSize: 13,
-    color: theme.colors.onSurfaceVariant,
+  location: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
   },
   statsRow: {
     flexDirection: 'row',
-    gap: theme.spacing.lg,
+    gap: 16,
+    marginTop: 12,
   },
-  statItem: {
+  stat: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
   statText: {
-    fontSize: 12,
-    color: theme.colors.onSurfaceVariant,
-  },
-  section: {
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
-    marginTop: theme.spacing.sm,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.onSurface,
-    marginBottom: theme.spacing.md,
-  },
-  categoryConditionRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-  },
-  categoryBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.full,
-    gap: 6,
-  },
-  categoryText: {
     fontSize: 13,
-    fontWeight: '600',
-  },
-  conditionBadge: {
-    backgroundColor: theme.colors.surfaceVariant,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.full,
-  },
-  conditionText: {
-    fontSize: 13,
-    color: theme.colors.onSurface,
-    fontWeight: '500',
-  },
-  description: {
-    fontSize: 14,
-    color: theme.colors.onSurface,
-    lineHeight: 22,
-  },
-  attributesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.sm,
-  },
-  attributeItem: {
-    backgroundColor: theme.colors.surfaceVariant,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.sm,
-    minWidth: '45%',
-  },
-  attributeKey: {
-    fontSize: 11,
-    color: theme.colors.onSurfaceVariant,
-    textTransform: 'capitalize',
-    marginBottom: 2,
-  },
-  attributeValue: {
-    fontSize: 14,
-    color: theme.colors.onSurface,
-    fontWeight: '600',
-  },
-  sellerCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  sellerInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  sellerAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  sellerAvatarPlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: theme.colors.surfaceVariant,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sellerDetails: {
-    marginLeft: theme.spacing.md,
-    flex: 1,
-  },
-  sellerNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  sellerName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.onSurface,
-  },
-  verifiedBadge: {
-    // badge styling
-  },
-  sellerMeta: {
-    fontSize: 13,
-    color: theme.colors.onSurfaceVariant,
-    marginTop: 2,
-  },
-  reportButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  safetySection: {
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.primaryContainer,
-    marginTop: theme.spacing.sm,
-    marginHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    marginBottom: theme.spacing.md,
-  },
-  safetyHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
-  },
-  safetyTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-  safetyText: {
-    fontSize: 12,
-    color: theme.colors.onPrimaryContainer,
-    lineHeight: 20,
-  },
-  spacer: {
-    height: 100,
+    color: COLORS.textSecondary,
   },
   bottomActions: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingVertical: 12,
+    paddingBottom: 24,
+    backgroundColor: COLORS.surface,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.outlineVariant,
-    gap: theme.spacing.md,
+    borderTopColor: COLORS.border,
+    gap: 10,
   },
-  callButton: {
+  actionBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.surface,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.full,
-    borderWidth: 2,
-    borderColor: theme.colors.primary,
-    gap: theme.spacing.sm,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    gap: 6,
   },
-  callButtonText: {
-    color: theme.colors.primary,
-    fontSize: 16,
-    fontWeight: '600',
+  primaryBtn: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
-  chatButton: {
-    flex: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.primary,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.full,
-    gap: theme.spacing.sm,
-  },
-  chatButtonText: {
-    color: theme.colors.onPrimary,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: theme.spacing.xl,
-  },
-  reportModal: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    width: '100%',
-    maxWidth: 360,
-    padding: theme.spacing.lg,
-  },
-  reportTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: theme.colors.onSurface,
-    marginBottom: theme.spacing.xs,
-  },
-  reportSubtitle: {
+  actionText: {
     fontSize: 14,
-    color: theme.colors.onSurfaceVariant,
-    marginBottom: theme.spacing.md,
-  },
-  reportOption: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.outlineVariant,
-  },
-  reportOptionText: {
-    fontSize: 15,
-    color: theme.colors.onSurface,
-  },
-  cancelButton: {
-    marginTop: theme.spacing.md,
-    paddingVertical: theme.spacing.md,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: theme.colors.error,
     fontWeight: '600',
-    fontSize: 16,
+    color: COLORS.primary,
   },
 });
