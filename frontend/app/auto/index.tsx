@@ -628,7 +628,7 @@ const MOCK_AUTO_LISTINGS: AutoListing[] = [
     price: 85000,
     negotiable: true,
     category_id: 'vehicles',
-    images: [],
+    images: [CAR_IMAGES[13]],
     location: 'Berlin, Germany',
     city: 'Berlin',
     distance: 7,
