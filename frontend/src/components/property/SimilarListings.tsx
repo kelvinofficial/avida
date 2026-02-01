@@ -571,8 +571,17 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
   // Handle press
   const handlePress = (listing: SimilarListing, index: number) => {
     trackEvent('click', propertyId, listing.id, listing.isSponsored, index);
-    if (onListingPress) onListingPress(listing);
-    else router.push(`/property/${listing.id}`);
+    if (onListingPress) {
+      onListingPress(listing);
+    } else {
+      // Navigate to the appropriate detail page based on category
+      if (isPropertyCategory) {
+        router.push(`/property/${listing.id}`);
+      } else {
+        // For other categories, use the generic listing page
+        router.push(`/listing/${listing.id}`);
+      }
+    }
   };
 
   // Render header
