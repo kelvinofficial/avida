@@ -602,6 +602,51 @@ export default function ListingDetailScreen() {
     }
   };
 
+  const handleCall = () => {
+    if (!listing?.seller?.phone) {
+      Alert.alert('Error', 'Phone number not available');
+      return;
+    }
+    Linking.openURL(`tel:${listing.seller.phone}`);
+  };
+
+  const handleWhatsApp = () => {
+    if (!listing) return;
+    const phone = listing.seller?.whatsapp || listing.seller?.phone || '';
+    if (!phone) {
+      Alert.alert('Error', 'WhatsApp number not available');
+      return;
+    }
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const message = encodeURIComponent(`Hi, I'm interested in your "${listing.title}" listed for ${formatPrice(listing.price)}. Is it still available?`);
+    Linking.openURL(`https://wa.me/${cleanPhone}?text=${message}`);
+  };
+
+  const handleSubmitOffer = async () => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    
+    if (!offerPrice) {
+      Alert.alert('Error', 'Please enter an offer amount');
+      return;
+    }
+
+    try {
+      // Start a conversation with the offer message
+      const conversation = await conversationsApi.create(id!);
+      // Navigate to chat with the offer
+      router.push(`/chat/${conversation.id}`);
+      Alert.alert('Offer Sent', `Your offer of ${formatPrice(parseInt(offerPrice))} has been sent to the seller.`);
+      setShowOfferModal(false);
+      setOfferPrice('');
+      setOfferMessage('');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to send offer');
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
