@@ -993,6 +993,15 @@ export default function PropertyScreen() {
         onApply={setFilters}
         purpose={purpose}
       />
+
+      {/* Floating Post Button */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push('/property/post')}
+        activeOpacity={0.9}
+      >
+        <Ionicons name="add" size={28} color="#fff" />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
