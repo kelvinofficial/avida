@@ -557,6 +557,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.primary,
   },
+  headerTyping: {
+    fontSize: 12,
+    color: theme.colors.primary,
+    fontStyle: 'italic',
+  },
   headerButton: {
     width: 40,
     height: 40,
