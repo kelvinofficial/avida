@@ -95,10 +95,14 @@ export interface AutoListing {
     user_id: string;
     name: string;
     picture?: string;
+    phone?: string;
+    whatsapp?: string;
     rating: number;
     verified: boolean;
     sellerType: 'individual' | 'dealer' | 'certified';
     memberSince: string;
+    allowsOffers?: boolean;
+    preferredContact?: 'whatsapp' | 'call';
   };
   
   is_favorited?: boolean;
