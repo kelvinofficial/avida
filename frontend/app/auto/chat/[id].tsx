@@ -239,8 +239,15 @@ export default function AutoChatScreen() {
         content,
       });
       
-      // Fetch updated conversation to get seller's auto-reply
+      // Show typing indicator after a short delay
+      setTimeout(() => {
+        setIsSellerTyping(true);
+        setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+      }, 800);
+      
+      // Fetch updated conversation to get seller's auto-reply after "typing" animation
       setTimeout(async () => {
+        setIsSellerTyping(false);
         try {
           const response = await api.get(`/auto/conversations/${id}`);
           setMessages(response.data.messages || []);
@@ -248,6 +255,7 @@ export default function AutoChatScreen() {
         } catch (err) {
           console.error('Error fetching updated messages:', err);
         }
+      }, 2500); // Typing for ~1.7 seconds before reply appears
       }, 500);
       
     } catch (error) {
