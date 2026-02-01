@@ -1259,6 +1259,9 @@ export default function PropertyDetailScreen() {
         {/* Verification */}
         <VerificationSection property={property} />
 
+        {/* Map & Location */}
+        <MapSection property={property} />
+
         {/* Spacer for bottom actions */}
         <View style={{ height: 120 }} />
       </ScrollView>
