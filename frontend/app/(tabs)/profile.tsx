@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,55 +7,574 @@ import {
   TouchableOpacity,
   Image,
   Alert,
-  ActivityIndicator,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../src/utils/theme';
+import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/store/authStore';
-import { listingsApi, favoritesApi, authApi } from '../../src/utils/api';
-import { Listing } from '../../src/types';
-import { EmptyState } from '../../src/components/EmptyState';
+import api from '../../src/utils/api';
+import { UserProfile, UserStats } from '../../src/types/settings';
 
+const COLORS = {
+  primary: '#2E7D32',
+  primaryLight: '#E8F5E9',
+  primaryDark: '#1B5E20',
+  secondary: '#FF6F00',
+  background: '#F5F5F5',
+  surface: '#FFFFFF',
+  text: '#212121',
+  textSecondary: '#757575',
+  border: '#E0E0E0',
+  error: '#D32F2F',
+  success: '#388E3C',
+  warning: '#F57C00',
+  info: '#1976D2',
+};
+
+const HORIZONTAL_PADDING = 16;
+
+// ============ PROFILE HEADER ============
+const ProfileHeader = ({ 
+  profile, 
+  onEditPress 
+}: { 
+  profile: UserProfile | null; 
+  onEditPress: () => void;
+}) => {
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  return (
+    <View style={headerStyles.container}>
+      <View style={headerStyles.avatarSection}>
+        {profile?.picture ? (
+          <Image source={{ uri: profile.picture }} style={headerStyles.avatar} />
+        ) : (
+          <View style={headerStyles.avatarPlaceholder}>
+            <Text style={headerStyles.avatarInitials}>
+              {profile?.name ? getInitials(profile.name) : 'U'}
+            </Text>
+          </View>
+        )}
+        
+        <TouchableOpacity style={headerStyles.editAvatarBtn} onPress={onEditPress}>
+          <Ionicons name="camera" size={16} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={headerStyles.infoSection}>
+        <View style={headerStyles.nameRow}>
+          <Text style={headerStyles.name}>{profile?.name || 'User'}</Text>
+          {profile?.verified && (
+            <View style={headerStyles.verifiedBadge}>
+              <Ionicons name="checkmark-circle" size={18} color={COLORS.primary} />
+            </View>
+          )}
+        </View>
+        
+        <View style={headerStyles.emailRow}>
+          <Ionicons name="mail-outline" size={14} color={COLORS.textSecondary} />
+          <Text style={headerStyles.email}>{profile?.email}</Text>
+          {profile?.email_verified && (
+            <View style={headerStyles.verifiedSmallBadge}>
+              <Ionicons name="checkmark" size={10} color="#fff" />
+            </View>
+          )}
+        </View>
+
+        {profile?.phone && (
+          <View style={headerStyles.emailRow}>
+            <Ionicons name="call-outline" size={14} color={COLORS.textSecondary} />
+            <Text style={headerStyles.email}>{profile.phone}</Text>
+            {profile?.phone_verified && (
+              <View style={headerStyles.verifiedSmallBadge}>
+                <Ionicons name="checkmark" size={10} color="#fff" />
+              </View>
+            )}
+          </View>
+        )}
+
+        {profile?.location && (
+          <View style={headerStyles.emailRow}>
+            <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
+            <Text style={headerStyles.email}>{profile.location}</Text>
+          </View>
+        )}
+      </View>
+
+      <TouchableOpacity style={headerStyles.editButton} onPress={onEditPress}>
+        <Ionicons name="pencil" size={16} color={COLORS.primary} />
+        <Text style={headerStyles.editButtonText}>Edit Profile</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const headerStyles = StyleSheet.create({
+  container: {
+    backgroundColor: COLORS.surface,
+    padding: HORIZONTAL_PADDING,
+    paddingTop: 24,
+    paddingBottom: 20,
+    alignItems: 'center',
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    marginBottom: 8,
+  },
+  avatarSection: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 3,
+    borderColor: COLORS.primaryLight,
+  },
+  avatarPlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: COLORS.primary,
+  },
+  avatarInitials: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  editAvatarBtn: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.surface,
+  },
+  infoSection: {
+    alignItems: 'center',
+    gap: 6,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  name: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  verifiedBadge: {},
+  emailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  email: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  verifiedSmallBadge: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: COLORS.success,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: COLORS.primaryLight,
+  },
+  editButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+});
+
+// ============ STATS ROW ============
+const StatsRow = ({ stats }: { stats: UserStats | null }) => {
+  const statItems = [
+    { label: 'Listings', value: stats?.active_listings || 0, icon: 'list' },
+    { label: 'Sold', value: stats?.sold_listings || 0, icon: 'checkmark-circle' },
+    { label: 'Favorites', value: stats?.total_favorites || 0, icon: 'heart' },
+  ];
+
+  return (
+    <View style={statsStyles.container}>
+      {statItems.map((item, index) => (
+        <View key={item.label} style={statsStyles.statItem}>
+          <View style={statsStyles.iconContainer}>
+            <Ionicons name={item.icon as any} size={20} color={COLORS.primary} />
+          </View>
+          <Text style={statsStyles.value}>{item.value}</Text>
+          <Text style={statsStyles.label}>{item.label}</Text>
+        </View>
+      ))}
+    </View>
+  );
+};
+
+const statsStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.surface,
+    marginHorizontal: HORIZONTAL_PADDING,
+    borderRadius: 16,
+    padding: 16,
+    justifyContent: 'space-around',
+    marginBottom: 8,
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  iconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  value: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  label: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+});
+
+// ============ ACTIVITY SECTION ============
+const ActivitySection = ({ onItemPress }: { onItemPress: (route: string) => void }) => {
+  const activityItems = [
+    { id: 'listings', label: 'My Listings', icon: 'list-outline', route: '/profile/my-listings', badge: null },
+    { id: 'purchases', label: 'Purchases', icon: 'bag-outline', route: '/profile/purchases', badge: null },
+    { id: 'sales', label: 'Sales', icon: 'cash-outline', route: '/profile/sales', badge: null },
+    { id: 'saved', label: 'Saved Items', icon: 'heart-outline', route: '/favorites', badge: null },
+    { id: 'viewed', label: 'Recently Viewed', icon: 'eye-outline', route: '/profile/recently-viewed', badge: null },
+  ];
+
+  return (
+    <View style={activityStyles.container}>
+      <View style={activityStyles.header}>
+        <Ionicons name="analytics-outline" size={20} color={COLORS.text} />
+        <Text style={activityStyles.title}>My Activity</Text>
+      </View>
+      
+      {activityItems.map((item) => (
+        <TouchableOpacity
+          key={item.id}
+          style={activityStyles.item}
+          onPress={() => onItemPress(item.route)}
+        >
+          <View style={activityStyles.itemLeft}>
+            <View style={activityStyles.iconContainer}>
+              <Ionicons name={item.icon as any} size={20} color={COLORS.primary} />
+            </View>
+            <Text style={activityStyles.itemLabel}>{item.label}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+};
+
+const activityStyles = StyleSheet.create({
+  container: {
+    backgroundColor: COLORS.surface,
+    marginHorizontal: HORIZONTAL_PADDING,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 8,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  itemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  itemLabel: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: COLORS.text,
+  },
+});
+
+// ============ TRUST SECTION ============
+const TrustSection = ({ profile }: { profile: UserProfile | null }) => {
+  const trustItems = [
+    { label: 'Email Verified', verified: profile?.email_verified || profile?.verified, icon: 'mail' },
+    { label: 'Phone Verified', verified: profile?.phone_verified, icon: 'call' },
+    { label: 'ID Verified', verified: false, icon: 'shield-checkmark' },
+  ];
+
+  return (
+    <View style={trustStyles.container}>
+      <View style={trustStyles.header}>
+        <Ionicons name="shield-checkmark-outline" size={20} color={COLORS.text} />
+        <Text style={trustStyles.title}>Trust & Identity</Text>
+      </View>
+      
+      <View style={trustStyles.items}>
+        {trustItems.map((item) => (
+          <View key={item.label} style={trustStyles.item}>
+            <View style={[trustStyles.iconContainer, item.verified && trustStyles.iconContainerVerified]}>
+              <Ionicons name={item.icon as any} size={18} color={item.verified ? COLORS.success : COLORS.textSecondary} />
+            </View>
+            <Text style={[trustStyles.itemLabel, item.verified && trustStyles.itemLabelVerified]}>
+              {item.label}
+            </Text>
+            <Ionicons 
+              name={item.verified ? 'checkmark-circle' : 'ellipse-outline'} 
+              size={18} 
+              color={item.verified ? COLORS.success : COLORS.border} 
+            />
+          </View>
+        ))}
+      </View>
+
+      <TouchableOpacity style={trustStyles.publicProfileBtn}>
+        <Ionicons name="person-outline" size={18} color={COLORS.primary} />
+        <Text style={trustStyles.publicProfileText}>View Public Profile</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const trustStyles = StyleSheet.create({
+  container: {
+    backgroundColor: COLORS.surface,
+    marginHorizontal: HORIZONTAL_PADDING,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 8,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  items: {
+    gap: 8,
+  },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 8,
+  },
+  iconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  iconContainerVerified: {
+    backgroundColor: '#E8F5E9',
+  },
+  itemLabel: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  itemLabelVerified: {
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+  publicProfileBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 12,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: COLORS.primaryLight,
+  },
+  publicProfileText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+});
+
+// ============ QUICK ACTIONS ============
+const QuickActions = ({ router, onLogout }: { router: any; onLogout: () => void }) => {
+  return (
+    <View style={quickActionsStyles.container}>
+      <TouchableOpacity style={quickActionsStyles.item} onPress={() => router.push('/settings')}>
+        <View style={quickActionsStyles.iconContainer}>
+          <Ionicons name="settings-outline" size={22} color={COLORS.text} />
+        </View>
+        <Text style={quickActionsStyles.label}>Settings</Text>
+        <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+      </TouchableOpacity>
+
+      <TouchableOpacity style={quickActionsStyles.item} onPress={() => router.push('/notifications')}>
+        <View style={quickActionsStyles.iconContainer}>
+          <Ionicons name="notifications-outline" size={22} color={COLORS.text} />
+        </View>
+        <Text style={quickActionsStyles.label}>Notifications</Text>
+        <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+      </TouchableOpacity>
+
+      <TouchableOpacity style={quickActionsStyles.item} onPress={() => router.push('/help')}>
+        <View style={quickActionsStyles.iconContainer}>
+          <Ionicons name="help-circle-outline" size={22} color={COLORS.text} />
+        </View>
+        <Text style={quickActionsStyles.label}>Help & Support</Text>
+        <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+      </TouchableOpacity>
+
+      <TouchableOpacity style={[quickActionsStyles.item, quickActionsStyles.logoutItem]} onPress={onLogout}>
+        <View style={[quickActionsStyles.iconContainer, quickActionsStyles.logoutIcon]}>
+          <Ionicons name="log-out-outline" size={22} color={COLORS.error} />
+        </View>
+        <Text style={[quickActionsStyles.label, quickActionsStyles.logoutLabel]}>Sign Out</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const quickActionsStyles = StyleSheet.create({
+  container: {
+    backgroundColor: COLORS.surface,
+    marginHorizontal: HORIZONTAL_PADDING,
+    borderRadius: 16,
+    padding: 8,
+    marginBottom: 24,
+  },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    gap: 12,
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  label: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '500',
+    color: COLORS.text,
+  },
+  logoutItem: {
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    marginTop: 4,
+  },
+  logoutIcon: {
+    backgroundColor: '#FFEBEE',
+  },
+  logoutLabel: {
+    color: COLORS.error,
+  },
+});
+
+// ============ MAIN SCREEN ============
 export default function ProfileScreen() {
   const router = useRouter();
   const { isAuthenticated, user, logout } = useAuthStore();
-  const [activeTab, setActiveTab] = useState<'listings' | 'favorites'>('listings');
-  const [listings, setListings] = useState<Listing[]>([]);
-  const [favorites, setFavorites] = useState<Listing[]>([]);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchData = async () => {
-    if (!isAuthenticated) {
-      setLoading(false);
-      return;
-    }
-
+  const fetchProfile = useCallback(async () => {
     try {
-      const [listingsData, favoritesData] = await Promise.all([
-        listingsApi.getMy(),
-        favoritesApi.getAll(),
-      ]);
-      setListings(listingsData);
-      setFavorites(favoritesData);
+      const response = await api.get('/profile');
+      setProfile(response.data);
     } catch (error) {
-      console.error('Error fetching profile data:', error);
+      console.error('Error fetching profile:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchData();
-  }, [isAuthenticated]);
+    if (isAuthenticated) {
+      fetchProfile();
+    } else {
+      setLoading(false);
+    }
+  }, [isAuthenticated, fetchProfile]);
 
-  const onRefresh = () => {
+  const handleRefresh = () => {
     setRefreshing(true);
-    fetchData();
+    fetchProfile();
   };
 
   const handleLogout = () => {
@@ -64,95 +583,61 @@ export default function ProfileScreen() {
       'Are you sure you want to sign out?',
       [
         { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Sign Out',
+        { 
+          text: 'Sign Out', 
           style: 'destructive',
           onPress: async () => {
-            try {
-              await authApi.logout();
-            } catch (e) {
-              // ignore
-            }
             await logout();
             router.replace('/');
-          },
+          }
         },
       ]
     );
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(price);
+  const handleEditProfile = () => {
+    router.push('/profile/edit');
   };
 
-  const renderListingItem = (item: Listing) => {
-    const imageSource = item.images?.[0]
-      ? item.images[0].startsWith('data:')
-        ? { uri: item.images[0] }
-        : { uri: `data:image/jpeg;base64,${item.images[0]}` }
-      : null;
-
-    return (
-      <TouchableOpacity
-        key={item.id}
-        style={styles.listingItem}
-        onPress={() => router.push(`/listing/${item.id}`)}
-      >
-        {imageSource ? (
-          <Image source={imageSource} style={styles.listingImage} />
-        ) : (
-          <View style={styles.listingImagePlaceholder}>
-            <Ionicons name="image-outline" size={24} color={theme.colors.outline} />
-          </View>
-        )}
-        <View style={styles.listingInfo}>
-          <Text style={styles.listingTitle} numberOfLines={2}>{item.title}</Text>
-          <Text style={styles.listingPrice}>{formatPrice(item.price)}</Text>
-          <View style={styles.listingStatus}>
-            <View style={[
-              styles.statusBadge,
-              item.status === 'sold' && styles.statusBadgeSold,
-            ]}>
-              <Text style={[
-                styles.statusText,
-                item.status === 'sold' && styles.statusTextSold,
-              ]}>
-                {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-              </Text>
-            </View>
-            <Text style={styles.listingViews}>
-              <Ionicons name="eye-outline" size={12} /> {item.views}
-            </Text>
-          </View>
-        </View>
-        <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceVariant} />
-      </TouchableOpacity>
-    );
+  const handleActivityPress = (route: string) => {
+    router.push(route as any);
   };
 
   if (!isAuthenticated) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profile</Text>
+        <View style={styles.loginPrompt}>
+          <View style={styles.loginIconContainer}>
+            <Ionicons name="person-outline" size={48} color={COLORS.primary} />
+          </View>
+          <Text style={styles.loginTitle}>Welcome to avida</Text>
+          <Text style={styles.loginSubtitle}>
+            Sign in to manage your listings, messages, and more
+          </Text>
+          <TouchableOpacity 
+            style={styles.loginButton}
+            onPress={() => router.push('/login')}
+          >
+            <Text style={styles.loginButtonText}>Sign In</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.registerButton}
+            onPress={() => router.push('/register')}
+          >
+            <Text style={styles.registerButtonText}>Create Account</Text>
+          </TouchableOpacity>
         </View>
-        <EmptyState
-          icon="person-outline"
-          title="Sign in to your account"
-          description="Manage your listings, favorites, and profile"
-          action={
-            <TouchableOpacity
-              style={styles.loginButton}
-              onPress={() => router.push('/login')}
-            >
-              <Text style={styles.loginButtonText}>Sign In</Text>
-            </TouchableOpacity>
-          }
-        />
+      </SafeAreaView>
+    );
+  }
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Loading profile...</Text>
+        </View>
       </SafeAreaView>
     );
   }
@@ -160,120 +645,27 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
+        showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.primary]} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
         }
       >
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profile</Text>
-          <TouchableOpacity onPress={() => router.push('/settings' as any)}>
-            <Ionicons name="settings-outline" size={24} color={theme.colors.onSurface} />
-          </TouchableOpacity>
-        </View>
+        <ProfileHeader profile={profile} onEditPress={handleEditProfile} />
+        
+        <StatsRow stats={profile?.stats || null} />
+        
+        <ActivitySection onItemPress={handleActivityPress} />
+        
+        <TrustSection profile={profile} />
+        
+        <QuickActions router={router} onLogout={handleLogout} />
 
-        <View style={styles.profileCard}>
-          <View style={styles.profileInfo}>
-            {user?.picture ? (
-              <Image source={{ uri: user.picture }} style={styles.avatar} />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Ionicons name="person" size={32} color={theme.colors.onSurfaceVariant} />
-              </View>
-            )}
-            <View style={styles.profileDetails}>
-              <Text style={styles.userName}>{user?.name || 'User'}</Text>
-              <Text style={styles.userEmail}>{user?.email}</Text>
-              {user?.verified && (
-                <View style={styles.verifiedBadge}>
-                  <Ionicons name="checkmark-circle" size={14} color={theme.colors.primary} />
-                  <Text style={styles.verifiedText}>Verified</Text>
-                </View>
-              )}
-            </View>
-          </View>
-
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{listings.filter(l => l.status === 'active').length}</Text>
-              <Text style={styles.statLabel}>Active</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{listings.filter(l => l.status === 'sold').length}</Text>
-              <Text style={styles.statLabel}>Sold</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{favorites.length}</Text>
-              <Text style={styles.statLabel}>Favorites</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.tabsContainer}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'listings' && styles.tabActive]}
-            onPress={() => setActiveTab('listings')}
-          >
-            <Ionicons
-              name="pricetags-outline"
-              size={20}
-              color={activeTab === 'listings' ? theme.colors.primary : theme.colors.onSurfaceVariant}
-            />
-            <Text style={[styles.tabText, activeTab === 'listings' && styles.tabTextActive]}>
-              My Listings
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'favorites' && styles.tabActive]}
-            onPress={() => setActiveTab('favorites')}
-          >
-            <Ionicons
-              name="heart-outline"
-              size={20}
-              color={activeTab === 'favorites' ? theme.colors.primary : theme.colors.onSurfaceVariant}
-            />
-            <Text style={[styles.tabText, activeTab === 'favorites' && styles.tabTextActive]}>
-              Favorites
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {loading ? (
-          <ActivityIndicator style={styles.loader} color={theme.colors.primary} />
-        ) : (
-          <View style={styles.listingsContainer}>
-            {activeTab === 'listings' ? (
-              listings.length === 0 ? (
-                <View style={styles.emptyTab}>
-                  <Ionicons name="pricetags-outline" size={48} color={theme.colors.outline} />
-                  <Text style={styles.emptyText}>No listings yet</Text>
-                  <TouchableOpacity
-                    style={styles.postButton}
-                    onPress={() => router.push('/post/category')}
-                  >
-                    <Text style={styles.postButtonText}>Post Your First Ad</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                listings.map(renderListingItem)
-              )
-            ) : favorites.length === 0 ? (
-              <View style={styles.emptyTab}>
-                <Ionicons name="heart-outline" size={48} color={theme.colors.outline} />
-                <Text style={styles.emptyText}>No favorites yet</Text>
-                <Text style={styles.emptySubtext}>Save listings you like to find them easily</Text>
-              </View>
-            ) : (
-              favorites.map(renderListingItem)
-            )}
-          </View>
-        )}
-
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={20} color={theme.colors.error} />
-          <Text style={styles.logoutText}>Sign Out</Text>
-        </TouchableOpacity>
+        <Text style={styles.version}>avida v1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -282,235 +674,74 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: COLORS.background,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
+    gap: 12,
   },
-  headerTitle: {
+  loadingText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  loginPrompt: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: HORIZONTAL_PADDING * 2,
+  },
+  loginIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  loginTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: theme.colors.onSurface,
+    color: COLORS.text,
+    marginBottom: 8,
   },
-  profileCard: {
-    backgroundColor: theme.colors.surface,
-    padding: theme.spacing.md,
-    ...theme.elevation.level1,
-  },
-  profileInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: theme.spacing.md,
-  },
-  avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-  },
-  avatarPlaceholder: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: theme.colors.surfaceVariant,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileDetails: {
-    flex: 1,
-    marginLeft: theme.spacing.md,
-  },
-  userName: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: theme.colors.onSurface,
-  },
-  userEmail: {
-    fontSize: 14,
-    color: theme.colors.onSurfaceVariant,
-    marginTop: 2,
-  },
-  verifiedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: theme.spacing.xs,
-    gap: 4,
-  },
-  verifiedText: {
-    fontSize: 12,
-    color: theme.colors.primary,
-    fontWeight: '500',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingTop: theme.spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.outlineVariant,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: theme.colors.onSurfaceVariant,
-    marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    backgroundColor: theme.colors.outlineVariant,
-  },
-  tabsContainer: {
-    flexDirection: 'row',
-    backgroundColor: theme.colors.surface,
-    marginTop: theme.spacing.md,
-  },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: theme.spacing.md,
-    gap: theme.spacing.sm,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  tabActive: {
-    borderBottomColor: theme.colors.primary,
-  },
-  tabText: {
-    fontSize: 14,
-    color: theme.colors.onSurfaceVariant,
-  },
-  tabTextActive: {
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
-  listingsContainer: {
-    backgroundColor: theme.colors.surface,
-    minHeight: 200,
-  },
-  listingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.outlineVariant,
-  },
-  listingImage: {
-    width: 64,
-    height: 64,
-    borderRadius: theme.borderRadius.sm,
-  },
-  listingImagePlaceholder: {
-    width: 64,
-    height: 64,
-    borderRadius: theme.borderRadius.sm,
-    backgroundColor: theme.colors.surfaceVariant,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  listingInfo: {
-    flex: 1,
-    marginLeft: theme.spacing.md,
-  },
-  listingTitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: theme.colors.onSurface,
-  },
-  listingPrice: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.primary,
-    marginTop: 2,
-  },
-  listingStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: theme.spacing.xs,
-    gap: theme.spacing.sm,
-  },
-  statusBadge: {
-    backgroundColor: theme.colors.primaryContainer,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: 2,
-    borderRadius: theme.borderRadius.sm,
-  },
-  statusBadgeSold: {
-    backgroundColor: theme.colors.secondaryContainer,
-  },
-  statusText: {
-    fontSize: 11,
-    color: theme.colors.primary,
-    fontWeight: '500',
-  },
-  statusTextSold: {
-    color: theme.colors.secondary,
-  },
-  listingViews: {
-    fontSize: 11,
-    color: theme.colors.onSurfaceVariant,
-  },
-  emptyTab: {
-    alignItems: 'center',
-    padding: theme.spacing.xl,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: theme.colors.onSurfaceVariant,
-    marginTop: theme.spacing.md,
-  },
-  emptySubtext: {
-    fontSize: 13,
-    color: theme.colors.onSurfaceVariant,
-    marginTop: theme.spacing.xs,
+  loginSubtitle: {
+    fontSize: 15,
+    color: COLORS.textSecondary,
     textAlign: 'center',
-  },
-  postButton: {
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.full,
-    marginTop: theme.spacing.md,
-  },
-  postButtonText: {
-    color: theme.colors.onPrimary,
-    fontWeight: '600',
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: theme.spacing.lg,
-    marginTop: theme.spacing.md,
-    gap: theme.spacing.sm,
-  },
-  logoutText: {
-    color: theme.colors.error,
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  loader: {
-    padding: theme.spacing.xl,
+    marginBottom: 32,
+    lineHeight: 22,
   },
   loginButton: {
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.full,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 14,
+    paddingHorizontal: 48,
+    borderRadius: 12,
+    marginBottom: 12,
   },
   loginButtonText: {
-    color: theme.colors.onPrimary,
-    fontWeight: '600',
     fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  registerButton: {
+    paddingVertical: 14,
+    paddingHorizontal: 48,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  registerButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  version: {
+    textAlign: 'center',
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginBottom: 32,
   },
 });
