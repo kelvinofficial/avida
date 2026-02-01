@@ -132,11 +132,11 @@ export default function AutoCategoryScreen() {
     fetchListings();
   }, [fetchListings]);
 
-  // Filter and sort listings
+  // Client-side filtering for search and near-me (backend handles other filters)
   const filteredListings = useMemo(() => {
     let result = [...allListings];
     
-    // Search filter
+    // Client-side search filter (for instant feedback)
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter((listing) =>
@@ -147,62 +147,12 @@ export default function AutoCategoryScreen() {
       );
     }
     
-    // Brand filter
-    if (selectedBrand) {
-      const brandName = CAR_BRANDS.find(b => b.id === selectedBrand)?.name || selectedBrand;
-      result = result.filter((listing) =>
-        listing.make.toLowerCase() === brandName.toLowerCase() ||
-        listing.make.toLowerCase() === selectedBrand.toLowerCase()
-      );
-    }
-    
-    // Model filter
-    if (selectedModel) {
-      result = result.filter((listing) =>
-        listing.model.toLowerCase().includes(selectedModel.toLowerCase())
-      );
-    }
-    
-    // City filter
-    if (selectedCity) {
-      result = result.filter((listing) => listing.city === selectedCity);
-    }
-    
-    // Near me filter with radius
+    // Near me filter with radius (client-side for now)
     if (nearMeEnabled) {
       result = result.filter((listing) => (listing.distance || 0) <= radius);
     }
     
-    // Advanced filters
-    if (filters.fuelType) {
-      result = result.filter((listing) => listing.fuelType === filters.fuelType);
-    }
-    if (filters.transmission) {
-      result = result.filter((listing) => listing.transmission === filters.transmission);
-    }
-    if (filters.bodyType) {
-      result = result.filter((listing) => listing.bodyType === filters.bodyType);
-    }
-    if (filters.condition) {
-      result = result.filter((listing) => listing.condition === filters.condition);
-    }
-    if (filters.priceMin !== undefined) {
-      result = result.filter((listing) => listing.price >= (filters.priceMin || 0));
-    }
-    if (filters.priceMax !== undefined) {
-      result = result.filter((listing) => listing.price <= (filters.priceMax || Infinity));
-    }
-    if (filters.verifiedSeller) {
-      result = result.filter((listing) => listing.seller?.verified);
-    }
-    if (filters.accidentFree) {
-      result = result.filter((listing) => listing.accidentFree);
-    }
-    if (filters.mileageMax !== undefined) {
-      result = result.filter((listing) => listing.mileage <= (filters.mileageMax || Infinity));
-    }
-    
-    // Sorting
+    // Sort client-side for immediate response
     switch (sortBy) {
       case 'price_asc':
         result.sort((a, b) => a.price - b.price);
@@ -226,7 +176,7 @@ export default function AutoCategoryScreen() {
     }
     
     return result;
-  }, [allListings, searchQuery, selectedBrand, selectedModel, selectedCity, nearMeEnabled, radius, filters, sortBy]);
+  }, [allListings, searchQuery, nearMeEnabled, radius, sortBy]);
 
   // Derived data
   const featuredListings = useMemo(() => 
