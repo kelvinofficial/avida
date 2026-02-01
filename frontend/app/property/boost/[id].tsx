@@ -214,7 +214,7 @@ export default function BoostPropertyScreen() {
               
               const days = activeTab === 'boost' ? selectedBoost : selectedFeature;
               
-              await axios.post(`${API_URL}${endpoint}`, { days });
+              await api.post(endpoint, { days });
               
               Alert.alert(
                 'Success!',
