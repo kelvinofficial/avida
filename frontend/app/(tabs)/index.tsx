@@ -457,10 +457,7 @@ export default function HomeScreen() {
         {/* Logo - Left aligned */}
         <Text style={styles.logo}>avida</Text>
         
-        {/* Spacer */}
-        <View style={{ flex: 1 }} />
-        
-        {/* Notification Bell - Right aligned */}
+        {/* Notification Bell - Right aligned (row1 has justifyContent: space-between) */}
         <TouchableOpacity
           style={styles.notificationButton}
           onPress={() => isAuthenticated ? router.push('/messages') : router.push('/login')}
