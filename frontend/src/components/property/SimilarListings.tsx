@@ -684,8 +684,13 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
           ))}
         </ScrollView>
       ) : (
-        // TWO COLUMN LAYOUT - Image on left, info on right (for other categories)
-        <View style={styles.otherGrid}>
+        // ONE COLUMN LAYOUT - Image on left, info on right (for other categories)
+        <ScrollView 
+          style={styles.propertyList}
+          contentContainerStyle={styles.propertyListContent}
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled
+        >
           {listings.map((item, index) => (
             <OtherCategoryCard
               key={item.id}
@@ -697,7 +702,7 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
               sourceId={propertyId}
             />
           ))}
-        </View>
+        </ScrollView>
       )}
 
       {/* Tooltip Modal */}
