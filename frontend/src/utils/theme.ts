@@ -1,55 +1,66 @@
-// Material 3 Theme - Light Mode
+// Material 3 Theme - Light Mode with Kleinanzeigen-inspired colors
 export const theme = {
   colors: {
     // Primary - Fresh Green (marketplace trust)
-    primary: '#2E7D32',
-    primaryContainer: '#A5D6A7',
+    primary: '#10B981',
+    primaryContainer: '#D1FAE5',
     onPrimary: '#FFFFFF',
-    onPrimaryContainer: '#1B5E20',
+    onPrimaryContainer: '#065F46',
     
     // Secondary
-    secondary: '#546E7A',
-    secondaryContainer: '#CFD8DC',
+    secondary: '#6B7280',
+    secondaryContainer: '#F3F4F6',
     onSecondary: '#FFFFFF',
-    onSecondaryContainer: '#37474F',
+    onSecondaryContainer: '#374151',
     
-    // Tertiary
-    tertiary: '#7B1FA2',
-    tertiaryContainer: '#E1BEE7',
+    // Tertiary - Purple accent
+    tertiary: '#8B5CF6',
+    tertiaryContainer: '#EDE9FE',
     onTertiary: '#FFFFFF',
-    onTertiaryContainer: '#4A148C',
+    onTertiaryContainer: '#5B21B6',
     
     // Error
-    error: '#D32F2F',
-    errorContainer: '#FFCDD2',
+    error: '#EF4444',
+    errorContainer: '#FEE2E2',
     onError: '#FFFFFF',
-    onErrorContainer: '#B71C1C',
+    onErrorContainer: '#991B1B',
     
     // Background & Surface
-    background: '#FAFAFA',
+    background: '#F9FAFB',
     surface: '#FFFFFF',
-    surfaceVariant: '#F5F5F5',
-    onBackground: '#212121',
-    onSurface: '#212121',
-    onSurfaceVariant: '#757575',
+    surfaceVariant: '#F3F4F6',
+    onBackground: '#111827',
+    onSurface: '#111827',
+    onSurfaceVariant: '#6B7280',
     
     // Outline
-    outline: '#BDBDBD',
-    outlineVariant: '#E0E0E0',
+    outline: '#D1D5DB',
+    outlineVariant: '#E5E7EB',
     
     // Inverse
-    inverseSurface: '#212121',
+    inverseSurface: '#1F2937',
     inverseOnSurface: '#FFFFFF',
-    inversePrimary: '#81C784',
+    inversePrimary: '#34D399',
     
     // Other
     shadow: '#000000',
     scrim: '#000000',
     
     // Custom
-    success: '#4CAF50',
-    warning: '#FF9800',
-    info: '#2196F3',
+    success: '#10B981',
+    warning: '#F59E0B',
+    info: '#3B82F6',
+    
+    // Category colors (pastel)
+    categoryAuto: '#DBEAFE',
+    categoryHome: '#D1FAE5',
+    categoryRealEstate: '#EDE9FE',
+    categoryFashion: '#FCE7F3',
+    categoryElectronics: '#E0F2FE',
+    categoryFamily: '#FEF3C7',
+    categoryJobs: '#FEE2E2',
+    categoryServices: '#F3E8FF',
+    categoryMisc: '#F3F4F6',
   },
   
   spacing: {
@@ -159,24 +170,49 @@ export const theme = {
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.05,
-      shadowRadius: 3,
+      shadowRadius: 2,
       elevation: 1,
     },
     level2: {
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 6,
-      elevation: 3,
+      shadowOpacity: 0.08,
+      shadowRadius: 4,
+      elevation: 2,
     },
     level3: {
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15,
+      shadowOpacity: 0.12,
       shadowRadius: 8,
-      elevation: 6,
+      elevation: 4,
     },
   },
+};
+
+// Category colors mapping
+export const CATEGORY_COLORS: Record<string, string> = {
+  vehicles: '#DBEAFE',
+  home: '#D1FAE5',
+  realestate: '#EDE9FE',
+  fashion: '#FCE7F3',
+  electronics: '#E0F2FE',
+  family: '#FEF3C7',
+  jobs: '#FEE2E2',
+  services: '#F3E8FF',
+  misc: '#F3F4F6',
+};
+
+export const CATEGORY_ICON_COLORS: Record<string, string> = {
+  vehicles: '#3B82F6',
+  home: '#10B981',
+  realestate: '#8B5CF6',
+  fashion: '#EC4899',
+  electronics: '#0EA5E9',
+  family: '#F59E0B',
+  jobs: '#EF4444',
+  services: '#A855F7',
+  misc: '#6B7280',
 };
 
 export type Theme = typeof theme;
