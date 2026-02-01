@@ -1188,7 +1188,6 @@ export default function AutoCategoryScreen() {
         data={filteredListings}
         renderItem={renderListItem}
         keyExtractor={(item) => item.id}
-        numColumns={2}
         ListHeaderComponent={renderHeader}
         contentContainerStyle={styles.listContent}
         refreshControl={
