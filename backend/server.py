@@ -998,6 +998,185 @@ async def typing(sid, data):
     if conversation_id:
         await sio.emit("user_typing", {"user_id": user_id}, room=conversation_id, skip_sid=sid)
 
+# ==================== AUTO/MOTORS ENDPOINTS ====================
+
+# Auto brands with listing counts
+AUTO_BRANDS = [
+    {"id": "toyota", "name": "Toyota", "logo": "🚗", "listingsCount": 1245},
+    {"id": "bmw", "name": "BMW", "logo": "🔵", "listingsCount": 892},
+    {"id": "mercedes", "name": "Mercedes", "logo": "⭐", "listingsCount": 756},
+    {"id": "volkswagen", "name": "VW", "logo": "🔷", "listingsCount": 1102},
+    {"id": "audi", "name": "Audi", "logo": "⚫", "listingsCount": 634},
+    {"id": "ford", "name": "Ford", "logo": "🔵", "listingsCount": 521},
+    {"id": "honda", "name": "Honda", "logo": "🔴", "listingsCount": 445},
+    {"id": "hyundai", "name": "Hyundai", "logo": "💠", "listingsCount": 389},
+    {"id": "nissan", "name": "Nissan", "logo": "🔘", "listingsCount": 312},
+    {"id": "porsche", "name": "Porsche", "logo": "🏎️", "listingsCount": 156},
+    {"id": "tesla", "name": "Tesla", "logo": "⚡", "listingsCount": 234},
+    {"id": "kia", "name": "Kia", "logo": "🔺", "listingsCount": 287},
+]
+
+# Auto models per brand
+AUTO_MODELS = {
+    "toyota": ["Camry", "Corolla", "RAV4", "Highlander", "Tacoma", "Prius", "Land Cruiser"],
+    "bmw": ["3 Series", "5 Series", "X3", "X5", "M3", "M5", "7 Series"],
+    "mercedes": ["C-Class", "E-Class", "S-Class", "GLC", "GLE", "A-Class", "AMG GT"],
+    "volkswagen": ["Golf", "Passat", "Tiguan", "Polo", "Arteon", "ID.4", "Touareg"],
+    "audi": ["A3", "A4", "A6", "Q3", "Q5", "Q7", "e-tron", "RS6"],
+    "ford": ["Focus", "Mustang", "F-150", "Explorer", "Escape", "Bronco"],
+    "honda": ["Civic", "Accord", "CR-V", "HR-V", "Pilot", "Odyssey"],
+    "hyundai": ["Elantra", "Sonata", "Tucson", "Santa Fe", "Kona", "Ioniq"],
+    "nissan": ["Altima", "Sentra", "Rogue", "Pathfinder", "Maxima", "GT-R"],
+    "porsche": ["911", "Cayenne", "Macan", "Panamera", "Taycan", "Boxster"],
+    "tesla": ["Model 3", "Model S", "Model X", "Model Y", "Cybertruck"],
+    "kia": ["Sportage", "Sorento", "Forte", "K5", "Telluride", "EV6"],
+}
+
+@api_router.get("/auto/brands")
+async def get_auto_brands():
+    """Get all car brands with listing counts"""
+    return AUTO_BRANDS
+
+@api_router.get("/auto/brands/{brand_id}/models")
+async def get_brand_models(brand_id: str):
+    """Get models for a specific brand"""
+    models = AUTO_MODELS.get(brand_id, [])
+    return [{"id": f"{brand_id}_{m.lower().replace(' ', '_')}", "brandId": brand_id, "name": m} for m in models]
+
+@api_router.get("/auto/listings")
+async def get_auto_listings(
+    make: Optional[str] = None,
+    model: Optional[str] = None,
+    year_min: Optional[int] = None,
+    year_max: Optional[int] = None,
+    mileage_max: Optional[int] = None,
+    fuel_type: Optional[str] = None,
+    transmission: Optional[str] = None,
+    body_type: Optional[str] = None,
+    condition: Optional[str] = None,
+    price_min: Optional[float] = None,
+    price_max: Optional[float] = None,
+    verified_seller: Optional[bool] = None,
+    city: Optional[str] = None,
+    sort: str = "newest",
+    page: int = 1,
+    limit: int = 20
+):
+    """Get auto listings with advanced filters"""
+    query = {"status": "active", "category_id": "vehicles"}
+    
+    if make:
+        query["attributes.make"] = {"$regex": make, "$options": "i"}
+    if model:
+        query["attributes.model"] = {"$regex": model, "$options": "i"}
+    if year_min:
+        query["attributes.year"] = {"$gte": year_min}
+    if year_max:
+        if "attributes.year" in query:
+            query["attributes.year"]["$lte"] = year_max
+        else:
+            query["attributes.year"] = {"$lte": year_max}
+    if mileage_max:
+        query["attributes.mileage"] = {"$lte": mileage_max}
+    if fuel_type:
+        query["attributes.fuel_type"] = fuel_type
+    if transmission:
+        query["attributes.transmission"] = transmission
+    if body_type:
+        query["attributes.body_type"] = body_type
+    if condition:
+        query["condition"] = condition
+    if price_min:
+        query["price"] = {"$gte": price_min}
+    if price_max:
+        if "price" in query:
+            query["price"]["$lte"] = price_max
+        else:
+            query["price"] = {"$lte": price_max}
+    if city:
+        query["location"] = {"$regex": city, "$options": "i"}
+    
+    # Sorting
+    sort_field = "created_at"
+    sort_order = -1
+    if sort == "price_asc":
+        sort_field = "price"
+        sort_order = 1
+    elif sort == "price_desc":
+        sort_field = "price"
+        sort_order = -1
+    elif sort == "mileage_asc":
+        sort_field = "attributes.mileage"
+        sort_order = 1
+    elif sort == "year_desc":
+        sort_field = "attributes.year"
+        sort_order = -1
+    
+    skip = (page - 1) * limit
+    total = await db.listings.count_documents(query)
+    listings = await db.listings.find(query, {"_id": 0}).sort(sort_field, sort_order).skip(skip).limit(limit).to_list(limit)
+    
+    return {
+        "listings": listings,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit if total > 0 else 0
+    }
+
+@api_router.get("/auto/featured")
+async def get_featured_auto(limit: int = 10):
+    """Get featured auto listings"""
+    query = {"status": "active", "category_id": "vehicles", "featured": True}
+    listings = await db.listings.find(query, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    return listings
+
+@api_router.get("/auto/recommended")
+async def get_recommended_auto(request: Request, limit: int = 10):
+    """Get recommended auto listings (personalized if authenticated)"""
+    query = {"status": "active", "category_id": "vehicles"}
+    
+    # If authenticated, could personalize based on user history
+    user = await get_current_user(request)
+    if user:
+        # For now, just return newest listings - could enhance with ML
+        pass
+    
+    listings = await db.listings.find(query, {"_id": 0}).sort("views", -1).limit(limit).to_list(limit)
+    return listings
+
+@api_router.get("/auto/popular-searches")
+async def get_popular_searches():
+    """Get popular auto search terms"""
+    # Return static popular searches for now
+    return [
+        {"term": "BMW 3 Series", "count": 1234},
+        {"term": "Mercedes C-Class", "count": 987},
+        {"term": "Audi A4", "count": 876},
+        {"term": "Tesla Model 3", "count": 765},
+        {"term": "VW Golf", "count": 654},
+        {"term": "Porsche 911", "count": 543},
+    ]
+
+@api_router.post("/auto/track-search")
+async def track_auto_search(request: Request):
+    """Track a search term for analytics"""
+    body = await request.json()
+    term = body.get("term", "")
+    # In production, would store this for analytics
+    return {"message": "Search tracked", "term": term}
+
+@api_router.get("/auto/filter-options")
+async def get_filter_options():
+    """Get available filter options based on current data"""
+    return {
+        "fuelTypes": ["Petrol", "Diesel", "Hybrid", "Electric", "LPG", "CNG"],
+        "transmissions": ["Automatic", "Manual", "CVT", "Semi-Auto"],
+        "bodyTypes": ["Sedan", "SUV", "Hatchback", "Pickup", "Coupe", "Wagon", "Van", "Convertible"],
+        "driveTypes": ["FWD", "RWD", "AWD", "4WD"],
+        "colors": ["Black", "White", "Silver", "Blue", "Red", "Grey", "Green", "Brown"],
+        "cities": ["Berlin", "Hamburg", "Munich", "Cologne", "Frankfurt", "Stuttgart", "Düsseldorf", "Leipzig"]
+    }
+
 # ==================== HEALTH CHECK ====================
 
 @api_router.get("/")
