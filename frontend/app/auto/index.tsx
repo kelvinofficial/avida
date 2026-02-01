@@ -975,8 +975,8 @@ export default function AutoCategoryScreen() {
     const showAd = (index + 1) % 7 === 0;
     
     return (
-      <View style={[styles.cardWrapper, index % 2 === 0 ? styles.cardLeft : styles.cardRight]}>
-        <AutoListingCard
+      <View style={styles.listItemWrapper}>
+        <HorizontalListingCard
           listing={item}
           onPress={() => handleListingPress(item)}
           onFavorite={() => toggleFavorite(item.id)}
@@ -984,10 +984,8 @@ export default function AutoCategoryScreen() {
           onCall={() => handleCall(item)}
           isFavorited={favorites.has(item.id)}
         />
-        {showAd && index % 2 === 1 && (
-          <View style={styles.adContainer}>
-            <NativeAdCard type="listing" />
-          </View>
+        {showAd && (
+          <NativeAdCard type="listing" />
         )}
       </View>
     );
