@@ -19,6 +19,7 @@ import { useRouter } from 'expo-router';
 import { theme } from '../../src/utils/theme';
 import { AutoFilters, AutoListing } from '../../src/types/auto';
 import { CAR_BRANDS, EXPLORE_CARDS, CITIES } from '../../src/data/autoData';
+import { api } from '../../src/utils/api';
 
 // Components
 import { SegmentedTabs } from '../../src/components/auto/SegmentedTabs';
