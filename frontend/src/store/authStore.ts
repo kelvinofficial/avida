@@ -58,15 +58,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   loadStoredAuth: async () => {
     try {
-      const token = await storage.getItem(TOKEN_KEY);
-      const userJson = await storage.getItem(USER_KEY);
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 3000)
+      );
       
-      if (token && userJson) {
-        const user = JSON.parse(userJson);
-        set({ user, token, isAuthenticated: true, isLoading: false });
-      } else {
-        set({ isLoading: false });
-      }
+      const loadPromise = async () => {
+        const token = await storage.getItem(TOKEN_KEY);
+        const userJson = await storage.getItem(USER_KEY);
+        
+        if (token && userJson) {
+          const user = JSON.parse(userJson);
+          set({ user, token, isAuthenticated: true, isLoading: false });
+        } else {
+          set({ isLoading: false });
+        }
+      };
+      
+      await Promise.race([loadPromise(), timeoutPromise]);
     } catch (error) {
       console.error('Error loading auth:', error);
       set({ isLoading: false });
