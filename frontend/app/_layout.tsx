@@ -93,6 +93,7 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: theme.colors.background },
         }}
       >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="listing/[id]" options={{ presentation: 'card' }} />
         <Stack.Screen name="chat/[id]" options={{ presentation: 'card' }} />
