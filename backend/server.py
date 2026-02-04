@@ -3039,6 +3039,7 @@ async def create_notification(
     
     # Get user settings to check notification preferences
     settings = await db.user_settings.find_one({"user_id": user_id})
+    user_data = await db.users.find_one({"user_id": user_id})
     
     if settings:
         notifications_prefs = settings.get("notifications", {})
@@ -3061,13 +3062,152 @@ async def create_notification(
         if not in_quiet_hours and notifications_prefs.get("push", True):
             push_token = settings.get("push_token")
             if push_token:
-                # TODO: Send actual push notification via Expo
-                await db.notifications.update_one(
-                    {"id": notification.id},
-                    {"$set": {"pushed": True}}
+                push_sent = await send_push_notification(
+                    push_token, title, body, data_payload, notification_type
                 )
+                if push_sent:
+                    await db.notifications.update_one(
+                        {"id": notification.id},
+                        {"$set": {"pushed": True}}
+                    )
+        
+        # Send email notification if enabled
+        if notifications_prefs.get("email", True) and user_data and user_data.get("email"):
+            # Check if this notification type should be emailed
+            should_email = False
+            if notification_type in ["offer_received", "offer_accepted", "offer_rejected"]:
+                should_email = notifications_prefs.get("offers", True)
+            elif notification_type == "chat_message":
+                should_email = notifications_prefs.get("messages", True)
+            elif notification_type in ["price_drop", "better_deal"]:
+                should_email = notifications_prefs.get("price_drops", True)
+            elif notification_type == "saved_search_match":
+                should_email = notifications_prefs.get("saved_searches", True)
+            elif notification_type in ["security_alert", "system_announcement"]:
+                should_email = True  # Always email security alerts
+            
+            if should_email:
+                email_sent = await send_notification_email(
+                    user_data["email"], 
+                    f"[avida] {title}", 
+                    body,
+                    notification_type,
+                    data_payload
+                )
+                if email_sent:
+                    await db.notifications.update_one(
+                        {"id": notification.id},
+                        {"$set": {"emailed": True}}
+                    )
     
     return notification
+
+# ==================== PUSH NOTIFICATION SERVICE ====================
+
+async def send_push_notification(
+    push_token: str,
+    title: str,
+    body: str,
+    data: Dict[str, Any] = {},
+    notification_type: str = "default"
+) -> bool:
+    """Send push notification via Expo Push Service"""
+    if not EXPO_PUSH_AVAILABLE:
+        logger.warning("Expo push SDK not available")
+        return False
+    
+    if not push_token or not push_token.startswith("ExponentPushToken"):
+        logger.warning(f"Invalid push token: {push_token}")
+        return False
+    
+    try:
+        # Determine Android channel based on notification type
+        channel_id = "default"
+        if notification_type in ["chat_message", "seller_response"]:
+            channel_id = "messages"
+        elif notification_type in ["offer_received", "offer_accepted", "offer_rejected"]:
+            channel_id = "offers"
+        elif notification_type in ["price_drop", "saved_search_match", "better_deal"]:
+            channel_id = "listings"
+        
+        message = PushMessage(
+            to=push_token,
+            title=title,
+            body=body,
+            data=data,
+            sound="default",
+            channel_id=channel_id,
+            priority="high" if notification_type in ["chat_message", "offer_received", "security_alert"] else "default"
+        )
+        
+        push_client = PushClient()
+        response = push_client.publish(message)
+        
+        # Check for errors
+        try:
+            response.validate_response()
+            logger.info(f"Push notification sent successfully to {push_token[:20]}...")
+            return True
+        except DeviceNotRegisteredError:
+            # Mark token as invalid
+            await db.user_settings.update_one(
+                {"push_token": push_token},
+                {"$set": {"push_token": None, "push_token_invalid": True}}
+            )
+            logger.warning(f"Device not registered, token invalidated: {push_token[:20]}...")
+            return False
+        except PushTicketError as e:
+            logger.error(f"Push ticket error: {e}")
+            return False
+            
+    except PushServerError as e:
+        logger.error(f"Push server error: {e}")
+        return False
+    except Exception as e:
+        logger.error(f"Failed to send push notification: {e}")
+        return False
+
+async def send_bulk_push_notifications(
+    messages: List[Dict[str, Any]]
+) -> Dict[str, int]:
+    """Send multiple push notifications in batch"""
+    if not EXPO_PUSH_AVAILABLE:
+        return {"sent": 0, "failed": len(messages)}
+    
+    sent = 0
+    failed = 0
+    
+    push_messages = []
+    for msg in messages:
+        if msg.get("push_token") and msg["push_token"].startswith("ExponentPushToken"):
+            push_messages.append(PushMessage(
+                to=msg["push_token"],
+                title=msg.get("title", ""),
+                body=msg.get("body", ""),
+                data=msg.get("data", {}),
+                sound="default"
+            ))
+    
+    if not push_messages:
+        return {"sent": 0, "failed": len(messages)}
+    
+    try:
+        push_client = PushClient()
+        # Send in batches of 100
+        for i in range(0, len(push_messages), 100):
+            batch = push_messages[i:i+100]
+            responses = push_client.publish_multiple(batch)
+            for response in responses:
+                try:
+                    response.validate_response()
+                    sent += 1
+                except:
+                    failed += 1
+    except Exception as e:
+        logger.error(f"Bulk push error: {e}")
+        failed = len(push_messages)
+    
+    return {"sent": sent, "failed": failed}
 
 # ==================== BLOCKED USERS ENDPOINTS ====================
 
