@@ -237,6 +237,9 @@ export default function PostPropertyScreen() {
     );
   }
 
+  // Success Modal
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
   // Form state
   const [formData, setFormData] = useState({
     // Step 1: Basic Info
