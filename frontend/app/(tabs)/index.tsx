@@ -422,7 +422,7 @@ export default function HomeScreen() {
   );
 
   const renderItem = ({ item, index }: { item: Listing; index: number }) => (
-    <View style={[styles.cardWrapper, index % 2 === 0 ? styles.cardLeft : styles.cardRight]}>
+    <View style={styles.cardWrapper}>
       <ListingCard
         listing={item}
         onPress={() => router.push(`/listing/${item.id}`)}
