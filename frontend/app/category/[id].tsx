@@ -90,6 +90,7 @@ export default function CategoryScreen() {
   const router = useRouter();
   const { id, subcategory: initialSubcategory } = useLocalSearchParams<{ id: string; subcategory?: string }>();
   const { isAuthenticated } = useAuthStore();
+  const { isMobile, isTablet, isDesktop, width: screenWidth } = useResponsive();
   
   const [listings, setListings] = useState<any[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
