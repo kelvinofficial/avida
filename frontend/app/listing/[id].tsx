@@ -212,6 +212,11 @@ const descStyles = StyleSheet.create({
 const SellerSection = memo(({ listing, onPress }: { listing: Listing; onPress: () => void }) => {
   if (!listing.seller) return null;
   
+  // Get contact methods from listing
+  const contactMethods = (listing as any).contact_methods || ['chat'];
+  const acceptsOffers = (listing as any).accepts_offers !== false;
+  const acceptsExchanges = (listing as any).accepts_exchanges || false;
+  
   return (
     <View style={sellerStyles.container}>
       <Text style={sellerStyles.title}>Listed by</Text>
@@ -247,6 +252,50 @@ const SellerSection = memo(({ listing, onPress }: { listing: Listing; onPress: (
         </View>
         <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
       </TouchableOpacity>
+
+      {/* Seller Preferences */}
+      <View style={sellerStyles.preferencesSection}>
+        {/* Badges */}
+        <View style={sellerStyles.badgesRow}>
+          {acceptsOffers && (
+            <View style={sellerStyles.prefBadge}>
+              <Ionicons name="pricetag-outline" size={14} color={COLORS.primary} />
+              <Text style={sellerStyles.prefBadgeText}>Accepts Offers</Text>
+            </View>
+          )}
+          {acceptsExchanges && (
+            <View style={[sellerStyles.prefBadge, { backgroundColor: '#E3F2FD' }]}>
+              <Ionicons name="repeat-outline" size={14} color="#1976D2" />
+              <Text style={[sellerStyles.prefBadgeText, { color: '#1976D2' }]}>Open to Exchanges</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Contact Methods */}
+        <View style={sellerStyles.contactSection}>
+          <Text style={sellerStyles.contactLabel}>Contact via:</Text>
+          <View style={sellerStyles.contactMethods}>
+            {contactMethods.includes('chat') && (
+              <View style={sellerStyles.contactBadge}>
+                <Ionicons name="chatbubble-outline" size={14} color={COLORS.primary} />
+                <Text style={sellerStyles.contactBadgeText}>Chat</Text>
+              </View>
+            )}
+            {contactMethods.includes('whatsapp') && (
+              <View style={sellerStyles.contactBadge}>
+                <Ionicons name="logo-whatsapp" size={14} color="#25D366" />
+                <Text style={sellerStyles.contactBadgeText}>WhatsApp</Text>
+              </View>
+            )}
+            {contactMethods.includes('call') && (
+              <View style={sellerStyles.contactBadge}>
+                <Ionicons name="call-outline" size={14} color="#1976D2" />
+                <Text style={sellerStyles.contactBadgeText}>Call</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </View>
     </View>
   );
 });
