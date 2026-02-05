@@ -1223,22 +1223,4 @@ const styles = StyleSheet.create({
     color: '#2E7D32',
     maxWidth: 120,
   },
-
-  // No results
-  noResultsContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 40,
-  },
-  noResultsText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#666',
-    marginTop: 12,
-  },
-  noResultsSubtext: {
-    fontSize: 14,
-    color: '#999',
-    marginTop: 4,
-  },
 });
