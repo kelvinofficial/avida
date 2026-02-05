@@ -608,8 +608,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: COLORS.background,
     marginRight: 8,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
-  filterChipActive: { backgroundColor: COLORS.primary },
+  filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   filterChipText: { fontSize: 13, fontWeight: '500', color: COLORS.textSecondary },
   filterChipTextActive: { color: '#fff' },
   filterChipBadge: {
