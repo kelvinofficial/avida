@@ -1181,6 +1181,55 @@ async def create_conversation(listing_id: str = Query(...), request: Request = N
     await db.conversations.insert_one(conversation)
     return conversation
 
+@api_router.post("/conversations/direct")
+async def create_direct_conversation(request: Request):
+    """Create or get existing direct conversation with a user (not tied to a listing)"""
+    user = await require_auth(request)
+    body = await request.json()
+    
+    target_user_id = body.get("user_id")
+    if not target_user_id:
+        raise HTTPException(status_code=400, detail="user_id is required")
+    
+    # Can't message yourself
+    if target_user_id == user.user_id:
+        raise HTTPException(status_code=400, detail="Cannot message yourself")
+    
+    # Check if user exists
+    target_user = await db.users.find_one({"user_id": target_user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if direct conversation exists (where listing_id is null or 'direct')
+    existing = await db.conversations.find_one({
+        "$or": [
+            {"buyer_id": user.user_id, "seller_id": target_user_id, "listing_id": "direct"},
+            {"seller_id": user.user_id, "buyer_id": target_user_id, "listing_id": "direct"},
+            {"buyer_id": user.user_id, "seller_id": target_user_id, "listing_id": None},
+            {"seller_id": user.user_id, "buyer_id": target_user_id, "listing_id": None}
+        ]
+    }, {"_id": 0})
+    
+    if existing:
+        return existing
+    
+    # Create new direct conversation
+    conversation = {
+        "id": str(uuid.uuid4()),
+        "listing_id": "direct",  # Mark as direct conversation
+        "buyer_id": user.user_id,  # Initiator
+        "seller_id": target_user_id,  # Recipient
+        "last_message": None,
+        "last_message_time": None,
+        "buyer_unread": 0,
+        "seller_unread": 0,
+        "created_at": datetime.now(timezone.utc),
+        "is_direct": True
+    }
+    
+    await db.conversations.insert_one(conversation)
+    return conversation
+
 @api_router.get("/conversations")
 async def get_conversations(request: Request):
     """Get user's conversations"""
