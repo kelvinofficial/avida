@@ -268,7 +268,7 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
   if (transmission) highlights.push(transmission);
 
   return (
-    <TouchableOpacity style={styles.autoCard} onPress={onPress} activeOpacity={0.97}>
+    <TouchableOpacity style={[styles.autoCard, listing.featured && styles.autoCardFeatured]} onPress={onPress} activeOpacity={0.97}>
       <View style={styles.autoCardRow}>
         {/* Left: Image */}
         <View style={styles.autoImageContainer}>
