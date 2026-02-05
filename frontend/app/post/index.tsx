@@ -558,7 +558,7 @@ export default function PostListingScreen() {
         currency,
         negotiable,
         category_id: selectedCategoryId,
-        subcategory: selectedSubcategory || undefined,
+        subcategory: selectedSubcategoryId, // Required - the subcategory ID
         condition: condition || undefined,
         images,
         location: location.trim(),
