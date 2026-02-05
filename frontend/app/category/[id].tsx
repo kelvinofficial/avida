@@ -568,11 +568,23 @@ export default function CategoryScreen() {
   };
 
   const isPropertyCategory = categoryId === 'properties';
+  const isAutoCategory = categoryId === 'auto_vehicles';
+  const isSingleColumn = isPropertyCategory || isAutoCategory;
 
   const renderListingCard = ({ item }: { item: any }) => {
     if (isPropertyCategory) {
       return (
         <PropertyListingCard
+          listing={item}
+          onPress={() => router.push(getListingRoute(item))}
+          onFavorite={() => handleFavorite(item.id)}
+          isFavorited={favorites.has(item.id)}
+        />
+      );
+    }
+    if (isAutoCategory) {
+      return (
+        <AutoListingCard
           listing={item}
           onPress={() => router.push(getListingRoute(item))}
           onFavorite={() => handleFavorite(item.id)}
