@@ -200,7 +200,7 @@ const NotificationItem = ({
 };
 
 // Empty State
-const EmptyState = ({ type, onSeedPress }: { type: string; onSeedPress?: () => void }) => (
+const EmptyState = ({ type }: { type: string }) => (
   <View style={styles.emptyContainer}>
     <View style={styles.emptyIconContainer}>
       <LinearGradient colors={[COLORS.primaryLight, '#fff']} style={styles.emptyIconBg}>
@@ -219,12 +219,6 @@ const EmptyState = ({ type, onSeedPress }: { type: string; onSeedPress?: () => v
         ? 'All your notifications have been read'
         : 'When you get notifications, they will show up here'}
     </Text>
-    {type !== 'unread' && onSeedPress && (
-      <TouchableOpacity style={styles.seedButton} onPress={onSeedPress}>
-        <Ionicons name="add-circle-outline" size={20} color={COLORS.primary} />
-        <Text style={styles.seedButtonText}>Load sample notifications</Text>
-      </TouchableOpacity>
-    )}
   </View>
 );
 
