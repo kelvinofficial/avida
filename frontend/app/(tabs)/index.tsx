@@ -411,9 +411,9 @@ export default function HomeScreen() {
       <View style={styles.row2}>
         <TouchableOpacity style={styles.searchField} onPress={() => router.push('/search')} activeOpacity={0.8}>
           <Ionicons name="search" size={20} color="#666" />
-          <Text style={styles.searchPlaceholder}>Search in your area</Text>
+          <Text style={styles.searchPlaceholder}>Search in {currentCity === 'All Locations' ? 'all areas' : currentCity}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.locationChip} activeOpacity={0.7}>
+        <TouchableOpacity style={styles.locationChip} activeOpacity={0.7} onPress={() => setShowLocationModal(true)}>
           <Ionicons name="location" size={16} color="#2E7D32" />
           <Text style={styles.locationText} numberOfLines={1}>{currentCity}</Text>
           <Ionicons name="chevron-down" size={14} color="#666" />
