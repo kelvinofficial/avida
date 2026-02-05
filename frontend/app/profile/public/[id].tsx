@@ -138,17 +138,29 @@ export default function PublicProfileScreen() {
 
   const fetchProfile = useCallback(async () => {
     try {
-      const [profileRes, listingsRes, reviewsRes] = await Promise.all([
-        api.get(`/profile/public/${id}`),
-        api.get(`/users/${id}/listings`, { params: { status: 'active', limit: 20 } }),
-        api.get(`/users/${id}/reviews`, { params: { limit: 10 } }),
-      ]);
-      
+      // Fetch profile first (required)
+      const profileRes = await api.get(`/profile/public/${id}`);
       setProfile(profileRes.data);
       setIsFollowing(profileRes.data.is_following || false);
-      setListings(listingsRes.data.listings || []);
-      setReviews(reviewsRes.data.reviews || []);
+      
+      // Fetch listings and reviews (optional, don't fail if these fail)
+      try {
+        const listingsRes = await api.get(`/users/${id}/listings`, { params: { status: 'active', limit: 20 } });
+        setListings(listingsRes.data.listings || []);
+      } catch (e) {
+        console.warn('Failed to fetch listings:', e);
+        setListings([]);
+      }
+      
+      try {
+        const reviewsRes = await api.get(`/users/${id}/reviews`, { params: { limit: 10 } });
+        setReviews(reviewsRes.data.reviews || []);
+      } catch (e) {
+        console.warn('Failed to fetch reviews:', e);
+        setReviews([]);
+      }
     } catch (err: any) {
+      console.error('Failed to load profile:', err);
       setError(err.response?.data?.detail || 'Failed to load profile');
     } finally {
       setLoading(false);
