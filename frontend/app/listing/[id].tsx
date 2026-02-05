@@ -731,6 +731,21 @@ export default function ListingDetailScreen() {
           <TouchableOpacity style={styles.headerBtn} onPress={() => safeGoBack(router)}>
             <Ionicons name="arrow-back" size={22} color={COLORS.text} />
           </TouchableOpacity>
+          
+          {/* Category Badge in Header */}
+          {listing.category_id && (
+            <View style={styles.headerCategoryBadge}>
+              <Ionicons 
+                name={getCategoryIcon(listing.category_id) as any} 
+                size={14} 
+                color={COLORS.primary} 
+              />
+              <Text style={styles.headerCategoryText}>
+                {category?.name || getCategoryName(listing.category_id)}
+              </Text>
+            </View>
+          )}
+          
           <View style={styles.headerRight}>
             <TouchableOpacity style={styles.headerBtn} onPress={handleShare}>
               <Ionicons name="share-outline" size={22} color={COLORS.text} />
