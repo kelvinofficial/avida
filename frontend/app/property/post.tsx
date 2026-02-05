@@ -213,8 +213,28 @@ const inputStyles = StyleSheet.create({
 
 export default function PostPropertyScreen() {
   const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
   const [currentStep, setCurrentStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+
+  // Check auth
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated]);
+
+  // Show loading while redirecting to login
+  if (!isAuthenticated) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={{ marginTop: 12, color: COLORS.textSecondary }}>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // Form state
   const [formData, setFormData] = useState({
