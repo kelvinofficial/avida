@@ -279,9 +279,20 @@ interface MessageBubbleProps {
   isMine: boolean;
   showAvatar: boolean;
   otherUser?: any;
+  isSeller?: boolean;
+  onAcceptOffer?: (messageId: string, amount: string) => void;
+  onRejectOffer?: (messageId: string) => void;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isMine, showAvatar, otherUser }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({ 
+  message, 
+  isMine, 
+  showAvatar, 
+  otherUser,
+  isSeller,
+  onAcceptOffer,
+  onRejectOffer
+}) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const soundRef = useRef<Audio.Sound | null>(null);
   
@@ -300,6 +311,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isMine, showAvat
   const isVideoMessage = messageType === 'video';
   const mediaUrl = (message as any).media_url;
   const mediaDuration = (message as any).media_duration;
+  
+  // Check if this is an offer message
+  const isOfferMessage = message.content?.includes('💰 OFFER:');
+  const offerAmount = message.content?.match(/💰 OFFER: (€[\d,]+)/)?.[1];
+  const offerStatus = (message as any).offer_status; // 'pending', 'accepted', 'rejected'
 
   // Play/pause voice message
   const togglePlayVoice = async () => {
@@ -338,8 +354,75 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isMine, showAvat
     };
   }, []);
 
+  // Render offer message
+  const renderOfferContent = () => {
+    const offerText = message.content?.split('\n\n')[1] || 'Offer submitted';
+    
+    return (
+      <View style={bubbleStyles.offerContainer}>
+        {/* Offer Header */}
+        <View style={[
+          bubbleStyles.offerHeader,
+          offerStatus === 'accepted' && bubbleStyles.offerHeaderAccepted,
+          offerStatus === 'rejected' && bubbleStyles.offerHeaderRejected,
+        ]}>
+          <Ionicons 
+            name={offerStatus === 'accepted' ? 'checkmark-circle' : offerStatus === 'rejected' ? 'close-circle' : 'pricetag'} 
+            size={20} 
+            color={offerStatus === 'accepted' ? '#4CAF50' : offerStatus === 'rejected' ? '#E53935' : COLORS.primary} 
+          />
+          <Text style={bubbleStyles.offerLabel}>
+            {isMine ? 'OFFER SENT' : 'OFFER RECEIVED'}
+          </Text>
+          {offerStatus && (
+            <View style={[
+              bubbleStyles.offerStatusBadge,
+              offerStatus === 'accepted' && bubbleStyles.offerStatusAccepted,
+              offerStatus === 'rejected' && bubbleStyles.offerStatusRejected,
+            ]}>
+              <Text style={bubbleStyles.offerStatusText}>
+                {offerStatus.toUpperCase()}
+              </Text>
+            </View>
+          )}
+        </View>
+        
+        {/* Offer Amount */}
+        <Text style={bubbleStyles.offerAmount}>{offerAmount}</Text>
+        
+        {/* Offer Message */}
+        <Text style={bubbleStyles.offerMessage}>{offerText}</Text>
+        
+        {/* Accept/Reject Buttons for Seller */}
+        {!isMine && isSeller && !offerStatus && (
+          <View style={bubbleStyles.offerActions}>
+            <TouchableOpacity 
+              style={[bubbleStyles.offerButton, bubbleStyles.offerButtonReject]}
+              onPress={() => onRejectOffer?.(message.id)}
+            >
+              <Ionicons name="close" size={18} color="#E53935" />
+              <Text style={bubbleStyles.offerButtonRejectText}>Decline</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[bubbleStyles.offerButton, bubbleStyles.offerButtonAccept]}
+              onPress={() => onAcceptOffer?.(message.id, offerAmount || '')}
+            >
+              <Ionicons name="checkmark" size={18} color="#fff" />
+              <Text style={bubbleStyles.offerButtonAcceptText}>Accept</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   // Render content based on message type
   const renderContent = () => {
+    // Check for offer message first
+    if (isOfferMessage) {
+      return renderOfferContent();
+    }
+    
     if (isVoiceMessage) {
       return (
         <View style={bubbleStyles.voiceContent}>
@@ -429,6 +512,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isMine, showAvat
         isMine ? bubbleStyles.bubbleMine : bubbleStyles.bubbleTheirs,
         isMine ? bubbleStyles.bubbleTailMine : bubbleStyles.bubbleTailTheirs,
         (isImageMessage || isVideoMessage) && bubbleStyles.mediaBubble,
+        isOfferMessage && bubbleStyles.offerBubble,
       ]}>
         {renderContent()}
         <View style={bubbleStyles.footer}>
