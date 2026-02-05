@@ -12,6 +12,7 @@ import {
   useWindowDimensions,
   Modal,
   TextInput,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,6 +26,8 @@ import { EmptyState } from '../../src/components/EmptyState';
 import { useAuthStore } from '../../src/store/authStore';
 import { formatDistanceToNow } from 'date-fns';
 import { getSubcategories, SubcategoryConfig, getMainCategory } from '../../src/config/subcategories';
+import { useResponsive } from '../../src/hooks/useResponsive';
+import { ResponsiveLayout } from '../../src/components/layout';
 
 const { width } = Dimensions.get('window');
 
