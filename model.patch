@@ -217,7 +217,7 @@ index b09d195..e69de29 100644
 --------+import json
 --------+
 --------+# Get backend URL
---------+BASE_URL = "https://homefinder-231.preview.emergentagent.com"
+--------+BASE_URL = "https://listings-master-2.preview.emergentagent.com"
 --------+API_URL = f"{BASE_URL}/api"
 --------+TEST_SESSION_TOKEN = "test_session_123"
 --------+
@@ -484,7 +484,7 @@ index b09d195..e69de29 100644
 -+                    return line.split('=', 1)[1].strip()
 -+    except Exception as e:
 -+        print(f'Error reading frontend .env: {e}')
--+    return 'https://homefinder-231.preview.emergentagent.com'
+-+    return 'https://listings-master-2.preview.emergentagent.com'
 -+
 -+BASE_URL = get_backend_url()
 -+API_URL = f'{BASE_URL}/api'
