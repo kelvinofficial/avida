@@ -320,10 +320,12 @@ export default function HomeScreen() {
       setCategories(categoriesRes);
       if (isAuthenticated) {
         try { const favs = await favoritesApi.getAll(); setFavorites(new Set(favs.map((f: Listing) => f.id))); } catch (e) {}
+        // Also refresh notification count on data refresh
+        fetchNotificationCount();
       }
     } catch (error) { console.error('Error fetching data:', error); }
     finally { setLoading(false); setRefreshing(false); }
-  }, [selectedCategory, page, isAuthenticated]);
+  }, [selectedCategory, page, isAuthenticated, fetchNotificationCount]);
 
   useEffect(() => { fetchData(true); }, [selectedCategory]);
 
