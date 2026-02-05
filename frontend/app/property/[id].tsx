@@ -1170,7 +1170,7 @@ export default function PropertyDetailScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerBtn} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.headerBtn} onPress={() => safeGoBack(router)}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
         <View style={styles.headerActions}>
