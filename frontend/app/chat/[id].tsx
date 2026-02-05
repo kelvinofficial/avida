@@ -692,6 +692,99 @@ const bubbleStyles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '500',
   },
+  // Offer message styles
+  offerBubble: {
+    padding: 0,
+    overflow: 'hidden',
+    maxWidth: SCREEN_WIDTH * 0.8,
+  },
+  offerContainer: {
+    minWidth: 220,
+  },
+  offerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  offerHeaderAccepted: {
+    backgroundColor: '#E8F5E9',
+  },
+  offerHeaderRejected: {
+    backgroundColor: '#FFEBEE',
+  },
+  offerLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.primary,
+    letterSpacing: 0.5,
+    flex: 1,
+  },
+  offerStatusBadge: {
+    backgroundColor: COLORS.textMuted,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  offerStatusAccepted: {
+    backgroundColor: '#4CAF50',
+  },
+  offerStatusRejected: {
+    backgroundColor: '#E53935',
+  },
+  offerStatusText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '700',
+  },
+  offerAmount: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: COLORS.primary,
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  offerMessage: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    lineHeight: 20,
+  },
+  offerActions: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  offerButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    gap: 6,
+  },
+  offerButtonAccept: {
+    backgroundColor: COLORS.primary,
+  },
+  offerButtonReject: {
+    backgroundColor: '#fff',
+    borderRightWidth: 1,
+    borderRightColor: COLORS.border,
+  },
+  offerButtonAcceptText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  offerButtonRejectText: {
+    color: '#E53935',
+    fontWeight: '600',
+    fontSize: 14,
+  },
 });
 
 // Quick reply buttons
