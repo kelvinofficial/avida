@@ -7,7 +7,7 @@ import requests
 import json
 
 # Get backend URL
-BASE_URL = "https://multicatbrowse.preview.emergentagent.com"
+BASE_URL = "https://offer-system-1.preview.emergentagent.com"
 API_URL = f"{BASE_URL}/api"
 TEST_SESSION_TOKEN = "test_session_123"
 
