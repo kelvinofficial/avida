@@ -386,8 +386,13 @@ export default function HomeScreen() {
   };
 
   const handleCategoryPress = (categoryId: string) => {
-    // Navigate to category page with filter
-    router.push(`/category/${categoryId}`);
+    if (categoryId === 'all') {
+      // Show all listings - clear category filter
+      setSelectedCategory(null);
+    } else {
+      // Navigate to category page with filter
+      router.push(`/category/${categoryId}`);
+    }
   };
 
   const handleLocationSelect = (city: string) => {
