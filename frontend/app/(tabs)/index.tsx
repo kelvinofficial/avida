@@ -286,7 +286,28 @@ export default function HomeScreen() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [notificationCount, setNotificationCount] = useState(0);
-  const [currentCity] = useState('Berlin');
+  const [currentCity, setCurrentCity] = useState('All Locations');
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [locationSearch, setLocationSearch] = useState('');
+
+  // Popular cities list
+  const POPULAR_CITIES = [
+    { name: 'All Locations', icon: 'globe-outline' },
+    { name: 'Berlin', icon: 'business-outline' },
+    { name: 'Munich', icon: 'business-outline' },
+    { name: 'Hamburg', icon: 'business-outline' },
+    { name: 'Frankfurt', icon: 'business-outline' },
+    { name: 'Cologne', icon: 'business-outline' },
+    { name: 'Stuttgart', icon: 'business-outline' },
+    { name: 'Düsseldorf', icon: 'business-outline' },
+    { name: 'Dresden', icon: 'business-outline' },
+    { name: 'Leipzig', icon: 'business-outline' },
+    { name: 'Hannover', icon: 'business-outline' },
+  ];
+
+  const filteredCities = POPULAR_CITIES.filter(city => 
+    city.name.toLowerCase().includes(locationSearch.toLowerCase())
+  );
 
   // Fetch unread notification count
   const fetchNotificationCount = useCallback(async () => {
