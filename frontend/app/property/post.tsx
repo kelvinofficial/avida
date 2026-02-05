@@ -343,6 +343,12 @@ export default function PostPropertyScreen() {
     setSubmitting(true);
     
     try {
+      // Get contact methods
+      const contactMethods: string[] = [];
+      if (contactPreferences.inAppChat) contactMethods.push('chat');
+      if (contactPreferences.whatsapp) contactMethods.push('whatsapp');
+      if (contactPreferences.call) contactMethods.push('call');
+
       const payload = {
         title: formData.title,
         description: formData.description,
@@ -368,6 +374,12 @@ export default function PostPropertyScreen() {
         images: [
           'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80',
         ],
+        // Seller preferences
+        accepts_offers: acceptsOffers,
+        accepts_exchanges: acceptsExchanges,
+        contact_methods: contactMethods,
+        whatsapp_number: contactPreferences.whatsapp ? whatsappNumber : undefined,
+        phone_number: contactPreferences.call ? phoneNumber : undefined,
       };
 
       await api.post('/property/listings', payload);
