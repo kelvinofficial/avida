@@ -3398,9 +3398,27 @@ async def get_public_profile(user_id: str, request: Request):
     if not privacy.get("allow_profile_discovery", True):
         raise HTTPException(status_code=403, detail="This profile is private")
     
-    # Get stats
+    # Get stats from all collections
     active_listings = await db.listings.count_documents({"user_id": user_id, "status": "active"})
+    active_properties = await db.properties.count_documents({"user_id": user_id, "status": "active"})
+    active_auto = await db.auto_listings.count_documents({"user_id": user_id, "status": "active"})
+    
     sold_listings = await db.listings.count_documents({"user_id": user_id, "status": "sold"})
+    sold_properties = await db.properties.count_documents({"user_id": user_id, "status": "sold"})
+    sold_auto = await db.auto_listings.count_documents({"user_id": user_id, "status": "sold"})
+    
+    # Check if current user is following
+    is_following = False
+    if current_user:
+        follow = await db.follows.find_one({
+            "follower_id": current_user.user_id,
+            "following_id": user_id
+        })
+        is_following = follow is not None
+    
+    # Get follower/following counts
+    followers_count = await db.follows.count_documents({"following_id": user_id})
+    following_count = await db.follows.count_documents({"follower_id": user_id})
     
     # Return limited public info
     return {
@@ -3410,16 +3428,296 @@ async def get_public_profile(user_id: str, request: Request):
         "location": user_data.get("location"),
         "bio": user_data.get("bio"),
         "verified": user_data.get("verified", False),
+        "email_verified": user_data.get("email_verified", False),
+        "phone_verified": user_data.get("phone_verified", False),
+        "id_verified": user_data.get("id_verified", False),
         "rating": user_data.get("rating", 0),
         "total_ratings": user_data.get("total_ratings", 0),
         "created_at": user_data.get("created_at"),
         "stats": {
-            "active_listings": active_listings,
-            "sold_listings": sold_listings
+            "active_listings": active_listings + active_properties + active_auto,
+            "sold_listings": sold_listings + sold_properties + sold_auto,
+            "followers": followers_count,
+            "following": following_count
         },
+        "is_following": is_following,
         "online_status": privacy.get("show_online_status", True),
         "last_seen": user_data.get("last_seen") if privacy.get("show_last_seen", True) else None
     }
+
+# ==================== FOLLOW SYSTEM ====================
+
+@api_router.post("/users/{user_id}/follow")
+async def follow_user(user_id: str, request: Request):
+    """Follow a user"""
+    current_user = await require_auth(request)
+    
+    if current_user.user_id == user_id:
+        raise HTTPException(status_code=400, detail="Cannot follow yourself")
+    
+    # Check if user exists
+    target_user = await db.users.find_one({"user_id": user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if already following
+    existing = await db.follows.find_one({
+        "follower_id": current_user.user_id,
+        "following_id": user_id
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="Already following this user")
+    
+    # Create follow relationship
+    await db.follows.insert_one({
+        "id": str(uuid.uuid4()),
+        "follower_id": current_user.user_id,
+        "following_id": user_id,
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Create notification for target user
+    await create_notification(
+        user_id,
+        "follow",
+        "New Follower",
+        f"{current_user.name or 'Someone'} started following you",
+        {"follower_id": current_user.user_id}
+    )
+    
+    return {"message": "Now following user", "is_following": True}
+
+@api_router.delete("/users/{user_id}/follow")
+async def unfollow_user(user_id: str, request: Request):
+    """Unfollow a user"""
+    current_user = await require_auth(request)
+    
+    result = await db.follows.delete_one({
+        "follower_id": current_user.user_id,
+        "following_id": user_id
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=400, detail="Not following this user")
+    
+    return {"message": "Unfollowed user", "is_following": False}
+
+@api_router.get("/users/{user_id}/followers")
+async def get_followers(
+    user_id: str,
+    request: Request,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100)
+):
+    """Get user's followers"""
+    skip = (page - 1) * limit
+    
+    follows = await db.follows.find(
+        {"following_id": user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Get follower user details
+    follower_ids = [f["follower_id"] for f in follows]
+    users = await db.users.find(
+        {"user_id": {"$in": follower_ids}},
+        {"_id": 0, "user_id": 1, "name": 1, "picture": 1, "verified": 1}
+    ).to_list(len(follower_ids))
+    
+    total = await db.follows.count_documents({"following_id": user_id})
+    
+    return {"followers": users, "total": total, "page": page}
+
+@api_router.get("/users/{user_id}/following")
+async def get_following(
+    user_id: str,
+    request: Request,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100)
+):
+    """Get users that user is following"""
+    skip = (page - 1) * limit
+    
+    follows = await db.follows.find(
+        {"follower_id": user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Get following user details
+    following_ids = [f["following_id"] for f in follows]
+    users = await db.users.find(
+        {"user_id": {"$in": following_ids}},
+        {"_id": 0, "user_id": 1, "name": 1, "picture": 1, "verified": 1}
+    ).to_list(len(following_ids))
+    
+    total = await db.follows.count_documents({"follower_id": user_id})
+    
+    return {"following": users, "total": total, "page": page}
+
+# ==================== REVIEWS SYSTEM ====================
+
+@api_router.post("/users/{user_id}/reviews")
+async def create_review(user_id: str, request: Request):
+    """Leave a review for a user"""
+    current_user = await require_auth(request)
+    body = await request.json()
+    
+    if current_user.user_id == user_id:
+        raise HTTPException(status_code=400, detail="Cannot review yourself")
+    
+    # Check if user exists
+    target_user = await db.users.find_one({"user_id": user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    rating = body.get("rating")
+    comment = body.get("comment", "").strip()
+    
+    if not rating or rating < 1 or rating > 5:
+        raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
+    
+    # Check if already reviewed
+    existing = await db.reviews.find_one({
+        "reviewer_id": current_user.user_id,
+        "user_id": user_id
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="You have already reviewed this user")
+    
+    # Create review
+    review = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "reviewer_id": current_user.user_id,
+        "reviewer_name": current_user.name,
+        "reviewer_picture": current_user.picture,
+        "rating": rating,
+        "comment": comment,
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    await db.reviews.insert_one(review)
+    
+    # Update user's average rating
+    reviews = await db.reviews.find({"user_id": user_id}).to_list(1000)
+    avg_rating = sum(r["rating"] for r in reviews) / len(reviews)
+    
+    await db.users.update_one(
+        {"user_id": user_id},
+        {"$set": {"rating": round(avg_rating, 1), "total_ratings": len(reviews)}}
+    )
+    
+    # Create notification
+    await create_notification(
+        user_id,
+        "review",
+        "New Review",
+        f"{current_user.name or 'Someone'} left you a {rating}-star review",
+        {"review_id": review["id"], "reviewer_id": current_user.user_id}
+    )
+    
+    return {"message": "Review submitted", "review": review}
+
+@api_router.get("/users/{user_id}/reviews")
+async def get_user_reviews(
+    user_id: str,
+    request: Request,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100)
+):
+    """Get reviews for a user"""
+    skip = (page - 1) * limit
+    
+    reviews = await db.reviews.find(
+        {"user_id": user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    total = await db.reviews.count_documents({"user_id": user_id})
+    
+    # Get rating breakdown
+    pipeline = [
+        {"$match": {"user_id": user_id}},
+        {"$group": {"_id": "$rating", "count": {"$sum": 1}}}
+    ]
+    breakdown_result = await db.reviews.aggregate(pipeline).to_list(5)
+    breakdown = {str(i): 0 for i in range(1, 6)}
+    for item in breakdown_result:
+        breakdown[str(item["_id"])] = item["count"]
+    
+    return {
+        "reviews": reviews,
+        "total": total,
+        "page": page,
+        "rating_breakdown": breakdown
+    }
+
+@api_router.delete("/reviews/{review_id}")
+async def delete_review(review_id: str, request: Request):
+    """Delete own review"""
+    current_user = await require_auth(request)
+    
+    review = await db.reviews.find_one({"id": review_id})
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+    
+    if review["reviewer_id"] != current_user.user_id:
+        raise HTTPException(status_code=403, detail="Cannot delete this review")
+    
+    await db.reviews.delete_one({"id": review_id})
+    
+    # Recalculate user's rating
+    user_id = review["user_id"]
+    reviews = await db.reviews.find({"user_id": user_id}).to_list(1000)
+    
+    if reviews:
+        avg_rating = sum(r["rating"] for r in reviews) / len(reviews)
+        await db.users.update_one(
+            {"user_id": user_id},
+            {"$set": {"rating": round(avg_rating, 1), "total_ratings": len(reviews)}}
+        )
+    else:
+        await db.users.update_one(
+            {"user_id": user_id},
+            {"$set": {"rating": 0, "total_ratings": 0}}
+        )
+    
+    return {"message": "Review deleted"}
+
+@api_router.get("/users/{user_id}/listings")
+async def get_user_listings(
+    user_id: str,
+    request: Request,
+    status: str = Query("active"),
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100)
+):
+    """Get listings for a specific user"""
+    skip = (page - 1) * limit
+    
+    query = {"user_id": user_id, "status": status}
+    
+    # Get from all collections
+    listings = await db.listings.find(query, {"_id": 0}).sort("created_at", -1).to_list(200)
+    properties = await db.properties.find(query, {"_id": 0}).sort("created_at", -1).to_list(200)
+    auto_listings = await db.auto_listings.find(query, {"_id": 0}).sort("created_at", -1).to_list(200)
+    
+    for l in listings:
+        l["type"] = "listing"
+    for p in properties:
+        p["type"] = "property"
+    for a in auto_listings:
+        a["type"] = "auto"
+    
+    all_listings = listings + properties + auto_listings
+    all_listings.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+    
+    total = len(all_listings)
+    paginated = all_listings[skip:skip + limit]
+    
+    return {"listings": paginated, "total": total, "page": page}
 
 @api_router.get("/profile/activity/listings")
 async def get_my_listings(
