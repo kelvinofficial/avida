@@ -313,8 +313,15 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   const mediaDuration = (message as any).media_duration;
   
   // Check if this is an offer message
-  const isOfferMessage = message.content?.includes('💰 OFFER:');
-  const offerAmount = message.content?.match(/💰 OFFER: (€[\d,]+)/)?.[1];
+  const isOfferMessage = message.content?.includes('💰 OFFER SUBMITTED') || message.content?.includes('💰 OFFER:');
+  
+  // Parse offer amount from new format: "Amount: €15,000 (25% off)" or old format: "💰 OFFER: €15,000"
+  let offerAmount = '';
+  if (message.content?.includes('Amount:')) {
+    offerAmount = message.content?.match(/Amount: (€[\d,]+)/)?.[1] || '';
+  } else {
+    offerAmount = message.content?.match(/💰 OFFER: (€[\d,]+)/)?.[1] || '';
+  }
   const offerStatus = (message as any).offer_status; // 'pending', 'accepted', 'rejected'
 
   // Play/pause voice message
