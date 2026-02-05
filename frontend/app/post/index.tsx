@@ -13,6 +13,7 @@ import {
   Platform,
   Switch,
   Dimensions,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -35,18 +36,73 @@ const COLORS = {
   textSecondary: '#666666',
   border: '#E0E0E0',
   error: '#D32F2F',
+  errorLight: '#FFEBEE',
   success: '#2E7D32',
+  warning: '#F57C00',
+  warningLight: '#FFF3E0',
 };
 
 const SELLER_TYPES = ['Individual', 'Dealer', 'Company'];
 const CONTACT_METHODS = ['Chat', 'WhatsApp', 'Phone Call', 'All'];
 
-// ============ DYNAMIC FIELD RENDERER ============
+// ============ VALIDATION ERROR COMPONENT ============
+interface ValidationErrorProps {
+  message: string;
+  visible: boolean;
+}
+
+const ValidationError: React.FC<ValidationErrorProps> = ({ message, visible }) => {
+  const [fadeAnim] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: visible ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [visible]);
+
+  if (!visible) return null;
+
+  return (
+    <Animated.View style={[validationStyles.container, { opacity: fadeAnim }]}>
+      <Ionicons name="alert-circle" size={14} color={COLORS.error} />
+      <Text style={validationStyles.text}>{message}</Text>
+    </Animated.View>
+  );
+};
+
+const validationStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.errorLight,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginTop: 6,
+    gap: 6,
+  },
+  text: {
+    fontSize: 12,
+    color: COLORS.error,
+    flex: 1,
+  },
+});
+
+// ============ FORM FIELD ERRORS STATE ============
+interface FieldErrors {
+  [key: string]: string;
+}
+
+// ============ DYNAMIC FIELD RENDERER WITH VALIDATION ============
 interface DynamicFieldProps {
   field: AttributeField;
   value: any;
   onChange: (value: any) => void;
   parentValues?: Record<string, any>;
+  error?: string;
+  onClearError?: () => void;
 }
 
 const DynamicField: React.FC<DynamicFieldProps> = ({ field, value, onChange, parentValues }) => {
