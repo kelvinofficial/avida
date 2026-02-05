@@ -23,6 +23,7 @@ import { Listing, Category } from '../../src/types';
 import { EmptyState } from '../../src/components/EmptyState';
 import { useAuthStore } from '../../src/store/authStore';
 import { formatDistanceToNow } from 'date-fns';
+import { getSubcategories, SubcategoryConfig } from '../../src/config/subcategories';
 
 const { width } = Dimensions.get('window');
 
