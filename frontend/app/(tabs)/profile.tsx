@@ -649,7 +649,7 @@ export default function ProfileScreen() {
             <View style={styles.unauthLogoContainer}>
               <Ionicons name="storefront" size={32} color={COLORS.primary} />
             </View>
-            <Text style={styles.unauthBrandName}>LocalMarket</Text>
+            <Text style={styles.unauthBrandName}>avida</Text>
           </View>
 
           {/* Welcome Card */}
