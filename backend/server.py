@@ -2720,6 +2720,216 @@ async def get_property_type_counts(purpose: Optional[str] = None):
     results = await db.properties.aggregate(pipeline).to_list(100)
     return {item["type"]: item["count"] for item in results}
 
+# ==================== OFFERS SYSTEM ====================
+
+@api_router.post("/offers")
+async def create_offer(request: Request):
+    """Submit an offer for any listing"""
+    user = await require_auth(request)
+    body = await request.json()
+    
+    listing_id = body.get("listing_id")
+    offered_price = body.get("offered_price")
+    message = body.get("message", "")
+    
+    if not listing_id or not offered_price:
+        raise HTTPException(status_code=400, detail="listing_id and offered_price are required")
+    
+    # Find listing in all collections
+    listing = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        listing = await db.properties.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        listing = await db.auto_listings.find_one({"id": listing_id}, {"_id": 0})
+    
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    
+    listed_price = listing.get("price", 0)
+    
+    # Validate offer is below listed price
+    if offered_price >= listed_price:
+        raise HTTPException(status_code=400, detail="Offer must be below the listed price")
+    
+    # Validate minimum offer (10% of listed price)
+    min_offer = listed_price * 0.1
+    if offered_price < min_offer:
+        raise HTTPException(status_code=400, detail=f"Offer must be at least {min_offer}")
+    
+    seller_id = listing.get("user_id")
+    
+    # Check if user already has a pending offer on this listing
+    existing_offer = await db.offers.find_one({
+        "listing_id": listing_id,
+        "buyer_id": user.user_id,
+        "status": "pending"
+    })
+    if existing_offer:
+        # Update existing offer
+        await db.offers.update_one(
+            {"id": existing_offer["id"]},
+            {"$set": {
+                "offered_price": offered_price,
+                "message": message,
+                "updated_at": datetime.utcnow().isoformat()
+            }}
+        )
+        return {"message": "Offer updated successfully", "offer_id": existing_offer["id"]}
+    
+    # Calculate discount percentage
+    discount_percent = round((1 - offered_price / listed_price) * 100)
+    
+    offer = {
+        "id": f"offer_{uuid.uuid4().hex[:12]}",
+        "listing_id": listing_id,
+        "listing_title": listing.get("title", "Untitled"),
+        "listing_image": listing.get("images", [None])[0],
+        "listed_price": listed_price,
+        "offered_price": offered_price,
+        "discount_percent": discount_percent,
+        "buyer_id": user.user_id,
+        "buyer_name": user.name,
+        "buyer_picture": user.picture,
+        "seller_id": seller_id,
+        "message": message,
+        "status": "pending",  # pending, accepted, rejected, expired, countered
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat(),
+    }
+    
+    await db.offers.insert_one(offer)
+    
+    # Create notification for seller
+    if seller_id:
+        await create_notification(
+            user_id=seller_id,
+            notification_type="offer_received",
+            title="New offer received!",
+            body=f"{user.name} offered €{offered_price:,.0f} for {listing.get('title', 'your listing')} ({discount_percent}% off)",
+            cta_label="VIEW OFFER",
+            cta_route=f"/offers",
+            actor_id=user.user_id,
+            actor_name=user.name,
+            actor_picture=user.picture,
+            listing_id=listing_id,
+            listing_title=listing.get("title"),
+            image_url=listing.get("images", [None])[0],
+            meta={"offer_id": offer["id"], "offered_price": offered_price}
+        )
+    
+    return {"message": "Offer submitted successfully", "offer_id": offer["id"]}
+
+@api_router.get("/offers")
+async def get_my_offers(request: Request, role: str = "seller"):
+    """Get offers - as seller (received) or buyer (sent)"""
+    user = await require_auth(request)
+    
+    if role == "seller":
+        # Get offers on my listings
+        query = {"seller_id": user.user_id}
+    else:
+        # Get offers I've made
+        query = {"buyer_id": user.user_id}
+    
+    offers = await db.offers.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    # Count by status
+    pending_count = len([o for o in offers if o.get("status") == "pending"])
+    
+    return {
+        "offers": offers,
+        "pending_count": pending_count,
+        "total": len(offers)
+    }
+
+@api_router.get("/offers/listing/{listing_id}")
+async def get_listing_offers(request: Request, listing_id: str):
+    """Get all offers for a specific listing (seller only)"""
+    user = await require_auth(request)
+    
+    # Verify user owns this listing
+    listing = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        listing = await db.properties.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        listing = await db.auto_listings.find_one({"id": listing_id}, {"_id": 0})
+    
+    if not listing or listing.get("user_id") != user.user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to view offers for this listing")
+    
+    offers = await db.offers.find({"listing_id": listing_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    return {
+        "offers": offers,
+        "listing": listing,
+        "total": len(offers)
+    }
+
+@api_router.put("/offers/{offer_id}/respond")
+async def respond_to_offer(request: Request, offer_id: str):
+    """Accept or reject an offer (seller only)"""
+    user = await require_auth(request)
+    body = await request.json()
+    
+    action = body.get("action")  # accept, reject, counter
+    counter_price = body.get("counter_price")
+    message = body.get("message", "")
+    
+    if action not in ["accept", "reject", "counter"]:
+        raise HTTPException(status_code=400, detail="Invalid action")
+    
+    offer = await db.offers.find_one({"id": offer_id}, {"_id": 0})
+    if not offer:
+        raise HTTPException(status_code=404, detail="Offer not found")
+    
+    if offer.get("seller_id") != user.user_id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    if offer.get("status") != "pending":
+        raise HTTPException(status_code=400, detail="Offer is no longer pending")
+    
+    # Update offer status
+    update_data = {
+        "status": "accepted" if action == "accept" else ("rejected" if action == "reject" else "countered"),
+        "response_message": message,
+        "responded_at": datetime.utcnow().isoformat(),
+    }
+    
+    if action == "counter" and counter_price:
+        update_data["counter_price"] = counter_price
+    
+    await db.offers.update_one({"id": offer_id}, {"$set": update_data})
+    
+    # Notify buyer
+    buyer_id = offer.get("buyer_id")
+    if buyer_id:
+        if action == "accept":
+            notif_title = "Offer accepted! 🎉"
+            notif_body = f"Your offer of €{offer['offered_price']:,.0f} for {offer['listing_title']} has been accepted!"
+            notif_type = "offer_accepted"
+        elif action == "reject":
+            notif_title = "Offer declined"
+            notif_body = f"Unfortunately, your offer for {offer['listing_title']} was declined."
+            notif_type = "offer_rejected"
+        else:
+            notif_title = "Counter offer received"
+            notif_body = f"The seller countered with €{counter_price:,.0f} for {offer['listing_title']}"
+            notif_type = "offer_received"
+        
+        await create_notification(
+            user_id=buyer_id,
+            notification_type=notif_type,
+            title=notif_title,
+            body=notif_body,
+            cta_label="VIEW",
+            listing_id=offer.get("listing_id"),
+            listing_title=offer.get("listing_title"),
+            image_url=offer.get("listing_image"),
+            meta={"offer_id": offer_id}
+        )
+    
+    return {"message": f"Offer {action}ed successfully"}
+
 @api_router.post("/property/offers")
 async def create_property_offer(request: Request):
     """Submit an offer for a property"""
