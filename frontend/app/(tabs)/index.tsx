@@ -760,7 +760,7 @@ export default function HomeScreen() {
   );
 
   return (
-    <ResponsiveLayout showSidebar={isDesktop || isTablet}>
+    <ResponsiveLayout showSidebar={false}>
       <SafeAreaView style={styles.container} edges={isMobile ? ['top'] : []}>
         {mainContent}
 
