@@ -80,13 +80,7 @@ export default function TabLayout() {
         options={{
           title: 'Messages',
           tabBarIcon: ({ color, size, focused }) => (
-            <View>
-              <Ionicons name={focused ? "chatbubbles" : "chatbubbles-outline"} size={24} color={color} />
-              {/* Badge for unread messages */}
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>1</Text>
-              </View>
-            </View>
+            <Ionicons name={focused ? "chatbubbles" : "chatbubbles-outline"} size={24} color={color} />
           ),
         }}
       />
