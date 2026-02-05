@@ -448,9 +448,154 @@ async def require_auth(request: Request) -> User:
 
 # ==================== AUTH ENDPOINTS ====================
 
+# Import bcrypt for password hashing
+import hashlib
+import secrets
+
+def hash_password(password: str) -> str:
+    """Hash password using SHA-256 with salt"""
+    salt = secrets.token_hex(16)
+    password_hash = hashlib.sha256((password + salt).encode()).hexdigest()
+    return f"{salt}:{password_hash}"
+
+def verify_password(password: str, stored_hash: str) -> bool:
+    """Verify password against stored hash"""
+    try:
+        salt, password_hash = stored_hash.split(':')
+        return hashlib.sha256((password + salt).encode()).hexdigest() == password_hash
+    except:
+        return False
+
+# Pydantic models for email/password auth
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+    name: str
+
+@api_router.post("/auth/register")
+async def register_user(register_data: RegisterRequest, response: Response):
+    """Register a new user with email and password"""
+    # Validate email format
+    if not register_data.email or '@' not in register_data.email:
+        raise HTTPException(status_code=400, detail="Invalid email format")
+    
+    # Validate password length
+    if len(register_data.password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+    
+    # Check if email already exists
+    existing_user = await db.users.find_one({"email": register_data.email.lower()})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered. Please login instead.")
+    
+    # Create user
+    user_id = f"user_{uuid.uuid4().hex[:12]}"
+    password_hash = hash_password(register_data.password)
+    
+    new_user = {
+        "user_id": user_id,
+        "email": register_data.email.lower(),
+        "name": register_data.name,
+        "password_hash": password_hash,
+        "picture": None,
+        "verified": False,
+        "rating": 0.0,
+        "total_ratings": 0,
+        "blocked_users": [],
+        "notifications_enabled": True,
+        "created_at": datetime.now(timezone.utc),
+        "auth_provider": "email"  # Track auth method
+    }
+    
+    await db.users.insert_one(new_user)
+    
+    # Create session
+    session_token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+    
+    await db.user_sessions.insert_one({
+        "user_id": user_id,
+        "session_token": session_token,
+        "expires_at": expires_at,
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Set cookie
+    response.set_cookie(
+        key="session_token",
+        value=session_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        max_age=7 * 24 * 60 * 60,
+        path="/"
+    )
+    
+    # Return user without password hash
+    user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0})
+    return {"user": user_doc, "session_token": session_token, "message": "Registration successful"}
+
+@api_router.post("/auth/login")
+async def login_user(login_data: LoginRequest, request: Request, response: Response):
+    """Login with email and password"""
+    # Rate limiting
+    client_ip = request.client.host if request.client else "unknown"
+    if not check_rate_limit(client_ip, "login"):
+        raise HTTPException(status_code=429, detail="Too many login attempts. Please wait.")
+    
+    # Find user by email
+    user = await db.users.find_one({"email": login_data.email.lower()})
+    
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Check if user has a password (might be Google-only user)
+    if not user.get("password_hash"):
+        raise HTTPException(
+            status_code=400, 
+            detail="This account uses Google Sign-In. Please login with Google."
+        )
+    
+    # Verify password
+    if not verify_password(login_data.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Create session
+    session_token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+    
+    # Remove old sessions for this user
+    await db.user_sessions.delete_many({"user_id": user["user_id"]})
+    
+    await db.user_sessions.insert_one({
+        "user_id": user["user_id"],
+        "session_token": session_token,
+        "expires_at": expires_at,
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Set cookie
+    response.set_cookie(
+        key="session_token",
+        value=session_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        max_age=7 * 24 * 60 * 60,
+        path="/"
+    )
+    
+    # Return user without password hash
+    user_doc = {k: v for k, v in user.items() if k not in ["_id", "password_hash"]}
+    return {"user": user_doc, "session_token": session_token, "message": "Login successful"}
+
 @api_router.post("/auth/session")
 async def exchange_session(request: Request, response: Response):
-    """Exchange session_id for session_token"""
+    """Exchange session_id for session_token (Google OAuth)"""
     body = await request.json()
     session_id = body.get("session_id")
     
@@ -482,6 +627,12 @@ async def exchange_session(request: Request, response: Response):
     
     if existing_user:
         user_id = existing_user["user_id"]
+        # Update picture if changed
+        if user_data.get("picture") and existing_user.get("picture") != user_data.get("picture"):
+            await db.users.update_one(
+                {"user_id": user_id},
+                {"$set": {"picture": user_data.get("picture")}}
+            )
     else:
         user_id = f"user_{uuid.uuid4().hex[:12]}"
         new_user = {
@@ -494,7 +645,8 @@ async def exchange_session(request: Request, response: Response):
             "total_ratings": 0,
             "blocked_users": [],
             "notifications_enabled": True,
-            "created_at": datetime.now(timezone.utc)
+            "created_at": datetime.now(timezone.utc),
+            "auth_provider": "google"  # Track auth method
         }
         await db.users.insert_one(new_user)
     
@@ -521,7 +673,7 @@ async def exchange_session(request: Request, response: Response):
         path="/"
     )
     
-    user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0})
     return {"user": user_doc, "session_token": session_token}
 
 @api_router.get("/auth/me")
