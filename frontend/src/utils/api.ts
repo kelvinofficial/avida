@@ -166,3 +166,6 @@ export const reportsApi = {
     return response.data;
   }
 };
+
+// Default export for convenience
+export default api;
