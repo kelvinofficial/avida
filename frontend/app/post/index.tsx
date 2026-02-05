@@ -401,52 +401,90 @@ export default function PostListingScreen() {
 
   // ============ VALIDATION ============
   const validateStep = useCallback(() => {
+    const errors: FieldErrors = {};
+    let isValid = true;
+
     switch (step) {
       case 1:
         if (!selectedCategoryId) {
-          Alert.alert('Required', 'Please select a category');
-          return false;
+          errors.category = 'Please select a category';
+          isValid = false;
         }
-        return true;
+        break;
       case 2:
         if (images.length === 0) {
-          Alert.alert('Required', 'Please add at least one photo');
-          return false;
+          errors.images = 'Please add at least one photo';
+          isValid = false;
         }
-        return true;
+        break;
       case 3:
         if (!title.trim()) {
-          Alert.alert('Required', 'Please enter a title');
-          return false;
+          errors.title = 'Title is required';
+          isValid = false;
+        } else if (title.trim().length < 5) {
+          errors.title = 'Title must be at least 5 characters';
+          isValid = false;
         }
         if (!description.trim()) {
-          Alert.alert('Required', 'Please enter a description');
-          return false;
+          errors.description = 'Description is required';
+          isValid = false;
+        } else if (description.trim().length < 20) {
+          errors.description = 'Description must be at least 20 characters';
+          isValid = false;
         }
-        return true;
+        break;
       case 4:
         // Validate required attributes
         if (categoryConfig) {
           for (const field of categoryConfig.attributes) {
             if (field.required && !attributes[field.name]) {
-              Alert.alert('Required', `Please fill in ${field.label}`);
-              return false;
+              errors[field.name] = `${field.label} is required`;
+              isValid = false;
+            }
+            // Number range validation
+            if (field.type === 'number' && attributes[field.name]) {
+              const val = Number(attributes[field.name]);
+              if (field.min !== undefined && val < field.min) {
+                errors[field.name] = `${field.label} must be at least ${field.min}`;
+                isValid = false;
+              }
+              if (field.max !== undefined && val > field.max) {
+                errors[field.name] = `${field.label} must be at most ${field.max}`;
+                isValid = false;
+              }
             }
           }
         }
-        return true;
+        break;
       case 5:
-        if (!price.trim() || isNaN(parseFloat(price))) {
-          Alert.alert('Required', 'Please enter a valid price');
-          return false;
+        if (!price.trim()) {
+          errors.price = 'Price is required';
+          isValid = false;
+        } else if (isNaN(parseFloat(price)) || parseFloat(price) <= 0) {
+          errors.price = 'Please enter a valid price greater than 0';
+          isValid = false;
         }
         if (!location.trim()) {
-          Alert.alert('Required', 'Please enter your location');
-          return false;
+          errors.location = 'Location is required';
+          isValid = false;
         }
-        return true;
+        break;
       default:
-        return true;
+        break;
+    }
+
+    setFieldErrors(errors);
+    
+    // Show summary alert if there are errors
+    if (!isValid) {
+      const errorCount = Object.keys(errors).length;
+      Alert.alert(
+        'Please fix the errors',
+        `${errorCount} field${errorCount > 1 ? 's' : ''} need${errorCount > 1 ? '' : 's'} your attention`
+      );
+    }
+
+    return isValid;
     }
   }, [step, selectedCategoryId, images, title, description, categoryConfig, attributes, price, location]);
 
