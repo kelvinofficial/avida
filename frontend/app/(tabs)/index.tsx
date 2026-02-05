@@ -963,6 +963,8 @@ export default function HomeScreen() {
 }
 
 // Desktop/Tablet specific styles
+const MAX_CONTENT_WIDTH = 1200;
+
 const desktopStyles = StyleSheet.create({
   headerWrapper: {
     backgroundColor: '#fff',
@@ -971,13 +973,18 @@ const desktopStyles = StyleSheet.create({
   },
   // Row 1: Logo + Auth + Post Listing
   headerRow1: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    alignItems: 'center',
+  },
+  headerRow1Inner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
   },
   logoContainer: {
     flexDirection: 'row',
@@ -1067,11 +1074,16 @@ const desktopStyles = StyleSheet.create({
   },
   // Row 2: Search + Location
   headerRow2: {
+    alignItems: 'center',
+  },
+  headerRow2Inner: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingVertical: 16,
     gap: 16,
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
   },
   searchField: {
     flex: 1,
@@ -1082,7 +1094,6 @@ const desktopStyles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     gap: 12,
-    maxWidth: 700,
   },
   searchPlaceholder: {
     fontSize: 15,
@@ -1104,9 +1115,14 @@ const desktopStyles = StyleSheet.create({
     fontWeight: '500',
   },
   // Row 3: Category Icons
-  categoryScroll: {
+  categoryRowWrapper: {
+    alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
+  },
+  categoryScroll: {
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
   },
   categoryContent: {
     paddingHorizontal: 24,
