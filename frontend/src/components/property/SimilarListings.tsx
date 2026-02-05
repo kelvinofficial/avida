@@ -6,21 +6,17 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-  Modal,
   Dimensions,
-  ScrollView,
   Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { api } from '../../utils/api';
-import { Property } from '../../types/property';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
 
 // Card dimensions - horizontal card (image left, content right)
-const CARD_WIDTH = SCREEN_WIDTH - HORIZONTAL_PADDING * 2;
 const IMAGE_SIZE = 130;
 
 const COLORS = {
@@ -42,10 +38,45 @@ const COLORS = {
   certified: '#9C27B0',
 };
 
-interface SimilarListing extends Property {
-  similarityScore: number;
-  isSponsored: boolean;
-  sponsoredRank: number | null;
+// Generic listing interface that works for all categories
+interface SimilarListing {
+  id: string;
+  title: string;
+  price?: number;
+  images?: string[];
+  location?: { city?: string; area?: string };
+  featured?: boolean;
+  boosted?: boolean;
+  isSponsored?: boolean;
+  sponsoredRank?: number | null;
+  similarityScore?: number;
+  priceNegotiable?: boolean;
+  negotiable?: boolean;
+  seller?: {
+    id?: string;
+    name?: string;
+    isVerified?: boolean;
+    verified?: boolean;
+    phone?: string;
+    whatsapp?: string;
+    sellerType?: string;
+  };
+  verification?: { isVerified?: boolean };
+  // Property specific
+  bedrooms?: number;
+  bathrooms?: number;
+  size?: number;
+  // Auto specific
+  year?: number;
+  mileage?: number;
+  fuelType?: string;
+  transmission?: string;
+  city?: string;
+  distance?: number;
+  // General listing
+  condition?: string;
+  category?: string;
+  createdAt?: string;
 }
 
 interface SimilarListingsProps {
@@ -61,19 +92,6 @@ const trackEvent = async (eventType: string, sourceId: string, targetId: string,
   } catch (error) { /* Silent fail */ }
 };
 
-// Helper function for relative time
-const getRelativeTime = (dateStr: string) => {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays}d ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-  return `${Math.floor(diffDays / 30)}mo ago`;
-};
-
 // Format price
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat('de-DE', {
@@ -84,10 +102,19 @@ const formatPrice = (price: number) => {
   }).format(price);
 };
 
+// Format mileage
+const formatMileage = (mileage: number) => {
+  if (mileage >= 1000) {
+    return `${(mileage / 1000).toFixed(0)}k km`;
+  }
+  return `${mileage} km`;
+};
+
 // ============ HORIZONTAL LISTING CARD (Auto Page Style) ============
 const HorizontalListingCard = memo(({ 
   listing, 
   index, 
+  category,
   onPress, 
   onFavorite, 
   isFavorited, 
@@ -97,7 +124,8 @@ const HorizontalListingCard = memo(({
   onWhatsApp,
 }: { 
   listing: SimilarListing; 
-  index: number; 
+  index: number;
+  category: 'property' | 'auto' | 'electronics' | 'other';
   onPress: () => void; 
   onFavorite: () => void; 
   isFavorited: boolean; 
@@ -107,17 +135,56 @@ const HorizontalListingCard = memo(({
   onWhatsApp?: () => void;
 }) => {
   useEffect(() => { 
-    trackEvent('impression', sourceId, listing.id, listing.isSponsored, index); 
+    trackEvent('impression', sourceId, listing.id, listing.isSponsored || false, index); 
   }, []);
 
   const imageCount = listing.images?.length || 0;
   const imageSource = listing.images?.[0] ? { uri: listing.images[0] } : null;
+  const isNegotiable = listing.priceNegotiable || listing.negotiable;
+  const isFeatured = listing.featured || listing.boosted;
+  const isVerified = listing.seller?.isVerified || listing.seller?.verified;
+
+  // Get category-specific icon
+  const getCategoryIcon = () => {
+    switch (category) {
+      case 'property': return 'home';
+      case 'auto': return 'car';
+      case 'electronics': return 'phone-portrait';
+      default: return 'cube';
+    }
+  };
+
+  // Render specs based on category
+  const renderSpecs = () => {
+    if (category === 'property') {
+      const specs = [];
+      if (listing.bedrooms) specs.push(`${listing.bedrooms} Beds`);
+      if (listing.bathrooms) specs.push(`${listing.bathrooms} Baths`);
+      if (listing.size) specs.push(`${listing.size} m²`);
+      return specs;
+    } else if (category === 'auto') {
+      const specs = [];
+      if (listing.year) specs.push(`${listing.year}`);
+      if (listing.mileage) specs.push(formatMileage(listing.mileage));
+      if (listing.fuelType) specs.push(listing.fuelType);
+      if (listing.transmission) specs.push(listing.transmission);
+      return specs.slice(0, 4); // Max 4 specs
+    } else {
+      const specs = [];
+      if (listing.condition) specs.push(listing.condition);
+      if (listing.category) specs.push(listing.category);
+      return specs;
+    }
+  };
+
+  const specs = renderSpecs();
+  const locationText = listing.location?.city || listing.location?.area || listing.city || 'Location';
 
   return (
     <TouchableOpacity
       style={[
         cardStyles.card,
-        listing.featured && cardStyles.cardFeatured,
+        isFeatured && cardStyles.cardFeatured,
         listing.isSponsored && cardStyles.cardSponsored,
       ]}
       onPress={onPress}
@@ -129,17 +196,17 @@ const HorizontalListingCard = memo(({
           <Image source={imageSource} style={cardStyles.image} resizeMode="cover" />
         ) : (
           <View style={cardStyles.placeholderImage}>
-            <Ionicons name="home" size={32} color={COLORS.border} />
+            <Ionicons name={getCategoryIcon()} size={32} color={COLORS.border} />
           </View>
         )}
 
         {/* Featured/Sponsored Badge */}
-        {(listing.featured || listing.isSponsored) && (
+        {(isFeatured || listing.isSponsored) && (
           <View style={[
             cardStyles.badge,
-            listing.featured ? cardStyles.featuredBadge : cardStyles.sponsoredBadge
+            isFeatured ? cardStyles.featuredBadge : cardStyles.sponsoredBadge
           ]}>
-            {listing.featured ? (
+            {isFeatured ? (
               <Ionicons name="star" size={10} color="#fff" />
             ) : (
               <Ionicons name="megaphone" size={10} color="#fff" />
@@ -161,7 +228,7 @@ const HorizontalListingCard = memo(({
         {/* Price Row */}
         <View style={cardStyles.priceRow}>
           <Text style={cardStyles.price}>{formatPrice(listing.price || 0)}</Text>
-          {listing.priceNegotiable && (
+          {isNegotiable && (
             <View style={cardStyles.negotiableBadge}>
               <Text style={cardStyles.negotiableText}>VB</Text>
             </View>
@@ -174,29 +241,23 @@ const HorizontalListingCard = memo(({
         </Text>
 
         {/* Specs Row */}
-        <View style={cardStyles.specsRow}>
-          {listing.bedrooms && (
-            <>
-              <Text style={cardStyles.specText}>{listing.bedrooms} Beds</Text>
-              <View style={cardStyles.specDot} />
-            </>
-          )}
-          {listing.bathrooms && (
-            <>
-              <Text style={cardStyles.specText}>{listing.bathrooms} Baths</Text>
-              <View style={cardStyles.specDot} />
-            </>
-          )}
-          {listing.size && (
-            <Text style={cardStyles.specText}>{listing.size} m²</Text>
-          )}
-        </View>
+        {specs.length > 0 && (
+          <View style={cardStyles.specsRow}>
+            {specs.map((spec, i) => (
+              <React.Fragment key={i}>
+                <Text style={cardStyles.specText}>{spec}</Text>
+                {i < specs.length - 1 && <View style={cardStyles.specDot} />}
+              </React.Fragment>
+            ))}
+          </View>
+        )}
 
         {/* Location */}
         <View style={cardStyles.locationRow}>
           <Ionicons name="location-outline" size={12} color={COLORS.textSecondary} />
           <Text style={cardStyles.locationText} numberOfLines={1}>
-            {listing.location?.city || listing.location?.area || 'Location'}
+            {locationText}
+            {listing.distance && ` • ${listing.distance} km`}
           </Text>
         </View>
 
@@ -204,12 +265,23 @@ const HorizontalListingCard = memo(({
         <View style={cardStyles.bottomRow}>
           {/* Seller Info */}
           <View style={cardStyles.sellerInfo}>
-            {listing.seller?.isVerified && (
+            {isVerified && (
               <View style={cardStyles.verifiedBadge}>
                 <Ionicons name="shield-checkmark" size={12} color={COLORS.primary} />
               </View>
             )}
-            {listing.verification?.isVerified && (
+            {listing.seller?.sellerType === 'dealer' && (
+              <View style={cardStyles.dealerBadge}>
+                <Text style={cardStyles.dealerText}>Dealer</Text>
+              </View>
+            )}
+            {listing.seller?.sellerType === 'certified' && (
+              <View style={cardStyles.certifiedBadge}>
+                <Ionicons name="ribbon" size={10} color="#fff" />
+                <Text style={cardStyles.certifiedText}>Certified</Text>
+              </View>
+            )}
+            {listing.verification?.isVerified && !isVerified && (
               <View style={cardStyles.certifiedBadge}>
                 <Ionicons name="ribbon" size={10} color="#fff" />
                 <Text style={cardStyles.certifiedText}>Certified</Text>
@@ -419,6 +491,17 @@ const cardStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  dealerBadge: {
+    backgroundColor: COLORS.secondaryLight,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  dealerText: {
+    fontSize: 9,
+    color: COLORS.secondary,
+    fontWeight: '600',
+  },
   certifiedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -458,13 +541,51 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
   const [error, setError] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
+  // Get the appropriate API endpoint based on category
+  const getApiEndpoint = () => {
+    if (category === 'property') {
+      return `/property/similar/${propertyId}`;
+    } else {
+      // For auto, electronics, and other categories
+      return `/listings/similar/${propertyId}`;
+    }
+  };
+
+  // Get the detail page route based on category
+  const getDetailRoute = (listingId: string) => {
+    if (category === 'property') {
+      return `/property/${listingId}`;
+    } else if (category === 'auto') {
+      return `/auto/${listingId}`;
+    } else {
+      return `/listing/${listingId}`;
+    }
+  };
+
+  // Get the browse all route based on category
+  const getBrowseRoute = () => {
+    if (category === 'property') return '/property';
+    if (category === 'auto') return '/auto';
+    return '/';
+  };
+
+  // Get category icon
+  const getCategoryIcon = (): string => {
+    switch (category) {
+      case 'property': return 'home';
+      case 'auto': return 'car';
+      case 'electronics': return 'phone-portrait';
+      default: return 'grid';
+    }
+  };
+
   // Fetch similar listings
   const fetchSimilarListings = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const endpoint = `/property/similar/${propertyId}`;
+      const endpoint = getApiEndpoint();
       const response = await api.get(endpoint, {
         params: { limit: 10, include_sponsored: true }
       });
@@ -476,7 +597,7 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
     } finally {
       setLoading(false);
     }
-  }, [propertyId]);
+  }, [propertyId, category]);
 
   useEffect(() => {
     if (propertyId) fetchSimilarListings();
@@ -493,11 +614,15 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
     });
     
     try {
-      if (isFav) await api.delete(`/property/favorites/${listingId}`);
-      else await api.post(`/property/favorites/${listingId}`);
+      const favEndpoint = category === 'property' 
+        ? `/property/favorites/${listingId}` 
+        : `/listings/favorites/${listingId}`;
+      
+      if (isFav) await api.delete(favEndpoint);
+      else await api.post(favEndpoint);
       
       const listing = listings.find(l => l.id === listingId);
-      if (listing) trackEvent('save', propertyId, listingId, listing.isSponsored, listings.indexOf(listing));
+      if (listing) trackEvent('save', propertyId, listingId, listing.isSponsored || false, listings.indexOf(listing));
     } catch (err) {
       // Revert on error
       setFavorites(prev => {
@@ -511,11 +636,11 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
 
   // Handle press
   const handlePress = (listing: SimilarListing, index: number) => {
-    trackEvent('click', propertyId, listing.id, listing.isSponsored, index);
+    trackEvent('click', propertyId, listing.id, listing.isSponsored || false, index);
     if (onListingPress) {
       onListingPress(listing);
     } else {
-      router.push(`/property/${listing.id}`);
+      router.push(getDetailRoute(listing.id));
     }
   };
 
@@ -523,7 +648,7 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
   const handleWhatsApp = (listing: SimilarListing) => {
     const phone = listing.seller?.whatsapp || listing.seller?.phone;
     if (phone) {
-      const message = `Hi, I'm interested in your property: ${listing.title}`;
+      const message = `Hi, I'm interested in: ${listing.title}`;
       const url = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
       Linking.openURL(url);
     }
@@ -546,12 +671,12 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
   const renderHeader = () => (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
-        <Ionicons name="home" size={18} color={COLORS.primary} />
+        <Ionicons name={getCategoryIcon() as any} size={18} color={COLORS.primary} />
         <Text style={styles.title}>Similar Listings</Text>
       </View>
       <TouchableOpacity 
         style={styles.seeAllBtn} 
-        onPress={() => router.push('/property')}
+        onPress={() => router.push(getBrowseRoute())}
       >
         <Text style={styles.seeAllText}>See All</Text>
         <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
@@ -562,10 +687,10 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
   // Render empty state
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="home-outline" size={40} color={COLORS.textSecondary} />
+      <Ionicons name={getCategoryIcon() as any} size={40} color={COLORS.textSecondary} />
       <Text style={styles.emptyTitle}>No similar listings found</Text>
-      <TouchableOpacity style={styles.browseBtn} onPress={() => router.push('/property')}>
-        <Text style={styles.browseBtnText}>Browse all properties</Text>
+      <TouchableOpacity style={styles.browseBtn} onPress={() => router.push(getBrowseRoute())}>
+        <Text style={styles.browseBtnText}>Browse all listings</Text>
       </TouchableOpacity>
     </View>
   );
@@ -609,6 +734,7 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
               key={item.id}
               listing={item}
               index={index}
+              category={category}
               onPress={() => handlePress(item, index)}
               onFavorite={() => toggleFavorite(item.id)}
               isFavorited={favorites.has(item.id)}
