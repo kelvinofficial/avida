@@ -1838,7 +1838,7 @@ export default function PropertyDetailScreen() {
         />
 
         {/* Verification */}
-        <VerificationSection property={property} />
+        <VerificationSection property={property} onReport={() => setShowReportModal(true)} />
 
         {/* Map & Location */}
         <MapSection property={property} />
