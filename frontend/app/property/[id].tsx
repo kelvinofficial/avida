@@ -71,6 +71,7 @@ const COLORS = {
   secondary: '#1565C0',
   secondaryLight: '#E3F2FD',
   surface: '#FFFFFF',
+  surfaceVariant: '#F5F5F5',
   background: '#F5F5F5',
   text: '#333333',
   textSecondary: '#666666',
