@@ -718,6 +718,37 @@ export default function ListingDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header Actions (floating - outside ScrollView) */}
+      <View style={styles.floatingHeader}>
+        <TouchableOpacity style={styles.headerBtn} onPress={() => safeGoBack(router)}>
+          <Ionicons name="arrow-back" size={22} color={COLORS.text} />
+        </TouchableOpacity>
+        
+        {/* Category Badge in Header */}
+        <TouchableOpacity 
+          style={styles.headerCategoryBadge}
+          onPress={() => router.push(`/category/${listing.category_id}`)}
+        >
+          <Ionicons 
+            name={(listing.category_id ? getCategoryIcon(listing.category_id) : 'pricetag-outline') as any} 
+            size={16} 
+            color={COLORS.primary} 
+          />
+          <Text style={styles.headerCategoryText} numberOfLines={1}>
+            {category?.name || (listing.category_id ? getCategoryName(listing.category_id) : 'Item')}
+          </Text>
+        </TouchableOpacity>
+        
+        <View style={styles.headerRight}>
+          <TouchableOpacity style={styles.headerBtn} onPress={handleShare}>
+            <Ionicons name="share-outline" size={22} color={COLORS.text} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.headerBtn} onPress={handleToggleFavorite}>
+            <Ionicons name={isFavorited ? 'heart' : 'heart-outline'} size={22} color={isFavorited ? COLORS.error : COLORS.text} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Image Carousel */}
         <ImageCarousel
@@ -725,37 +756,6 @@ export default function ListingDetailScreen() {
           onImagePress={() => {}}
           featured={listing.featured}
         />
-
-        {/* Header Actions (floating) */}
-        <View style={styles.floatingHeader}>
-          <TouchableOpacity style={styles.headerBtn} onPress={() => safeGoBack(router)}>
-            <Ionicons name="arrow-back" size={22} color={COLORS.text} />
-          </TouchableOpacity>
-          
-          {/* Category Badge in Header */}
-          <TouchableOpacity 
-            style={styles.headerCategoryBadge}
-            onPress={() => router.push(`/category/${listing.category_id}`)}
-          >
-            <Ionicons 
-              name={(listing.category_id ? getCategoryIcon(listing.category_id) : 'pricetag-outline') as any} 
-              size={16} 
-              color={COLORS.primary} 
-            />
-            <Text style={styles.headerCategoryText} numberOfLines={1}>
-              {category?.name || (listing.category_id ? getCategoryName(listing.category_id) : 'Item')}
-            </Text>
-          </TouchableOpacity>
-          
-          <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.headerBtn} onPress={handleShare}>
-              <Ionicons name="share-outline" size={22} color={COLORS.text} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.headerBtn} onPress={handleToggleFavorite}>
-              <Ionicons name={isFavorited ? 'heart' : 'heart-outline'} size={22} color={isFavorited ? COLORS.error : COLORS.text} />
-            </TouchableOpacity>
-          </View>
-        </View>
 
         {/* Price & Title */}
         <View style={styles.mainInfo}>
