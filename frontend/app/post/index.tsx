@@ -400,7 +400,6 @@ export default function PostListingScreen() {
       setFieldErrors({});
     }
   }, [selectedSubcategoryId]);
-  };
 
   // ============ IMAGE HANDLING ============
   const pickImage = async () => {
@@ -443,6 +442,10 @@ export default function PostListingScreen() {
           errors.category = 'Please select a category';
           isValid = false;
         }
+        if (!selectedSubcategoryId) {
+          errors.subcategory = 'Please select a subcategory';
+          isValid = false;
+        }
         break;
       case 2:
         if (images.length === 0) {
@@ -467,9 +470,9 @@ export default function PostListingScreen() {
         }
         break;
       case 4:
-        // Validate required attributes
-        if (categoryConfig) {
-          for (const field of categoryConfig.attributes) {
+        // Validate required attributes from subcategory config
+        if (currentSubcategoryConfig) {
+          for (const field of currentSubcategoryConfig.attributes) {
             if (field.required && !attributes[field.name]) {
               errors[field.name] = `${field.label} is required`;
               isValid = false;
@@ -518,7 +521,7 @@ export default function PostListingScreen() {
     }
 
     return isValid;
-  }, [step, selectedCategoryId, images, title, description, categoryConfig, attributes, price, location, fieldErrors]);
+  }, [step, selectedCategoryId, selectedSubcategoryId, images, title, description, currentSubcategoryConfig, attributes, price, location]);
 
   const nextStep = () => {
     if (validateStep()) {
