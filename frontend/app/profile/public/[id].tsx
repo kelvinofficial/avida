@@ -126,7 +126,13 @@ export default function PublicProfileScreen() {
   const [reviewComment, setReviewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
 
-  const isOwnProfile = user?.user_id === id;
+  const handleGoBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/');
+    }
+  };
 
   const fetchProfile = useCallback(async () => {
     try {
