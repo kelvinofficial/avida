@@ -1,0 +1,330 @@
+import React, { useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Modal,
+  Animated,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+const { width } = Dimensions.get('window');
+
+interface SuccessModalProps {
+  visible: boolean;
+  title?: string;
+  message?: string;
+  buttonText?: string;
+  onClose: () => void;
+}
+
+export const SuccessModal: React.FC<SuccessModalProps> = ({
+  visible,
+  title = 'Success!',
+  message = 'Your listing has been published successfully!',
+  buttonText = 'View Listings',
+  onClose,
+}) => {
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const checkmarkScale = useRef(new Animated.Value(0)).current;
+  const checkmarkRotate = useRef(new Animated.Value(0)).current;
+  const confettiAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (visible) {
+      // Reset animations
+      scaleAnim.setValue(0);
+      opacityAnim.setValue(0);
+      checkmarkScale.setValue(0);
+      checkmarkRotate.setValue(0);
+      confettiAnim.setValue(0);
+
+      // Start animation sequence
+      Animated.sequence([
+        // Fade in and scale up modal
+        Animated.parallel([
+          Animated.spring(scaleAnim, {
+            toValue: 1,
+            tension: 50,
+            friction: 7,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityAnim, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]),
+        // Animate checkmark with bounce and rotation
+        Animated.parallel([
+          Animated.spring(checkmarkScale, {
+            toValue: 1,
+            tension: 100,
+            friction: 5,
+            useNativeDriver: true,
+          }),
+          Animated.timing(checkmarkRotate, {
+            toValue: 1,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+        ]),
+        // Confetti burst
+        Animated.spring(confettiAnim, {
+          toValue: 1,
+          tension: 40,
+          friction: 6,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [visible]);
+
+  const handleClose = () => {
+    Animated.parallel([
+      Animated.timing(scaleAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      onClose();
+    });
+  };
+
+  const rotateInterpolate = checkmarkRotate.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['-180deg', '0deg'],
+  });
+
+  // Confetti particles
+  const renderConfetti = () => {
+    const particles = [];
+    const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
+    
+    for (let i = 0; i < 12; i++) {
+      const angle = (i / 12) * 2 * Math.PI;
+      const distance = 80 + Math.random() * 40;
+      const x = Math.cos(angle) * distance;
+      const y = Math.sin(angle) * distance;
+      const size = 8 + Math.random() * 8;
+      const color = colors[i % colors.length];
+      
+      particles.push(
+        <Animated.View
+          key={i}
+          style={[
+            styles.confettiParticle,
+            {
+              backgroundColor: color,
+              width: size,
+              height: size,
+              borderRadius: Math.random() > 0.5 ? size / 2 : 2,
+              transform: [
+                {
+                  translateX: confettiAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, x],
+                  }),
+                },
+                {
+                  translateY: confettiAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, y],
+                  }),
+                },
+                {
+                  scale: confettiAnim.interpolate({
+                    inputRange: [0, 0.5, 1],
+                    outputRange: [0, 1.2, 0.8],
+                  }),
+                },
+                {
+                  rotate: confettiAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['0deg', `${Math.random() * 360}deg`],
+                  }),
+                },
+              ],
+              opacity: confettiAnim.interpolate({
+                inputRange: [0, 0.2, 0.8, 1],
+                outputRange: [0, 1, 1, 0.3],
+              }),
+            },
+          ]}
+        />
+      );
+    }
+    return particles;
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      onRequestClose={handleClose}
+    >
+      <View style={styles.overlay}>
+        <Animated.View
+          style={[
+            styles.modalContainer,
+            {
+              opacity: opacityAnim,
+              transform: [{ scale: scaleAnim }],
+            },
+          ]}
+        >
+          {/* Confetti container */}
+          <View style={styles.confettiContainer}>
+            {renderConfetti()}
+          </View>
+
+          {/* Success checkmark circle */}
+          <Animated.View
+            style={[
+              styles.checkmarkCircle,
+              {
+                transform: [
+                  { scale: checkmarkScale },
+                  { rotate: rotateInterpolate },
+                ],
+              },
+            ]}
+          >
+            <Ionicons name="checkmark" size={48} color="#fff" />
+          </Animated.View>
+
+          {/* Title */}
+          <Text style={styles.title}>{title}</Text>
+
+          {/* Message */}
+          <Text style={styles.message}>{message}</Text>
+
+          {/* Celebration text */}
+          <View style={styles.celebrationRow}>
+            <Text style={styles.emoji}>🎉</Text>
+            <Text style={styles.celebrationText}>Congratulations!</Text>
+            <Text style={styles.emoji}>🎉</Text>
+          </View>
+
+          {/* Action button */}
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleClose}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.buttonText}>{buttonText}</Text>
+            <Ionicons name="arrow-forward" size={20} color="#fff" />
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+};
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 32,
+    alignItems: 'center',
+    width: width - 48,
+    maxWidth: 340,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  confettiContainer: {
+    position: 'absolute',
+    top: 80,
+    left: '50%',
+    width: 0,
+    height: 0,
+  },
+  confettiParticle: {
+    position: 'absolute',
+  },
+  checkmarkCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: '#2E7D32',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+    shadowColor: '#2E7D32',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  message: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 16,
+  },
+  celebrationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 28,
+    gap: 8,
+  },
+  emoji: {
+    fontSize: 24,
+  },
+  celebrationText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2E7D32',
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2E7D32',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 14,
+    gap: 8,
+    width: '100%',
+    shadowColor: '#2E7D32',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: '600',
+  },
+});
+
+export default SuccessModal;
