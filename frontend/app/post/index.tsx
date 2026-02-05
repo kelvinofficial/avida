@@ -749,6 +749,8 @@ export default function PostListingScreen() {
           value={attributes[field.name]}
           onChange={(value) => setAttributes({ ...attributes, [field.name]: value })}
           parentValues={attributes}
+          error={fieldErrors[field.name]}
+          onClearError={() => clearFieldError(field.name)}
         />
       ))}
 
