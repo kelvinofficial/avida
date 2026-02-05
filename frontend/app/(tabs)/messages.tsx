@@ -382,7 +382,11 @@ export default function MessagesScreen() {
         <View style={styles.headerContainer}>
           <Text style={styles.title}>Messages</Text>
         </View>
-        <View style={styles.unauthContainer}>
+        <ScrollView 
+          style={styles.unauthScrollView}
+          contentContainerStyle={styles.unauthContainer}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Illustration */}
           <View style={styles.unauthIllustration}>
             <View style={styles.unauthIconBg}>
@@ -438,7 +442,7 @@ export default function MessagesScreen() {
           >
             <Text style={styles.unauthSignUpBtnText}>Create Account</Text>
           </TouchableOpacity>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
