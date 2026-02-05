@@ -354,10 +354,10 @@ async def migrate_properties():
 
 
 async def migrate_autos():
-    """Update autos collection with proper subcategories"""
-    print("\nMigrating autos collection...")
+    """Update auto_listings collection with proper subcategories"""
+    print("\nMigrating auto_listings collection...")
     
-    cursor = db.autos.find({})
+    cursor = db.auto_listings.find({})
     autos = await cursor.to_list(length=1000)
     
     print(f"Found {len(autos)} autos to process")
