@@ -282,6 +282,9 @@ interface MessageBubbleProps {
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isMine, showAvatar, otherUser }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const soundRef = useRef<Audio.Sound | null>(null);
+  
   const formatTime = (date: string) => {
     try {
       return format(new Date(date), 'HH:mm');
@@ -290,8 +293,121 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isMine, showAvat
     }
   };
 
-  // Check if message is a voice message
-  const isVoiceMessage = message.content?.startsWith('[VOICE:');
+  // Determine message type
+  const messageType = (message as any).message_type || 'text';
+  const isVoiceMessage = messageType === 'audio' || message.content?.startsWith('[VOICE:');
+  const isImageMessage = messageType === 'image';
+  const isVideoMessage = messageType === 'video';
+  const mediaUrl = (message as any).media_url;
+  const mediaDuration = (message as any).media_duration;
+
+  // Play/pause voice message
+  const togglePlayVoice = async () => {
+    if (!mediaUrl) return;
+    
+    try {
+      if (isPlaying && soundRef.current) {
+        await soundRef.current.pauseAsync();
+        setIsPlaying(false);
+      } else {
+        if (soundRef.current) {
+          await soundRef.current.playAsync();
+        } else {
+          const { sound } = await Audio.Sound.createAsync({ uri: mediaUrl });
+          soundRef.current = sound;
+          sound.setOnPlaybackStatusUpdate((status) => {
+            if (status.isLoaded && status.didJustFinish) {
+              setIsPlaying(false);
+            }
+          });
+          await sound.playAsync();
+        }
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error('Error playing voice:', error);
+    }
+  };
+
+  // Cleanup sound on unmount
+  useEffect(() => {
+    return () => {
+      if (soundRef.current) {
+        soundRef.current.unloadAsync();
+      }
+    };
+  }, []);
+
+  // Render content based on message type
+  const renderContent = () => {
+    if (isVoiceMessage) {
+      return (
+        <View style={bubbleStyles.voiceContent}>
+          <TouchableOpacity style={bubbleStyles.playButton} onPress={togglePlayVoice}>
+            <Ionicons 
+              name={isPlaying ? "pause" : "play"} 
+              size={20} 
+              color={COLORS.primary} 
+            />
+          </TouchableOpacity>
+          <View style={bubbleStyles.waveform}>
+            {[...Array(15)].map((_, i) => (
+              <View
+                key={i}
+                style={[
+                  bubbleStyles.waveformBar,
+                  { height: Math.random() * 16 + 8 },
+                  isMine && bubbleStyles.waveformBarMine,
+                ]}
+              />
+            ))}
+          </View>
+          <Text style={[bubbleStyles.voiceDuration, isMine && bubbleStyles.voiceDurationMine]}>
+            {mediaDuration || message.content?.match(/\[VOICE:(\d+)s\]/)?.[1] || '0'}s
+          </Text>
+        </View>
+      );
+    }
+
+    if (isImageMessage) {
+      return (
+        <TouchableOpacity activeOpacity={0.9}>
+          <Image 
+            source={{ uri: mediaUrl || message.content }} 
+            style={bubbleStyles.imageContent}
+            resizeMode="cover"
+          />
+        </TouchableOpacity>
+      );
+    }
+
+    if (isVideoMessage) {
+      return (
+        <TouchableOpacity style={bubbleStyles.videoContent} activeOpacity={0.9}>
+          <Image 
+            source={{ uri: mediaUrl || message.content }} 
+            style={bubbleStyles.videoThumbnail}
+            resizeMode="cover"
+          />
+          <View style={bubbleStyles.videoPlayOverlay}>
+            <Ionicons name="play-circle" size={48} color="rgba(255,255,255,0.9)" />
+          </View>
+          <View style={bubbleStyles.videoDuration}>
+            <Text style={bubbleStyles.videoDurationText}>
+              {mediaDuration ? `${Math.floor(mediaDuration / 60)}:${(mediaDuration % 60).toString().padStart(2, '0')}` : '0:00'}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      );
+    }
+
+    // Default text message
+    return (
+      <Text style={[bubbleStyles.text, isMine && bubbleStyles.textMine]}>
+        {message.content}
+      </Text>
+    );
+  };
 
   return (
     <View style={[bubbleStyles.row, isMine && bubbleStyles.rowMine]}>
@@ -312,33 +428,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isMine, showAvat
         bubbleStyles.bubble,
         isMine ? bubbleStyles.bubbleMine : bubbleStyles.bubbleTheirs,
         isMine ? bubbleStyles.bubbleTailMine : bubbleStyles.bubbleTailTheirs,
+        (isImageMessage || isVideoMessage) && bubbleStyles.mediaBubble,
       ]}>
-        {isVoiceMessage ? (
-          <View style={bubbleStyles.voiceContent}>
-            <TouchableOpacity style={bubbleStyles.playButton}>
-              <Ionicons name="play" size={20} color={isMine ? COLORS.primary : COLORS.primary} />
-            </TouchableOpacity>
-            <View style={bubbleStyles.waveform}>
-              {[...Array(15)].map((_, i) => (
-                <View
-                  key={i}
-                  style={[
-                    bubbleStyles.waveformBar,
-                    { height: Math.random() * 16 + 8 },
-                    isMine && bubbleStyles.waveformBarMine,
-                  ]}
-                />
-              ))}
-            </View>
-            <Text style={[bubbleStyles.voiceDuration, isMine && bubbleStyles.voiceDurationMine]}>
-              {message.content?.match(/\[VOICE:(\d+)s\]/)?.[1] || '0'}s
-            </Text>
-          </View>
-        ) : (
-          <Text style={[bubbleStyles.text, isMine && bubbleStyles.textMine]}>
-            {message.content}
-          </Text>
-        )}
+        {renderContent()}
         <View style={bubbleStyles.footer}>
           <Text style={[bubbleStyles.time, isMine && bubbleStyles.timeMine]}>
             {formatTime(message.created_at)}
