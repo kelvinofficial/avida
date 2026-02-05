@@ -101,6 +101,102 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
   );
 });
 
+// ============ PROPERTY LISTING CARD (Single Column) ============
+const PropertyListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFavorited = false }) => {
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('de-DE', {
+      style: 'currency',
+      currency: listing.currency || 'EUR',
+      minimumFractionDigits: 0,
+    }).format(price);
+  };
+
+  const attributes = listing.attributes || {};
+  const bedrooms = attributes.bedrooms || attributes.rooms;
+  const bathrooms = attributes.bathrooms;
+  const size = attributes.size || attributes.area;
+  const propertyType = attributes.property_type || listing.subcategory?.replace(/_/g, ' ');
+
+  return (
+    <TouchableOpacity style={styles.propertyCard} onPress={onPress} activeOpacity={0.95}>
+      <View style={styles.propertyImageContainer}>
+        <Image
+          source={{ uri: listing.images?.[0] || 'https://via.placeholder.com/400x250' }}
+          style={styles.propertyImage}
+          resizeMode="cover"
+        />
+        {listing.featured && (
+          <View style={styles.featuredBadge}>
+            <Text style={styles.featuredText}>FEATURED</Text>
+          </View>
+        )}
+        <TouchableOpacity
+          style={styles.propertyFavoriteButton}
+          onPress={(e) => { e.stopPropagation(); onFavorite(); }}
+        >
+          <Ionicons
+            name={isFavorited ? 'heart' : 'heart-outline'}
+            size={24}
+            color={isFavorited ? '#E53935' : '#FFFFFF'}
+          />
+        </TouchableOpacity>
+        {/* Image count badge */}
+        {listing.images?.length > 1 && (
+          <View style={styles.imageCountBadge}>
+            <Ionicons name="images-outline" size={14} color="#fff" />
+            <Text style={styles.imageCountText}>{listing.images.length}</Text>
+          </View>
+        )}
+      </View>
+      <View style={styles.propertyCardContent}>
+        <View style={styles.propertyPriceRow}>
+          <Text style={styles.propertyPrice}>{formatPrice(listing.price)}</Text>
+          {listing.negotiable && (
+            <View style={styles.negotiableBadge}>
+              <Text style={styles.negotiableText}>Negotiable</Text>
+            </View>
+          )}
+        </View>
+        <Text style={styles.propertyTitle} numberOfLines={2}>{listing.title}</Text>
+        
+        {/* Property Features */}
+        <View style={styles.propertyFeatures}>
+          {bedrooms && (
+            <View style={styles.featureItem}>
+              <Ionicons name="bed-outline" size={16} color={COLORS.textSecondary} />
+              <Text style={styles.featureText}>{bedrooms} {bedrooms === 1 ? 'Bed' : 'Beds'}</Text>
+            </View>
+          )}
+          {bathrooms && (
+            <View style={styles.featureItem}>
+              <Ionicons name="water-outline" size={16} color={COLORS.textSecondary} />
+              <Text style={styles.featureText}>{bathrooms} {bathrooms === 1 ? 'Bath' : 'Baths'}</Text>
+            </View>
+          )}
+          {size && (
+            <View style={styles.featureItem}>
+              <Ionicons name="resize-outline" size={16} color={COLORS.textSecondary} />
+              <Text style={styles.featureText}>{size} m²</Text>
+            </View>
+          )}
+        </View>
+        
+        <View style={styles.propertyLocationRow}>
+          <Ionicons name="location-outline" size={16} color={COLORS.textSecondary} />
+          <Text style={styles.propertyLocation} numberOfLines={1}>{listing.location}</Text>
+        </View>
+        
+        {propertyType && (
+          <View style={styles.propertyTypeTag}>
+            <Ionicons name="home-outline" size={12} color={COLORS.primary} />
+            <Text style={styles.propertyTypeText}>{propertyType}</Text>
+          </View>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+});
+
 // ============ FILTER CHIP ============
 interface FilterChipProps {
   label: string;
