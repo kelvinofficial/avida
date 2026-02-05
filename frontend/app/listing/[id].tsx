@@ -719,14 +719,43 @@ export default function ListingDetailScreen() {
       return;
     }
 
+    const offerAmount = parseInt(offerPrice);
+    
+    // Validate offer is below listed price
+    if (offerAmount >= listing.price) {
+      Alert.alert(
+        'Invalid Offer', 
+        `Your offer must be below the listed price of ${formatPrice(listing.price)}. If you want to pay full price, use the "Contact Seller" option instead.`
+      );
+      return;
+    }
+
+    // Validate offer is reasonable (at least 10% of listed price)
+    const minOffer = listing.price * 0.1;
+    if (offerAmount < minOffer) {
+      Alert.alert(
+        'Offer Too Low', 
+        `Please enter a reasonable offer. Minimum offer is ${formatPrice(minOffer)}`
+      );
+      return;
+    }
+
     setSubmittingOffer(true);
     try {
+      // Save offer to database
+      await api.post('/offers', {
+        listing_id: id,
+        offered_price: offerAmount,
+        message: offerMessage || 'I would like to make an offer on this item.'
+      });
+
       // Start a conversation with the offer message
       const conversation = await conversationsApi.create(id!);
       
       // Send the offer message automatically
-      const formattedOffer = formatPrice(parseInt(offerPrice));
-      const offerText = `💰 OFFER: ${formattedOffer}\n\n${offerMessage || 'I would like to make an offer on this item.'}`;
+      const formattedOffer = formatPrice(offerAmount);
+      const discount = Math.round((1 - offerAmount / listing.price) * 100);
+      const offerText = `💰 OFFER SUBMITTED\n\nAmount: ${formattedOffer} (${discount}% off)\nListed Price: ${formatPrice(listing.price)}\n\n${offerMessage || 'I would like to make an offer on this item.'}`;
       await conversationsApi.sendMessage(conversation.id, offerText);
       
       // Store offer details for success modal
