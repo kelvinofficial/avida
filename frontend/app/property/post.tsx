@@ -358,43 +358,19 @@ export default function PostPropertyScreen() {
         ],
       };
 
-      const response = await api.post('/property/listings', payload);
-      
-      Alert.alert(
-        'Success!',
-        'Your property has been listed successfully.',
-        [
-          { text: 'View Listing', onPress: () => router.push(`/property/${response.data.property.id}`) },
-          { text: 'Post Another', onPress: () => {
-            setFormData({
-              purpose: 'rent',
-              type: '',
-              title: '',
-              description: '',
-              price: '',
-              bedrooms: '',
-              bathrooms: '',
-              size: '',
-              furnishing: '',
-              condition: '',
-              city: '',
-              area: '',
-              address: '',
-              facilities: {},
-              sellerName: formData.sellerName,
-              sellerPhone: formData.sellerPhone,
-              sellerType: formData.sellerType,
-            });
-            setCurrentStep(0);
-          }},
-        ]
-      );
+      await api.post('/property/listings', payload);
+      setShowSuccessModal(true);
     } catch (error) {
       console.error('Error posting property:', error);
       Alert.alert('Error', 'Failed to post property. Please try again.');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    router.replace('/');
   };
 
   // Get all property types flattened
