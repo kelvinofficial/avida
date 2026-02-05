@@ -40,11 +40,11 @@ const ICON_SIZE = 24;
 const TOUCH_TARGET = 48;
 
 // Category icon constants - CIRCULAR DESIGN
-const CATEGORY_ICON_SIZE = 52;
-const CATEGORY_ICON_RADIUS = 26; // Full circle
+const CATEGORY_ICON_SIZE = 48;
+const CATEGORY_ICON_RADIUS = 24; // Full circle
 const CATEGORY_INNER_ICON = 22;
 const CATEGORY_GAP = 4;
-const CATEGORY_ITEM_WIDTH = 70;
+const CATEGORY_ITEM_WIDTH = 80;
 
 // ============ CATEGORY COLORS - VIBRANT ============
 const CATEGORY_STYLES: Record<string, { bg: string; icon: string }> = {
