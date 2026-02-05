@@ -359,7 +359,12 @@ export default function HomeScreen() {
   };
 
   const handleCategoryPress = (categoryId: string) => {
-    // Toggle filter - if already selected, deselect to show all
+    // Navigate to category page for full browsing experience with subcategories
+    router.push(`/category/${categoryId}`);
+  };
+
+  const handleCategoryLongPress = (categoryId: string) => {
+    // Long press to filter in place (quick filter)
     if (selectedCategory === categoryId) {
       setSelectedCategory(null);
     } else {
