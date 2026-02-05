@@ -241,6 +241,17 @@ export default function PostPropertyScreen() {
   // Success Modal
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+  // Seller Preferences
+  const [acceptsOffers, setAcceptsOffers] = useState(true);
+  const [acceptsExchanges, setAcceptsExchanges] = useState(false);
+  const [contactPreferences, setContactPreferences] = useState({
+    inAppChat: true,
+    whatsapp: false,
+    call: false,
+  });
+  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+
   // Form state
   const [formData, setFormData] = useState({
     // Step 1: Basic Info
