@@ -293,7 +293,7 @@ export default function HomeScreen() {
     }
     try {
       const response = await notificationsApi.getUnreadCount();
-      setNotificationCount(response.count || 0);
+      setNotificationCount(response.unread_count || 0);
     } catch (error) {
       console.error('Error fetching notification count:', error);
       setNotificationCount(0);
