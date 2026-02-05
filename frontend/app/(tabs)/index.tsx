@@ -87,7 +87,7 @@ const FULL_CATEGORIES = [
   { id: 'industrial', name: 'Industry', icon: 'cog' },
 ];
 
-// ============ CATEGORY ICON COMPONENT - ROUNDED SQUARE ============
+// ============ CATEGORY ICON COMPONENT - CIRCULAR DESIGN ============
 interface CategoryIconProps {
   id: string;
   name: string;
@@ -98,6 +98,7 @@ interface CategoryIconProps {
 
 const CategoryIcon = memo<CategoryIconProps>(({ id, name, icon, onPress, selected }) => {
   const style = CATEGORY_STYLES[id] || CATEGORY_STYLES.default;
+  const isAll = id === 'all';
   
   return (
     <TouchableOpacity 
@@ -110,7 +111,8 @@ const CategoryIcon = memo<CategoryIconProps>(({ id, name, icon, onPress, selecte
       <View style={[
         categoryStyles.iconContainer,
         { backgroundColor: style.bg },
-        selected && categoryStyles.iconContainerSelected
+        selected && categoryStyles.iconContainerSelected,
+        isAll && !selected && categoryStyles.allIconContainer,
       ]}>
         <Ionicons name={icon as any} size={CATEGORY_INNER_ICON} color={style.icon} />
       </View>
@@ -135,25 +137,30 @@ const categoryStyles = StyleSheet.create({
     borderRadius: CATEGORY_ICON_RADIUS,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   iconContainerSelected: {
-    // Slight shadow for selected state
+    transform: [{ scale: 1.05 }],
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  allIconContainer: {
+    borderWidth: 2,
+    borderColor: '#2E7D32',
+    backgroundColor: '#fff',
   },
   label: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#666',
     textAlign: 'center',
     fontWeight: '500',
   },
   labelSelected: {
-    color: '#333',
-    fontWeight: '600',
+    color: '#2E7D32',
+    fontWeight: '700',
   },
 });
 
