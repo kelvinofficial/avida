@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, memo, useMemo, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,10 +14,14 @@ import {
   Alert,
   Linking,
   ActivityIndicator,
+  Animated,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../../src/utils/api';
 import {
   Property,
@@ -26,29 +30,1139 @@ import {
   PROPERTY_TYPE_CATEGORIES,
   FACILITIES_LIST,
   PropertyType,
+  FurnishingType,
+  ConditionType,
 } from '../../src/types/property';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 // Layout constants
 const HORIZONTAL_PADDING = 16;
 const CARD_WIDTH = width - HORIZONTAL_PADDING * 2;
 
-// Colors
+// Colors - Material 3 inspired
 const COLORS = {
   primary: '#2E7D32',
   primaryLight: '#E8F5E9',
+  primaryDark: '#1B5E20',
   secondary: '#1565C0',
   secondaryLight: '#E3F2FD',
   surface: '#FFFFFF',
-  background: '#F5F5F5',
-  text: '#333333',
+  surfaceVariant: '#F5F5F5',
+  background: '#FAFAFA',
+  text: '#1A1A1A',
   textSecondary: '#666666',
+  textTertiary: '#999999',
   border: '#E0E0E0',
   error: '#D32F2F',
   warning: '#FF9800',
+  success: '#4CAF50',
   verified: '#4CAF50',
+  divider: '#EEEEEE',
 };
+
+// German Cities with Areas
+const LOCATION_DATA = {
+  Germany: {
+    Berlin: ['Mitte', 'Kreuzberg', 'Prenzlauer Berg', 'Charlottenburg', 'Friedrichshain', 'Neukölln', 'Schöneberg', 'Wedding', 'Spandau', 'Steglitz'],
+    Munich: ['Schwabing', 'Maxvorstadt', 'Haidhausen', 'Sendling', 'Bogenhausen', 'Lehel', 'Au', 'Giesing', 'Pasing', 'Trudering'],
+    Hamburg: ['Altona', 'Eimsbüttel', 'Wandsbek', 'Harburg', 'Bergedorf', 'St. Pauli', 'HafenCity', 'Eppendorf', 'Winterhude', 'Blankenese'],
+    Frankfurt: ['Sachsenhausen', 'Nordend', 'Bornheim', 'Bockenheim', 'Westend', 'Ostend', 'Gallus', 'Niederrad', 'Rödelheim', 'Höchst'],
+    Cologne: ['Altstadt', 'Neustadt', 'Ehrenfeld', 'Nippes', 'Lindenthal', 'Rodenkirchen', 'Porz', 'Kalk', 'Mülheim', 'Deutz'],
+    Stuttgart: ['Mitte', 'West', 'Ost', 'Süd', 'Nord', 'Bad Cannstatt', 'Vaihingen', 'Möhringen', 'Degerloch', 'Feuerbach'],
+    Düsseldorf: ['Altstadt', 'Carlstadt', 'Pempelfort', 'Oberkassel', 'Flingern', 'Bilk', 'Unterbilk', 'Friedrichstadt', 'Derendorf', 'Golzheim'],
+    Leipzig: ['Zentrum', 'Connewitz', 'Plagwitz', 'Lindenau', 'Gohlis', 'Reudnitz', 'Südvorstadt', 'Schleußig', 'Leutzsch', 'Mockau'],
+    Dresden: ['Altstadt', 'Neustadt', 'Blasewitz', 'Striesen', 'Loschwitz', 'Pieschen', 'Cotta', 'Plauen', 'Prohlis', 'Laubegast'],
+    Hannover: ['Mitte', 'Linden', 'Nordstadt', 'Südstadt', 'List', 'Vahrenwald', 'Bothfeld', 'Ricklingen', 'Döhren', 'Herrenhausen'],
+  },
+};
+
+const GERMAN_CITIES = Object.keys(LOCATION_DATA.Germany);
+
+// Popular landmarks by city
+const LANDMARKS: Record<string, string[]> = {
+  Berlin: ['Brandenburg Gate', 'Alexanderplatz', 'Potsdamer Platz', 'Kurfürstendamm', 'East Side Gallery'],
+  Munich: ['Marienplatz', 'English Garden', 'Olympiapark', 'BMW World', 'Viktualienmarkt'],
+  Hamburg: ['Elbphilharmonie', 'Reeperbahn', 'Speicherstadt', 'Jungfernstieg', 'Landungsbrücken'],
+  Frankfurt: ['Römerberg', 'Main Tower', 'Palmengarten', 'Zeil', 'Sachsenhausen'],
+};
+
+// Recent searches storage key
+const RECENT_SEARCHES_KEY = 'property_recent_searches';
+
+// ============ SMART SEARCH BAR ============
+interface SmartSearchBarProps {
+  purpose: PropertyPurpose;
+  value: string;
+  onChangeText: (text: string) => void;
+  onFocus: () => void;
+  selectedCity: string;
+}
+
+const SmartSearchBar = memo<SmartSearchBarProps>(({ purpose, value, onChangeText, onFocus, selectedCity }) => {
+  const placeholder = purpose === 'buy'
+    ? 'Find your dream plot / house / apartment'
+    : 'Find apartments, houses, short lets';
+
+  return (
+    <TouchableOpacity style={searchStyles.container} onPress={onFocus} activeOpacity={0.9}>
+      <View style={searchStyles.iconContainer}>
+        <Ionicons name="search" size={20} color={COLORS.primary} />
+      </View>
+      <TextInput
+        style={searchStyles.input}
+        placeholder={placeholder}
+        placeholderTextColor={COLORS.textSecondary}
+        value={value}
+        onChangeText={onChangeText}
+        onFocus={onFocus}
+      />
+      {value ? (
+        <TouchableOpacity onPress={() => onChangeText('')} style={searchStyles.clearBtn}>
+          <Ionicons name="close-circle" size={20} color={COLORS.textSecondary} />
+        </TouchableOpacity>
+      ) : (
+        <View style={searchStyles.locationBadge}>
+          <Ionicons name="location" size={14} color={COLORS.primary} />
+          <Text style={searchStyles.locationText}>{selectedCity}</Text>
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+});
+
+const searchStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    marginHorizontal: HORIZONTAL_PADDING,
+    borderRadius: 16,
+    paddingHorizontal: 4,
+    height: 56,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  iconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  input: {
+    flex: 1,
+    fontSize: 15,
+    color: COLORS.text,
+  },
+  clearBtn: {
+    padding: 8,
+  },
+  locationBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginRight: 8,
+    gap: 4,
+  },
+  locationText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+});
+
+// ============ SEARCH MODAL (Auto-suggest + Recent) ============
+interface SearchModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onSearch: (query: string) => void;
+  selectedCity: string;
+}
+
+const SearchModal = memo<SearchModalProps>(({ visible, onClose, onSearch, selectedCity }) => {
+  const [query, setQuery] = useState('');
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const inputRef = useRef<TextInput>(null);
+
+  // Load recent searches
+  useEffect(() => {
+    if (visible) {
+      loadRecentSearches();
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [visible]);
+
+  const loadRecentSearches = async () => {
+    try {
+      const saved = await AsyncStorage.getItem(RECENT_SEARCHES_KEY);
+      if (saved) setRecentSearches(JSON.parse(saved));
+    } catch (e) {
+      console.error('Error loading recent searches:', e);
+    }
+  };
+
+  const saveSearch = async (searchQuery: string) => {
+    try {
+      const updated = [searchQuery, ...recentSearches.filter(s => s !== searchQuery)].slice(0, 10);
+      await AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+      setRecentSearches(updated);
+    } catch (e) {
+      console.error('Error saving search:', e);
+    }
+  };
+
+  const handleSearch = (searchQuery: string) => {
+    if (searchQuery.trim()) {
+      saveSearch(searchQuery.trim());
+      onSearch(searchQuery.trim());
+    }
+    onClose();
+  };
+
+  const clearRecentSearches = async () => {
+    try {
+      await AsyncStorage.removeItem(RECENT_SEARCHES_KEY);
+      setRecentSearches([]);
+    } catch (e) {
+      console.error('Error clearing recent searches:', e);
+    }
+  };
+
+  // Popular searches for the selected city
+  const popularSearches = [
+    `${selectedCity} apartment for rent`,
+    `${selectedCity} house for sale`,
+    `Furnished apartments ${selectedCity}`,
+    `Studio apartment ${selectedCity}`,
+    `Family house ${selectedCity}`,
+  ];
+
+  // Auto-suggestions based on query
+  const suggestions = useMemo(() => {
+    if (!query.trim()) return [];
+    const q = query.toLowerCase();
+    const results: string[] = [];
+    
+    // Suggest areas
+    const areas = LOCATION_DATA.Germany[selectedCity as keyof typeof LOCATION_DATA.Germany] || [];
+    areas.forEach(area => {
+      if (area.toLowerCase().includes(q)) {
+        results.push(`${area}, ${selectedCity}`);
+      }
+    });
+    
+    // Suggest landmarks
+    const landmarks = LANDMARKS[selectedCity] || [];
+    landmarks.forEach(landmark => {
+      if (landmark.toLowerCase().includes(q)) {
+        results.push(`Near ${landmark}, ${selectedCity}`);
+      }
+    });
+    
+    // Property type suggestions
+    const types = ['Apartment', 'House', 'Studio', 'Villa', 'Penthouse', 'Loft', 'Office', 'Shop'];
+    types.forEach(type => {
+      if (type.toLowerCase().includes(q)) {
+        results.push(`${type} in ${selectedCity}`);
+      }
+    });
+    
+    return results.slice(0, 6);
+  }, [query, selectedCity]);
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="fullScreen">
+      <SafeAreaView style={searchModalStyles.container}>
+        {/* Header */}
+        <View style={searchModalStyles.header}>
+          <TouchableOpacity onPress={onClose} style={searchModalStyles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <View style={searchModalStyles.searchInputContainer}>
+            <Ionicons name="search" size={20} color={COLORS.textSecondary} />
+            <TextInput
+              ref={inputRef}
+              style={searchModalStyles.searchInput}
+              placeholder="Search properties..."
+              placeholderTextColor={COLORS.textSecondary}
+              value={query}
+              onChangeText={setQuery}
+              onSubmitEditing={() => handleSearch(query)}
+              returnKeyType="search"
+            />
+            {query && (
+              <TouchableOpacity onPress={() => setQuery('')}>
+                <Ionicons name="close-circle" size={20} color={COLORS.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        <ScrollView style={searchModalStyles.content} keyboardShouldPersistTaps="handled">
+          {/* Auto-suggestions */}
+          {suggestions.length > 0 && (
+            <View style={searchModalStyles.section}>
+              <Text style={searchModalStyles.sectionTitle}>Suggestions</Text>
+              {suggestions.map((suggestion, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={searchModalStyles.suggestionItem}
+                  onPress={() => handleSearch(suggestion)}
+                >
+                  <Ionicons name="search-outline" size={18} color={COLORS.textSecondary} />
+                  <Text style={searchModalStyles.suggestionText}>{suggestion}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          {/* Recent Searches */}
+          {!query && recentSearches.length > 0 && (
+            <View style={searchModalStyles.section}>
+              <View style={searchModalStyles.sectionHeader}>
+                <Text style={searchModalStyles.sectionTitle}>Recent Searches</Text>
+                <TouchableOpacity onPress={clearRecentSearches}>
+                  <Text style={searchModalStyles.clearText}>Clear</Text>
+                </TouchableOpacity>
+              </View>
+              {recentSearches.map((search, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={searchModalStyles.recentItem}
+                  onPress={() => handleSearch(search)}
+                >
+                  <Ionicons name="time-outline" size={18} color={COLORS.textSecondary} />
+                  <Text style={searchModalStyles.recentText}>{search}</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      const updated = recentSearches.filter((_, i) => i !== index);
+                      setRecentSearches(updated);
+                      AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+                    }}
+                  >
+                    <Ionicons name="close" size={18} color={COLORS.textTertiary} />
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          {/* Popular Searches */}
+          {!query && (
+            <View style={searchModalStyles.section}>
+              <Text style={searchModalStyles.sectionTitle}>Popular in {selectedCity}</Text>
+              {popularSearches.map((search, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={searchModalStyles.popularItem}
+                  onPress={() => handleSearch(search)}
+                >
+                  <Ionicons name="trending-up" size={18} color={COLORS.primary} />
+                  <Text style={searchModalStyles.popularText}>{search}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </Modal>
+  );
+});
+
+const searchModalStyles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.surface },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    gap: 12,
+  },
+  backBtn: { padding: 4 },
+  searchInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surfaceVariant,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 44,
+    gap: 8,
+  },
+  searchInput: { flex: 1, fontSize: 15, color: COLORS.text },
+  content: { flex: 1 },
+  section: { paddingHorizontal: HORIZONTAL_PADDING, paddingTop: 20 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  sectionTitle: { fontSize: 14, fontWeight: '700', color: COLORS.text, marginBottom: 12 },
+  clearText: { fontSize: 13, color: COLORS.primary, fontWeight: '600' },
+  suggestionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.divider,
+    gap: 12,
+  },
+  suggestionText: { fontSize: 15, color: COLORS.text },
+  recentItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.divider,
+    gap: 12,
+  },
+  recentText: { flex: 1, fontSize: 15, color: COLORS.text },
+  popularItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.divider,
+    gap: 12,
+  },
+  popularText: { fontSize: 15, color: COLORS.text },
+});
+
+// ============ LOCATION FILTER MODAL ============
+interface LocationFilterProps {
+  visible: boolean;
+  onClose: () => void;
+  selectedCity: string;
+  selectedArea: string;
+  onApply: (city: string, area: string, radius: number) => void;
+}
+
+const LocationFilterModal = memo<LocationFilterProps>(({ visible, onClose, selectedCity, selectedArea, onApply }) => {
+  const [city, setCity] = useState(selectedCity);
+  const [area, setArea] = useState(selectedArea);
+  const [radius, setRadius] = useState(10);
+  const [searchLandmark, setSearchLandmark] = useState('');
+
+  const areas = LOCATION_DATA.Germany[city as keyof typeof LOCATION_DATA.Germany] || [];
+  const landmarks = LANDMARKS[city] || [];
+
+  const handleApply = () => {
+    onApply(city, area, radius);
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
+      <SafeAreaView style={locationStyles.container}>
+        {/* Header */}
+        <View style={locationStyles.header}>
+          <TouchableOpacity onPress={onClose}>
+            <Ionicons name="close" size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text style={locationStyles.headerTitle}>Location</Text>
+          <TouchableOpacity onPress={() => { setCity('Berlin'); setArea(''); setRadius(10); }}>
+            <Text style={locationStyles.resetText}>Reset</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView style={locationStyles.content} showsVerticalScrollIndicator={false}>
+          {/* City Selection */}
+          <View style={locationStyles.section}>
+            <Text style={locationStyles.sectionTitle}>City</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={locationStyles.cityScroll}>
+              {GERMAN_CITIES.map((c) => (
+                <TouchableOpacity
+                  key={c}
+                  style={[locationStyles.cityChip, city === c && locationStyles.cityChipActive]}
+                  onPress={() => { setCity(c); setArea(''); }}
+                >
+                  <Text style={[locationStyles.cityChipText, city === c && locationStyles.cityChipTextActive]}>{c}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Area Selection */}
+          <View style={locationStyles.section}>
+            <Text style={locationStyles.sectionTitle}>Area / District</Text>
+            <View style={locationStyles.areaGrid}>
+              <TouchableOpacity
+                style={[locationStyles.areaChip, !area && locationStyles.areaChipActive]}
+                onPress={() => setArea('')}
+              >
+                <Text style={[locationStyles.areaChipText, !area && locationStyles.areaChipTextActive]}>All Areas</Text>
+              </TouchableOpacity>
+              {areas.map((a) => (
+                <TouchableOpacity
+                  key={a}
+                  style={[locationStyles.areaChip, area === a && locationStyles.areaChipActive]}
+                  onPress={() => setArea(a)}
+                >
+                  <Text style={[locationStyles.areaChipText, area === a && locationStyles.areaChipTextActive]}>{a}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Near Landmark */}
+          {landmarks.length > 0 && (
+            <View style={locationStyles.section}>
+              <Text style={locationStyles.sectionTitle}>Near Landmark</Text>
+              <View style={locationStyles.landmarkInput}>
+                <Ionicons name="location" size={20} color={COLORS.textSecondary} />
+                <TextInput
+                  style={locationStyles.landmarkTextInput}
+                  placeholder="Search landmark..."
+                  placeholderTextColor={COLORS.textSecondary}
+                  value={searchLandmark}
+                  onChangeText={setSearchLandmark}
+                />
+              </View>
+              <View style={locationStyles.landmarkList}>
+                {landmarks.filter(l => l.toLowerCase().includes(searchLandmark.toLowerCase())).map((l) => (
+                  <TouchableOpacity key={l} style={locationStyles.landmarkItem}>
+                    <Ionicons name="pin" size={16} color={COLORS.primary} />
+                    <Text style={locationStyles.landmarkText}>{l}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Radius Selector */}
+          <View style={locationStyles.section}>
+            <Text style={locationStyles.sectionTitle}>Search Radius</Text>
+            <View style={locationStyles.radiusOptions}>
+              {[5, 10, 25, 50, 100].map((r) => (
+                <TouchableOpacity
+                  key={r}
+                  style={[locationStyles.radiusChip, radius === r && locationStyles.radiusChipActive]}
+                  onPress={() => setRadius(r)}
+                >
+                  <Text style={[locationStyles.radiusText, radius === r && locationStyles.radiusTextActive]}>{r} km</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </ScrollView>
+
+        {/* Footer */}
+        <View style={locationStyles.footer}>
+          <TouchableOpacity style={locationStyles.applyBtn} onPress={handleApply}>
+            <Ionicons name="location" size={20} color="#fff" />
+            <Text style={locationStyles.applyText}>Apply Location</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </Modal>
+  );
+});
+
+const locationStyles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.surface },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
+  resetText: { fontSize: 14, color: COLORS.primary, fontWeight: '600' },
+  content: { flex: 1 },
+  section: { paddingHorizontal: HORIZONTAL_PADDING, paddingTop: 20 },
+  sectionTitle: { fontSize: 15, fontWeight: '700', color: COLORS.text, marginBottom: 14 },
+  cityScroll: { marginHorizontal: -HORIZONTAL_PADDING, paddingHorizontal: HORIZONTAL_PADDING },
+  cityChip: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+    backgroundColor: COLORS.surfaceVariant,
+    marginRight: 10,
+  },
+  cityChipActive: { backgroundColor: COLORS.primary },
+  cityChipText: { fontSize: 14, fontWeight: '600', color: COLORS.text },
+  cityChipTextActive: { color: '#fff' },
+  areaGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  areaChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: COLORS.surfaceVariant,
+  },
+  areaChipActive: { backgroundColor: COLORS.primary },
+  areaChipText: { fontSize: 13, fontWeight: '500', color: COLORS.text },
+  areaChipTextActive: { color: '#fff' },
+  landmarkInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surfaceVariant,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    height: 48,
+    gap: 10,
+    marginBottom: 12,
+  },
+  landmarkTextInput: { flex: 1, fontSize: 14, color: COLORS.text },
+  landmarkList: { gap: 8 },
+  landmarkItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.divider,
+    gap: 10,
+  },
+  landmarkText: { fontSize: 14, color: COLORS.text },
+  radiusOptions: { flexDirection: 'row', gap: 10 },
+  radiusChip: {
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 24,
+    backgroundColor: COLORS.surfaceVariant,
+  },
+  radiusChipActive: { backgroundColor: COLORS.primary },
+  radiusText: { fontSize: 14, fontWeight: '600', color: COLORS.text },
+  radiusTextActive: { color: '#fff' },
+  footer: {
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  applyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.primary,
+    paddingVertical: 16,
+    borderRadius: 14,
+    gap: 8,
+  },
+  applyText: { fontSize: 16, fontWeight: '700', color: '#fff' },
+});
+
+// ============ ADVANCED FILTER MODAL ============
+interface AdvancedFilterProps {
+  visible: boolean;
+  onClose: () => void;
+  filters: PropertyFilters;
+  onApply: (filters: PropertyFilters) => void;
+  purpose: PropertyPurpose;
+}
+
+const AdvancedFilterModal = memo<AdvancedFilterProps>(({ visible, onClose, filters, onApply, purpose }) => {
+  const [localFilters, setLocalFilters] = useState<PropertyFilters>(filters);
+
+  useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
+
+  const handleApply = () => {
+    onApply(localFilters);
+    onClose();
+  };
+
+  const handleReset = () => {
+    setLocalFilters({});
+  };
+
+  const toggleFacility = (facilityId: string) => {
+    const current = localFilters.facilities || [];
+    const updated = current.includes(facilityId as any)
+      ? current.filter((f) => f !== facilityId)
+      : [...current, facilityId as any];
+    setLocalFilters({ ...localFilters, facilities: updated });
+  };
+
+  // Group facilities by category
+  const facilitiesByCategory = {
+    utilities: FACILITIES_LIST.filter(f => f.category === 'utilities'),
+    interior: FACILITIES_LIST.filter(f => f.category === 'interior'),
+    security: FACILITIES_LIST.filter(f => f.category === 'security'),
+    outdoor: FACILITIES_LIST.filter(f => f.category === 'outdoor'),
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
+      <SafeAreaView style={filterStyles.container}>
+        {/* Header */}
+        <View style={filterStyles.header}>
+          <TouchableOpacity onPress={onClose}>
+            <Ionicons name="close" size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text style={filterStyles.headerTitle}>Filters</Text>
+          <TouchableOpacity onPress={handleReset}>
+            <Text style={filterStyles.resetText}>Reset</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView style={filterStyles.content} showsVerticalScrollIndicator={false}>
+          {/* Price Range */}
+          <View style={filterStyles.section}>
+            <View style={filterStyles.sectionHeader}>
+              <Ionicons name="pricetag" size={20} color={COLORS.primary} />
+              <Text style={filterStyles.sectionTitle}>Price Range</Text>
+              <Text style={filterStyles.sectionSubtitle}>
+                {purpose === 'rent' ? 'Per month' : 'Total price'}
+              </Text>
+            </View>
+            <View style={filterStyles.priceRow}>
+              <View style={filterStyles.priceInputContainer}>
+                <Text style={filterStyles.priceLabel}>Min</Text>
+                <TextInput
+                  style={filterStyles.priceInput}
+                  placeholder="€0"
+                  placeholderTextColor={COLORS.textTertiary}
+                  keyboardType="numeric"
+                  value={localFilters.priceMin?.toString() || ''}
+                  onChangeText={(t) => setLocalFilters({ ...localFilters, priceMin: t ? parseInt(t) : undefined })}
+                />
+              </View>
+              <View style={filterStyles.priceSeparator}>
+                <Text style={filterStyles.priceSeparatorText}>—</Text>
+              </View>
+              <View style={filterStyles.priceInputContainer}>
+                <Text style={filterStyles.priceLabel}>Max</Text>
+                <TextInput
+                  style={filterStyles.priceInput}
+                  placeholder="No limit"
+                  placeholderTextColor={COLORS.textTertiary}
+                  keyboardType="numeric"
+                  value={localFilters.priceMax?.toString() || ''}
+                  onChangeText={(t) => setLocalFilters({ ...localFilters, priceMax: t ? parseInt(t) : undefined })}
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* Property Details */}
+          <View style={filterStyles.section}>
+            <View style={filterStyles.sectionHeader}>
+              <Ionicons name="home" size={20} color={COLORS.primary} />
+              <Text style={filterStyles.sectionTitle}>Property Details</Text>
+            </View>
+
+            {/* Bedrooms */}
+            <Text style={filterStyles.fieldLabel}>Bedrooms</Text>
+            <View style={filterStyles.optionRow}>
+              {['Any', '1', '2', '3', '4', '5+'].map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  style={[
+                    filterStyles.optionChip,
+                    (option === 'Any' && !localFilters.bedroomsMin) && filterStyles.optionChipActive,
+                    (localFilters.bedroomsMin?.toString() === option) && filterStyles.optionChipActive,
+                  ]}
+                  onPress={() => setLocalFilters({
+                    ...localFilters,
+                    bedroomsMin: option === 'Any' ? undefined : parseInt(option.replace('+', '')),
+                  })}
+                >
+                  <Text style={[
+                    filterStyles.optionText,
+                    ((option === 'Any' && !localFilters.bedroomsMin) || localFilters.bedroomsMin?.toString() === option) && filterStyles.optionTextActive,
+                  ]}>{option}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Bathrooms */}
+            <Text style={filterStyles.fieldLabel}>Bathrooms</Text>
+            <View style={filterStyles.optionRow}>
+              {['Any', '1', '2', '3', '4+'].map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  style={[
+                    filterStyles.optionChip,
+                    (option === 'Any' && !localFilters.bathroomsMin) && filterStyles.optionChipActive,
+                    (localFilters.bathroomsMin?.toString() === option) && filterStyles.optionChipActive,
+                  ]}
+                  onPress={() => setLocalFilters({
+                    ...localFilters,
+                    bathroomsMin: option === 'Any' ? undefined : parseInt(option.replace('+', '')),
+                  })}
+                >
+                  <Text style={[
+                    filterStyles.optionText,
+                    ((option === 'Any' && !localFilters.bathroomsMin) || localFilters.bathroomsMin?.toString() === option) && filterStyles.optionTextActive,
+                  ]}>{option}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Property Size */}
+            <Text style={filterStyles.fieldLabel}>Property Size (sqm)</Text>
+            <View style={filterStyles.sizeRow}>
+              <TextInput
+                style={filterStyles.sizeInput}
+                placeholder="Min"
+                placeholderTextColor={COLORS.textTertiary}
+                keyboardType="numeric"
+                value={localFilters.sizeMin?.toString() || ''}
+                onChangeText={(t) => setLocalFilters({ ...localFilters, sizeMin: t ? parseInt(t) : undefined })}
+              />
+              <Text style={filterStyles.sizeSeparator}>—</Text>
+              <TextInput
+                style={filterStyles.sizeInput}
+                placeholder="Max"
+                placeholderTextColor={COLORS.textTertiary}
+                keyboardType="numeric"
+                value={localFilters.sizeMax?.toString() || ''}
+                onChangeText={(t) => setLocalFilters({ ...localFilters, sizeMax: t ? parseInt(t) : undefined })}
+              />
+            </View>
+
+            {/* Furnishing */}
+            <Text style={filterStyles.fieldLabel}>Furnishing</Text>
+            <View style={filterStyles.optionRow}>
+              {[
+                { value: undefined, label: 'Any' },
+                { value: 'furnished', label: 'Furnished' },
+                { value: 'semi_furnished', label: 'Semi' },
+                { value: 'unfurnished', label: 'Unfurnished' },
+              ].map((option) => (
+                <TouchableOpacity
+                  key={option.label}
+                  style={[
+                    filterStyles.optionChip,
+                    localFilters.furnishing === option.value && filterStyles.optionChipActive,
+                    (!localFilters.furnishing && !option.value) && filterStyles.optionChipActive,
+                  ]}
+                  onPress={() => setLocalFilters({ ...localFilters, furnishing: option.value as FurnishingType | undefined })}
+                >
+                  <Text style={[
+                    filterStyles.optionText,
+                    (localFilters.furnishing === option.value || (!localFilters.furnishing && !option.value)) && filterStyles.optionTextActive,
+                  ]}>{option.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Condition */}
+            <Text style={filterStyles.fieldLabel}>Condition</Text>
+            <View style={filterStyles.optionRow}>
+              {[
+                { value: undefined, label: 'Any' },
+                { value: 'new', label: 'New' },
+                { value: 'renovated', label: 'Renovated' },
+                { value: 'old', label: 'Old' },
+              ].map((option) => (
+                <TouchableOpacity
+                  key={option.label}
+                  style={[
+                    filterStyles.optionChip,
+                    localFilters.condition === option.value && filterStyles.optionChipActive,
+                    (!localFilters.condition && !option.value) && filterStyles.optionChipActive,
+                  ]}
+                  onPress={() => setLocalFilters({ ...localFilters, condition: option.value as ConditionType | undefined })}
+                >
+                  <Text style={[
+                    filterStyles.optionText,
+                    (localFilters.condition === option.value || (!localFilters.condition && !option.value)) && filterStyles.optionTextActive,
+                  ]}>{option.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Legal & Trust */}
+          <View style={filterStyles.section}>
+            <View style={filterStyles.sectionHeader}>
+              <Ionicons name="shield-checkmark" size={20} color={COLORS.primary} />
+              <Text style={filterStyles.sectionTitle}>Legal & Trust</Text>
+            </View>
+            
+            <TouchableOpacity
+              style={filterStyles.trustOption}
+              onPress={() => setLocalFilters({ ...localFilters, verifiedOnly: !localFilters.verifiedOnly })}
+            >
+              <View style={[filterStyles.checkbox, localFilters.verifiedOnly && filterStyles.checkboxActive]}>
+                {localFilters.verifiedOnly && <Ionicons name="checkmark" size={16} color="#fff" />}
+              </View>
+              <View style={filterStyles.trustInfo}>
+                <Text style={filterStyles.trustLabel}>Verified Properties Only</Text>
+                <Text style={filterStyles.trustDesc}>Documents checked & address confirmed</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={filterStyles.trustOption}>
+              <View style={filterStyles.checkbox}>
+              </View>
+              <View style={filterStyles.trustInfo}>
+                <Text style={filterStyles.trustLabel}>Title Deed Available</Text>
+                <Text style={filterStyles.trustDesc}>Property has valid title documentation</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={filterStyles.trustOption}>
+              <View style={filterStyles.checkbox}>
+              </View>
+              <View style={filterStyles.trustInfo}>
+                <Text style={filterStyles.trustLabel}>Agent Verified</Text>
+                <Text style={filterStyles.trustDesc}>Listed by a verified agent</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={filterStyles.trustOption}>
+              <View style={filterStyles.checkbox}>
+              </View>
+              <View style={filterStyles.trustInfo}>
+                <Text style={filterStyles.trustLabel}>Owner Direct</Text>
+                <Text style={filterStyles.trustDesc}>Listed directly by property owner</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* Facilities */}
+          <View style={filterStyles.section}>
+            <View style={filterStyles.sectionHeader}>
+              <Ionicons name="apps" size={20} color={COLORS.primary} />
+              <Text style={filterStyles.sectionTitle}>Facilities</Text>
+            </View>
+
+            {/* Utilities */}
+            <Text style={filterStyles.facilityCategory}>Utilities</Text>
+            <View style={filterStyles.facilityGrid}>
+              {facilitiesByCategory.utilities.map((facility) => (
+                <TouchableOpacity
+                  key={facility.id}
+                  style={[
+                    filterStyles.facilityChip,
+                    localFilters.facilities?.includes(facility.id as any) && filterStyles.facilityChipActive,
+                  ]}
+                  onPress={() => toggleFacility(facility.id)}
+                >
+                  <Ionicons
+                    name={facility.icon as any}
+                    size={16}
+                    color={localFilters.facilities?.includes(facility.id as any) ? '#fff' : COLORS.textSecondary}
+                  />
+                  <Text style={[
+                    filterStyles.facilityText,
+                    localFilters.facilities?.includes(facility.id as any) && filterStyles.facilityTextActive,
+                  ]}>{facility.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Interior */}
+            <Text style={filterStyles.facilityCategory}>Interior</Text>
+            <View style={filterStyles.facilityGrid}>
+              {facilitiesByCategory.interior.map((facility) => (
+                <TouchableOpacity
+                  key={facility.id}
+                  style={[
+                    filterStyles.facilityChip,
+                    localFilters.facilities?.includes(facility.id as any) && filterStyles.facilityChipActive,
+                  ]}
+                  onPress={() => toggleFacility(facility.id)}
+                >
+                  <Ionicons
+                    name={facility.icon as any}
+                    size={16}
+                    color={localFilters.facilities?.includes(facility.id as any) ? '#fff' : COLORS.textSecondary}
+                  />
+                  <Text style={[
+                    filterStyles.facilityText,
+                    localFilters.facilities?.includes(facility.id as any) && filterStyles.facilityTextActive,
+                  ]}>{facility.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Security */}
+            <Text style={filterStyles.facilityCategory}>Security</Text>
+            <View style={filterStyles.facilityGrid}>
+              {facilitiesByCategory.security.map((facility) => (
+                <TouchableOpacity
+                  key={facility.id}
+                  style={[
+                    filterStyles.facilityChip,
+                    localFilters.facilities?.includes(facility.id as any) && filterStyles.facilityChipActive,
+                  ]}
+                  onPress={() => toggleFacility(facility.id)}
+                >
+                  <Ionicons
+                    name={facility.icon as any}
+                    size={16}
+                    color={localFilters.facilities?.includes(facility.id as any) ? '#fff' : COLORS.textSecondary}
+                  />
+                  <Text style={[
+                    filterStyles.facilityText,
+                    localFilters.facilities?.includes(facility.id as any) && filterStyles.facilityTextActive,
+                  ]}>{facility.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Outdoor */}
+            <Text style={filterStyles.facilityCategory}>Outdoor</Text>
+            <View style={filterStyles.facilityGrid}>
+              {facilitiesByCategory.outdoor.map((facility) => (
+                <TouchableOpacity
+                  key={facility.id}
+                  style={[
+                    filterStyles.facilityChip,
+                    localFilters.facilities?.includes(facility.id as any) && filterStyles.facilityChipActive,
+                  ]}
+                  onPress={() => toggleFacility(facility.id)}
+                >
+                  <Ionicons
+                    name={facility.icon as any}
+                    size={16}
+                    color={localFilters.facilities?.includes(facility.id as any) ? '#fff' : COLORS.textSecondary}
+                  />
+                  <Text style={[
+                    filterStyles.facilityText,
+                    localFilters.facilities?.includes(facility.id as any) && filterStyles.facilityTextActive,
+                  ]}>{facility.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <View style={{ height: 40 }} />
+        </ScrollView>
+
+        {/* Footer */}
+        <View style={filterStyles.footer}>
+          <TouchableOpacity style={filterStyles.applyBtn} onPress={handleApply}>
+            <Text style={filterStyles.applyText}>Show Results</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </Modal>
+  );
+});
+
+const filterStyles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.surface },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
+  resetText: { fontSize: 14, color: COLORS.primary, fontWeight: '600' },
+  content: { flex: 1 },
+  section: {
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingTop: 24,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.divider,
+  },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: COLORS.text },
+  sectionSubtitle: { fontSize: 12, color: COLORS.textSecondary, marginLeft: 'auto' },
+  fieldLabel: { fontSize: 14, fontWeight: '600', color: COLORS.text, marginBottom: 12, marginTop: 16 },
+  priceRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  priceInputContainer: { flex: 1 },
+  priceLabel: { fontSize: 12, color: COLORS.textSecondary, marginBottom: 6 },
+  priceInput: {
+    height: 50,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    fontSize: 16,
+    color: COLORS.text,
+    backgroundColor: COLORS.surfaceVariant,
+  },
+  priceSeparator: { paddingTop: 20 },
+  priceSeparatorText: { fontSize: 16, color: COLORS.textSecondary },
+  optionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  optionChip: {
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 24,
+    backgroundColor: COLORS.surfaceVariant,
+  },
+  optionChipActive: { backgroundColor: COLORS.primary },
+  optionText: { fontSize: 14, fontWeight: '500', color: COLORS.text },
+  optionTextActive: { color: '#fff' },
+  sizeRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  sizeInput: {
+    flex: 1,
+    height: 48,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    fontSize: 15,
+    color: COLORS.text,
+  },
+  sizeSeparator: { fontSize: 16, color: COLORS.textSecondary },
+  trustOption: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 14,
+    gap: 14,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: COLORS.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  checkboxActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  trustInfo: { flex: 1 },
+  trustLabel: { fontSize: 15, fontWeight: '600', color: COLORS.text },
+  trustDesc: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
+  facilityCategory: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginTop: 16,
+    marginBottom: 10,
+  },
+  facilityGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  facilityChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 24,
+    backgroundColor: COLORS.surfaceVariant,
+    gap: 6,
+  },
+  facilityChipActive: { backgroundColor: COLORS.primary },
+  facilityText: { fontSize: 13, fontWeight: '500', color: COLORS.textSecondary },
+  facilityTextActive: { color: '#fff' },
+  footer: {
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  applyBtn: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 16,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  applyText: { fontSize: 16, fontWeight: '700', color: '#fff' },
+});
 
 // ============ PROPERTY TYPE TILE ============
 interface PropertyTypeTileProps {
@@ -57,14 +1171,19 @@ interface PropertyTypeTileProps {
   icon: string;
   count: number;
   onPress: () => void;
+  isSelected: boolean;
 }
 
-const PropertyTypeTile = memo<PropertyTypeTileProps>(({ name, icon, count, onPress }) => (
-  <TouchableOpacity style={tileStyles.container} onPress={onPress} activeOpacity={0.7}>
-    <View style={tileStyles.iconBox}>
-      <Ionicons name={icon as any} size={24} color={COLORS.primary} />
+const PropertyTypeTile = memo<PropertyTypeTileProps>(({ name, icon, count, onPress, isSelected }) => (
+  <TouchableOpacity 
+    style={[tileStyles.container, isSelected && tileStyles.containerSelected]} 
+    onPress={onPress} 
+    activeOpacity={0.7}
+  >
+    <View style={[tileStyles.iconBox, isSelected && tileStyles.iconBoxSelected]}>
+      <Ionicons name={icon as any} size={24} color={isSelected ? '#fff' : COLORS.primary} />
     </View>
-    <Text style={tileStyles.name} numberOfLines={1}>{name}</Text>
+    <Text style={[tileStyles.name, isSelected && tileStyles.nameSelected]} numberOfLines={1}>{name}</Text>
     <Text style={tileStyles.count}>{count} listings</Text>
   </TouchableOpacity>
 ));
@@ -74,21 +1193,32 @@ const tileStyles = StyleSheet.create({
     width: (width - HORIZONTAL_PADDING * 2 - 12 * 3) / 4,
     alignItems: 'center',
     marginBottom: 16,
+    padding: 8,
+    borderRadius: 12,
+  },
+  containerSelected: {
+    backgroundColor: COLORS.primaryLight,
   },
   iconBox: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
+    width: 52,
+    height: 52,
+    borderRadius: 16,
     backgroundColor: COLORS.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
+  },
+  iconBoxSelected: {
+    backgroundColor: COLORS.primary,
   },
   name: {
     fontSize: 11,
     fontWeight: '600',
     color: COLORS.text,
     textAlign: 'center',
+  },
+  nameSelected: {
+    color: COLORS.primary,
   },
   count: {
     fontSize: 10,
@@ -111,7 +1241,7 @@ const PropertyCard = memo<PropertyCardProps>(({ property, onPress, onFavorite, o
   const formatPrice = (price: number, perMonth?: boolean) => {
     const formatted = new Intl.NumberFormat('de-DE', {
       style: 'currency',
-      currency: property.currency,
+      currency: property.currency || 'EUR',
       minimumFractionDigits: 0,
     }).format(price);
     return perMonth ? `${formatted}/mo` : formatted;
@@ -123,7 +1253,11 @@ const PropertyCard = memo<PropertyCardProps>(({ property, onPress, onFavorite, o
       
       {/* Image */}
       <View style={cardStyles.imageContainer}>
-        <Image source={{ uri: property.images[0] }} style={cardStyles.image} resizeMode="cover" />
+        <Image 
+          source={{ uri: property.images?.[0] || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800' }} 
+          style={cardStyles.image} 
+          resizeMode="cover" 
+        />
         
         {/* Badges */}
         <View style={cardStyles.badgeRow}>
@@ -133,7 +1267,7 @@ const PropertyCard = memo<PropertyCardProps>(({ property, onPress, onFavorite, o
               <Text style={cardStyles.featuredText}>Featured</Text>
             </View>
           )}
-          {property.verification.isVerified && (
+          {property.verification?.isVerified && (
             <View style={cardStyles.verifiedBadge}>
               <Ionicons name="shield-checkmark" size={10} color="#fff" />
               <Text style={cardStyles.verifiedText}>Verified</Text>
@@ -147,7 +1281,7 @@ const PropertyCard = memo<PropertyCardProps>(({ property, onPress, onFavorite, o
         </TouchableOpacity>
         
         {/* Image count */}
-        {property.images.length > 1 && (
+        {property.images && property.images.length > 1 && (
           <View style={cardStyles.imageCount}>
             <Ionicons name="camera" size={12} color="#fff" />
             <Text style={cardStyles.imageCountText}>{property.images.length}</Text>
@@ -167,27 +1301,27 @@ const PropertyCard = memo<PropertyCardProps>(({ property, onPress, onFavorite, o
         {/* Price */}
         <Text style={cardStyles.price}>
           {formatPrice(property.price, property.pricePerMonth)}
-          {property.priceNegotiable && <Text style={cardStyles.negotiable}> (Negotiable)</Text>}
+          {property.priceNegotiable && <Text style={cardStyles.negotiable}> (VB)</Text>}
         </Text>
         
         {/* Specs */}
         <View style={cardStyles.specs}>
           {property.bedrooms && (
             <View style={cardStyles.specItem}>
-              <Ionicons name="bed" size={14} color={COLORS.textSecondary} />
-              <Text style={cardStyles.specText}>{property.bedrooms}</Text>
+              <Ionicons name="bed-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={cardStyles.specText}>{property.bedrooms} Beds</Text>
             </View>
           )}
           {property.bathrooms && (
             <View style={cardStyles.specItem}>
-              <Ionicons name="water" size={14} color={COLORS.textSecondary} />
-              <Text style={cardStyles.specText}>{property.bathrooms}</Text>
+              <Ionicons name="water-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={cardStyles.specText}>{property.bathrooms} Baths</Text>
             </View>
           )}
           {property.size && (
             <View style={cardStyles.specItem}>
-              <Ionicons name="resize" size={14} color={COLORS.textSecondary} />
-              <Text style={cardStyles.specText}>{property.size} {property.sizeUnit}</Text>
+              <Ionicons name="resize-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={cardStyles.specText}>{property.size} {property.sizeUnit || 'sqm'}</Text>
             </View>
           )}
         </View>
@@ -197,8 +1331,10 @@ const PropertyCard = memo<PropertyCardProps>(({ property, onPress, onFavorite, o
         
         {/* Location */}
         <View style={cardStyles.locationRow}>
-          <Ionicons name="location" size={12} color={COLORS.textSecondary} />
-          <Text style={cardStyles.location}>{property.location.area}, {property.location.city}</Text>
+          <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
+          <Text style={cardStyles.location} numberOfLines={1}>
+            {property.location?.area ? `${property.location.area}, ` : ''}{property.location?.city || 'Berlin'}
+          </Text>
         </View>
         
         {/* Tags */}
@@ -209,7 +1345,7 @@ const PropertyCard = memo<PropertyCardProps>(({ property, onPress, onFavorite, o
             </View>
           )}
           {property.condition === 'new' && (
-            <View style={[cardStyles.tag, { backgroundColor: '#E3F2FD' }]}>
+            <View style={[cardStyles.tag, { backgroundColor: COLORS.secondaryLight }]}>
               <Text style={[cardStyles.tagText, { color: COLORS.secondary }]}>Newly Built</Text>
             </View>
           )}
@@ -239,9 +1375,14 @@ const PropertyCard = memo<PropertyCardProps>(({ property, onPress, onFavorite, o
 const cardStyles = StyleSheet.create({
   container: {
     backgroundColor: COLORS.surface,
-    borderRadius: 12,
+    borderRadius: 16,
     marginBottom: 16,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
   },
   sponsoredBorder: {
     position: 'absolute',
@@ -255,7 +1396,7 @@ const cardStyles = StyleSheet.create({
   imageContainer: {
     width: '100%',
     height: 200,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: COLORS.surfaceVariant,
   },
   image: {
     width: '100%',
@@ -272,37 +1413,37 @@ const cardStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.warning,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
     gap: 4,
   },
   featuredText: {
     color: '#fff',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
   },
   verifiedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.verified,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    backgroundColor: COLORS.success,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
     gap: 4,
   },
   verifiedText: {
     color: '#fff',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
   },
   favoriteBtn: {
     position: 'absolute',
     top: 12,
     right: 12,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -314,45 +1455,45 @@ const cardStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.6)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
     gap: 4,
   },
   imageCountText: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
   },
   videoBadge: {
     position: 'absolute',
     bottom: 12,
     right: 12,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   content: {
-    padding: 14,
+    padding: 16,
   },
   price: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: '800',
     color: COLORS.primary,
-    marginBottom: 8,
+    marginBottom: 10,
   },
   negotiable: {
-    fontSize: 12,
-    fontWeight: '400',
+    fontSize: 13,
+    fontWeight: '500',
     color: COLORS.textSecondary,
   },
   specs: {
     flexDirection: 'row',
     gap: 16,
-    marginBottom: 8,
+    marginBottom: 10,
   },
   specItem: {
     flexDirection: 'row',
@@ -362,35 +1503,37 @@ const cardStyles = StyleSheet.create({
   specText: {
     fontSize: 13,
     color: COLORS.textSecondary,
+    fontWeight: '500',
   },
   title: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     color: COLORS.text,
-    lineHeight: 20,
-    marginBottom: 6,
+    lineHeight: 22,
+    marginBottom: 8,
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   location: {
-    fontSize: 12,
+    flex: 1,
+    fontSize: 13,
     color: COLORS.textSecondary,
   },
   tags: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 12,
+    marginBottom: 14,
   },
   tag: {
     backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 14,
   },
   tagText: {
     fontSize: 11,
@@ -406,9 +1549,9 @@ const cardStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: 8,
-    borderWidth: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1.5,
     borderColor: COLORS.primary,
     gap: 6,
   },
@@ -423,285 +1566,21 @@ const cardStyles = StyleSheet.create({
   },
 });
 
-// ============ FILTER MODAL ============
-interface FilterModalProps {
-  visible: boolean;
-  onClose: () => void;
-  filters: PropertyFilters;
-  onApply: (filters: PropertyFilters) => void;
-  purpose: PropertyPurpose;
-}
-
-const FilterModal = memo<FilterModalProps>(({ visible, onClose, filters, onApply, purpose }) => {
-  const [localFilters, setLocalFilters] = useState<PropertyFilters>(filters);
-
-  const handleApply = () => {
-    onApply(localFilters);
-    onClose();
-  };
-
-  const handleReset = () => {
-    setLocalFilters({});
-  };
-
-  return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <SafeAreaView style={filterStyles.container}>
-        <View style={filterStyles.header}>
-          <TouchableOpacity onPress={onClose}>
-            <Ionicons name="close" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <Text style={filterStyles.headerTitle}>Filters</Text>
-          <TouchableOpacity onPress={handleReset}>
-            <Text style={filterStyles.resetText}>Reset</Text>
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView style={filterStyles.content} showsVerticalScrollIndicator={false}>
-          {/* Price Range */}
-          <View style={filterStyles.section}>
-            <Text style={filterStyles.sectionTitle}>Price Range ({purpose === 'rent' ? '/month' : 'total'})</Text>
-            <View style={filterStyles.row}>
-              <TextInput
-                style={filterStyles.input}
-                placeholder="Min"
-                keyboardType="numeric"
-                value={localFilters.priceMin?.toString() || ''}
-                onChangeText={(t) => setLocalFilters({ ...localFilters, priceMin: t ? parseInt(t) : undefined })}
-              />
-              <Text style={filterStyles.separator}>-</Text>
-              <TextInput
-                style={filterStyles.input}
-                placeholder="Max"
-                keyboardType="numeric"
-                value={localFilters.priceMax?.toString() || ''}
-                onChangeText={(t) => setLocalFilters({ ...localFilters, priceMax: t ? parseInt(t) : undefined })}
-              />
-            </View>
-          </View>
-
-          {/* Bedrooms */}
-          <View style={filterStyles.section}>
-            <Text style={filterStyles.sectionTitle}>Bedrooms</Text>
-            <View style={filterStyles.optionRow}>
-              {['Any', '1', '2', '3', '4', '5+'].map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  style={[
-                    filterStyles.optionChip,
-                    localFilters.bedroomsMin?.toString() === option && filterStyles.optionChipActive,
-                  ]}
-                  onPress={() => setLocalFilters({
-                    ...localFilters,
-                    bedroomsMin: option === 'Any' ? undefined : parseInt(option),
-                  })}
-                >
-                  <Text style={[
-                    filterStyles.optionText,
-                    localFilters.bedroomsMin?.toString() === option && filterStyles.optionTextActive,
-                  ]}>{option}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Furnishing */}
-          <View style={filterStyles.section}>
-            <Text style={filterStyles.sectionTitle}>Furnishing</Text>
-            <View style={filterStyles.optionRow}>
-              {[
-                { value: undefined, label: 'Any' },
-                { value: 'furnished', label: 'Furnished' },
-                { value: 'semi_furnished', label: 'Semi' },
-                { value: 'unfurnished', label: 'Unfurnished' },
-              ].map((option) => (
-                <TouchableOpacity
-                  key={option.label}
-                  style={[
-                    filterStyles.optionChip,
-                    localFilters.furnishing === option.value && filterStyles.optionChipActive,
-                  ]}
-                  onPress={() => setLocalFilters({ ...localFilters, furnishing: option.value as any })}
-                >
-                  <Text style={[
-                    filterStyles.optionText,
-                    localFilters.furnishing === option.value && filterStyles.optionTextActive,
-                  ]}>{option.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Condition */}
-          <View style={filterStyles.section}>
-            <Text style={filterStyles.sectionTitle}>Condition</Text>
-            <View style={filterStyles.optionRow}>
-              {[
-                { value: undefined, label: 'Any' },
-                { value: 'new', label: 'New' },
-                { value: 'renovated', label: 'Renovated' },
-                { value: 'old', label: 'Old' },
-              ].map((option) => (
-                <TouchableOpacity
-                  key={option.label}
-                  style={[
-                    filterStyles.optionChip,
-                    localFilters.condition === option.value && filterStyles.optionChipActive,
-                  ]}
-                  onPress={() => setLocalFilters({ ...localFilters, condition: option.value as any })}
-                >
-                  <Text style={[
-                    filterStyles.optionText,
-                    localFilters.condition === option.value && filterStyles.optionTextActive,
-                  ]}>{option.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Verified Only */}
-          <View style={filterStyles.section}>
-            <TouchableOpacity
-              style={filterStyles.checkRow}
-              onPress={() => setLocalFilters({ ...localFilters, verifiedOnly: !localFilters.verifiedOnly })}
-            >
-              <View style={[filterStyles.checkbox, localFilters.verifiedOnly && filterStyles.checkboxActive]}>
-                {localFilters.verifiedOnly && <Ionicons name="checkmark" size={16} color="#fff" />}
-              </View>
-              <Text style={filterStyles.checkLabel}>Verified properties only</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Facilities */}
-          <View style={filterStyles.section}>
-            <Text style={filterStyles.sectionTitle}>Facilities</Text>
-            <View style={filterStyles.facilityGrid}>
-              {FACILITIES_LIST.slice(0, 12).map((facility) => (
-                <TouchableOpacity
-                  key={facility.id}
-                  style={[
-                    filterStyles.facilityChip,
-                    localFilters.facilities?.includes(facility.id as any) && filterStyles.facilityChipActive,
-                  ]}
-                  onPress={() => {
-                    const current = localFilters.facilities || [];
-                    const updated = current.includes(facility.id as any)
-                      ? current.filter((f) => f !== facility.id)
-                      : [...current, facility.id as any];
-                    setLocalFilters({ ...localFilters, facilities: updated });
-                  }}
-                >
-                  <Ionicons
-                    name={facility.icon as any}
-                    size={16}
-                    color={localFilters.facilities?.includes(facility.id as any) ? '#fff' : COLORS.textSecondary}
-                  />
-                  <Text style={[
-                    filterStyles.facilityText,
-                    localFilters.facilities?.includes(facility.id as any) && filterStyles.facilityTextActive,
-                  ]}>{facility.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        </ScrollView>
-
-        <View style={filterStyles.footer}>
-          <TouchableOpacity style={filterStyles.applyBtn} onPress={handleApply}>
-            <Text style={filterStyles.applyText}>Apply Filters</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    </Modal>
-  );
-});
-
-const filterStyles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.surface },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: HORIZONTAL_PADDING,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
-  resetText: { fontSize: 14, color: COLORS.primary, fontWeight: '600' },
-  content: { flex: 1, paddingHorizontal: HORIZONTAL_PADDING },
-  section: { paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: COLORS.text, marginBottom: 14 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  input: {
-    flex: 1,
-    height: 48,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    fontSize: 15,
-  },
-  separator: { fontSize: 16, color: COLORS.textSecondary },
-  optionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  optionChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: COLORS.background,
-  },
-  optionChipActive: { backgroundColor: COLORS.primary },
-  optionText: { fontSize: 13, fontWeight: '500', color: COLORS.text },
-  optionTextActive: { color: '#fff' },
-  checkRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: COLORS.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  checkLabel: { fontSize: 14, color: COLORS.text },
-  facilityGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  facilityChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: COLORS.background,
-    gap: 6,
-  },
-  facilityChipActive: { backgroundColor: COLORS.primary },
-  facilityText: { fontSize: 12, color: COLORS.textSecondary },
-  facilityTextActive: { color: '#fff' },
-  footer: {
-    paddingHorizontal: HORIZONTAL_PADDING,
-    paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-  },
-  applyBtn: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  applyText: { fontSize: 16, fontWeight: '700', color: '#fff' },
-});
-
 // ============ MAIN PROPERTY SCREEN ============
 export default function PropertyScreen() {
   const router = useRouter();
   const [purpose, setPurpose] = useState<PropertyPurpose>('rent');
   const [filters, setFilters] = useState<PropertyFilters>({});
   const [showFilters, setShowFilters] = useState(false);
+  const [showLocationFilter, setShowLocationFilter] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [selectedCity, setSelectedCity] = useState('Berlin');
+  const [selectedArea, setSelectedArea] = useState('');
+  const [searchRadius, setSearchRadius] = useState(10);
+  const [selectedType, setSelectedType] = useState<PropertyType | null>(null);
   
   // API state
   const [properties, setProperties] = useState<Property[]>([]);
@@ -723,8 +1602,10 @@ export default function PropertyScreen() {
       if (filters.furnishing) params.furnishing = filters.furnishing;
       if (filters.condition) params.condition = filters.condition;
       if (filters.verifiedOnly) params.verified_only = true;
-      if (filters.type) params.property_type = filters.type;
+      if (selectedType) params.property_type = selectedType;
       if (searchQuery) params.search = searchQuery;
+      if (selectedCity) params.city = selectedCity;
+      if (selectedArea) params.area = selectedArea;
       
       const response = await api.get('/property/listings', { params });
       setProperties(response.data.listings || []);
@@ -733,7 +1614,7 @@ export default function PropertyScreen() {
     } finally {
       setLoading(false);
     }
-  }, [purpose, filters, searchQuery]);
+  }, [purpose, filters, searchQuery, selectedType, selectedCity, selectedArea]);
 
   // Fetch type counts
   const fetchTypeCounts = useCallback(async () => {
@@ -753,45 +1634,20 @@ export default function PropertyScreen() {
     fetchTypeCounts();
   }, [fetchProperties, fetchTypeCounts]);
 
-  const getSearchPlaceholder = () => {
-    return purpose === 'buy'
-      ? 'Find your dream plot / house / apartment'
-      : 'Find apartments, houses, short lets';
-  };
-
   const toggleFavorite = async (id: string) => {
-    try {
-      const isFav = favorites.has(id);
-      if (isFav) {
-        await api.delete(`/property/favorites/${id}`);
-        setFavorites((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(id);
-          return newSet;
-        });
-      } else {
-        await api.post(`/property/favorites/${id}`);
-        setFavorites((prev) => {
-          const newSet = new Set(prev);
-          newSet.add(id);
-          return newSet;
-        });
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      // Optimistic update fallback
-      setFavorites((prev) => {
-        const newSet = new Set(prev);
-        if (newSet.has(id)) newSet.delete(id);
-        else newSet.add(id);
-        return newSet;
-      });
-    }
+    setFavorites((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) newSet.delete(id);
+      else newSet.add(id);
+      return newSet;
+    });
   };
 
   const handleCall = (property: Property) => {
-    if (property.seller.phone) {
+    if (property.seller?.phone) {
       Linking.openURL(`tel:${property.seller.phone}`);
+    } else {
+      Alert.alert('No phone number', 'This seller has not provided a phone number.');
     }
   };
 
@@ -806,10 +1662,36 @@ export default function PropertyScreen() {
     });
   }, [fetchProperties, fetchTypeCounts]);
 
-  // Property type counts from API
-  const getTypeCount = (typeId: string) => {
-    return typeCounts[typeId] || 0;
+  const handleLocationApply = (city: string, area: string, radius: number) => {
+    setSelectedCity(city);
+    setSelectedArea(area);
+    setSearchRadius(radius);
   };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
+
+  const handleTypeSelect = (typeId: PropertyType) => {
+    if (selectedType === typeId) {
+      setSelectedType(null);
+    } else {
+      setSelectedType(typeId);
+    }
+  };
+
+  // Active filters count
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (filters.priceMin || filters.priceMax) count++;
+    if (filters.bedroomsMin) count++;
+    if (filters.bathroomsMin) count++;
+    if (filters.furnishing) count++;
+    if (filters.condition) count++;
+    if (filters.verifiedOnly) count++;
+    if (filters.facilities?.length) count++;
+    return count;
+  }, [filters]);
 
   // Render header
   const renderHeader = () => (
@@ -833,48 +1715,70 @@ export default function PropertyScreen() {
           style={[styles.purposeBtn, purpose === 'buy' && styles.purposeBtnActive]}
           onPress={() => setPurpose('buy')}
         >
+          <Ionicons name="home" size={18} color={purpose === 'buy' ? '#fff' : COLORS.textSecondary} />
           <Text style={[styles.purposeText, purpose === 'buy' && styles.purposeTextActive]}>Buy</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.purposeBtn, purpose === 'rent' && styles.purposeBtnActive]}
           onPress={() => setPurpose('rent')}
         >
+          <Ionicons name="key" size={18} color={purpose === 'rent' ? '#fff' : COLORS.textSecondary} />
           <Text style={[styles.purposeText, purpose === 'rent' && styles.purposeTextActive]}>Rent</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Search Bar */}
-      <TouchableOpacity style={styles.searchBar} activeOpacity={0.8}>
-        <Ionicons name="search" size={20} color={COLORS.textSecondary} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder={getSearchPlaceholder()}
-          placeholderTextColor={COLORS.textSecondary}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        {searchQuery ? (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Ionicons name="close-circle" size={20} color={COLORS.textSecondary} />
-          </TouchableOpacity>
-        ) : null}
-      </TouchableOpacity>
+      {/* Smart Search Bar */}
+      <SmartSearchBar
+        purpose={purpose}
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        onFocus={() => setShowSearchModal(true)}
+        selectedCity={selectedCity}
+      />
 
-      {/* Filter Bar */}
-      <View style={styles.filterBar}>
-        <TouchableOpacity style={styles.filterChip} onPress={() => setShowFilters(true)}>
-          <Ionicons name="options" size={18} color={COLORS.primary} />
-          <Text style={styles.filterChipText}>Filters</Text>
+      {/* Filter Chips */}
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        style={styles.filterChipScroll}
+        contentContainerStyle={styles.filterChipContent}
+      >
+        <TouchableOpacity 
+          style={[styles.filterChip, activeFiltersCount > 0 && styles.filterChipActive]} 
+          onPress={() => setShowFilters(true)}
+        >
+          <Ionicons name="options-outline" size={18} color={activeFiltersCount > 0 ? '#fff' : COLORS.primary} />
+          <Text style={[styles.filterChipText, activeFiltersCount > 0 && styles.filterChipTextActive]}>
+            Filters {activeFiltersCount > 0 ? `(${activeFiltersCount})` : ''}
+          </Text>
         </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.filterChip, selectedArea && styles.filterChipActive]} 
+          onPress={() => setShowLocationFilter(true)}
+        >
+          <Ionicons name="location-outline" size={18} color={selectedArea ? '#fff' : COLORS.primary} />
+          <Text style={[styles.filterChipText, selectedArea && styles.filterChipTextActive]}>
+            {selectedArea || selectedCity}
+          </Text>
+        </TouchableOpacity>
+        
         <TouchableOpacity style={styles.filterChip}>
-          <Ionicons name="location" size={18} color={COLORS.primary} />
-          <Text style={styles.filterChipText}>Berlin</Text>
+          <Ionicons name="pricetag-outline" size={18} color={COLORS.primary} />
+          <Text style={styles.filterChipText}>
+            {filters.priceMin || filters.priceMax 
+              ? `€${filters.priceMin || 0} - €${filters.priceMax || '∞'}` 
+              : 'Price'}
+          </Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.filterChip}>
-          <Ionicons name="pricetag" size={18} color={COLORS.primary} />
-          <Text style={styles.filterChipText}>Price</Text>
+          <Ionicons name="bed-outline" size={18} color={COLORS.primary} />
+          <Text style={styles.filterChipText}>
+            {filters.bedroomsMin ? `${filters.bedroomsMin}+ Beds` : 'Bedrooms'}
+          </Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
 
       {/* Divider */}
       <View style={styles.divider} />
@@ -882,6 +1786,11 @@ export default function PropertyScreen() {
       {/* Property Type Grid */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Property Types</Text>
+        {selectedType && (
+          <TouchableOpacity onPress={() => setSelectedType(null)}>
+            <Text style={styles.clearFilterText}>Clear</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Residential */}
@@ -893,8 +1802,9 @@ export default function PropertyScreen() {
             id={type.id}
             name={type.name}
             icon={type.icon}
-            count={getTypeCount(type.id)}
-            onPress={() => setFilters({ ...filters, type: type.id as PropertyType })}
+            count={typeCounts[type.id] || 0}
+            onPress={() => handleTypeSelect(type.id as PropertyType)}
+            isSelected={selectedType === type.id}
           />
         ))}
       </View>
@@ -908,8 +1818,9 @@ export default function PropertyScreen() {
             id={type.id}
             name={type.name}
             icon={type.icon}
-            count={getTypeCount(type.id)}
-            onPress={() => setFilters({ ...filters, type: type.id as PropertyType })}
+            count={typeCounts[type.id] || 0}
+            onPress={() => handleTypeSelect(type.id as PropertyType)}
+            isSelected={selectedType === type.id}
           />
         ))}
       </View>
@@ -923,8 +1834,9 @@ export default function PropertyScreen() {
             id={type.id}
             name={type.name}
             icon={type.icon}
-            count={getTypeCount(type.id)}
-            onPress={() => setFilters({ ...filters, type: type.id as PropertyType })}
+            count={typeCounts[type.id] || 0}
+            onPress={() => handleTypeSelect(type.id as PropertyType)}
+            isSelected={selectedType === type.id}
           />
         ))}
       </View>
@@ -970,9 +1882,17 @@ export default function PropertyScreen() {
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={!loading ? (
           <View style={styles.emptyContainer}>
-            <Ionicons name="home-outline" size={48} color={COLORS.textSecondary} />
+            <View style={styles.emptyIcon}>
+              <Ionicons name="home-outline" size={48} color={COLORS.textSecondary} />
+            </View>
             <Text style={styles.emptyText}>No properties found</Text>
-            <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
+            <Text style={styles.emptySubtext}>Try adjusting your filters or search in a different area</Text>
+            <TouchableOpacity 
+              style={styles.emptyBtn} 
+              onPress={() => { setFilters({}); setSelectedType(null); setSelectedArea(''); }}
+            >
+              <Text style={styles.emptyBtnText}>Clear All Filters</Text>
+            </TouchableOpacity>
           </View>
         ) : null}
         contentContainerStyle={styles.listContent}
@@ -982,7 +1902,25 @@ export default function PropertyScreen() {
         showsVerticalScrollIndicator={false}
       />
 
-      <FilterModal
+      {/* Search Modal */}
+      <SearchModal
+        visible={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        onSearch={handleSearch}
+        selectedCity={selectedCity}
+      />
+
+      {/* Location Filter Modal */}
+      <LocationFilterModal
+        visible={showLocationFilter}
+        onClose={() => setShowLocationFilter(false)}
+        selectedCity={selectedCity}
+        selectedArea={selectedArea}
+        onApply={handleLocationApply}
+      />
+
+      {/* Advanced Filter Modal */}
+      <AdvancedFilterModal
         visible={showFilters}
         onClose={() => setShowFilters(false)}
         filters={filters}
@@ -1015,7 +1953,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: HORIZONTAL_PADDING,
     paddingVertical: 12,
-    gap: 20,
+    gap: 24,
   },
   navTab: {
     paddingVertical: 8,
@@ -1036,23 +1974,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: HORIZONTAL_PADDING,
     marginBottom: 16,
-    backgroundColor: COLORS.background,
-    borderRadius: 10,
+    backgroundColor: COLORS.surfaceVariant,
+    borderRadius: 14,
     padding: 4,
   },
   purposeBtn: {
     flex: 1,
-    paddingVertical: 12,
+    flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 8,
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    gap: 8,
   },
   purposeBtnActive: {
-    backgroundColor: COLORS.surface,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    backgroundColor: COLORS.primary,
   },
   purposeText: {
     fontSize: 15,
@@ -1060,49 +1996,44 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
   purposeTextActive: {
-    color: COLORS.primary,
+    color: '#fff',
   },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-    marginHorizontal: HORIZONTAL_PADDING,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    height: 48,
-    gap: 10,
+  filterChipScroll: {
+    marginTop: 16,
   },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: COLORS.text,
-  },
-  filterBar: {
-    flexDirection: 'row',
+  filterChipContent: {
     paddingHorizontal: HORIZONTAL_PADDING,
-    paddingTop: 12,
     gap: 10,
   },
   filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 24,
     gap: 6,
+  },
+  filterChipActive: {
+    backgroundColor: COLORS.primary,
   },
   filterChipText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '600',
     color: COLORS.primary,
+  },
+  filterChipTextActive: {
+    color: '#fff',
   },
   divider: {
     height: 1,
-    backgroundColor: COLORS.border,
+    backgroundColor: COLORS.divider,
     marginTop: 16,
   },
   sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: HORIZONTAL_PADDING,
     paddingTop: 20,
     paddingBottom: 8,
@@ -1112,12 +2043,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.text,
   },
+  clearFilterText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
   categoryLabel: {
     fontSize: 13,
     fontWeight: '600',
     color: COLORS.textSecondary,
     paddingHorizontal: HORIZONTAL_PADDING,
-    paddingTop: 12,
+    paddingTop: 14,
     paddingBottom: 12,
   },
   typeGrid: {
@@ -1130,7 +2066,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: HORIZONTAL_PADDING,
-    paddingTop: 20,
+    paddingTop: 24,
     paddingBottom: 8,
   },
   resultsTitle: {
@@ -1145,7 +2081,7 @@ const styles = StyleSheet.create({
   },
   sortText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     color: COLORS.primary,
   },
   listContent: {
@@ -1169,31 +2105,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  emptyIcon: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: COLORS.surfaceVariant,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   emptyText: {
-    marginTop: 16,
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: COLORS.text,
   },
   emptySubtext: {
     marginTop: 8,
     fontSize: 14,
     color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  emptyBtn: {
+    marginTop: 20,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  emptyBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
   },
   fab: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 24,
     right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowRadius: 8,
     elevation: 8,
   },
 });
