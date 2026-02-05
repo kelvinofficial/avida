@@ -367,11 +367,15 @@ const styles = StyleSheet.create({
   },
   signInBtnText: { fontSize: 16, fontWeight: '600', color: '#fff' },
   // Unauthenticated State Styles
-  unauthContainer: {
+  unauthScrollView: {
     flex: 1,
+  },
+  unauthContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
+    paddingBottom: 100,
   },
   unauthIllustration: {
     position: 'relative',
