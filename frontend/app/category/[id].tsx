@@ -1228,3 +1228,194 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
 });
+
+// Desktop Styles
+const desktopStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: COLORS.background,
+  },
+  sidebar: {
+    width: 280,
+    backgroundColor: COLORS.surface,
+    borderRightWidth: 1,
+    borderRightColor: COLORS.border,
+    padding: 20,
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 24,
+  },
+  logoIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  sidebarSection: {
+    marginBottom: 24,
+  },
+  sidebarSectionTitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    letterSpacing: 1,
+    marginBottom: 12,
+  },
+  categoryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginBottom: 4,
+  },
+  categoryItemActive: {
+    backgroundColor: COLORS.primaryLight,
+  },
+  categoryItemText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  categoryItemTextActive: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  subcategoryItem: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    marginBottom: 2,
+  },
+  subcategoryItemActive: {
+    backgroundColor: COLORS.primaryLight,
+  },
+  subcategoryItemText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  subcategoryItemTextActive: {
+    color: COLORS.primary,
+    fontWeight: '500',
+  },
+  filterGroup: {
+    marginBottom: 16,
+  },
+  filterLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  filterOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 8,
+  },
+  filterOptionActive: {},
+  filterOptionText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  priceInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  priceInput: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: COLORS.text,
+  },
+  priceSeparator: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  applyPriceBtn: {
+    marginTop: 8,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  applyPriceBtnText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  clearFiltersBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  clearFiltersBtnText: {
+    fontSize: 13,
+    color: COLORS.primary,
+    fontWeight: '500',
+  },
+  mainContent: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  homeLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  breadcrumb: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  breadcrumbActive: {
+    fontSize: 14,
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+  resultsCount: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  listContent: {
+    padding: 24,
+  },
+  gridRow: {
+    justifyContent: 'flex-start',
+    gap: 20,
+    marginBottom: 20,
+  },
+});
