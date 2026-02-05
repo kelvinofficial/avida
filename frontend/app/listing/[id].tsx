@@ -660,29 +660,31 @@ export default function ListingDetailScreen() {
       return;
     }
 
-    setLoading(true);
+    setSubmittingOffer(true);
     try {
       // Start a conversation with the offer message
       const conversation = await conversationsApi.create(id!);
       
       // Send the offer message automatically
-      const offerText = `💰 OFFER: ${formatPrice(parseInt(offerPrice))}\n\n${offerMessage || 'I would like to make an offer on this item.'}`;
+      const formattedOffer = formatPrice(parseInt(offerPrice));
+      const offerText = `💰 OFFER: ${formattedOffer}\n\n${offerMessage || 'I would like to make an offer on this item.'}`;
       await conversationsApi.sendMessage(conversation.id, offerText);
       
+      // Store offer details for success modal
+      setSubmittedOfferAmount(formattedOffer);
+      setOfferConversationId(conversation.id);
+      
+      // Close offer modal and show success modal
       setShowOfferModal(false);
       setOfferPrice('');
       setOfferMessage('');
+      setShowOfferSuccessModal(true);
       
-      Alert.alert(
-        'Offer Sent!', 
-        `Your offer of ${formatPrice(parseInt(offerPrice))} has been sent to the seller.`,
-        [{ text: 'View Chat', onPress: () => router.push(`/chat/${conversation.id}`) }]
-      );
     } catch (error) {
       console.error('Error sending offer:', error);
       Alert.alert('Error', 'Failed to send offer. Please try again.');
     } finally {
-      setLoading(false);
+      setSubmittingOffer(false);
     }
   };
 
