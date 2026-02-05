@@ -2061,6 +2061,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: HORIZONTAL_PADDING,
+    justifyContent: 'flex-start',
   },
   resultsHeader: {
     flexDirection: 'row',
