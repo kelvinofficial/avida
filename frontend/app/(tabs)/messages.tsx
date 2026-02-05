@@ -382,20 +382,63 @@ export default function MessagesScreen() {
         <View style={styles.headerContainer}>
           <Text style={styles.title}>Messages</Text>
         </View>
-        <EmptyState
-          icon="chatbubbles-outline"
-          title="Sign in to view messages"
-          description="Log in to start chatting with sellers and buyers"
-          action={
-            <TouchableOpacity
-              style={styles.loginButton}
-              onPress={() => router.push('/login')}
-            >
-              <Ionicons name="log-in-outline" size={20} color="#fff" />
-              <Text style={styles.loginButtonText}>Sign In</Text>
-            </TouchableOpacity>
-          }
-        />
+        <View style={styles.unauthContainer}>
+          {/* Illustration */}
+          <View style={styles.unauthIllustration}>
+            <View style={styles.unauthIconBg}>
+              <Ionicons name="chatbubbles" size={48} color="#1976D2" />
+            </View>
+            <View style={[styles.floatingBubble, styles.floatingBubble1]}>
+              <Ionicons name="chatbubble" size={14} color={COLORS.primary} />
+            </View>
+            <View style={[styles.floatingBubble, styles.floatingBubble2]}>
+              <Ionicons name="send" size={12} color="#F57C00" />
+            </View>
+          </View>
+
+          <Text style={styles.unauthTitle}>Your Messages</Text>
+          <Text style={styles.unauthSubtitle}>
+            Sign in to chat with buyers and sellers, negotiate prices, and close deals
+          </Text>
+
+          {/* Benefits */}
+          <View style={styles.benefitsList}>
+            <View style={styles.benefitItem}>
+              <View style={[styles.benefitIcon, { backgroundColor: '#E3F2FD' }]}>
+                <Ionicons name="chatbubble-ellipses" size={18} color="#1976D2" />
+              </View>
+              <Text style={styles.benefitText}>Real-time messaging</Text>
+            </View>
+            <View style={styles.benefitItem}>
+              <View style={[styles.benefitIcon, { backgroundColor: '#E8F5E9' }]}>
+                <Ionicons name="pricetag" size={18} color={COLORS.primary} />
+              </View>
+              <Text style={styles.benefitText}>Make and receive offers</Text>
+            </View>
+            <View style={styles.benefitItem}>
+              <View style={[styles.benefitIcon, { backgroundColor: '#FFF3E0' }]}>
+                <Ionicons name="shield-checkmark" size={18} color="#F57C00" />
+              </View>
+              <Text style={styles.benefitText}>Safe & secure conversations</Text>
+            </View>
+          </View>
+
+          {/* Buttons */}
+          <TouchableOpacity 
+            style={styles.unauthSignInBtn} 
+            onPress={() => router.push('/login')}
+          >
+            <Ionicons name="log-in-outline" size={20} color="#fff" />
+            <Text style={styles.unauthSignInBtnText}>Sign In</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.unauthSignUpBtn} 
+            onPress={() => router.push('/register')}
+          >
+            <Text style={styles.unauthSignUpBtnText}>Create Account</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }
