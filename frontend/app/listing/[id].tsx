@@ -955,7 +955,10 @@ export default function ListingDetailScreen() {
 
           <ScrollView style={styles.modalContent}>
             <Text style={styles.modalLabel}>Your Offer</Text>
-            <View style={styles.priceInputContainer}>
+            <View style={[
+              styles.priceInputContainer,
+              offerPrice && parseInt(offerPrice) >= listing.price && styles.priceInputError
+            ]}>
               <Text style={styles.currencySymbol}>€</Text>
               <TextInput
                 style={styles.priceInput}
@@ -965,7 +968,32 @@ export default function ListingDetailScreen() {
                 onChangeText={setOfferPrice}
               />
             </View>
-            <Text style={styles.priceHint}>Listed price: {formatPrice(listing.price)}</Text>
+            
+            {/* Price validation messages */}
+            {offerPrice && parseInt(offerPrice) >= listing.price ? (
+              <View style={styles.priceErrorContainer}>
+                <Ionicons name="alert-circle" size={16} color="#DC2626" />
+                <Text style={styles.priceErrorText}>
+                  Offer must be below the listed price of {formatPrice(listing.price)}
+                </Text>
+              </View>
+            ) : offerPrice && parseInt(offerPrice) < listing.price * 0.1 ? (
+              <View style={styles.priceWarningContainer}>
+                <Ionicons name="warning" size={16} color="#F59E0B" />
+                <Text style={styles.priceWarningText}>
+                  Offer seems too low. Minimum: {formatPrice(listing.price * 0.1)}
+                </Text>
+              </View>
+            ) : offerPrice && parseInt(offerPrice) < listing.price ? (
+              <View style={styles.priceValidContainer}>
+                <Ionicons name="checkmark-circle" size={16} color="#16A34A" />
+                <Text style={styles.priceValidText}>
+                  {Math.round((1 - parseInt(offerPrice) / listing.price) * 100)}% off listed price
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.priceHint}>Listed price: {formatPrice(listing.price)}</Text>
+            )}
 
             <Text style={[styles.modalLabel, { marginTop: 20 }]}>Message (optional)</Text>
             <TextInput
@@ -980,9 +1008,12 @@ export default function ListingDetailScreen() {
 
           <View style={styles.modalFooter}>
             <TouchableOpacity
-              style={[styles.submitBtn, (!offerPrice || submittingOffer) && styles.submitBtnDisabled]}
+              style={[
+                styles.submitBtn, 
+                (!offerPrice || submittingOffer || (offerPrice && parseInt(offerPrice) >= listing.price)) && styles.submitBtnDisabled
+              ]}
               onPress={handleSubmitOffer}
-              disabled={!offerPrice || submittingOffer}
+              disabled={!offerPrice || submittingOffer || (offerPrice && parseInt(offerPrice) >= listing.price)}
             >
               {submittingOffer ? (
                 <ActivityIndicator size="small" color="#fff" />
