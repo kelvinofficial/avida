@@ -148,6 +148,7 @@ class ListingCreate(BaseModel):
     title: str
     description: str
     price: float
+    currency: str = "EUR"
     negotiable: bool = True
     category_id: str
     subcategory: Optional[str] = None
