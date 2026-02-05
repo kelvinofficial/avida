@@ -2817,6 +2817,8 @@ async def create_offer(request: Request):
         "buyer_name": user.name,
         "buyer_picture": user.picture,
         "seller_id": seller_id,
+        "seller_name": listing.get("user_name", "Seller"),
+        "seller_picture": listing.get("user_picture"),
         "message": message,
         "status": "pending",  # pending, accepted, rejected, expired, countered
         "created_at": datetime.utcnow().isoformat(),
