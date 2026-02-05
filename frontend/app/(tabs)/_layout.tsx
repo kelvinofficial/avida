@@ -16,7 +16,7 @@ export default function TabLayout() {
     if (!isAuthenticated) {
       router.push('/login');
     } else {
-      router.push('/post/category');
+      router.push('/post');
     }
   };
 
