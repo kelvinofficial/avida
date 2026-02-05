@@ -848,6 +848,12 @@ async def create_listing(listing: ListingCreate, request: Request):
         "images": listing.images[:10],  # Max 10 images
         "location": listing.location,
         "attributes": listing.attributes,
+        # Seller preferences
+        "accepts_offers": listing.accepts_offers,
+        "accepts_exchanges": listing.accepts_exchanges,
+        "contact_methods": listing.contact_methods,
+        "whatsapp_number": listing.whatsapp_number,
+        "phone_number": listing.phone_number,
         "status": "active",
         "featured": False,
         "views": 0,
