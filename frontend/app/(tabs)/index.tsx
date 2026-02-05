@@ -908,9 +908,105 @@ export default function HomeScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+      </SafeAreaView>
+    </ResponsiveLayout>
   );
 }
+
+// Desktop/Tablet specific styles
+const desktopStyles = StyleSheet.create({
+  headerWrapper: {
+    backgroundColor: '#fff',
+    paddingTop: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8E8E8',
+  },
+  headerTop: {
+    paddingHorizontal: 24,
+    marginBottom: 16,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  searchField: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 12,
+    maxWidth: 600,
+  },
+  searchPlaceholder: {
+    fontSize: 15,
+    color: '#666',
+    flex: 1,
+  },
+  locationChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 10,
+    gap: 8,
+  },
+  locationText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+  categoryScroll: {
+    marginBottom: 0,
+  },
+  categoryContent: {
+    paddingHorizontal: 24,
+    gap: 10,
+  },
+  categoryPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  categoryPillActive: {
+    backgroundColor: '#2E7D32',
+  },
+  categoryPillText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  categoryPillTextActive: {
+    color: '#fff',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 8,
+    backgroundColor: '#F5F5F5',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  listingCount: {
+    fontSize: 14,
+    color: '#666',
+  },
+});
 
 const styles = StyleSheet.create({
   container: {
