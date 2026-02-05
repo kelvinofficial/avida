@@ -1195,26 +1195,6 @@ const styles = StyleSheet.create({
     color: '#2E7D32',
   },
 
-  // Search in subcategory modal
-  subcategorySearchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    marginHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 4,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 12,
-    gap: 10,
-  },
-  subcategorySearchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333',
-    padding: 0,
-  },
-
   // Recently viewed section
   recentSubcategoriesRow: {
     paddingVertical: 12,
