@@ -271,7 +271,7 @@ export default function NotificationsScreen() {
     }
     setLoading(true);
     fetchNotifications(1, true);
-  }, [isAuthenticated, activeTab, activeFilter]);
+  }, [isAuthenticated, activeTab, activeFilter, fetchNotifications, router]);
 
   const handleRefresh = () => {
     setRefreshing(true);
