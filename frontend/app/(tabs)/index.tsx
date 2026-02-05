@@ -46,30 +46,16 @@ const CATEGORY_INNER_ICON = 22;
 const CATEGORY_GAP = 4;
 const CATEGORY_ITEM_WIDTH = 80;
 
-// ============ CATEGORY COLORS - VIBRANT ============
-const CATEGORY_STYLES: Record<string, { bg: string; icon: string }> = {
-  all: { bg: '#2E7D32', icon: '#FFFFFF' },
-  vehicles: { bg: '#1565C0', icon: '#FFFFFF' },
-  electronics: { bg: '#7B1FA2', icon: '#FFFFFF' },
-  realestate: { bg: '#303F9F', icon: '#FFFFFF' },
-  bikes: { bg: '#00796B', icon: '#FFFFFF' },
-  services: { bg: '#F57C00', icon: '#FFFFFF' },
-  jobs: { bg: '#0097A7', icon: '#FFFFFF' },
-  home: { bg: '#388E3C', icon: '#FFFFFF' },
-  fashion: { bg: '#C2185B', icon: '#FFFFFF' },
-  beauty: { bg: '#E64A19', icon: '#FFFFFF' },
-  leisure: { bg: '#FF5722', icon: '#FFFFFF' },
-  family: { bg: '#D32F2F', icon: '#FFFFFF' },
-  animals: { bg: '#689F38', icon: '#FFFFFF' },
-  industrial: { bg: '#455A64', icon: '#FFFFFF' },
-  agriculture: { bg: '#33691E', icon: '#FFFFFF' },
-  misc: { bg: '#757575', icon: '#FFFFFF' },
-  default: { bg: '#9E9E9E', icon: '#FFFFFF' },
+// ============ CATEGORY COLORS - Match Publishing Page ============
+const COLORS_CATEGORY = {
+  primary: '#2E7D32',
+  primaryLight: '#E8F5E9',
+  surface: '#FFFFFF',
+  text: '#1A1A1A',
 };
 
 // ============ CATEGORIES DATA - EXACT same as Publishing page ============
 const FULL_CATEGORIES = [
-  { id: 'all', name: 'All', icon: 'apps-outline' },
   { id: 'vehicles', name: 'Auto & Vehicles', icon: 'car-outline' },
   { id: 'electronics', name: 'Electronics & Mobile', icon: 'phone-portrait-outline' },
   { id: 'realestate', name: 'Properties', icon: 'business-outline' },
