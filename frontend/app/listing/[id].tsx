@@ -207,13 +207,13 @@ const descStyles = StyleSheet.create({
 });
 
 // ============ SELLER SECTION ============
-const SellerSection = memo(({ listing }: { listing: Listing }) => {
+const SellerSection = memo(({ listing, onPress }: { listing: Listing; onPress: () => void }) => {
   if (!listing.seller) return null;
   
   return (
     <View style={sellerStyles.container}>
       <Text style={sellerStyles.title}>Listed by</Text>
-      <View style={sellerStyles.card}>
+      <TouchableOpacity style={sellerStyles.card} onPress={onPress} activeOpacity={0.7}>
         {listing.seller.picture ? (
           <Image source={{ uri: listing.seller.picture }} style={sellerStyles.avatar} />
         ) : (
@@ -231,11 +231,20 @@ const SellerSection = memo(({ listing }: { listing: Listing }) => {
               </View>
             )}
           </View>
-          <Text style={sellerStyles.memberSince}>
-            Member since {new Date(listing.seller.created_at).getFullYear()}
-          </Text>
+          <View style={sellerStyles.ratingRow}>
+            {listing.seller.rating && (
+              <>
+                <Ionicons name="star" size={14} color="#FFB800" />
+                <Text style={sellerStyles.ratingText}>{listing.seller.rating.toFixed(1)}</Text>
+              </>
+            )}
+            <Text style={sellerStyles.memberSince}>
+              Member since {new Date(listing.seller.created_at).getFullYear()}
+            </Text>
+          </View>
         </View>
-      </View>
+        <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+      </TouchableOpacity>
     </View>
   );
 });
