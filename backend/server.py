@@ -2933,27 +2933,40 @@ async def get_notifications(
     request: Request,
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    unread_only: bool = Query(False)
+    unread_only: bool = Query(False),
+    notification_type: str = Query(None, description="Filter by type: message, follow, review, price_drop, system")
 ):
-    """Get user notifications"""
+    """Get user notifications with optional filtering"""
     user = await require_auth(request)
     
     query = {"user_id": user.user_id}
     if unread_only:
         query["read"] = False
+    if notification_type:
+        query["type"] = notification_type
     
     skip = (page - 1) * limit
     total = await db.notifications.count_documents(query)
     
     notifications = await db.notifications.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
-    # Get unread count
+    # Get unread count (total unread, not filtered)
     unread_count = await db.notifications.count_documents({"user_id": user.user_id, "read": False})
+    
+    # Get counts by type for badges
+    type_counts = {}
+    pipeline = [
+        {"$match": {"user_id": user.user_id, "read": False}},
+        {"$group": {"_id": "$type", "count": {"$sum": 1}}}
+    ]
+    async for doc in db.notifications.aggregate(pipeline):
+        type_counts[doc["_id"]] = doc["count"]
     
     return {
         "notifications": notifications,
         "total": total,
         "unread_count": unread_count,
+        "type_counts": type_counts,
         "page": page,
         "limit": limit
     }
