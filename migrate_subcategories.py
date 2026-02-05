@@ -387,7 +387,7 @@ async def migrate_autos():
             new_subcategory = "cars"  # Default to cars
         
         if not old_subcategory or old_subcategory != new_subcategory:
-            result = await db.autos.update_one(
+            result = await db.auto_listings.update_one(
                 {"id": auto_id},
                 {"$set": {"subcategory": new_subcategory}}
             )
