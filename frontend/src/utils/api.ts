@@ -128,6 +128,10 @@ export const conversationsApi = {
     const response = await api.post(`/conversations?listing_id=${listingId}`);
     return response.data;
   },
+  createDirect: async (userId: string) => {
+    const response = await api.post('/conversations/direct', { user_id: userId });
+    return response.data;
+  },
   sendMessage: async (conversationId: string, content: string) => {
     const response = await api.post(`/conversations/${conversationId}/messages`, { content });
     return response.data;
@@ -138,6 +142,30 @@ export const conversationsApi = {
 export const usersApi = {
   getOne: async (id: string) => {
     const response = await api.get(`/users/${id}`);
+    return response.data;
+  },
+  getPublicProfile: async (id: string) => {
+    const response = await api.get(`/profile/public/${id}`);
+    return response.data;
+  },
+  getListings: async (id: string, params?: { status?: string; limit?: number }) => {
+    const response = await api.get(`/users/${id}/listings`, { params });
+    return response.data;
+  },
+  getReviews: async (id: string, params?: { page?: number; limit?: number }) => {
+    const response = await api.get(`/users/${id}/reviews`, { params });
+    return response.data;
+  },
+  follow: async (id: string) => {
+    const response = await api.post(`/users/${id}/follow`);
+    return response.data;
+  },
+  unfollow: async (id: string) => {
+    const response = await api.delete(`/users/${id}/follow`);
+    return response.data;
+  },
+  createReview: async (id: string, data: { rating: number; comment?: string }) => {
+    const response = await api.post(`/users/${id}/reviews`, data);
     return response.data;
   },
   updateMe: async (data: any) => {
