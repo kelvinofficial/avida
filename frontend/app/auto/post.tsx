@@ -357,21 +357,18 @@ export default function PostAutoScreen() {
       };
 
       await api.post('/listings', payload);
-      
-      Alert.alert(
-        'Success!',
-        'Your vehicle has been listed successfully.',
-        [
-          { text: 'View My Listings', onPress: () => router.replace('/profile/my-listings') },
-          { text: 'Done', onPress: () => router.replace('/') },
-        ]
-      );
+      setShowSuccessModal(true);
     } catch (error: any) {
       console.error('Error posting vehicle:', error);
       Alert.alert('Error', error.response?.data?.detail || 'Failed to post vehicle. Please try again.');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    router.replace('/');
   };
 
   const availableModels = formData.brand ? MODELS_BY_BRAND[formData.brand] || MODELS_BY_BRAND['other'] : [];
