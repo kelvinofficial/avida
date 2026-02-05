@@ -132,8 +132,27 @@ export const conversationsApi = {
     const response = await api.post('/conversations/direct', { user_id: userId });
     return response.data;
   },
-  sendMessage: async (conversationId: string, content: string) => {
-    const response = await api.post(`/conversations/${conversationId}/messages`, { content });
+  sendMessage: async (
+    conversationId: string, 
+    content: string,
+    messageType: 'text' | 'audio' | 'image' | 'video' = 'text',
+    mediaUrl?: string,
+    mediaDuration?: number
+  ) => {
+    const response = await api.post(`/conversations/${conversationId}/messages`, { 
+      content,
+      message_type: messageType,
+      media_url: mediaUrl,
+      media_duration: mediaDuration
+    });
+    return response.data;
+  },
+  uploadMedia: async (file: FormData, mediaType: 'audio' | 'image' | 'video') => {
+    const response = await api.post(`/messages/upload-media?media_type=${mediaType}`, file, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   }
 };
