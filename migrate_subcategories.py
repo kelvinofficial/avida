@@ -12,8 +12,9 @@ load_dotenv()
 
 # MongoDB connection
 MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
+DB_NAME = os.getenv("DB_NAME", "classifieds_db")
 client = AsyncIOMotorClient(MONGO_URL)
-db = client.avida
+db = client[DB_NAME]  # Use the correct database from env
 
 # Mapping from old category IDs to new category IDs
 CATEGORY_MAPPING = {
