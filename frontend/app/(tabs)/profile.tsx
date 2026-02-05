@@ -281,7 +281,7 @@ const ActivitySection = ({ onItemPress }: { onItemPress: (route: string) => void
     { id: 'listings', label: 'My Listings', icon: 'list-outline', route: '/profile/my-listings', badge: null },
     { id: 'purchases', label: 'Purchases', icon: 'bag-outline', route: '/profile/purchases', badge: null },
     { id: 'sales', label: 'Sales', icon: 'cash-outline', route: '/profile/sales', badge: null },
-    { id: 'saved', label: 'Saved Items', icon: 'heart-outline', route: '/favorites', badge: null },
+    { id: 'saved', label: 'Saved Items', icon: 'heart-outline', route: '/profile/saved', badge: null },
     { id: 'viewed', label: 'Recently Viewed', icon: 'eye-outline', route: '/profile/recently-viewed', badge: null },
   ];
 
