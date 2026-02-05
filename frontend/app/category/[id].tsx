@@ -414,14 +414,28 @@ export default function CategoryScreen() {
     return `/listing/${listingId}`;
   };
 
-  const renderListingCard = ({ item }: { item: any }) => (
-    <ListingCard
-      listing={item}
-      onPress={() => router.push(getListingRoute(item))}
-      onFavorite={() => handleFavorite(item.id)}
-      isFavorited={favorites.has(item.id)}
-    />
-  );
+  const isPropertyCategory = categoryId === 'properties';
+
+  const renderListingCard = ({ item }: { item: any }) => {
+    if (isPropertyCategory) {
+      return (
+        <PropertyListingCard
+          listing={item}
+          onPress={() => router.push(getListingRoute(item))}
+          onFavorite={() => handleFavorite(item.id)}
+          isFavorited={favorites.has(item.id)}
+        />
+      );
+    }
+    return (
+      <ListingCard
+        listing={item}
+        onPress={() => router.push(getListingRoute(item))}
+        onFavorite={() => handleFavorite(item.id)}
+        isFavorited={favorites.has(item.id)}
+      />
+    );
+  };
 
   const renderEmpty = () => (
     <View style={styles.emptyState}>
