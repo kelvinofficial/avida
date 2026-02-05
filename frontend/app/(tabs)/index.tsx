@@ -748,6 +748,23 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
 
+            {/* Search Input */}
+            <View style={styles.subcategorySearchContainer}>
+              <Ionicons name="search" size={20} color="#999" />
+              <TextInput
+                style={styles.subcategorySearchInput}
+                placeholder="Search subcategories..."
+                value={subcategorySearch}
+                onChangeText={setSubcategorySearch}
+                placeholderTextColor="#999"
+              />
+              {subcategorySearch.length > 0 && (
+                <TouchableOpacity onPress={() => setSubcategorySearch('')}>
+                  <Ionicons name="close-circle" size={20} color="#999" />
+                </TouchableOpacity>
+              )}
+            </View>
+
             {/* View All Option */}
             <TouchableOpacity
               style={styles.viewAllButton}
@@ -758,12 +775,46 @@ export default function HomeScreen() {
                 <Ionicons name="grid-outline" size={20} color="#2E7D32" />
                 <Text style={styles.viewAllText}>View All {selectedCategoryForSubcats?.name}</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#2E7D32" />
+              <View style={styles.viewAllRight}>
+                {loadingCounts ? (
+                  <ActivityIndicator size="small" color="#2E7D32" />
+                ) : (
+                  <Text style={styles.viewAllCount}>{subcategoryCounts._total || 0}</Text>
+                )}
+                <Ionicons name="chevron-forward" size={20} color="#2E7D32" />
+              </View>
             </TouchableOpacity>
+
+            {/* Recently Viewed Section */}
+            {recentSubcategories.length > 0 && !subcategorySearch && (
+              <>
+                <View style={styles.subcategoryDivider}>
+                  <Ionicons name="time-outline" size={14} color="#999" style={{ marginRight: 6 }} />
+                  <Text style={styles.subcategoryDividerText}>Recently viewed</Text>
+                </View>
+                <View style={styles.recentSubcategoriesRow}>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.recentScrollContent}>
+                    {recentSubcategories.slice(0, 5).map((item, index) => (
+                      <TouchableOpacity
+                        key={`${item.categoryId}-${item.subcategoryId}-${index}`}
+                        style={styles.recentChip}
+                        onPress={() => handleRecentSubcategoryPress(item)}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons name={item.categoryIcon as any} size={14} color="#2E7D32" />
+                        <Text style={styles.recentChipText} numberOfLines={1}>{item.subcategoryName}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              </>
+            )}
 
             {/* Divider */}
             <View style={styles.subcategoryDivider}>
-              <Text style={styles.subcategoryDividerText}>Select a subcategory</Text>
+              <Text style={styles.subcategoryDividerText}>
+                {subcategorySearch ? `${filteredSubcategories.length} results` : 'All subcategories'}
+              </Text>
             </View>
 
             {/* Subcategories List */}
@@ -771,21 +822,39 @@ export default function HomeScreen() {
               style={styles.subcategoriesList} 
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.subcategoriesListContent}
+              keyboardShouldPersistTaps="handled"
             >
-              {selectedCategoryForSubcats?.subcategories.map((subcat, index) => (
-                <TouchableOpacity
-                  key={subcat.id}
-                  style={[
-                    styles.subcategoryItem,
-                    index === (selectedCategoryForSubcats?.subcategories.length || 0) - 1 && styles.subcategoryItemLast
-                  ]}
-                  onPress={() => handleSubcategorySelect(selectedCategoryForSubcats?.id || '', subcat.id)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.subcategoryItemText}>{subcat.name}</Text>
-                  <Ionicons name="chevron-forward" size={18} color="#999" />
-                </TouchableOpacity>
-              ))}
+              {filteredSubcategories.length === 0 ? (
+                <View style={styles.noResultsContainer}>
+                  <Ionicons name="search-outline" size={40} color="#CCC" />
+                  <Text style={styles.noResultsText}>No subcategories found</Text>
+                  <Text style={styles.noResultsSubtext}>Try a different search term</Text>
+                </View>
+              ) : (
+                filteredSubcategories.map((subcat, index) => (
+                  <TouchableOpacity
+                    key={subcat.id}
+                    style={[
+                      styles.subcategoryItem,
+                      index === filteredSubcategories.length - 1 && styles.subcategoryItemLast
+                    ]}
+                    onPress={() => handleSubcategorySelect(selectedCategoryForSubcats?.id || '', subcat.id)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.subcategoryItemText}>{subcat.name}</Text>
+                    <View style={styles.subcategoryItemRight}>
+                      {loadingCounts ? (
+                        <View style={styles.countPlaceholder} />
+                      ) : subcategoryCounts[subcat.id] !== undefined && subcategoryCounts[subcat.id] > 0 ? (
+                        <View style={styles.countBadge}>
+                          <Text style={styles.countBadgeText}>{subcategoryCounts[subcat.id]}</Text>
+                        </View>
+                      ) : null}
+                      <Ionicons name="chevron-forward" size={18} color="#999" />
+                    </View>
+                  </TouchableOpacity>
+                ))
+              )}
             </ScrollView>
           </View>
         </View>
