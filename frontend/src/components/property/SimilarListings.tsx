@@ -3,13 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
   Image,
   ActivityIndicator,
   Modal,
   Dimensions,
   ScrollView,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -18,11 +18,10 @@ import { Property } from '../../types/property';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
-const CARD_GAP = 12;
 
-// Card width for 2-column grid (matching Auto page design)
-const CARD_WIDTH = (SCREEN_WIDTH - HORIZONTAL_PADDING * 2 - CARD_GAP) / 2;
-const IMAGE_HEIGHT = 110;
+// Card dimensions - horizontal card (image left, content right)
+const CARD_WIDTH = SCREEN_WIDTH - HORIZONTAL_PADDING * 2;
+const IMAGE_SIZE = 130;
 
 const COLORS = {
   primary: '#2E7D32',
@@ -35,6 +34,7 @@ const COLORS = {
   text: '#1A1A1A',
   textSecondary: '#666666',
   border: '#E0E0E0',
+  borderLight: '#F0F0F0',
   error: '#D32F2F',
   warning: '#FF9800',
   warningLight: '#FFF3E0',
@@ -53,42 +53,6 @@ interface SimilarListingsProps {
   category?: 'property' | 'auto' | 'electronics' | 'other';
   onListingPress?: (listing: SimilarListing) => void;
 }
-
-// Tooltip Component
-const InfoTooltip = memo(({ visible, onClose }: { visible: boolean; onClose: () => void }) => (
-  <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-    <TouchableOpacity style={tooltipStyles.overlay} activeOpacity={1} onPress={onClose}>
-      <View style={tooltipStyles.container}>
-        <View style={tooltipStyles.header}>
-          <Ionicons name="information-circle" size={24} color={COLORS.primary} />
-          <Text style={tooltipStyles.title}>Why am I seeing this?</Text>
-        </View>
-        <Text style={tooltipStyles.text}>These listings are selected based on:</Text>
-        <View style={tooltipStyles.list}>
-          <Text style={tooltipStyles.listItem}>• Same property type</Text>
-          <Text style={tooltipStyles.listItem}>• Similar price range (±20%)</Text>
-          <Text style={tooltipStyles.listItem}>• Same or nearby location</Text>
-          <Text style={tooltipStyles.listItem}>• Similar size and features</Text>
-        </View>
-        <TouchableOpacity style={tooltipStyles.closeBtn} onPress={onClose}>
-          <Text style={tooltipStyles.closeBtnText}>Got it</Text>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  </Modal>
-));
-
-const tooltipStyles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  container: { backgroundColor: COLORS.surface, borderRadius: 16, padding: 20, maxWidth: 340, width: '100%' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
-  title: { fontSize: 18, fontWeight: '700', color: COLORS.text },
-  text: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 8 },
-  list: { marginBottom: 16 },
-  listItem: { fontSize: 14, color: COLORS.text, marginVertical: 2 },
-  closeBtn: { backgroundColor: COLORS.primary, paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
-  closeBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
-});
 
 // Track event helper
 const trackEvent = async (eventType: string, sourceId: string, targetId: string, isSponsored: boolean, position: number) => {
@@ -120,14 +84,16 @@ const formatPrice = (price: number) => {
   }).format(price);
 };
 
-// ============ LISTING CARD (Auto Page Style - 2 Column Grid) ============
-const ListingCard = memo(({ 
+// ============ HORIZONTAL LISTING CARD (Auto Page Style) ============
+const HorizontalListingCard = memo(({ 
   listing, 
   index, 
   onPress, 
   onFavorite, 
   isFavorited, 
   sourceId,
+  onChat,
+  onCall,
   onWhatsApp,
 }: { 
   listing: SimilarListing; 
@@ -136,6 +102,8 @@ const ListingCard = memo(({
   onFavorite: () => void; 
   isFavorited: boolean; 
   sourceId: string;
+  onChat?: () => void;
+  onCall?: () => void;
   onWhatsApp?: () => void;
 }) => {
   useEffect(() => { 
@@ -155,7 +123,7 @@ const ListingCard = memo(({
       onPress={onPress}
       activeOpacity={0.9}
     >
-      {/* Image Container */}
+      {/* LEFT: Image */}
       <View style={cardStyles.imageContainer}>
         {imageSource ? (
           <Image source={imageSource} style={cardStyles.image} resizeMode="cover" />
@@ -165,36 +133,19 @@ const ListingCard = memo(({
           </View>
         )}
 
-        {/* Badges Row - Featured/Sponsored/Boosted */}
-        <View style={cardStyles.badgeRow}>
-          {listing.featured && (
-            <View style={cardStyles.featuredBadge}>
-              <Text style={cardStyles.featuredText}>Featured</Text>
-            </View>
-          )}
-          {listing.isSponsored && !listing.featured && (
-            <View style={cardStyles.sponsoredBadge}>
-              <Ionicons name="megaphone" size={9} color="#fff" />
-              <Text style={cardStyles.sponsoredText}>Ad</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Favorite Button */}
-        <TouchableOpacity
-          style={cardStyles.favoriteButton}
-          onPress={(e) => {
-            e.stopPropagation?.();
-            onFavorite();
-          }}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Ionicons
-            name={isFavorited ? 'heart' : 'heart-outline'}
-            size={18}
-            color={isFavorited ? COLORS.error : COLORS.text}
-          />
-        </TouchableOpacity>
+        {/* Featured/Sponsored Badge */}
+        {(listing.featured || listing.isSponsored) && (
+          <View style={[
+            cardStyles.badge,
+            listing.featured ? cardStyles.featuredBadge : cardStyles.sponsoredBadge
+          ]}>
+            {listing.featured ? (
+              <Ionicons name="star" size={10} color="#fff" />
+            ) : (
+              <Ionicons name="megaphone" size={10} color="#fff" />
+            )}
+          </View>
+        )}
 
         {/* Image Count Badge */}
         {imageCount > 1 && (
@@ -205,14 +156,14 @@ const ListingCard = memo(({
         )}
       </View>
 
-      {/* Content */}
+      {/* RIGHT: Content */}
       <View style={cardStyles.content}>
         {/* Price Row */}
         <View style={cardStyles.priceRow}>
           <Text style={cardStyles.price}>{formatPrice(listing.price || 0)}</Text>
           {listing.priceNegotiable && (
             <View style={cardStyles.negotiableBadge}>
-              <Text style={cardStyles.negotiableText}>Negotiable</Text>
+              <Text style={cardStyles.negotiableText}>VB</Text>
             </View>
           )}
         </View>
@@ -222,7 +173,7 @@ const ListingCard = memo(({
           {listing.title}
         </Text>
 
-        {/* Property Specs */}
+        {/* Specs Row */}
         <View style={cardStyles.specsRow}>
           {listing.bedrooms && (
             <>
@@ -243,39 +194,79 @@ const ListingCard = memo(({
 
         {/* Location */}
         <View style={cardStyles.locationRow}>
-          <Ionicons name="location" size={11} color={COLORS.textSecondary} />
-          <Text style={cardStyles.location} numberOfLines={1}>
+          <Ionicons name="location-outline" size={12} color={COLORS.textSecondary} />
+          <Text style={cardStyles.locationText} numberOfLines={1}>
             {listing.location?.city || listing.location?.area || 'Location'}
           </Text>
         </View>
 
-        {/* Seller Badges */}
-        <View style={cardStyles.sellerRow}>
-          {listing.seller?.isVerified && (
-            <View style={cardStyles.verifiedBadge}>
-              <Ionicons name="shield-checkmark" size={9} color={COLORS.primary} />
-              <Text style={cardStyles.verifiedText}>Verified</Text>
-            </View>
-          )}
-          {listing.verification?.isVerified && (
-            <View style={cardStyles.certifiedBadge}>
-              <Ionicons name="ribbon" size={9} color="#fff" />
-              <Text style={cardStyles.certifiedText}>Certified</Text>
-            </View>
-          )}
-        </View>
+        {/* Bottom Row: Seller Info & Actions */}
+        <View style={cardStyles.bottomRow}>
+          {/* Seller Info */}
+          <View style={cardStyles.sellerInfo}>
+            {listing.seller?.isVerified && (
+              <View style={cardStyles.verifiedBadge}>
+                <Ionicons name="shield-checkmark" size={12} color={COLORS.primary} />
+              </View>
+            )}
+            {listing.verification?.isVerified && (
+              <View style={cardStyles.certifiedBadge}>
+                <Ionicons name="ribbon" size={10} color="#fff" />
+                <Text style={cardStyles.certifiedText}>Certified</Text>
+              </View>
+            )}
+          </View>
 
-        {/* Quick Actions */}
-        <View style={cardStyles.actionsRow}>
-          <TouchableOpacity
-            style={[cardStyles.actionButton, cardStyles.whatsappButton]}
-            onPress={(e) => {
-              e.stopPropagation?.();
-              onWhatsApp?.();
-            }}
-          >
-            <Ionicons name="logo-whatsapp" size={16} color="#25D366" />
-          </TouchableOpacity>
+          {/* Action Buttons */}
+          <View style={cardStyles.actionsRow}>
+            {onFavorite && (
+              <TouchableOpacity
+                style={cardStyles.actionButton}
+                onPress={(e) => {
+                  e.stopPropagation?.();
+                  onFavorite();
+                }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons
+                  name={isFavorited ? 'heart' : 'heart-outline'}
+                  size={18}
+                  color={isFavorited ? COLORS.error : COLORS.textSecondary}
+                />
+              </TouchableOpacity>
+            )}
+            {onChat && (
+              <TouchableOpacity
+                style={cardStyles.actionButton}
+                onPress={(e) => {
+                  e.stopPropagation?.();
+                  onChat();
+                }}
+              >
+                <Ionicons name="chatbubble-outline" size={18} color={COLORS.primary} />
+              </TouchableOpacity>
+            )}
+            {onCall && (
+              <TouchableOpacity
+                style={cardStyles.actionButton}
+                onPress={(e) => {
+                  e.stopPropagation?.();
+                  onCall();
+                }}
+              >
+                <Ionicons name="call-outline" size={18} color={COLORS.primary} />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={[cardStyles.actionButton, cardStyles.whatsappButton]}
+              onPress={(e) => {
+                e.stopPropagation?.();
+                onWhatsApp?.();
+              }}
+            >
+              <Ionicons name="logo-whatsapp" size={18} color="#25D366" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -284,12 +275,13 @@ const ListingCard = memo(({
 
 const cardStyles = StyleSheet.create({
   card: {
-    width: CARD_WIDTH,
+    flexDirection: 'row',
     backgroundColor: COLORS.surface,
     borderRadius: 12,
+    marginBottom: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderLight,
   },
   cardFeatured: {
     borderColor: COLORS.primary,
@@ -299,11 +291,12 @@ const cardStyles = StyleSheet.create({
     borderColor: COLORS.warning,
     borderWidth: 2,
   },
+  // Image container
   imageContainer: {
-    position: 'relative',
-    width: '100%',
-    height: IMAGE_HEIGHT,
+    width: IMAGE_SIZE,
+    height: IMAGE_SIZE,
     backgroundColor: COLORS.surfaceVariant,
+    position: 'relative',
   },
   image: {
     width: '100%',
@@ -312,83 +305,58 @@ const cardStyles = StyleSheet.create({
   placeholderImage: {
     width: '100%',
     height: '100%',
-    backgroundColor: COLORS.surfaceVariant,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: COLORS.surfaceVariant,
   },
-  badgeRow: {
+  badge: {
     position: 'absolute',
     top: 6,
     left: 6,
-    flexDirection: 'row',
-    gap: 4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   featuredBadge: {
     backgroundColor: COLORS.primary,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  featuredText: {
-    color: '#fff',
-    fontSize: 9,
-    fontWeight: '700',
   },
   sponsoredBadge: {
     backgroundColor: COLORS.warning,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  sponsoredText: {
-    color: '#fff',
-    fontSize: 9,
-    fontWeight: '600',
-  },
-  favoriteButton: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    borderRadius: 14,
-    width: 28,
-    height: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   imageCountBadge: {
     position: 'absolute',
     bottom: 6,
     left: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.6)',
     paddingHorizontal: 5,
     paddingVertical: 2,
     borderRadius: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
+    gap: 2,
   },
   imageCountText: {
     color: '#fff',
     fontSize: 10,
     fontWeight: '600',
   },
+  // Content
   content: {
-    padding: 10,
+    flex: 1,
+    padding: 12,
+    justifyContent: 'space-between',
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 4,
   },
   price: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
-    color: COLORS.primary,
+    color: COLORS.text,
   },
   negotiableBadge: {
     backgroundColor: COLORS.primaryLight,
@@ -397,23 +365,20 @@ const cardStyles = StyleSheet.create({
     borderRadius: 4,
   },
   negotiableText: {
-    fontSize: 9,
+    fontSize: 10,
     color: COLORS.primary,
     fontWeight: '600',
   },
   title: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
     color: COLORS.text,
-    lineHeight: 16,
-    marginBottom: 4,
-    minHeight: 32,
+    lineHeight: 17,
   },
   specsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    marginBottom: 4,
   },
   specText: {
     fontSize: 11,
@@ -430,57 +395,52 @@ const cardStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    marginBottom: 4,
   },
-  location: {
+  locationText: {
     fontSize: 11,
     color: COLORS.textSecondary,
     flex: 1,
   },
-  sellerRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 4,
-    marginBottom: 6,
-  },
-  verifiedBadge: {
+  bottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderRadius: 4,
-    gap: 2,
+    justifyContent: 'space-between',
   },
-  verifiedText: {
-    fontSize: 9,
-    color: COLORS.primary,
-    fontWeight: '500',
+  sellerInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  verifiedBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   certifiedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.certified,
-    paddingHorizontal: 4,
-    paddingVertical: 1,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
     borderRadius: 4,
     gap: 2,
   },
   certifiedText: {
     fontSize: 9,
     color: '#fff',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   actionsRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 6,
-    marginTop: 2,
+    gap: 4,
   },
   actionButton: {
     width: 32,
-    height: 28,
-    borderRadius: 6,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: COLORS.surfaceVariant,
     justifyContent: 'center',
     alignItems: 'center',
@@ -497,7 +457,6 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
-  const [showTooltip, setShowTooltip] = useState(false);
 
   // Fetch similar listings
   const fetchSimilarListings = useCallback(async () => {
@@ -566,11 +525,24 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
     if (phone) {
       const message = `Hi, I'm interested in your property: ${listing.title}`;
       const url = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-      import('react-native').then(({ Linking }) => Linking.openURL(url));
+      Linking.openURL(url);
     }
   };
 
-  // Render header with See All
+  // Handle Chat
+  const handleChat = (listing: SimilarListing) => {
+    router.push(`/chat/${listing.seller?.id || listing.id}`);
+  };
+
+  // Handle Call
+  const handleCall = (listing: SimilarListing) => {
+    const phone = listing.seller?.phone;
+    if (phone) {
+      Linking.openURL(`tel:${phone}`);
+    }
+  };
+
+  // Render header
   const renderHeader = () => (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
@@ -624,12 +596,6 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
     );
   }
 
-  // Create pairs for 2-column horizontal scroll (matching Auto page)
-  const pairs: SimilarListing[][] = [];
-  for (let i = 0; i < listings.length; i += 2) {
-    pairs.push(listings.slice(i, i + 2));
-  }
-
   return (
     <View style={styles.container}>
       {renderHeader()}
@@ -637,38 +603,23 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
       {listings.length === 0 ? (
         renderEmpty()
       ) : (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-          pagingEnabled={false}
-          snapToInterval={CARD_WIDTH * 2 + CARD_GAP + HORIZONTAL_PADDING}
-          decelerationRate="fast"
-        >
-          {pairs.map((pair, pairIndex) => (
-            <View key={pairIndex} style={styles.pairContainer}>
-              {pair.map((item, itemIndex) => {
-                const globalIndex = pairIndex * 2 + itemIndex;
-                return (
-                  <ListingCard
-                    key={item.id}
-                    listing={item}
-                    index={globalIndex}
-                    onPress={() => handlePress(item, globalIndex)}
-                    onFavorite={() => toggleFavorite(item.id)}
-                    isFavorited={favorites.has(item.id)}
-                    sourceId={propertyId}
-                    onWhatsApp={() => handleWhatsApp(item)}
-                  />
-                );
-              })}
-            </View>
+        <View style={styles.listContainer}>
+          {listings.map((item, index) => (
+            <HorizontalListingCard
+              key={item.id}
+              listing={item}
+              index={index}
+              onPress={() => handlePress(item, index)}
+              onFavorite={() => toggleFavorite(item.id)}
+              isFavorited={favorites.has(item.id)}
+              sourceId={propertyId}
+              onChat={() => handleChat(item)}
+              onCall={() => handleCall(item)}
+              onWhatsApp={() => handleWhatsApp(item)}
+            />
           ))}
-        </ScrollView>
+        </View>
       )}
-
-      {/* Tooltip Modal */}
-      <InfoTooltip visible={showTooltip} onClose={() => setShowTooltip(false)} />
     </View>
   );
 };
@@ -706,13 +657,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.primary,
   },
-  scrollContent: {
+  listContainer: {
     paddingHorizontal: HORIZONTAL_PADDING,
-  },
-  pairContainer: {
-    flexDirection: 'row',
-    gap: CARD_GAP,
-    marginRight: HORIZONTAL_PADDING,
   },
   loadingContainer: {
     flexDirection: 'row',
