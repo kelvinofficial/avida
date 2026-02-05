@@ -167,5 +167,33 @@ export const reportsApi = {
   }
 };
 
+// Notifications API
+export const notificationsApi = {
+  getAll: async (params?: { type?: string; unread_only?: boolean; page?: number; limit?: number }) => {
+    const response = await api.get('/notifications', { params });
+    return response.data;
+  },
+  getUnreadCount: async () => {
+    const response = await api.get('/notifications/unread-count');
+    return response.data;
+  },
+  markAsRead: async (notificationId: string) => {
+    const response = await api.put(`/notifications/${notificationId}/read`);
+    return response.data;
+  },
+  markAllAsRead: async () => {
+    const response = await api.put('/notifications/mark-all-read');
+    return response.data;
+  },
+  delete: async (notificationId: string) => {
+    const response = await api.delete(`/notifications/${notificationId}`);
+    return response.data;
+  },
+  clearAll: async () => {
+    const response = await api.delete('/notifications');
+    return response.data;
+  }
+};
+
 // Default export for convenience
 export default api;
