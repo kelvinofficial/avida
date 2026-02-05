@@ -212,6 +212,11 @@ export default function PublicProfileScreen() {
       return;
     }
 
+    if (isOwnProfile) {
+      Alert.alert('Error', 'Cannot follow yourself');
+      return;
+    }
+
     setFollowLoading(true);
     try {
       if (isFollowing) {
@@ -219,18 +224,23 @@ export default function PublicProfileScreen() {
         setIsFollowing(false);
         setProfile((p: any) => ({
           ...p,
-          stats: { ...p.stats, followers: p.stats.followers - 1 }
+          stats: { ...p.stats, followers: Math.max(0, (p.stats?.followers || 0) - 1) }
         }));
       } else {
         await api.post(`/users/${id}/follow`);
         setIsFollowing(true);
         setProfile((p: any) => ({
           ...p,
-          stats: { ...p.stats, followers: p.stats.followers + 1 }
+          stats: { ...p.stats, followers: (p.stats?.followers || 0) + 1 }
         }));
       }
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.detail || 'Failed to update follow status');
+      const errorMessage = err.response?.data?.detail || 'Failed to update follow status';
+      if (errorMessage.includes('not found')) {
+        Alert.alert('Error', 'This seller account is not yet registered');
+      } else {
+        Alert.alert('Error', errorMessage);
+      }
     } finally {
       setFollowLoading(false);
     }
@@ -239,6 +249,11 @@ export default function PublicProfileScreen() {
   const handleSubmitReview = async () => {
     if (!isAuthenticated) {
       router.push('/login');
+      return;
+    }
+
+    if (isOwnProfile) {
+      Alert.alert('Error', 'Cannot review yourself');
       return;
     }
 
@@ -254,8 +269,9 @@ export default function PublicProfileScreen() {
         comment: reviewComment.trim(),
       });
       
-      // Add new review to list
+      // Add new review to list and mark as reviewed
       setReviews(prev => [response.data.review, ...prev]);
+      setHasReviewed(true);
       
       // Update profile rating
       fetchProfile();
@@ -265,7 +281,15 @@ export default function PublicProfileScreen() {
       setReviewComment('');
       Alert.alert('Success', 'Review submitted successfully');
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.detail || 'Failed to submit review');
+      const errorMessage = err.response?.data?.detail || 'Failed to submit review';
+      if (errorMessage.includes('already reviewed')) {
+        Alert.alert('Error', 'You have already reviewed this user');
+        setHasReviewed(true);
+      } else if (errorMessage.includes('not found')) {
+        Alert.alert('Error', 'This seller account is not yet registered');
+      } else {
+        Alert.alert('Error', errorMessage);
+      }
     } finally {
       setSubmittingReview(false);
     }
@@ -277,6 +301,12 @@ export default function PublicProfileScreen() {
       return;
     }
     
+    if (isOwnProfile) {
+      Alert.alert('Error', 'Cannot message yourself');
+      return;
+    }
+
+    setMessageLoading(true);
     try {
       // Create or get existing direct conversation
       const response = await api.post('/conversations/direct', {
@@ -287,7 +317,14 @@ export default function PublicProfileScreen() {
       router.push(`/chat/${response.data.id}`);
     } catch (err: any) {
       console.error('Error starting conversation:', err);
-      Alert.alert('Error', err.response?.data?.detail || 'Failed to start conversation');
+      const errorMessage = err.response?.data?.detail || 'Failed to start conversation';
+      if (errorMessage.includes('not found')) {
+        Alert.alert('Error', 'This seller account is not yet registered');
+      } else {
+        Alert.alert('Error', errorMessage);
+      }
+    } finally {
+      setMessageLoading(false);
     }
   };
 
