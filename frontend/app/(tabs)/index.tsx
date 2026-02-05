@@ -334,8 +334,14 @@ export default function HomeScreen() {
   const fetchData = useCallback(async (refresh = false) => {
     try {
       if (refresh) { setPage(1); setHasMore(true); }
+      const locationFilter = currentCity !== 'All Locations' ? currentCity : undefined;
       const [listingsRes, categoriesRes] = await Promise.all([
-        listingsApi.getAll({ category: selectedCategory || undefined, page: refresh ? 1 : page, limit: 20 }),
+        listingsApi.getAll({ 
+          category: selectedCategory || undefined, 
+          location: locationFilter,
+          page: refresh ? 1 : page, 
+          limit: 20 
+        }),
         categoriesApi.getAll(),
       ]);
       if (refresh) { setListings(listingsRes.listings); }
@@ -349,9 +355,9 @@ export default function HomeScreen() {
       }
     } catch (error) { console.error('Error fetching data:', error); }
     finally { setLoading(false); setRefreshing(false); }
-  }, [selectedCategory, page, isAuthenticated, fetchNotificationCount]);
+  }, [selectedCategory, currentCity, page, isAuthenticated, fetchNotificationCount]);
 
-  useEffect(() => { fetchData(true); }, [selectedCategory]);
+  useEffect(() => { fetchData(true); }, [selectedCategory, currentCity]);
 
   const onRefresh = useCallback(() => { setRefreshing(true); fetchData(true); }, [fetchData]);
 
