@@ -1850,30 +1850,44 @@ export default function PropertyDetailScreen() {
         <View style={{ height: 120 }} />
       </ScrollView>
 
-      {/* Bottom Actions - Dynamic based on seller preferences */}
+      {/* Bottom Actions - Enhanced with all key actions */}
       <View style={styles.bottomActions}>
         {/* Chat button - Always shown */}
         <TouchableOpacity style={styles.actionBtn} onPress={handleChat}>
-          <Ionicons name="chatbubble-outline" size={20} color={COLORS.primary} />
+          <Ionicons name="chatbubble-outline" size={18} color={COLORS.primary} />
           <Text style={styles.actionText}>Chat</Text>
+        </TouchableOpacity>
+        
+        {/* Book Viewing button - For rental properties or buy properties */}
+        <TouchableOpacity 
+          style={[styles.actionBtn, styles.actionBtnSecondary]} 
+          onPress={() => setShowBookingModal(true)}
+        >
+          <Ionicons name="calendar-outline" size={18} color={COLORS.secondary} />
+          <Text style={[styles.actionText, { color: COLORS.secondary }]}>Book Viewing</Text>
         </TouchableOpacity>
         
         {/* Make Offer button - Only if seller allows offers */}
         {property.seller?.allowsOffers && (
           <TouchableOpacity style={[styles.actionBtn, styles.actionBtnPrimary]} onPress={() => setShowOfferModal(true)}>
-            <Ionicons name="pricetag" size={20} color="#fff" />
-            <Text style={[styles.actionText, { color: '#fff' }]}>Make Offer</Text>
+            <Ionicons name="pricetag" size={18} color="#fff" />
+            <Text style={[styles.actionText, { color: '#fff' }]}>Offer</Text>
           </TouchableOpacity>
         )}
         
-        {/* Contact button - WhatsApp OR Call based on preference */}
-        {property.seller?.preferredContact === 'call' ? (
-          <TouchableOpacity style={styles.iconOnlyBtn} onPress={handleCall}>
-            <Ionicons name="call" size={22} color={COLORS.primary} />
+        {/* Contact buttons - WhatsApp and/or Call */}
+        {property.seller?.whatsapp && (
+          <TouchableOpacity 
+            style={[styles.iconOnlyBtn, { backgroundColor: '#25D366', borderColor: '#25D366' }]} 
+            onPress={handleWhatsApp}
+          >
+            <Ionicons name="logo-whatsapp" size={20} color="#fff" />
           </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={[styles.iconOnlyBtn, { backgroundColor: '#25D366', borderColor: '#25D366' }]} onPress={handleWhatsApp}>
-            <Ionicons name="logo-whatsapp" size={22} color="#fff" />
+        )}
+        
+        {property.seller?.phone && (
+          <TouchableOpacity style={styles.iconOnlyBtn} onPress={handleCall}>
+            <Ionicons name="call" size={20} color={COLORS.primary} />
           </TouchableOpacity>
         )}
       </View>
@@ -1892,6 +1906,14 @@ export default function PropertyDetailScreen() {
         onClose={() => setShowBookingModal(false)}
         property={property}
         onSubmit={handleBookViewing}
+      />
+      
+      {/* Report Modal */}
+      <ReportModal
+        visible={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        propertyId={property.id}
+        onSubmit={handleReport}
       />
     </SafeAreaView>
   );
