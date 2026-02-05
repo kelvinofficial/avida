@@ -285,7 +285,6 @@ export default function HomeScreen() {
     icon: string;
     subcategories: SubcategoryConfig[];
   } | null>(null);
-  const [subcategorySearch, setSubcategorySearch] = useState('');
   const [subcategoryCounts, setSubcategoryCounts] = useState<Record<string, number>>({});
   const [loadingCounts, setLoadingCounts] = useState(false);
   const [recentSubcategories, setRecentSubcategories] = useState<Array<{
@@ -296,15 +295,6 @@ export default function HomeScreen() {
     subcategoryName: string;
     timestamp: number;
   }>>([]);
-
-  // Filter subcategories based on search
-  const filteredSubcategories = useMemo(() => {
-    if (!selectedCategoryForSubcats) return [];
-    if (!subcategorySearch.trim()) return selectedCategoryForSubcats.subcategories;
-    return selectedCategoryForSubcats.subcategories.filter(sub =>
-      sub.name.toLowerCase().includes(subcategorySearch.toLowerCase())
-    );
-  }, [selectedCategoryForSubcats, subcategorySearch]);
 
   // Load recent subcategories from storage
   const loadRecentSubcategories = useCallback(async () => {
