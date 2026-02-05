@@ -605,15 +605,11 @@ const styles = StyleSheet.create({
   },
   columnWrapper: {
     justifyContent: 'space-between',
+    gap: COLUMN_GAP,
   },
   cardWrapper: {
-    width: CARD_WIDTH,
-  },
-  cardLeft: {
-    marginRight: COLUMN_GAP / 2,
-  },
-  cardRight: {
-    marginLeft: COLUMN_GAP / 2,
+    width: '48%',
+    marginBottom: 4,
   },
 
   // SKELETON
