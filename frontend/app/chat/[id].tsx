@@ -563,6 +563,51 @@ const bubbleStyles = StyleSheet.create({
   voiceDurationMine: {
     color: 'rgba(0,0,0,0.5)',
   },
+  // Image/Video message styles
+  mediaBubble: {
+    padding: 4,
+    overflow: 'hidden',
+  },
+  imageContent: {
+    width: SCREEN_WIDTH * 0.6,
+    height: SCREEN_WIDTH * 0.6 * 0.75,
+    borderRadius: 14,
+  },
+  videoContent: {
+    position: 'relative',
+    width: SCREEN_WIDTH * 0.6,
+    height: SCREEN_WIDTH * 0.6 * 0.75,
+  },
+  videoThumbnail: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 14,
+  },
+  videoPlayOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    borderRadius: 14,
+  },
+  videoDuration: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  videoDurationText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '500',
+  },
 });
 
 // Quick reply buttons
