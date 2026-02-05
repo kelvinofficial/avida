@@ -1242,6 +1242,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  inputWrapperError: {
+    borderColor: COLORS.error,
+  },
   input: {
     flex: 1,
     backgroundColor: COLORS.surface,
@@ -1263,9 +1266,38 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontWeight: '500',
   },
+  fieldHint: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    marginTop: 4,
+  },
+  disabledSelectContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    gap: 8,
+  },
   disabledText: {
     color: COLORS.textSecondary,
     fontStyle: 'italic',
+    fontSize: 14,
+  },
+  dependentBadge: {
+    marginLeft: 8,
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  dependentBadgeText: {
+    fontSize: 10,
+    color: COLORS.primary,
+    fontWeight: '500',
   },
   textArea: {
     minHeight: 140,
