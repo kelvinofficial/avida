@@ -485,8 +485,7 @@ export default function PostListingScreen() {
     }
 
     return isValid;
-    }
-  }, [step, selectedCategoryId, images, title, description, categoryConfig, attributes, price, location]);
+  }, [step, selectedCategoryId, images, title, description, categoryConfig, attributes, price, location, fieldErrors]);
 
   const nextStep = () => {
     if (validateStep()) {
