@@ -56,23 +56,19 @@ export default function TabLayout() {
         name="post-placeholder"
         options={{
           title: '',
-          tabBarIcon: () => (
-            <View style={styles.fabContainer}>
-              <TouchableOpacity
-                style={styles.fabButton}
-                onPress={handlePostPress}
-                activeOpacity={0.8}
-              >
+          href: null, // Prevent navigation to this route
+          tabBarButton: (props) => (
+            <TouchableOpacity
+              {...props}
+              style={styles.fabContainer}
+              onPress={handlePostPress}
+              activeOpacity={0.8}
+            >
+              <View style={styles.fabButton}>
                 <Ionicons name="add" size={26} color="#fff" />
-              </TouchableOpacity>
-            </View>
+              </View>
+            </TouchableOpacity>
           ),
-        }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-            handlePostPress();
-          },
         }}
       />
       <Tabs.Screen
