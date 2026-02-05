@@ -1284,6 +1284,199 @@ const bookingStyles = StyleSheet.create({
   },
 });
 
+// ============ REPORT LISTING MODAL ============
+const ReportModal = memo<{ visible: boolean; onClose: () => void; propertyId: string; onSubmit: (reason: string, details: string) => void }>(
+  ({ visible, onClose, propertyId, onSubmit }) => {
+    const [selectedReason, setSelectedReason] = useState('');
+    const [details, setDetails] = useState('');
+
+    const reportReasons = [
+      { id: 'fake', label: 'Fake listing / Scam', icon: 'warning' },
+      { id: 'wrong_info', label: 'Wrong information', icon: 'information-circle' },
+      { id: 'sold', label: 'Property already sold/rented', icon: 'checkmark-done' },
+      { id: 'wrong_price', label: 'Misleading price', icon: 'pricetag' },
+      { id: 'wrong_photos', label: 'Photos don\'t match property', icon: 'image' },
+      { id: 'spam', label: 'Spam or duplicate listing', icon: 'copy' },
+      { id: 'other', label: 'Other issue', icon: 'ellipsis-horizontal' },
+    ];
+
+    const handleSubmit = () => {
+      if (selectedReason) {
+        onSubmit(selectedReason, details);
+        setSelectedReason('');
+        setDetails('');
+      }
+    };
+
+    return (
+      <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={reportStyles.container}>
+          <View style={reportStyles.header}>
+            <TouchableOpacity onPress={onClose}>
+              <Ionicons name="close" size={24} color={COLORS.text} />
+            </TouchableOpacity>
+            <Text style={reportStyles.headerTitle}>Report Listing</Text>
+            <View style={{ width: 24 }} />
+          </View>
+
+          <ScrollView style={reportStyles.content}>
+            <Text style={reportStyles.instruction}>
+              Help us keep avida safe. Select the reason for reporting this listing.
+            </Text>
+
+            {reportReasons.map((reason) => (
+              <TouchableOpacity
+                key={reason.id}
+                style={[
+                  reportStyles.reasonItem,
+                  selectedReason === reason.id && reportStyles.reasonItemActive,
+                ]}
+                onPress={() => setSelectedReason(reason.id)}
+              >
+                <View style={[
+                  reportStyles.reasonIcon,
+                  selectedReason === reason.id && reportStyles.reasonIconActive,
+                ]}>
+                  <Ionicons
+                    name={reason.icon as any}
+                    size={20}
+                    color={selectedReason === reason.id ? '#fff' : COLORS.error}
+                  />
+                </View>
+                <Text style={[
+                  reportStyles.reasonText,
+                  selectedReason === reason.id && reportStyles.reasonTextActive,
+                ]}>
+                  {reason.label}
+                </Text>
+                {selectedReason === reason.id && (
+                  <Ionicons name="checkmark-circle" size={22} color={COLORS.primary} />
+                )}
+              </TouchableOpacity>
+            ))}
+
+            {selectedReason && (
+              <>
+                <Text style={reportStyles.detailsLabel}>Additional details (optional)</Text>
+                <TextInput
+                  style={reportStyles.detailsInput}
+                  placeholder="Provide more information about the issue..."
+                  placeholderTextColor={COLORS.textSecondary}
+                  multiline
+                  numberOfLines={4}
+                  value={details}
+                  onChangeText={setDetails}
+                />
+              </>
+            )}
+          </ScrollView>
+
+          <View style={reportStyles.footer}>
+            <TouchableOpacity
+              style={[reportStyles.submitBtn, !selectedReason && reportStyles.submitBtnDisabled]}
+              onPress={handleSubmit}
+              disabled={!selectedReason}
+            >
+              <Ionicons name="flag" size={20} color="#fff" />
+              <Text style={reportStyles.submitText}>Submit Report</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </Modal>
+    );
+  }
+);
+
+const reportStyles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.surface },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
+  content: { flex: 1, padding: HORIZONTAL_PADDING },
+  instruction: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  reasonItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    gap: 12,
+  },
+  reasonItemActive: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryLight,
+  },
+  reasonIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFEBEE',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  reasonIconActive: {
+    backgroundColor: COLORS.error,
+  },
+  reasonText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '500',
+    color: COLORS.text,
+  },
+  reasonTextActive: {
+    fontWeight: '600',
+  },
+  detailsLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  detailsInput: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 14,
+    minHeight: 100,
+    textAlignVertical: 'top',
+    color: COLORS.text,
+  },
+  footer: {
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  submitBtn: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.error,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  submitBtnDisabled: { backgroundColor: COLORS.border },
+  submitText: { fontSize: 16, fontWeight: '700', color: '#fff' },
+});
+
 const offerStyles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.surface },
   header: {
