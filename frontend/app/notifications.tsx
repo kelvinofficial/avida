@@ -46,7 +46,7 @@ const COLORS = {
   systemColor: '#6B7280',
 };
 
-type NotificationType = 'message' | 'follow' | 'review' | 'price_drop' | 'system';
+type NotificationType = 'message' | 'follow' | 'review' | 'price_drop' | 'system' | 'offer_received' | 'offer_accepted' | 'offer_rejected';
 
 interface Notification {
   id: string;
@@ -69,10 +69,11 @@ interface Notification {
 
 const FILTER_CHIPS = [
   { key: 'all', label: 'All', icon: 'apps-outline' },
+  { key: 'offer', label: 'Offers', icon: 'pricetag-outline' },
   { key: 'message', label: 'Messages', icon: 'chatbubble-outline' },
   { key: 'follow', label: 'Follows', icon: 'person-add-outline' },
   { key: 'review', label: 'Reviews', icon: 'star-outline' },
-  { key: 'price_drop', label: 'Deals', icon: 'pricetag-outline' },
+  { key: 'price_drop', label: 'Deals', icon: 'trending-down-outline' },
   { key: 'system', label: 'System', icon: 'shield-outline' },
 ];
 
@@ -86,6 +87,12 @@ const getNotificationConfig = (type: NotificationType) => {
       return { icon: 'star', color: COLORS.reviewColor, gradient: ['#F59E0B', '#D97706'] };
     case 'price_drop':
       return { icon: 'trending-down', color: COLORS.priceDropColor, gradient: ['#10B981', '#059669'] };
+    case 'offer_received':
+      return { icon: 'pricetag', color: '#F59E0B', gradient: ['#F59E0B', '#D97706'] };
+    case 'offer_accepted':
+      return { icon: 'checkmark-circle', color: '#16A34A', gradient: ['#16A34A', '#15803D'] };
+    case 'offer_rejected':
+      return { icon: 'close-circle', color: '#DC2626', gradient: ['#DC2626', '#B91C1C'] };
     case 'system':
       return { icon: 'shield-checkmark', color: COLORS.systemColor, gradient: ['#6B7280', '#4B5563'] };
     default:
