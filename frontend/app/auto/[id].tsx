@@ -22,6 +22,7 @@ import { api } from '../../src/utils/api';
 import { AutoListing } from '../../src/types/auto';
 import { ImageViewerModal } from '../../src/components/auto/ImageViewerModal';
 import SimilarListings from '../../src/components/property/SimilarListings';
+import { safeGoBack } from '../../src/utils/navigation';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
