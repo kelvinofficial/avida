@@ -1558,6 +1558,9 @@ export default function PropertyDetailScreen() {
         {/* Highlights */}
         <HighlightsSection property={property} />
 
+        {/* AI Smart Summary */}
+        <SmartSummarySection property={property} />
+
         {/* Key Details */}
         <KeyDetailsSection property={property} />
 
