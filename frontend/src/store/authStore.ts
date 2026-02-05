@@ -83,6 +83,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
+    try {
+      // Call backend logout API to clear server-side session
+      const token = get().token;
+      if (token) {
+        const { default: api } = await import('../utils/api');
+        await api.post('/auth/logout');
+      }
+    } catch (error) {
+      console.error('Error calling logout API:', error);
+      // Continue with local logout even if API call fails
+    }
+    
+    // Clear local storage
     await storage.removeItem(TOKEN_KEY);
     await storage.removeItem(USER_KEY);
     set({ user: null, token: null, isAuthenticated: false });
