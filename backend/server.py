@@ -1448,19 +1448,27 @@ async def send_message(conversation_id: str, message: MessageCreate, request: Re
         "conversation_id": conversation_id,
         "sender_id": user.user_id,
         "content": message.content,
+        "message_type": message.message_type,
+        "media_url": message.media_url,
+        "media_duration": message.media_duration,
         "read": False,
         "created_at": datetime.now(timezone.utc)
     }
     
     await db.messages.insert_one(new_message)
     
+    # Prepare message for response (remove MongoDB _id)
+    response_message = {k: v for k, v in new_message.items() if k != '_id'}
+    response_message['created_at'] = response_message['created_at'].isoformat()
+    
     # Update conversation
+    last_msg_preview = message.content[:100] if message.message_type == "text" else f"[{message.message_type.title()}]"
     unread_field = "seller_unread" if conversation["buyer_id"] == user.user_id else "buyer_unread"
     await db.conversations.update_one(
         {"id": conversation_id},
         {
             "$set": {
-                "last_message": message.content[:100],
+                "last_message": last_msg_preview,
                 "last_message_time": datetime.now(timezone.utc)
             },
             "$inc": {unread_field: 1}
@@ -1470,7 +1478,7 @@ async def send_message(conversation_id: str, message: MessageCreate, request: Re
     # Emit socket event
     await sio.emit("new_message", {
         "conversation_id": conversation_id,
-        "message": new_message
+        "message": response_message
     }, room=conversation_id)
     
     return new_message
