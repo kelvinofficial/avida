@@ -3644,7 +3644,7 @@ async def get_notifications(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     unread_only: bool = Query(False),
-    notification_type: str = Query(None, description="Filter by type: message, follow, review, price_drop, system")
+    notification_type: str = Query(None, description="Filter by type: message, follow, review, price_drop, system, offer")
 ):
     """Get user notifications with optional filtering"""
     user = await require_auth(request)
@@ -3653,7 +3653,11 @@ async def get_notifications(
     if unread_only:
         query["read"] = False
     if notification_type:
-        query["type"] = notification_type
+        # Handle 'offer' filter which includes all offer types
+        if notification_type == 'offer':
+            query["type"] = {"$in": ["offer_received", "offer_accepted", "offer_rejected"]}
+        else:
+            query["type"] = notification_type
     
     skip = (page - 1) * limit
     total = await db.notifications.count_documents(query)
@@ -3670,7 +3674,12 @@ async def get_notifications(
         {"$group": {"_id": "$type", "count": {"$sum": 1}}}
     ]
     async for doc in db.notifications.aggregate(pipeline):
-        type_counts[doc["_id"]] = doc["count"]
+        notif_type = doc["_id"]
+        # Group offer types under 'offer' key
+        if notif_type in ["offer_received", "offer_accepted", "offer_rejected"]:
+            type_counts["offer"] = type_counts.get("offer", 0) + doc["count"]
+        else:
+            type_counts[notif_type] = doc["count"]
     
     return {
         "notifications": notifications,
