@@ -291,11 +291,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Listings CRUD API"
     - "Favorites API" 
     - "Conversations/Messages API"
   stuck_tasks:
-    - "Listings CRUD API"
     - "Favorites API"
     - "Conversations/Messages API"
   test_all: false
