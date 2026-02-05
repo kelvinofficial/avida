@@ -800,9 +800,7 @@ export default function HomeScreen() {
 
             {/* Divider */}
             <View style={styles.subcategoryDivider}>
-              <Text style={styles.subcategoryDividerText}>
-                {subcategorySearch ? `${filteredSubcategories.length} results` : 'All subcategories'}
-              </Text>
+              <Text style={styles.subcategoryDividerText}>All subcategories</Text>
             </View>
 
             {/* Subcategories List */}
@@ -810,39 +808,30 @@ export default function HomeScreen() {
               style={styles.subcategoriesList} 
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.subcategoriesListContent}
-              keyboardShouldPersistTaps="handled"
             >
-              {filteredSubcategories.length === 0 ? (
-                <View style={styles.noResultsContainer}>
-                  <Ionicons name="search-outline" size={40} color="#CCC" />
-                  <Text style={styles.noResultsText}>No subcategories found</Text>
-                  <Text style={styles.noResultsSubtext}>Try a different search term</Text>
-                </View>
-              ) : (
-                filteredSubcategories.map((subcat, index) => (
-                  <TouchableOpacity
-                    key={subcat.id}
-                    style={[
-                      styles.subcategoryItem,
-                      index === filteredSubcategories.length - 1 && styles.subcategoryItemLast
-                    ]}
-                    onPress={() => handleSubcategorySelect(selectedCategoryForSubcats?.id || '', subcat.id)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.subcategoryItemText}>{subcat.name}</Text>
-                    <View style={styles.subcategoryItemRight}>
-                      {loadingCounts ? (
-                        <View style={styles.countPlaceholder} />
-                      ) : subcategoryCounts[subcat.id] !== undefined && subcategoryCounts[subcat.id] > 0 ? (
-                        <View style={styles.countBadge}>
-                          <Text style={styles.countBadgeText}>{subcategoryCounts[subcat.id]}</Text>
-                        </View>
-                      ) : null}
-                      <Ionicons name="chevron-forward" size={18} color="#999" />
-                    </View>
-                  </TouchableOpacity>
-                ))
-              )}
+              {selectedCategoryForSubcats?.subcategories.map((subcat, index) => (
+                <TouchableOpacity
+                  key={subcat.id}
+                  style={[
+                    styles.subcategoryItem,
+                    index === (selectedCategoryForSubcats?.subcategories.length || 0) - 1 && styles.subcategoryItemLast
+                  ]}
+                  onPress={() => handleSubcategorySelect(selectedCategoryForSubcats?.id || '', subcat.id)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.subcategoryItemText}>{subcat.name}</Text>
+                  <View style={styles.subcategoryItemRight}>
+                    {loadingCounts ? (
+                      <View style={styles.countPlaceholder} />
+                    ) : subcategoryCounts[subcat.id] !== undefined && subcategoryCounts[subcat.id] > 0 ? (
+                      <View style={styles.countBadge}>
+                        <Text style={styles.countBadgeText}>{subcategoryCounts[subcat.id]}</Text>
+                      </View>
+                    ) : null}
+                    <Ionicons name="chevron-forward" size={18} color="#999" />
+                  </View>
+                </TouchableOpacity>
+              ))}
             </ScrollView>
           </View>
         </View>
