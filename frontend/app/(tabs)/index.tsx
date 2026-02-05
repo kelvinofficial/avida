@@ -1070,8 +1070,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '80%',
-    paddingBottom: 30,
+    maxHeight: '92%',
+    paddingBottom: 40,
   },
   subcategoryModalHeader: {
     flexDirection: 'row',
