@@ -3903,33 +3903,52 @@ async def seed_sample_notifications(request: Request):
     
     return {"message": f"Created {len(created)} sample notifications", "count": len(created)}
 
-# Internal function to create notifications
+# Internal function to create notifications (merged version)
 async def create_notification(
     user_id: str,
     notification_type: str,
     title: str,
     body: str,
-    data_payload: Dict[str, Any] = {}
+    cta_label: str = None,
+    cta_route: str = None,
+    actor_id: str = None,
+    actor_name: str = None,
+    actor_picture: str = None,
+    listing_id: str = None,
+    listing_title: str = None,
+    image_url: str = None,
+    meta: dict = None,
+    data_payload: Dict[str, Any] = None
 ):
-    """Create a notification and optionally send push/email"""
-    notification = Notification(
-        user_id=user_id,
-        type=notification_type,
-        title=title,
-        body=body,
-        data_payload=data_payload
-    )
+    """Create a notification for a user and optionally send push/email"""
+    notification_id = str(uuid.uuid4())
+    notification = {
+        "id": notification_id,
+        "user_id": user_id,
+        "type": notification_type,
+        "title": title,
+        "body": body,
+        "cta_label": cta_label,
+        "cta_route": cta_route,
+        "read": False,
+        "created_at": datetime.utcnow().isoformat(),
+        "actor_id": actor_id,
+        "actor_name": actor_name,
+        "actor_picture": actor_picture,
+        "listing_id": listing_id,
+        "listing_title": listing_title,
+        "image_url": image_url,
+        "meta": meta or {},
+        "data_payload": data_payload or {}
+    }
     
-    notification_dict = notification.model_dump()
-    notification_dict["created_at"] = datetime.now(timezone.utc)
+    await db.notifications.insert_one(notification)
     
-    await db.notifications.insert_one(notification_dict)
-    
-    # Get user settings to check notification preferences
+    # Get user settings to check notification preferences and send push if enabled
     settings = await db.user_settings.find_one({"user_id": user_id})
     user_data = await db.users.find_one({"user_id": user_id})
     
-    if settings:
+    if settings and user_data:
         notifications_prefs = settings.get("notifications", {})
         quiet_hours = settings.get("quiet_hours", {})
         
@@ -3938,55 +3957,22 @@ async def create_notification(
         if quiet_hours.get("enabled"):
             now = datetime.now(timezone.utc)
             start = quiet_hours.get("start_time", "22:00")
-            end = quiet_hours.get("end_time", "08:00")
+            end = quiet_hours.get("end_time", "07:00")
             current_time = now.strftime("%H:%M")
-            
-            if start > end:  # Crosses midnight
+            if start > end:
                 in_quiet_hours = current_time >= start or current_time < end
             else:
                 in_quiet_hours = start <= current_time < end
         
         # Send push notification if enabled and not in quiet hours
         if not in_quiet_hours and notifications_prefs.get("push", True):
-            push_token = settings.get("push_token")
+            push_token = user_data.get("push_token")
             if push_token:
-                push_sent = await send_push_notification(
-                    push_token, title, body, data_payload, notification_type
+                await send_push_notification(
+                    push_token, title, body, 
+                    data_payload or {"notification_id": notification_id, "type": notification_type},
+                    notification_type
                 )
-                if push_sent:
-                    await db.notifications.update_one(
-                        {"id": notification.id},
-                        {"$set": {"pushed": True}}
-                    )
-        
-        # Send email notification if enabled
-        if notifications_prefs.get("email", True) and user_data and user_data.get("email"):
-            # Check if this notification type should be emailed
-            should_email = False
-            if notification_type in ["offer_received", "offer_accepted", "offer_rejected"]:
-                should_email = notifications_prefs.get("offers", True)
-            elif notification_type == "chat_message":
-                should_email = notifications_prefs.get("messages", True)
-            elif notification_type in ["price_drop", "better_deal"]:
-                should_email = notifications_prefs.get("price_drops", True)
-            elif notification_type == "saved_search_match":
-                should_email = notifications_prefs.get("saved_searches", True)
-            elif notification_type in ["security_alert", "system_announcement"]:
-                should_email = True  # Always email security alerts
-            
-            if should_email:
-                email_sent = await send_notification_email(
-                    user_data["email"], 
-                    f"[avida] {title}", 
-                    body,
-                    notification_type,
-                    data_payload
-                )
-                if email_sent:
-                    await db.notifications.update_one(
-                        {"id": notification.id},
-                        {"$set": {"emailed": True}}
-                    )
     
     return notification
 
