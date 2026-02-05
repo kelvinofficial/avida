@@ -639,21 +639,61 @@ export default function HomeScreen() {
   // Desktop header with different layout
   const renderDesktopHeader = () => (
     <View style={desktopStyles.headerWrapper}>
-      <View style={desktopStyles.headerTop}>
-        <View style={desktopStyles.searchContainer}>
-          <TouchableOpacity style={desktopStyles.searchField} onPress={() => router.push('/search')} activeOpacity={0.8}>
-            <Ionicons name="search" size={20} color="#666" />
-            <Text style={desktopStyles.searchPlaceholder}>Search in {currentCity === 'All Locations' ? 'all areas' : currentCity}...</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={desktopStyles.locationChip} activeOpacity={0.7} onPress={() => setShowLocationModal(true)}>
-            <Ionicons name="location" size={16} color="#2E7D32" />
-            <Text style={desktopStyles.locationText} numberOfLines={1}>{currentCity}</Text>
-            <Ionicons name="chevron-down" size={14} color="#666" />
+      {/* Row 1: Logo + Auth + Post Listing */}
+      <View style={desktopStyles.headerRow1}>
+        <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+          <View style={desktopStyles.logoIcon}>
+            <Ionicons name="storefront" size={22} color="#fff" />
+          </View>
+          <Text style={desktopStyles.logoText}>avida</Text>
+        </TouchableOpacity>
+        
+        <View style={desktopStyles.headerActions}>
+          {isAuthenticated ? (
+            <>
+              <TouchableOpacity style={desktopStyles.notifBtn} onPress={() => router.push('/notifications')}>
+                <Ionicons name="notifications-outline" size={22} color="#333" />
+                {notificationCount > 0 && (
+                  <View style={desktopStyles.notifBadge}>
+                    <Text style={desktopStyles.notifBadgeText}>{notificationCount > 99 ? '99+' : notificationCount}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.profileBtn} onPress={() => router.push('/profile')}>
+                <Ionicons name="person-circle-outline" size={28} color="#333" />
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity style={desktopStyles.signInBtn} onPress={() => router.push('/login')}>
+                <Text style={desktopStyles.signInBtnText}>Sign In</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.signUpBtn} onPress={() => router.push('/login')}>
+                <Text style={desktopStyles.signUpBtnText}>Sign Up</Text>
+              </TouchableOpacity>
+            </>
+          )}
+          <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => router.push('/create-listing')}>
+            <Ionicons name="add" size={18} color="#fff" />
+            <Text style={desktopStyles.postListingBtnText}>Post Listing</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Category Pills Row */}
+      {/* Row 2: Search + Location */}
+      <View style={desktopStyles.headerRow2}>
+        <TouchableOpacity style={desktopStyles.searchField} onPress={() => router.push('/search')} activeOpacity={0.8}>
+          <Ionicons name="search" size={20} color="#666" />
+          <Text style={desktopStyles.searchPlaceholder}>Search for anything...</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={desktopStyles.locationChip} activeOpacity={0.7} onPress={() => setShowLocationModal(true)}>
+          <Ionicons name="location" size={18} color="#2E7D32" />
+          <Text style={desktopStyles.locationText} numberOfLines={1}>{currentCity}</Text>
+          <Ionicons name="chevron-down" size={16} color="#666" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Row 3: Category Icons */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -664,8 +704,9 @@ export default function HomeScreen() {
           style={[desktopStyles.categoryPill, !selectedCategory && desktopStyles.categoryPillActive]}
           onPress={() => setSelectedCategory(null)}
         >
+          <Ionicons name="apps" size={16} color={!selectedCategory ? '#fff' : '#666'} />
           <Text style={[desktopStyles.categoryPillText, !selectedCategory && desktopStyles.categoryPillTextActive]}>
-            All Categories
+            All
           </Text>
         </TouchableOpacity>
         {FULL_CATEGORIES.map((cat) => (
