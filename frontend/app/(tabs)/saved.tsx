@@ -247,11 +247,13 @@ export default function SavedScreen() {
             <SkeletonCard />
           </View>
         </View>
-      ) : items.length === 0 ? (
-        <EmptyState 
-          isAuthenticated={isAuthenticated} 
+      ) : !isAuthenticated ? (
+        <UnauthenticatedState 
           onSignIn={() => router.push('/login')} 
+          onSignUp={() => router.push('/register')}
         />
+      ) : items.length === 0 ? (
+        <EmptyState />
       ) : (
         <FlatList
           data={items}
