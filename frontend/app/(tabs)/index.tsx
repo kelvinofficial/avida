@@ -347,23 +347,8 @@ export default function HomeScreen() {
   };
 
   const handleCategoryPress = (categoryId: string) => {
-    // Navigate to dedicated category pages
-    if (categoryId === 'vehicles') { 
-      router.push('/auto'); 
-    } else if (categoryId === 'property') { 
-      router.push('/property'); 
-    } else if (categoryId === 'electronics') {
-      router.push('/electronics');
-    } else if (categoryId === 'mobile') {
-      router.push('/mobile');
-    } else if (categoryId === 'fashion') {
-      router.push('/fashion');
-    } else if (categoryId === 'jobs') {
-      router.push('/jobs');
-    } else { 
-      // For categories without dedicated pages, filter listings
-      setSelectedCategory(categoryId === selectedCategory ? null : categoryId); 
-    }
+    // Navigate to category page with filter
+    router.push(`/category/${categoryId}`);
   };
 
   // ============ HEADER COMPONENT ============
