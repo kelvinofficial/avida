@@ -874,28 +874,33 @@ export default function ListingDetailScreen() {
       {/* Bottom Actions - Dynamic based on seller preferences */}
       {listing.user_id !== user?.user_id && (
         <View style={styles.bottomActions}>
-          {/* Chat button - Always shown */}
-          <TouchableOpacity style={styles.actionBtn} onPress={handleChat}>
-            <Ionicons name="chatbubble-outline" size={20} color={COLORS.primary} />
-            <Text style={styles.actionText}>Chat</Text>
-          </TouchableOpacity>
+          {/* Chat button - Always shown if seller allows chat */}
+          {((listing as any).contact_methods || ['chat']).includes('chat') && (
+            <TouchableOpacity style={styles.actionBtn} onPress={handleChat}>
+              <Ionicons name="chatbubble-outline" size={20} color={COLORS.primary} />
+              <Text style={styles.actionText}>Chat</Text>
+            </TouchableOpacity>
+          )}
           
           {/* Make Offer button - Only if seller allows offers */}
-          {listing.seller?.allowsOffers && (
+          {(listing as any).accepts_offers !== false && (
             <TouchableOpacity style={[styles.actionBtn, styles.primaryBtn]} onPress={() => setShowOfferModal(true)}>
               <Ionicons name="pricetag" size={20} color="#fff" />
               <Text style={[styles.actionText, { color: '#fff' }]}>Make Offer</Text>
             </TouchableOpacity>
           )}
           
-          {/* Contact button - WhatsApp OR Call based on preference */}
-          {listing.seller?.preferredContact === 'call' ? (
-            <TouchableOpacity style={styles.iconOnlyBtn} onPress={handleCall}>
-              <Ionicons name="call" size={22} color={COLORS.primary} />
-            </TouchableOpacity>
-          ) : (
+          {/* WhatsApp button - if seller allows WhatsApp */}
+          {((listing as any).contact_methods || []).includes('whatsapp') && (
             <TouchableOpacity style={[styles.iconOnlyBtn, { backgroundColor: '#25D366', borderColor: '#25D366' }]} onPress={handleWhatsApp}>
               <Ionicons name="logo-whatsapp" size={22} color="#fff" />
+            </TouchableOpacity>
+          )}
+          
+          {/* Call button - if seller allows calls */}
+          {((listing as any).contact_methods || []).includes('call') && (
+            <TouchableOpacity style={styles.iconOnlyBtn} onPress={handleCall}>
+              <Ionicons name="call" size={22} color={COLORS.primary} />
             </TouchableOpacity>
           )}
         </View>
