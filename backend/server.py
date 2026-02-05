@@ -156,6 +156,12 @@ class ListingCreate(BaseModel):
     images: List[str] = []
     location: str
     attributes: Dict[str, Any] = {}
+    # Seller preferences
+    accepts_offers: bool = True
+    accepts_exchanges: bool = False
+    contact_methods: List[str] = ["chat"]  # chat, whatsapp, call
+    whatsapp_number: Optional[str] = None
+    phone_number: Optional[str] = None
 
 class ListingUpdate(BaseModel):
     title: Optional[str] = None
@@ -167,6 +173,12 @@ class ListingUpdate(BaseModel):
     location: Optional[str] = None
     attributes: Optional[Dict[str, Any]] = None
     status: Optional[str] = None
+    # Seller preferences
+    accepts_offers: Optional[bool] = None
+    accepts_exchanges: Optional[bool] = None
+    contact_methods: Optional[List[str]] = None
+    whatsapp_number: Optional[str] = None
+    phone_number: Optional[str] = None
 
 # Conversation and Message Models
 class Message(BaseModel):
