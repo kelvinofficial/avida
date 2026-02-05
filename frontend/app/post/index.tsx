@@ -317,6 +317,9 @@ export default function PostListingScreen() {
   const [sellerType, setSellerType] = useState('Individual');
   const [contactMethod, setContactMethod] = useState('Chat');
 
+  // Success Modal
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
   // Form Validation Errors
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
