@@ -1271,6 +1271,53 @@ export default function ChatScreen() {
     }).format(price);
   };
 
+  // Check if current user is the seller (owns the listing)
+  const isSeller = conversation?.listing?.user_id === user?.user_id;
+
+  // Handle offer accept
+  const handleAcceptOffer = async (messageId: string, amount: string) => {
+    try {
+      // Update message status locally
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, offer_status: 'accepted' } as any
+          : msg
+      ));
+      
+      // Send acceptance message
+      await conversationsApi.sendMessage(
+        id!, 
+        `✅ OFFER ACCEPTED!\n\nI've accepted your offer of ${amount}. Let's arrange the details!`
+      );
+      
+      Alert.alert('Offer Accepted', `You've accepted the offer of ${amount}`);
+    } catch (error) {
+      console.error('Error accepting offer:', error);
+      Alert.alert('Error', 'Failed to accept offer');
+    }
+  };
+
+  // Handle offer reject
+  const handleRejectOffer = async (messageId: string) => {
+    try {
+      // Update message status locally
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, offer_status: 'rejected' } as any
+          : msg
+      ));
+      
+      // Send rejection message
+      await conversationsApi.sendMessage(
+        id!, 
+        `❌ OFFER DECLINED\n\nThank you for your interest, but I cannot accept this offer. Feel free to make a higher offer!`
+      );
+    } catch (error) {
+      console.error('Error rejecting offer:', error);
+      Alert.alert('Error', 'Failed to reject offer');
+    }
+  };
+
   // Add date separators between messages
   const getMessagesWithSeparators = useCallback(() => {
     const result: Array<Message | { type: 'date'; date: string }> = [];
@@ -1309,10 +1356,13 @@ export default function ChatScreen() {
           isMine={isMine}
           showAvatar={showAvatar}
           otherUser={conversation?.other_user}
+          isSeller={isSeller}
+          onAcceptOffer={handleAcceptOffer}
+          onRejectOffer={handleRejectOffer}
         />
       );
     },
-    [user, conversation, getMessagesWithSeparators]
+    [user, conversation, getMessagesWithSeparators, isSeller]
   );
 
   if (loading) {
