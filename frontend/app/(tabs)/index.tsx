@@ -448,7 +448,7 @@ export default function HomeScreen() {
     } catch (error) { console.error('Error toggling favorite:', error); }
   };
 
-  const handleCategoryPress = (categoryId: string) => {
+  const handleCategoryPress = async (categoryId: string) => {
     // Get subcategories for this category
     const category = FULL_CATEGORIES.find(c => c.id === categoryId);
     if (!category) return;
@@ -462,11 +462,39 @@ export default function HomeScreen() {
       icon: category.icon,
       subcategories: subcategories,
     });
+    setSubcategorySearch('');
     setShowSubcategoryModal(true);
+    
+    // Fetch subcategory counts in background
+    setLoadingCounts(true);
+    try {
+      const counts = await categoriesApi.getSubcategoryCounts(categoryId);
+      setSubcategoryCounts(counts);
+    } catch (error) {
+      console.log('Error fetching subcategory counts:', error);
+      setSubcategoryCounts({});
+    } finally {
+      setLoadingCounts(false);
+    }
   };
 
-  const handleSubcategorySelect = (categoryId: string, subcategoryId?: string) => {
+  const handleSubcategorySelect = async (categoryId: string, subcategoryId?: string) => {
     setShowSubcategoryModal(false);
+    
+    // Save to recent if a specific subcategory is selected
+    if (subcategoryId && selectedCategoryForSubcats) {
+      const subcategory = selectedCategoryForSubcats.subcategories.find(s => s.id === subcategoryId);
+      if (subcategory) {
+        await saveRecentSubcategory(
+          categoryId,
+          selectedCategoryForSubcats.name,
+          selectedCategoryForSubcats.icon,
+          subcategoryId,
+          subcategory.name
+        );
+      }
+    }
+    
     if (subcategoryId) {
       // Navigate to category page with subcategory pre-selected
       router.push(`/category/${categoryId}?subcategory=${subcategoryId}`);
@@ -474,6 +502,11 @@ export default function HomeScreen() {
       // View all in category
       router.push(`/category/${categoryId}`);
     }
+  };
+
+  const handleRecentSubcategoryPress = (item: typeof recentSubcategories[0]) => {
+    setShowSubcategoryModal(false);
+    router.push(`/category/${item.categoryId}?subcategory=${item.subcategoryId}`);
   };
 
   const handleCategoryLongPress = (categoryId: string) => {
