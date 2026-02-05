@@ -49,9 +49,11 @@ const COLORS = {
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { signedOut } = useLocalSearchParams<{ signedOut?: string }>();
   const { setUser, setToken } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showWelcomeBack, setShowWelcomeBack] = useState(signedOut === 'true');
   
   // Email/Password state
   const [email, setEmail] = useState('');
