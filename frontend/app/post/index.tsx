@@ -105,25 +105,47 @@ interface DynamicFieldProps {
   onClearError?: () => void;
 }
 
-const DynamicField: React.FC<DynamicFieldProps> = ({ field, value, onChange, parentValues }) => {
+const DynamicField: React.FC<DynamicFieldProps> = ({ field, value, onChange, parentValues, error, onClearError }) => {
   // Get options for dependent dropdowns
   const options = useMemo(() => {
     if (field.dependsOn && field.dependentOptions && parentValues) {
       const parentValue = parentValues[field.dependsOn];
-      return field.dependentOptions[parentValue] || field.dependentOptions['Other'] || [];
+      if (parentValue) {
+        return field.dependentOptions[parentValue] || field.dependentOptions['Other'] || [];
+      }
+      return [];
     }
     return field.options || [];
   }, [field, parentValues]);
 
   // Disable if dependent on a field that isn't set
   const isDisabled = field.dependsOn && parentValues && !parentValues[field.dependsOn];
+  
+  // Reset dependent field value when parent changes
+  useEffect(() => {
+    if (field.dependsOn && parentValues) {
+      const parentValue = parentValues[field.dependsOn];
+      // If parent changed and current value is not in new options, reset
+      if (value && options.length > 0 && !options.includes(value)) {
+        onChange('');
+      }
+    }
+  }, [parentValues, field.dependsOn]);
+
+  // Clear error when value changes
+  const handleChange = (newValue: any) => {
+    if (onClearError) onClearError();
+    onChange(newValue);
+  };
 
   // Common icon component
   const FieldIcon = field.icon ? (
     <View style={styles.fieldIconWrapper}>
-      <Ionicons name={field.icon as any} size={18} color={COLORS.primary} />
+      <Ionicons name={field.icon as any} size={18} color={error ? COLORS.error : COLORS.primary} />
     </View>
   ) : null;
+
+  const hasError = !!error;
 
   switch (field.type) {
     case 'text':
@@ -135,17 +157,18 @@ const DynamicField: React.FC<DynamicFieldProps> = ({ field, value, onChange, par
               {field.label} {field.required && <Text style={styles.required}>*</Text>}
             </Text>
           </View>
-          <View style={styles.inputWrapper}>
+          <View style={[styles.inputWrapper, hasError && styles.inputWrapperError]}>
             <TextInput
               style={[styles.input, isDisabled && styles.inputDisabled]}
               placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
               placeholderTextColor={COLORS.textSecondary}
               value={value || ''}
-              onChangeText={onChange}
+              onChangeText={handleChange}
               editable={!isDisabled}
             />
             {field.suffix && <Text style={styles.inputSuffix}>{field.suffix}</Text>}
           </View>
+          <ValidationError message={error || ''} visible={hasError} />
         </View>
       );
 
@@ -158,18 +181,22 @@ const DynamicField: React.FC<DynamicFieldProps> = ({ field, value, onChange, par
               {field.label} {field.required && <Text style={styles.required}>*</Text>}
             </Text>
           </View>
-          <View style={styles.inputWrapper}>
+          <View style={[styles.inputWrapper, hasError && styles.inputWrapperError]}>
             <TextInput
               style={[styles.input, isDisabled && styles.inputDisabled]}
               placeholder={field.placeholder || '0'}
               placeholderTextColor={COLORS.textSecondary}
               value={value?.toString() || ''}
-              onChangeText={(text) => onChange(text ? parseInt(text.replace(/\D/g, '')) : '')}
+              onChangeText={(text) => handleChange(text ? parseInt(text.replace(/\D/g, '')) : '')}
               keyboardType="numeric"
               editable={!isDisabled}
             />
             {field.suffix && <Text style={styles.inputSuffix}>{field.suffix}</Text>}
           </View>
+          {field.min !== undefined && field.max !== undefined && (
+            <Text style={styles.fieldHint}>Range: {field.min} - {field.max}</Text>
+          )}
+          <ValidationError message={error || ''} visible={hasError} />
         </View>
       );
 
@@ -181,10 +208,25 @@ const DynamicField: React.FC<DynamicFieldProps> = ({ field, value, onChange, par
             <Text style={styles.fieldLabel}>
               {field.label} {field.required && <Text style={styles.required}>*</Text>}
             </Text>
+            {field.dependsOn && parentValues?.[field.dependsOn] && (
+              <View style={styles.dependentBadge}>
+                <Text style={styles.dependentBadgeText}>
+                  for {parentValues[field.dependsOn]}
+                </Text>
+              </View>
+            )}
           </View>
           {isDisabled ? (
-            <View style={[styles.input, styles.inputDisabled]}>
-              <Text style={styles.disabledText}>Select {field.dependsOn} first</Text>
+            <View style={styles.disabledSelectContainer}>
+              <Ionicons name="lock-closed-outline" size={16} color={COLORS.textSecondary} />
+              <Text style={styles.disabledText}>
+                Select {field.dependsOn?.replace(/_/g, ' ')} first
+              </Text>
+            </View>
+          ) : options.length === 0 ? (
+            <View style={styles.disabledSelectContainer}>
+              <Ionicons name="information-circle-outline" size={16} color={COLORS.warning} />
+              <Text style={styles.disabledText}>No options available</Text>
             </View>
           ) : (
             <ScrollView 
@@ -195,16 +237,24 @@ const DynamicField: React.FC<DynamicFieldProps> = ({ field, value, onChange, par
               {options.map((option) => (
                 <TouchableOpacity
                   key={option}
-                  style={[styles.chip, value === option && styles.chipSelected]}
-                  onPress={() => onChange(value === option ? '' : option)}
+                  style={[
+                    styles.chip, 
+                    value === option && styles.chipSelected,
+                    hasError && !value && styles.chipError,
+                  ]}
+                  onPress={() => handleChange(value === option ? '' : option)}
                 >
                   <Text style={[styles.chipText, value === option && styles.chipTextSelected]}>
                     {option}
                   </Text>
+                  {value === option && (
+                    <Ionicons name="checkmark-circle" size={14} color="#fff" style={{ marginLeft: 4 }} />
+                  )}
                 </TouchableOpacity>
               ))}
             </ScrollView>
           )}
+          <ValidationError message={error || ''} visible={hasError} />
         </View>
       );
 
@@ -218,7 +268,7 @@ const DynamicField: React.FC<DynamicFieldProps> = ({ field, value, onChange, par
             </View>
             <Switch
               value={!!value}
-              onValueChange={onChange}
+              onValueChange={handleChange}
               trackColor={{ false: COLORS.border, true: COLORS.primaryLight }}
               thumbColor={value ? COLORS.primary : '#f4f4f4'}
             />
