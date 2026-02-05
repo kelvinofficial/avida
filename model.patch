@@ -135,7 +135,7 @@ index 6e3c511..e69de29 100644
 ------+import json
 ------+
 ------+# Get backend URL
-------+BASE_URL = "https://listingbazaar.preview.emergentagent.com"
+------+BASE_URL = "https://classypro.preview.emergentagent.com"
 ------+API_URL = f"{BASE_URL}/api"
 ------+TEST_SESSION_TOKEN = "test_session_123"
 ------+
