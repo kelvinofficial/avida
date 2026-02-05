@@ -770,16 +770,56 @@ LEGACY_CATEGORY_MAP = {
 
 @api_router.get("/categories", response_model=List[dict])
 async def get_categories():
-    """Get all categories"""
+    """Get all categories with their subcategories"""
     return DEFAULT_CATEGORIES
 
 @api_router.get("/categories/{category_id}")
 async def get_category(category_id: str):
-    """Get single category"""
+    """Get single category with its subcategories"""
+    # Check legacy mapping first
+    mapped_id = LEGACY_CATEGORY_MAP.get(category_id, category_id)
+    
     for cat in DEFAULT_CATEGORIES:
-        if cat["id"] == category_id:
+        if cat["id"] == mapped_id:
             return cat
     raise HTTPException(status_code=404, detail="Category not found")
+
+@api_router.get("/categories/{category_id}/subcategories")
+async def get_subcategories(category_id: str):
+    """Get subcategories for a specific category"""
+    # Check legacy mapping first
+    mapped_id = LEGACY_CATEGORY_MAP.get(category_id, category_id)
+    
+    for cat in DEFAULT_CATEGORIES:
+        if cat["id"] == mapped_id:
+            return cat.get("subcategories", [])
+    raise HTTPException(status_code=404, detail="Category not found")
+
+def validate_category_and_subcategory(category_id: str, subcategory_id: Optional[str]) -> tuple[bool, str]:
+    """Validate category and subcategory. Returns (is_valid, error_message)"""
+    # Map legacy category IDs
+    mapped_category_id = LEGACY_CATEGORY_MAP.get(category_id, category_id)
+    
+    # Find the category
+    category = None
+    for cat in DEFAULT_CATEGORIES:
+        if cat["id"] == mapped_category_id:
+            category = cat
+            break
+    
+    if not category:
+        return False, "Invalid category"
+    
+    # Check if subcategory is required (it is now mandatory)
+    if not subcategory_id:
+        return False, "Subcategory is required"
+    
+    # Validate subcategory exists in the category
+    subcategory_ids = [sub["id"] for sub in category.get("subcategories", [])]
+    if subcategory_id not in subcategory_ids:
+        return False, f"Invalid subcategory '{subcategory_id}' for category '{category['name']}'"
+    
+    return True, ""
 
 # ==================== LISTING ENDPOINTS ====================
 
@@ -792,15 +832,13 @@ async def create_listing(listing: ListingCreate, request: Request):
     if not check_rate_limit(user.user_id, "post_listing"):
         raise HTTPException(status_code=429, detail="Too many listings. Please wait.")
     
-    # Validate category
-    valid_category = False
-    for cat in DEFAULT_CATEGORIES:
-        if cat["id"] == listing.category_id:
-            valid_category = True
-            break
+    # Map legacy category ID if needed
+    category_id = LEGACY_CATEGORY_MAP.get(listing.category_id, listing.category_id)
     
-    if not valid_category:
-        raise HTTPException(status_code=400, detail="Invalid category")
+    # Validate category and subcategory
+    is_valid, error_message = validate_category_and_subcategory(category_id, listing.subcategory)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_message)
     
     # Create listing
     listing_id = str(uuid.uuid4())
