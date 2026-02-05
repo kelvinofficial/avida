@@ -38,6 +38,16 @@ export const authApi = {
     const response = await api.post('/auth/session', { session_id: sessionId });
     return response.data;
   },
+  // Email/Password login
+  login: async (email: string, password: string) => {
+    const response = await api.post('/auth/login', { email, password });
+    return response.data;
+  },
+  // Email/Password registration
+  register: async (email: string, password: string, name: string) => {
+    const response = await api.post('/auth/register', { email, password, name });
+    return response.data;
+  },
   getMe: async () => {
     const response = await api.get('/auth/me');
     return response.data;
