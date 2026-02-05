@@ -124,21 +124,4 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     ...theme.elevation.level3,
   },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -8,
-    backgroundColor: theme.colors.error,
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-  badgeText: {
-    color: theme.colors.onError,
-    fontSize: 10,
-    fontWeight: '700',
-  },
 });
