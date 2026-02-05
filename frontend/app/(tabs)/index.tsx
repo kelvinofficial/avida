@@ -422,6 +422,9 @@ export default function HomeScreen() {
     </View>
   );
 
+  // Calculate card width dynamically
+  const dynamicCardWidth = (windowWidth - HORIZONTAL_PADDING * 2 - COLUMN_GAP) / 2;
+
   // Render listings as grid manually
   const renderGrid = () => {
     if (listings.length === 0) {
@@ -431,7 +434,7 @@ export default function HomeScreen() {
     return (
       <View style={styles.gridContainer}>
         {listings.map((item) => (
-          <View key={item.id} style={styles.cardWrapper}>
+          <View key={item.id} style={[styles.cardWrapper, { width: dynamicCardWidth }]}>
             <ListingCard
               listing={item}
               onPress={() => router.push(`/listing/${item.id}`)}
