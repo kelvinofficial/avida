@@ -394,10 +394,10 @@ const descStyles = StyleSheet.create({
 });
 
 // ============ SELLER SECTION ============
-const SellerSection = memo<{ property: Property }>(({ property }) => (
+const SellerSection = memo<{ property: Property; onPress: () => void }>(({ property, onPress }) => (
   <View style={sellerStyles.container}>
     <Text style={sellerStyles.title}>Listed by</Text>
-    <View style={sellerStyles.card}>
+    <TouchableOpacity style={sellerStyles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={sellerStyles.avatar}>
         <Ionicons name={property.seller.type === 'agent' ? 'business' : 'person'} size={24} color={COLORS.primary} />
       </View>
@@ -419,7 +419,8 @@ const SellerSection = memo<{ property: Property }>(({ property }) => (
           </View>
         )}
       </View>
-    </View>
+      <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+    </TouchableOpacity>
   </View>
 ));
 
