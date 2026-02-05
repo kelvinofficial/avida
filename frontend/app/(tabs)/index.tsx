@@ -153,10 +153,12 @@ const categoryStyles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   label: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#666',
     textAlign: 'center',
     fontWeight: '500',
+    lineHeight: 12,
+    height: 24,
   },
   labelSelected: {
     color: '#2E7D32',
