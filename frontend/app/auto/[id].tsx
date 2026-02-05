@@ -270,10 +270,10 @@ const descStyles = StyleSheet.create({
 });
 
 // ============ SELLER SECTION ============
-const SellerSection = memo(({ listing }: { listing: AutoListing }) => (
+const SellerSection = memo(({ listing, onPress }: { listing: AutoListing; onPress: () => void }) => (
   <View style={sellerStyles.container}>
     <Text style={sellerStyles.title}>Listed by</Text>
-    <View style={sellerStyles.card}>
+    <TouchableOpacity style={sellerStyles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={sellerStyles.avatar}>
         <Ionicons name="person" size={28} color={COLORS.primary} />
       </View>
@@ -311,7 +311,8 @@ const SellerSection = memo(({ listing }: { listing: AutoListing }) => (
           Member since {listing.seller?.memberSince?.split('-')[0] || '2023'}
         </Text>
       </View>
-    </View>
+      <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+    </TouchableOpacity>
   </View>
 ));
 
