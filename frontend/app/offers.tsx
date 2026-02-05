@@ -598,6 +598,7 @@ const styles = StyleSheet.create({
   buyerInfo: { flex: 1 },
   buyerName: { fontSize: 14, fontWeight: '600', color: COLORS.text },
   offerTime: { fontSize: 12, color: COLORS.textLight },
+  buyerLabel: { fontSize: 10, color: COLORS.textSecondary, marginBottom: 2 },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
