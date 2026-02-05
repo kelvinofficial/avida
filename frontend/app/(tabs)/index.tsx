@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, memo } from 'react';
+import React, { useEffect, useState, useCallback, memo, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,15 +17,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { theme } from '../../src/utils/theme';
 import { listingsApi, categoriesApi, favoritesApi, notificationsApi } from '../../src/utils/api';
 import { Listing, Category } from '../../src/types';
 import { EmptyState } from '../../src/components/EmptyState';
 import { useAuthStore } from '../../src/store/authStore';
 import { formatDistanceToNow } from 'date-fns';
-import { getSubcategories, SubcategoryConfig } from '../../src/config/subcategories';
+import { getSubcategories, SubcategoryConfig, getMainCategory } from '../../src/config/subcategories';
 
 const { width } = Dimensions.get('window');
+
+// Storage key for recently viewed subcategories
+const RECENT_SUBCATEGORIES_KEY = '@avida_recent_subcategories';
 
 // ============ LAYOUT CONSTANTS - Material 3 ============
 const HORIZONTAL_PADDING = 16;
