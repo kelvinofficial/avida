@@ -365,12 +365,11 @@ export default function HomeScreen() {
   };
 
   const handleCategoryPress = (categoryId: string) => {
-    if (categoryId === 'all') {
-      // Show all listings - clear category filter
+    // Toggle filter - if already selected, deselect to show all
+    if (selectedCategory === categoryId) {
       setSelectedCategory(null);
     } else {
-      // Navigate to category page with filter
-      router.push(`/category/${categoryId}`);
+      setSelectedCategory(categoryId);
     }
   };
 
