@@ -640,27 +640,130 @@ export default function ProfileScreen() {
   if (!isAuthenticated) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.loginPrompt}>
-          <View style={styles.loginIconContainer}>
-            <Ionicons name="person-outline" size={48} color={COLORS.primary} />
+        <ScrollView 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.unauthContent}
+        >
+          {/* Header */}
+          <View style={styles.unauthHeader}>
+            <View style={styles.unauthLogoContainer}>
+              <Ionicons name="storefront" size={32} color={COLORS.primary} />
+            </View>
+            <Text style={styles.unauthBrandName}>LocalMarket</Text>
           </View>
-          <Text style={styles.loginTitle}>Welcome to avida</Text>
-          <Text style={styles.loginSubtitle}>
-            Sign in to manage your listings, messages, and more
-          </Text>
+
+          {/* Welcome Card */}
+          <View style={styles.welcomeCard}>
+            <View style={styles.welcomeIconContainer}>
+              <Ionicons name="person-circle-outline" size={64} color={COLORS.primary} />
+            </View>
+            <Text style={styles.welcomeTitle}>Welcome!</Text>
+            <Text style={styles.welcomeSubtitle}>
+              Sign in to unlock all features
+            </Text>
+          </View>
+
+          {/* Feature Cards */}
+          <View style={styles.featureCardsContainer}>
+            <TouchableOpacity 
+              style={styles.featureCard}
+              onPress={() => router.push('/login')}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.featureCardIcon, { backgroundColor: '#FFEBEE' }]}>
+                <Ionicons name="heart" size={24} color="#E53935" />
+              </View>
+              <View style={styles.featureCardContent}>
+                <Text style={styles.featureCardTitle}>Save Favorites</Text>
+                <Text style={styles.featureCardDesc}>Keep track of items you love</Text>
+              </View>
+              <View style={styles.featureCardArrow}>
+                <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.featureCard}
+              onPress={() => router.push('/login')}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.featureCardIcon, { backgroundColor: '#E3F2FD' }]}>
+                <Ionicons name="chatbubbles" size={24} color="#1976D2" />
+              </View>
+              <View style={styles.featureCardContent}>
+                <Text style={styles.featureCardTitle}>View Messages</Text>
+                <Text style={styles.featureCardDesc}>Chat with buyers and sellers</Text>
+              </View>
+              <View style={styles.featureCardArrow}>
+                <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.featureCard}
+              onPress={() => router.push('/login')}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.featureCardIcon, { backgroundColor: '#E8F5E9' }]}>
+                <Ionicons name="pricetags" size={24} color={COLORS.primary} />
+              </View>
+              <View style={styles.featureCardContent}>
+                <Text style={styles.featureCardTitle}>Manage Listings</Text>
+                <Text style={styles.featureCardDesc}>Post and edit your items</Text>
+              </View>
+              <View style={styles.featureCardArrow}>
+                <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.featureCard}
+              onPress={() => router.push('/login')}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.featureCardIcon, { backgroundColor: '#FFF3E0' }]}>
+                <Ionicons name="notifications" size={24} color="#F57C00" />
+              </View>
+              <View style={styles.featureCardContent}>
+                <Text style={styles.featureCardTitle}>Get Notifications</Text>
+                <Text style={styles.featureCardDesc}>Stay updated on your activity</Text>
+              </View>
+              <View style={styles.featureCardArrow}>
+                <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* Action Buttons */}
+          <View style={styles.unauthButtonsContainer}>
+            <TouchableOpacity 
+              style={styles.signInButton}
+              onPress={() => router.push('/login')}
+              activeOpacity={0.9}
+            >
+              <Ionicons name="log-in-outline" size={20} color="#FFFFFF" />
+              <Text style={styles.signInButtonText}>Sign In</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.createAccountButton}
+              onPress={() => router.push('/register')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="person-add-outline" size={20} color={COLORS.primary} />
+              <Text style={styles.createAccountButtonText}>Create Account</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Browse as Guest */}
           <TouchableOpacity 
-            style={styles.loginButton}
-            onPress={() => router.push('/login')}
+            style={styles.browseGuestButton}
+            onPress={() => router.push('/')}
+            activeOpacity={0.7}
           >
-            <Text style={styles.loginButtonText}>Sign In</Text>
+            <Text style={styles.browseGuestText}>Continue browsing as guest</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.registerButton}
-            onPress={() => router.push('/register')}
-          >
-            <Text style={styles.registerButtonText}>Create Account</Text>
-          </TouchableOpacity>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
