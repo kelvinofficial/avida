@@ -1320,10 +1320,15 @@ const styles = StyleSheet.create({
     marginRight: 8,
     borderWidth: 1,
     borderColor: COLORS.border,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   chipSelected: {
     backgroundColor: COLORS.primary,
     borderColor: COLORS.primary,
+  },
+  chipError: {
+    borderColor: COLORS.error,
   },
   chipText: {
     fontSize: 14,
