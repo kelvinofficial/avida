@@ -24,6 +24,7 @@ import { Listing, Category } from '../../src/types';
 import { useAuthStore } from '../../src/store/authStore';
 import { formatDistanceToNow } from 'date-fns';
 import SimilarListings from '../../src/components/property/SimilarListings';
+import { safeGoBack } from '../../src/utils/navigation';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
