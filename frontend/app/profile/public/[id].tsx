@@ -822,6 +822,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 24,
   },
+  messageBtnDisabled: {
+    opacity: 0.7,
+  },
   messageBtnText: { fontSize: 15, fontWeight: '600', color: COLORS.primary },
   tabsContainer: {
     flexDirection: 'row',
@@ -843,6 +846,69 @@ const styles = StyleSheet.create({
   tabText: { fontSize: 14, fontWeight: '500', color: COLORS.textSecondary },
   tabTextActive: { color: COLORS.primary },
   content: { padding: 16 },
+  ratingSummary: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    gap: 16,
+  },
+  ratingOverview: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingRight: 16,
+    borderRightWidth: 1,
+    borderRightColor: COLORS.border,
+  },
+  ratingBig: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  ratingCount: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 4,
+  },
+  ratingBars: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 4,
+  },
+  ratingBarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  ratingBarLabel: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    width: 12,
+    textAlign: 'center',
+  },
+  ratingBarBg: {
+    flex: 1,
+    height: 8,
+    backgroundColor: COLORS.border,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  ratingBarFill: {
+    height: '100%',
+    backgroundColor: COLORS.warning,
+    borderRadius: 4,
+  },
+  ratingBarCount: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    width: 20,
+    textAlign: 'right',
+  },
+  writeReviewBtnDisabled: {
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+  },
   emptyState: {
     alignItems: 'center',
     paddingVertical: 40,
