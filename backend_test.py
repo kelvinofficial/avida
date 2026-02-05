@@ -302,6 +302,36 @@ class APITester:
                 self.log_result("GET /api/listings/my - My listings", False, f"Status: {response.status_code}", response.text)
         except Exception as e:
             self.log_result("GET /api/listings/my - My listings", False, f"Exception: {str(e)}")
+        
+        # Test get single listing with seller preferences
+        if hasattr(self, 'created_listing_id') and self.created_listing_id:
+            try:
+                response = self.session.get(f"{API_URL}/listings/{self.created_listing_id}", timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    if 'id' in data:
+                        # Verify seller preference fields are present in GET response
+                        seller_prefs_present = True
+                        missing_fields = []
+                        
+                        required_fields = ['accepts_offers', 'accepts_exchanges', 'contact_methods', 'whatsapp_number', 'phone_number']
+                        for field in required_fields:
+                            if field not in data:
+                                seller_prefs_present = False
+                                missing_fields.append(field)
+                        
+                        if seller_prefs_present:
+                            self.log_result("GET /api/listings/{id} - Seller preferences fields", True, f"All seller preference fields present in response")
+                        else:
+                            self.log_result("GET /api/listings/{id} - Seller preferences fields", False, f"Missing seller preference fields: {missing_fields}")
+                    else:
+                        self.log_result("GET /api/listings/{id} - Seller preferences fields", False, "Invalid response format", data)
+                else:
+                    self.log_result("GET /api/listings/{id} - Seller preferences fields", False, f"Status: {response.status_code}", response.text)
+            except Exception as e:
+                self.log_result("GET /api/listings/{id} - Seller preferences fields", False, f"Exception: {str(e)}")
+        else:
+            self.log_result("GET /api/listings/{id} - Seller preferences fields", False, "No listing ID available for testing")
     
     def test_auth_api(self):
         """Test authentication API"""
