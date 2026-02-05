@@ -762,12 +762,37 @@ export default function ChatScreen() {
       const uri = recording.getURI();
       const duration = recordingDuration;
 
-      // In a real app, you would upload the audio file and send a message with the audio URL
-      // For now, we'll simulate with a placeholder
-      const voiceContent = `[VOICE:${duration}s]`;
+      if (!uri) {
+        Alert.alert('Error', 'No recording found');
+        return;
+      }
 
       setSending(true);
-      await conversationsApi.sendMessage(id!, voiceContent);
+
+      // Upload the audio file
+      const formData = new FormData();
+      formData.append('file', {
+        uri: uri,
+        type: 'audio/m4a',
+        name: `voice_${Date.now()}.m4a`,
+      } as any);
+
+      try {
+        const uploadResult = await conversationsApi.uploadMedia(formData, 'audio');
+        
+        // Send message with media URL
+        await conversationsApi.sendMessage(
+          id!,
+          'Voice message',
+          'audio',
+          uploadResult.media_url,
+          duration
+        );
+      } catch (uploadError) {
+        console.error('Upload failed, sending placeholder:', uploadError);
+        // Fallback to placeholder if upload fails
+        await conversationsApi.sendMessage(id!, `🎤 Voice message (${duration}s)`, 'text');
+      }
       
       setMessages((prev) => [
         ...prev,
@@ -775,9 +800,13 @@ export default function ChatScreen() {
           id: `temp_${Date.now()}`,
           conversation_id: id!,
           sender_id: user?.user_id || '',
-          content: voiceContent,
+          content: 'Voice message',
+          message_type: 'audio',
+          media_duration: duration,
           read: false,
           created_at: new Date().toISOString(),
+        },
+      ]);
         },
       ]);
 
