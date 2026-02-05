@@ -315,7 +315,17 @@ export default function PostListingScreen() {
   const [currency, setCurrency] = useState('EUR');
   const [location, setLocation] = useState('');
   const [sellerType, setSellerType] = useState('Individual');
-  const [contactMethod, setContactMethod] = useState('Chat');
+  
+  // Seller Preferences
+  const [acceptsOffers, setAcceptsOffers] = useState(true);
+  const [acceptsExchanges, setAcceptsExchanges] = useState(false);
+  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [contactPreferences, setContactPreferences] = useState({
+    inAppChat: true,
+    whatsapp: false,
+    call: false,
+  });
 
   // Success Modal
   const [showSuccessModal, setShowSuccessModal] = useState(false);
