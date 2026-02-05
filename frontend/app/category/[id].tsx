@@ -1561,6 +1561,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  autoCardFeatured: {
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+  },
   autoCardRow: {
     flexDirection: 'row',
     position: 'relative',
