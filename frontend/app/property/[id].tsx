@@ -1030,6 +1030,9 @@ export default function PropertyDetailScreen() {
       setLoading(true);
       const response = await api.get(`/property/listings/${id}`);
       setProperty(response.data);
+      
+      // Track recently viewed (fire and forget)
+      api.post(`/profile/activity/recently-viewed/${id}`).catch(() => {});
     } catch (error) {
       console.error('Error fetching property:', error);
       Alert.alert('Error', 'Failed to load property details');
