@@ -344,6 +344,12 @@ export default function PostAutoScreen() {
     try {
       const brandName = CAR_BRANDS.find(b => b.id === formData.brand)?.name || formData.brand;
       
+      // Get contact methods
+      const contactMethods: string[] = [];
+      if (contactPreferences.inAppChat) contactMethods.push('chat');
+      if (contactPreferences.whatsapp) contactMethods.push('whatsapp');
+      if (contactPreferences.call) contactMethods.push('call');
+
       const payload = {
         title: formData.title || `${brandName} ${formData.model} - ${formData.year}`,
         description: formData.description || `${brandName} ${formData.model} from ${formData.year}. ${formData.mileage} km, ${formData.fuelType}, ${formData.transmission}. ${formData.condition} condition.`,
@@ -366,6 +372,12 @@ export default function PostAutoScreen() {
           color: formData.color,
           engine_size: formData.engineSize,
         },
+        // Seller preferences
+        accepts_offers: acceptsOffers,
+        accepts_exchanges: acceptsExchanges,
+        contact_methods: contactMethods,
+        whatsapp_number: contactPreferences.whatsapp ? whatsappNumber : undefined,
+        phone_number: contactPreferences.call ? phoneNumber : undefined,
       };
 
       await api.post('/listings', payload);
