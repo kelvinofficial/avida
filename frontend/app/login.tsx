@@ -9,11 +9,13 @@ import {
   Image,
   Dimensions,
   ScrollView,
+  Linking,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
+import * as ExpoLinking from 'expo-linking';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore, saveUserData } from '../src/store/authStore';
 import { authApi } from '../src/utils/api';
@@ -21,6 +23,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+
+// URLs for Terms and Privacy
+const TERMS_URL = 'https://www.emergentagent.com/terms';
+const PRIVACY_URL = 'https://www.emergentagent.com/privacy';
 
 const COLORS = {
   primary: '#2E7D32',
@@ -45,6 +51,36 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const handleClose = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/');
+    }
+  };
+
+  const openLink = async (url: string) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        // Fallback to WebBrowser
+        await WebBrowser.openBrowserAsync(url);
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Could not open link');
+    }
+  };
+
+  const handleTermsPress = () => {
+    openLink(TERMS_URL);
+  };
+
+  const handlePrivacyPress = () => {
+    openLink(PRIVACY_URL);
+  };
+
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError(null);
@@ -52,7 +88,7 @@ export default function LoginScreen() {
     try {
       const redirectUrl = Platform.OS === 'web'
         ? `${BACKEND_URL}/`
-        : Linking.createURL('/');
+        : ExpoLinking.createURL('/');
 
       const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
 
@@ -103,7 +139,7 @@ export default function LoginScreen() {
       >
         {/* Close Button */}
         <SafeAreaView edges={['top']}>
-          <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
             <Ionicons name="close" size={24} color="#FFFFFF" />
           </TouchableOpacity>
         </SafeAreaView>
@@ -240,11 +276,19 @@ export default function LoginScreen() {
             <Text style={styles.guestButtonText}>Browse as Guest</Text>
           </TouchableOpacity>
 
+          {/* Create Account Link */}
+          <View style={styles.signupPrompt}>
+            <Text style={styles.signupPromptText}>Don't have an account?</Text>
+            <TouchableOpacity onPress={() => router.push('/register')}>
+              <Text style={styles.signupLink}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
+
           {/* Terms */}
           <Text style={styles.terms}>
             By continuing, you agree to our{'\n'}
-            <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
-            <Text style={styles.termsLink}>Privacy Policy</Text>
+            <Text style={styles.termsLink} onPress={handleTermsPress}>Terms of Service</Text> and{' '}
+            <Text style={styles.termsLink} onPress={handlePrivacyPress}>Privacy Policy</Text>
           </Text>
         </ScrollView>
       </View>
@@ -527,15 +571,32 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.primary,
   },
+  signupPrompt: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 20,
+  },
+  signupPromptText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  signupLink: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
   terms: {
     fontSize: 12,
     color: COLORS.textLight,
     textAlign: 'center',
-    marginTop: 24,
+    marginTop: 20,
     lineHeight: 18,
   },
   termsLink: {
     color: COLORS.primary,
     fontWeight: '500',
+    textDecorationLine: 'underline',
   },
 });
