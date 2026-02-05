@@ -254,16 +254,18 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
   const attributes = listing.attributes || {};
   const year = attributes.year;
   const mileage = attributes.mileage || attributes.km;
-  const fuel = attributes.fuel_type || attributes.fuel;
   const transmission = attributes.transmission;
-  const make = attributes.make;
-  const model = attributes.model;
-  const vehicleType = listing.subcategory?.replace(/_/g, ' ');
 
   const formatMileage = (km: number) => {
     if (km >= 1000) return `${Math.round(km / 1000)}k km`;
     return `${km} km`;
   };
+
+  // Build highlights array (max 3)
+  const highlights: string[] = [];
+  if (year) highlights.push(String(year));
+  if (mileage) highlights.push(formatMileage(mileage));
+  if (transmission) highlights.push(transmission);
 
   return (
     <TouchableOpacity style={styles.autoCard} onPress={onPress} activeOpacity={0.97}>
@@ -296,42 +298,19 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
           {/* Title */}
           <Text style={styles.autoTitle} numberOfLines={2}>{listing.title}</Text>
 
-          {/* Vehicle Specs Row */}
-          <View style={styles.autoSpecs}>
-            {year && (
-              <View style={styles.autoSpecItem}>
-                <Ionicons name="calendar-outline" size={14} color={COLORS.textSecondary} />
-                <Text style={styles.autoSpecText}>{year}</Text>
-              </View>
-            )}
-            {mileage && (
-              <View style={styles.autoSpecItem}>
-                <Ionicons name="speedometer-outline" size={14} color={COLORS.textSecondary} />
-                <Text style={styles.autoSpecText}>{formatMileage(mileage)}</Text>
-              </View>
-            )}
-            {fuel && (
-              <View style={styles.autoSpecItem}>
-                <Ionicons name="flash-outline" size={14} color={COLORS.textSecondary} />
-                <Text style={styles.autoSpecText}>{fuel}</Text>
-              </View>
-            )}
-            {transmission && (
-              <View style={styles.autoSpecItem}>
-                <Ionicons name="cog-outline" size={14} color={COLORS.textSecondary} />
-                <Text style={styles.autoSpecText}>{transmission}</Text>
-              </View>
-            )}
+          {/* Highlights Row (no icons) */}
+          {highlights.length > 0 && (
+            <Text style={styles.autoHighlights}>{highlights.join(' • ')}</Text>
+          )}
+
+          {/* Location */}
+          <View style={styles.autoLocationRow}>
+            <Ionicons name="location-outline" size={11} color={COLORS.textLight} />
+            <Text style={styles.autoLocation} numberOfLines={1}>{listing.location}</Text>
           </View>
 
-          {/* Bottom: Location & Date */}
-          <View style={styles.autoBottomRow}>
-            <View style={styles.autoLocationRow}>
-              <Ionicons name="location-outline" size={13} color={COLORS.textLight} />
-              <Text style={styles.autoLocation} numberOfLines={1}>{listing.location}</Text>
-            </View>
-            <Text style={styles.autoDate}>{formatDate(listing.created_at)}</Text>
-          </View>
+          {/* Date */}
+          <Text style={styles.autoDate}>{formatDate(listing.created_at)}</Text>
         </View>
 
         {/* Favorite Button */}
