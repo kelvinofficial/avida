@@ -947,83 +947,90 @@ export default function ListingDetailScreen() {
       {/* Offer Modal */}
       <Modal visible={showOfferModal} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setShowOfferModal(false)}>
-              <Ionicons name="close" size={24} color={COLORS.text} />
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>Make an Offer</Text>
-            <View style={{ width: 24 }} />
-          </View>
-
-          <ScrollView style={styles.modalContent}>
-            <Text style={styles.modalLabel}>Your Offer</Text>
-            <View style={[
-              styles.priceInputContainer,
-              offerPrice && parseInt(offerPrice) >= listing.price && styles.priceInputError
-            ]}>
-              <Text style={styles.currencySymbol}>€</Text>
-              <TextInput
-                style={styles.priceInput}
-                placeholder="Enter amount"
-                keyboardType="numeric"
-                value={offerPrice}
-                onChangeText={setOfferPrice}
-              />
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1 }}
+          >
+            <View style={styles.modalHeader}>
+              <TouchableOpacity onPress={() => setShowOfferModal(false)}>
+                <Ionicons name="close" size={24} color={COLORS.text} />
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>Make an Offer</Text>
+              <View style={{ width: 24 }} />
             </View>
-            
-            {/* Price validation messages */}
-            {offerPrice && parseInt(offerPrice) >= listing.price ? (
-              <View style={styles.priceErrorContainer}>
-                <Ionicons name="alert-circle" size={16} color="#DC2626" />
-                <Text style={styles.priceErrorText}>
-                  Offer must be below the listed price of {formatPrice(listing.price)}
-                </Text>
-              </View>
-            ) : offerPrice && parseInt(offerPrice) < listing.price * 0.1 ? (
-              <View style={styles.priceWarningContainer}>
-                <Ionicons name="warning" size={16} color="#F59E0B" />
-                <Text style={styles.priceWarningText}>
-                  Offer seems too low. Minimum: {formatPrice(listing.price * 0.1)}
-                </Text>
-              </View>
-            ) : offerPrice && parseInt(offerPrice) < listing.price ? (
-              <View style={styles.priceValidContainer}>
-                <Ionicons name="checkmark-circle" size={16} color="#16A34A" />
-                <Text style={styles.priceValidText}>
-                  {Math.round((1 - parseInt(offerPrice) / listing.price) * 100)}% off listed price
-                </Text>
-              </View>
-            ) : (
-              <Text style={styles.priceHint}>Listed price: {formatPrice(listing.price)}</Text>
-            )}
 
-            <Text style={[styles.modalLabel, { marginTop: 20 }]}>Message (optional)</Text>
-            <TextInput
-              style={styles.messageInput}
-              placeholder="Add a message to the seller..."
-              multiline
-              numberOfLines={4}
-              value={offerMessage}
-              onChangeText={setOfferMessage}
-            />
-          </ScrollView>
-
-          <View style={styles.modalFooter}>
-            <TouchableOpacity
-              style={[
-                styles.submitBtn, 
-                (!offerPrice || submittingOffer || (offerPrice && parseInt(offerPrice) >= listing.price)) && styles.submitBtnDisabled
-              ]}
-              onPress={handleSubmitOffer}
-              disabled={!offerPrice || submittingOffer || (offerPrice && parseInt(offerPrice) >= listing.price)}
-            >
-              {submittingOffer ? (
-                <ActivityIndicator size="small" color="#fff" />
+            <ScrollView style={styles.modalContent} keyboardShouldPersistTaps="handled">
+              <Text style={styles.modalLabel}>Your Offer</Text>
+              <View style={[
+                styles.priceInputContainer,
+                offerPrice && parseInt(offerPrice) >= listing.price && styles.priceInputError
+              ]}>
+                <Text style={styles.currencySymbol}>€</Text>
+                <TextInput
+                  style={styles.priceInput}
+                  placeholder="Enter amount"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="numeric"
+                  value={offerPrice}
+                  onChangeText={setOfferPrice}
+                />
+              </View>
+              
+              {/* Price validation messages */}
+              {offerPrice && parseInt(offerPrice) >= listing.price ? (
+                <View style={styles.priceErrorContainer}>
+                  <Ionicons name="alert-circle" size={16} color="#DC2626" />
+                  <Text style={styles.priceErrorText}>
+                    Offer must be below the listed price of {formatPrice(listing.price)}
+                  </Text>
+                </View>
+              ) : offerPrice && parseInt(offerPrice) < listing.price * 0.1 ? (
+                <View style={styles.priceWarningContainer}>
+                  <Ionicons name="warning" size={16} color="#F59E0B" />
+                  <Text style={styles.priceWarningText}>
+                    Offer seems too low. Minimum: {formatPrice(listing.price * 0.1)}
+                  </Text>
+                </View>
+              ) : offerPrice && parseInt(offerPrice) < listing.price ? (
+                <View style={styles.priceValidContainer}>
+                  <Ionicons name="checkmark-circle" size={16} color="#16A34A" />
+                  <Text style={styles.priceValidText}>
+                    {Math.round((1 - parseInt(offerPrice) / listing.price) * 100)}% off listed price
+                  </Text>
+                </View>
               ) : (
-                <Text style={styles.submitBtnText}>Submit Offer</Text>
+                <Text style={styles.priceHint}>Listed price: {formatPrice(listing.price)}</Text>
               )}
-            </TouchableOpacity>
-          </View>
+
+              <Text style={[styles.modalLabel, { marginTop: 20 }]}>Message (optional)</Text>
+              <TextInput
+                style={styles.messageInput}
+                placeholder="Add a message to the seller..."
+                placeholderTextColor="#9CA3AF"
+                multiline
+                numberOfLines={4}
+                value={offerMessage}
+                onChangeText={setOfferMessage}
+              />
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={[
+                  styles.submitBtn, 
+                  (!offerPrice || submittingOffer || (offerPrice && parseInt(offerPrice) >= listing.price)) && styles.submitBtnDisabled
+                ]}
+                onPress={handleSubmitOffer}
+                disabled={!offerPrice || submittingOffer || (offerPrice && parseInt(offerPrice) >= listing.price)}
+              >
+                {submittingOffer ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.submitBtnText}>Submit Offer</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
         </SafeAreaView>
       </Modal>
 
