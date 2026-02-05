@@ -523,6 +523,14 @@ export default function PostListingScreen() {
   };
 
   // ============ SUBMIT ============
+  const getContactMethods = () => {
+    const methods: string[] = [];
+    if (contactPreferences.inAppChat) methods.push('chat');
+    if (contactPreferences.whatsapp) methods.push('whatsapp');
+    if (contactPreferences.call) methods.push('call');
+    return methods;
+  };
+
   const handlePublish = async () => {
     if (!validateStep()) return;
 
@@ -542,8 +550,13 @@ export default function PostListingScreen() {
         attributes: {
           ...attributes,
           seller_type: sellerType,
-          contact_method: contactMethod,
         },
+        // Seller preferences
+        accepts_offers: acceptsOffers,
+        accepts_exchanges: acceptsExchanges,
+        contact_methods: getContactMethods(),
+        whatsapp_number: contactPreferences.whatsapp ? whatsappNumber : undefined,
+        phone_number: contactPreferences.call ? phoneNumber : undefined,
       };
 
       await listingsApi.create(listingData);
