@@ -342,6 +342,19 @@ export default function NotificationsScreen() {
       case 'review':
         if (notification.listing_id) router.push(`/listing/${notification.listing_id}`);
         break;
+      case 'offer_received':
+        // Navigate to offers page to see incoming offers
+        router.push('/offers' as any);
+        break;
+      case 'offer_accepted':
+      case 'offer_rejected':
+        // Navigate to the listing or offers page
+        if (notification.listing_id) {
+          router.push(`/listing/${notification.listing_id}`);
+        } else {
+          router.push('/offers' as any);
+        }
+        break;
       case 'system':
         router.push('/settings' as any);
         break;
