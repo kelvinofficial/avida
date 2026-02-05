@@ -395,7 +395,7 @@ async def migrate_autos():
                 print(f"  Updated auto: {auto.get('title', 'Unknown')[:40]} -> {new_subcategory}")
                 updated_count += 1
     
-    print(f"Autos migration complete! Updated: {updated_count}")
+    print(f"Auto_listings migration complete! Updated: {updated_count}")
 
 
 async def main():
