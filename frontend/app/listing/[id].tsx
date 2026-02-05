@@ -754,7 +754,10 @@ export default function ListingDetailScreen() {
         {listing.description && <DescriptionSection description={listing.description} />}
 
         {/* Seller */}
-        <SellerSection listing={listing} />
+        <SellerSection 
+          listing={listing} 
+          onPress={() => router.push(`/profile/public/${listing.user_id}`)}
+        />
 
         {/* Location */}
         <LocationSection listing={listing} />
