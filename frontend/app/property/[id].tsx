@@ -352,6 +352,144 @@ const facilitiesStyles = StyleSheet.create({
   },
 });
 
+// ============ AI SMART SUMMARY SECTION ============
+const SmartSummarySection = memo<{ property: Property }>(({ property }) => {
+  // Generate smart summary points from property data
+  const summaryPoints: string[] = [];
+
+  // Property type and purpose
+  const typeLabel = property.type.replace(/_/g, ' ');
+  summaryPoints.push(`This ${typeLabel.toLowerCase()} is available for ${property.purpose === 'rent' ? 'rent' : 'sale'} in ${property.location.area}, ${property.location.city}.`);
+
+  // Size and rooms
+  if (property.size) {
+    let roomInfo = property.size + ' ' + (property.sizeUnit || 'sqm');
+    if (property.bedrooms && property.bathrooms) {
+      roomInfo += ` with ${property.bedrooms} bedroom${property.bedrooms > 1 ? 's' : ''} and ${property.bathrooms} bathroom${property.bathrooms > 1 ? 's' : ''}`;
+    }
+    summaryPoints.push(roomInfo);
+  }
+
+  // Condition and furnishing
+  if (property.condition === 'new') {
+    summaryPoints.push('Newly built property in excellent condition');
+  } else if (property.condition === 'renovated') {
+    summaryPoints.push('Recently renovated with modern finishes');
+  }
+
+  if (property.furnishing === 'furnished') {
+    summaryPoints.push('Comes fully furnished and ready to move in');
+  } else if (property.furnishing === 'semi_furnished') {
+    summaryPoints.push('Semi-furnished with essential appliances');
+  }
+
+  // Key facilities
+  const topFacilities: string[] = [];
+  if (property.facilities?.parking) topFacilities.push('parking');
+  if (property.facilities?.security) topFacilities.push('24hr security');
+  if (property.facilities?.elevator) topFacilities.push('elevator');
+  if (property.facilities?.gym) topFacilities.push('gym');
+  if (property.facilities?.swimmingPool) topFacilities.push('pool');
+  
+  if (topFacilities.length > 0) {
+    summaryPoints.push(`Key amenities include ${topFacilities.join(', ')}`);
+  }
+
+  // Verification status
+  if (property.verification?.isVerified) {
+    summaryPoints.push('This property has been verified by our team');
+  }
+
+  return (
+    <View style={summaryStyles.container}>
+      <View style={summaryStyles.header}>
+        <View style={summaryStyles.aiIcon}>
+          <Ionicons name="sparkles" size={18} color={COLORS.secondary} />
+        </View>
+        <Text style={summaryStyles.title}>What You Should Know</Text>
+        <View style={summaryStyles.aiBadge}>
+          <Text style={summaryStyles.aiBadgeText}>AI Summary</Text>
+        </View>
+      </View>
+      
+      <View style={summaryStyles.points}>
+        {summaryPoints.map((point, index) => (
+          <View key={index} style={summaryStyles.pointItem}>
+            <View style={summaryStyles.bullet}>
+              <Ionicons name="checkmark" size={14} color={COLORS.primary} />
+            </View>
+            <Text style={summaryStyles.pointText}>{point}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+});
+
+const summaryStyles = StyleSheet.create({
+  container: {
+    backgroundColor: COLORS.secondaryLight,
+    padding: HORIZONTAL_PADDING,
+    marginBottom: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.secondary,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14,
+    gap: 10,
+  },
+  aiIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  aiBadge: {
+    backgroundColor: COLORS.secondary,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  aiBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  points: {
+    gap: 10,
+  },
+  pointItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  bullet: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  pointText: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.text,
+    lineHeight: 20,
+  },
+});
+
 // ============ DESCRIPTION SECTION ============
 const DescriptionSection = memo<{ property: Property }>(({ property }) => {
   const [expanded, setExpanded] = useState(false);
