@@ -641,98 +641,106 @@ export default function HomeScreen() {
     <View style={desktopStyles.headerWrapper}>
       {/* Row 1: Logo + Auth + Post Listing */}
       <View style={desktopStyles.headerRow1}>
-        <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
-          <View style={desktopStyles.logoIcon}>
-            <Ionicons name="storefront" size={22} color="#fff" />
-          </View>
-          <Text style={desktopStyles.logoText}>avida</Text>
-        </TouchableOpacity>
-        
-        <View style={desktopStyles.headerActions}>
-          {isAuthenticated ? (
-            <>
-              <TouchableOpacity style={desktopStyles.notifBtn} onPress={() => router.push('/notifications')}>
-                <Ionicons name="notifications-outline" size={22} color="#333" />
-                {notificationCount > 0 && (
-                  <View style={desktopStyles.notifBadge}>
-                    <Text style={desktopStyles.notifBadgeText}>{notificationCount > 99 ? '99+' : notificationCount}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-              <TouchableOpacity style={desktopStyles.profileBtn} onPress={() => router.push('/profile')}>
-                <Ionicons name="person-circle-outline" size={28} color="#333" />
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <TouchableOpacity style={desktopStyles.signInBtn} onPress={() => router.push('/login')}>
-                <Text style={desktopStyles.signInBtnText}>Sign In</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={desktopStyles.signUpBtn} onPress={() => router.push('/login')}>
-                <Text style={desktopStyles.signUpBtnText}>Sign Up</Text>
-              </TouchableOpacity>
-            </>
-          )}
-          <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => router.push('/create-listing')}>
-            <Ionicons name="add" size={18} color="#fff" />
-            <Text style={desktopStyles.postListingBtnText}>Post Listing</Text>
+        <View style={desktopStyles.headerRow1Inner}>
+          <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+            <View style={desktopStyles.logoIcon}>
+              <Ionicons name="storefront" size={22} color="#fff" />
+            </View>
+            <Text style={desktopStyles.logoText}>avida</Text>
           </TouchableOpacity>
+          
+          <View style={desktopStyles.headerActions}>
+            {isAuthenticated ? (
+              <>
+                <TouchableOpacity style={desktopStyles.notifBtn} onPress={() => router.push('/notifications')}>
+                  <Ionicons name="notifications-outline" size={22} color="#333" />
+                  {notificationCount > 0 && (
+                    <View style={desktopStyles.notifBadge}>
+                      <Text style={desktopStyles.notifBadgeText}>{notificationCount > 99 ? '99+' : notificationCount}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity style={desktopStyles.profileBtn} onPress={() => router.push('/profile')}>
+                  <Ionicons name="person-circle-outline" size={28} color="#333" />
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <TouchableOpacity style={desktopStyles.signInBtn} onPress={() => router.push('/login')}>
+                  <Text style={desktopStyles.signInBtnText}>Sign In</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={desktopStyles.signUpBtn} onPress={() => router.push('/login')}>
+                  <Text style={desktopStyles.signUpBtnText}>Sign Up</Text>
+                </TouchableOpacity>
+              </>
+            )}
+            <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => router.push('/create-listing')}>
+              <Ionicons name="add" size={18} color="#fff" />
+              <Text style={desktopStyles.postListingBtnText}>Post Listing</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
       {/* Row 2: Search + Location */}
       <View style={desktopStyles.headerRow2}>
-        <TouchableOpacity style={desktopStyles.searchField} onPress={() => router.push('/search')} activeOpacity={0.8}>
-          <Ionicons name="search" size={20} color="#666" />
-          <Text style={desktopStyles.searchPlaceholder}>Search for anything...</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={desktopStyles.locationChip} activeOpacity={0.7} onPress={() => setShowLocationModal(true)}>
-          <Ionicons name="location" size={18} color="#2E7D32" />
-          <Text style={desktopStyles.locationText} numberOfLines={1}>{currentCity}</Text>
-          <Ionicons name="chevron-down" size={16} color="#666" />
-        </TouchableOpacity>
+        <View style={desktopStyles.headerRow2Inner}>
+          <TouchableOpacity style={desktopStyles.searchField} onPress={() => router.push('/search')} activeOpacity={0.8}>
+            <Ionicons name="search" size={20} color="#666" />
+            <Text style={desktopStyles.searchPlaceholder}>Search for anything...</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={desktopStyles.locationChip} activeOpacity={0.7} onPress={() => setShowLocationModal(true)}>
+            <Ionicons name="location" size={18} color="#2E7D32" />
+            <Text style={desktopStyles.locationText} numberOfLines={1}>{currentCity}</Text>
+            <Ionicons name="chevron-down" size={16} color="#666" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Row 3: Category Icons */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={desktopStyles.categoryScroll}
-        contentContainerStyle={desktopStyles.categoryContent}
-      >
-        <TouchableOpacity
-          style={[desktopStyles.categoryPill, !selectedCategory && desktopStyles.categoryPillActive]}
-          onPress={() => setSelectedCategory(null)}
+      <View style={desktopStyles.categoryRowWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={desktopStyles.categoryScroll}
+          contentContainerStyle={desktopStyles.categoryContent}
         >
-          <Ionicons name="apps" size={16} color={!selectedCategory ? '#fff' : '#666'} />
-          <Text style={[desktopStyles.categoryPillText, !selectedCategory && desktopStyles.categoryPillTextActive]}>
-            All
-          </Text>
-        </TouchableOpacity>
-        {FULL_CATEGORIES.map((cat) => (
           <TouchableOpacity
-            key={cat.id}
-            style={[desktopStyles.categoryPill, selectedCategory === cat.id && desktopStyles.categoryPillActive]}
-            onPress={() => handleCategoryPress(cat.id)}
+            style={[desktopStyles.categoryPill, !selectedCategory && desktopStyles.categoryPillActive]}
+            onPress={() => setSelectedCategory(null)}
           >
-            <Ionicons 
-              name={cat.icon as any} 
-              size={16} 
-              color={selectedCategory === cat.id ? '#fff' : '#666'} 
-            />
-            <Text style={[desktopStyles.categoryPillText, selectedCategory === cat.id && desktopStyles.categoryPillTextActive]}>
-              {cat.name}
+            <Ionicons name="apps" size={16} color={!selectedCategory ? '#fff' : '#666'} />
+            <Text style={[desktopStyles.categoryPillText, !selectedCategory && desktopStyles.categoryPillTextActive]}>
+              All
             </Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+          {FULL_CATEGORIES.map((cat) => (
+            <TouchableOpacity
+              key={cat.id}
+              style={[desktopStyles.categoryPill, selectedCategory === cat.id && desktopStyles.categoryPillActive]}
+              onPress={() => handleCategoryPress(cat.id)}
+            >
+              <Ionicons 
+                name={cat.icon as any} 
+                size={16} 
+                color={selectedCategory === cat.id ? '#fff' : '#666'} 
+              />
+              <Text style={[desktopStyles.categoryPillText, selectedCategory === cat.id && desktopStyles.categoryPillTextActive]}>
+                {cat.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       {/* Section Title */}
-      <View style={desktopStyles.sectionHeader}>
-        <Text style={desktopStyles.sectionTitle}>
-          {selectedCategory ? FULL_CATEGORIES.find(c => c.id === selectedCategory)?.name || 'Listings' : 'Recent Listings'}
-        </Text>
-        <Text style={desktopStyles.listingCount}>{listings.length} items</Text>
+      <View style={desktopStyles.sectionHeaderWrapper}>
+        <View style={desktopStyles.sectionHeader}>
+          <Text style={desktopStyles.sectionTitle}>
+            {selectedCategory ? FULL_CATEGORIES.find(c => c.id === selectedCategory)?.name || 'Listings' : 'Recent Listings'}
+          </Text>
+          <Text style={desktopStyles.listingCount}>{listings.length} items</Text>
+        </View>
       </View>
     </View>
   );
