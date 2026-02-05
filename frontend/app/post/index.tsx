@@ -799,12 +799,12 @@ export default function PostListingScreen() {
         <Text style={styles.charCount}>{description.length}/2000</Text>
       </View>
 
-      {/* Condition - Category specific options */}
-      {categoryConfig?.conditionOptions && (
+      {/* Condition - Subcategory specific options */}
+      {conditionOptions && conditionOptions.length > 0 && (
         <View style={styles.fieldContainer}>
           <Text style={styles.fieldLabel}>Condition</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {categoryConfig.conditionOptions.map((c) => (
+            {conditionOptions.map((c) => (
               <TouchableOpacity
                 key={c}
                 style={[styles.chip, condition === c && styles.chipSelected]}
@@ -821,50 +821,55 @@ export default function PostListingScreen() {
     </ScrollView>
   );
 
-  // ============ STEP 4: DYNAMIC ATTRIBUTES ============
-  const renderStep4 = () => (
-    <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
-      <View style={styles.stepHeaderWithIcon}>
-        {categoryConfig?.icon && (
-          <View style={styles.stepHeaderIconWrapper}>
-            <Ionicons name={categoryConfig.icon as any} size={24} color={COLORS.primary} />
+  // ============ STEP 4: DYNAMIC ATTRIBUTES (Subcategory-specific) ============
+  const renderStep4 = () => {
+    const mainCategory = getMainCategory(selectedCategoryId);
+    const subcategoryAttrs = currentSubcategoryConfig?.attributes || [];
+    
+    return (
+      <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.stepHeaderWithIcon}>
+          {mainCategory?.icon && (
+            <View style={styles.stepHeaderIconWrapper}>
+              <Ionicons name={mainCategory.icon as any} size={24} color={COLORS.primary} />
+            </View>
+          )}
+          <View style={styles.stepHeaderText}>
+            <Text style={styles.stepTitle}>
+              {currentSubcategoryConfig?.name || 'Item'} Details
+            </Text>
+            <Text style={styles.stepSubtitle}>
+              Fill in the specific details for your {currentSubcategoryConfig?.name?.toLowerCase() || 'item'}
+            </Text>
+          </View>
+        </View>
+
+        {subcategoryAttrs.map((field) => (
+          <DynamicField
+            key={field.name}
+            field={field}
+            value={attributes[field.name]}
+            onChange={(value) => setAttributes({ ...attributes, [field.name]: value })}
+            parentValues={attributes}
+            error={fieldErrors[field.name]}
+            onClearError={() => clearFieldError(field.name)}
+          />
+        ))}
+
+        {subcategoryAttrs.length === 0 && (
+          <View style={styles.noAttributesMessage}>
+            <Ionicons name="information-circle-outline" size={48} color={COLORS.textSecondary} />
+            <Text style={styles.noAttributesText}>
+              No additional details required for this subcategory.
+            </Text>
+            <Text style={styles.noAttributesSubtext}>
+              You can proceed to the next step.
+            </Text>
           </View>
         )}
-        <View style={styles.stepHeaderText}>
-          <Text style={styles.stepTitle}>
-            {categoryConfig?.name || 'Category'} Details
-          </Text>
-          <Text style={styles.stepSubtitle}>
-            Fill in the specific details for your {categoryConfig?.name?.toLowerCase() || 'item'}
-          </Text>
-        </View>
-      </View>
-
-      {categoryConfig?.attributes.map((field) => (
-        <DynamicField
-          key={field.name}
-          field={field}
-          value={attributes[field.name]}
-          onChange={(value) => setAttributes({ ...attributes, [field.name]: value })}
-          parentValues={attributes}
-          error={fieldErrors[field.name]}
-          onClearError={() => clearFieldError(field.name)}
-        />
-      ))}
-
-      {(!categoryConfig || categoryConfig.attributes.length === 0) && (
-        <View style={styles.noAttributesMessage}>
-          <Ionicons name="information-circle-outline" size={48} color={COLORS.textSecondary} />
-          <Text style={styles.noAttributesText}>
-            No additional details required for this category.
-          </Text>
-          <Text style={styles.noAttributesSubtext}>
-            You can proceed to the next step.
-          </Text>
-        </View>
-      )}
-    </ScrollView>
-  );
+      </ScrollView>
+    );
+  };
 
   // ============ STEP 5: PRICE & CONTACT ============
   const renderStep5 = () => (
