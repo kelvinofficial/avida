@@ -1181,47 +1181,48 @@ const PropertyTypeTile = memo<PropertyTypeTileProps>(({ name, icon, count, onPre
     activeOpacity={0.7}
   >
     <View style={[tileStyles.iconBox, isSelected && tileStyles.iconBoxSelected]}>
-      <Ionicons name={icon as any} size={24} color={isSelected ? '#fff' : COLORS.primary} />
+      <Ionicons name={icon as any} size={22} color={isSelected ? '#fff' : COLORS.primary} />
     </View>
-    <Text style={[tileStyles.name, isSelected && tileStyles.nameSelected]} numberOfLines={1}>{name}</Text>
+    <Text style={[tileStyles.name, isSelected && tileStyles.nameSelected]} numberOfLines={2}>{name}</Text>
     <Text style={tileStyles.count}>{count} listings</Text>
   </TouchableOpacity>
 ));
 
 const tileStyles = StyleSheet.create({
   container: {
-    width: (width - HORIZONTAL_PADDING * 2 - 12 * 3) / 4,
+    width: '23%',
     alignItems: 'center',
-    marginBottom: 16,
-    padding: 8,
+    marginBottom: 12,
+    padding: 6,
     borderRadius: 12,
   },
   containerSelected: {
     backgroundColor: COLORS.primaryLight,
   },
   iconBox: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 14,
     backgroundColor: COLORS.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   iconBoxSelected: {
     backgroundColor: COLORS.primary,
   },
   name: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
     color: COLORS.text,
     textAlign: 'center',
+    lineHeight: 13,
   },
   nameSelected: {
     color: COLORS.primary,
   },
   count: {
-    fontSize: 10,
+    fontSize: 9,
     color: COLORS.textSecondary,
     marginTop: 2,
   },
