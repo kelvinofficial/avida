@@ -1016,6 +1016,15 @@ export default function PostListingScreen() {
           </TouchableOpacity>
         )}
       </View>
+
+      {/* Success Modal */}
+      <SuccessModal
+        visible={showSuccessModal}
+        title="Published!"
+        message="Your listing is now live and visible to buyers in your area."
+        buttonText="View Listings"
+        onClose={handleSuccessModalClose}
+      />
     </SafeAreaView>
   );
 }
