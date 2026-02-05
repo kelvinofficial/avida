@@ -748,23 +748,6 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Search Input */}
-            <View style={styles.subcategorySearchContainer}>
-              <Ionicons name="search" size={20} color="#999" />
-              <TextInput
-                style={styles.subcategorySearchInput}
-                placeholder="Search subcategories..."
-                value={subcategorySearch}
-                onChangeText={setSubcategorySearch}
-                placeholderTextColor="#999"
-              />
-              {subcategorySearch.length > 0 && (
-                <TouchableOpacity onPress={() => setSubcategorySearch('')}>
-                  <Ionicons name="close-circle" size={20} color="#999" />
-                </TouchableOpacity>
-              )}
-            </View>
-
             {/* View All Option */}
             <TouchableOpacity
               style={styles.viewAllButton}
@@ -790,7 +773,7 @@ export default function HomeScreen() {
               const recentForThisCategory = recentSubcategories.filter(
                 item => item.categoryId === selectedCategoryForSubcats?.id
               );
-              if (recentForThisCategory.length === 0 || subcategorySearch) return null;
+              if (recentForThisCategory.length === 0) return null;
               return (
                 <>
                   <View style={styles.subcategoryDivider}>
