@@ -330,13 +330,16 @@ export default function PostListingScreen() {
     }
   };
 
-  // Initialize
+  // Initialize - only fetch categories once when authenticated
   useEffect(() => {
     if (!isAuthenticated) {
       router.replace('/login');
       return;
     }
-    fetchCategories();
+    // Only fetch if we don't have categories yet
+    if (allCategories.length === 0) {
+      fetchCategories();
+    }
   }, [isAuthenticated]);
 
   useEffect(() => {
