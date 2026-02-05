@@ -101,7 +101,7 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
   );
 });
 
-// ============ PROPERTY LISTING CARD (Single Column) ============
+// ============ PROPERTY LISTING CARD (Single Column - Compact) ============
 const PropertyListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFavorited = false }) => {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('de-DE', {
@@ -111,6 +111,23 @@ const PropertyListingCard = memo<ListingCardProps>(({ listing, onPress, onFavori
     }).format(price);
   };
 
+  const formatDate = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - date.getTime());
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 0) return 'Today';
+      if (diffDays === 1) return 'Yesterday';
+      if (diffDays < 7) return `${diffDays} days ago`;
+      if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+      return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    } catch {
+      return '';
+    }
+  };
+
   const attributes = listing.attributes || {};
   const bedrooms = attributes.bedrooms || attributes.rooms;
   const bathrooms = attributes.bathrooms;
@@ -118,80 +135,97 @@ const PropertyListingCard = memo<ListingCardProps>(({ listing, onPress, onFavori
   const propertyType = attributes.property_type || listing.subcategory?.replace(/_/g, ' ');
 
   return (
-    <TouchableOpacity style={styles.propertyCard} onPress={onPress} activeOpacity={0.95}>
-      <View style={styles.propertyImageContainer}>
-        <Image
-          source={{ uri: listing.images?.[0] || 'https://via.placeholder.com/400x250' }}
-          style={styles.propertyImage}
-          resizeMode="cover"
-        />
-        {listing.featured && (
-          <View style={styles.featuredBadge}>
-            <Text style={styles.featuredText}>FEATURED</Text>
+    <TouchableOpacity style={styles.propertyCard} onPress={onPress} activeOpacity={0.97}>
+      {/* Horizontal Layout: Image + Content */}
+      <View style={styles.propertyCardRow}>
+        {/* Left: Image */}
+        <View style={styles.propertyImageContainer}>
+          <Image
+            source={{ uri: listing.images?.[0] || 'https://via.placeholder.com/300x200' }}
+            style={styles.propertyImage}
+            resizeMode="cover"
+          />
+          {listing.featured && (
+            <View style={styles.propertyFeaturedBadge}>
+              <Text style={styles.propertyFeaturedText}>TOP</Text>
+            </View>
+          )}
+          {listing.images?.length > 1 && (
+            <View style={styles.imageCountBadge}>
+              <Ionicons name="camera-outline" size={10} color="#fff" />
+              <Text style={styles.imageCountText}>{listing.images.length}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Right: Content */}
+        <View style={styles.propertyCardContent}>
+          {/* Price & Type Row */}
+          <View style={styles.propertyTopRow}>
+            <Text style={styles.propertyPrice}>{formatPrice(listing.price)}</Text>
+            {propertyType && (
+              <View style={styles.propertyTypeTag}>
+                <Text style={styles.propertyTypeText}>{propertyType}</Text>
+              </View>
+            )}
           </View>
-        )}
+
+          {/* Title */}
+          <Text style={styles.propertyTitle} numberOfLines={1}>{listing.title}</Text>
+
+          {/* Features Row: Beds | Baths | Size */}
+          <View style={styles.propertyFeatures}>
+            {bedrooms && (
+              <View style={styles.featureItem}>
+                <Ionicons name="bed-outline" size={13} color={COLORS.textSecondary} />
+                <Text style={styles.featureText}>{bedrooms}</Text>
+              </View>
+            )}
+            {bedrooms && (bathrooms || size) && <View style={styles.featureDivider} />}
+            {bathrooms && (
+              <View style={styles.featureItem}>
+                <Ionicons name="water-outline" size={13} color={COLORS.textSecondary} />
+                <Text style={styles.featureText}>{bathrooms}</Text>
+              </View>
+            )}
+            {bathrooms && size && <View style={styles.featureDivider} />}
+            {size && (
+              <View style={styles.featureItem}>
+                <Ionicons name="expand-outline" size={13} color={COLORS.textSecondary} />
+                <Text style={styles.featureText}>{size} m²</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Location */}
+          <View style={styles.propertyLocationRow}>
+            <Ionicons name="location-outline" size={12} color={COLORS.textLight} />
+            <Text style={styles.propertyLocation} numberOfLines={1}>{listing.location}</Text>
+          </View>
+
+          {/* Bottom: Date */}
+          <View style={styles.propertyBottomRow}>
+            <View style={styles.dateContainer}>
+              <Ionicons name="time-outline" size={11} color={COLORS.textLight} />
+              <Text style={styles.dateText}>{formatDate(listing.created_at)}</Text>
+            </View>
+            {listing.negotiable && (
+              <Text style={styles.negotiableTag}>Negotiable</Text>
+            )}
+          </View>
+        </View>
+
+        {/* Favorite Button */}
         <TouchableOpacity
           style={styles.propertyFavoriteButton}
           onPress={(e) => { e.stopPropagation(); onFavorite(); }}
         >
           <Ionicons
             name={isFavorited ? 'heart' : 'heart-outline'}
-            size={24}
-            color={isFavorited ? '#E53935' : '#FFFFFF'}
+            size={20}
+            color={isFavorited ? '#E53935' : COLORS.textSecondary}
           />
         </TouchableOpacity>
-        {/* Image count badge */}
-        {listing.images?.length > 1 && (
-          <View style={styles.imageCountBadge}>
-            <Ionicons name="images-outline" size={14} color="#fff" />
-            <Text style={styles.imageCountText}>{listing.images.length}</Text>
-          </View>
-        )}
-      </View>
-      <View style={styles.propertyCardContent}>
-        <View style={styles.propertyPriceRow}>
-          <Text style={styles.propertyPrice}>{formatPrice(listing.price)}</Text>
-          {listing.negotiable && (
-            <View style={styles.negotiableBadge}>
-              <Text style={styles.negotiableText}>Negotiable</Text>
-            </View>
-          )}
-        </View>
-        <Text style={styles.propertyTitle} numberOfLines={2}>{listing.title}</Text>
-        
-        {/* Property Features */}
-        <View style={styles.propertyFeatures}>
-          {bedrooms && (
-            <View style={styles.featureItem}>
-              <Ionicons name="bed-outline" size={16} color={COLORS.textSecondary} />
-              <Text style={styles.featureText}>{bedrooms} {bedrooms === 1 ? 'Bed' : 'Beds'}</Text>
-            </View>
-          )}
-          {bathrooms && (
-            <View style={styles.featureItem}>
-              <Ionicons name="water-outline" size={16} color={COLORS.textSecondary} />
-              <Text style={styles.featureText}>{bathrooms} {bathrooms === 1 ? 'Bath' : 'Baths'}</Text>
-            </View>
-          )}
-          {size && (
-            <View style={styles.featureItem}>
-              <Ionicons name="resize-outline" size={16} color={COLORS.textSecondary} />
-              <Text style={styles.featureText}>{size} m²</Text>
-            </View>
-          )}
-        </View>
-        
-        <View style={styles.propertyLocationRow}>
-          <Ionicons name="location-outline" size={16} color={COLORS.textSecondary} />
-          <Text style={styles.propertyLocation} numberOfLines={1}>{listing.location}</Text>
-        </View>
-        
-        {propertyType && (
-          <View style={styles.propertyTypeTag}>
-            <Ionicons name="home-outline" size={12} color={COLORS.primary} />
-            <Text style={styles.propertyTypeText}>{propertyType}</Text>
-          </View>
-        )}
       </View>
     </TouchableOpacity>
   );
