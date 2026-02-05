@@ -14,12 +14,14 @@ import {
   Dimensions,
   Animated,
   Alert,
+  ActionSheetIOS,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { io, Socket } from 'socket.io-client';
 import { Audio } from 'expo-av';
+import * as ImagePicker from 'expo-image-picker';
 import { conversationsApi } from '../../src/utils/api';
 import { Conversation, Message } from '../../src/types';
 import { useAuthStore } from '../../src/store/authStore';
