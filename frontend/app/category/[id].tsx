@@ -753,22 +753,39 @@ export default function CategoryScreen() {
       )}
 
       {/* Listings Grid */}
-      <FlatList
-        data={listings}
-        renderItem={renderListingCard}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={COLORS.primary} />
-        }
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        ListEmptyComponent={renderEmpty}
-        ListFooterComponent={renderFooter}
-        showsVerticalScrollIndicator={false}
-      />
+      {isPropertyCategory ? (
+        <FlatList
+          data={listings}
+          renderItem={renderListingCard}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.propertyListContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={COLORS.primary} />
+          }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListEmptyComponent={renderEmpty}
+          ListFooterComponent={renderFooter}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        <FlatList
+          data={listings}
+          renderItem={renderListingCard}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={COLORS.primary} />
+          }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListEmptyComponent={renderEmpty}
+          ListFooterComponent={renderFooter}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
 
       {/* Filters Modal */}
       {renderFiltersModal()}
