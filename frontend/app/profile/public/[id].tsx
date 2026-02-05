@@ -507,9 +507,19 @@ export default function PublicProfileScreen() {
                 )}
               </TouchableOpacity>
               
-              <TouchableOpacity style={styles.messageBtn} onPress={handleMessage}>
-                <Ionicons name="chatbubble-outline" size={18} color={COLORS.primary} />
-                <Text style={styles.messageBtnText}>Message</Text>
+              <TouchableOpacity 
+                style={[styles.messageBtn, messageLoading && styles.messageBtnDisabled]} 
+                onPress={handleMessage}
+                disabled={messageLoading}
+              >
+                {messageLoading ? (
+                  <ActivityIndicator size="small" color={COLORS.primary} />
+                ) : (
+                  <>
+                    <Ionicons name="chatbubble-outline" size={18} color={COLORS.primary} />
+                    <Text style={styles.messageBtnText}>Message</Text>
+                  </>
+                )}
               </TouchableOpacity>
             </View>
           )}
