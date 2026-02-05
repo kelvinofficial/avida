@@ -1252,7 +1252,10 @@ export default function PropertyDetailScreen() {
         <DescriptionSection property={property} />
 
         {/* Seller */}
-        <SellerSection property={property} />
+        <SellerSection 
+          property={property} 
+          onPress={() => router.push(`/profile/public/${property.user_id}`)}
+        />
 
         {/* Verification */}
         <VerificationSection property={property} />
