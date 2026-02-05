@@ -1,7 +1,7 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { View, StyleSheet, TouchableOpacity, Platform, Text } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { theme } from '../../src/utils/theme';
@@ -25,10 +25,10 @@ export default function TabLayout() {
       screenOptions={{
         tabBarStyle: [
           styles.tabBar,
-          { paddingBottom: Platform.OS === 'ios' ? insets.bottom : 10 },
+          { paddingBottom: Platform.OS === 'ios' ? insets.bottom : 12 },
         ],
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
+        tabBarActiveTintColor: '#2E7D32',
+        tabBarInactiveTintColor: '#9E9E9E',
         tabBarLabelStyle: styles.tabLabel,
         tabBarShowLabel: true,
         headerShown: false,
@@ -38,8 +38,8 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "home" : "home-outline"} size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "home" : "home-outline"} size={22} color={color} />
           ),
         }}
       />
@@ -47,8 +47,8 @@ export default function TabLayout() {
         name="saved"
         options={{
           title: 'Saved',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "heart" : "heart-outline"} size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "heart" : "heart-outline"} size={22} color={color} />
           ),
         }}
       />
@@ -63,7 +63,7 @@ export default function TabLayout() {
                 onPress={handlePostPress}
                 activeOpacity={0.8}
               >
-                <Ionicons name="add" size={28} color={theme.colors.onPrimary} />
+                <Ionicons name="add" size={26} color="#fff" />
               </TouchableOpacity>
             </View>
           ),
@@ -79,8 +79,8 @@ export default function TabLayout() {
         name="messages"
         options={{
           title: 'Messages',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "chatbubbles" : "chatbubbles-outline"} size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "chatbubble-ellipses" : "chatbubble-ellipses-outline"} size={22} color={color} />
           ),
         }}
       />
@@ -88,9 +88,16 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "person" : "person-outline"} size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "person-circle" : "person-circle-outline"} size={24} color={color} />
           ),
+        }}
+      />
+      {/* Hide the search tab from bottom navigation */}
+      <Tabs.Screen
+        name="search"
+        options={{
+          href: null, // This hides the tab from navigation
         }}
       />
     </Tabs>
