@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 10,
+    top: 50,
     right: 20,
     width: 40,
     height: 40,
@@ -303,6 +303,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 100,
   },
   decorCircle: {
     position: 'absolute',
