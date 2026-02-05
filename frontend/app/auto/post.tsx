@@ -18,6 +18,7 @@ import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { api } from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
+import { SuccessModal } from '../../src/components/SuccessModal';
 
 const COLORS = {
   primary: '#2E7D32',
