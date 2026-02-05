@@ -7,7 +7,7 @@ import requests
 import json
 
 # Get backend URL
-BASE_URL = "https://classypro.preview.emergentagent.com"
+BASE_URL = "https://classimart-2.preview.emergentagent.com"
 API_URL = f"{BASE_URL}/api"
 TEST_SESSION_TOKEN = "test_session_123"
 

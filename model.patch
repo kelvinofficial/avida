@@ -212,7 +212,7 @@ index 4c23b2e..9bcd7ae 100644
 -------+import json
 -------+
 -------+# Get backend URL
--------+BASE_URL = "https://classypro.preview.emergentagent.com"
+-------+BASE_URL = "https://classimart-2.preview.emergentagent.com"
 -------+API_URL = f"{BASE_URL}/api"
 -------+TEST_SESSION_TOKEN = "test_session_123"
 -------+
@@ -479,7 +479,7 @@ index 0000000..d258c6d
 +                    return line.split('=', 1)[1].strip()
 +    except Exception as e:
 +        print(f'Error reading frontend .env: {e}')
-+    return 'https://classypro.preview.emergentagent.com'
++    return 'https://classimart-2.preview.emergentagent.com'
 +
 +BASE_URL = get_backend_url()
 +API_URL = f'{BASE_URL}/api'
