@@ -601,6 +601,82 @@ export default function HomeScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Subcategory Selection Modal */}
+      <Modal
+        visible={showSubcategoryModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowSubcategoryModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.subcategoryModalContent}>
+            {/* Modal Header */}
+            <View style={styles.subcategoryModalHeader}>
+              <View style={styles.subcategoryHeaderLeft}>
+                {selectedCategoryForSubcats?.icon && (
+                  <View style={styles.subcategoryHeaderIcon}>
+                    <Ionicons 
+                      name={selectedCategoryForSubcats.icon as any} 
+                      size={24} 
+                      color="#2E7D32" 
+                    />
+                  </View>
+                )}
+                <Text style={styles.subcategoryModalTitle}>
+                  {selectedCategoryForSubcats?.name}
+                </Text>
+              </View>
+              <TouchableOpacity 
+                onPress={() => setShowSubcategoryModal(false)} 
+                style={styles.modalCloseBtn}
+              >
+                <Ionicons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+
+            {/* View All Option */}
+            <TouchableOpacity
+              style={styles.viewAllButton}
+              onPress={() => handleSubcategorySelect(selectedCategoryForSubcats?.id || '', undefined)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.viewAllContent}>
+                <Ionicons name="grid-outline" size={20} color="#2E7D32" />
+                <Text style={styles.viewAllText}>View All {selectedCategoryForSubcats?.name}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#2E7D32" />
+            </TouchableOpacity>
+
+            {/* Divider */}
+            <View style={styles.subcategoryDivider}>
+              <Text style={styles.subcategoryDividerText}>Select a subcategory</Text>
+            </View>
+
+            {/* Subcategories List */}
+            <ScrollView 
+              style={styles.subcategoriesList} 
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.subcategoriesListContent}
+            >
+              {selectedCategoryForSubcats?.subcategories.map((subcat, index) => (
+                <TouchableOpacity
+                  key={subcat.id}
+                  style={[
+                    styles.subcategoryItem,
+                    index === (selectedCategoryForSubcats?.subcategories.length || 0) - 1 && styles.subcategoryItemLast
+                  ]}
+                  onPress={() => handleSubcategorySelect(selectedCategoryForSubcats?.id || '', subcat.id)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.subcategoryItemText}>{subcat.name}</Text>
+                  <Ionicons name="chevron-forward" size={18} color="#999" />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
