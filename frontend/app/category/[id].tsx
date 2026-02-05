@@ -300,25 +300,25 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
           <View style={styles.autoSpecs}>
             {year && (
               <View style={styles.autoSpecItem}>
-                <Ionicons name="calendar-outline" size={12} color={COLORS.textSecondary} />
+                <Ionicons name="calendar-outline" size={14} color={COLORS.textSecondary} />
                 <Text style={styles.autoSpecText}>{year}</Text>
               </View>
             )}
             {mileage && (
               <View style={styles.autoSpecItem}>
-                <Ionicons name="speedometer-outline" size={12} color={COLORS.textSecondary} />
+                <Ionicons name="speedometer-outline" size={14} color={COLORS.textSecondary} />
                 <Text style={styles.autoSpecText}>{formatMileage(mileage)}</Text>
               </View>
             )}
             {fuel && (
               <View style={styles.autoSpecItem}>
-                <Ionicons name="flash-outline" size={12} color={COLORS.textSecondary} />
+                <Ionicons name="flash-outline" size={14} color={COLORS.textSecondary} />
                 <Text style={styles.autoSpecText}>{fuel}</Text>
               </View>
             )}
             {transmission && (
               <View style={styles.autoSpecItem}>
-                <Ionicons name="cog-outline" size={12} color={COLORS.textSecondary} />
+                <Ionicons name="cog-outline" size={14} color={COLORS.textSecondary} />
                 <Text style={styles.autoSpecText}>{transmission}</Text>
               </View>
             )}
@@ -327,7 +327,7 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
           {/* Bottom: Location & Date */}
           <View style={styles.autoBottomRow}>
             <View style={styles.autoLocationRow}>
-              <Ionicons name="location-outline" size={11} color={COLORS.textLight} />
+              <Ionicons name="location-outline" size={13} color={COLORS.textLight} />
               <Text style={styles.autoLocation} numberOfLines={1}>{listing.location}</Text>
             </View>
             <Text style={styles.autoDate}>{formatDate(listing.created_at)}</Text>
