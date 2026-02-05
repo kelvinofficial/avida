@@ -253,13 +253,24 @@ export default function PublicProfileScreen() {
     }
   };
 
-  const handleMessage = () => {
+  const handleMessage = async () => {
     if (!isAuthenticated) {
       router.push('/login');
       return;
     }
-    // Navigate to chat or start conversation
-    Alert.alert('Message', 'Start a conversation with this seller');
+    
+    try {
+      // Create or get existing direct conversation
+      const response = await api.post('/conversations/direct', {
+        user_id: id as string
+      });
+      
+      // Navigate to the chat screen
+      router.push(`/chat/${response.data.id}`);
+    } catch (err: any) {
+      console.error('Error starting conversation:', err);
+      Alert.alert('Error', err.response?.data?.detail || 'Failed to start conversation');
+    }
   };
 
   const getInitials = (name: string) => {
