@@ -503,7 +503,7 @@ export default function AutoListingDetailScreen() {
         <View style={styles.loading}>
           <Ionicons name="car-outline" size={48} color={COLORS.textSecondary} />
           <Text style={styles.loadingText}>{error || 'Listing not found'}</Text>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => safeGoBack(router)}>
             <Text style={styles.backButtonText}>Go Back</Text>
           </TouchableOpacity>
         </View>
@@ -525,7 +525,7 @@ export default function AutoListingDetailScreen() {
 
         {/* Header Actions (floating) */}
         <View style={styles.floatingHeader}>
-          <TouchableOpacity style={styles.headerBtn} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.headerBtn} onPress={() => safeGoBack(router)}>
             <Ionicons name="arrow-back" size={22} color={COLORS.text} />
           </TouchableOpacity>
           <View style={styles.headerRight}>
