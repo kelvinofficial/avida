@@ -520,8 +520,12 @@ export default function ListingDetailScreen() {
   const [isFavorited, setIsFavorited] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
+  const [showOfferSuccessModal, setShowOfferSuccessModal] = useState(false);
   const [offerPrice, setOfferPrice] = useState('');
   const [offerMessage, setOfferMessage] = useState('');
+  const [submittedOfferAmount, setSubmittedOfferAmount] = useState('');
+  const [offerConversationId, setOfferConversationId] = useState<string | null>(null);
+  const [submittingOffer, setSubmittingOffer] = useState(false);
 
   const fetchListing = useCallback(async () => {
     try {
