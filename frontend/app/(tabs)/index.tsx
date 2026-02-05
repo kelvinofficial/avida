@@ -601,13 +601,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: HORIZONTAL_PADDING,
     paddingBottom: 100,
   },
-  columnWrapper: {
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: COLUMN_GAP,
   },
   cardWrapper: {
-    width: '48%',
-    marginBottom: 4,
+    width: CARD_WIDTH,
+    marginBottom: 12,
   },
 
   // SKELETON
