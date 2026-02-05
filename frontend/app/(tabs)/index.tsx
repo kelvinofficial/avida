@@ -958,18 +958,111 @@ export default function HomeScreen() {
 const desktopStyles = StyleSheet.create({
   headerWrapper: {
     backgroundColor: '#fff',
-    paddingTop: 20,
-    paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#E8E8E8',
   },
-  headerTop: {
-    paddingHorizontal: 24,
-    marginBottom: 16,
-  },
-  searchContainer: {
+  // Row 1: Logo + Auth + Post Listing
+  headerRow1: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  logoIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: '#2E7D32',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  signInBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  signInBtnText: {
+    fontSize: 15,
+    color: '#333',
+    fontWeight: '500',
+  },
+  signUpBtn: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+  },
+  signUpBtnText: {
+    fontSize: 15,
+    color: '#333',
+    fontWeight: '600',
+  },
+  notifBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  notifBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    backgroundColor: '#E53935',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  notifBadgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  profileBtn: {
+    padding: 4,
+  },
+  postListingBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#2E7D32',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+  postListingBtnText: {
+    fontSize: 15,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  // Row 2: Search + Location
+  headerRow2: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
     gap: 16,
   },
   searchField: {
@@ -981,7 +1074,7 @@ const desktopStyles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     gap: 12,
-    maxWidth: 600,
+    maxWidth: 700,
   },
   searchPlaceholder: {
     fontSize: 15,
@@ -1002,11 +1095,14 @@ const desktopStyles = StyleSheet.create({
     color: '#333',
     fontWeight: '500',
   },
+  // Row 3: Category Icons
   categoryScroll: {
-    marginBottom: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
   categoryContent: {
     paddingHorizontal: 24,
+    paddingVertical: 12,
     gap: 10,
   },
   categoryPill: {
