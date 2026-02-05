@@ -48,23 +48,24 @@ const CATEGORY_GAP = 4;
 const VISIBLE_CATEGORIES = 5;
 const CATEGORY_ITEM_WIDTH = (width - HORIZONTAL_PADDING * 2) / VISIBLE_CATEGORIES;
 
-// ============ CATEGORY COLORS ============
+// ============ CATEGORY COLORS - VIBRANT ============
 const CATEGORY_STYLES: Record<string, { bg: string; icon: string }> = {
-  vehicles: { bg: '#E3F2FD', icon: '#1565C0' },
-  electronics: { bg: '#F3E5F5', icon: '#7B1FA2' },
-  fashion: { bg: '#FCE4EC', icon: '#C2185B' },
-  home: { bg: '#E8F5E9', icon: '#2E7D32' },
-  sports: { bg: '#FFF3E0', icon: '#EF6C00' },
-  jobs: { bg: '#E0F7FA', icon: '#00838F' },
-  services: { bg: '#FFF8E1', icon: '#FF8F00' },
-  kids: { bg: '#FFEBEE', icon: '#C62828' },
-  pets: { bg: '#F1F8E9', icon: '#558B2F' },
-  property: { bg: '#E8EAF6', icon: '#3949AB' },
-  mobile: { bg: '#EDE7F6', icon: '#5E35B1' },
-  bikes: { bg: '#E0F2F1', icon: '#00695C' },
-  beauty: { bg: '#FBE9E7', icon: '#D84315' },
-  industrial: { bg: '#ECEFF1', icon: '#455A64' },
-  default: { bg: '#F5F5F5', icon: '#616161' },
+  all: { bg: '#2E7D32', icon: '#FFFFFF' },
+  vehicles: { bg: '#1976D2', icon: '#FFFFFF' },
+  electronics: { bg: '#7B1FA2', icon: '#FFFFFF' },
+  fashion: { bg: '#C2185B', icon: '#FFFFFF' },
+  home: { bg: '#388E3C', icon: '#FFFFFF' },
+  sports: { bg: '#F57C00', icon: '#FFFFFF' },
+  jobs: { bg: '#0097A7', icon: '#FFFFFF' },
+  services: { bg: '#FFA000', icon: '#FFFFFF' },
+  kids: { bg: '#D32F2F', icon: '#FFFFFF' },
+  pets: { bg: '#689F38', icon: '#FFFFFF' },
+  property: { bg: '#303F9F', icon: '#FFFFFF' },
+  mobile: { bg: '#512DA8', icon: '#FFFFFF' },
+  bikes: { bg: '#00796B', icon: '#FFFFFF' },
+  beauty: { bg: '#E64A19', icon: '#FFFFFF' },
+  industrial: { bg: '#455A64', icon: '#FFFFFF' },
+  default: { bg: '#757575', icon: '#FFFFFF' },
 };
 
 // ============ CATEGORIES DATA ============
