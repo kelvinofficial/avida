@@ -429,7 +429,7 @@ export default function HomeScreen() {
               id={cat.id}
               name={cat.name}
               icon={cat.icon}
-              selected={cat.id === 'all' ? !selectedCategory : selectedCategory === cat.id}
+              selected={selectedCategory === cat.id}
               onPress={() => handleCategoryPress(cat.id)}
             />
           ))}
