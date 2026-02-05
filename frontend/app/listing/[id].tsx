@@ -871,11 +871,15 @@ export default function ListingDetailScreen() {
 
           <View style={styles.modalFooter}>
             <TouchableOpacity
-              style={[styles.submitBtn, !offerPrice && styles.submitBtnDisabled]}
+              style={[styles.submitBtn, (!offerPrice || submittingOffer) && styles.submitBtnDisabled]}
               onPress={handleSubmitOffer}
-              disabled={!offerPrice}
+              disabled={!offerPrice || submittingOffer}
             >
-              <Text style={styles.submitBtnText}>Submit Offer</Text>
+              {submittingOffer ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.submitBtnText}>Submit Offer</Text>
+              )}
             </TouchableOpacity>
           </View>
         </SafeAreaView>
