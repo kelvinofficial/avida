@@ -700,7 +700,8 @@ const styles = StyleSheet.create({
   },
   categoriesContent: {
     paddingHorizontal: HORIZONTAL_PADDING,
-    gap: CATEGORY_GAP,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 
   // SECTION HEADER
