@@ -1030,6 +1030,7 @@ async def create_listing(listing: ListingCreate, request: Request):
 @api_router.get("/listings")
 async def get_listings(
     category: Optional[str] = None,
+    subcategory: Optional[str] = None,
     search: Optional[str] = None,
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
@@ -1037,13 +1038,21 @@ async def get_listings(
     location: Optional[str] = None,
     sort: str = "newest",
     page: int = 1,
-    limit: int = 20
+    limit: int = 20,
+    # Dynamic attribute filters passed as query params
+    filters: Optional[str] = None  # JSON string of attribute filters
 ):
-    """Get listings with filters and pagination"""
+    """Get listings with filters, subcategory filtering, and pagination"""
     query = {"status": "active"}
     
+    # Handle legacy category IDs
     if category:
-        query["category_id"] = category
+        mapped_category = LEGACY_CATEGORY_MAP.get(category, category)
+        query["category_id"] = mapped_category
+    
+    # Subcategory filter
+    if subcategory:
+        query["subcategory"] = subcategory
     
     if search:
         query["$or"] = [
@@ -1065,6 +1074,34 @@ async def get_listings(
     
     if location:
         query["location"] = {"$regex": location, "$options": "i"}
+    
+    # Parse and apply dynamic attribute filters
+    if filters:
+        try:
+            import json
+            attr_filters = json.loads(filters)
+            for attr_name, attr_value in attr_filters.items():
+                if attr_value is not None and attr_value != "":
+                    # Handle range filters (e.g., year_min, year_max)
+                    if attr_name.endswith('_min'):
+                        base_name = attr_name[:-4]
+                        if f"attributes.{base_name}" not in query:
+                            query[f"attributes.{base_name}"] = {}
+                        query[f"attributes.{base_name}"]["$gte"] = attr_value
+                    elif attr_name.endswith('_max'):
+                        base_name = attr_name[:-4]
+                        if f"attributes.{base_name}" not in query:
+                            query[f"attributes.{base_name}"] = {}
+                        query[f"attributes.{base_name}"]["$lte"] = attr_value
+                    elif isinstance(attr_value, bool):
+                        query[f"attributes.{attr_name}"] = attr_value
+                    elif isinstance(attr_value, list):
+                        query[f"attributes.{attr_name}"] = {"$in": attr_value}
+                    else:
+                        # Text/select filter - case insensitive match
+                        query[f"attributes.{attr_name}"] = {"$regex": f"^{attr_value}$", "$options": "i"}
+        except Exception as e:
+            logger.warning(f"Failed to parse filters: {e}")
     
     # Sorting
     sort_field = "created_at"
