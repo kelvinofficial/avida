@@ -1149,6 +1149,10 @@ const desktopStyles = StyleSheet.create({
   categoryPillTextActive: {
     color: '#fff',
   },
+  sectionHeaderWrapper: {
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+  },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1156,7 +1160,8 @@ const desktopStyles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 20,
     paddingBottom: 8,
-    backgroundColor: '#F5F5F5',
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
   },
   sectionTitle: {
     fontSize: 20,
