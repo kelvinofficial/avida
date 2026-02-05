@@ -304,13 +304,18 @@ export default function CategoryScreen() {
 
   const getListingRoute = (listing: any) => {
     const catId = listing.category_id;
-    if (catId === 'auto_vehicles') {
-      return `/auto/${listing.id}`;
+    const listingId = listing.id;
+    
+    // Only route to /auto/ for listings with auto_ prefix (from auto_listings collection)
+    if (catId === 'auto_vehicles' && listingId.startsWith('auto_')) {
+      return `/auto/${listingId}`;
     }
-    if (catId === 'properties') {
-      return `/property/${listing.id}`;
+    // Only route to /property/ for listings with prop_ prefix (from properties collection)
+    if (catId === 'properties' && listingId.startsWith('prop_')) {
+      return `/property/${listingId}`;
     }
-    return `/listing/${listing.id}`;
+    // Default: route to generic listing page (for listings in listings collection)
+    return `/listing/${listingId}`;
   };
 
   const renderListingCard = ({ item }: { item: any }) => (
