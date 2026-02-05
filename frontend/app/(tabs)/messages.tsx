@@ -721,11 +721,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   // Unauthenticated State Styles
-  unauthContainer: {
+  unauthScrollView: {
     flex: 1,
+  },
+  unauthContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
+    paddingBottom: 100,
   },
   unauthIllustration: {
     position: 'relative',
