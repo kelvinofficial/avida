@@ -177,7 +177,10 @@ const NotificationItem = ({
           <View style={[styles.typeBadge, { backgroundColor: `${config.color}15` }]}>
             <Ionicons name={config.icon as any} size={12} color={config.color} />
             <Text style={[styles.typeBadgeText, { color: config.color }]}>
-              {notification.type.replace('_', ' ')}
+              {notification.type === 'offer_received' ? 'Offer' :
+               notification.type === 'offer_accepted' ? 'Accepted' :
+               notification.type === 'offer_rejected' ? 'Declined' :
+               notification.type.replace('_', ' ')}
             </Text>
           </View>
           <TouchableOpacity
