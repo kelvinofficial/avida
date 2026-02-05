@@ -828,6 +828,7 @@ async def create_listing(listing: ListingCreate, request: Request):
         "title": listing.title,
         "description": listing.description,
         "price": listing.price,
+        "currency": listing.currency,
         "negotiable": listing.negotiable,
         "category_id": listing.category_id,
         "subcategory": listing.subcategory,
