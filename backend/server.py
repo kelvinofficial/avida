@@ -3528,6 +3528,171 @@ async def clear_all_notifications(request: Request):
     
     return {"message": f"Deleted {result.deleted_count} notifications"}
 
+# Helper function to create notifications
+async def create_notification(
+    user_id: str,
+    notification_type: str,
+    title: str,
+    body: str,
+    cta_label: str = None,
+    cta_route: str = None,
+    actor_id: str = None,
+    actor_name: str = None,
+    actor_picture: str = None,
+    listing_id: str = None,
+    listing_title: str = None,
+    image_url: str = None,
+    meta: dict = None
+):
+    """Create a notification for a user"""
+    notification = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "type": notification_type,
+        "title": title,
+        "body": body,
+        "cta_label": cta_label,
+        "cta_route": cta_route,
+        "read": False,
+        "created_at": datetime.utcnow().isoformat(),
+        "actor_id": actor_id,
+        "actor_name": actor_name,
+        "actor_picture": actor_picture,
+        "listing_id": listing_id,
+        "listing_title": listing_title,
+        "image_url": image_url,
+        "meta": meta or {}
+    }
+    await db.notifications.insert_one(notification)
+    return notification
+
+@api_router.post("/notifications/seed")
+async def seed_sample_notifications(request: Request):
+    """Seed sample notifications for testing"""
+    user = await require_auth(request)
+    
+    # Clear existing notifications first
+    await db.notifications.delete_many({"user_id": user.user_id})
+    
+    sample_notifications = [
+        {
+            "type": "message",
+            "title": "New message from Sarah",
+            "body": "Hi! Is the iPhone 14 Pro still available? I'm very interested in buying it.",
+            "actor_name": "Sarah Miller",
+            "actor_picture": "https://randomuser.me/api/portraits/women/44.jpg",
+            "cta_label": "REPLY",
+            "meta": {"thread_id": "thread_123"}
+        },
+        {
+            "type": "message",
+            "title": "New message from John",
+            "body": "Can you do €200 for the bicycle? I can pick it up today.",
+            "actor_name": "John Smith",
+            "actor_picture": "https://randomuser.me/api/portraits/men/32.jpg",
+            "cta_label": "REPLY",
+            "meta": {"thread_id": "thread_456"}
+        },
+        {
+            "type": "follow",
+            "title": "New follower",
+            "body": "Michael Johnson started following you",
+            "actor_name": "Michael Johnson",
+            "actor_picture": "https://randomuser.me/api/portraits/men/67.jpg",
+            "actor_id": "user_789",
+            "cta_label": "VIEW PROFILE"
+        },
+        {
+            "type": "price_drop",
+            "title": "Price drop alert!",
+            "body": "BMW 320d M Sport you saved dropped from €25,000 to €22,500",
+            "listing_id": "listing_abc",
+            "listing_title": "BMW 320d M Sport",
+            "image_url": "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=200",
+            "cta_label": "VIEW DEAL"
+        },
+        {
+            "type": "price_drop",
+            "title": "Price reduced!",
+            "body": "3BR Apartment in Munich is now €50,000 less!",
+            "listing_id": "listing_def",
+            "listing_title": "3BR Apartment Munich",
+            "image_url": "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=200",
+            "cta_label": "VIEW"
+        },
+        {
+            "type": "review",
+            "title": "New review received",
+            "body": "Emma Wilson left a 5-star review: 'Great seller, fast delivery!'",
+            "actor_name": "Emma Wilson",
+            "actor_picture": "https://randomuser.me/api/portraits/women/65.jpg",
+            "cta_label": "VIEW"
+        },
+        {
+            "type": "system",
+            "title": "Listing approved",
+            "body": "Your listing 'MacBook Pro 14\" M3' has been approved and is now live",
+            "cta_label": "VIEW LISTING"
+        },
+        {
+            "type": "system",
+            "title": "Verify your email",
+            "body": "Please verify your email address to unlock all features",
+            "cta_label": "VERIFY"
+        },
+        {
+            "type": "message",
+            "title": "New message from Anna",
+            "body": "Thanks for the quick response! I'll take it. When can we meet?",
+            "actor_name": "Anna Brown",
+            "actor_picture": "https://randomuser.me/api/portraits/women/28.jpg",
+            "cta_label": "REPLY",
+            "meta": {"thread_id": "thread_789"}
+        },
+        {
+            "type": "follow",
+            "title": "New follower",
+            "body": "David Lee started following you",
+            "actor_name": "David Lee",
+            "actor_picture": "https://randomuser.me/api/portraits/men/45.jpg",
+            "actor_id": "user_456",
+            "cta_label": "VIEW PROFILE"
+        },
+    ]
+    
+    created = []
+    import random
+    for i, notif in enumerate(sample_notifications):
+        # Randomize read status (some read, some unread)
+        is_read = random.choice([True, False, False])  # More unread
+        
+        # Create with varied timestamps
+        hours_ago = i * 3 + random.randint(0, 5)
+        created_at = (datetime.utcnow() - timedelta(hours=hours_ago)).isoformat()
+        
+        notification = {
+            "id": str(uuid.uuid4()),
+            "user_id": user.user_id,
+            "type": notif["type"],
+            "title": notif["title"],
+            "body": notif["body"],
+            "cta_label": notif.get("cta_label"),
+            "cta_route": notif.get("cta_route"),
+            "read": is_read,
+            "created_at": created_at,
+            "actor_id": notif.get("actor_id"),
+            "actor_name": notif.get("actor_name"),
+            "actor_picture": notif.get("actor_picture"),
+            "listing_id": notif.get("listing_id"),
+            "listing_title": notif.get("listing_title"),
+            "image_url": notif.get("image_url"),
+            "meta": notif.get("meta", {})
+        }
+        await db.notifications.insert_one(notification)
+        created.append(notification)
+    
+    return {"message": f"Created {len(created)} sample notifications", "count": len(created)}
+
 # Internal function to create notifications
 async def create_notification(
     user_id: str,
