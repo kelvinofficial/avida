@@ -220,7 +220,7 @@ const EmptyState = ({ type }: { type: string }) => (
 
 export default function NotificationsScreen() {
   const router = useRouter();
-  const { isAuthenticated, token } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -228,7 +228,6 @@ export default function NotificationsScreen() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [typeCounts, setTypeCounts] = useState<Record<string, number>>({});
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
   const [activeFilter, setActiveFilter] = useState('all');
   const [showMenu, setShowMenu] = useState(false);
