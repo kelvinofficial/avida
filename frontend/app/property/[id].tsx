@@ -21,6 +21,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { api } from '../../src/utils/api';
 import { Property, FACILITIES_LIST } from '../../src/types/property';
 import SimilarListings from '../../src/components/property/SimilarListings';
+import { safeGoBack } from '../../src/utils/navigation';
 
 // Generate highlights from property data
 const generateHighlights = (property: Property) => {
