@@ -108,7 +108,7 @@ interface FieldErrors {
 
 // ============ DYNAMIC FIELD RENDERER WITH VALIDATION ============
 interface DynamicFieldProps {
-  field: AttributeField;
+  field: SubcategoryAttribute;
   value: any;
   onChange: (value: any) => void;
   parentValues?: Record<string, any>;
