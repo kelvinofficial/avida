@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  Dimensions,
   ScrollView,
   Modal,
   TextInput,
@@ -29,8 +28,6 @@ import {
   PropertyListingCard,
   AutoListingCard,
 } from '../../src/components/listings';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const COLORS = {
   primary: '#2E7D32',
