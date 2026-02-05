@@ -1106,7 +1106,42 @@ export default function PostListingScreen() {
         {/* Seller Info */}
         <View style={styles.previewSection}>
           <Text style={styles.previewSectionTitle}>Seller Information</Text>
-          <Text style={styles.previewSellerType}>{sellerType} • {contactMethod}</Text>
+          <Text style={styles.previewSellerType}>{sellerType}</Text>
+          
+          <View style={styles.previewPreferences}>
+            {acceptsOffers && (
+              <View style={styles.previewBadge}>
+                <Text style={styles.previewBadgeText}>Accepts Offers</Text>
+              </View>
+            )}
+            {acceptsExchanges && (
+              <View style={styles.previewBadge}>
+                <Text style={styles.previewBadgeText}>Open to Exchanges</Text>
+              </View>
+            )}
+          </View>
+
+          <Text style={styles.previewContactTitle}>Contact via:</Text>
+          <View style={styles.previewContactMethods}>
+            {contactPreferences.inAppChat && (
+              <View style={styles.previewContactBadge}>
+                <Ionicons name="chatbubble-outline" size={14} color={COLORS.primary} />
+                <Text style={styles.previewContactText}>Chat</Text>
+              </View>
+            )}
+            {contactPreferences.whatsapp && (
+              <View style={styles.previewContactBadge}>
+                <Ionicons name="logo-whatsapp" size={14} color="#25D366" />
+                <Text style={styles.previewContactText}>WhatsApp</Text>
+              </View>
+            )}
+            {contactPreferences.call && (
+              <View style={styles.previewContactBadge}>
+                <Ionicons name="call-outline" size={14} color="#1976D2" />
+                <Text style={styles.previewContactText}>Call</Text>
+              </View>
+            )}
+          </View>
         </View>
       </View>
     </ScrollView>
