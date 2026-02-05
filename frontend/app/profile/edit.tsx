@@ -103,7 +103,7 @@ const inputStyles = StyleSheet.create({
 // ============ MAIN SCREEN ============
 export default function EditProfileScreen() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
@@ -113,7 +113,22 @@ export default function EditProfileScreen() {
   const [bio, setBio] = useState('');
   const [picture, setPicture] = useState<string | undefined>();
 
+  // Check authentication on mount
+  useEffect(() => {
+    if (!isAuthenticated) {
+      Alert.alert(
+        'Sign In Required',
+        'Please sign in to edit your profile',
+        [{ text: 'OK', onPress: () => router.replace('/login') }]
+      );
+    }
+  }, [isAuthenticated]);
+
   const fetchProfile = useCallback(async () => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
     try {
       const response = await api.get('/profile');
       const profile = response.data;
@@ -122,18 +137,27 @@ export default function EditProfileScreen() {
       setLocation(profile.location || '');
       setBio(profile.bio || '');
       setPicture(profile.picture);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching profile:', error);
+      if (error.response?.status === 401) {
+        Alert.alert('Session Expired', 'Please sign in again');
+        router.replace('/login');
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
 
   const handleSave = async () => {
+    if (!isAuthenticated) {
+      Alert.alert('Error', 'Please sign in to save changes');
+      return;
+    }
+    
     if (!name.trim()) {
       Alert.alert('Error', 'Name is required');
       return;
@@ -143,17 +167,27 @@ export default function EditProfileScreen() {
     try {
       await api.put('/profile', {
         name: name.trim(),
-        phone: phone.trim(),
-        location: location.trim(),
-        bio: bio.trim(),
-        picture,
+        phone: phone.trim() || null,
+        location: location.trim() || null,
+        bio: bio.trim() || null,
+        picture: picture || null,
       });
       
       Alert.alert('Success', 'Profile updated successfully', [
         { text: 'OK', onPress: () => router.back() }
       ]);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update profile');
+    } catch (error: any) {
+      console.error('Error saving profile:', error);
+      if (error.response?.status === 401) {
+        Alert.alert('Session Expired', 'Please sign in again', [
+          { text: 'OK', onPress: () => router.replace('/login') }
+        ]);
+      } else {
+        Alert.alert(
+          'Error', 
+          error.response?.data?.detail || 'Failed to update profile. Please try again.'
+        );
+      }
     } finally {
       setSaving(false);
     }
