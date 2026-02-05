@@ -224,6 +224,132 @@ const PropertyListingCard = memo<ListingCardProps>(({ listing, onPress, onFavori
   );
 });
 
+// ============ AUTO LISTING CARD (Single Column - Image on Left) ============
+const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFavorited = false }) => {
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('de-DE', {
+      style: 'currency',
+      currency: listing.currency || 'EUR',
+      minimumFractionDigits: 0,
+    }).format(price);
+  };
+
+  const formatDate = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - date.getTime());
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 0) return 'Today';
+      if (diffDays === 1) return 'Yesterday';
+      if (diffDays < 7) return `${diffDays}d ago`;
+      if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+      return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    } catch {
+      return '';
+    }
+  };
+
+  const attributes = listing.attributes || {};
+  const year = attributes.year;
+  const mileage = attributes.mileage || attributes.km;
+  const fuel = attributes.fuel_type || attributes.fuel;
+  const transmission = attributes.transmission;
+  const make = attributes.make;
+  const model = attributes.model;
+  const vehicleType = listing.subcategory?.replace(/_/g, ' ');
+
+  const formatMileage = (km: number) => {
+    if (km >= 1000) return `${Math.round(km / 1000)}k km`;
+    return `${km} km`;
+  };
+
+  return (
+    <TouchableOpacity style={styles.autoCard} onPress={onPress} activeOpacity={0.97}>
+      <View style={styles.autoCardRow}>
+        {/* Left: Image */}
+        <View style={styles.autoImageContainer}>
+          <Image
+            source={{ uri: listing.images?.[0] || 'https://via.placeholder.com/300x200' }}
+            style={styles.autoImage}
+            resizeMode="cover"
+          />
+          {listing.featured && (
+            <View style={styles.autoFeaturedBadge}>
+              <Text style={styles.autoFeaturedText}>TOP</Text>
+            </View>
+          )}
+          {listing.images?.length > 1 && (
+            <View style={styles.autoImageCount}>
+              <Ionicons name="camera-outline" size={10} color="#fff" />
+              <Text style={styles.autoImageCountText}>{listing.images.length}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Right: Content */}
+        <View style={styles.autoCardContent}>
+          {/* Price */}
+          <Text style={styles.autoPrice}>{formatPrice(listing.price)}</Text>
+
+          {/* Title */}
+          <Text style={styles.autoTitle} numberOfLines={2}>{listing.title}</Text>
+
+          {/* Vehicle Specs Row */}
+          <View style={styles.autoSpecs}>
+            {year && (
+              <View style={styles.autoSpecItem}>
+                <Ionicons name="calendar-outline" size={12} color={COLORS.textSecondary} />
+                <Text style={styles.autoSpecText}>{year}</Text>
+              </View>
+            )}
+            {mileage && (
+              <View style={styles.autoSpecItem}>
+                <Ionicons name="speedometer-outline" size={12} color={COLORS.textSecondary} />
+                <Text style={styles.autoSpecText}>{formatMileage(mileage)}</Text>
+              </View>
+            )}
+            {fuel && (
+              <View style={styles.autoSpecItem}>
+                <Ionicons name="flash-outline" size={12} color={COLORS.textSecondary} />
+                <Text style={styles.autoSpecText}>{fuel}</Text>
+              </View>
+            )}
+            {transmission && (
+              <View style={styles.autoSpecItem}>
+                <Ionicons name="cog-outline" size={12} color={COLORS.textSecondary} />
+                <Text style={styles.autoSpecText}>{transmission}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Bottom: Location & Date */}
+          <View style={styles.autoBottomRow}>
+            <View style={styles.autoLocationRow}>
+              <Ionicons name="location-outline" size={11} color={COLORS.textLight} />
+              <Text style={styles.autoLocation} numberOfLines={1}>{listing.location}</Text>
+            </View>
+            <Text style={styles.autoDate}>{formatDate(listing.created_at)}</Text>
+          </View>
+        </View>
+
+        {/* Favorite Button */}
+        <TouchableOpacity
+          style={styles.autoFavoriteButton}
+          onPress={(e) => { e.stopPropagation(); onFavorite(); }}
+        >
+          <Ionicons
+            name={isFavorited ? 'heart' : 'heart-outline'}
+            size={18}
+            color={isFavorited ? '#E53935' : COLORS.textSecondary}
+          />
+        </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
+  );
+});
+
 // ============ FILTER CHIP ============
 interface FilterChipProps {
   label: string;
