@@ -310,6 +310,13 @@ const safetyStyles = StyleSheet.create({
 const generateHighlights = (listing: Listing, category: Category | null) => {
   const highlights: { id: string; icon: string; label: string }[] = [];
   
+  // Add category with its icon first
+  if (listing.category_id) {
+    const categoryIcon = getCategoryIcon(listing.category_id);
+    const categoryName = category?.name || getCategoryName(listing.category_id);
+    highlights.push({ id: 'category', icon: categoryIcon, label: categoryName });
+  }
+  
   if (listing.condition === 'new') {
     highlights.push({ id: 'new', icon: 'sparkles', label: 'Brand New' });
   }
@@ -324,9 +331,6 @@ const generateHighlights = (listing: Listing, category: Category | null) => {
   }
   if (listing.seller?.verified) {
     highlights.push({ id: 'verified', icon: 'shield-checkmark', label: 'Verified Seller' });
-  }
-  if (category) {
-    highlights.push({ id: 'category', icon: 'grid', label: category.name });
   }
   
   return highlights.slice(0, 6);
