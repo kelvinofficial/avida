@@ -248,7 +248,7 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
 });
 
 const cardStyles = StyleSheet.create({
-  card: { flex: 1, backgroundColor: '#fff', borderRadius: BORDER_RADIUS, overflow: 'hidden', marginBottom: 16, maxWidth: CARD_WIDTH },
+  card: { width: '100%', backgroundColor: '#fff', borderRadius: BORDER_RADIUS, overflow: 'hidden', marginBottom: 12 },
   imageContainer: { width: '100%', aspectRatio: 1.1, backgroundColor: '#F5F5F5' },
   image: { width: '100%', height: '100%' },
   placeholderImage: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5F5F5' },
