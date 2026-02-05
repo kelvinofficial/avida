@@ -318,19 +318,19 @@ const generateHighlights = (listing: Listing, category: Category | null) => {
   }
   
   if (listing.condition === 'new') {
-    highlights.push({ id: 'new', icon: 'sparkles', label: 'Brand New' });
+    highlights.push({ id: 'new', icon: 'sparkles-outline', label: 'Brand New' });
   }
   if (listing.condition === 'like_new') {
-    highlights.push({ id: 'like_new', icon: 'star', label: 'Like New' });
+    highlights.push({ id: 'like_new', icon: 'star-outline', label: 'Like New' });
   }
   if (listing.negotiable) {
-    highlights.push({ id: 'negotiable', icon: 'pricetag', label: 'Negotiable' });
+    highlights.push({ id: 'negotiable', icon: 'pricetag-outline', label: 'Negotiable' });
   }
   if (listing.featured) {
-    highlights.push({ id: 'featured', icon: 'ribbon', label: 'Featured' });
+    highlights.push({ id: 'featured', icon: 'ribbon-outline', label: 'Featured' });
   }
   if (listing.seller?.verified) {
-    highlights.push({ id: 'verified', icon: 'shield-checkmark', label: 'Verified Seller' });
+    highlights.push({ id: 'verified', icon: 'shield-checkmark-outline', label: 'Verified Seller' });
   }
   
   return highlights.slice(0, 6);
