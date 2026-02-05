@@ -8,7 +8,6 @@ import {
   Image,
   ActivityIndicator,
   Modal,
-  Share,
   Dimensions,
   ScrollView,
 } from 'react-native';
@@ -19,28 +18,28 @@ import { Property } from '../../types/property';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
+const CARD_GAP = 12;
 
-// Property category - One column, image on top (full width vertical card)
-const PROPERTY_CARD_WIDTH = SCREEN_WIDTH - HORIZONTAL_PADDING * 2;
-const PROPERTY_IMAGE_HEIGHT = 180;
-
-// Other categories - Single column with horizontal cards (image left, info right)
-const OTHER_CARD_WIDTH = SCREEN_WIDTH - HORIZONTAL_PADDING * 2;
-const OTHER_IMAGE_SIZE = 120;
+// Card width for 2-column grid (matching Auto page design)
+const CARD_WIDTH = (SCREEN_WIDTH - HORIZONTAL_PADDING * 2 - CARD_GAP) / 2;
+const IMAGE_HEIGHT = 110;
 
 const COLORS = {
   primary: '#2E7D32',
   primaryLight: '#E8F5E9',
+  secondary: '#1565C0',
+  secondaryLight: '#E3F2FD',
   surface: '#FFFFFF',
+  surfaceVariant: '#F5F5F5',
   background: '#F5F5F5',
   text: '#1A1A1A',
   textSecondary: '#666666',
   border: '#E0E0E0',
   error: '#D32F2F',
-  warning: '#F57C00',
-  sponsored: '#FFF3E0',
-  sponsoredBorder: '#FF9800',
-  verified: '#1565C0',
+  warning: '#FF9800',
+  warningLight: '#FFF3E0',
+  verified: '#4CAF50',
+  certified: '#9C27B0',
 };
 
 interface SimilarListing extends Property {
@@ -106,357 +105,175 @@ const getRelativeTime = (dateStr: string) => {
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-  return `${Math.floor(diffDays / 30)} months ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+  return `${Math.floor(diffDays / 30)}mo ago`;
 };
 
-// ============ PROPERTY CARD (One Column - Image on Top) ============
-const PropertyCard = memo(({ 
-  listing, index, onPress, onFavorite, isFavorited, sourceId 
+// Format price
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(price);
+};
+
+// ============ LISTING CARD (Auto Page Style - 2 Column Grid) ============
+const ListingCard = memo(({ 
+  listing, 
+  index, 
+  onPress, 
+  onFavorite, 
+  isFavorited, 
+  sourceId,
+  onWhatsApp,
 }: { 
-  listing: SimilarListing; index: number; onPress: () => void; onFavorite: () => void; isFavorited: boolean; sourceId: string;
+  listing: SimilarListing; 
+  index: number; 
+  onPress: () => void; 
+  onFavorite: () => void; 
+  isFavorited: boolean; 
+  sourceId: string;
+  onWhatsApp?: () => void;
 }) => {
-  useEffect(() => { trackEvent('impression', sourceId, listing.id, listing.isSponsored, index); }, []);
+  useEffect(() => { 
+    trackEvent('impression', sourceId, listing.id, listing.isSponsored, index); 
+  }, []);
+
+  const imageCount = listing.images?.length || 0;
+  const imageSource = listing.images?.[0] ? { uri: listing.images[0] } : null;
 
   return (
-    <TouchableOpacity 
-      style={[propertyCardStyles.container, listing.isSponsored && propertyCardStyles.sponsoredContainer]}
+    <TouchableOpacity
+      style={[
+        cardStyles.card,
+        listing.featured && cardStyles.cardFeatured,
+        listing.isSponsored && cardStyles.cardSponsored,
+      ]}
       onPress={onPress}
       activeOpacity={0.9}
     >
-      {/* Image Row */}
-      <View style={propertyCardStyles.imageContainer}>
-        <Image source={{ uri: listing.images?.[0] }} style={propertyCardStyles.image} />
-        
-        {listing.isSponsored && (
-          <View style={propertyCardStyles.sponsoredLabel}>
-            <Text style={propertyCardStyles.sponsoredText}>Sponsored</Text>
+      {/* Image Container */}
+      <View style={cardStyles.imageContainer}>
+        {imageSource ? (
+          <Image source={imageSource} style={cardStyles.image} resizeMode="cover" />
+        ) : (
+          <View style={cardStyles.placeholderImage}>
+            <Ionicons name="home" size={32} color={COLORS.border} />
           </View>
         )}
-        
-        <TouchableOpacity style={propertyCardStyles.favoriteBtn} onPress={onFavorite}>
-          <Ionicons name={isFavorited ? 'heart' : 'heart-outline'} size={20} color={isFavorited ? COLORS.error : '#fff'} />
+
+        {/* Badges Row - Featured/Sponsored/Boosted */}
+        <View style={cardStyles.badgeRow}>
+          {listing.featured && (
+            <View style={cardStyles.featuredBadge}>
+              <Text style={cardStyles.featuredText}>Featured</Text>
+            </View>
+          )}
+          {listing.isSponsored && !listing.featured && (
+            <View style={cardStyles.sponsoredBadge}>
+              <Ionicons name="megaphone" size={9} color="#fff" />
+              <Text style={cardStyles.sponsoredText}>Ad</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Favorite Button */}
+        <TouchableOpacity
+          style={cardStyles.favoriteButton}
+          onPress={(e) => {
+            e.stopPropagation?.();
+            onFavorite();
+          }}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons
+            name={isFavorited ? 'heart' : 'heart-outline'}
+            size={18}
+            color={isFavorited ? COLORS.error : COLORS.text}
+          />
         </TouchableOpacity>
 
-        {listing.images && listing.images.length > 1 && (
-          <View style={propertyCardStyles.imageCount}>
-            <Ionicons name="camera-outline" size={12} color="#fff" />
-            <Text style={propertyCardStyles.imageCountText}>{listing.images.length}</Text>
+        {/* Image Count Badge */}
+        {imageCount > 1 && (
+          <View style={cardStyles.imageCountBadge}>
+            <Ionicons name="camera" size={10} color="#fff" />
+            <Text style={cardStyles.imageCountText}>{imageCount}</Text>
           </View>
         )}
       </View>
 
       {/* Content */}
-      <View style={propertyCardStyles.content}>
-        <View style={propertyCardStyles.topRow}>
-          <Text style={propertyCardStyles.price}>
-            €{listing.price?.toLocaleString()}
-            {listing.pricePerMonth && <Text style={propertyCardStyles.priceUnit}>/mo</Text>}
-          </Text>
-          {listing.priceNegotiable && <Text style={propertyCardStyles.negotiable}>Negotiable</Text>}
-        </View>
-
-        <Text style={propertyCardStyles.title} numberOfLines={2}>{listing.title}</Text>
-
-        <View style={propertyCardStyles.locationRow}>
-          <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
-          <Text style={propertyCardStyles.location}>{listing.location?.area}, {listing.location?.city}</Text>
-        </View>
-
-        {/* Stats */}
-        <View style={propertyCardStyles.stats}>
-          {listing.bedrooms && (
-            <View style={propertyCardStyles.stat}>
-              <Ionicons name="bed-outline" size={14} color={COLORS.textSecondary} />
-              <Text style={propertyCardStyles.statText}>{listing.bedrooms} Beds</Text>
+      <View style={cardStyles.content}>
+        {/* Price Row */}
+        <View style={cardStyles.priceRow}>
+          <Text style={cardStyles.price}>{formatPrice(listing.price || 0)}</Text>
+          {listing.priceNegotiable && (
+            <View style={cardStyles.negotiableBadge}>
+              <Text style={cardStyles.negotiableText}>Negotiable</Text>
             </View>
+          )}
+        </View>
+
+        {/* Title */}
+        <Text style={cardStyles.title} numberOfLines={2}>
+          {listing.title}
+        </Text>
+
+        {/* Property Specs */}
+        <View style={cardStyles.specsRow}>
+          {listing.bedrooms && (
+            <>
+              <Text style={cardStyles.specText}>{listing.bedrooms} Beds</Text>
+              <View style={cardStyles.specDot} />
+            </>
           )}
           {listing.bathrooms && (
-            <View style={propertyCardStyles.stat}>
-              <Ionicons name="water-outline" size={14} color={COLORS.textSecondary} />
-              <Text style={propertyCardStyles.statText}>{listing.bathrooms} Baths</Text>
-            </View>
+            <>
+              <Text style={cardStyles.specText}>{listing.bathrooms} Baths</Text>
+              <View style={cardStyles.specDot} />
+            </>
           )}
           {listing.size && (
-            <View style={propertyCardStyles.stat}>
-              <Ionicons name="resize-outline" size={14} color={COLORS.textSecondary} />
-              <Text style={propertyCardStyles.statText}>{listing.size} sqm</Text>
-            </View>
+            <Text style={cardStyles.specText}>{listing.size} m²</Text>
           )}
         </View>
-
-        {/* Badges */}
-        <View style={propertyCardStyles.badges}>
-          {listing.verification?.isVerified && (
-            <View style={[propertyCardStyles.badge, { backgroundColor: '#E3F2FD' }]}>
-              <Ionicons name="shield-checkmark" size={10} color={COLORS.verified} />
-              <Text style={[propertyCardStyles.badgeText, { color: COLORS.verified }]}>Verified</Text>
-            </View>
-          )}
-          {listing.condition === 'new' && (
-            <View style={[propertyCardStyles.badge, { backgroundColor: COLORS.primaryLight }]}>
-              <Text style={[propertyCardStyles.badgeText, { color: COLORS.primary }]}>New</Text>
-            </View>
-          )}
-          {listing.furnishing === 'furnished' && (
-            <View style={[propertyCardStyles.badge, { backgroundColor: '#FFF3E0' }]}>
-              <Text style={[propertyCardStyles.badgeText, { color: COLORS.warning }]}>Furnished</Text>
-            </View>
-          )}
-        </View>
-
-        <Text style={propertyCardStyles.postedDate}>{getRelativeTime(listing.createdAt || new Date().toISOString())}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-});
-
-const propertyCardStyles = StyleSheet.create({
-  container: {
-    width: PROPERTY_CARD_WIDTH,
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    marginBottom: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  sponsoredContainer: {
-    borderColor: COLORS.sponsoredBorder,
-    borderWidth: 2,
-  },
-  imageContainer: {
-    position: 'relative',
-  },
-  image: {
-    width: '100%',
-    height: PROPERTY_IMAGE_HEIGHT,
-    backgroundColor: COLORS.background,
-  },
-  sponsoredLabel: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    backgroundColor: COLORS.sponsored,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  sponsoredText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: COLORS.warning,
-  },
-  favoriteBtn: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  imageCount: {
-    position: 'absolute',
-    bottom: 10,
-    left: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  imageCountText: {
-    fontSize: 11,
-    color: '#fff',
-    fontWeight: '600',
-  },
-  content: {
-    padding: 14,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  price: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
-  priceUnit: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-  },
-  negotiable: {
-    fontSize: 11,
-    color: COLORS.primary,
-    fontWeight: '500',
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginTop: 6,
-    lineHeight: 20,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 8,
-  },
-  location: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-  },
-  stats: {
-    flexDirection: 'row',
-    gap: 16,
-    marginTop: 10,
-  },
-  stat: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  statText: {
-    fontSize: 12,
-    color: COLORS.text,
-  },
-  badges: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginTop: 10,
-  },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 4,
-  },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  postedDate: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 8,
-  },
-});
-
-// ============ OTHER CATEGORY CARD (Horizontal - Image Left, Info Right) ============
-const OtherCategoryCard = memo(({ 
-  listing, index, onPress, onFavorite, isFavorited, sourceId 
-}: { 
-  listing: SimilarListing; index: number; onPress: () => void; onFavorite: () => void; isFavorited: boolean; sourceId: string;
-}) => {
-  useEffect(() => { trackEvent('impression', sourceId, listing.id, listing.isSponsored, index); }, []);
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
-
-  const imageCount = listing.images?.length || 0;
-
-  return (
-    <TouchableOpacity 
-      style={[
-        otherCardStyles.container, 
-        listing.isSponsored && otherCardStyles.sponsoredContainer,
-        listing.featured && otherCardStyles.featuredContainer,
-      ]}
-      onPress={onPress}
-      activeOpacity={0.9}
-    >
-      {/* LEFT COLUMN - Image */}
-      <View style={otherCardStyles.imageColumn}>
-        <Image source={{ uri: listing.images?.[0] }} style={otherCardStyles.image} />
-        
-        {/* Badges on image */}
-        {listing.isSponsored && (
-          <View style={otherCardStyles.sponsoredBadge}>
-            <Text style={otherCardStyles.sponsoredText}>Ad</Text>
-          </View>
-        )}
-        {listing.featured && !listing.isSponsored && (
-          <View style={otherCardStyles.featuredBadge}>
-            <Text style={otherCardStyles.featuredText}>Featured</Text>
-          </View>
-        )}
-        
-        {/* Favorite button */}
-        <TouchableOpacity style={otherCardStyles.favoriteBtn} onPress={onFavorite}>
-          <Ionicons name={isFavorited ? 'heart' : 'heart-outline'} size={18} color={isFavorited ? COLORS.error : '#fff'} />
-        </TouchableOpacity>
-
-        {/* Image count */}
-        {imageCount > 1 && (
-          <View style={otherCardStyles.imageCountBadge}>
-            <Ionicons name="camera" size={10} color="#fff" />
-            <Text style={otherCardStyles.imageCountText}>{imageCount}</Text>
-          </View>
-        )}
-      </View>
-
-      {/* RIGHT COLUMN - Content */}
-      <View style={otherCardStyles.contentColumn}>
-        {/* Price row */}
-        <View style={otherCardStyles.priceRow}>
-          <Text style={otherCardStyles.price}>{formatPrice(listing.price || 0)}</Text>
-          {listing.negotiable && (
-            <View style={otherCardStyles.negotiableBadge}>
-              <Text style={otherCardStyles.negotiableText}>Neg.</Text>
-            </View>
-          )}
-        </View>
-        
-        {/* Title */}
-        <Text style={otherCardStyles.title} numberOfLines={2}>{listing.title}</Text>
 
         {/* Location */}
-        <View style={otherCardStyles.locationRow}>
-          <Ionicons name="location" size={12} color={COLORS.textSecondary} />
-          <Text style={otherCardStyles.location} numberOfLines={1}>
+        <View style={cardStyles.locationRow}>
+          <Ionicons name="location" size={11} color={COLORS.textSecondary} />
+          <Text style={cardStyles.location} numberOfLines={1}>
             {listing.location?.city || listing.location?.area || 'Location'}
           </Text>
         </View>
 
-        {/* Bottom row - Verified + Time */}
-        <View style={otherCardStyles.bottomRow}>
+        {/* Seller Badges */}
+        <View style={cardStyles.sellerRow}>
           {listing.seller?.isVerified && (
-            <View style={otherCardStyles.verifiedBadge}>
-              <Ionicons name="shield-checkmark" size={10} color={COLORS.primary} />
-              <Text style={otherCardStyles.verifiedText}>Verified</Text>
+            <View style={cardStyles.verifiedBadge}>
+              <Ionicons name="shield-checkmark" size={9} color={COLORS.primary} />
+              <Text style={cardStyles.verifiedText}>Verified</Text>
             </View>
           )}
-          <Text style={otherCardStyles.timeText}>{getRelativeTime(listing.createdAt || new Date().toISOString())}</Text>
+          {listing.verification?.isVerified && (
+            <View style={cardStyles.certifiedBadge}>
+              <Ionicons name="ribbon" size={9} color="#fff" />
+              <Text style={cardStyles.certifiedText}>Certified</Text>
+            </View>
+          )}
         </View>
 
-        {/* Quick actions */}
-        <View style={otherCardStyles.actionsRow}>
-          <TouchableOpacity style={otherCardStyles.actionButton}>
-            <Ionicons name="chatbubble-outline" size={16} color={COLORS.primary} />
-          </TouchableOpacity>
-          <TouchableOpacity style={otherCardStyles.actionButton}>
-            <Ionicons name="call-outline" size={16} color={COLORS.primary} />
-          </TouchableOpacity>
-          <TouchableOpacity style={[otherCardStyles.actionButton, otherCardStyles.whatsappButton]}>
+        {/* Quick Actions */}
+        <View style={cardStyles.actionsRow}>
+          <TouchableOpacity
+            style={[cardStyles.actionButton, cardStyles.whatsappButton]}
+            onPress={(e) => {
+              e.stopPropagation?.();
+              onWhatsApp?.();
+            }}
+          >
             <Ionicons name="logo-whatsapp" size={16} color="#25D366" />
           </TouchableOpacity>
         </View>
@@ -465,54 +282,48 @@ const OtherCategoryCard = memo(({
   );
 });
 
-const otherCardStyles = StyleSheet.create({
-  container: {
-    width: OTHER_CARD_WIDTH,
+const cardStyles = StyleSheet.create({
+  card: {
+    width: CARD_WIDTH,
     backgroundColor: COLORS.surface,
     borderRadius: 12,
-    marginBottom: 12,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: COLORS.border,
-    flexDirection: 'row',
   },
-  sponsoredContainer: {
-    borderColor: COLORS.sponsoredBorder,
-    borderWidth: 2,
-  },
-  featuredContainer: {
+  cardFeatured: {
     borderColor: COLORS.primary,
     borderWidth: 2,
   },
-  // Left column - Image
-  imageColumn: {
+  cardSponsored: {
+    borderColor: COLORS.warning,
+    borderWidth: 2,
+  },
+  imageContainer: {
     position: 'relative',
-    width: OTHER_IMAGE_SIZE,
-    height: OTHER_IMAGE_SIZE,
+    width: '100%',
+    height: IMAGE_HEIGHT,
+    backgroundColor: COLORS.surfaceVariant,
   },
   image: {
     width: '100%',
     height: '100%',
-    backgroundColor: COLORS.background,
   },
-  sponsoredBadge: {
+  placeholderImage: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: COLORS.surfaceVariant,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeRow: {
     position: 'absolute',
     top: 6,
     left: 6,
-    backgroundColor: COLORS.warning,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  sponsoredText: {
-    color: '#fff',
-    fontSize: 9,
-    fontWeight: '700',
+    flexDirection: 'row',
+    gap: 4,
   },
   featuredBadge: {
-    position: 'absolute',
-    top: 6,
-    left: 6,
     backgroundColor: COLORS.primary,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -523,14 +334,28 @@ const otherCardStyles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '700',
   },
-  favoriteBtn: {
+  sponsoredBadge: {
+    backgroundColor: COLORS.warning,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  sponsoredText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '600',
+  },
+  favoriteButton: {
     position: 'absolute',
     top: 6,
     right: 6,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: 14,
     width: 28,
     height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -538,104 +363,130 @@ const otherCardStyles = StyleSheet.create({
     position: 'absolute',
     bottom: 6,
     left: 6,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 4,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 4,
   },
   imageCountText: {
     color: '#fff',
     fontSize: 10,
     fontWeight: '600',
   },
-  // Right column - Content
-  contentColumn: {
-    flex: 1,
-    padding: 12,
-    justifyContent: 'space-between',
+  content: {
+    padding: 10,
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    marginBottom: 4,
   },
   price: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: COLORS.primary,
   },
   negotiableBadge: {
     backgroundColor: COLORS.primaryLight,
     paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderRadius: 3,
+    paddingVertical: 1,
+    borderRadius: 4,
   },
   negotiableText: {
     fontSize: 9,
-    fontWeight: '600',
     color: COLORS.primary,
+    fontWeight: '600',
   },
   title: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '500',
     color: COLORS.text,
-    marginTop: 4,
-    lineHeight: 18,
+    lineHeight: 16,
+    marginBottom: 4,
+    minHeight: 32,
+  },
+  specsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    marginBottom: 4,
+  },
+  specText: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+  },
+  specDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: COLORS.border,
+    marginHorizontal: 4,
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginTop: 6,
+    gap: 3,
+    marginBottom: 4,
   },
   location: {
-    fontSize: 12,
+    fontSize: 11,
     color: COLORS.textSecondary,
     flex: 1,
   },
-  bottomRow: {
+  sellerRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 6,
+    flexWrap: 'wrap',
+    gap: 4,
+    marginBottom: 6,
   },
   verifiedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
     backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
     borderRadius: 4,
+    gap: 2,
   },
   verifiedText: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 9,
     color: COLORS.primary,
+    fontWeight: '500',
   },
-  timeText: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
+  certifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.certified,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 4,
+    gap: 2,
+  },
+  certifiedText: {
+    fontSize: 9,
+    color: '#fff',
+    fontWeight: '500',
   },
   actionsRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 8,
-    marginTop: 8,
+    gap: 6,
+    marginTop: 2,
   },
   actionButton: {
     width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.background,
+    height: 28,
+    borderRadius: 6,
+    backgroundColor: COLORS.surfaceVariant,
     justifyContent: 'center',
     alignItems: 'center',
   },
   whatsappButton: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: '#E7FFE7',
   },
 });
 
@@ -647,10 +498,6 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
   const [error, setError] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [showTooltip, setShowTooltip] = useState(false);
-  const [sameCityOnly, setSameCityOnly] = useState(false);
-  const [samePriceRange, setSamePriceRange] = useState(false);
-
-  const isPropertyCategory = category === 'property';
 
   // Fetch similar listings
   const fetchSimilarListings = useCallback(async () => {
@@ -658,13 +505,9 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
       setLoading(true);
       setError(null);
       
-      // Use the appropriate endpoint based on category
-      const endpoint = isPropertyCategory 
-        ? `/property/similar/${propertyId}`
-        : `/listings/similar/${propertyId}`;
-      
+      const endpoint = `/property/similar/${propertyId}`;
       const response = await api.get(endpoint, {
-        params: { limit: 10, include_sponsored: true, same_city_only: sameCityOnly, same_price_range: samePriceRange }
+        params: { limit: 10, include_sponsored: true }
       });
       
       setListings(response.data.listings || []);
@@ -674,7 +517,7 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
     } finally {
       setLoading(false);
     }
-  }, [propertyId, sameCityOnly, samePriceRange, isPropertyCategory]);
+  }, [propertyId]);
 
   useEffect(() => {
     if (propertyId) fetchSimilarListings();
@@ -683,24 +526,25 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
   // Toggle favorite
   const toggleFavorite = async (listingId: string) => {
     const isFav = favorites.has(listingId);
+    setFavorites(prev => {
+      const newSet = new Set(prev);
+      if (isFav) newSet.delete(listingId);
+      else newSet.add(listingId);
+      return newSet;
+    });
+    
     try {
       if (isFav) await api.delete(`/property/favorites/${listingId}`);
       else await api.post(`/property/favorites/${listingId}`);
       
-      setFavorites(prev => {
-        const newSet = new Set(prev);
-        if (isFav) newSet.delete(listingId);
-        else newSet.add(listingId);
-        return newSet;
-      });
-      
       const listing = listings.find(l => l.id === listingId);
       if (listing) trackEvent('save', propertyId, listingId, listing.isSponsored, listings.indexOf(listing));
     } catch (err) {
+      // Revert on error
       setFavorites(prev => {
         const newSet = new Set(prev);
-        if (isFav) newSet.delete(listingId);
-        else newSet.add(listingId);
+        if (isFav) newSet.add(listingId);
+        else newSet.delete(listingId);
         return newSet;
       });
     }
@@ -712,46 +556,33 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
     if (onListingPress) {
       onListingPress(listing);
     } else {
-      // Navigate to the appropriate detail page based on category
-      if (isPropertyCategory) {
-        router.push(`/property/${listing.id}`);
-      } else {
-        // For other categories, use the generic listing page
-        router.push(`/listing/${listing.id}`);
-      }
+      router.push(`/property/${listing.id}`);
     }
   };
 
-  // Render header
+  // Handle WhatsApp
+  const handleWhatsApp = (listing: SimilarListing) => {
+    const phone = listing.seller?.whatsapp || listing.seller?.phone;
+    if (phone) {
+      const message = `Hi, I'm interested in your property: ${listing.title}`;
+      const url = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+      import('react-native').then(({ Linking }) => Linking.openURL(url));
+    }
+  };
+
+  // Render header with See All
   const renderHeader = () => (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
+        <Ionicons name="home" size={18} color={COLORS.primary} />
         <Text style={styles.title}>Similar Listings</Text>
-        <Text style={styles.subtitle}>Based on price, condition, and location</Text>
       </View>
-      <TouchableOpacity style={styles.infoBtn} onPress={() => setShowTooltip(true)}>
-        <Ionicons name="help-circle-outline" size={20} color={COLORS.textSecondary} />
-      </TouchableOpacity>
-    </View>
-  );
-
-  // Render filters
-  const renderFilters = () => (
-    <View style={styles.filters}>
       <TouchableOpacity 
-        style={[styles.filterChip, sameCityOnly && styles.filterChipActive]}
-        onPress={() => setSameCityOnly(!sameCityOnly)}
+        style={styles.seeAllBtn} 
+        onPress={() => router.push('/property')}
       >
-        <Ionicons name={sameCityOnly ? 'checkbox' : 'square-outline'} size={14} color={sameCityOnly ? COLORS.primary : COLORS.textSecondary} />
-        <Text style={[styles.filterText, sameCityOnly && styles.filterTextActive]}>Same city only</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity 
-        style={[styles.filterChip, samePriceRange && styles.filterChipActive]}
-        onPress={() => setSamePriceRange(!samePriceRange)}
-      >
-        <Ionicons name={samePriceRange ? 'checkbox' : 'square-outline'} size={14} color={samePriceRange ? COLORS.primary : COLORS.textSecondary} />
-        <Text style={[styles.filterText, samePriceRange && styles.filterTextActive]}>Same price range</Text>
+        <Text style={styles.seeAllText}>See All</Text>
+        <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
       </TouchableOpacity>
     </View>
   );
@@ -761,7 +592,6 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
     <View style={styles.emptyContainer}>
       <Ionicons name="home-outline" size={40} color={COLORS.textSecondary} />
       <Text style={styles.emptyTitle}>No similar listings found</Text>
-      <Text style={styles.emptySubtitle}>Try adjusting your filters</Text>
       <TouchableOpacity style={styles.browseBtn} onPress={() => router.push('/property')}>
         <Text style={styles.browseBtnText}>Browse all properties</Text>
       </TouchableOpacity>
@@ -794,51 +624,45 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
     );
   }
 
+  // Create pairs for 2-column horizontal scroll (matching Auto page)
+  const pairs: SimilarListing[][] = [];
+  for (let i = 0; i < listings.length; i += 2) {
+    pairs.push(listings.slice(i, i + 2));
+  }
+
   return (
     <View style={styles.container}>
       {renderHeader()}
-      {renderFilters()}
       
       {listings.length === 0 ? (
         renderEmpty()
-      ) : isPropertyCategory ? (
-        // ONE COLUMN LAYOUT - Image on top (for Property category)
-        <ScrollView 
-          style={styles.propertyList}
-          contentContainerStyle={styles.propertyListContent}
-          showsVerticalScrollIndicator={false}
-          nestedScrollEnabled
-        >
-          {listings.map((item, index) => (
-            <PropertyCard
-              key={item.id}
-              listing={item}
-              index={index}
-              onPress={() => handlePress(item, index)}
-              onFavorite={() => toggleFavorite(item.id)}
-              isFavorited={favorites.has(item.id)}
-              sourceId={propertyId}
-            />
-          ))}
-        </ScrollView>
       ) : (
-        // ONE COLUMN LAYOUT - Vertical cards matching Auto page design (for other categories)
-        <ScrollView 
-          style={styles.propertyList}
-          contentContainerStyle={styles.propertyListContent}
-          showsVerticalScrollIndicator={false}
-          nestedScrollEnabled
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          pagingEnabled={false}
+          snapToInterval={CARD_WIDTH * 2 + CARD_GAP + HORIZONTAL_PADDING}
+          decelerationRate="fast"
         >
-          {listings.map((item, index) => (
-            <OtherCategoryCard
-              key={item.id}
-              listing={item}
-              index={index}
-              onPress={() => handlePress(item, index)}
-              onFavorite={() => toggleFavorite(item.id)}
-              isFavorited={favorites.has(item.id)}
-              sourceId={propertyId}
-            />
+          {pairs.map((pair, pairIndex) => (
+            <View key={pairIndex} style={styles.pairContainer}>
+              {pair.map((item, itemIndex) => {
+                const globalIndex = pairIndex * 2 + itemIndex;
+                return (
+                  <ListingCard
+                    key={item.id}
+                    listing={item}
+                    index={globalIndex}
+                    onPress={() => handlePress(item, globalIndex)}
+                    onFavorite={() => toggleFavorite(item.id)}
+                    isFavorited={favorites.has(item.id)}
+                    sourceId={propertyId}
+                    onWhatsApp={() => handleWhatsApp(item)}
+                  />
+                );
+              })}
+            </View>
           ))}
         </ScrollView>
       )}
@@ -858,63 +682,37 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     paddingHorizontal: HORIZONTAL_PADDING,
     marginBottom: 12,
   },
   headerLeft: {
-    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   title: {
     fontSize: 18,
     fontWeight: '700',
     color: COLORS.text,
   },
-  subtitle: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  infoBtn: {
-    padding: 4,
-  },
-  filters: {
-    flexDirection: 'row',
-    paddingHorizontal: HORIZONTAL_PADDING,
-    gap: 12,
-    marginBottom: 12,
-  },
-  filterChip: {
+  seeAllBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: COLORS.background,
+    gap: 2,
   },
-  filterChipActive: {
-    backgroundColor: COLORS.primaryLight,
-  },
-  filterText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-  },
-  filterTextActive: {
-    color: COLORS.primary,
+  seeAllText: {
+    fontSize: 14,
     fontWeight: '600',
+    color: COLORS.primary,
   },
-  propertyList: {
-    maxHeight: 500,
-  },
-  propertyListContent: {
+  scrollContent: {
     paddingHorizontal: HORIZONTAL_PADDING,
   },
-  otherGrid: {
+  pairContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: HORIZONTAL_PADDING,
-    gap: 12,
+    gap: CARD_GAP,
+    marginRight: HORIZONTAL_PADDING,
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -950,11 +748,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.text,
     marginTop: 12,
-  },
-  emptySubtitle: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    marginTop: 4,
   },
   browseBtn: {
     marginTop: 16,
