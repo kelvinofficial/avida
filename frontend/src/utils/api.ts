@@ -67,6 +67,10 @@ export const categoriesApi = {
   getOne: async (id: string) => {
     const response = await api.get(`/categories/${id}`);
     return response.data;
+  },
+  getSubcategories: async (categoryId: string) => {
+    const response = await api.get(`/categories/${categoryId}/subcategories`);
+    return response.data;
   }
 };
 
@@ -74,6 +78,7 @@ export const categoriesApi = {
 export const listingsApi = {
   getAll: async (params?: {
     category?: string;
+    subcategory?: string;
     search?: string;
     min_price?: number;
     max_price?: number;
@@ -82,6 +87,7 @@ export const listingsApi = {
     sort?: string;
     page?: number;
     limit?: number;
+    filters?: string; // JSON string of attribute filters
   }) => {
     const response = await api.get('/listings', { params });
     return response.data;
