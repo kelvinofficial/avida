@@ -537,15 +537,18 @@ export default function PostListingScreen() {
       };
 
       await listingsApi.create(listingData);
-      Alert.alert('Success', 'Your listing has been posted!', [
-        { text: 'OK', onPress: () => router.replace('/') },
-      ]);
+      setShowSuccessModal(true);
     } catch (error: any) {
       console.error('Error creating listing:', error);
       Alert.alert('Error', error.response?.data?.detail || 'Failed to post listing');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    router.replace('/');
   };
 
   // ============ STEP INDICATOR ============
