@@ -1451,7 +1451,61 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.text,
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  sectionSubtitle: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginBottom: 16,
+  },
+  subcategoryList: {
+    gap: 8,
+  },
+  subcategoryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: COLORS.border,
+  },
+  subcategoryItemSelected: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryLight,
+  },
+  subcategoryItemError: {
+    borderColor: COLORS.error,
+  },
+  subcategoryContent: {
+    flex: 1,
+  },
+  subcategoryText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: COLORS.text,
+  },
+  subcategoryTextSelected: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  selectionSummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#E8F5E9',
+    borderRadius: 10,
+    marginTop: 16,
+    gap: 8,
+  },
+  selectionSummaryText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.success,
+    flex: 1,
   },
   // Images
   imagesGrid: {
