@@ -11,6 +11,8 @@ import {
   ScrollView,
   Linking,
   Alert,
+  TextInput,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -50,9 +52,15 @@ export default function LoginScreen() {
   const { setUser, setToken } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Email/Password state
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [name, setName] = useState('');
 
   const handleClose = () => {
-    // Always navigate to home - simpler and more reliable
     router.replace('/');
   };
 
@@ -62,7 +70,6 @@ export default function LoginScreen() {
       if (supported) {
         await Linking.openURL(url);
       } else {
-        // Fallback to WebBrowser
         await WebBrowser.openBrowserAsync(url);
       }
     } catch (err) {
@@ -76,6 +83,79 @@ export default function LoginScreen() {
 
   const handlePrivacyPress = () => {
     openLink(PRIVACY_URL);
+  };
+
+  // Email/Password Login
+  const handleEmailLogin = async () => {
+    if (!email.trim()) {
+      setError('Please enter your email');
+      return;
+    }
+    if (!password.trim()) {
+      setError('Please enter your password');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await authApi.login(email.trim(), password);
+      if (result.user && result.session_token) {
+        await setToken(result.session_token);
+        setUser(result.user);
+        await saveUserData(result.user);
+        router.replace('/');
+      }
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Email/Password Registration
+  const handleEmailRegister = async () => {
+    if (!name.trim()) {
+      setError('Please enter your name');
+      return;
+    }
+    if (!email.trim()) {
+      setError('Please enter your email');
+      return;
+    }
+    if (!email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    if (!password.trim()) {
+      setError('Please enter a password');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await authApi.register(email.trim(), password, name.trim());
+      if (result.user && result.session_token) {
+        await setToken(result.session_token);
+        setUser(result.user);
+        await saveUserData(result.user);
+        Alert.alert('Success', 'Account created successfully!');
+        router.replace('/');
+      }
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      setError(err.response?.data?.detail || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -125,8 +205,19 @@ export default function LoginScreen() {
     }
   };
 
+  const toggleMode = () => {
+    setIsLoginMode(!isLoginMode);
+    setError(null);
+    setEmail('');
+    setPassword('');
+    setName('');
+  };
+
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       {/* Header with gradient background */}
       <LinearGradient
         colors={[COLORS.gradientStart, COLORS.gradientEnd]}
@@ -134,7 +225,7 @@ export default function LoginScreen() {
         end={{ x: 1, y: 1 }}
         style={styles.headerGradient}
       >
-        {/* Close Button - Fixed position */}
+        {/* Close Button */}
         <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
           <Ionicons name="close" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -142,41 +233,20 @@ export default function LoginScreen() {
         {/* Decorative circles */}
         <View style={[styles.decorCircle, styles.circle1]} />
         <View style={[styles.decorCircle, styles.circle2]} />
-        <View style={[styles.decorCircle, styles.circle3]} />
 
-        {/* Illustration */}
-        <View style={styles.illustrationContainer}>
-          <View style={styles.illustration}>
-            <View style={styles.phoneFrame}>
-              <View style={styles.phoneNotch} />
-              <View style={styles.phoneContent}>
-                <View style={styles.miniCard}>
-                  <View style={styles.miniCardImage} />
-                  <View style={styles.miniCardLines}>
-                    <View style={styles.miniLine} />
-                    <View style={[styles.miniLine, { width: '60%' }]} />
-                  </View>
-                </View>
-                <View style={styles.miniCard}>
-                  <View style={styles.miniCardImage} />
-                  <View style={styles.miniCardLines}>
-                    <View style={styles.miniLine} />
-                    <View style={[styles.miniLine, { width: '50%' }]} />
-                  </View>
-                </View>
-              </View>
-            </View>
-            {/* Floating elements */}
-            <View style={[styles.floatingIcon, styles.floatingIcon1]}>
-              <Ionicons name="heart" size={16} color={COLORS.error} />
-            </View>
-            <View style={[styles.floatingIcon, styles.floatingIcon2]}>
-              <Ionicons name="chatbubble" size={14} color={COLORS.google} />
-            </View>
-            <View style={[styles.floatingIcon, styles.floatingIcon3]}>
-              <Ionicons name="pricetag" size={14} color={COLORS.accent} />
-            </View>
+        {/* Header Content */}
+        <View style={styles.headerContent}>
+          <View style={styles.logoContainer}>
+            <Ionicons name="storefront" size={32} color="#fff" />
           </View>
+          <Text style={styles.headerTitle}>
+            {isLoginMode ? 'Welcome Back' : 'Create Account'}
+          </Text>
+          <Text style={styles.headerSubtitle}>
+            {isLoginMode 
+              ? 'Sign in to continue to avida' 
+              : 'Join avida marketplace today'}
+          </Text>
         </View>
       </LinearGradient>
 
@@ -185,45 +255,8 @@ export default function LoginScreen() {
         <ScrollView 
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
-          {/* Welcome Text */}
-          <View style={styles.welcomeSection}>
-            <Text style={styles.welcomeTitle}>Welcome to</Text>
-            <View style={styles.brandRow}>
-              <View style={styles.logoIcon}>
-                <Ionicons name="storefront" size={24} color={COLORS.primary} />
-              </View>
-              <Text style={styles.brandName}>avida</Text>
-            </View>
-            <Text style={styles.welcomeSubtitle}>
-              Your neighborhood marketplace for buying and selling
-            </Text>
-          </View>
-
-          {/* Features */}
-          <View style={styles.featuresContainer}>
-            <View style={styles.featureRow}>
-              <View style={styles.featureItem}>
-                <View style={[styles.featureIcon, { backgroundColor: '#E3F2FD' }]}>
-                  <Ionicons name="shield-checkmark" size={20} color="#1976D2" />
-                </View>
-                <Text style={styles.featureText}>Secure</Text>
-              </View>
-              <View style={styles.featureItem}>
-                <View style={[styles.featureIcon, { backgroundColor: '#FFF3E0' }]}>
-                  <Ionicons name="flash" size={20} color="#F57C00" />
-                </View>
-                <Text style={styles.featureText}>Fast</Text>
-              </View>
-              <View style={styles.featureItem}>
-                <View style={[styles.featureIcon, { backgroundColor: '#E8F5E9' }]}>
-                  <Ionicons name="cash" size={20} color={COLORS.primary} />
-                </View>
-                <Text style={styles.featureText}>Free</Text>
-              </View>
-            </View>
-          </View>
-
           {/* Error Message */}
           {error && (
             <View style={styles.errorContainer}>
@@ -232,24 +265,88 @@ export default function LoginScreen() {
             </View>
           )}
 
-          {/* Google Sign In Button */}
+          {/* Name Input (Register only) */}
+          {!isLoginMode && (
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Full Name</Text>
+              <View style={styles.inputWrapper}>
+                <Ionicons name="person-outline" size={20} color={COLORS.textSecondary} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your name"
+                  placeholderTextColor={COLORS.textLight}
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="words"
+                />
+              </View>
+            </View>
+          )}
+
+          {/* Email Input */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Email Address</Text>
+            <View style={styles.inputWrapper}>
+              <Ionicons name="mail-outline" size={20} color={COLORS.textSecondary} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your email"
+                placeholderTextColor={COLORS.textLight}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+              />
+            </View>
+          </View>
+
+          {/* Password Input */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Password</Text>
+            <View style={styles.inputWrapper}>
+              <Ionicons name="lock-closed-outline" size={20} color={COLORS.textSecondary} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder={isLoginMode ? "Enter your password" : "Create a password (min 6 chars)"}
+                placeholderTextColor={COLORS.textLight}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity 
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeButton}
+              >
+                <Ionicons 
+                  name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                  size={20} 
+                  color={COLORS.textSecondary} 
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Login/Register Button */}
           <TouchableOpacity
-            style={styles.googleButton}
-            onPress={handleGoogleLogin}
+            style={styles.primaryButton}
+            onPress={isLoginMode ? handleEmailLogin : handleEmailRegister}
             disabled={loading}
             activeOpacity={0.9}
           >
             {loading ? (
-              <ActivityIndicator color={COLORS.text} />
+              <ActivityIndicator color="#fff" />
             ) : (
               <>
-                <View style={styles.googleIconContainer}>
-                  <Image
-                    source={{ uri: 'https://www.google.com/favicon.ico' }}
-                    style={styles.googleIcon}
-                  />
-                </View>
-                <Text style={styles.googleButtonText}>Continue with Google</Text>
+                <Ionicons 
+                  name={isLoginMode ? "log-in-outline" : "person-add-outline"} 
+                  size={20} 
+                  color="#fff" 
+                />
+                <Text style={styles.primaryButtonText}>
+                  {isLoginMode ? 'Sign In' : 'Create Account'}
+                </Text>
               </>
             )}
           </TouchableOpacity>
@@ -257,9 +354,25 @@ export default function LoginScreen() {
           {/* Divider */}
           <View style={styles.divider}>
             <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
+            <Text style={styles.dividerText}>or continue with</Text>
             <View style={styles.dividerLine} />
           </View>
+
+          {/* Google Sign In Button */}
+          <TouchableOpacity
+            style={styles.googleButton}
+            onPress={handleGoogleLogin}
+            disabled={loading}
+            activeOpacity={0.9}
+          >
+            <View style={styles.googleIconContainer}>
+              <Image
+                source={{ uri: 'https://www.google.com/favicon.ico' }}
+                style={styles.googleIcon}
+              />
+            </View>
+            <Text style={styles.googleButtonText}>Google</Text>
+          </TouchableOpacity>
 
           {/* Browse as Guest */}
           <TouchableOpacity
@@ -271,11 +384,15 @@ export default function LoginScreen() {
             <Text style={styles.guestButtonText}>Browse as Guest</Text>
           </TouchableOpacity>
 
-          {/* Create Account Link */}
-          <View style={styles.signupPrompt}>
-            <Text style={styles.signupPromptText}>Don't have an account?</Text>
-            <TouchableOpacity onPress={() => router.push('/register')}>
-              <Text style={styles.signupLink}>Sign Up</Text>
+          {/* Toggle Login/Register */}
+          <View style={styles.togglePrompt}>
+            <Text style={styles.togglePromptText}>
+              {isLoginMode ? "Don't have an account?" : "Already have an account?"}
+            </Text>
+            <TouchableOpacity onPress={toggleMode}>
+              <Text style={styles.toggleLink}>
+                {isLoginMode ? 'Sign Up' : 'Sign In'}
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -287,7 +404,7 @@ export default function LoginScreen() {
           </Text>
         </ScrollView>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -297,7 +414,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   headerGradient: {
-    height: SCREEN_HEIGHT * 0.42,
+    height: SCREEN_HEIGHT * 0.28,
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
     overflow: 'hidden',
@@ -327,100 +444,35 @@ const styles = StyleSheet.create({
     right: -50,
   },
   circle2: {
-    width: 150,
-    height: 150,
-    bottom: 50,
+    width: 100,
+    height: 100,
+    bottom: 20,
     left: -30,
   },
-  circle3: {
-    width: 80,
-    height: 80,
-    top: 100,
-    left: 50,
-  },
-  illustrationContainer: {
+  headerContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 40,
+    paddingTop: 30,
   },
-  illustration: {
-    position: 'relative',
-    alignItems: 'center',
-  },
-  phoneFrame: {
-    width: 140,
-    height: 200,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  phoneNotch: {
-    width: 50,
-    height: 6,
-    backgroundColor: COLORS.border,
-    borderRadius: 3,
-    alignSelf: 'center',
-    marginBottom: 8,
-  },
-  phoneContent: {
-    flex: 1,
-    gap: 8,
-  },
-  miniCard: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.background,
-    borderRadius: 12,
-    padding: 10,
-    gap: 10,
-  },
-  miniCardImage: {
-    width: 45,
-    height: 45,
-    borderRadius: 8,
-    backgroundColor: COLORS.primaryLight,
-  },
-  miniCardLines: {
-    flex: 1,
-    justifyContent: 'center',
-    gap: 6,
-  },
-  miniLine: {
-    height: 8,
-    backgroundColor: COLORS.border,
-    borderRadius: 4,
-    width: '80%',
-  },
-  floatingIcon: {
-    position: 'absolute',
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#FFFFFF',
+  logoContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    marginBottom: 12,
   },
-  floatingIcon1: {
-    top: -10,
-    right: -25,
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 4,
   },
-  floatingIcon2: {
-    bottom: 40,
-    left: -30,
-  },
-  floatingIcon3: {
-    bottom: -5,
-    right: -20,
+  headerSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.9)',
   },
   contentCard: {
     flex: 1,
@@ -433,65 +485,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 24,
     paddingBottom: 40,
-  },
-  welcomeSection: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  welcomeTitle: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    marginBottom: 4,
-  },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 8,
-  },
-  logoIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: COLORS.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  brandName: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: COLORS.primary,
-    letterSpacing: -0.5,
-  },
-  welcomeSubtitle: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  featuresContainer: {
-    marginBottom: 24,
-  },
-  featureRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 24,
-  },
-  featureItem: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  featureIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  featureText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
   },
   errorContainer: {
     flexDirection: 'row',
@@ -507,36 +500,55 @@ const styles = StyleSheet.create({
     color: COLORS.error,
     fontSize: 14,
   },
-  googleButton: {
+  inputContainer: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingHorizontal: 12,
+  },
+  inputIcon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    height: 50,
+    fontSize: 16,
+    color: COLORS.text,
+  },
+  eyeButton: {
+    padding: 8,
+  },
+  primaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.surface,
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
+    backgroundColor: COLORS.primary,
     paddingVertical: 16,
     borderRadius: 16,
-    gap: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    gap: 10,
+    marginTop: 8,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 4,
   },
-  googleIconContainer: {
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  googleIcon: {
-    width: 20,
-    height: 20,
-  },
-  googleButtonText: {
+  primaryButtonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
+    fontWeight: '700',
+    color: '#fff',
   },
   divider: {
     flexDirection: 'row',
@@ -553,32 +565,59 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textLight,
   },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.surface,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 10,
+  },
+  googleIconContainer: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  googleIcon: {
+    width: 20,
+    height: 20,
+  },
+  googleButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
   guestButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.background,
-    paddingVertical: 16,
-    borderRadius: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
     gap: 10,
+    marginTop: 12,
   },
   guestButtonText: {
     fontSize: 15,
     fontWeight: '600',
     color: COLORS.primary,
   },
-  signupPrompt: {
+  togglePrompt: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 6,
     marginTop: 20,
   },
-  signupPromptText: {
+  togglePromptText: {
     fontSize: 14,
     color: COLORS.textSecondary,
   },
-  signupLink: {
+  toggleLink: {
     fontSize: 14,
     fontWeight: '700',
     color: COLORS.primary,
