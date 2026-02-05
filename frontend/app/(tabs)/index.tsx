@@ -443,7 +443,13 @@ export default function HomeScreen() {
   };
 
   const handleCategoryPress = async (categoryId: string) => {
-    // Get subcategories for this category
+    // On desktop/tablet, navigate directly to category page
+    if (isDesktop || isTablet) {
+      router.push(`/category/${categoryId}`);
+      return;
+    }
+    
+    // On mobile, show subcategory selection modal
     const category = FULL_CATEGORIES.find(c => c.id === categoryId);
     if (!category) return;
     
