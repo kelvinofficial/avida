@@ -23,6 +23,7 @@ import { listingsApi, categoriesApi } from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
 import { getCategoryConfig, AttributeField, CategoryAttributeConfig } from '../../src/config/categoryAttributes';
 import { safeGoBack } from '../../src/utils/navigation';
+import { SuccessModal } from '../../src/components/SuccessModal';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const MAX_IMAGES = 10;
