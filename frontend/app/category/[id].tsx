@@ -1562,8 +1562,8 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   autoImageContainer: {
-    width: 130,
-    height: 100,
+    width: 150,
+    height: 115,
     position: 'relative',
   },
   autoImage: {
