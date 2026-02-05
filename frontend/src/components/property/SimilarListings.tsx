@@ -617,13 +617,6 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
     }
   };
 
-  // Get the browse all route based on category
-  const getBrowseRoute = () => {
-    if (category === 'property') return '/property';
-    if (category === 'auto') return '/auto';
-    return '/';
-  };
-
   // Get category icon
   const getCategoryIcon = (): string => {
     switch (category) {
