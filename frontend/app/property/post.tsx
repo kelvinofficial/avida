@@ -623,6 +623,149 @@ export default function PostPropertyScreen() {
                 required
               />
             </View>
+
+            {/* Seller Preferences */}
+            <View style={prefStyles.divider}>
+              <Text style={prefStyles.dividerText}>Seller Preferences</Text>
+            </View>
+
+            {/* Accepts Offers */}
+            <View style={prefStyles.card}>
+              <View style={prefStyles.row}>
+                <View style={prefStyles.info}>
+                  <View style={[prefStyles.icon, { backgroundColor: '#E8F5E9' }]}>
+                    <Ionicons name="pricetag-outline" size={20} color={COLORS.primary} />
+                  </View>
+                  <View>
+                    <Text style={prefStyles.title}>Accept Offers</Text>
+                    <Text style={prefStyles.desc}>Allow buyers to make price offers</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={acceptsOffers}
+                  onValueChange={setAcceptsOffers}
+                  trackColor={{ false: COLORS.border, true: '#C8E6C9' }}
+                  thumbColor={acceptsOffers ? COLORS.primary : '#f4f4f4'}
+                />
+              </View>
+            </View>
+
+            {/* Accepts Exchanges */}
+            <View style={prefStyles.card}>
+              <View style={prefStyles.row}>
+                <View style={prefStyles.info}>
+                  <View style={[prefStyles.icon, { backgroundColor: '#E3F2FD' }]}>
+                    <Ionicons name="repeat-outline" size={20} color="#1976D2" />
+                  </View>
+                  <View>
+                    <Text style={prefStyles.title}>Accept Exchanges</Text>
+                    <Text style={prefStyles.desc}>Open to property exchanges</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={acceptsExchanges}
+                  onValueChange={setAcceptsExchanges}
+                  trackColor={{ false: COLORS.border, true: '#BBDEFB' }}
+                  thumbColor={acceptsExchanges ? '#1976D2' : '#f4f4f4'}
+                />
+              </View>
+            </View>
+
+            {/* Contact Methods */}
+            <View style={prefStyles.divider}>
+              <Text style={prefStyles.dividerText}>Contact Methods</Text>
+            </View>
+
+            {/* In-App Chat */}
+            <View style={prefStyles.card}>
+              <View style={prefStyles.row}>
+                <View style={prefStyles.info}>
+                  <View style={[prefStyles.icon, { backgroundColor: '#E8F5E9' }]}>
+                    <Ionicons name="chatbubble-outline" size={20} color={COLORS.primary} />
+                  </View>
+                  <View>
+                    <Text style={prefStyles.title}>In-App Chat</Text>
+                    <Text style={prefStyles.desc}>Message through the app</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={contactPreferences.inAppChat}
+                  onValueChange={(val) => setContactPreferences(prev => ({ ...prev, inAppChat: val }))}
+                  trackColor={{ false: COLORS.border, true: '#C8E6C9' }}
+                  thumbColor={contactPreferences.inAppChat ? COLORS.primary : '#f4f4f4'}
+                />
+              </View>
+            </View>
+
+            {/* WhatsApp */}
+            <View style={prefStyles.card}>
+              <View style={prefStyles.row}>
+                <View style={prefStyles.info}>
+                  <View style={[prefStyles.icon, { backgroundColor: '#E8F5E9' }]}>
+                    <Ionicons name="logo-whatsapp" size={20} color="#25D366" />
+                  </View>
+                  <View>
+                    <Text style={prefStyles.title}>WhatsApp</Text>
+                    <Text style={prefStyles.desc}>Chat via WhatsApp</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={contactPreferences.whatsapp}
+                  onValueChange={(val) => setContactPreferences(prev => ({ ...prev, whatsapp: val }))}
+                  trackColor={{ false: COLORS.border, true: '#C8E6C9' }}
+                  thumbColor={contactPreferences.whatsapp ? '#25D366' : '#f4f4f4'}
+                />
+              </View>
+              {contactPreferences.whatsapp && (
+                <View style={prefStyles.phoneContainer}>
+                  <Text style={prefStyles.phoneLabel}>WhatsApp Number</Text>
+                  <TextInput
+                    style={prefStyles.phoneInput}
+                    placeholder="+49 123 456 7890"
+                    placeholderTextColor={COLORS.textSecondary}
+                    value={whatsappNumber}
+                    onChangeText={setWhatsappNumber}
+                    keyboardType="phone-pad"
+                  />
+                </View>
+              )}
+            </View>
+
+            {/* Phone Call */}
+            <View style={prefStyles.card}>
+              <View style={prefStyles.row}>
+                <View style={prefStyles.info}>
+                  <View style={[prefStyles.icon, { backgroundColor: '#E3F2FD' }]}>
+                    <Ionicons name="call-outline" size={20} color="#1976D2" />
+                  </View>
+                  <View>
+                    <Text style={prefStyles.title}>Phone Call</Text>
+                    <Text style={prefStyles.desc}>Receive phone calls</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={contactPreferences.call}
+                  onValueChange={(val) => setContactPreferences(prev => ({ ...prev, call: val }))}
+                  trackColor={{ false: COLORS.border, true: '#BBDEFB' }}
+                  thumbColor={contactPreferences.call ? '#1976D2' : '#f4f4f4'}
+                />
+              </View>
+              {contactPreferences.call && (
+                <View style={prefStyles.phoneContainer}>
+                  <Text style={prefStyles.phoneLabel}>Phone Number</Text>
+                  <TextInput
+                    style={prefStyles.phoneInput}
+                    placeholder="+49 123 456 7890"
+                    placeholderTextColor={COLORS.textSecondary}
+                    value={phoneNumber}
+                    onChangeText={setPhoneNumber}
+                    keyboardType="phone-pad"
+                  />
+                </View>
+              )}
+            </View>
+
+            <View style={{ height: 40 }} />
           </ScrollView>
         );
     }
