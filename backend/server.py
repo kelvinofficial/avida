@@ -1542,6 +1542,8 @@ async def create_conversation(listing_id: str = Query(...), request: Request = N
     }
     
     await db.conversations.insert_one(conversation)
+    # Remove MongoDB _id field before returning
+    conversation.pop("_id", None)
     return conversation
 
 @api_router.post("/conversations/direct")
