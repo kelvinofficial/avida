@@ -1593,6 +1593,8 @@ async def create_direct_conversation(request: Request):
     }
     
     await db.conversations.insert_one(conversation)
+    # Remove MongoDB _id field before returning
+    conversation.pop("_id", None)
     return conversation
 
 @api_router.get("/conversations")
