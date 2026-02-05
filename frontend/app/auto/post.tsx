@@ -702,6 +702,15 @@ export default function PostAutoScreen() {
           )}
         </TouchableOpacity>
       </View>
+
+      {/* Success Modal */}
+      <SuccessModal
+        visible={showSuccessModal}
+        title="Vehicle Listed!"
+        message="Your vehicle is now live and ready for buyers to discover."
+        buttonText="View Listings"
+        onClose={handleSuccessModalClose}
+      />
     </SafeAreaView>
   );
 }
