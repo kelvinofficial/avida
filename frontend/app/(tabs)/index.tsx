@@ -381,6 +381,12 @@ export default function HomeScreen() {
     router.push(`/category/${categoryId}`);
   };
 
+  const handleLocationSelect = (city: string) => {
+    setCurrentCity(city);
+    setShowLocationModal(false);
+    setLocationSearch('');
+  };
+
   // ============ HEADER COMPONENT ============
   const renderHeader = () => (
     <View style={styles.headerWrapper}>
