@@ -437,8 +437,9 @@ export default function HomeScreen() {
       {/* CATEGORY ICONS - CIRCULAR DESIGN */}
       <View style={styles.categoriesSection}>
         <ScrollView
-          horizontal
+          horizontal={true}
           showsHorizontalScrollIndicator={false}
+          style={styles.categoriesScroll}
           contentContainerStyle={styles.categoriesContent}
         >
           {FULL_CATEGORIES.map((cat) => (
