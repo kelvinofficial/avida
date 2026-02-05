@@ -101,7 +101,7 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
   );
 });
 
-// ============ PROPERTY LISTING CARD (Single Column - Compact) ============
+// ============ PROPERTY LISTING CARD (Single Column - Image on Top) ============
 const PropertyListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFavorited = false }) => {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('de-DE', {
@@ -136,86 +136,18 @@ const PropertyListingCard = memo<ListingCardProps>(({ listing, onPress, onFavori
 
   return (
     <TouchableOpacity style={styles.propertyCard} onPress={onPress} activeOpacity={0.97}>
-      {/* Horizontal Layout: Image + Content */}
-      <View style={styles.propertyCardRow}>
-        {/* Left: Image */}
-        <View style={styles.propertyImageContainer}>
-          <Image
-            source={{ uri: listing.images?.[0] || 'https://via.placeholder.com/300x200' }}
-            style={styles.propertyImage}
-            resizeMode="cover"
-          />
-          {listing.featured && (
-            <View style={styles.propertyFeaturedBadge}>
-              <Text style={styles.propertyFeaturedText}>TOP</Text>
-            </View>
-          )}
-          {listing.images?.length > 1 && (
-            <View style={styles.imageCountBadge}>
-              <Ionicons name="camera-outline" size={10} color="#fff" />
-              <Text style={styles.imageCountText}>{listing.images.length}</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Right: Content */}
-        <View style={styles.propertyCardContent}>
-          {/* Price & Type Row */}
-          <View style={styles.propertyTopRow}>
-            <Text style={styles.propertyPrice}>{formatPrice(listing.price)}</Text>
-            {propertyType && (
-              <View style={styles.propertyTypeTag}>
-                <Text style={styles.propertyTypeText}>{propertyType}</Text>
-              </View>
-            )}
+      {/* Image on Top */}
+      <View style={styles.propertyImageContainer}>
+        <Image
+          source={{ uri: listing.images?.[0] || 'https://via.placeholder.com/400x200' }}
+          style={styles.propertyImage}
+          resizeMode="cover"
+        />
+        {listing.featured && (
+          <View style={styles.propertyFeaturedBadge}>
+            <Text style={styles.propertyFeaturedText}>FEATURED</Text>
           </View>
-
-          {/* Title */}
-          <Text style={styles.propertyTitle} numberOfLines={1}>{listing.title}</Text>
-
-          {/* Features Row: Beds | Baths | Size */}
-          <View style={styles.propertyFeatures}>
-            {bedrooms && (
-              <View style={styles.featureItem}>
-                <Ionicons name="bed-outline" size={13} color={COLORS.textSecondary} />
-                <Text style={styles.featureText}>{bedrooms}</Text>
-              </View>
-            )}
-            {bedrooms && (bathrooms || size) && <View style={styles.featureDivider} />}
-            {bathrooms && (
-              <View style={styles.featureItem}>
-                <Ionicons name="water-outline" size={13} color={COLORS.textSecondary} />
-                <Text style={styles.featureText}>{bathrooms}</Text>
-              </View>
-            )}
-            {bathrooms && size && <View style={styles.featureDivider} />}
-            {size && (
-              <View style={styles.featureItem}>
-                <Ionicons name="expand-outline" size={13} color={COLORS.textSecondary} />
-                <Text style={styles.featureText}>{size} m²</Text>
-              </View>
-            )}
-          </View>
-
-          {/* Location */}
-          <View style={styles.propertyLocationRow}>
-            <Ionicons name="location-outline" size={12} color={COLORS.textLight} />
-            <Text style={styles.propertyLocation} numberOfLines={1}>{listing.location}</Text>
-          </View>
-
-          {/* Bottom: Date */}
-          <View style={styles.propertyBottomRow}>
-            <View style={styles.dateContainer}>
-              <Ionicons name="time-outline" size={11} color={COLORS.textLight} />
-              <Text style={styles.dateText}>{formatDate(listing.created_at)}</Text>
-            </View>
-            {listing.negotiable && (
-              <Text style={styles.negotiableTag}>Negotiable</Text>
-            )}
-          </View>
-        </View>
-
-        {/* Favorite Button */}
+        )}
         <TouchableOpacity
           style={styles.propertyFavoriteButton}
           onPress={(e) => { e.stopPropagation(); onFavorite(); }}
@@ -223,9 +155,70 @@ const PropertyListingCard = memo<ListingCardProps>(({ listing, onPress, onFavori
           <Ionicons
             name={isFavorited ? 'heart' : 'heart-outline'}
             size={20}
-            color={isFavorited ? '#E53935' : COLORS.textSecondary}
+            color={isFavorited ? '#E53935' : '#FFFFFF'}
           />
         </TouchableOpacity>
+        {listing.images?.length > 1 && (
+          <View style={styles.imageCountBadge}>
+            <Ionicons name="camera-outline" size={11} color="#fff" />
+            <Text style={styles.imageCountText}>{listing.images.length}</Text>
+          </View>
+        )}
+        {propertyType && (
+          <View style={styles.propertyTypeBadge}>
+            <Text style={styles.propertyTypeBadgeText}>{propertyType}</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Content Below */}
+      <View style={styles.propertyCardContent}>
+        {/* Price Row */}
+        <View style={styles.propertyPriceRow}>
+          <Text style={styles.propertyPrice}>{formatPrice(listing.price)}</Text>
+          {listing.negotiable && (
+            <Text style={styles.negotiableTag}>Negotiable</Text>
+          )}
+        </View>
+
+        {/* Title */}
+        <Text style={styles.propertyTitle} numberOfLines={1}>{listing.title}</Text>
+
+        {/* Features Row: Beds | Baths | Size */}
+        <View style={styles.propertyFeatures}>
+          {bedrooms && (
+            <View style={styles.featureItem}>
+              <Ionicons name="bed-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.featureText}>{bedrooms} {bedrooms === 1 ? 'Bed' : 'Beds'}</Text>
+            </View>
+          )}
+          {bedrooms && (bathrooms || size) && <View style={styles.featureDivider} />}
+          {bathrooms && (
+            <View style={styles.featureItem}>
+              <Ionicons name="water-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.featureText}>{bathrooms} {bathrooms === 1 ? 'Bath' : 'Baths'}</Text>
+            </View>
+          )}
+          {bathrooms && size && <View style={styles.featureDivider} />}
+          {size && (
+            <View style={styles.featureItem}>
+              <Ionicons name="expand-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.featureText}>{size} m²</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Bottom Row: Location & Date */}
+        <View style={styles.propertyBottomRow}>
+          <View style={styles.propertyLocationRow}>
+            <Ionicons name="location-outline" size={12} color={COLORS.textLight} />
+            <Text style={styles.propertyLocation} numberOfLines={1}>{listing.location}</Text>
+          </View>
+          <View style={styles.dateContainer}>
+            <Ionicons name="time-outline" size={11} color={COLORS.textLight} />
+            <Text style={styles.dateText}>{formatDate(listing.created_at)}</Text>
+          </View>
+        </View>
       </View>
     </TouchableOpacity>
   );
