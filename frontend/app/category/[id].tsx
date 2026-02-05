@@ -1393,6 +1393,10 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 3,
   },
+  propertyCardFeatured: {
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+  },
   propertyImageContainer: {
     width: '100%',
     height: 140,
