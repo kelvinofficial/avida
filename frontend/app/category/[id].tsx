@@ -169,7 +169,7 @@ export default function CategoryScreen() {
         try {
           const favs = await favoritesApi.getAll();
           setFavorites(new Set(favs.map((f: any) => f.id)));
-        } catch (e) {
+        } catch {
           console.log('Could not fetch favorites');
         }
       }
