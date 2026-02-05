@@ -462,7 +462,7 @@ export default function OffersScreen() {
               onReject={() => handleReject(item)}
               onCounter={() => handleCounter(item)}
               onViewListing={() => router.push(`/listing/${item.listing_id}`)}
-              onViewChat={() => router.push(`/chat/${item.listing_id}`)}
+              onViewChat={() => handleViewChat(item)}
             />
           )}
           contentContainerStyle={styles.listContent}
