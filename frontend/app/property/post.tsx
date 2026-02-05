@@ -17,6 +17,7 @@ import { useRouter } from 'expo-router';
 import { api } from '../../src/utils/api';
 import { PROPERTY_TYPE_CATEGORIES, FACILITIES_LIST } from '../../src/types/property';
 import { useAuthStore } from '../../src/store/authStore';
+import { SuccessModal } from '../../src/components/SuccessModal';
 
 const COLORS = {
   primary: '#2E7D32',
