@@ -1536,6 +1536,17 @@ export default function PropertyDetailScreen() {
   const [isFavorited, setIsFavorited] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  
+  // Sticky header animation
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const [showStickyHeader, setShowStickyHeader] = useState(false);
+  
+  // Scroll handler for sticky header
+  const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    setShowStickyHeader(offsetY > 350); // Show after scrolling past image + price
+  }, []);
 
   // Fetch property from API
   const fetchProperty = useCallback(async () => {
