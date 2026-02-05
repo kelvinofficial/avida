@@ -695,7 +695,7 @@ export default function ProfileScreen() {
         
         <ActivitySection onItemPress={handleActivityPress} />
         
-        <TrustSection profile={profile} />
+        <TrustSection profile={profile} onVerifyPress={handleActivityPress} />
         
         <QuickActions router={router} onLogout={handleLogout} />
 
