@@ -3847,6 +3847,257 @@ def build_email_template(subject: str, body: str, notification_type: str, data: 
     </html>
     '''
 
+# ==================== SUPPORT TICKETS ====================
+
+class SupportTicketCreate(BaseModel):
+    subject: str
+    message: str
+
+@api_router.post("/support/tickets")
+async def create_support_ticket(request: Request):
+    """Create a support ticket"""
+    user = await require_auth(request)
+    body = await request.json()
+    
+    subject = body.get("subject", "").strip()
+    message = body.get("message", "").strip()
+    
+    if not subject or not message:
+        raise HTTPException(status_code=400, detail="Subject and message required")
+    
+    ticket = {
+        "id": str(uuid.uuid4()),
+        "user_id": user.user_id,
+        "subject": subject,
+        "message": message,
+        "status": "open",
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc),
+    }
+    
+    await db.support_tickets.insert_one(ticket)
+    
+    # Create notification
+    await create_notification(
+        user.user_id,
+        "system",
+        "Support Ticket Created",
+        f"Your support ticket \"{subject}\" has been received. We'll respond within 24-48 hours.",
+        {"ticket_id": ticket["id"]}
+    )
+    
+    return {"message": "Ticket created", "ticket_id": ticket["id"]}
+
+@api_router.get("/support/tickets")
+async def get_support_tickets(request: Request):
+    """Get user's support tickets"""
+    user = await require_auth(request)
+    
+    tickets = await db.support_tickets.find(
+        {"user_id": user.user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    return {"tickets": tickets}
+
+@api_router.get("/support/tickets/{ticket_id}")
+async def get_support_ticket(ticket_id: str, request: Request):
+    """Get a specific support ticket"""
+    user = await require_auth(request)
+    
+    ticket = await db.support_tickets.find_one(
+        {"id": ticket_id, "user_id": user.user_id},
+        {"_id": 0}
+    )
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    return ticket
+
+# ==================== ID VERIFICATION ====================
+
+@api_router.post("/profile/verify-id")
+async def submit_id_verification(request: Request):
+    """Submit ID verification documents"""
+    user = await require_auth(request)
+    body = await request.json()
+    
+    required_fields = ["full_name", "dob", "id_type", "id_number", "doc_front_url", "doc_back_url", "selfie_url"]
+    for field in required_fields:
+        if not body.get(field):
+            raise HTTPException(status_code=400, detail=f"{field} is required")
+    
+    # Check if already has pending verification
+    existing = await db.id_verifications.find_one({
+        "user_id": user.user_id,
+        "status": "pending"
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="You already have a pending verification")
+    
+    verification = {
+        "id": str(uuid.uuid4()),
+        "user_id": user.user_id,
+        "full_name": body["full_name"],
+        "dob": body["dob"],
+        "id_type": body["id_type"],
+        "id_number": body["id_number"],
+        "doc_front_url": body["doc_front_url"],
+        "doc_back_url": body["doc_back_url"],
+        "selfie_url": body["selfie_url"],
+        "status": "pending",
+        "submitted_at": datetime.now(timezone.utc),
+        "reviewed_at": None,
+        "reviewer_note": None,
+    }
+    
+    await db.id_verifications.insert_one(verification)
+    
+    # Update user's trust status
+    await db.users.update_one(
+        {"user_id": user.user_id},
+        {"$set": {"id_verification_status": "pending"}}
+    )
+    
+    # Create notification
+    await create_notification(
+        user.user_id,
+        "system",
+        "ID Verification Submitted",
+        "Your ID verification has been submitted and is under review. This typically takes 1-3 business days.",
+        {"verification_id": verification["id"]}
+    )
+    
+    return {"message": "Verification submitted", "verification_id": verification["id"]}
+
+@api_router.get("/profile/verify-id/status")
+async def get_id_verification_status(request: Request):
+    """Get ID verification status"""
+    user = await require_auth(request)
+    
+    verification = await db.id_verifications.find_one(
+        {"user_id": user.user_id},
+        {"_id": 0, "doc_front_url": 0, "doc_back_url": 0, "selfie_url": 0}
+    )
+    
+    if not verification:
+        return {"status": "not_started"}
+    
+    return verification
+
+# ==================== EMAIL VERIFICATION ====================
+
+@api_router.post("/auth/send-verification-email")
+async def send_verification_email(request: Request):
+    """Send email verification link"""
+    user = await require_auth(request)
+    
+    # Generate verification token
+    token = str(uuid.uuid4())
+    expires = datetime.now(timezone.utc) + timedelta(hours=24)
+    
+    await db.email_verifications.update_one(
+        {"user_id": user.user_id},
+        {
+            "$set": {
+                "user_id": user.user_id,
+                "token": token,
+                "expires": expires,
+                "created_at": datetime.now(timezone.utc)
+            }
+        },
+        upsert=True
+    )
+    
+    # Send verification email
+    user_data = await db.users.find_one({"user_id": user.user_id})
+    if user_data and user_data.get("email"):
+        await send_notification_email(
+            user_data["email"],
+            "[avida] Verify Your Email",
+            f"Click the link below to verify your email address:\n\nhttps://avida.app/verify-email?token={token}\n\nThis link expires in 24 hours.",
+            "system",
+            {}
+        )
+    
+    return {"message": "Verification email sent"}
+
+@api_router.post("/auth/verify-email")
+async def verify_email(request: Request):
+    """Verify email with token"""
+    body = await request.json()
+    token = body.get("token")
+    
+    if not token:
+        raise HTTPException(status_code=400, detail="Token required")
+    
+    verification = await db.email_verifications.find_one({
+        "token": token,
+        "expires": {"$gt": datetime.now(timezone.utc)}
+    })
+    
+    if not verification:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+    
+    # Update user's email verification status
+    await db.users.update_one(
+        {"user_id": verification["user_id"]},
+        {"$set": {"email_verified": True}}
+    )
+    
+    # Delete verification token
+    await db.email_verifications.delete_one({"token": token})
+    
+    return {"message": "Email verified successfully"}
+
+# ==================== FAVORITES (SAVED ITEMS) ====================
+
+@api_router.get("/profile/activity/favorites")
+async def get_saved_items(
+    request: Request,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100)
+):
+    """Get user's saved/favorite items"""
+    user = await require_auth(request)
+    
+    skip = (page - 1) * limit
+    
+    # Get favorites
+    favorites = await db.favorites.find(
+        {"user_id": user.user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Get listing details
+    listing_ids = [f["listing_id"] for f in favorites]
+    listings = await db.listings.find({"id": {"$in": listing_ids}}, {"_id": 0}).to_list(len(listing_ids))
+    listings_map = {l["id"]: l for l in listings}
+    
+    result = []
+    for fav in favorites:
+        listing = listings_map.get(fav["listing_id"])
+        if listing:
+            result.append({
+                **listing,
+                "saved_at": fav.get("created_at")
+            })
+    
+    total = await db.favorites.count_documents({"user_id": user.user_id})
+    
+    return {"items": result, "total": total, "page": page}
+
+@api_router.delete("/profile/activity/recently-viewed")
+async def clear_recently_viewed(request: Request):
+    """Clear recently viewed history"""
+    user = await require_auth(request)
+    
+    await db.recently_viewed.delete_many({"user_id": user.user_id})
+    
+    return {"message": "Viewing history cleared"}
+
 # ==================== HEALTH CHECK ====================
 
 @api_router.get("/")
