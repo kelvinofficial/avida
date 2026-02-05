@@ -62,13 +62,23 @@ const DynamicField: React.FC<DynamicFieldProps> = ({ field, value, onChange, par
   // Disable if dependent on a field that isn't set
   const isDisabled = field.dependsOn && parentValues && !parentValues[field.dependsOn];
 
+  // Common icon component
+  const FieldIcon = field.icon ? (
+    <View style={styles.fieldIconWrapper}>
+      <Ionicons name={field.icon as any} size={18} color={COLORS.primary} />
+    </View>
+  ) : null;
+
   switch (field.type) {
     case 'text':
       return (
         <View style={styles.fieldContainer}>
-          <Text style={styles.fieldLabel}>
-            {field.label} {field.required && <Text style={styles.required}>*</Text>}
-          </Text>
+          <View style={styles.fieldLabelRow}>
+            {FieldIcon}
+            <Text style={styles.fieldLabel}>
+              {field.label} {field.required && <Text style={styles.required}>*</Text>}
+            </Text>
+          </View>
           <View style={styles.inputWrapper}>
             <TextInput
               style={[styles.input, isDisabled && styles.inputDisabled]}
@@ -86,9 +96,12 @@ const DynamicField: React.FC<DynamicFieldProps> = ({ field, value, onChange, par
     case 'number':
       return (
         <View style={styles.fieldContainer}>
-          <Text style={styles.fieldLabel}>
-            {field.label} {field.required && <Text style={styles.required}>*</Text>}
-          </Text>
+          <View style={styles.fieldLabelRow}>
+            {FieldIcon}
+            <Text style={styles.fieldLabel}>
+              {field.label} {field.required && <Text style={styles.required}>*</Text>}
+            </Text>
+          </View>
           <View style={styles.inputWrapper}>
             <TextInput
               style={[styles.input, isDisabled && styles.inputDisabled]}
@@ -107,9 +120,12 @@ const DynamicField: React.FC<DynamicFieldProps> = ({ field, value, onChange, par
     case 'select':
       return (
         <View style={styles.fieldContainer}>
-          <Text style={styles.fieldLabel}>
-            {field.label} {field.required && <Text style={styles.required}>*</Text>}
-          </Text>
+          <View style={styles.fieldLabelRow}>
+            {FieldIcon}
+            <Text style={styles.fieldLabel}>
+              {field.label} {field.required && <Text style={styles.required}>*</Text>}
+            </Text>
+          </View>
           {isDisabled ? (
             <View style={[styles.input, styles.inputDisabled]}>
               <Text style={styles.disabledText}>Select {field.dependsOn} first</Text>
@@ -140,7 +156,10 @@ const DynamicField: React.FC<DynamicFieldProps> = ({ field, value, onChange, par
       return (
         <View style={styles.fieldContainer}>
           <View style={styles.toggleRow}>
-            <Text style={styles.fieldLabel}>{field.label}</Text>
+            <View style={styles.toggleLabelRow}>
+              {FieldIcon}
+              <Text style={styles.fieldLabel}>{field.label}</Text>
+            </View>
             <Switch
               value={!!value}
               onValueChange={onChange}
