@@ -917,17 +917,10 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     marginTop: 12,
   },
-  browseBtn: {
-    marginTop: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: COLORS.primary,
-    borderRadius: 8,
-  },
-  browseBtnText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 14,
+  emptySubtitle: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginTop: 4,
   },
 });
 
