@@ -548,15 +548,6 @@ export default function NotificationsScreen() {
                 <Text style={styles.menuItemSubtitle}>Manage your preferences</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={handleSeedNotifications}>
-              <View style={[styles.menuIconBg, { backgroundColor: '#EFF6FF' }]}>
-                <Ionicons name="refresh" size={20} color={COLORS.info} />
-              </View>
-              <View style={styles.menuItemContent}>
-                <Text style={styles.menuItemTitle}>Load sample notifications</Text>
-                <Text style={styles.menuItemSubtitle}>For testing purposes</Text>
-              </View>
-            </TouchableOpacity>
             <TouchableOpacity style={[styles.menuItem, styles.menuItemDanger]} onPress={handleClearAll}>
               <View style={[styles.menuIconBg, { backgroundColor: '#FEF2F2' }]}>
                 <Ionicons name="trash-outline" size={20} color={COLORS.error} />
