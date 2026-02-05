@@ -137,7 +137,7 @@ backend:
 
   - task: "Listings CRUD API"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 1
     priority: "high"
@@ -149,6 +149,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL ISSUE: POST /api/listings fails with 520 Internal Server Error due to BSON ObjectId serialization error. GET /api/listings and filtering work correctly. GET /api/listings/my works. Root cause: Backend tries to serialize MongoDB ObjectId which is not JSON serializable. Error: 'Unable to serialize unknown type: <class 'bson.objectid.ObjectId'>'"
+      - working: true
+        agent: "testing"
+        comment: "✅ SELLER PREFERENCES FEATURE TESTED: POST /api/listings now working correctly with new seller preference fields (accepts_offers, accepts_exchanges, contact_methods, whatsapp_number, phone_number). All tests passed: 1) Created listing with all seller preference fields - verified all values stored correctly, 2) Created listing without seller preference fields - verified correct default values (accepts_offers: true, accepts_exchanges: false, contact_methods: ['chat'], whatsapp_number: null, phone_number: null), 3) GET /api/listings/{id} returns all seller preference fields correctly. Previous BSON ObjectId serialization issue appears to be resolved."
 
   - task: "Auth API (Emergent Google OAuth)"
     implemented: true
