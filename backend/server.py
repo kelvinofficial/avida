@@ -189,6 +189,9 @@ class Conversation(BaseModel):
 
 class MessageCreate(BaseModel):
     content: str
+    message_type: str = "text"  # text, audio, image, video
+    media_url: Optional[str] = None
+    media_duration: Optional[int] = None  # For audio/video in seconds
 
 # Favorite Model
 class Favorite(BaseModel):
