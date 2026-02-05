@@ -47,6 +47,8 @@ interface Offer {
   buyer_name: string;
   buyer_picture?: string;
   seller_id: string;
+  seller_name?: string;
+  seller_picture?: string;
   message?: string;
   status: 'pending' | 'accepted' | 'rejected' | 'countered' | 'expired';
   counter_price?: number;
