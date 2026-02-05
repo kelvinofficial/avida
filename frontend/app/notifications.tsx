@@ -497,14 +497,6 @@ export default function NotificationsScreen() {
         />
       )}
 
-      {/* Seeding Indicator */}
-      {seeding && (
-        <View style={styles.seedingOverlay}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.seedingText}>Loading notifications...</Text>
-        </View>
-      )}
-
       {/* Menu Modal */}
       <Modal visible={showMenu} transparent animationType="fade" onRequestClose={() => setShowMenu(false)}>
         <TouchableOpacity style={styles.menuOverlay} activeOpacity={1} onPress={() => setShowMenu(false)}>
