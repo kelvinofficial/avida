@@ -314,6 +314,16 @@ const sellerStyles = StyleSheet.create({
   verifiedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: COLORS.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4 },
   verifiedText: { fontSize: 10, fontWeight: '700', color: '#fff' },
   memberSince: { fontSize: 12, color: COLORS.textSecondary, marginTop: 4 },
+  // Seller Preferences Styles
+  preferencesSection: { marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: COLORS.border },
+  badgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
+  prefBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: COLORS.primaryLight, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
+  prefBadgeText: { fontSize: 12, fontWeight: '600', color: COLORS.primary },
+  contactSection: { marginTop: 4 },
+  contactLabel: { fontSize: 13, color: COLORS.textSecondary, marginBottom: 8 },
+  contactMethods: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  contactBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: COLORS.background, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 },
+  contactBadgeText: { fontSize: 13, fontWeight: '500', color: COLORS.text },
 });
 
 // ============ SAFETY SECTION ============
