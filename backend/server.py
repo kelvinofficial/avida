@@ -600,203 +600,173 @@ async def unblock_user(user_id: str, request: Request):
 
 # ==================== CATEGORY ENDPOINTS ====================
 
-# Default categories
+# New comprehensive categories with subcategories
+# Each category now has detailed subcategory objects with their own attributes
 DEFAULT_CATEGORIES = [
     {
-        "id": "vehicles",
+        "id": "auto_vehicles",
         "name": "Auto & Vehicles",
         "icon": "car-outline",
-        "subcategories": ["Cars", "Motorcycles", "Bicycles", "Boats", "Parts", "Commercial Vehicles"],
-        "attributes": [
-            {"name": "brand", "type": "text", "required": False},
-            {"name": "model", "type": "text", "required": False},
-            {"name": "year", "type": "number", "required": False},
-            {"name": "mileage", "type": "number", "required": False},
-            {"name": "fuel_type", "type": "select", "options": ["Petrol", "Diesel", "Electric", "Hybrid", "LPG"], "required": False},
-            {"name": "transmission", "type": "select", "options": ["Automatic", "Manual", "CVT", "PDK"], "required": False},
-            {"name": "color", "type": "text", "required": False}
+        "subcategories": [
+            {"id": "vehicle_parts", "name": "Vehicle Parts & Accessories"},
+            {"id": "cars", "name": "Cars"},
+            {"id": "motorcycles_scooters", "name": "Motorcycles & Scooters"},
+            {"id": "buses_microbuses", "name": "Buses & Microbuses"},
+            {"id": "trucks_trailers", "name": "Trucks & Trailers"},
+            {"id": "heavy_machinery", "name": "Construction & Heavy Machinery"},
+            {"id": "watercraft_boats", "name": "Watercraft & Boats"},
+            {"id": "car_services", "name": "Car Services"},
+        ]
+    },
+    {
+        "id": "properties",
+        "name": "Properties",
+        "icon": "business-outline",
+        "subcategories": [
+            {"id": "new_builds", "name": "New Builds"},
+            {"id": "houses_apartments_rent", "name": "Houses & Apartments For Rent"},
+            {"id": "houses_apartments_sale", "name": "Houses & Apartments For Sale"},
+            {"id": "short_let", "name": "Short Let"},
+            {"id": "land_plots_rent", "name": "Land & Plots for Rent"},
+            {"id": "land_plots_sale", "name": "Land & Plots For Sale"},
+            {"id": "event_centres", "name": "Event Centres, Venues & Workstations"},
+            {"id": "commercial_rent", "name": "Commercial Property for Rent"},
+            {"id": "commercial_sale", "name": "Commercial Property for Sale"},
         ]
     },
     {
         "id": "electronics",
-        "name": "Electronics & Mobile",
+        "name": "Electronics",
+        "icon": "laptop-outline",
+        "subcategories": [
+            {"id": "laptops_computers", "name": "Laptops & Computers"},
+            {"id": "tv_dvd", "name": "TV & DVD Equipment"},
+            {"id": "video_game_consoles", "name": "Video Game Consoles"},
+            {"id": "audio_music", "name": "Audio & Music Equipment"},
+            {"id": "headphones", "name": "Headphones"},
+            {"id": "photo_video_cameras", "name": "Photo & Video Cameras"},
+            {"id": "security_surveillance", "name": "Security & Surveillance"},
+            {"id": "networking", "name": "Networking Products"},
+            {"id": "printers_scanners", "name": "Printers & Scanners"},
+            {"id": "computer_monitors", "name": "Computer Monitors"},
+            {"id": "computer_hardware", "name": "Computer Hardware"},
+            {"id": "computer_accessories", "name": "Computer Accessories"},
+            {"id": "electronics_accessories", "name": "Accessories & Supplies for Electronics"},
+            {"id": "video_games", "name": "Video Games"},
+            {"id": "software", "name": "Software"},
+        ]
+    },
+    {
+        "id": "phones_tablets",
+        "name": "Phones & Tablets",
         "icon": "phone-portrait-outline",
-        "subcategories": ["Phones", "Tablets", "Computers", "Gaming", "Audio", "Cameras", "TV"],
-        "attributes": [
-            {"name": "brand", "type": "text", "required": False},
-            {"name": "model", "type": "text", "required": False},
-            {"name": "storage", "type": "text", "required": False},
-            {"name": "ram", "type": "text", "required": False},
-            {"name": "battery_health", "type": "text", "required": False},
-            {"name": "warranty", "type": "text", "required": False}
+        "subcategories": [
+            {"id": "mobile_phones", "name": "Mobile Phones"},
+            {"id": "phone_accessories", "name": "Accessories for Phones & Tablets"},
+            {"id": "smart_watches", "name": "Smart Watches"},
+            {"id": "tablets", "name": "Tablets"},
+            {"id": "phones_headphones", "name": "Headphones"},
         ]
     },
     {
-        "id": "realestate",
-        "name": "Properties",
-        "icon": "business-outline",
-        "subcategories": ["Apartments", "Houses", "Studios", "Penthouses", "Villas", "Commercial", "Land"],
-        "attributes": [
-            {"name": "property_type", "type": "text", "required": False},
-            {"name": "bedrooms", "type": "number", "required": False},
-            {"name": "bathrooms", "type": "number", "required": False},
-            {"name": "size_sqm", "type": "number", "required": False},
-            {"name": "furnished", "type": "select", "options": ["Yes", "No", "Partially"], "required": False},
-            {"name": "parking", "type": "select", "options": ["Yes", "No"], "required": False},
-            {"name": "year_built", "type": "number", "required": False},
-            {"name": "purpose", "type": "select", "options": ["rent", "sale"], "required": True}
-        ]
-    },
-    {
-        "id": "fashion",
-        "name": "Fashion & Accessories",
-        "icon": "shirt-outline",
-        "subcategories": ["Clothing", "Shoes", "Bags", "Jewelry", "Watches", "Accessories"],
-        "attributes": [
-            {"name": "brand", "type": "text", "required": False},
-            {"name": "size", "type": "select", "options": ["XS", "S", "M", "L", "XL", "XXL"], "required": False},
-            {"name": "color", "type": "text", "required": False},
-            {"name": "category", "type": "select", "options": ["Men", "Women", "Kids", "Unisex"], "required": False},
-            {"name": "material", "type": "text", "required": False},
-            {"name": "original", "type": "select", "options": ["Yes", "No"], "required": False}
-        ]
-    },
-    {
-        "id": "home",
-        "name": "Home & Furniture",
+        "id": "home_furniture",
+        "name": "Home, Furniture & Appliances",
         "icon": "home-outline",
-        "subcategories": ["Furniture", "Kitchen", "Decor", "Garden", "Tools", "Lighting"],
-        "attributes": [
-            {"name": "furniture_type", "type": "text", "required": False},
-            {"name": "material", "type": "text", "required": False},
-            {"name": "dimensions", "type": "text", "required": False},
-            {"name": "color", "type": "text", "required": False},
-            {"name": "assembly_required", "type": "select", "options": ["Yes", "No"], "required": False},
-            {"name": "weight", "type": "text", "required": False}
+        "subcategories": [
+            {"id": "furniture", "name": "Furniture"},
+            {"id": "lighting", "name": "Lighting"},
+            {"id": "storage_organization", "name": "Storage & Organization"},
+            {"id": "home_accessories", "name": "Home Accessories"},
+            {"id": "home_appliances", "name": "Home Appliances"},
+            {"id": "kitchen_appliances", "name": "Kitchen Appliances"},
+            {"id": "kitchenware", "name": "Kitchenware & Cookware"},
+            {"id": "household_chemicals", "name": "Household Chemicals"},
+            {"id": "garden_supplies", "name": "Garden Supplies"},
         ]
     },
     {
-        "id": "services",
-        "name": "Services",
-        "icon": "construct-outline",
-        "subcategories": ["Cleaning", "Repair", "Moving", "Tutoring", "IT Support", "Photography", "Other"],
-        "attributes": [
-            {"name": "service_type", "type": "text", "required": False},
-            {"name": "experience_years", "type": "number", "required": False},
-            {"name": "availability", "type": "text", "required": False},
-            {"name": "pricing_model", "type": "select", "options": ["Hourly", "Per Job", "Fixed Price", "Per Session"], "required": False},
-            {"name": "service_area", "type": "text", "required": False},
-            {"name": "response_time", "type": "text", "required": False},
-            {"name": "certifications", "type": "text", "required": False}
+        "id": "fashion_beauty",
+        "name": "Fashion & Beauty",
+        "icon": "shirt-outline",
+        "subcategories": [
+            {"id": "clothing", "name": "Clothing"},
+            {"id": "shoes", "name": "Shoes"},
+            {"id": "bags", "name": "Bags"},
+            {"id": "watches", "name": "Watches"},
+            {"id": "jewelry", "name": "Jewelry"},
+            {"id": "skincare", "name": "Skincare"},
+            {"id": "makeup", "name": "Makeup"},
+            {"id": "haircare", "name": "Hair Care"},
+            {"id": "perfumes", "name": "Perfumes & Fragrances"},
         ]
     },
     {
-        "id": "jobs",
-        "name": "Jobs",
+        "id": "jobs_services",
+        "name": "Jobs & Services",
         "icon": "briefcase-outline",
-        "subcategories": ["Full-time", "Part-time", "Freelance", "Internship", "Contract"],
-        "attributes": [
-            {"name": "job_title", "type": "text", "required": False},
-            {"name": "job_type", "type": "select", "options": ["Full-time", "Part-time", "Contract", "Freelance"], "required": False},
-            {"name": "salary_range", "type": "text", "required": False},
-            {"name": "experience_required", "type": "text", "required": False},
-            {"name": "education_level", "type": "select", "options": ["High School", "Bachelor's", "Master's", "PhD"], "required": False},
-            {"name": "remote", "type": "select", "options": ["Yes", "No", "Hybrid"], "required": False},
-            {"name": "industry", "type": "text", "required": False}
+        "subcategories": [
+            {"id": "job_listings", "name": "Job Listings"},
+            {"id": "professional_services", "name": "Professional Services"},
+            {"id": "home_services", "name": "Home Services"},
+            {"id": "events_entertainment", "name": "Events & Entertainment"},
+            {"id": "health_wellness", "name": "Health & Wellness Services"},
         ]
     },
     {
-        "id": "family",
+        "id": "pets",
+        "name": "Pets",
+        "icon": "paw-outline",
+        "subcategories": [
+            {"id": "dogs", "name": "Dogs"},
+            {"id": "cats", "name": "Cats"},
+            {"id": "birds", "name": "Birds"},
+            {"id": "fish_aquarium", "name": "Fish & Aquarium"},
+            {"id": "small_animals", "name": "Small Animals"},
+            {"id": "pet_supplies", "name": "Pet Supplies"},
+        ]
+    },
+    {
+        "id": "sports_hobbies",
+        "name": "Sports & Hobbies",
+        "icon": "football-outline",
+        "subcategories": [
+            {"id": "sports_equipment", "name": "Sports Equipment"},
+            {"id": "fitness_equipment", "name": "Fitness Equipment"},
+            {"id": "bicycles", "name": "Bicycles"},
+            {"id": "musical_instruments", "name": "Musical Instruments"},
+            {"id": "books_comics", "name": "Books & Comics"},
+            {"id": "collectibles", "name": "Collectibles & Art"},
+            {"id": "outdoor_camping", "name": "Outdoor & Camping"},
+        ]
+    },
+    {
+        "id": "kids_baby",
         "name": "Kids & Baby",
         "icon": "people-outline",
-        "subcategories": ["Strollers", "Car Seats", "Cribs", "Toys", "Clothing", "Maternity"],
-        "attributes": [
-            {"name": "item_type", "type": "text", "required": False},
-            {"name": "age_range", "type": "select", "options": ["0-6 months", "6-12 months", "1-2 years", "2-4 years", "4+ years"], "required": False},
-            {"name": "brand", "type": "text", "required": False},
-            {"name": "material", "type": "text", "required": False},
-            {"name": "safety_certified", "type": "select", "options": ["Yes", "No"], "required": False},
-            {"name": "gender_neutral", "type": "select", "options": ["Yes", "No"], "required": False}
+        "subcategories": [
+            {"id": "baby_gear", "name": "Baby Gear"},
+            {"id": "baby_furniture", "name": "Baby & Kids Furniture"},
+            {"id": "toys", "name": "Toys & Games"},
+            {"id": "kids_clothing", "name": "Kids Clothing"},
+            {"id": "feeding_nursing", "name": "Feeding & Nursing"},
+            {"id": "maternity", "name": "Maternity"},
         ]
     },
-    {
-        "id": "beauty",
-        "name": "Beauty & Personal Care",
-        "icon": "sparkles-outline",
-        "subcategories": ["Skincare", "Makeup", "Hair Care", "Perfumes", "Grooming", "Devices"],
-        "attributes": [
-            {"name": "product_type", "type": "text", "required": False},
-            {"name": "brand", "type": "text", "required": False},
-            {"name": "skin_hair_type", "type": "text", "required": False},
-            {"name": "usage_state", "type": "select", "options": ["New/Sealed", "Lightly Used", "Half Used"], "required": False},
-            {"name": "expiry_date", "type": "text", "required": False},
-            {"name": "authenticity", "type": "select", "options": ["Yes", "No"], "required": False}
-        ]
-    },
-    {
-        "id": "leisure",
-        "name": "Leisure & Activities",
-        "icon": "bicycle-outline",
-        "subcategories": ["Sports", "Fitness", "Outdoor", "Music", "Art", "Classes"],
-        "attributes": [
-            {"name": "activity_type", "type": "text", "required": False},
-            {"name": "duration", "type": "text", "required": False},
-            {"name": "skill_level", "type": "select", "options": ["Beginner", "Intermediate", "Advanced", "All Levels"], "required": False},
-            {"name": "equipment_included", "type": "select", "options": ["Yes", "No"], "required": False},
-            {"name": "group_size", "type": "text", "required": False},
-            {"name": "availability_dates", "type": "text", "required": False}
-        ]
-    },
-    {
-        "id": "animals",
-        "name": "Animals & Pets",
-        "icon": "paw-outline",
-        "subcategories": ["Dogs", "Cats", "Birds", "Fish", "Rabbits", "Other Pets", "Pet Supplies"],
-        "attributes": [
-            {"name": "animal_type", "type": "text", "required": False},
-            {"name": "breed", "type": "text", "required": False},
-            {"name": "age", "type": "text", "required": False},
-            {"name": "gender", "type": "select", "options": ["Male", "Female"], "required": False},
-            {"name": "vaccinated", "type": "select", "options": ["Yes", "No", "Partial"], "required": False},
-            {"name": "health_status", "type": "text", "required": False}
-        ]
-    },
-    {
-        "id": "industrial",
-        "name": "Industrial Machines",
-        "icon": "cog-outline",
-        "subcategories": ["CNC", "Robotics", "Manufacturing", "Construction", "Printing", "Other"],
-        "attributes": [
-            {"name": "machine_type", "type": "text", "required": False},
-            {"name": "brand", "type": "text", "required": False},
-            {"name": "model", "type": "text", "required": False},
-            {"name": "year", "type": "number", "required": False},
-            {"name": "operating_hours", "type": "number", "required": False},
-            {"name": "power_rating", "type": "text", "required": False},
-            {"name": "certification", "type": "select", "options": ["Yes", "No"], "required": False}
-        ]
-    },
-    {
-        "id": "agriculture",
-        "name": "Agriculture",
-        "icon": "leaf-outline",
-        "subcategories": ["Tractors", "Harvesters", "Livestock", "Crops", "Seeds", "Supplies"],
-        "attributes": [
-            {"name": "item_type", "type": "select", "options": ["Machine", "Crop", "Livestock", "Plants", "Equipment", "Supplies"], "required": False},
-            {"name": "brand", "type": "text", "required": False},
-            {"name": "quantity", "type": "text", "required": False},
-            {"name": "usage_hours", "type": "number", "required": False},
-            {"name": "organic", "type": "select", "options": ["Yes", "No"], "required": False}
-        ]
-    },
-    {
-        "id": "misc",
-        "name": "Miscellaneous",
-        "icon": "ellipsis-horizontal-outline",
-        "subcategories": ["Books", "Collectibles", "Antiques", "Other"],
-        "attributes": []
-    }
 ]
+
+# Legacy category mapping for backward compatibility
+LEGACY_CATEGORY_MAP = {
+    "vehicles": "auto_vehicles",
+    "realestate": "properties", 
+    "home": "home_furniture",
+    "fashion": "fashion_beauty",
+    "services": "jobs_services",
+    "jobs": "jobs_services",
+    "family": "kids_baby",
+    "beauty": "fashion_beauty",
+    "leisure": "sports_hobbies",
+    "animals": "pets",
+}
 
 @api_router.get("/categories", response_model=List[dict])
 async def get_categories():
