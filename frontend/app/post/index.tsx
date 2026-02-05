@@ -1079,6 +1079,24 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     lineHeight: 20,
   },
+  stepHeaderWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  stepHeaderIconWrapper: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  stepHeaderText: {
+    flex: 1,
+    paddingTop: 4,
+  },
   // Category Grid
   categoryGrid: {
     flexDirection: 'row',
