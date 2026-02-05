@@ -3738,44 +3738,6 @@ async def clear_all_notifications(request: Request):
     
     return {"message": f"Deleted {result.deleted_count} notifications"}
 
-# Helper function to create notifications
-async def create_notification(
-    user_id: str,
-    notification_type: str,
-    title: str,
-    body: str,
-    cta_label: str = None,
-    cta_route: str = None,
-    actor_id: str = None,
-    actor_name: str = None,
-    actor_picture: str = None,
-    listing_id: str = None,
-    listing_title: str = None,
-    image_url: str = None,
-    meta: dict = None
-):
-    """Create a notification for a user"""
-    notification = {
-        "id": str(uuid.uuid4()),
-        "user_id": user_id,
-        "type": notification_type,
-        "title": title,
-        "body": body,
-        "cta_label": cta_label,
-        "cta_route": cta_route,
-        "read": False,
-        "created_at": datetime.utcnow().isoformat(),
-        "actor_id": actor_id,
-        "actor_name": actor_name,
-        "actor_picture": actor_picture,
-        "listing_id": listing_id,
-        "listing_title": listing_title,
-        "image_url": image_url,
-        "meta": meta or {}
-    }
-    await db.notifications.insert_one(notification)
-    return notification
-
 @api_router.post("/notifications/seed")
 async def seed_sample_notifications(request: Request):
     """Seed sample notifications for testing"""
