@@ -1716,7 +1716,7 @@ export default function PropertyDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
+      {/* Regular Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.headerBtn} onPress={() => safeGoBack(router)}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
@@ -1730,8 +1730,36 @@ export default function PropertyDetailScreen() {
           </TouchableOpacity>
         </View>
       </View>
+      
+      {/* Sticky Price Header - Shows on scroll */}
+      {showStickyHeader && (
+        <View style={styles.stickyHeader}>
+          <TouchableOpacity style={styles.stickyBackBtn} onPress={() => safeGoBack(router)}>
+            <Ionicons name="arrow-back" size={20} color={COLORS.text} />
+          </TouchableOpacity>
+          <View style={styles.stickyContent}>
+            <Text style={styles.stickyPrice}>
+              {formatPrice(property.price, property.pricePerMonth)}
+            </Text>
+            <Text style={styles.stickyTitle} numberOfLines={1}>{property.title}</Text>
+          </View>
+          <View style={styles.stickyActions}>
+            <TouchableOpacity style={styles.stickyIconBtn} onPress={handleShare}>
+              <Ionicons name="share-outline" size={20} color={COLORS.text} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.stickyIconBtn} onPress={handleToggleFavorite}>
+              <Ionicons name={isFavorited ? 'heart' : 'heart-outline'} size={20} color={isFavorited ? COLORS.error : COLORS.text} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         {/* Image Carousel */}
         <ImageCarousel images={property.images} videoUrl={property.videoUrl} />
 
