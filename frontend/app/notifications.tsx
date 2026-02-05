@@ -489,7 +489,7 @@ export default function NotificationsScreen() {
           contentContainerStyle={styles.listContent}
         />
       ) : notifications.length === 0 ? (
-        <EmptyState type={activeTab} onSeedPress={handleSeedNotifications} />
+        <EmptyState type={activeTab} />
       ) : (
         <FlatList
           data={notifications}
