@@ -591,18 +591,21 @@ export default function HomeScreen() {
   // Calculate dynamic columns based on screen size
   const { isMobile, isTablet, isDesktop, width: screenWidth } = useResponsive();
   
+  // Max content width for desktop
+  const MAX_WIDTH = 1200;
+  const effectiveWidth = isDesktop ? Math.min(screenWidth, MAX_WIDTH) : screenWidth;
+  
   // Calculate columns: 2 for mobile, 3 for tablet, 4-5 for desktop
   const getColumns = () => {
     if (isMobile) return 2;
     if (isTablet) return 3;
-    if (screenWidth >= 1400) return 5;
     return 4;
   };
   
   const columns = getColumns();
   const gridPadding = isDesktop ? 24 : isTablet ? 20 : HORIZONTAL_PADDING;
   const gridGap = isDesktop ? 20 : isTablet ? 16 : COLUMN_GAP;
-  const dynamicCardWidth = Math.floor((screenWidth - gridPadding * 2 - gridGap * (columns - 1)) / columns);
+  const dynamicCardWidth = Math.floor((effectiveWidth - gridPadding * 2 - gridGap * (columns - 1)) / columns);
 
   // Render listings as grid manually - responsive columns
   const renderGrid = () => {
@@ -617,7 +620,10 @@ export default function HomeScreen() {
     }
     
     return (
-      <View style={{ paddingHorizontal: gridPadding }}>
+      <View style={[
+        { paddingHorizontal: gridPadding },
+        (isDesktop || isTablet) && { maxWidth: MAX_WIDTH, alignSelf: 'center', width: '100%' }
+      ]}>
         {rows.map((row, rowIndex) => (
           <View key={rowIndex} style={[styles.gridRow, { gap: gridGap }]}>
             {row.map((item) => (
