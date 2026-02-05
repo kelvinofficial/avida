@@ -397,6 +397,9 @@ export default function AutoListingDetailScreen() {
       setError(null);
       const response = await api.get(`/auto/listings/${id}`);
       setListing(response.data);
+      
+      // Track recently viewed (fire and forget)
+      api.post(`/profile/activity/recently-viewed/${id}`).catch(() => {});
     } catch (err: any) {
       console.error('Error fetching listing:', err);
       setError(err.response?.data?.detail || 'Failed to load listing');
