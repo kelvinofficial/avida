@@ -76,6 +76,8 @@ export default function CategoryScreen() {
   const { isAuthenticated } = useAuthStore();
   
   const [listings, setListings] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_category, setCategory] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
