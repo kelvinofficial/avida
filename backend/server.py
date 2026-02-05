@@ -3388,8 +3388,34 @@ async def get_public_profile(user_id: str, request: Request):
     
     user_data = await db.users.find_one({"user_id": user_id}, {"_id": 0})
     
+    # If user not found, try to build profile from listings data
     if not user_data:
-        raise HTTPException(status_code=404, detail="User not found")
+        # Check if there are any listings from this seller
+        listing = await db.listings.find_one({"user_id": user_id})
+        if not listing:
+            listing = await db.auto_listings.find_one({"user_id": user_id})
+        if not listing:
+            listing = await db.properties.find_one({"user_id": user_id})
+        
+        if listing and listing.get("seller"):
+            # Create a placeholder profile from seller info
+            seller = listing["seller"]
+            user_data = {
+                "user_id": user_id,
+                "name": seller.get("name", "Unknown Seller"),
+                "picture": seller.get("picture"),
+                "location": seller.get("location"),
+                "bio": None,
+                "verified": seller.get("verified", False),
+                "email_verified": seller.get("verified", False),
+                "phone_verified": False,
+                "id_verified": False,
+                "rating": seller.get("rating", 0),
+                "total_ratings": seller.get("totalRatings", 0),
+                "created_at": listing.get("created_at", datetime.now(timezone.utc)),
+            }
+        else:
+            raise HTTPException(status_code=404, detail="User not found")
     
     # Get user settings to check privacy
     settings = await db.user_settings.find_one({"user_id": user_id})
