@@ -891,7 +891,7 @@ def generate_agriculture_listings():
             "id": f"agri_{i+1}",
             "user_id": seller["seller_id"],
             "title": f"{item['brand'] if item['type'] != 'Machine' else item['item']} - {item['qty']}",
-            "description": f"{item['item']} available for sale. {item['brand']}. Quantity: {item['qty']}. {f'Operating hours: {item[\"hours\"]:,}.' if item['hours'] else ''} {'Certified organic.' if item['organic'] else ''} Located in rural area, transport can be arranged.",
+            "description": f"{item['item']} available for sale. {item['brand']}. Quantity: {item['qty']}. {'Operating hours: ' + str(item['hours']) + '.' if item['hours'] else ''} {'Certified organic.' if item['organic'] else ''} Located in rural area, transport can be arranged.",
             "price": item["price"],
             "currency": "EUR",
             "negotiable": True,
