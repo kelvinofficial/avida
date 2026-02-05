@@ -695,11 +695,14 @@ const styles = StyleSheet.create({
   // CATEGORIES
   categoriesSection: {
     paddingTop: 16,
+    paddingBottom: 8,
+  },
+  categoriesScroll: {
+    flexGrow: 0,
   },
   categoriesContent: {
     paddingHorizontal: HORIZONTAL_PADDING,
-    flexDirection: 'row',
-    alignItems: 'center',
+    gap: 4,
   },
 
   // SECTION HEADER
