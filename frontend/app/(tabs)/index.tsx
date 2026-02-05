@@ -741,4 +741,74 @@ const styles = StyleSheet.create({
   footer: {
     paddingVertical: 20,
   },
+
+  // LOCATION MODAL
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '70%',
+    paddingBottom: 30,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EBEBEB',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  modalCloseBtn: {
+    padding: 4,
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    marginHorizontal: 20,
+    marginVertical: 12,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 48,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+  },
+  citiesList: {
+    paddingHorizontal: 12,
+  },
+  cityItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    gap: 12,
+  },
+  cityItemSelected: {
+    backgroundColor: '#E8F5E9',
+  },
+  cityName: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+  },
+  cityNameSelected: {
+    color: '#2E7D32',
+    fontWeight: '600',
+  },
 });
