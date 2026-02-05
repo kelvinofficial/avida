@@ -1111,6 +1111,10 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
+  cardFeatured: {
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+  },
   imageContainer: {
     position: 'relative',
     width: '100%',
