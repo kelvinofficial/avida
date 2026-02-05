@@ -1627,6 +1627,32 @@ export default function PropertyDetailScreen() {
     }
   };
 
+  // Submit report
+  const handleReport = async (reason: string, details: string) => {
+    if (!property) return;
+    
+    try {
+      await api.post('/property/report', {
+        propertyId: property.id,
+        reason,
+        details,
+      });
+      Alert.alert(
+        'Report Submitted',
+        'Thank you for helping keep avida safe. We will review this listing.',
+        [{ text: 'OK', onPress: () => setShowReportModal(false) }]
+      );
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      // Still close modal and show success (fire and forget)
+      Alert.alert(
+        'Report Submitted',
+        'Thank you for helping keep avida safe. We will review this listing.',
+        [{ text: 'OK', onPress: () => setShowReportModal(false) }]
+      );
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
