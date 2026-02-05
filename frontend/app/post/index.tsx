@@ -617,9 +617,10 @@ export default function PostListingScreen() {
           </TouchableOpacity>
         ))}
       </View>
+      )}
 
       {/* Subcategory Selection */}
-      {selectedCategoryId && (
+      {selectedCategoryId && !categoriesLoading && (
         <View style={styles.subcategorySection}>
           <Text style={styles.sectionTitle}>Subcategory (Optional)</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
