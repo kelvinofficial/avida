@@ -587,95 +587,197 @@ async def unblock_user(user_id: str, request: Request):
 # Default categories
 DEFAULT_CATEGORIES = [
     {
-        "id": "fashion",
-        "name": "Fashion & Accessories",
-        "icon": "shirt-outline",
-        "subcategories": ["Clothing", "Shoes", "Bags", "Jewelry", "Watches"],
+        "id": "vehicles",
+        "name": "Auto & Vehicles",
+        "icon": "car-outline",
+        "subcategories": ["Cars", "Motorcycles", "Bicycles", "Boats", "Parts", "Commercial Vehicles"],
         "attributes": [
-            {"name": "size", "type": "select", "options": ["XS", "S", "M", "L", "XL", "XXL"], "required": False},
             {"name": "brand", "type": "text", "required": False},
-            {"name": "color", "type": "text", "required": False},
-            {"name": "gender", "type": "select", "options": ["Men", "Women", "Unisex"], "required": False}
-        ]
-    },
-    {
-        "id": "home",
-        "name": "Home & Garden",
-        "icon": "home-outline",
-        "subcategories": ["Furniture", "Kitchen", "Decor", "Garden", "Tools"],
-        "attributes": [
-            {"name": "material", "type": "text", "required": False},
-            {"name": "dimensions", "type": "text", "required": False}
+            {"name": "model", "type": "text", "required": False},
+            {"name": "year", "type": "number", "required": False},
+            {"name": "mileage", "type": "number", "required": False},
+            {"name": "fuel_type", "type": "select", "options": ["Petrol", "Diesel", "Electric", "Hybrid", "LPG"], "required": False},
+            {"name": "transmission", "type": "select", "options": ["Automatic", "Manual", "CVT", "PDK"], "required": False},
+            {"name": "color", "type": "text", "required": False}
         ]
     },
     {
         "id": "electronics",
-        "name": "Electronics",
+        "name": "Electronics & Mobile",
         "icon": "phone-portrait-outline",
-        "subcategories": ["Phones", "Computers", "Gaming", "Audio", "Cameras", "TV"],
+        "subcategories": ["Phones", "Tablets", "Computers", "Gaming", "Audio", "Cameras", "TV"],
         "attributes": [
             {"name": "brand", "type": "text", "required": False},
             {"name": "model", "type": "text", "required": False},
-            {"name": "storage", "type": "text", "required": False}
+            {"name": "storage", "type": "text", "required": False},
+            {"name": "ram", "type": "text", "required": False},
+            {"name": "battery_health", "type": "text", "required": False},
+            {"name": "warranty", "type": "text", "required": False}
         ]
     },
     {
         "id": "realestate",
-        "name": "Real Estate",
+        "name": "Properties",
         "icon": "business-outline",
-        "subcategories": ["Apartments", "Houses", "Rooms", "Commercial", "Land"],
+        "subcategories": ["Apartments", "Houses", "Studios", "Penthouses", "Villas", "Commercial", "Land"],
         "attributes": [
-            {"name": "rooms", "type": "number", "required": False},
-            {"name": "sqm", "type": "number", "required": False},
-            {"name": "type", "type": "select", "options": ["Rent", "Sale"], "required": True}
+            {"name": "property_type", "type": "text", "required": False},
+            {"name": "bedrooms", "type": "number", "required": False},
+            {"name": "bathrooms", "type": "number", "required": False},
+            {"name": "size_sqm", "type": "number", "required": False},
+            {"name": "furnished", "type": "select", "options": ["Yes", "No", "Partially"], "required": False},
+            {"name": "parking", "type": "select", "options": ["Yes", "No"], "required": False},
+            {"name": "year_built", "type": "number", "required": False},
+            {"name": "purpose", "type": "select", "options": ["rent", "sale"], "required": True}
         ]
     },
     {
-        "id": "vehicles",
-        "name": "Cars, Bikes & Boats",
-        "icon": "car-outline",
-        "subcategories": ["Cars", "Motorcycles", "Bicycles", "Boats", "Parts"],
+        "id": "fashion",
+        "name": "Fashion & Accessories",
+        "icon": "shirt-outline",
+        "subcategories": ["Clothing", "Shoes", "Bags", "Jewelry", "Watches", "Accessories"],
         "attributes": [
-            {"name": "make", "type": "text", "required": False},
-            {"name": "model", "type": "text", "required": False},
-            {"name": "year", "type": "number", "required": False},
-            {"name": "mileage", "type": "number", "required": False}
+            {"name": "brand", "type": "text", "required": False},
+            {"name": "size", "type": "select", "options": ["XS", "S", "M", "L", "XL", "XXL"], "required": False},
+            {"name": "color", "type": "text", "required": False},
+            {"name": "category", "type": "select", "options": ["Men", "Women", "Kids", "Unisex"], "required": False},
+            {"name": "material", "type": "text", "required": False},
+            {"name": "original", "type": "select", "options": ["Yes", "No"], "required": False}
         ]
     },
     {
-        "id": "family",
-        "name": "Family & Baby",
-        "icon": "people-outline",
-        "subcategories": ["Baby Clothing", "Toys", "Strollers", "Furniture", "Maternity"],
+        "id": "home",
+        "name": "Home & Furniture",
+        "icon": "home-outline",
+        "subcategories": ["Furniture", "Kitchen", "Decor", "Garden", "Tools", "Lighting"],
         "attributes": [
-            {"name": "age_group", "type": "select", "options": ["0-6 months", "6-12 months", "1-2 years", "2-4 years", "4+ years"], "required": False}
-        ]
-    },
-    {
-        "id": "jobs",
-        "name": "Jobs",
-        "icon": "briefcase-outline",
-        "subcategories": ["Full-time", "Part-time", "Freelance", "Internship"],
-        "attributes": [
-            {"name": "job_type", "type": "select", "options": ["Full-time", "Part-time", "Contract", "Freelance"], "required": False},
-            {"name": "industry", "type": "text", "required": False}
+            {"name": "furniture_type", "type": "text", "required": False},
+            {"name": "material", "type": "text", "required": False},
+            {"name": "dimensions", "type": "text", "required": False},
+            {"name": "color", "type": "text", "required": False},
+            {"name": "assembly_required", "type": "select", "options": ["Yes", "No"], "required": False},
+            {"name": "weight", "type": "text", "required": False}
         ]
     },
     {
         "id": "services",
         "name": "Services",
         "icon": "construct-outline",
-        "subcategories": ["Cleaning", "Repair", "Moving", "Tutoring", "Other"],
+        "subcategories": ["Cleaning", "Repair", "Moving", "Tutoring", "IT Support", "Photography", "Other"],
         "attributes": [
             {"name": "service_type", "type": "text", "required": False},
-            {"name": "availability", "type": "text", "required": False}
+            {"name": "experience_years", "type": "number", "required": False},
+            {"name": "availability", "type": "text", "required": False},
+            {"name": "pricing_model", "type": "select", "options": ["Hourly", "Per Job", "Fixed Price", "Per Session"], "required": False},
+            {"name": "service_area", "type": "text", "required": False},
+            {"name": "response_time", "type": "text", "required": False},
+            {"name": "certifications", "type": "text", "required": False}
+        ]
+    },
+    {
+        "id": "jobs",
+        "name": "Jobs",
+        "icon": "briefcase-outline",
+        "subcategories": ["Full-time", "Part-time", "Freelance", "Internship", "Contract"],
+        "attributes": [
+            {"name": "job_title", "type": "text", "required": False},
+            {"name": "job_type", "type": "select", "options": ["Full-time", "Part-time", "Contract", "Freelance"], "required": False},
+            {"name": "salary_range", "type": "text", "required": False},
+            {"name": "experience_required", "type": "text", "required": False},
+            {"name": "education_level", "type": "select", "options": ["High School", "Bachelor's", "Master's", "PhD"], "required": False},
+            {"name": "remote", "type": "select", "options": ["Yes", "No", "Hybrid"], "required": False},
+            {"name": "industry", "type": "text", "required": False}
+        ]
+    },
+    {
+        "id": "family",
+        "name": "Kids & Baby",
+        "icon": "people-outline",
+        "subcategories": ["Strollers", "Car Seats", "Cribs", "Toys", "Clothing", "Maternity"],
+        "attributes": [
+            {"name": "item_type", "type": "text", "required": False},
+            {"name": "age_range", "type": "select", "options": ["0-6 months", "6-12 months", "1-2 years", "2-4 years", "4+ years"], "required": False},
+            {"name": "brand", "type": "text", "required": False},
+            {"name": "material", "type": "text", "required": False},
+            {"name": "safety_certified", "type": "select", "options": ["Yes", "No"], "required": False},
+            {"name": "gender_neutral", "type": "select", "options": ["Yes", "No"], "required": False}
+        ]
+    },
+    {
+        "id": "beauty",
+        "name": "Beauty & Personal Care",
+        "icon": "sparkles-outline",
+        "subcategories": ["Skincare", "Makeup", "Hair Care", "Perfumes", "Grooming", "Devices"],
+        "attributes": [
+            {"name": "product_type", "type": "text", "required": False},
+            {"name": "brand", "type": "text", "required": False},
+            {"name": "skin_hair_type", "type": "text", "required": False},
+            {"name": "usage_state", "type": "select", "options": ["New/Sealed", "Lightly Used", "Half Used"], "required": False},
+            {"name": "expiry_date", "type": "text", "required": False},
+            {"name": "authenticity", "type": "select", "options": ["Yes", "No"], "required": False}
+        ]
+    },
+    {
+        "id": "leisure",
+        "name": "Leisure & Activities",
+        "icon": "bicycle-outline",
+        "subcategories": ["Sports", "Fitness", "Outdoor", "Music", "Art", "Classes"],
+        "attributes": [
+            {"name": "activity_type", "type": "text", "required": False},
+            {"name": "duration", "type": "text", "required": False},
+            {"name": "skill_level", "type": "select", "options": ["Beginner", "Intermediate", "Advanced", "All Levels"], "required": False},
+            {"name": "equipment_included", "type": "select", "options": ["Yes", "No"], "required": False},
+            {"name": "group_size", "type": "text", "required": False},
+            {"name": "availability_dates", "type": "text", "required": False}
+        ]
+    },
+    {
+        "id": "animals",
+        "name": "Animals & Pets",
+        "icon": "paw-outline",
+        "subcategories": ["Dogs", "Cats", "Birds", "Fish", "Rabbits", "Other Pets", "Pet Supplies"],
+        "attributes": [
+            {"name": "animal_type", "type": "text", "required": False},
+            {"name": "breed", "type": "text", "required": False},
+            {"name": "age", "type": "text", "required": False},
+            {"name": "gender", "type": "select", "options": ["Male", "Female"], "required": False},
+            {"name": "vaccinated", "type": "select", "options": ["Yes", "No", "Partial"], "required": False},
+            {"name": "health_status", "type": "text", "required": False}
+        ]
+    },
+    {
+        "id": "industrial",
+        "name": "Industrial Machines",
+        "icon": "cog-outline",
+        "subcategories": ["CNC", "Robotics", "Manufacturing", "Construction", "Printing", "Other"],
+        "attributes": [
+            {"name": "machine_type", "type": "text", "required": False},
+            {"name": "brand", "type": "text", "required": False},
+            {"name": "model", "type": "text", "required": False},
+            {"name": "year", "type": "number", "required": False},
+            {"name": "operating_hours", "type": "number", "required": False},
+            {"name": "power_rating", "type": "text", "required": False},
+            {"name": "certification", "type": "select", "options": ["Yes", "No"], "required": False}
+        ]
+    },
+    {
+        "id": "agriculture",
+        "name": "Agriculture",
+        "icon": "leaf-outline",
+        "subcategories": ["Tractors", "Harvesters", "Livestock", "Crops", "Seeds", "Supplies"],
+        "attributes": [
+            {"name": "item_type", "type": "select", "options": ["Machine", "Crop", "Livestock", "Plants", "Equipment", "Supplies"], "required": False},
+            {"name": "brand", "type": "text", "required": False},
+            {"name": "quantity", "type": "text", "required": False},
+            {"name": "usage_hours", "type": "number", "required": False},
+            {"name": "organic", "type": "select", "options": ["Yes", "No"], "required": False}
         ]
     },
     {
         "id": "misc",
         "name": "Miscellaneous",
         "icon": "ellipsis-horizontal-outline",
-        "subcategories": ["Books", "Sports", "Music", "Art", "Collectibles", "Other"],
+        "subcategories": ["Books", "Collectibles", "Antiques", "Other"],
         "attributes": []
     }
 ]
