@@ -18,6 +18,7 @@ import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import api from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
+import { safeGoBack } from '../../src/utils/navigation';
 
 const COLORS = {
   primary: '#2E7D32',
