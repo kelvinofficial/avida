@@ -526,11 +526,16 @@ const QuickActions = ({ router, onLogout }: { router: any; onLogout: () => void 
         <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
       </TouchableOpacity>
 
-      <TouchableOpacity style={[quickActionsStyles.item, quickActionsStyles.logoutItem]} onPress={onLogout}>
+      <TouchableOpacity 
+        style={[quickActionsStyles.item, quickActionsStyles.logoutItem]} 
+        onPress={onLogout}
+        activeOpacity={0.7}
+      >
         <View style={[quickActionsStyles.iconContainer, quickActionsStyles.logoutIcon]}>
           <Ionicons name="log-out-outline" size={22} color={COLORS.error} />
         </View>
         <Text style={[quickActionsStyles.label, quickActionsStyles.logoutLabel]}>Sign Out</Text>
+        <Ionicons name="chevron-forward" size={20} color={COLORS.error} />
       </TouchableOpacity>
     </View>
   );
