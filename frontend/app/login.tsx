@@ -215,6 +215,75 @@ export default function LoginScreen() {
     setName('');
   };
 
+  // Welcome Back screen shown after sign out
+  if (showWelcomeBack) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <LinearGradient
+          colors={[COLORS.gradientStart, COLORS.gradientEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.welcomeBackGradient}
+        >
+          {/* Decorative circles */}
+          <View style={[styles.decorCircle, styles.circle1]} />
+          <View style={[styles.decorCircle, styles.circle2]} />
+          <View style={[styles.decorCircle, styles.circle3]} />
+
+          {/* Content */}
+          <View style={styles.welcomeBackContent}>
+            <View style={styles.welcomeIconContainer}>
+              <Ionicons name="hand-right" size={48} color="#fff" />
+            </View>
+            <Text style={styles.welcomeBackTitle}>See You Soon!</Text>
+            <Text style={styles.welcomeBackSubtitle}>
+              You've been signed out successfully.{'\n'}Come back anytime!
+            </Text>
+
+            {/* Sign In Options */}
+            <View style={styles.welcomeBackOptions}>
+              <TouchableOpacity 
+                style={styles.welcomeBackPrimaryBtn}
+                onPress={() => setShowWelcomeBack(false)}
+              >
+                <Ionicons name="log-in-outline" size={22} color={COLORS.primary} />
+                <Text style={styles.welcomeBackPrimaryBtnText}>Sign In Again</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.welcomeBackGoogleBtn}
+                onPress={handleGoogleLogin}
+                disabled={loading}
+              >
+                <Image 
+                  source={{ uri: 'https://developers.google.com/identity/images/g-logo.png' }}
+                  style={styles.googleIconSmall}
+                />
+                <Text style={styles.welcomeBackGoogleBtnText}>Continue with Google</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.welcomeBackSecondaryBtn}
+                onPress={handleClose}
+              >
+                <Ionicons name="home-outline" size={20} color="#fff" />
+                <Text style={styles.welcomeBackSecondaryBtnText}>Browse as Guest</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* App branding */}
+          <View style={styles.welcomeBackFooter}>
+            <View style={styles.welcomeBackBrand}>
+              <Ionicons name="storefront" size={20} color="rgba(255,255,255,0.8)" />
+              <Text style={styles.welcomeBackBrandText}>avida marketplace</Text>
+            </View>
+          </View>
+        </LinearGradient>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <KeyboardAvoidingView 
       style={styles.container}
