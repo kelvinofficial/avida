@@ -423,24 +423,34 @@ export default function HomeScreen() {
   );
 
   // Calculate card width dynamically
-  const dynamicCardWidth = (windowWidth - HORIZONTAL_PADDING * 2 - COLUMN_GAP) / 2;
+  const dynamicCardWidth = Math.floor((windowWidth - HORIZONTAL_PADDING * 2 - COLUMN_GAP) / 2);
 
-  // Render listings as grid manually
+  // Render listings as grid manually - using row pairs for guaranteed 2-column layout
   const renderGrid = () => {
     if (listings.length === 0) {
       return <EmptyState icon="pricetags-outline" title="No listings yet" description="Be the first to post an ad in your area!" />;
     }
     
+    // Create pairs of listings for 2-column layout
+    const rows = [];
+    for (let i = 0; i < listings.length; i += 2) {
+      rows.push(listings.slice(i, i + 2));
+    }
+    
     return (
-      <View style={styles.gridContainer}>
-        {listings.map((item) => (
-          <View key={item.id} style={[styles.cardWrapper, { width: dynamicCardWidth }]}>
-            <ListingCard
-              listing={item}
-              onPress={() => router.push(`/listing/${item.id}`)}
-              onFavorite={() => toggleFavorite(item.id)}
-              isFavorited={favorites.has(item.id)}
-            />
+      <View>
+        {rows.map((row, rowIndex) => (
+          <View key={rowIndex} style={styles.gridRow}>
+            {row.map((item) => (
+              <View key={item.id} style={[styles.cardWrapper, { width: dynamicCardWidth }]}>
+                <ListingCard
+                  listing={item}
+                  onPress={() => router.push(`/listing/${item.id}`)}
+                  onFavorite={() => toggleFavorite(item.id)}
+                  isFavorited={favorites.has(item.id)}
+                />
+              </View>
+            ))}
           </View>
         ))}
       </View>
