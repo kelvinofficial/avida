@@ -292,19 +292,6 @@ export default function NotificationsScreen() {
     }
   };
 
-  const handleSeedNotifications = async () => {
-    setSeeding(true);
-    try {
-      await api.post('/notifications/seed');
-      await fetchNotifications(1, true);
-      Alert.alert('Success', 'Sample notifications loaded!');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to load sample notifications');
-    } finally {
-      setSeeding(false);
-    }
-  };
-
   const handleNotificationPress = async (notification: Notification) => {
     if (!notification.read) {
       try {
