@@ -1220,9 +1220,9 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   recentChipText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '500',
     color: '#2E7D32',
-    maxWidth: 120,
+    maxWidth: 100,
   },
 });
