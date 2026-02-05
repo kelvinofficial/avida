@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { api } from '../../src/utils/api';
 import { PROPERTY_TYPE_CATEGORIES, FACILITIES_LIST } from '../../src/types/property';
+import { useAuthStore } from '../../src/store/authStore';
 
 const COLORS = {
   primary: '#2E7D32',
