@@ -579,6 +579,12 @@ export default function PostListingScreen() {
       <Text style={styles.stepTitle}>What are you selling?</Text>
       <Text style={styles.stepSubtitle}>Choose the category that best fits your item</Text>
       
+      {categoriesLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Loading categories...</Text>
+        </View>
+      ) : (
       <View style={styles.categoryGrid}>
         {allCategories.map((cat) => (
           <TouchableOpacity
