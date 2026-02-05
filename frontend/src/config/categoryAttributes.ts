@@ -13,6 +13,7 @@ export interface AttributeField {
   suffix?: string; // e.g., "km", "sqm"
   min?: number;
   max?: number;
+  icon?: string; // Ionicons name
 }
 
 export interface CategoryAttributeConfig {
@@ -43,16 +44,16 @@ export const VEHICLES_CONFIG: CategoryAttributeConfig = {
   icon: 'car-outline',
   conditionOptions: ['New', 'Like New', 'Good', 'Fair', 'For Parts'],
   attributes: [
-    { name: 'brand', label: 'Brand', type: 'select', options: AUTO_BRANDS, required: true },
-    { name: 'model', label: 'Model', type: 'select', required: true, dependsOn: 'brand', dependentOptions: AUTO_MODELS },
-    { name: 'year', label: 'Year', type: 'number', placeholder: '2020', min: 1950, max: 2026, required: true },
-    { name: 'mileage', label: 'Mileage', type: 'number', placeholder: '50000', suffix: 'km', required: true },
-    { name: 'fuel_type', label: 'Fuel Type', type: 'select', options: ['Petrol', 'Diesel', 'Electric', 'Hybrid', 'Plug-in Hybrid', 'LPG', 'CNG'], required: true },
-    { name: 'transmission', label: 'Transmission', type: 'select', options: ['Automatic', 'Manual', 'Semi-Automatic', 'CVT'], required: true },
-    { name: 'engine_size', label: 'Engine Size', type: 'text', placeholder: '2.0L' },
-    { name: 'color', label: 'Color', type: 'select', options: ['Black', 'White', 'Silver', 'Gray', 'Blue', 'Red', 'Green', 'Brown', 'Beige', 'Yellow', 'Orange', 'Other'] },
-    { name: 'body_type', label: 'Body Type', type: 'select', options: ['Sedan', 'Hatchback', 'SUV', 'Coupe', 'Convertible', 'Wagon', 'Van', 'Pickup'] },
-    { name: 'doors', label: 'Doors', type: 'select', options: ['2', '3', '4', '5'] },
+    { name: 'brand', label: 'Brand', type: 'select', options: AUTO_BRANDS, required: true, icon: 'ribbon-outline' },
+    { name: 'model', label: 'Model', type: 'select', required: true, dependsOn: 'brand', dependentOptions: AUTO_MODELS, icon: 'car-sport-outline' },
+    { name: 'year', label: 'Year', type: 'number', placeholder: '2020', min: 1950, max: 2026, required: true, icon: 'calendar-outline' },
+    { name: 'mileage', label: 'Mileage', type: 'number', placeholder: '50000', suffix: 'km', required: true, icon: 'speedometer-outline' },
+    { name: 'fuel_type', label: 'Fuel Type', type: 'select', options: ['Petrol', 'Diesel', 'Electric', 'Hybrid', 'Plug-in Hybrid', 'LPG', 'CNG'], required: true, icon: 'water-outline' },
+    { name: 'transmission', label: 'Transmission', type: 'select', options: ['Automatic', 'Manual', 'Semi-Automatic', 'CVT'], required: true, icon: 'settings-outline' },
+    { name: 'engine_size', label: 'Engine Size', type: 'text', placeholder: '2.0L', icon: 'flash-outline' },
+    { name: 'color', label: 'Color', type: 'select', options: ['Black', 'White', 'Silver', 'Gray', 'Blue', 'Red', 'Green', 'Brown', 'Beige', 'Yellow', 'Orange', 'Other'], icon: 'color-palette-outline' },
+    { name: 'body_type', label: 'Body Type', type: 'select', options: ['Sedan', 'Hatchback', 'SUV', 'Coupe', 'Convertible', 'Wagon', 'Van', 'Pickup'], icon: 'car-outline' },
+    { name: 'doors', label: 'Doors', type: 'select', options: ['2', '3', '4', '5'], icon: 'enter-outline' },
   ]
 };
 
@@ -72,17 +73,17 @@ export const ELECTRONICS_CONFIG: CategoryAttributeConfig = {
   icon: 'phone-portrait-outline',
   conditionOptions: ['New/Sealed', 'Like New', 'Good', 'Fair'],
   attributes: [
-    { name: 'device_type', label: 'Device Type', type: 'select', options: ['Smartphone', 'Tablet', 'Laptop', 'Desktop', 'TV', 'Audio', 'Camera', 'Gaming Console', 'Wearable', 'Other'], required: true },
-    { name: 'brand', label: 'Brand', type: 'select', options: MOBILE_BRANDS, required: true },
-    { name: 'model', label: 'Model', type: 'select', dependsOn: 'brand', dependentOptions: MOBILE_MODELS, required: true },
-    { name: 'storage', label: 'Storage', type: 'select', options: ['32GB', '64GB', '128GB', '256GB', '512GB', '1TB', '2TB', 'Other'] },
-    { name: 'ram', label: 'RAM', type: 'select', options: ['4GB', '6GB', '8GB', '12GB', '16GB', '32GB', '64GB', 'Other'] },
-    { name: 'screen_size', label: 'Screen Size', type: 'text', placeholder: '6.7 inch' },
-    { name: 'battery_health', label: 'Battery Health', type: 'select', options: ['100%', '95-99%', '90-94%', '85-89%', '80-84%', 'Below 80%', 'Unknown'] },
-    { name: 'warranty', label: 'Warranty', type: 'select', options: ['Under Warranty', '1+ Year Left', '6+ Months Left', 'Expired', 'None'] },
-    { name: 'color', label: 'Color', type: 'text', placeholder: 'Space Gray' },
-    { name: 'accessories_included', label: 'Accessories Included', type: 'toggle' },
-    { name: 'original_box', label: 'Original Box', type: 'toggle' },
+    { name: 'device_type', label: 'Device Type', type: 'select', options: ['Smartphone', 'Tablet', 'Laptop', 'Desktop', 'TV', 'Audio', 'Camera', 'Gaming Console', 'Wearable', 'Other'], required: true, icon: 'hardware-chip-outline' },
+    { name: 'brand', label: 'Brand', type: 'select', options: MOBILE_BRANDS, required: true, icon: 'ribbon-outline' },
+    { name: 'model', label: 'Model', type: 'select', dependsOn: 'brand', dependentOptions: MOBILE_MODELS, required: true, icon: 'phone-portrait-outline' },
+    { name: 'storage', label: 'Storage', type: 'select', options: ['32GB', '64GB', '128GB', '256GB', '512GB', '1TB', '2TB', 'Other'], icon: 'folder-outline' },
+    { name: 'ram', label: 'RAM', type: 'select', options: ['4GB', '6GB', '8GB', '12GB', '16GB', '32GB', '64GB', 'Other'], icon: 'server-outline' },
+    { name: 'screen_size', label: 'Screen Size', type: 'text', placeholder: '6.7 inch', icon: 'expand-outline' },
+    { name: 'battery_health', label: 'Battery Health', type: 'select', options: ['100%', '95-99%', '90-94%', '85-89%', '80-84%', 'Below 80%', 'Unknown'], icon: 'battery-half-outline' },
+    { name: 'warranty', label: 'Warranty', type: 'select', options: ['Under Warranty', '1+ Year Left', '6+ Months Left', 'Expired', 'None'], icon: 'shield-checkmark-outline' },
+    { name: 'color', label: 'Color', type: 'text', placeholder: 'Space Gray', icon: 'color-palette-outline' },
+    { name: 'accessories_included', label: 'Accessories Included', type: 'toggle', icon: 'gift-outline' },
+    { name: 'original_box', label: 'Original Box', type: 'toggle', icon: 'cube-outline' },
   ]
 };
 
@@ -93,21 +94,21 @@ export const REALESTATE_CONFIG: CategoryAttributeConfig = {
   icon: 'business-outline',
   conditionOptions: ['New Build', 'Renovated', 'Good', 'Needs Renovation'],
   attributes: [
-    { name: 'property_type', label: 'Property Type', type: 'select', options: ['Apartment', 'House', 'Studio', 'Penthouse', 'Villa', 'Townhouse', 'Loft', 'Commercial', 'Land'], required: true },
-    { name: 'purpose', label: 'For', type: 'select', options: ['Rent', 'Sale'], required: true },
-    { name: 'bedrooms', label: 'Bedrooms', type: 'select', options: ['Studio', '1', '2', '3', '4', '5', '6+'], required: true },
-    { name: 'bathrooms', label: 'Bathrooms', type: 'select', options: ['1', '2', '3', '4', '5+'], required: true },
-    { name: 'size_sqm', label: 'Size', type: 'number', placeholder: '85', suffix: 'm²', required: true },
-    { name: 'floor', label: 'Floor', type: 'select', options: ['Ground', '1', '2', '3', '4', '5', '6-10', '10+', 'Penthouse'] },
-    { name: 'total_floors', label: 'Total Floors in Building', type: 'number', placeholder: '5' },
-    { name: 'furnished', label: 'Furnished', type: 'select', options: ['Fully Furnished', 'Partially Furnished', 'Unfurnished'] },
-    { name: 'parking', label: 'Parking', type: 'select', options: ['Garage', 'Outdoor Parking', 'Street Parking', 'No Parking'] },
-    { name: 'year_built', label: 'Year Built', type: 'number', placeholder: '2015' },
-    { name: 'energy_rating', label: 'Energy Rating', type: 'select', options: ['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'Unknown'] },
-    { name: 'available_from', label: 'Available From', type: 'select', options: ['Immediately', 'Within 1 Month', 'Within 3 Months', 'Negotiable'] },
-    { name: 'pets_allowed', label: 'Pets Allowed', type: 'toggle' },
-    { name: 'balcony', label: 'Balcony/Terrace', type: 'toggle' },
-    { name: 'elevator', label: 'Elevator', type: 'toggle' },
+    { name: 'property_type', label: 'Property Type', type: 'select', options: ['Apartment', 'House', 'Studio', 'Penthouse', 'Villa', 'Townhouse', 'Loft', 'Commercial', 'Land'], required: true, icon: 'home-outline' },
+    { name: 'purpose', label: 'For', type: 'select', options: ['Rent', 'Sale'], required: true, icon: 'pricetag-outline' },
+    { name: 'bedrooms', label: 'Bedrooms', type: 'select', options: ['Studio', '1', '2', '3', '4', '5', '6+'], required: true, icon: 'bed-outline' },
+    { name: 'bathrooms', label: 'Bathrooms', type: 'select', options: ['1', '2', '3', '4', '5+'], required: true, icon: 'water-outline' },
+    { name: 'size_sqm', label: 'Size', type: 'number', placeholder: '85', suffix: 'm²', required: true, icon: 'resize-outline' },
+    { name: 'floor', label: 'Floor', type: 'select', options: ['Ground', '1', '2', '3', '4', '5', '6-10', '10+', 'Penthouse'], icon: 'layers-outline' },
+    { name: 'total_floors', label: 'Total Floors in Building', type: 'number', placeholder: '5', icon: 'business-outline' },
+    { name: 'furnished', label: 'Furnished', type: 'select', options: ['Fully Furnished', 'Partially Furnished', 'Unfurnished'], icon: 'cube-outline' },
+    { name: 'parking', label: 'Parking', type: 'select', options: ['Garage', 'Outdoor Parking', 'Street Parking', 'No Parking'], icon: 'car-outline' },
+    { name: 'year_built', label: 'Year Built', type: 'number', placeholder: '2015', icon: 'calendar-outline' },
+    { name: 'energy_rating', label: 'Energy Rating', type: 'select', options: ['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'Unknown'], icon: 'leaf-outline' },
+    { name: 'available_from', label: 'Available From', type: 'select', options: ['Immediately', 'Within 1 Month', 'Within 3 Months', 'Negotiable'], icon: 'time-outline' },
+    { name: 'pets_allowed', label: 'Pets Allowed', type: 'toggle', icon: 'paw-outline' },
+    { name: 'balcony', label: 'Balcony/Terrace', type: 'toggle', icon: 'sunny-outline' },
+    { name: 'elevator', label: 'Elevator', type: 'toggle', icon: 'arrow-up-outline' },
   ]
 };
 
@@ -118,15 +119,15 @@ export const BIKES_CONFIG: CategoryAttributeConfig = {
   icon: 'bicycle-outline',
   conditionOptions: ['New', 'Like New', 'Good', 'Fair', 'For Parts'],
   attributes: [
-    { name: 'bike_type', label: 'Bike Type', type: 'select', options: ['Road Bike', 'Mountain Bike', 'E-Bike', 'City/Urban', 'Hybrid', 'BMX', 'Folding', 'Gravel', 'Kids Bike', 'Other'], required: true },
-    { name: 'brand', label: 'Brand', type: 'select', options: ['Canyon', 'Trek', 'Specialized', 'Giant', 'Scott', 'Cube', 'Cannondale', 'BMC', 'Bianchi', 'Santa Cruz', 'Brompton', 'Other'], required: true },
-    { name: 'frame_size', label: 'Frame Size', type: 'select', options: ['XS', 'S', 'M', 'L', 'XL', '48cm', '50cm', '52cm', '54cm', '56cm', '58cm', '60cm', 'One Size'] },
-    { name: 'wheel_size', label: 'Wheel Size', type: 'select', options: ['16 inch', '20 inch', '24 inch', '26 inch', '27.5 inch', '29 inch', '700c'] },
-    { name: 'gear_count', label: 'Gears', type: 'select', options: ['Single Speed', '3', '7', '8', '9', '10', '11', '12', '18', '21', '24', '27', '30+'] },
-    { name: 'brake_type', label: 'Brake Type', type: 'select', options: ['Disc (Hydraulic)', 'Disc (Mechanical)', 'Rim Brake', 'Coaster Brake'] },
-    { name: 'suspension', label: 'Suspension', type: 'select', options: ['None (Rigid)', 'Front Only (Hardtail)', 'Full Suspension'] },
-    { name: 'frame_material', label: 'Frame Material', type: 'select', options: ['Carbon', 'Aluminum', 'Steel', 'Titanium', 'Other'] },
-    { name: 'color', label: 'Color', type: 'text', placeholder: 'Black/Red' },
+    { name: 'bike_type', label: 'Bike Type', type: 'select', options: ['Road Bike', 'Mountain Bike', 'E-Bike', 'City/Urban', 'Hybrid', 'BMX', 'Folding', 'Gravel', 'Kids Bike', 'Other'], required: true, icon: 'bicycle-outline' },
+    { name: 'brand', label: 'Brand', type: 'select', options: ['Canyon', 'Trek', 'Specialized', 'Giant', 'Scott', 'Cube', 'Cannondale', 'BMC', 'Bianchi', 'Santa Cruz', 'Brompton', 'Other'], required: true, icon: 'ribbon-outline' },
+    { name: 'frame_size', label: 'Frame Size', type: 'select', options: ['XS', 'S', 'M', 'L', 'XL', '48cm', '50cm', '52cm', '54cm', '56cm', '58cm', '60cm', 'One Size'], icon: 'resize-outline' },
+    { name: 'wheel_size', label: 'Wheel Size', type: 'select', options: ['16 inch', '20 inch', '24 inch', '26 inch', '27.5 inch', '29 inch', '700c'], icon: 'ellipse-outline' },
+    { name: 'gear_count', label: 'Gears', type: 'select', options: ['Single Speed', '3', '7', '8', '9', '10', '11', '12', '18', '21', '24', '27', '30+'], icon: 'cog-outline' },
+    { name: 'brake_type', label: 'Brake Type', type: 'select', options: ['Disc (Hydraulic)', 'Disc (Mechanical)', 'Rim Brake', 'Coaster Brake'], icon: 'stop-circle-outline' },
+    { name: 'suspension', label: 'Suspension', type: 'select', options: ['None (Rigid)', 'Front Only (Hardtail)', 'Full Suspension'], icon: 'git-compare-outline' },
+    { name: 'frame_material', label: 'Frame Material', type: 'select', options: ['Carbon', 'Aluminum', 'Steel', 'Titanium', 'Other'], icon: 'construct-outline' },
+    { name: 'color', label: 'Color', type: 'text', placeholder: 'Black/Red', icon: 'color-palette-outline' },
   ]
 };
 
@@ -136,14 +137,14 @@ export const SERVICES_CONFIG: CategoryAttributeConfig = {
   name: 'Services',
   icon: 'construct-outline',
   attributes: [
-    { name: 'service_type', label: 'Service Type', type: 'select', options: ['Cleaning', 'Plumbing', 'Electrical', 'Moving', 'Tutoring', 'IT Support', 'Photography', 'Personal Training', 'Gardening', 'Renovation', 'Interior Design', 'Translation', 'Other'], required: true },
-    { name: 'experience_years', label: 'Years of Experience', type: 'select', options: ['Less than 1', '1-2', '3-5', '5-10', '10+'], required: true },
-    { name: 'pricing_model', label: 'Pricing', type: 'select', options: ['Hourly Rate', 'Fixed Price', 'Per Project', 'Per Session', 'Per Day'], required: true },
-    { name: 'availability', label: 'Availability', type: 'select', options: ['Weekdays Only', 'Weekends Only', 'Flexible', '24/7', 'By Appointment'] },
-    { name: 'service_area', label: 'Service Area', type: 'text', placeholder: 'Berlin and surrounding areas' },
-    { name: 'response_time', label: 'Response Time', type: 'select', options: ['Same Day', 'Within 24 Hours', 'Within 48 Hours', 'Within a Week'] },
-    { name: 'certifications', label: 'Certifications', type: 'text', placeholder: 'Licensed, Insured, TÜV Certified' },
-    { name: 'languages', label: 'Languages', type: 'text', placeholder: 'German, English' },
+    { name: 'service_type', label: 'Service Type', type: 'select', options: ['Cleaning', 'Plumbing', 'Electrical', 'Moving', 'Tutoring', 'IT Support', 'Photography', 'Personal Training', 'Gardening', 'Renovation', 'Interior Design', 'Translation', 'Other'], required: true, icon: 'briefcase-outline' },
+    { name: 'experience_years', label: 'Years of Experience', type: 'select', options: ['Less than 1', '1-2', '3-5', '5-10', '10+'], required: true, icon: 'time-outline' },
+    { name: 'pricing_model', label: 'Pricing', type: 'select', options: ['Hourly Rate', 'Fixed Price', 'Per Project', 'Per Session', 'Per Day'], required: true, icon: 'cash-outline' },
+    { name: 'availability', label: 'Availability', type: 'select', options: ['Weekdays Only', 'Weekends Only', 'Flexible', '24/7', 'By Appointment'], icon: 'calendar-outline' },
+    { name: 'service_area', label: 'Service Area', type: 'text', placeholder: 'Berlin and surrounding areas', icon: 'location-outline' },
+    { name: 'response_time', label: 'Response Time', type: 'select', options: ['Same Day', 'Within 24 Hours', 'Within 48 Hours', 'Within a Week'], icon: 'alarm-outline' },
+    { name: 'certifications', label: 'Certifications', type: 'text', placeholder: 'Licensed, Insured, TÜV Certified', icon: 'ribbon-outline' },
+    { name: 'languages', label: 'Languages', type: 'text', placeholder: 'German, English', icon: 'language-outline' },
   ]
 };
 
@@ -153,16 +154,16 @@ export const JOBS_CONFIG: CategoryAttributeConfig = {
   name: 'Jobs',
   icon: 'briefcase-outline',
   attributes: [
-    { name: 'job_title', label: 'Job Title', type: 'text', placeholder: 'Software Engineer', required: true },
-    { name: 'job_type', label: 'Employment Type', type: 'select', options: ['Full-time', 'Part-time', 'Contract', 'Freelance', 'Internship', 'Mini-Job'], required: true },
-    { name: 'salary_type', label: 'Salary Type', type: 'select', options: ['Annual Salary', 'Monthly Salary', 'Hourly Rate', 'Negotiable', 'Not Disclosed'] },
-    { name: 'salary_range', label: 'Salary Range', type: 'text', placeholder: '€50,000 - €70,000' },
-    { name: 'experience_required', label: 'Experience Required', type: 'select', options: ['Entry Level', '1-2 Years', '3-5 Years', '5-10 Years', '10+ Years', 'No Experience'] },
-    { name: 'education_level', label: 'Education Level', type: 'select', options: ['High School', 'Vocational Training', 'Bachelor\'s Degree', 'Master\'s Degree', 'PhD', 'Not Required'] },
-    { name: 'industry', label: 'Industry', type: 'select', options: ['Technology', 'Finance', 'Healthcare', 'Marketing', 'Sales', 'Education', 'Manufacturing', 'Hospitality', 'Retail', 'Other'] },
-    { name: 'remote', label: 'Remote Work', type: 'select', options: ['Fully Remote', 'Hybrid', 'On-site Only'] },
-    { name: 'start_date', label: 'Start Date', type: 'select', options: ['Immediately', 'Within 1 Month', 'Within 3 Months', 'Flexible'] },
-    { name: 'benefits', label: 'Benefits', type: 'text', placeholder: 'Health Insurance, 401k, Flexible Hours' },
+    { name: 'job_title', label: 'Job Title', type: 'text', placeholder: 'Software Engineer', required: true, icon: 'person-outline' },
+    { name: 'job_type', label: 'Employment Type', type: 'select', options: ['Full-time', 'Part-time', 'Contract', 'Freelance', 'Internship', 'Mini-Job'], required: true, icon: 'briefcase-outline' },
+    { name: 'salary_type', label: 'Salary Type', type: 'select', options: ['Annual Salary', 'Monthly Salary', 'Hourly Rate', 'Negotiable', 'Not Disclosed'], icon: 'cash-outline' },
+    { name: 'salary_range', label: 'Salary Range', type: 'text', placeholder: '€50,000 - €70,000', icon: 'wallet-outline' },
+    { name: 'experience_required', label: 'Experience Required', type: 'select', options: ['Entry Level', '1-2 Years', '3-5 Years', '5-10 Years', '10+ Years', 'No Experience'], icon: 'trending-up-outline' },
+    { name: 'education_level', label: 'Education Level', type: 'select', options: ['High School', 'Vocational Training', 'Bachelor\'s Degree', 'Master\'s Degree', 'PhD', 'Not Required'], icon: 'school-outline' },
+    { name: 'industry', label: 'Industry', type: 'select', options: ['Technology', 'Finance', 'Healthcare', 'Marketing', 'Sales', 'Education', 'Manufacturing', 'Hospitality', 'Retail', 'Other'], icon: 'business-outline' },
+    { name: 'remote', label: 'Remote Work', type: 'select', options: ['Fully Remote', 'Hybrid', 'On-site Only'], icon: 'home-outline' },
+    { name: 'start_date', label: 'Start Date', type: 'select', options: ['Immediately', 'Within 1 Month', 'Within 3 Months', 'Flexible'], icon: 'calendar-outline' },
+    { name: 'benefits', label: 'Benefits', type: 'text', placeholder: 'Health Insurance, 401k, Flexible Hours', icon: 'heart-outline' },
   ]
 };
 
@@ -173,14 +174,14 @@ export const FURNITURE_CONFIG: CategoryAttributeConfig = {
   icon: 'home-outline',
   conditionOptions: ['New', 'Like New', 'Good', 'Fair', 'Needs Repair'],
   attributes: [
-    { name: 'furniture_type', label: 'Furniture Type', type: 'select', options: ['Sofa', 'Bed', 'Dining Table', 'Desk', 'Chair', 'Wardrobe', 'Bookshelf', 'TV Stand', 'Coffee Table', 'Dresser', 'Outdoor Furniture', 'Other'], required: true },
-    { name: 'material', label: 'Material', type: 'select', options: ['Wood', 'Metal', 'Leather', 'Fabric', 'Glass', 'Plastic', 'Rattan', 'Mixed'], required: true },
-    { name: 'dimensions', label: 'Dimensions (L×W×H)', type: 'text', placeholder: '180×90×75 cm' },
-    { name: 'color', label: 'Color', type: 'text', placeholder: 'White Oak', required: true },
-    { name: 'brand', label: 'Brand', type: 'select', options: ['IKEA', 'BoConcept', 'West Elm', 'Muuto', 'Hay', 'Habitat', 'Custom Made', 'Unknown', 'Other'] },
-    { name: 'assembly_required', label: 'Assembly Required', type: 'toggle' },
-    { name: 'weight', label: 'Weight (approx)', type: 'text', placeholder: '25 kg' },
-    { name: 'style', label: 'Style', type: 'select', options: ['Modern', 'Classic', 'Scandinavian', 'Industrial', 'Vintage', 'Minimalist', 'Rustic'] },
+    { name: 'furniture_type', label: 'Furniture Type', type: 'select', options: ['Sofa', 'Bed', 'Dining Table', 'Desk', 'Chair', 'Wardrobe', 'Bookshelf', 'TV Stand', 'Coffee Table', 'Dresser', 'Outdoor Furniture', 'Other'], required: true, icon: 'bed-outline' },
+    { name: 'material', label: 'Material', type: 'select', options: ['Wood', 'Metal', 'Leather', 'Fabric', 'Glass', 'Plastic', 'Rattan', 'Mixed'], required: true, icon: 'layers-outline' },
+    { name: 'dimensions', label: 'Dimensions (L×W×H)', type: 'text', placeholder: '180×90×75 cm', icon: 'resize-outline' },
+    { name: 'color', label: 'Color', type: 'text', placeholder: 'White Oak', required: true, icon: 'color-palette-outline' },
+    { name: 'brand', label: 'Brand', type: 'select', options: ['IKEA', 'BoConcept', 'West Elm', 'Muuto', 'Hay', 'Habitat', 'Custom Made', 'Unknown', 'Other'], icon: 'ribbon-outline' },
+    { name: 'assembly_required', label: 'Assembly Required', type: 'toggle', icon: 'build-outline' },
+    { name: 'weight', label: 'Weight (approx)', type: 'text', placeholder: '25 kg', icon: 'barbell-outline' },
+    { name: 'style', label: 'Style', type: 'select', options: ['Modern', 'Classic', 'Scandinavian', 'Industrial', 'Vintage', 'Minimalist', 'Rustic'], icon: 'sparkles-outline' },
   ]
 };
 
@@ -191,14 +192,14 @@ export const FASHION_CONFIG: CategoryAttributeConfig = {
   icon: 'shirt-outline',
   conditionOptions: ['New with Tags', 'Like New', 'Good', 'Fair'],
   attributes: [
-    { name: 'item_type', label: 'Item Type', type: 'select', options: ['Clothing', 'Shoes', 'Bags', 'Watches', 'Jewelry', 'Accessories', 'Sunglasses', 'Belts', 'Scarves'], required: true },
-    { name: 'category', label: 'For', type: 'select', options: ['Men', 'Women', 'Kids', 'Unisex'], required: true },
-    { name: 'brand', label: 'Brand', type: 'text', placeholder: 'Nike, Gucci, Zara...', required: true },
-    { name: 'size', label: 'Size', type: 'text', placeholder: 'M, 42, US 9', required: true },
-    { name: 'color', label: 'Color', type: 'text', placeholder: 'Black', required: true },
-    { name: 'material', label: 'Material', type: 'text', placeholder: 'Cotton, Leather, Wool...' },
-    { name: 'original', label: 'Authentic/Original', type: 'select', options: ['Yes - With Receipt', 'Yes - No Receipt', 'Unknown'] },
-    { name: 'style', label: 'Style', type: 'select', options: ['Casual', 'Formal', 'Sport', 'Vintage', 'Designer', 'Streetwear'] },
+    { name: 'item_type', label: 'Item Type', type: 'select', options: ['Clothing', 'Shoes', 'Bags', 'Watches', 'Jewelry', 'Accessories', 'Sunglasses', 'Belts', 'Scarves'], required: true, icon: 'shirt-outline' },
+    { name: 'category', label: 'For', type: 'select', options: ['Men', 'Women', 'Kids', 'Unisex'], required: true, icon: 'people-outline' },
+    { name: 'brand', label: 'Brand', type: 'text', placeholder: 'Nike, Gucci, Zara...', required: true, icon: 'ribbon-outline' },
+    { name: 'size', label: 'Size', type: 'text', placeholder: 'M, 42, US 9', required: true, icon: 'resize-outline' },
+    { name: 'color', label: 'Color', type: 'text', placeholder: 'Black', required: true, icon: 'color-palette-outline' },
+    { name: 'material', label: 'Material', type: 'text', placeholder: 'Cotton, Leather, Wool...', icon: 'layers-outline' },
+    { name: 'original', label: 'Authentic/Original', type: 'select', options: ['Yes - With Receipt', 'Yes - No Receipt', 'Unknown'], icon: 'shield-checkmark-outline' },
+    { name: 'style', label: 'Style', type: 'select', options: ['Casual', 'Formal', 'Sport', 'Vintage', 'Designer', 'Streetwear'], icon: 'sparkles-outline' },
   ]
 };
 
@@ -209,13 +210,13 @@ export const BEAUTY_CONFIG: CategoryAttributeConfig = {
   icon: 'sparkles-outline',
   conditionOptions: ['New/Sealed', 'Lightly Used', 'Partially Used'],
   attributes: [
-    { name: 'product_type', label: 'Product Type', type: 'select', options: ['Skincare', 'Makeup', 'Hair Care', 'Perfume', 'Grooming', 'Beauty Device', 'Nail Care', 'Body Care', 'Other'], required: true },
-    { name: 'brand', label: 'Brand', type: 'text', placeholder: 'La Mer, Chanel, MAC...', required: true },
-    { name: 'skin_hair_type', label: 'Suitable For', type: 'text', placeholder: 'All Skin Types, Dry Hair...' },
-    { name: 'usage_state', label: 'Usage State', type: 'select', options: ['New/Sealed', '90%+ Remaining', '70-90% Remaining', '50-70% Remaining', 'Less than 50%'], required: true },
-    { name: 'expiry_date', label: 'Expiry Date', type: 'text', placeholder: '2026-12' },
-    { name: 'authenticity', label: 'Authentic', type: 'select', options: ['Yes - With Proof', 'Yes - No Proof', 'Unknown'] },
-    { name: 'quantity', label: 'Quantity/Size', type: 'text', placeholder: '100ml, Set of 3' },
+    { name: 'product_type', label: 'Product Type', type: 'select', options: ['Skincare', 'Makeup', 'Hair Care', 'Perfume', 'Grooming', 'Beauty Device', 'Nail Care', 'Body Care', 'Other'], required: true, icon: 'sparkles-outline' },
+    { name: 'brand', label: 'Brand', type: 'text', placeholder: 'La Mer, Chanel, MAC...', required: true, icon: 'ribbon-outline' },
+    { name: 'skin_hair_type', label: 'Suitable For', type: 'text', placeholder: 'All Skin Types, Dry Hair...', icon: 'information-circle-outline' },
+    { name: 'usage_state', label: 'Usage State', type: 'select', options: ['New/Sealed', '90%+ Remaining', '70-90% Remaining', '50-70% Remaining', 'Less than 50%'], required: true, icon: 'pie-chart-outline' },
+    { name: 'expiry_date', label: 'Expiry Date', type: 'text', placeholder: '2026-12', icon: 'calendar-outline' },
+    { name: 'authenticity', label: 'Authentic', type: 'select', options: ['Yes - With Proof', 'Yes - No Proof', 'Unknown'], icon: 'shield-checkmark-outline' },
+    { name: 'quantity', label: 'Quantity/Size', type: 'text', placeholder: '100ml, Set of 3', icon: 'cube-outline' },
   ]
 };
 
@@ -225,13 +226,13 @@ export const LEISURE_CONFIG: CategoryAttributeConfig = {
   name: 'Leisure & Activities',
   icon: 'bicycle-outline',
   attributes: [
-    { name: 'activity_type', label: 'Activity Type', type: 'select', options: ['Sports Equipment', 'Fitness', 'Music Instruments', 'Art Supplies', 'Books', 'Games', 'Outdoor Gear', 'Class/Workshop', 'Tickets', 'Other'], required: true },
-    { name: 'duration', label: 'Duration (if service)', type: 'text', placeholder: '2 hours' },
-    { name: 'skill_level', label: 'Skill Level', type: 'select', options: ['Beginner', 'Intermediate', 'Advanced', 'All Levels'] },
-    { name: 'equipment_included', label: 'Equipment Included', type: 'toggle' },
-    { name: 'group_size', label: 'Group Size', type: 'text', placeholder: '1-4 people' },
-    { name: 'availability', label: 'Availability', type: 'text', placeholder: 'Weekends, By Appointment' },
-    { name: 'brand', label: 'Brand (if product)', type: 'text', placeholder: 'Wilson, Yamaha...' },
+    { name: 'activity_type', label: 'Activity Type', type: 'select', options: ['Sports Equipment', 'Fitness', 'Music Instruments', 'Art Supplies', 'Books', 'Games', 'Outdoor Gear', 'Class/Workshop', 'Tickets', 'Other'], required: true, icon: 'football-outline' },
+    { name: 'duration', label: 'Duration (if service)', type: 'text', placeholder: '2 hours', icon: 'time-outline' },
+    { name: 'skill_level', label: 'Skill Level', type: 'select', options: ['Beginner', 'Intermediate', 'Advanced', 'All Levels'], icon: 'trending-up-outline' },
+    { name: 'equipment_included', label: 'Equipment Included', type: 'toggle', icon: 'fitness-outline' },
+    { name: 'group_size', label: 'Group Size', type: 'text', placeholder: '1-4 people', icon: 'people-outline' },
+    { name: 'availability', label: 'Availability', type: 'text', placeholder: 'Weekends, By Appointment', icon: 'calendar-outline' },
+    { name: 'brand', label: 'Brand (if product)', type: 'text', placeholder: 'Wilson, Yamaha...', icon: 'ribbon-outline' },
   ]
 };
 
@@ -242,12 +243,12 @@ export const KIDS_CONFIG: CategoryAttributeConfig = {
   icon: 'people-outline',
   conditionOptions: ['New', 'Like New', 'Good', 'Fair'],
   attributes: [
-    { name: 'item_type', label: 'Item Type', type: 'select', options: ['Stroller', 'Car Seat', 'Crib/Bed', 'High Chair', 'Toys', 'Clothing', 'Books', 'Baby Monitor', 'Feeding', 'Bathing', 'Safety', 'Other'], required: true },
-    { name: 'age_range', label: 'Age Range', type: 'select', options: ['0-6 Months', '6-12 Months', '1-2 Years', '2-4 Years', '4-6 Years', '6-8 Years', '8+ Years', 'All Ages'], required: true },
-    { name: 'brand', label: 'Brand', type: 'text', placeholder: 'Bugaboo, Cybex, LEGO...' },
-    { name: 'gender', label: 'Gender', type: 'select', options: ['Boy', 'Girl', 'Unisex'] },
-    { name: 'material', label: 'Material', type: 'text', placeholder: 'Wood, Plastic, Fabric...' },
-    { name: 'safety_certified', label: 'Safety Certified', type: 'toggle' },
+    { name: 'item_type', label: 'Item Type', type: 'select', options: ['Stroller', 'Car Seat', 'Crib/Bed', 'High Chair', 'Toys', 'Clothing', 'Books', 'Baby Monitor', 'Feeding', 'Bathing', 'Safety', 'Other'], required: true, icon: 'happy-outline' },
+    { name: 'age_range', label: 'Age Range', type: 'select', options: ['0-6 Months', '6-12 Months', '1-2 Years', '2-4 Years', '4-6 Years', '6-8 Years', '8+ Years', 'All Ages'], required: true, icon: 'calendar-outline' },
+    { name: 'brand', label: 'Brand', type: 'text', placeholder: 'Bugaboo, Cybex, LEGO...', icon: 'ribbon-outline' },
+    { name: 'gender', label: 'Gender', type: 'select', options: ['Boy', 'Girl', 'Unisex'], icon: 'male-female-outline' },
+    { name: 'material', label: 'Material', type: 'text', placeholder: 'Wood, Plastic, Fabric...', icon: 'layers-outline' },
+    { name: 'safety_certified', label: 'Safety Certified', type: 'toggle', icon: 'shield-checkmark-outline' },
   ]
 };
 
@@ -257,15 +258,15 @@ export const ANIMALS_CONFIG: CategoryAttributeConfig = {
   name: 'Animals & Pets',
   icon: 'paw-outline',
   attributes: [
-    { name: 'animal_type', label: 'Animal Type', type: 'select', options: ['Dog', 'Cat', 'Bird', 'Fish', 'Rabbit', 'Hamster', 'Reptile', 'Horse', 'Pet Supplies', 'Other'], required: true },
-    { name: 'breed', label: 'Breed', type: 'text', placeholder: 'Golden Retriever, Maine Coon...', required: true },
-    { name: 'age', label: 'Age', type: 'text', placeholder: '6 months, 2 years', required: true },
-    { name: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female', 'Unknown'], required: true },
-    { name: 'vaccinated', label: 'Vaccinated', type: 'select', options: ['Fully Vaccinated', 'Partially', 'No', 'Unknown'], required: true },
-    { name: 'health_status', label: 'Health Status', type: 'select', options: ['Excellent', 'Good', 'Special Needs'] },
-    { name: 'neutered', label: 'Neutered/Spayed', type: 'select', options: ['Yes', 'No', 'Unknown'] },
-    { name: 'microchipped', label: 'Microchipped', type: 'toggle' },
-    { name: 'papers', label: 'Papers/Pedigree', type: 'select', options: ['Yes', 'No'] },
+    { name: 'animal_type', label: 'Animal Type', type: 'select', options: ['Dog', 'Cat', 'Bird', 'Fish', 'Rabbit', 'Hamster', 'Reptile', 'Horse', 'Pet Supplies', 'Other'], required: true, icon: 'paw-outline' },
+    { name: 'breed', label: 'Breed', type: 'text', placeholder: 'Golden Retriever, Maine Coon...', required: true, icon: 'ribbon-outline' },
+    { name: 'age', label: 'Age', type: 'text', placeholder: '6 months, 2 years', required: true, icon: 'calendar-outline' },
+    { name: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female', 'Unknown'], required: true, icon: 'male-female-outline' },
+    { name: 'vaccinated', label: 'Vaccinated', type: 'select', options: ['Fully Vaccinated', 'Partially', 'No', 'Unknown'], required: true, icon: 'medkit-outline' },
+    { name: 'health_status', label: 'Health Status', type: 'select', options: ['Excellent', 'Good', 'Special Needs'], icon: 'heart-outline' },
+    { name: 'neutered', label: 'Neutered/Spayed', type: 'select', options: ['Yes', 'No', 'Unknown'], icon: 'cut-outline' },
+    { name: 'microchipped', label: 'Microchipped', type: 'toggle', icon: 'hardware-chip-outline' },
+    { name: 'papers', label: 'Papers/Pedigree', type: 'select', options: ['Yes', 'No'], icon: 'document-outline' },
   ]
 };
 
@@ -276,15 +277,15 @@ export const INDUSTRIAL_CONFIG: CategoryAttributeConfig = {
   icon: 'cog-outline',
   conditionOptions: ['New', 'Excellent', 'Good', 'Operational', 'For Parts'],
   attributes: [
-    { name: 'machine_type', label: 'Machine Type', type: 'select', options: ['CNC Machine', 'Forklift', 'Robot', 'Laser Cutter', '3D Printer', 'Hydraulic Press', 'Injection Molding', 'Welding', 'Conveyor', 'Compressor', 'Generator', 'Other'], required: true },
-    { name: 'brand', label: 'Brand', type: 'text', placeholder: 'Haas, KUKA, Trumpf...', required: true },
-    { name: 'model', label: 'Model', type: 'text', placeholder: 'VF-2, KR 16...', required: true },
-    { name: 'year', label: 'Year of Manufacture', type: 'number', placeholder: '2020', required: true },
-    { name: 'operating_hours', label: 'Operating Hours', type: 'number', placeholder: '5000', suffix: 'hours' },
-    { name: 'power_rating', label: 'Power Rating', type: 'text', placeholder: '22 kW' },
-    { name: 'voltage', label: 'Voltage', type: 'select', options: ['110V', '220V', '380V', '400V', '480V', 'Other'] },
-    { name: 'certification', label: 'Certification', type: 'select', options: ['TÜV Certified', 'CE Marked', 'ISO Certified', 'None'] },
-    { name: 'warranty', label: 'Warranty', type: 'select', options: ['Under Warranty', '3 Months', '6 Months', 'As-Is'] },
+    { name: 'machine_type', label: 'Machine Type', type: 'select', options: ['CNC Machine', 'Forklift', 'Robot', 'Laser Cutter', '3D Printer', 'Hydraulic Press', 'Injection Molding', 'Welding', 'Conveyor', 'Compressor', 'Generator', 'Other'], required: true, icon: 'cog-outline' },
+    { name: 'brand', label: 'Brand', type: 'text', placeholder: 'Haas, KUKA, Trumpf...', required: true, icon: 'ribbon-outline' },
+    { name: 'model', label: 'Model', type: 'text', placeholder: 'VF-2, KR 16...', required: true, icon: 'barcode-outline' },
+    { name: 'year', label: 'Year of Manufacture', type: 'number', placeholder: '2020', required: true, icon: 'calendar-outline' },
+    { name: 'operating_hours', label: 'Operating Hours', type: 'number', placeholder: '5000', suffix: 'hours', icon: 'time-outline' },
+    { name: 'power_rating', label: 'Power Rating', type: 'text', placeholder: '22 kW', icon: 'flash-outline' },
+    { name: 'voltage', label: 'Voltage', type: 'select', options: ['110V', '220V', '380V', '400V', '480V', 'Other'], icon: 'thunderstorm-outline' },
+    { name: 'certification', label: 'Certification', type: 'select', options: ['TÜV Certified', 'CE Marked', 'ISO Certified', 'None'], icon: 'ribbon-outline' },
+    { name: 'warranty', label: 'Warranty', type: 'select', options: ['Under Warranty', '3 Months', '6 Months', 'As-Is'], icon: 'shield-checkmark-outline' },
   ]
 };
 
@@ -295,14 +296,14 @@ export const AGRICULTURE_CONFIG: CategoryAttributeConfig = {
   icon: 'leaf-outline',
   conditionOptions: ['New', 'Excellent', 'Good', 'Fair'],
   attributes: [
-    { name: 'item_type', label: 'Item Type', type: 'select', options: ['Tractor', 'Harvester', 'Livestock', 'Crops/Seeds', 'Plants/Trees', 'Equipment', 'Fertilizer', 'Feed', 'Other'], required: true },
-    { name: 'brand', label: 'Brand', type: 'text', placeholder: 'John Deere, Claas...' },
-    { name: 'quantity', label: 'Quantity', type: 'text', placeholder: '10 head, 500 kg', required: true },
-    { name: 'unit', label: 'Unit', type: 'select', options: ['Piece', 'Kilogram', 'Ton', 'Liter', 'Head', 'Pack', 'Hectare', 'Other'] },
-    { name: 'year', label: 'Year (for machinery)', type: 'number', placeholder: '2020' },
-    { name: 'usage_hours', label: 'Usage Hours', type: 'number', placeholder: '2500', suffix: 'hours' },
-    { name: 'organic', label: 'Organic Certified', type: 'toggle' },
-    { name: 'harvest_date', label: 'Harvest Date (for crops)', type: 'text', placeholder: '2024-09' },
+    { name: 'item_type', label: 'Item Type', type: 'select', options: ['Tractor', 'Harvester', 'Livestock', 'Crops/Seeds', 'Plants/Trees', 'Equipment', 'Fertilizer', 'Feed', 'Other'], required: true, icon: 'leaf-outline' },
+    { name: 'brand', label: 'Brand', type: 'text', placeholder: 'John Deere, Claas...', icon: 'ribbon-outline' },
+    { name: 'quantity', label: 'Quantity', type: 'text', placeholder: '10 head, 500 kg', required: true, icon: 'layers-outline' },
+    { name: 'unit', label: 'Unit', type: 'select', options: ['Piece', 'Kilogram', 'Ton', 'Liter', 'Head', 'Pack', 'Hectare', 'Other'], icon: 'scale-outline' },
+    { name: 'year', label: 'Year (for machinery)', type: 'number', placeholder: '2020', icon: 'calendar-outline' },
+    { name: 'usage_hours', label: 'Usage Hours', type: 'number', placeholder: '2500', suffix: 'hours', icon: 'time-outline' },
+    { name: 'organic', label: 'Organic Certified', type: 'toggle', icon: 'leaf-outline' },
+    { name: 'harvest_date', label: 'Harvest Date (for crops)', type: 'text', placeholder: '2024-09', icon: 'calendar-outline' },
   ]
 };
 
@@ -313,9 +314,9 @@ export const MISC_CONFIG: CategoryAttributeConfig = {
   icon: 'ellipsis-horizontal-outline',
   conditionOptions: ['New', 'Like New', 'Good', 'Fair'],
   attributes: [
-    { name: 'item_type', label: 'Item Type', type: 'text', placeholder: 'Books, Collectibles...', required: true },
-    { name: 'brand', label: 'Brand (if applicable)', type: 'text' },
-    { name: 'quantity', label: 'Quantity', type: 'text', placeholder: '1, Set of 5' },
+    { name: 'item_type', label: 'Item Type', type: 'text', placeholder: 'Books, Collectibles...', required: true, icon: 'pricetag-outline' },
+    { name: 'brand', label: 'Brand (if applicable)', type: 'text', icon: 'ribbon-outline' },
+    { name: 'quantity', label: 'Quantity', type: 'text', placeholder: '1, Set of 5', icon: 'layers-outline' },
   ]
 };
 
