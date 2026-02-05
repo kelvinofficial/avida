@@ -437,40 +437,34 @@ export default function NotificationsScreen() {
       </View>
 
       {/* Filter Chips */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterChips}
-      >
-        {FILTER_CHIPS.map(chip => {
-          const count = chip.key === 'all' ? unreadCount : (typeCounts[chip.key] || 0);
-          const isActive = activeFilter === chip.key;
+      <View style={styles.filterChipsWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterChips}
+        >
+          {FILTER_CHIPS.map(chip => {
+            const isActive = activeFilter === chip.key;
 
-          return (
-            <TouchableOpacity
-              key={chip.key}
-              style={[styles.filterChip, isActive && styles.filterChipActive]}
-              onPress={() => setActiveFilter(chip.key)}
-            >
-              <Ionicons
-                name={chip.icon as any}
-                size={14}
-                color={isActive ? '#fff' : COLORS.textSecondary}
-              />
-              <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>
-                {chip.label}
-              </Text>
-              {count > 0 && (
-                <View style={[styles.filterChipBadge, isActive && styles.filterChipBadgeActive]}>
-                  <Text style={[styles.filterChipBadgeText, isActive && styles.filterChipBadgeTextActive]}>
-                    {count > 99 ? '99+' : count}
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+            return (
+              <TouchableOpacity
+                key={chip.key}
+                style={[styles.filterChip, isActive && styles.filterChipActive]}
+                onPress={() => setActiveFilter(chip.key)}
+              >
+                <Ionicons
+                  name={chip.icon as any}
+                  size={14}
+                  color={isActive ? '#fff' : COLORS.textSecondary}
+                />
+                <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>
+                  {chip.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
 
       {/* Notifications List */}
       {loading ? (
