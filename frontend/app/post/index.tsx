@@ -734,12 +734,21 @@ export default function PostListingScreen() {
   // ============ STEP 4: DYNAMIC ATTRIBUTES ============
   const renderStep4 = () => (
     <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.stepTitle}>
-        {categoryConfig?.name || 'Category'} Details
-      </Text>
-      <Text style={styles.stepSubtitle}>
-        Fill in the specific details for your {categoryConfig?.name?.toLowerCase() || 'item'}
-      </Text>
+      <View style={styles.stepHeaderWithIcon}>
+        {categoryConfig?.icon && (
+          <View style={styles.stepHeaderIconWrapper}>
+            <Ionicons name={categoryConfig.icon as any} size={24} color={COLORS.primary} />
+          </View>
+        )}
+        <View style={styles.stepHeaderText}>
+          <Text style={styles.stepTitle}>
+            {categoryConfig?.name || 'Category'} Details
+          </Text>
+          <Text style={styles.stepSubtitle}>
+            Fill in the specific details for your {categoryConfig?.name?.toLowerCase() || 'item'}
+          </Text>
+        </View>
+      </View>
 
       {categoryConfig?.attributes.map((field) => (
         <DynamicField
