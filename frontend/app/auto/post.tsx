@@ -196,6 +196,18 @@ export default function PostAutoScreen() {
     }
   }, [isAuthenticated]);
 
+  // Show loading while redirecting to login
+  if (!isAuthenticated) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={{ marginTop: 12, color: COLORS.textSecondary }}>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   const updateForm = (key: string, value: any) => {
     setFormData(prev => ({ ...prev, [key]: value }));
     // Reset model when brand changes
