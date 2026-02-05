@@ -73,7 +73,7 @@ const FULL_CATEGORIES = [
   { id: 'misc', name: 'Miscellaneous', icon: 'ellipsis-horizontal-outline' },
 ];
 
-// ============ CATEGORY ICON COMPONENT - CIRCULAR DESIGN ============
+// ============ CATEGORY ICON COMPONENT - Match Publishing Page Design ============
 interface CategoryIconProps {
   id: string;
   name: string;
@@ -83,9 +83,6 @@ interface CategoryIconProps {
 }
 
 const CategoryIcon = memo<CategoryIconProps>(({ id, name, icon, onPress, selected }) => {
-  const style = CATEGORY_STYLES[id] || CATEGORY_STYLES.default;
-  const isAll = id === 'all';
-  
   return (
     <TouchableOpacity 
       style={categoryStyles.item} 
@@ -96,11 +93,13 @@ const CategoryIcon = memo<CategoryIconProps>(({ id, name, icon, onPress, selecte
     >
       <View style={[
         categoryStyles.iconContainer,
-        { backgroundColor: style.bg },
         selected && categoryStyles.iconContainerSelected,
-        isAll && !selected && categoryStyles.allIconContainer,
       ]}>
-        <Ionicons name={icon as any} size={CATEGORY_INNER_ICON} color={isAll && !selected ? '#2E7D32' : style.icon} />
+        <Ionicons 
+          name={icon as any} 
+          size={28} 
+          color={selected ? '#fff' : COLORS_CATEGORY.primary} 
+        />
       </View>
       <Text style={[
         categoryStyles.label,
@@ -116,39 +115,31 @@ const categoryStyles = StyleSheet.create({
   item: {
     alignItems: 'center',
     width: CATEGORY_ITEM_WIDTH,
+    marginBottom: 4,
   },
   iconContainer: {
-    width: CATEGORY_ICON_SIZE,
-    height: CATEGORY_ICON_SIZE,
-    borderRadius: CATEGORY_ICON_RADIUS,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: COLORS_CATEGORY.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   iconContainerSelected: {
-    transform: [{ scale: 1.05 }],
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  allIconContainer: {
-    borderWidth: 2,
-    borderColor: '#2E7D32',
-    backgroundColor: '#fff',
+    backgroundColor: COLORS_CATEGORY.primary,
   },
   label: {
-    fontSize: 10,
-    color: '#666',
+    fontSize: 11,
+    color: COLORS_CATEGORY.text,
     textAlign: 'center',
     fontWeight: '500',
-    lineHeight: 12,
-    height: 24,
+    lineHeight: 14,
+    height: 28,
   },
   labelSelected: {
-    color: '#2E7D32',
-    fontWeight: '700',
+    color: COLORS_CATEGORY.primary,
+    fontWeight: '600',
   },
 });
 
