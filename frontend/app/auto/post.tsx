@@ -161,6 +161,7 @@ export default function PostAutoScreen() {
   const [currentStep, setCurrentStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [images, setImages] = useState<string[]>([]);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
