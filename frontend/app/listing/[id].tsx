@@ -513,6 +513,11 @@ export default function ListingDetailScreen() {
       setListing(data);
       setIsFavorited(data.is_favorited || false);
       
+      // Track recently viewed (don't await, fire and forget)
+      if (isAuthenticated) {
+        api.post(`/profile/activity/recently-viewed/${id}`).catch(() => {});
+      }
+      
       try {
         const catData = await categoriesApi.getOne(data.category_id);
         setCategory(catData);
@@ -523,7 +528,7 @@ export default function ListingDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, isAuthenticated]);
 
   useEffect(() => {
     if (id) fetchListing();
