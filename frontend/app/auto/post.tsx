@@ -192,6 +192,17 @@ export default function PostAutoScreen() {
     description: '',
   });
 
+  // Seller Preferences
+  const [acceptsOffers, setAcceptsOffers] = useState(true);
+  const [acceptsExchanges, setAcceptsExchanges] = useState(false);
+  const [contactPreferences, setContactPreferences] = useState({
+    inAppChat: true,
+    whatsapp: false,
+    call: false,
+  });
+  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+
   // Check auth
   React.useEffect(() => {
     if (!isAuthenticated) {
