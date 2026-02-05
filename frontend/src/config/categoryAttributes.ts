@@ -342,3 +342,15 @@ export const CATEGORY_CONFIGS: Record<string, CategoryAttributeConfig> = {
 export const getCategoryConfig = (categoryId: string): CategoryAttributeConfig | null => {
   return CATEGORY_CONFIGS[categoryId] || null;
 };
+
+// Helper to get just the icon for a category
+export const getCategoryIcon = (categoryId: string): string => {
+  const config = CATEGORY_CONFIGS[categoryId];
+  return config?.icon || 'apps-outline';
+};
+
+// Helper to get category name
+export const getCategoryName = (categoryId: string): string => {
+  const config = CATEGORY_CONFIGS[categoryId];
+  return config?.name || categoryId;
+};
