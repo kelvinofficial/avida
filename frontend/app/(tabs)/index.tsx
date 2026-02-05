@@ -636,26 +636,91 @@ export default function HomeScreen() {
     );
   };
 
-  return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2E7D32']} tintColor="#2E7D32" />}
-        onScroll={({ nativeEvent }) => {
-          const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-          const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
-          if (isCloseToBottom && !loading && hasMore) {
-            loadMore();
-          }
-        }}
-        scrollEventThrottle={400}
-      >
-        {renderHeader()}
-        <View style={styles.listContent}>
-          {renderGrid()}
-          {loading && listings.length > 0 && <ActivityIndicator style={styles.footer} color="#2E7D32" />}
+  // Desktop header with different layout
+  const renderDesktopHeader = () => (
+    <View style={desktopStyles.headerWrapper}>
+      <View style={desktopStyles.headerTop}>
+        <View style={desktopStyles.searchContainer}>
+          <TouchableOpacity style={desktopStyles.searchField} onPress={() => router.push('/search')} activeOpacity={0.8}>
+            <Ionicons name="search" size={20} color="#666" />
+            <Text style={desktopStyles.searchPlaceholder}>Search in {currentCity === 'All Locations' ? 'all areas' : currentCity}...</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={desktopStyles.locationChip} activeOpacity={0.7} onPress={() => setShowLocationModal(true)}>
+            <Ionicons name="location" size={16} color="#2E7D32" />
+            <Text style={desktopStyles.locationText} numberOfLines={1}>{currentCity}</Text>
+            <Ionicons name="chevron-down" size={14} color="#666" />
+          </TouchableOpacity>
         </View>
+      </View>
+
+      {/* Category Pills Row */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={desktopStyles.categoryScroll}
+        contentContainerStyle={desktopStyles.categoryContent}
+      >
+        <TouchableOpacity
+          style={[desktopStyles.categoryPill, !selectedCategory && desktopStyles.categoryPillActive]}
+          onPress={() => setSelectedCategory(null)}
+        >
+          <Text style={[desktopStyles.categoryPillText, !selectedCategory && desktopStyles.categoryPillTextActive]}>
+            All Categories
+          </Text>
+        </TouchableOpacity>
+        {FULL_CATEGORIES.map((cat) => (
+          <TouchableOpacity
+            key={cat.id}
+            style={[desktopStyles.categoryPill, selectedCategory === cat.id && desktopStyles.categoryPillActive]}
+            onPress={() => handleCategoryPress(cat.id)}
+          >
+            <Ionicons 
+              name={cat.icon as any} 
+              size={16} 
+              color={selectedCategory === cat.id ? '#fff' : '#666'} 
+            />
+            <Text style={[desktopStyles.categoryPillText, selectedCategory === cat.id && desktopStyles.categoryPillTextActive]}>
+              {cat.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </ScrollView>
+
+      {/* Section Title */}
+      <View style={desktopStyles.sectionHeader}>
+        <Text style={desktopStyles.sectionTitle}>
+          {selectedCategory ? FULL_CATEGORIES.find(c => c.id === selectedCategory)?.name || 'Listings' : 'Recent Listings'}
+        </Text>
+        <Text style={desktopStyles.listingCount}>{listings.length} items</Text>
+      </View>
+    </View>
+  );
+
+  const mainContent = (
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2E7D32']} tintColor="#2E7D32" />}
+      onScroll={({ nativeEvent }) => {
+        const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+        const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
+        if (isCloseToBottom && !loading && hasMore) {
+          loadMore();
+        }
+      }}
+      scrollEventThrottle={400}
+      style={isDesktop || isTablet ? { flex: 1 } : undefined}
+    >
+      {isDesktop || isTablet ? renderDesktopHeader() : renderHeader()}
+      <View style={[styles.listContent, (isDesktop || isTablet) && { paddingHorizontal: 0 }]}>
+        {renderGrid()}
+        {loading && listings.length > 0 && <ActivityIndicator style={styles.footer} color="#2E7D32" />}
+      </View>
+    </ScrollView>
+  );
+
+  return (
+    <ResponsiveLayout showSidebar={isDesktop || isTablet}>
+      <SafeAreaView style={styles.container} edges={isMobile ? ['top'] : []}>
 
       {/* Location Picker Modal */}
       <Modal
