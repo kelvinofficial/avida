@@ -71,6 +71,10 @@ export const categoriesApi = {
   getSubcategories: async (categoryId: string) => {
     const response = await api.get(`/categories/${categoryId}/subcategories`);
     return response.data;
+  },
+  getSubcategoryCounts: async (categoryId: string) => {
+    const response = await api.get(`/categories/${categoryId}/subcategory-counts`);
+    return response.data;
   }
 };
 
