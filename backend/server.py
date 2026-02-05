@@ -3507,10 +3507,22 @@ async def get_recently_viewed(
         {"_id": 0}
     ).sort("viewed_at", -1).limit(limit).to_list(limit)
     
-    # Get listing details
+    # Get listing details from all collections
     listing_ids = [v["listing_id"] for v in viewed]
-    listings = await db.listings.find({"id": {"$in": listing_ids}, "status": "active"}, {"_id": 0}).to_list(len(listing_ids))
-    listings_map = {l["id"]: l for l in listings}
+    
+    # Fetch from all listing collections
+    listings = await db.listings.find({"id": {"$in": listing_ids}}, {"_id": 0}).to_list(len(listing_ids))
+    properties = await db.properties.find({"id": {"$in": listing_ids}}, {"_id": 0}).to_list(len(listing_ids))
+    auto_listings = await db.auto_listings.find({"id": {"$in": listing_ids}}, {"_id": 0}).to_list(len(listing_ids))
+    
+    # Combine all into a map
+    listings_map = {}
+    for l in listings:
+        listings_map[l["id"]] = {**l, "type": "listing"}
+    for p in properties:
+        listings_map[p["id"]] = {**p, "type": "property"}
+    for a in auto_listings:
+        listings_map[a["id"]] = {**a, "type": "auto"}
     
     result = []
     for v in viewed:
