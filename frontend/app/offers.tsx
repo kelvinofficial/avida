@@ -364,6 +364,26 @@ export default function OffersScreen() {
     router.canGoBack() ? router.back() : router.replace('/');
   };
 
+  const handleViewChat = async (offer: Offer) => {
+    try {
+      // Create or get existing conversation with the other party
+      const otherUserId = role === 'seller' ? offer.buyer_id : offer.seller_id;
+      const response = await api.post('/conversations', {
+        listing_id: offer.listing_id,
+        other_user_id: otherUserId,
+      });
+      
+      if (response.data?.id) {
+        router.push(`/chat/${response.data.id}`);
+      } else {
+        Alert.alert('Error', 'Could not open chat');
+      }
+    } catch (error) {
+      console.error('Failed to open chat:', error);
+      Alert.alert('Error', 'Could not open chat');
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
