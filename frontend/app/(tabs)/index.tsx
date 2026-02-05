@@ -190,7 +190,7 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
   const imageCount = listing.images?.length || 0;
 
   return (
-    <TouchableOpacity style={cardStyles.card} onPress={onPress} activeOpacity={0.95}>
+    <TouchableOpacity style={[cardStyles.card, listing.featured && cardStyles.cardFeatured]} onPress={onPress} activeOpacity={0.95}>
       <View style={cardStyles.imageContainer}>
         {imageSource ? (
           <Image source={imageSource} style={cardStyles.image} resizeMode="cover" />
