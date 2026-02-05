@@ -533,13 +533,68 @@ const cardStyles = StyleSheet.create({
   },
 });
 
+// ============ FILTER CHIP COMPONENT ============
+const FilterChip = memo(({ 
+  label, 
+  active, 
+  onPress 
+}: { 
+  label: string; 
+  active: boolean; 
+  onPress: () => void;
+}) => (
+  <TouchableOpacity
+    style={[filterStyles.chip, active && filterStyles.chipActive]}
+    onPress={onPress}
+    activeOpacity={0.7}
+  >
+    <Text style={[filterStyles.chipText, active && filterStyles.chipTextActive]}>
+      {label}
+    </Text>
+    {active && (
+      <Ionicons name="checkmark" size={14} color="#fff" style={{ marginLeft: 4 }} />
+    )}
+  </TouchableOpacity>
+));
+
+const filterStyles = StyleSheet.create({
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: COLORS.surfaceVariant,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  chipActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  chipText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: COLORS.text,
+  },
+  chipTextActive: {
+    color: '#fff',
+  },
+});
+
 // ============ MAIN COMPONENT ============
 const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category = 'property', onListingPress }) => {
   const router = useRouter();
   const [listings, setListings] = useState<SimilarListing[]>([]);
+  const [allListings, setAllListings] = useState<SimilarListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  
+  // Filter states
+  const [filterSameCity, setFilterSameCity] = useState(false);
+  const [filterSamePriceRange, setFilterSamePriceRange] = useState(false);
+  const [filterVerifiedOnly, setFilterVerifiedOnly] = useState(false);
 
   // Get the appropriate API endpoint based on category
   const getApiEndpoint = () => {
