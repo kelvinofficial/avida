@@ -785,30 +785,35 @@ export default function HomeScreen() {
               </View>
             </TouchableOpacity>
 
-            {/* Recently Viewed Section */}
-            {recentSubcategories.length > 0 && !subcategorySearch && (
-              <>
-                <View style={styles.subcategoryDivider}>
-                  <Ionicons name="time-outline" size={14} color="#999" style={{ marginRight: 6 }} />
-                  <Text style={styles.subcategoryDividerText}>Recently viewed</Text>
-                </View>
-                <View style={styles.recentSubcategoriesRow}>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.recentScrollContent}>
-                    {recentSubcategories.slice(0, 5).map((item, index) => (
-                      <TouchableOpacity
-                        key={`${item.categoryId}-${item.subcategoryId}-${index}`}
-                        style={styles.recentChip}
-                        onPress={() => handleRecentSubcategoryPress(item)}
-                        activeOpacity={0.7}
-                      >
-                        <Ionicons name={item.categoryIcon as any} size={14} color="#2E7D32" />
-                        <Text style={styles.recentChipText} numberOfLines={1}>{item.subcategoryName}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              </>
-            )}
+            {/* Recently Viewed Section - Only show for current category */}
+            {(() => {
+              const recentForThisCategory = recentSubcategories.filter(
+                item => item.categoryId === selectedCategoryForSubcats?.id
+              );
+              if (recentForThisCategory.length === 0 || subcategorySearch) return null;
+              return (
+                <>
+                  <View style={styles.subcategoryDivider}>
+                    <Ionicons name="time-outline" size={14} color="#999" style={{ marginRight: 6 }} />
+                    <Text style={styles.subcategoryDividerText}>Recently viewed</Text>
+                  </View>
+                  <View style={styles.recentSubcategoriesRow}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.recentScrollContent}>
+                      {recentForThisCategory.slice(0, 5).map((item, index) => (
+                        <TouchableOpacity
+                          key={`${item.categoryId}-${item.subcategoryId}-${index}`}
+                          style={styles.recentChip}
+                          onPress={() => handleRecentSubcategoryPress(item)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.recentChipText} numberOfLines={1}>{item.subcategoryName}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                </>
+              );
+            })()}
 
             {/* Divider */}
             <View style={styles.subcategoryDivider}>
