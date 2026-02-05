@@ -53,23 +53,18 @@ const COLORS_CATEGORY = {
   text: '#1A1A1A',
 };
 
-// ============ CATEGORIES DATA - EXACT same as Publishing page ============
+// ============ CATEGORIES DATA - Match backend DEFAULT_CATEGORIES ============
 const FULL_CATEGORIES = [
-  { id: 'vehicles', name: 'Auto & Vehicles', icon: 'car-outline' },
-  { id: 'electronics', name: 'Electronics & Mobile', icon: 'phone-portrait-outline' },
-  { id: 'realestate', name: 'Properties', icon: 'business-outline' },
-  { id: 'bikes', name: 'Bicycles', icon: 'bicycle-outline' },
-  { id: 'services', name: 'Services', icon: 'construct-outline' },
-  { id: 'jobs', name: 'Jobs', icon: 'briefcase-outline' },
-  { id: 'home', name: 'Home & Furniture', icon: 'home-outline' },
-  { id: 'fashion', name: 'Fashion & Accessories', icon: 'shirt-outline' },
-  { id: 'beauty', name: 'Beauty & Personal Care', icon: 'sparkles-outline' },
-  { id: 'leisure', name: 'Leisure & Activities', icon: 'bicycle-outline' },
-  { id: 'family', name: 'Kids & Baby', icon: 'people-outline' },
-  { id: 'animals', name: 'Animals & Pets', icon: 'paw-outline' },
-  { id: 'industrial', name: 'Industrial Machines', icon: 'cog-outline' },
-  { id: 'agriculture', name: 'Agriculture', icon: 'leaf-outline' },
-  { id: 'misc', name: 'Miscellaneous', icon: 'ellipsis-horizontal-outline' },
+  { id: 'auto_vehicles', name: 'Auto & Vehicles', icon: 'car-outline' },
+  { id: 'properties', name: 'Properties', icon: 'business-outline' },
+  { id: 'electronics', name: 'Electronics', icon: 'laptop-outline' },
+  { id: 'phones_tablets', name: 'Phones & Tablets', icon: 'phone-portrait-outline' },
+  { id: 'home_furniture', name: 'Home & Furniture', icon: 'home-outline' },
+  { id: 'fashion_beauty', name: 'Fashion & Beauty', icon: 'shirt-outline' },
+  { id: 'jobs_services', name: 'Jobs & Services', icon: 'briefcase-outline' },
+  { id: 'pets', name: 'Pets', icon: 'paw-outline' },
+  { id: 'sports_hobbies', name: 'Sports & Hobbies', icon: 'football-outline' },
+  { id: 'kids_baby', name: 'Kids & Baby', icon: 'people-outline' },
 ];
 
 // ============ CATEGORY ICON COMPONENT - Match Publishing Page Design ============
