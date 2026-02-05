@@ -938,6 +938,18 @@ export default function PostListingScreen() {
   );
 
   // ============ RENDER ============
+  // Show nothing while redirecting to login
+  if (!isAuthenticated) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Redirecting to login...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
