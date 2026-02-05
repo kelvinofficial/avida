@@ -1184,24 +1184,26 @@ const PropertyTypeTile = memo<PropertyTypeTileProps>(({ name, icon, count, onPre
       <Ionicons name={icon as any} size={22} color={isSelected ? '#fff' : COLORS.primary} />
     </View>
     <Text style={[tileStyles.name, isSelected && tileStyles.nameSelected]} numberOfLines={2}>{name}</Text>
-    <Text style={tileStyles.count}>{count} listings</Text>
+    <Text style={tileStyles.count}>{count}</Text>
   </TouchableOpacity>
 ));
 
+const TILE_WIDTH = (width - HORIZONTAL_PADDING * 2) / 4 - 4;
+
 const tileStyles = StyleSheet.create({
   container: {
-    width: '23%',
+    width: TILE_WIDTH,
     alignItems: 'center',
     marginBottom: 12,
-    padding: 6,
+    paddingVertical: 8,
     borderRadius: 12,
   },
   containerSelected: {
     backgroundColor: COLORS.primaryLight,
   },
   iconBox: {
-    width: 48,
-    height: 48,
+    width: 46,
+    height: 46,
     borderRadius: 14,
     backgroundColor: COLORS.primaryLight,
     justifyContent: 'center',
