@@ -367,7 +367,11 @@ export default function NotificationsScreen() {
   };
 
   const handleGoBack = () => {
-    router.canGoBack() ? router.back() : router.replace('/');
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/');
+    }
   };
 
   if (!isAuthenticated) {
