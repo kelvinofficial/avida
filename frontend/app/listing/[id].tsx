@@ -880,9 +880,125 @@ export default function ListingDetailScreen() {
           </View>
         </SafeAreaView>
       </Modal>
+
+      {/* Offer Success Modal */}
+      <Modal 
+        visible={showOfferSuccessModal} 
+        animationType="fade" 
+        transparent={true}
+        onRequestClose={() => setShowOfferSuccessModal(false)}
+      >
+        <View style={offerSuccessStyles.overlay}>
+          <View style={offerSuccessStyles.container}>
+            <View style={offerSuccessStyles.iconContainer}>
+              <Ionicons name="checkmark-circle" size={64} color="#4CAF50" />
+            </View>
+            <Text style={offerSuccessStyles.title}>Offer Sent!</Text>
+            <Text style={offerSuccessStyles.amount}>{submittedOfferAmount}</Text>
+            <Text style={offerSuccessStyles.description}>
+              Your offer has been sent to the seller. They will be notified and can accept or decline your offer.
+            </Text>
+            <View style={offerSuccessStyles.buttons}>
+              <TouchableOpacity 
+                style={offerSuccessStyles.secondaryButton}
+                onPress={() => setShowOfferSuccessModal(false)}
+              >
+                <Text style={offerSuccessStyles.secondaryButtonText}>Continue Browsing</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={offerSuccessStyles.primaryButton}
+                onPress={() => {
+                  setShowOfferSuccessModal(false);
+                  if (offerConversationId) {
+                    router.push(`/chat/${offerConversationId}`);
+                  }
+                }}
+              >
+                <Ionicons name="chatbubble" size={18} color="#fff" />
+                <Text style={offerSuccessStyles.primaryButtonText}>View Chat</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
+
+const offerSuccessStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  container: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 32,
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 340,
+  },
+  iconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#E8F5E9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 8,
+  },
+  amount: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: COLORS.primary,
+    marginBottom: 16,
+  },
+  description: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  buttons: {
+    width: '100%',
+    gap: 12,
+  },
+  primaryButton: {
+    backgroundColor: COLORS.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  primaryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    backgroundColor: '#F5F5F5',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+});
 
 const styles = StyleSheet.create({
   container: {
