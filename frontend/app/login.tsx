@@ -134,12 +134,10 @@ export default function LoginScreen() {
         end={{ x: 1, y: 1 }}
         style={styles.headerGradient}
       >
-        {/* Close Button */}
-        <SafeAreaView edges={['top']}>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-            <Ionicons name="close" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-        </SafeAreaView>
+        {/* Close Button - Fixed position */}
+        <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+          <Ionicons name="close" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
 
         {/* Decorative circles */}
         <View style={[styles.decorCircle, styles.circle1]} />
