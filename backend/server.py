@@ -947,6 +947,47 @@ async def get_subcategories(category_id: str):
             return cat.get("subcategories", [])
     raise HTTPException(status_code=404, detail="Category not found")
 
+@api_router.get("/categories/{category_id}/subcategory-counts")
+async def get_subcategory_counts(category_id: str):
+    """Get listing counts for each subcategory in a category"""
+    # Check legacy mapping first
+    mapped_id = LEGACY_CATEGORY_MAP.get(category_id, category_id)
+    
+    # Find the category
+    category = None
+    for cat in DEFAULT_CATEGORIES:
+        if cat["id"] == mapped_id:
+            category = cat
+            break
+    
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    # Get counts using aggregation
+    pipeline = [
+        {"$match": {"category_id": mapped_id, "status": "active"}},
+        {"$group": {"_id": "$subcategory", "count": {"$sum": 1}}}
+    ]
+    
+    counts_cursor = db.listings.aggregate(pipeline)
+    counts_list = await counts_cursor.to_list(length=100)
+    
+    # Build response with all subcategories (0 count for those without listings)
+    result = {}
+    for sub in category.get("subcategories", []):
+        result[sub["id"]] = 0
+    
+    # Fill in actual counts
+    for item in counts_list:
+        if item["_id"] and item["_id"] in result:
+            result[item["_id"]] = item["count"]
+    
+    # Get total for the category
+    total = await db.listings.count_documents({"category_id": mapped_id, "status": "active"})
+    result["_total"] = total
+    
+    return result
+
 def validate_category_and_subcategory(category_id: str, subcategory_id: Optional[str]) -> tuple[bool, str]:
     """Validate category and subcategory. Returns (is_valid, error_message)"""
     # Map legacy category IDs
