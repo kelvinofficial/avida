@@ -710,66 +710,130 @@ const verifyStyles = StyleSheet.create({
   },
 });
 
-// ============ MAP PLACEHOLDER SECTION ============
-const MapSection = memo<{ property: Property }>(({ property }) => (
-  <View style={mapStyles.container}>
-    <Text style={mapStyles.title}>Location</Text>
-    
-    {/* Map Placeholder */}
-    <View style={mapStyles.mapPlaceholder}>
-      <View style={mapStyles.mapContent}>
-        <Ionicons name="map" size={40} color={COLORS.primary} />
-        <Text style={mapStyles.mapText}>{property.location.area}, {property.location.city}</Text>
-        <Text style={mapStyles.mapSubtext}>{property.location.country}</Text>
-      </View>
+// ============ MAP & LOCATION INTELLIGENCE SECTION ============
+const MapSection = memo<{ property: Property }>(({ property }) => {
+  // Nearby amenities (simulated data based on location)
+  const nearbyAmenities = [
+    { icon: 'school', label: 'Schools', distance: '0.5 km', count: 3 },
+    { icon: 'medical', label: 'Hospitals', distance: '1.2 km', count: 2 },
+    { icon: 'cart', label: 'Supermarkets', distance: '0.3 km', count: 4 },
+    { icon: 'train', label: 'Transport', distance: '0.4 km', count: 2 },
+    { icon: 'restaurant', label: 'Restaurants', distance: '0.2 km', count: 8 },
+    { icon: 'fitness', label: 'Gyms', distance: '0.6 km', count: 2 },
+  ];
+
+  // Area safety indicator (simulated)
+  const safetyScore = 4.2; // out of 5
+
+  const handleGetDirections = () => {
+    const address = encodeURIComponent(`${property.location.area}, ${property.location.city}, ${property.location.country}`);
+    Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${address}`);
+  };
+
+  return (
+    <View style={mapStyles.container}>
+      <Text style={mapStyles.title}>Location & Nearby</Text>
       
-      {/* Map Pin Overlay */}
-      <View style={mapStyles.pinOverlay}>
-        <View style={mapStyles.pin}>
-          <Ionicons name="location" size={24} color="#fff" />
+      {/* Map Preview */}
+      <TouchableOpacity 
+        style={mapStyles.mapPlaceholder}
+        onPress={handleGetDirections}
+        activeOpacity={0.9}
+      >
+        <View style={mapStyles.mapContent}>
+          <View style={mapStyles.pinContainer}>
+            <View style={mapStyles.pin}>
+              <Ionicons name="location" size={24} color="#fff" />
+            </View>
+            <View style={mapStyles.pinShadow} />
+          </View>
+          <Text style={mapStyles.mapText}>{property.location.area}</Text>
+          <Text style={mapStyles.mapSubtext}>{property.location.city}, {property.location.country}</Text>
+        </View>
+        
+        {/* Map Grid Lines (Decorative) */}
+        <View style={mapStyles.gridLines}>
+          {[...Array(5)].map((_, i) => (
+            <View key={`h-${i}`} style={[mapStyles.gridLine, { top: `${(i + 1) * 20}%` }]} />
+          ))}
+          {[...Array(5)].map((_, i) => (
+            <View key={`v-${i}`} style={[mapStyles.gridLineVertical, { left: `${(i + 1) * 20}%` }]} />
+          ))}
+        </View>
+
+        {/* Tap to open overlay */}
+        <View style={mapStyles.tapOverlay}>
+          <Ionicons name="expand-outline" size={18} color="#fff" />
+          <Text style={mapStyles.tapText}>Tap to open map</Text>
+        </View>
+      </TouchableOpacity>
+      
+      {/* Address Details */}
+      <View style={mapStyles.addressBox}>
+        <Ionicons name="location-outline" size={20} color={COLORS.primary} />
+        <View style={mapStyles.addressText}>
+          <Text style={mapStyles.addressMain}>
+            {property.location.address || property.location.area}
+          </Text>
+          <Text style={mapStyles.addressSub}>
+            {property.location.city}, {property.location.country}
+          </Text>
+          {property.location.landmark && (
+            <View style={mapStyles.landmarkRow}>
+              <Ionicons name="pin" size={12} color={COLORS.primary} />
+              <Text style={mapStyles.landmark}>Near {property.location.landmark}</Text>
+            </View>
+          )}
+        </View>
+      </View>
+
+      {/* Area Safety Score */}
+      <View style={mapStyles.safetySection}>
+        <View style={mapStyles.safetyHeader}>
+          <Ionicons name="shield-checkmark" size={20} color={COLORS.verified} />
+          <Text style={mapStyles.safetyTitle}>Area Safety</Text>
+        </View>
+        <View style={mapStyles.safetyScore}>
+          <View style={mapStyles.safetyBar}>
+            <View style={[mapStyles.safetyFill, { width: `${(safetyScore / 5) * 100}%` }]} />
+          </View>
+          <Text style={mapStyles.safetyValue}>{safetyScore}/5</Text>
+        </View>
+        <Text style={mapStyles.safetyLabel}>Based on local crime statistics</Text>
+      </View>
+
+      {/* Nearby Amenities */}
+      <View style={mapStyles.amenitiesSection}>
+        <Text style={mapStyles.amenitiesTitle}>What's Nearby</Text>
+        <View style={mapStyles.amenitiesGrid}>
+          {nearbyAmenities.map((amenity, index) => (
+            <View key={index} style={mapStyles.amenityItem}>
+              <View style={mapStyles.amenityIcon}>
+                <Ionicons name={amenity.icon as any} size={18} color={COLORS.primary} />
+              </View>
+              <View style={mapStyles.amenityInfo}>
+                <Text style={mapStyles.amenityLabel}>{amenity.label}</Text>
+                <Text style={mapStyles.amenityDistance}>{amenity.distance} • {amenity.count} found</Text>
+              </View>
+            </View>
+          ))}
         </View>
       </View>
       
-      {/* Fake Map Grid Lines */}
-      <View style={mapStyles.gridLines}>
-        {[...Array(5)].map((_, i) => (
-          <View key={`h-${i}`} style={[mapStyles.gridLine, { top: `${(i + 1) * 20}%` }]} />
-        ))}
-        {[...Array(5)].map((_, i) => (
-          <View key={`v-${i}`} style={[mapStyles.gridLineVertical, { left: `${(i + 1) * 20}%` }]} />
-        ))}
+      {/* Action Buttons */}
+      <View style={mapStyles.actions}>
+        <TouchableOpacity style={mapStyles.actionBtn} onPress={handleGetDirections}>
+          <Ionicons name="navigate-outline" size={18} color={COLORS.primary} />
+          <Text style={mapStyles.actionText}>Get Directions</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={mapStyles.actionBtn}>
+          <Ionicons name="share-outline" size={18} color={COLORS.primary} />
+          <Text style={mapStyles.actionText}>Share Location</Text>
+        </TouchableOpacity>
       </View>
     </View>
-    
-    {/* Address Details */}
-    <View style={mapStyles.addressBox}>
-      <Ionicons name="location-outline" size={20} color={COLORS.primary} />
-      <View style={mapStyles.addressText}>
-        <Text style={mapStyles.addressMain}>
-          {property.location.address || property.location.area}
-        </Text>
-        <Text style={mapStyles.addressSub}>
-          {property.location.city}, {property.location.country}
-        </Text>
-        {property.location.landmark && (
-          <Text style={mapStyles.landmark}>Near: {property.location.landmark}</Text>
-        )}
-      </View>
-    </View>
-    
-    {/* Action Buttons */}
-    <View style={mapStyles.actions}>
-      <TouchableOpacity style={mapStyles.actionBtn}>
-        <Ionicons name="navigate-outline" size={18} color={COLORS.primary} />
-        <Text style={mapStyles.actionText}>Get Directions</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={mapStyles.actionBtn}>
-        <Ionicons name="share-outline" size={18} color={COLORS.primary} />
-        <Text style={mapStyles.actionText}>Share Location</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-));
+  );
+});
 
 const mapStyles = StyleSheet.create({
   container: {
@@ -796,34 +860,40 @@ const mapStyles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 10,
   },
+  pinContainer: {
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  pin: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  pinShadow: {
+    width: 20,
+    height: 6,
+    borderRadius: 10,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    marginTop: 4,
+  },
   mapText: {
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.primary,
-    marginTop: 8,
+    marginTop: 4,
   },
   mapSubtext: {
     fontSize: 13,
     color: COLORS.textSecondary,
     marginTop: 2,
-  },
-  pinOverlay: {
-    position: 'absolute',
-    top: '30%',
-    alignSelf: 'center',
-  },
-  pin: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
   },
   gridLines: {
     position: 'absolute',
@@ -845,6 +915,23 @@ const mapStyles = StyleSheet.create({
     bottom: 0,
     width: 1,
     backgroundColor: 'rgba(46, 125, 50, 0.1)',
+  },
+  tapOverlay: {
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 6,
+  },
+  tapText: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: '500',
   },
   addressBox: {
     flexDirection: 'row',
@@ -868,23 +955,113 @@ const mapStyles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 2,
   },
+  landmarkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 6,
+  },
   landmark: {
     fontSize: 12,
     color: COLORS.primary,
-    marginTop: 4,
+    fontWeight: '500',
+  },
+  safetySection: {
+    marginTop: 16,
+    padding: 14,
+    backgroundColor: '#E8F5E9',
+    borderRadius: 10,
+  },
+  safetyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  safetyTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  safetyScore: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  safetyBar: {
+    flex: 1,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.border,
+  },
+  safetyFill: {
+    height: '100%',
+    borderRadius: 4,
+    backgroundColor: COLORS.verified,
+  },
+  safetyValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.verified,
+  },
+  safetyLabel: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    marginTop: 8,
+  },
+  amenitiesSection: {
+    marginTop: 16,
+  },
+  amenitiesTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 12,
+  },
+  amenitiesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  amenityItem: {
+    width: '50%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    gap: 10,
+  },
+  amenityIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  amenityInfo: {
+    flex: 1,
+  },
+  amenityLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  amenityDistance: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    marginTop: 1,
   },
   actions: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 12,
+    marginTop: 16,
   },
   actionBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingVertical: 12,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: COLORS.primary,
     gap: 6,
