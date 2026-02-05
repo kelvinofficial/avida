@@ -282,8 +282,30 @@ export default function HomeScreen() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [notificationCount] = useState(3);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [currentCity] = useState('Berlin');
+
+  // Fetch unread notification count
+  const fetchNotificationCount = useCallback(async () => {
+    if (!isAuthenticated) {
+      setNotificationCount(0);
+      return;
+    }
+    try {
+      const response = await notificationsApi.getUnreadCount();
+      setNotificationCount(response.count || 0);
+    } catch (error) {
+      console.error('Error fetching notification count:', error);
+      setNotificationCount(0);
+    }
+  }, [isAuthenticated]);
+
+  // Refresh notification count when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchNotificationCount();
+    }, [fetchNotificationCount])
+  );
 
   const fetchData = useCallback(async (refresh = false) => {
     try {
