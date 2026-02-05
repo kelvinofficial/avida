@@ -201,6 +201,16 @@ export default function PostListingScreen() {
 
   useEffect(() => {
     if (selectedCategoryId) {
+      // Check if this category should use dedicated form
+      if (selectedCategoryId === 'vehicles') {
+        router.replace('/auto/post');
+        return;
+      }
+      if (selectedCategoryId === 'property' || selectedCategoryId === 'realestate') {
+        router.replace('/property/post');
+        return;
+      }
+      
       const config = getCategoryConfig(selectedCategoryId);
       setCategoryConfig(config);
       // Reset attributes when category changes
