@@ -21,7 +21,17 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { listingsApi, categoriesApi } from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
-import { getCategoryConfig, AttributeField, CategoryAttributeConfig } from '../../src/config/categoryAttributes';
+import { 
+  ALL_CATEGORIES, 
+  getMainCategory, 
+  getSubcategoryConfig,
+  getSubcategories,
+  getSubcategoryAttributes,
+  getConditionOptions,
+  SubcategoryAttribute,
+  MainCategoryConfig,
+  SubcategoryConfig,
+} from '../../src/config/subcategories';
 import { safeGoBack } from '../../src/utils/navigation';
 import { SuccessModal } from '../../src/components/SuccessModal';
 
