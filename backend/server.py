@@ -1481,7 +1481,74 @@ async def send_message(conversation_id: str, message: MessageCreate, request: Re
         "message": response_message
     }, room=conversation_id)
     
-    return new_message
+    return response_message
+
+# ==================== MEDIA UPLOAD ENDPOINT ====================
+
+@api_router.post("/messages/upload-media")
+async def upload_message_media(
+    request: Request,
+    file: UploadFile = File(...),
+    media_type: str = Query(..., description="audio, image, or video")
+):
+    """Upload media file for a message"""
+    user = await require_auth(request)
+    
+    # Validate media type
+    if media_type not in ["audio", "image", "video"]:
+        raise HTTPException(status_code=400, detail="Invalid media type")
+    
+    # Validate file size (max 10MB for audio/image, 50MB for video)
+    max_size = 50 * 1024 * 1024 if media_type == "video" else 10 * 1024 * 1024
+    content = await file.read()
+    if len(content) > max_size:
+        raise HTTPException(status_code=400, detail=f"File too large. Max size: {max_size // (1024 * 1024)}MB")
+    
+    # Generate unique filename
+    file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'bin'
+    filename = f"{media_type}_{user.user_id}_{uuid.uuid4()}.{file_extension}"
+    
+    # Save file (in production, upload to cloud storage like S3)
+    # For now, store as base64 in database
+    media_data = base64.b64encode(content).decode('utf-8')
+    
+    media_record = {
+        "id": str(uuid.uuid4()),
+        "user_id": user.user_id,
+        "media_type": media_type,
+        "filename": filename,
+        "content_type": file.content_type,
+        "size": len(content),
+        "data": media_data,
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    await db.media.insert_one(media_record)
+    
+    # Return URL that can be used to retrieve the media
+    media_url = f"/api/media/{media_record['id']}"
+    
+    return {
+        "id": media_record["id"],
+        "media_url": media_url,
+        "media_type": media_type,
+        "filename": filename,
+        "size": len(content)
+    }
+
+@api_router.get("/media/{media_id}")
+async def get_media(media_id: str):
+    """Get media file by ID"""
+    media = await db.media.find_one({"id": media_id}, {"_id": 0})
+    if not media:
+        raise HTTPException(status_code=404, detail="Media not found")
+    
+    # Return base64 encoded data with content type
+    import base64
+    from fastapi.responses import Response
+    
+    content = base64.b64decode(media["data"])
+    return Response(content=content, media_type=media["content_type"])
 
 # ==================== REPORTS ENDPOINTS ====================
 
