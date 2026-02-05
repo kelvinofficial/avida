@@ -82,30 +82,71 @@ const ListingCard = ({
   );
 };
 
-// Empty State
-const EmptyState = ({ isAuthenticated, onSignIn }: { isAuthenticated: boolean; onSignIn: () => void }) => (
+// Empty State for unauthenticated users
+const UnauthenticatedState = ({ onSignIn, onSignUp }: { onSignIn: () => void; onSignUp: () => void }) => (
+  <View style={styles.unauthContainer}>
+    {/* Illustration */}
+    <View style={styles.unauthIllustration}>
+      <View style={styles.unauthIconBg}>
+        <Ionicons name="heart" size={48} color={COLORS.error} />
+      </View>
+      <View style={[styles.floatingHeart, styles.floatingHeart1]}>
+        <Ionicons name="heart" size={16} color={COLORS.error} />
+      </View>
+      <View style={[styles.floatingHeart, styles.floatingHeart2]}>
+        <Ionicons name="heart-outline" size={14} color={COLORS.primary} />
+      </View>
+    </View>
+
+    <Text style={styles.unauthTitle}>Save Your Favorites</Text>
+    <Text style={styles.unauthSubtitle}>
+      Sign in to save items you love and access them anytime, anywhere
+    </Text>
+
+    {/* Benefits */}
+    <View style={styles.benefitsList}>
+      <View style={styles.benefitItem}>
+        <View style={[styles.benefitIcon, { backgroundColor: '#FFEBEE' }]}>
+          <Ionicons name="bookmark" size={18} color={COLORS.error} />
+        </View>
+        <Text style={styles.benefitText}>Save unlimited items</Text>
+      </View>
+      <View style={styles.benefitItem}>
+        <View style={[styles.benefitIcon, { backgroundColor: '#E3F2FD' }]}>
+          <Ionicons name="sync" size={18} color="#1976D2" />
+        </View>
+        <Text style={styles.benefitText}>Sync across all devices</Text>
+      </View>
+      <View style={styles.benefitItem}>
+        <View style={[styles.benefitIcon, { backgroundColor: '#E8F5E9' }]}>
+          <Ionicons name="notifications" size={18} color={COLORS.primary} />
+        </View>
+        <Text style={styles.benefitText}>Get price drop alerts</Text>
+      </View>
+    </View>
+
+    {/* Buttons */}
+    <TouchableOpacity style={styles.unauthSignInBtn} onPress={onSignIn}>
+      <Ionicons name="log-in-outline" size={20} color="#fff" />
+      <Text style={styles.unauthSignInBtnText}>Sign In</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={styles.unauthSignUpBtn} onPress={onSignUp}>
+      <Text style={styles.unauthSignUpBtnText}>Create Account</Text>
+    </TouchableOpacity>
+  </View>
+);
+
+// Empty State for authenticated users with no items
+const EmptyState = () => (
   <View style={styles.emptyContainer}>
     <View style={styles.emptyIcon}>
       <Ionicons name="heart-outline" size={64} color={COLORS.textSecondary} />
     </View>
-    {isAuthenticated ? (
-      <>
-        <Text style={styles.emptyTitle}>No saved items</Text>
-        <Text style={styles.emptySubtitle}>
-          Items you save will appear here. Tap the heart icon on any listing to save it.
-        </Text>
-      </>
-    ) : (
-      <>
-        <Text style={styles.emptyTitle}>Sign in to save items</Text>
-        <Text style={styles.emptySubtitle}>
-          Create an account or sign in to save your favorite listings.
-        </Text>
-        <TouchableOpacity style={styles.signInBtn} onPress={onSignIn}>
-          <Text style={styles.signInBtnText}>Sign In</Text>
-        </TouchableOpacity>
-      </>
-    )}
+    <Text style={styles.emptyTitle}>No saved items</Text>
+    <Text style={styles.emptySubtitle}>
+      Items you save will appear here. Tap the heart icon on any listing to save it.
+    </Text>
   </View>
 );
 
