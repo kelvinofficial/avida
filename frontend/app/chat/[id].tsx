@@ -777,10 +777,24 @@ export default function ChatScreen() {
   const handleSend = async () => {
     if (!newMessage.trim() || sending) return;
 
-    setSending(true);
     const content = newMessage.trim();
+    const tempId = `temp_${Date.now()}`;
+    
+    // Optimistic update - add message immediately
+    const optimisticMessage = {
+      id: tempId,
+      conversation_id: id!,
+      sender_id: user?.user_id || '',
+      content,
+      message_type: 'text' as const,
+      read: false,
+      created_at: new Date().toISOString(),
+    };
+    
+    setMessages((prev) => [...prev, optimisticMessage]);
     setNewMessage('');
     Keyboard.dismiss();
+    setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
 
     // Emit stop typing
     if (socketRef.current) {
@@ -790,23 +804,16 @@ export default function ChatScreen() {
       });
     }
 
+    setSending(true);
     try {
+      // Send to server in background
       await conversationsApi.sendMessage(id!, content);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `temp_${Date.now()}`,
-          conversation_id: id!,
-          sender_id: user?.user_id || '',
-          content,
-          read: false,
-          created_at: new Date().toISOString(),
-        },
-      ]);
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (error) {
       console.error('Error sending message:', error);
+      // Remove optimistic message on error
+      setMessages((prev) => prev.filter(m => m.id !== tempId));
       setNewMessage(content);
+      Alert.alert('Error', 'Failed to send message');
     } finally {
       setSending(false);
     }
