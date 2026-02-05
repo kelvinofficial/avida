@@ -1743,6 +1743,32 @@ async def send_message(conversation_id: str, message: MessageCreate, request: Re
         "message": response_message
     }, room=conversation_id)
     
+    # Create notification for recipient
+    recipient_id = other_user_id
+    if recipient_id:
+        # Get sender info
+        sender_name = user.name or "Someone"
+        sender_picture = user.picture
+        
+        # Get listing info for context
+        listing_title = conversation.get("listing_title", "a listing")
+        
+        # Create message notification
+        await create_notification(
+            user_id=recipient_id,
+            notification_type="message",
+            title=f"New message from {sender_name}",
+            body=last_msg_preview,
+            cta_label="REPLY",
+            cta_route=f"/chat/{conversation_id}",
+            actor_id=user.user_id,
+            actor_name=sender_name,
+            actor_picture=sender_picture,
+            listing_id=conversation.get("listing_id"),
+            listing_title=listing_title,
+            meta={"conversation_id": conversation_id}
+        )
+    
     return response_message
 
 # ==================== MEDIA UPLOAD ENDPOINT ====================
