@@ -2059,6 +2059,9 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     paddingBottom: 12,
   },
+  typeScroll: {
+    paddingHorizontal: HORIZONTAL_PADDING,
+  },
   typeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
