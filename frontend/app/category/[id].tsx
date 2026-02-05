@@ -48,24 +48,26 @@ interface FilterChipProps {
   count?: number;
 }
 
-const FilterChip = memo<FilterChipProps>(({ label, selected, onPress, count }) => (
-  <TouchableOpacity
-    style={[styles.filterChip, selected && styles.filterChipSelected]}
-    onPress={onPress}
-    activeOpacity={0.7}
-  >
-    <Text style={[styles.filterChipText, selected && styles.filterChipTextSelected]}>
-      {label}
-    </Text>
-    {count !== undefined && count > 0 && (
-      <View style={[styles.filterChipCount, selected && styles.filterChipCountSelected]}>
-        <Text style={[styles.filterChipCountText, selected && styles.filterChipCountTextSelected]}>
-          {count}
-        </Text>
-      </View>
-    )}
-  </TouchableOpacity>
-));
+const FilterChip = memo<FilterChipProps>(function FilterChip({ label, selected, onPress, count }) {
+  return (
+    <TouchableOpacity
+      style={[styles.filterChip, selected && styles.filterChipSelected]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <Text style={[styles.filterChipText, selected && styles.filterChipTextSelected]}>
+        {label}
+      </Text>
+      {count !== undefined && count > 0 && (
+        <View style={[styles.filterChipCount, selected && styles.filterChipCountSelected]}>
+          <Text style={[styles.filterChipCountText, selected && styles.filterChipCountTextSelected]}>
+            {count}
+          </Text>
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+});
 
 // ============ MAIN SCREEN ============
 export default function CategoryScreen() {
@@ -74,7 +76,6 @@ export default function CategoryScreen() {
   const { isAuthenticated } = useAuthStore();
   
   const [listings, setListings] = useState<any[]>([]);
-  const [category, setCategory] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
