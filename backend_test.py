@@ -487,6 +487,7 @@ class APITester:
         
         # Initialize test data
         self.created_listing_id = None
+        self.created_listing_id_defaults = None
         self.conversation_id = None
         
         # Run tests
