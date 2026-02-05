@@ -1786,7 +1786,7 @@ export default function PropertyScreen() {
       {/* Divider */}
       <View style={styles.divider} />
 
-      {/* Property Type Grid */}
+      {/* Property Type Grid - Use Horizontal Scroll for compact display */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Property Types</Text>
         {selectedType && (
@@ -1798,7 +1798,7 @@ export default function PropertyScreen() {
 
       {/* Residential */}
       <Text style={styles.categoryLabel}>Residential</Text>
-      <View style={styles.typeGrid}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.typeScroll}>
         {PROPERTY_TYPE_CATEGORIES.residential.map((type) => (
           <PropertyTypeTile
             key={type.id}
@@ -1810,11 +1810,11 @@ export default function PropertyScreen() {
             isSelected={selectedType === type.id}
           />
         ))}
-      </View>
+      </ScrollView>
 
       {/* Land */}
       <Text style={styles.categoryLabel}>Land</Text>
-      <View style={styles.typeGrid}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.typeScroll}>
         {PROPERTY_TYPE_CATEGORIES.land.map((type) => (
           <PropertyTypeTile
             key={type.id}
@@ -1826,12 +1826,12 @@ export default function PropertyScreen() {
             isSelected={selectedType === type.id}
           />
         ))}
-      </View>
+      </ScrollView>
 
       {/* Commercial */}
       <Text style={styles.categoryLabel}>Commercial</Text>
-      <View style={styles.typeGrid}>
-        {PROPERTY_TYPE_CATEGORIES.commercial.slice(0, 4).map((type) => (
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.typeScroll}>
+        {PROPERTY_TYPE_CATEGORIES.commercial.map((type) => (
           <PropertyTypeTile
             key={type.id}
             id={type.id}
@@ -1842,7 +1842,7 @@ export default function PropertyScreen() {
             isSelected={selectedType === type.id}
           />
         ))}
-      </View>
+      </ScrollView>
 
       {/* Results Header */}
       <View style={styles.resultsHeader}>
