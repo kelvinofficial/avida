@@ -662,6 +662,15 @@ export default function PostPropertyScreen() {
           )}
         </TouchableOpacity>
       </View>
+
+      {/* Success Modal */}
+      <SuccessModal
+        visible={showSuccessModal}
+        title="Property Listed!"
+        message="Your property is now live and ready for interested buyers to discover."
+        buttonText="View Listings"
+        onClose={handleSuccessModalClose}
+      />
     </SafeAreaView>
   );
 }
