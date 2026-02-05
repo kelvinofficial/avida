@@ -1524,8 +1524,17 @@ async def typing(sid, data):
     """Broadcast typing indicator"""
     conversation_id = data.get("conversation_id")
     user_id = data.get("user_id")
+    user_name = data.get("user_name")
     if conversation_id:
-        await sio.emit("user_typing", {"user_id": user_id}, room=conversation_id, skip_sid=sid)
+        await sio.emit("user_typing", {"user_id": user_id, "user_name": user_name}, room=conversation_id, skip_sid=sid)
+
+@sio.event
+async def stop_typing(sid, data):
+    """Broadcast stop typing indicator"""
+    conversation_id = data.get("conversation_id")
+    user_id = data.get("user_id")
+    if conversation_id:
+        await sio.emit("user_stop_typing", {"user_id": user_id}, room=conversation_id, skip_sid=sid)
 
 # ==================== AUTO/MOTORS ENDPOINTS ====================
 
