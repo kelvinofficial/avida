@@ -114,12 +114,12 @@ const CategoryIcon = memo<CategoryIconProps>(({ id, name, icon, onPress, selecte
         selected && categoryStyles.iconContainerSelected,
         isAll && !selected && categoryStyles.allIconContainer,
       ]}>
-        <Ionicons name={icon as any} size={CATEGORY_INNER_ICON} color={style.icon} />
+        <Ionicons name={icon as any} size={CATEGORY_INNER_ICON} color={isAll && !selected ? '#2E7D32' : style.icon} />
       </View>
       <Text style={[
         categoryStyles.label,
         selected && categoryStyles.labelSelected
-      ]} numberOfLines={1}>
+      ]} numberOfLines={2}>
         {name}
       </Text>
     </TouchableOpacity>
