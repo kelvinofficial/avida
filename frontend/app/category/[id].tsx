@@ -507,6 +507,204 @@ export default function CategoryScreen() {
 
   const mainCategory = getMainCategory(categoryId);
 
+  // Desktop Sidebar Component
+  const renderDesktopSidebar = () => (
+    <View style={desktopStyles.sidebar}>
+      {/* Logo */}
+      <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+        <View style={desktopStyles.logoIcon}>
+          <Ionicons name="storefront" size={20} color="#fff" />
+        </View>
+        <Text style={desktopStyles.logoText}>avida</Text>
+      </TouchableOpacity>
+
+      {/* Categories Section */}
+      <View style={desktopStyles.sidebarSection}>
+        <Text style={desktopStyles.sidebarSectionTitle}>CATEGORIES</Text>
+        {ALL_CATEGORIES.map((cat) => (
+          <TouchableOpacity
+            key={cat.id}
+            style={[desktopStyles.categoryItem, categoryId === cat.id && desktopStyles.categoryItemActive]}
+            onPress={() => router.push(`/category/${cat.id}`)}
+          >
+            <Ionicons 
+              name={cat.icon as any} 
+              size={18} 
+              color={categoryId === cat.id ? COLORS.primary : COLORS.textSecondary} 
+            />
+            <Text style={[desktopStyles.categoryItemText, categoryId === cat.id && desktopStyles.categoryItemTextActive]}>
+              {cat.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Subcategories Section */}
+      {subcategories.length > 0 && (
+        <View style={desktopStyles.sidebarSection}>
+          <Text style={desktopStyles.sidebarSectionTitle}>SUBCATEGORIES</Text>
+          <TouchableOpacity
+            style={[desktopStyles.subcategoryItem, !selectedSubcategory && desktopStyles.subcategoryItemActive]}
+            onPress={() => setSelectedSubcategory('')}
+          >
+            <Text style={[desktopStyles.subcategoryItemText, !selectedSubcategory && desktopStyles.subcategoryItemTextActive]}>
+              All {mainCategory?.name}
+            </Text>
+          </TouchableOpacity>
+          {subcategories.map((sub) => (
+            <TouchableOpacity
+              key={sub.id}
+              style={[desktopStyles.subcategoryItem, selectedSubcategory === sub.id && desktopStyles.subcategoryItemActive]}
+              onPress={() => handleSubcategorySelect(sub.id)}
+            >
+              <Text style={[desktopStyles.subcategoryItemText, selectedSubcategory === sub.id && desktopStyles.subcategoryItemTextActive]}>
+                {sub.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
+      {/* Filters Section */}
+      <View style={desktopStyles.sidebarSection}>
+        <Text style={desktopStyles.sidebarSectionTitle}>FILTERS</Text>
+        
+        {/* Condition Filter */}
+        {conditionOptions.length > 0 && (
+          <View style={desktopStyles.filterGroup}>
+            <Text style={desktopStyles.filterLabel}>Condition</Text>
+            {conditionOptions.map((condition) => (
+              <TouchableOpacity
+                key={condition}
+                style={[desktopStyles.filterOption, selectedCondition === condition && desktopStyles.filterOptionActive]}
+                onPress={() => {
+                  setSelectedCondition(selectedCondition === condition ? '' : condition);
+                }}
+              >
+                <Ionicons 
+                  name={selectedCondition === condition ? 'checkbox' : 'square-outline'} 
+                  size={18} 
+                  color={selectedCondition === condition ? COLORS.primary : COLORS.textSecondary} 
+                />
+                <Text style={desktopStyles.filterOptionText}>{condition}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        {/* Price Range Filter */}
+        <View style={desktopStyles.filterGroup}>
+          <Text style={desktopStyles.filterLabel}>Price Range</Text>
+          <View style={desktopStyles.priceInputRow}>
+            <TextInput
+              style={desktopStyles.priceInput}
+              placeholder="Min"
+              keyboardType="numeric"
+              value={priceRange.min}
+              onChangeText={(v) => setPriceRange(prev => ({ ...prev, min: v }))}
+              placeholderTextColor="#999"
+            />
+            <Text style={desktopStyles.priceSeparator}>-</Text>
+            <TextInput
+              style={desktopStyles.priceInput}
+              placeholder="Max"
+              keyboardType="numeric"
+              value={priceRange.max}
+              onChangeText={(v) => setPriceRange(prev => ({ ...prev, max: v }))}
+              placeholderTextColor="#999"
+            />
+          </View>
+          <TouchableOpacity style={desktopStyles.applyPriceBtn} onPress={() => fetchData(true)}>
+            <Text style={desktopStyles.applyPriceBtnText}>Apply</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Sort By */}
+        <View style={desktopStyles.filterGroup}>
+          <Text style={desktopStyles.filterLabel}>Sort By</Text>
+          {[
+            { id: 'newest', label: 'Newest First' },
+            { id: 'price_low', label: 'Price: Low to High' },
+            { id: 'price_high', label: 'Price: High to Low' },
+          ].map((option) => (
+            <TouchableOpacity
+              key={option.id}
+              style={[desktopStyles.filterOption, sortBy === option.id && desktopStyles.filterOptionActive]}
+              onPress={() => setSortBy(option.id)}
+            >
+              <Ionicons 
+                name={sortBy === option.id ? 'radio-button-on' : 'radio-button-off'} 
+                size={18} 
+                color={sortBy === option.id ? COLORS.primary : COLORS.textSecondary} 
+              />
+              <Text style={desktopStyles.filterOptionText}>{option.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Clear Filters */}
+      {activeFilterCount > 0 && (
+        <TouchableOpacity style={desktopStyles.clearFiltersBtn} onPress={handleClearFilters}>
+          <Ionicons name="refresh" size={16} color={COLORS.primary} />
+          <Text style={desktopStyles.clearFiltersBtnText}>Clear All Filters</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+
+  // Desktop view
+  if (isDesktop || isTablet) {
+    return (
+      <View style={desktopStyles.container}>
+        {renderDesktopSidebar()}
+        <View style={desktopStyles.mainContent}>
+          {/* Desktop Header */}
+          <View style={desktopStyles.header}>
+            <View style={desktopStyles.headerLeft}>
+              <TouchableOpacity onPress={() => router.push('/')} style={desktopStyles.homeLink}>
+                <Ionicons name="home-outline" size={18} color={COLORS.textSecondary} />
+                <Text style={desktopStyles.breadcrumb}>Home</Text>
+              </TouchableOpacity>
+              <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
+              <Text style={desktopStyles.breadcrumbActive}>{mainCategory?.name}</Text>
+              {selectedSubcategory && (
+                <>
+                  <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
+                  <Text style={desktopStyles.breadcrumbActive}>
+                    {subcategories.find(s => s.id === selectedSubcategory)?.name}
+                  </Text>
+                </>
+              )}
+            </View>
+            <Text style={desktopStyles.resultsCount}>{total} results</Text>
+          </View>
+
+          {/* Listings Grid */}
+          <FlatList
+            data={listings}
+            renderItem={renderListingCard}
+            keyExtractor={(item) => item.id}
+            numColumns={isDesktop ? 3 : 2}
+            key={isDesktop ? 'desktop-3col' : 'tablet-2col'}
+            contentContainerStyle={desktopStyles.listContent}
+            columnWrapperStyle={desktopStyles.gridRow}
+            ListEmptyComponent={renderEmpty}
+            ListFooterComponent={renderFooter}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[COLORS.primary]} />
+            }
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+          />
+        </View>
+
+        {renderFiltersModal()}
+      </View>
+    );
+  }
+
+  // Mobile view (original)
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
