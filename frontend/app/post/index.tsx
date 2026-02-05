@@ -315,6 +315,20 @@ export default function PostListingScreen() {
   const [sellerType, setSellerType] = useState('Individual');
   const [contactMethod, setContactMethod] = useState('Chat');
 
+  // Form Validation Errors
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+
+  // Clear specific field error
+  const clearFieldError = (fieldName: string) => {
+    if (fieldErrors[fieldName]) {
+      setFieldErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
+    }
+  };
+
   // Initialize
   useEffect(() => {
     if (!isAuthenticated) {
@@ -341,6 +355,8 @@ export default function PostListingScreen() {
       // Reset attributes when category changes
       setAttributes({});
       setCondition('');
+      // Clear errors on category change
+      setFieldErrors({});
     }
   }, [selectedCategoryId]);
 
