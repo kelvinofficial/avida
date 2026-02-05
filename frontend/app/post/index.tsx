@@ -813,6 +813,7 @@ export default function PostListingScreen() {
       <Text style={styles.stepTitle}>Price & Contact</Text>
       <Text style={styles.stepSubtitle}>Set your price and how buyers can reach you</Text>
 
+      {/* Price Section */}
       <View style={styles.priceSection}>
         <Text style={styles.fieldLabel}>Price <Text style={styles.required}>*</Text></Text>
         <View style={styles.priceInputContainer}>
@@ -826,18 +827,9 @@ export default function PostListingScreen() {
             keyboardType="numeric"
           />
         </View>
-        
-        <View style={styles.toggleRow}>
-          <Text style={styles.toggleLabel}>Price is negotiable (VB)</Text>
-          <Switch
-            value={negotiable}
-            onValueChange={setNegotiable}
-            trackColor={{ false: COLORS.border, true: COLORS.primaryLight }}
-            thumbColor={negotiable ? COLORS.primary : '#f4f4f4'}
-          />
-        </View>
       </View>
 
+      {/* Location */}
       <View style={styles.fieldContainer}>
         <Text style={styles.fieldLabel}>Location <Text style={styles.required}>*</Text></Text>
         <TextInput
@@ -849,6 +841,7 @@ export default function PostListingScreen() {
         />
       </View>
 
+      {/* Seller Type */}
       <View style={styles.fieldContainer}>
         <Text style={styles.fieldLabel}>Seller Type</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -866,22 +859,171 @@ export default function PostListingScreen() {
         </ScrollView>
       </View>
 
-      <View style={styles.fieldContainer}>
-        <Text style={styles.fieldLabel}>Preferred Contact Method</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {CONTACT_METHODS.map((method) => (
-            <TouchableOpacity
-              key={method}
-              style={[styles.chip, contactMethod === method && styles.chipSelected]}
-              onPress={() => setContactMethod(method)}
-            >
-              <Text style={[styles.chipText, contactMethod === method && styles.chipTextSelected]}>
-                {method}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+      {/* Seller Preferences Section */}
+      <View style={styles.sectionDivider}>
+        <Text style={styles.sectionDividerText}>Seller Preferences</Text>
       </View>
+
+      {/* Accepts Offers */}
+      <View style={styles.preferenceCard}>
+        <View style={styles.preferenceRow}>
+          <View style={styles.preferenceInfo}>
+            <View style={[styles.preferenceIcon, { backgroundColor: '#E8F5E9' }]}>
+              <Ionicons name="pricetag-outline" size={20} color={COLORS.primary} />
+            </View>
+            <View>
+              <Text style={styles.preferenceTitle}>Accept Offers</Text>
+              <Text style={styles.preferenceDesc}>Allow buyers to make price offers</Text>
+            </View>
+          </View>
+          <Switch
+            value={acceptsOffers}
+            onValueChange={setAcceptsOffers}
+            trackColor={{ false: COLORS.border, true: COLORS.primaryLight }}
+            thumbColor={acceptsOffers ? COLORS.primary : '#f4f4f4'}
+          />
+        </View>
+      </View>
+
+      {/* Price Negotiable (if accepts offers) */}
+      {acceptsOffers && (
+        <View style={styles.preferenceCard}>
+          <View style={styles.preferenceRow}>
+            <View style={styles.preferenceInfo}>
+              <View style={[styles.preferenceIcon, { backgroundColor: '#FFF3E0' }]}>
+                <Ionicons name="swap-horizontal-outline" size={20} color="#F57C00" />
+              </View>
+              <View>
+                <Text style={styles.preferenceTitle}>Negotiable Price (VB)</Text>
+                <Text style={styles.preferenceDesc}>Show "VB" badge on listing</Text>
+              </View>
+            </View>
+            <Switch
+              value={negotiable}
+              onValueChange={setNegotiable}
+              trackColor={{ false: COLORS.border, true: '#FFE0B2' }}
+              thumbColor={negotiable ? '#F57C00' : '#f4f4f4'}
+            />
+          </View>
+        </View>
+      )}
+
+      {/* Accepts Exchanges */}
+      <View style={styles.preferenceCard}>
+        <View style={styles.preferenceRow}>
+          <View style={styles.preferenceInfo}>
+            <View style={[styles.preferenceIcon, { backgroundColor: '#E3F2FD' }]}>
+              <Ionicons name="repeat-outline" size={20} color="#1976D2" />
+            </View>
+            <View>
+              <Text style={styles.preferenceTitle}>Accept Exchanges</Text>
+              <Text style={styles.preferenceDesc}>Open to trading items</Text>
+            </View>
+          </View>
+          <Switch
+            value={acceptsExchanges}
+            onValueChange={setAcceptsExchanges}
+            trackColor={{ false: COLORS.border, true: '#BBDEFB' }}
+            thumbColor={acceptsExchanges ? '#1976D2' : '#f4f4f4'}
+          />
+        </View>
+      </View>
+
+      {/* Contact Methods Section */}
+      <View style={styles.sectionDivider}>
+        <Text style={styles.sectionDividerText}>Contact Methods</Text>
+      </View>
+
+      {/* In-App Chat */}
+      <View style={styles.preferenceCard}>
+        <View style={styles.preferenceRow}>
+          <View style={styles.preferenceInfo}>
+            <View style={[styles.preferenceIcon, { backgroundColor: '#E8F5E9' }]}>
+              <Ionicons name="chatbubble-outline" size={20} color={COLORS.primary} />
+            </View>
+            <View>
+              <Text style={styles.preferenceTitle}>In-App Chat</Text>
+              <Text style={styles.preferenceDesc}>Message through the app</Text>
+            </View>
+          </View>
+          <Switch
+            value={contactPreferences.inAppChat}
+            onValueChange={(val) => setContactPreferences(prev => ({ ...prev, inAppChat: val }))}
+            trackColor={{ false: COLORS.border, true: COLORS.primaryLight }}
+            thumbColor={contactPreferences.inAppChat ? COLORS.primary : '#f4f4f4'}
+          />
+        </View>
+      </View>
+
+      {/* WhatsApp */}
+      <View style={styles.preferenceCard}>
+        <View style={styles.preferenceRow}>
+          <View style={styles.preferenceInfo}>
+            <View style={[styles.preferenceIcon, { backgroundColor: '#E8F5E9' }]}>
+              <Ionicons name="logo-whatsapp" size={20} color="#25D366" />
+            </View>
+            <View>
+              <Text style={styles.preferenceTitle}>WhatsApp</Text>
+              <Text style={styles.preferenceDesc}>Chat via WhatsApp</Text>
+            </View>
+          </View>
+          <Switch
+            value={contactPreferences.whatsapp}
+            onValueChange={(val) => setContactPreferences(prev => ({ ...prev, whatsapp: val }))}
+            trackColor={{ false: COLORS.border, true: '#C8E6C9' }}
+            thumbColor={contactPreferences.whatsapp ? '#25D366' : '#f4f4f4'}
+          />
+        </View>
+        {contactPreferences.whatsapp && (
+          <View style={styles.phoneInputContainer}>
+            <Text style={styles.phoneInputLabel}>WhatsApp Number</Text>
+            <TextInput
+              style={styles.phoneInput}
+              placeholder="+49 123 456 7890"
+              placeholderTextColor={COLORS.textSecondary}
+              value={whatsappNumber}
+              onChangeText={setWhatsappNumber}
+              keyboardType="phone-pad"
+            />
+          </View>
+        )}
+      </View>
+
+      {/* Phone Call */}
+      <View style={styles.preferenceCard}>
+        <View style={styles.preferenceRow}>
+          <View style={styles.preferenceInfo}>
+            <View style={[styles.preferenceIcon, { backgroundColor: '#E3F2FD' }]}>
+              <Ionicons name="call-outline" size={20} color="#1976D2" />
+            </View>
+            <View>
+              <Text style={styles.preferenceTitle}>Phone Call</Text>
+              <Text style={styles.preferenceDesc}>Receive phone calls</Text>
+            </View>
+          </View>
+          <Switch
+            value={contactPreferences.call}
+            onValueChange={(val) => setContactPreferences(prev => ({ ...prev, call: val }))}
+            trackColor={{ false: COLORS.border, true: '#BBDEFB' }}
+            thumbColor={contactPreferences.call ? '#1976D2' : '#f4f4f4'}
+          />
+        </View>
+        {contactPreferences.call && (
+          <View style={styles.phoneInputContainer}>
+            <Text style={styles.phoneInputLabel}>Phone Number</Text>
+            <TextInput
+              style={styles.phoneInput}
+              placeholder="+49 123 456 7890"
+              placeholderTextColor={COLORS.textSecondary}
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              keyboardType="phone-pad"
+            />
+          </View>
+        )}
+      </View>
+
+      <View style={{ height: 40 }} />
     </ScrollView>
   );
 
