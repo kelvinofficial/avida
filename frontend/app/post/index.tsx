@@ -300,13 +300,29 @@ export default function PostListingScreen() {
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
-  const [categoryConfig, setCategoryConfig] = useState<CategoryAttributeConfig | null>(null);
-  const [allCategories, setAllCategories] = useState<any[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
   
-  // Step 1: Category Selection
+  // Step 1: Category & Subcategory Selection
   const [selectedCategoryId, setSelectedCategoryId] = useState(categoryId || '');
-  const [selectedSubcategory, setSelectedSubcategory] = useState('');
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState('');
+  
+  // Derived state for current subcategory config
+  const currentSubcategoryConfig = useMemo(() => {
+    if (!selectedCategoryId || !selectedSubcategoryId) return null;
+    return getSubcategoryConfig(selectedCategoryId, selectedSubcategoryId);
+  }, [selectedCategoryId, selectedSubcategoryId]);
+
+  // Get available subcategories for selected category
+  const availableSubcategories = useMemo(() => {
+    if (!selectedCategoryId) return [];
+    return getSubcategories(selectedCategoryId);
+  }, [selectedCategoryId]);
+
+  // Get condition options for selected subcategory
+  const conditionOptions = useMemo(() => {
+    if (!selectedCategoryId || !selectedSubcategoryId) return ['New', 'Like New', 'Good', 'Fair'];
+    return getConditionOptions(selectedCategoryId, selectedSubcategoryId);
+  }, [selectedCategoryId, selectedSubcategoryId]);
   
   // Step 2: Images
   const [images, setImages] = useState<string[]>([]);
@@ -316,7 +332,7 @@ export default function PostListingScreen() {
   const [description, setDescription] = useState('');
   const [condition, setCondition] = useState('');
   
-  // Step 4: Category-Specific Attributes
+  // Step 4: Subcategory-Specific Attributes
   const [attributes, setAttributes] = useState<Record<string, any>>({});
   
   // Step 5: Price & Contact
@@ -354,33 +370,21 @@ export default function PostListingScreen() {
     }
   };
 
-  // Initialize - only fetch categories once when authenticated
+  // Initialize - check authentication
   useEffect(() => {
     if (!isAuthenticated) {
       router.replace('/login');
       return;
     }
-    // Only fetch if we don't have categories yet
-    if (allCategories.length === 0) {
-      fetchCategories();
-    }
+    // Categories are now loaded from the config file, no need to fetch
+    setCategoriesLoading(false);
   }, [isAuthenticated]);
 
+  // Reset subcategory when category changes
   useEffect(() => {
     if (selectedCategoryId) {
-      // Check if this category should use dedicated form
-      if (selectedCategoryId === 'vehicles') {
-        router.replace('/auto/post');
-        return;
-      }
-      if (selectedCategoryId === 'property' || selectedCategoryId === 'realestate') {
-        router.replace('/property/post');
-        return;
-      }
-      
-      const config = getCategoryConfig(selectedCategoryId);
-      setCategoryConfig(config);
-      // Reset attributes when category changes
+      // Reset subcategory, attributes and condition when category changes
+      setSelectedSubcategoryId('');
       setAttributes({});
       setCondition('');
       // Clear errors on category change
@@ -388,16 +392,14 @@ export default function PostListingScreen() {
     }
   }, [selectedCategoryId]);
 
-  const fetchCategories = async () => {
-    setCategoriesLoading(true);
-    try {
-      const cats = await categoriesApi.getAll();
-      setAllCategories(cats);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    } finally {
-      setCategoriesLoading(false);
+  // Reset attributes when subcategory changes
+  useEffect(() => {
+    if (selectedSubcategoryId) {
+      setAttributes({});
+      setCondition('');
+      setFieldErrors({});
     }
+  }, [selectedSubcategoryId]);
   };
 
   // ============ IMAGE HANDLING ============
