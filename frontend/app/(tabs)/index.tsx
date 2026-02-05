@@ -349,13 +349,13 @@ export default function HomeScreen() {
         <Text style={styles.logo}>avida</Text>
         <TouchableOpacity
           style={styles.notificationButton}
-          onPress={() => isAuthenticated ? router.push('/messages') : router.push('/login')}
+          onPress={() => router.push('/notifications')}
           accessibilityLabel="Notifications"
         >
           <Ionicons name="notifications-outline" size={ICON_SIZE} color="#333" />
           {notificationCount > 0 && (
             <View style={styles.notificationBadge}>
-              <Text style={styles.notificationBadgeText}>{notificationCount > 9 ? '9+' : notificationCount}</Text>
+              <Text style={styles.notificationBadgeText}>{notificationCount > 99 ? '99+' : notificationCount}</Text>
             </View>
           )}
         </TouchableOpacity>
