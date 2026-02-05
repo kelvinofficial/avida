@@ -362,11 +362,14 @@ export default function PostListingScreen() {
   }, [selectedCategoryId]);
 
   const fetchCategories = async () => {
+    setCategoriesLoading(true);
     try {
       const cats = await categoriesApi.getAll();
       setAllCategories(cats);
     } catch (error) {
       console.error('Error fetching categories:', error);
+    } finally {
+      setCategoriesLoading(false);
     }
   };
 
