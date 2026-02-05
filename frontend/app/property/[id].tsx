@@ -635,7 +635,7 @@ const sellerStyles = StyleSheet.create({
 });
 
 // ============ VERIFICATION STATUS ============
-const VerificationSection = memo<{ property: Property }>(({ property }) => (
+const VerificationSection = memo<{ property: Property; onReport: () => void }>(({ property, onReport }) => (
   <View style={verifyStyles.container}>
     <Text style={verifyStyles.title}>Trust & Safety</Text>
     <View style={verifyStyles.items}>
@@ -664,7 +664,7 @@ const VerificationSection = memo<{ property: Property }>(({ property }) => (
         <Text style={verifyStyles.label}>Owner Verified</Text>
       </View>
     </View>
-    <TouchableOpacity style={verifyStyles.reportBtn}>
+    <TouchableOpacity style={verifyStyles.reportBtn} onPress={onReport}>
       <Ionicons name="flag-outline" size={18} color={COLORS.error} />
       <Text style={verifyStyles.reportText}>Report this listing</Text>
     </TouchableOpacity>
