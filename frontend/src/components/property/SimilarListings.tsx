@@ -755,20 +755,35 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
     }
   };
 
-  // Render header
+  // Render header with filters
   const renderHeader = () => (
-    <View style={styles.header}>
-      <View style={styles.headerLeft}>
-        <Ionicons name={getCategoryIcon() as any} size={18} color={COLORS.primary} />
-        <Text style={styles.title}>Similar Listings</Text>
+    <View style={styles.headerContainer}>
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Ionicons name={getCategoryIcon() as any} size={18} color={COLORS.primary} />
+          <Text style={styles.title}>Similar Listings</Text>
+        </View>
+        <Text style={styles.countText}>{listings.length} found</Text>
       </View>
-      <TouchableOpacity 
-        style={styles.seeAllBtn} 
-        onPress={() => router.push(getBrowseRoute())}
-      >
-        <Text style={styles.seeAllText}>See All</Text>
-        <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
-      </TouchableOpacity>
+      
+      {/* Filter Chips */}
+      <View style={styles.filtersRow}>
+        <FilterChip 
+          label="Same City" 
+          active={filterSameCity} 
+          onPress={() => setFilterSameCity(!filterSameCity)} 
+        />
+        <FilterChip 
+          label="Similar Price" 
+          active={filterSamePriceRange} 
+          onPress={() => setFilterSamePriceRange(!filterSamePriceRange)} 
+        />
+        <FilterChip 
+          label="Verified Only" 
+          active={filterVerifiedOnly} 
+          onPress={() => setFilterVerifiedOnly(!filterVerifiedOnly)} 
+        />
+      </View>
     </View>
   );
 
