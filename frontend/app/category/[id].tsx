@@ -10,6 +10,7 @@ import {
   ScrollView,
   Modal,
   TextInput,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,6 +29,7 @@ import {
   PropertyListingCard,
   AutoListingCard,
 } from '../../src/components/listings';
+import { useResponsive } from '../../src/hooks/useResponsive';
 
 const COLORS = {
   primary: '#2E7D32',
@@ -39,6 +41,20 @@ const COLORS = {
   textLight: '#999999',
   border: '#E0E0E0',
 };
+
+// All categories for sidebar
+const ALL_CATEGORIES = [
+  { id: 'auto_vehicles', name: 'Auto & Vehicles', icon: 'car-sport-outline' },
+  { id: 'properties', name: 'Properties', icon: 'home-outline' },
+  { id: 'electronics', name: 'Electronics', icon: 'laptop-outline' },
+  { id: 'phones_tablets', name: 'Phones & Tablets', icon: 'phone-portrait-outline' },
+  { id: 'home_furniture', name: 'Home & Furniture', icon: 'bed-outline' },
+  { id: 'fashion_beauty', name: 'Fashion & Beauty', icon: 'shirt-outline' },
+  { id: 'jobs_services', name: 'Jobs & Services', icon: 'briefcase-outline' },
+  { id: 'kids_babies', name: 'Kids & Babies', icon: 'happy-outline' },
+  { id: 'sports_leisure', name: 'Sports & Leisure', icon: 'football-outline' },
+  { id: 'pets', name: 'Pets', icon: 'paw-outline' },
+];
 
 // ============ FILTER CHIP ============
 interface FilterChipProps {
