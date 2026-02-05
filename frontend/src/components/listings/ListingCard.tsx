@@ -1,0 +1,176 @@
+import React, { memo } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Dimensions,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const COLORS = {
+  primary: '#2E7D32',
+  primaryLight: '#E8F5E9',
+  background: '#F5F5F5',
+  surface: '#FFFFFF',
+  text: '#1A1A1A',
+  textSecondary: '#666666',
+  border: '#E0E0E0',
+};
+
+export interface ListingCardProps {
+  listing: any;
+  onPress: () => void;
+  onFavorite: () => void;
+  isFavorited?: boolean;
+}
+
+const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFavorited = false }) => {
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('de-DE', {
+      style: 'currency',
+      currency: listing.currency || 'EUR',
+      minimumFractionDigits: 0,
+    }).format(price);
+  };
+
+  return (
+    <TouchableOpacity style={[styles.card, listing.featured && styles.cardFeatured]} onPress={onPress} activeOpacity={0.95}>
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: listing.images?.[0] || 'https://via.placeholder.com/300x200' }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        {listing.featured && (
+          <View style={styles.featuredBadge}>
+            <Text style={styles.featuredText}>TOP</Text>
+          </View>
+        )}
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={(e) => { e.stopPropagation(); onFavorite(); }}
+        >
+          <Ionicons
+            name={isFavorited ? 'heart' : 'heart-outline'}
+            size={22}
+            color={isFavorited ? '#E53935' : '#FFFFFF'}
+          />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.cardContent}>
+        <Text style={styles.price}>{formatPrice(listing.price)}</Text>
+        <Text style={styles.title} numberOfLines={2}>{listing.title}</Text>
+        <View style={styles.locationRow}>
+          <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
+          <Text style={styles.location} numberOfLines={1}>{listing.location}</Text>
+        </View>
+        {listing.subcategory && (
+          <View style={styles.subcategoryTag}>
+            <Text style={styles.subcategoryTagText}>{listing.subcategory.replace(/_/g, ' ')}</Text>
+          </View>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+});
+
+const styles = StyleSheet.create({
+  card: {
+    width: (SCREEN_WIDTH - 32) / 2,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    marginBottom: 12,
+    marginHorizontal: 4,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  cardFeatured: {
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+  },
+  imageContainer: {
+    position: 'relative',
+    width: '100%',
+    height: 140,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: COLORS.border,
+  },
+  featuredBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  featuredText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  favoriteButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardContent: {
+    padding: 12,
+  },
+  price: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginBottom: 4,
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.text,
+    marginBottom: 6,
+    lineHeight: 18,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  location: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    flex: 1,
+  },
+  subcategoryTag: {
+    marginTop: 6,
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+  },
+  subcategoryTagText: {
+    fontSize: 10,
+    color: COLORS.primary,
+    fontWeight: '500',
+    textTransform: 'capitalize',
+  },
+});
+
+export default ListingCard;
