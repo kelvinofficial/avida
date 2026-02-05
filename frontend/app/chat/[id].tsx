@@ -809,8 +809,6 @@ export default function ChatScreen() {
           created_at: new Date().toISOString(),
         },
       ]);
-        },
-      ]);
 
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (error) {
@@ -821,6 +819,126 @@ export default function ChatScreen() {
       setRecording(null);
       setIsRecording(false);
       setRecordingDuration(0);
+    }
+  };
+
+  // Image/Video Attachment Functions
+  const showAttachmentOptions = () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Take Photo', 'Choose from Library', 'Record Video'],
+          cancelButtonIndex: 0,
+        },
+        async (buttonIndex) => {
+          if (buttonIndex === 1) {
+            await pickImage('camera', 'image');
+          } else if (buttonIndex === 2) {
+            await pickImage('library', 'image');
+          } else if (buttonIndex === 3) {
+            await pickImage('camera', 'video');
+          }
+        }
+      );
+    } else {
+      Alert.alert(
+        'Add Attachment',
+        'Choose an option',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Take Photo', onPress: () => pickImage('camera', 'image') },
+          { text: 'Choose from Library', onPress: () => pickImage('library', 'image') },
+          { text: 'Record Video', onPress: () => pickImage('camera', 'video') },
+        ]
+      );
+    }
+  };
+
+  const pickImage = async (source: 'camera' | 'library', mediaType: 'image' | 'video') => {
+    try {
+      const permissionResult = source === 'camera'
+        ? await ImagePicker.requestCameraPermissionsAsync()
+        : await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (permissionResult.status !== 'granted') {
+        Alert.alert('Permission Required', `Please allow ${source} access to attach ${mediaType}s`);
+        return;
+      }
+
+      const options: ImagePicker.ImagePickerOptions = {
+        mediaTypes: mediaType === 'video' ? ['videos'] : ['images'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      };
+
+      const result = source === 'camera'
+        ? await ImagePicker.launchCameraAsync(options)
+        : await ImagePicker.launchImageLibraryAsync(options);
+
+      if (!result.canceled && result.assets[0]) {
+        await sendMediaMessage(result.assets[0], mediaType);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to pick media');
+    }
+  };
+
+  const sendMediaMessage = async (asset: ImagePicker.ImagePickerAsset, mediaType: 'image' | 'video') => {
+    setSending(true);
+    
+    try {
+      const formData = new FormData();
+      const fileName = asset.uri.split('/').pop() || `${mediaType}_${Date.now()}`;
+      const fileType = mediaType === 'image' ? 'image/jpeg' : 'video/mp4';
+      
+      formData.append('file', {
+        uri: asset.uri,
+        type: fileType,
+        name: fileName,
+      } as any);
+
+      try {
+        const uploadResult = await conversationsApi.uploadMedia(formData, mediaType);
+        
+        await conversationsApi.sendMessage(
+          id!,
+          mediaType === 'image' ? 'Photo' : 'Video',
+          mediaType,
+          uploadResult.media_url
+        );
+      } catch (uploadError) {
+        console.error('Upload failed:', uploadError);
+        // Send base64 as fallback
+        const base64 = asset.base64 || '';
+        await conversationsApi.sendMessage(
+          id!,
+          `📷 ${mediaType === 'image' ? 'Photo' : 'Video'}`,
+          'text'
+        );
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `temp_${Date.now()}`,
+          conversation_id: id!,
+          sender_id: user?.user_id || '',
+          content: mediaType === 'image' ? 'Photo' : 'Video',
+          message_type: mediaType,
+          media_url: asset.uri,
+          read: false,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+    } catch (error) {
+      console.error('Error sending media:', error);
+      Alert.alert('Error', 'Failed to send media');
+    } finally {
+      setSending(false);
     }
   };
 
