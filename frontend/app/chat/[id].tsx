@@ -12,15 +12,18 @@ import {
   Platform,
   Keyboard,
   Dimensions,
+  Animated,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { io, Socket } from 'socket.io-client';
+import { Audio } from 'expo-av';
 import { conversationsApi } from '../../src/utils/api';
 import { Conversation, Message } from '../../src/types';
 import { useAuthStore } from '../../src/store/authStore';
-import { format, isToday, isYesterday, isSameDay } from 'date-fns';
+import { format, isToday, isYesterday } from 'date-fns';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
@@ -38,6 +41,7 @@ const COLORS = {
   myMessage: '#DCF8C6',
   theirMessage: '#FFFFFF',
   inputBg: '#F0F0F0',
+  recording: '#E53935',
 };
 
 // Date separator component
@@ -78,16 +82,192 @@ const dateSeparatorStyles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
     marginHorizontal: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
   },
   text: {
     fontSize: 12,
     fontWeight: '500',
     color: COLORS.textSecondary,
+  },
+});
+
+// Typing Indicator Component
+const TypingIndicator = ({ userName }: { userName?: string }) => {
+  const [dot1] = useState(new Animated.Value(0.3));
+  const [dot2] = useState(new Animated.Value(0.3));
+  const [dot3] = useState(new Animated.Value(0.3));
+
+  useEffect(() => {
+    const animateDot = (dot: Animated.Value, delay: number) => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(dot, {
+            toValue: 1,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+          Animated.timing(dot, {
+            toValue: 0.3,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    };
+
+    animateDot(dot1, 0);
+    animateDot(dot2, 200);
+    animateDot(dot3, 400);
+  }, []);
+
+  return (
+    <View style={typingStyles.container}>
+      <View style={typingStyles.bubble}>
+        <Animated.View style={[typingStyles.dot, { opacity: dot1 }]} />
+        <Animated.View style={[typingStyles.dot, { opacity: dot2 }]} />
+        <Animated.View style={[typingStyles.dot, { opacity: dot3 }]} />
+      </View>
+      <Text style={typingStyles.text}>{userName || 'Someone'} is typing...</Text>
+    </View>
+  );
+};
+
+const typingStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 60,
+    paddingBottom: 8,
+    gap: 8,
+  },
+  bubble: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 18,
+    gap: 4,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.textSecondary,
+  },
+  text: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    fontStyle: 'italic',
+  },
+});
+
+// Voice Message Recording UI
+interface VoiceRecordingProps {
+  isRecording: boolean;
+  duration: number;
+  onCancel: () => void;
+  onSend: () => void;
+}
+
+const VoiceRecordingUI: React.FC<VoiceRecordingProps> = ({ isRecording, duration, onCancel, onSend }) => {
+  const [pulseAnim] = useState(new Animated.Value(1));
+
+  useEffect(() => {
+    if (isRecording) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.2,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [isRecording]);
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  if (!isRecording) return null;
+
+  return (
+    <View style={voiceStyles.container}>
+      <TouchableOpacity style={voiceStyles.cancelButton} onPress={onCancel}>
+        <Ionicons name="trash-outline" size={24} color={COLORS.recording} />
+      </TouchableOpacity>
+      
+      <View style={voiceStyles.recordingInfo}>
+        <Animated.View style={[voiceStyles.recordingDot, { transform: [{ scale: pulseAnim }] }]} />
+        <Text style={voiceStyles.durationText}>{formatDuration(duration)}</Text>
+        <Text style={voiceStyles.recordingLabel}>Recording...</Text>
+      </View>
+
+      <TouchableOpacity style={voiceStyles.sendButton} onPress={onSend}>
+        <Ionicons name="send" size={20} color="#fff" />
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const voiceStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  cancelButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFEBEE',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  recordingInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  recordingDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: COLORS.recording,
+  },
+  durationText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.text,
+    fontVariant: ['tabular-nums'],
+  },
+  recordingLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  sendButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
@@ -107,6 +287,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isMine, showAvat
       return '';
     }
   };
+
+  // Check if message is a voice message
+  const isVoiceMessage = message.content?.startsWith('[VOICE:');
 
   return (
     <View style={[bubbleStyles.row, isMine && bubbleStyles.rowMine]}>
@@ -128,9 +311,32 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isMine, showAvat
         isMine ? bubbleStyles.bubbleMine : bubbleStyles.bubbleTheirs,
         isMine ? bubbleStyles.bubbleTailMine : bubbleStyles.bubbleTailTheirs,
       ]}>
-        <Text style={[bubbleStyles.text, isMine && bubbleStyles.textMine]}>
-          {message.content}
-        </Text>
+        {isVoiceMessage ? (
+          <View style={bubbleStyles.voiceContent}>
+            <TouchableOpacity style={bubbleStyles.playButton}>
+              <Ionicons name="play" size={20} color={isMine ? COLORS.primary : COLORS.primary} />
+            </TouchableOpacity>
+            <View style={bubbleStyles.waveform}>
+              {[...Array(15)].map((_, i) => (
+                <View
+                  key={i}
+                  style={[
+                    bubbleStyles.waveformBar,
+                    { height: Math.random() * 16 + 8 },
+                    isMine && bubbleStyles.waveformBarMine,
+                  ]}
+                />
+              ))}
+            </View>
+            <Text style={[bubbleStyles.voiceDuration, isMine && bubbleStyles.voiceDurationMine]}>
+              {message.content?.match(/\[VOICE:(\d+)s\]/)?.[1] || '0'}s
+            </Text>
+          </View>
+        ) : (
+          <Text style={[bubbleStyles.text, isMine && bubbleStyles.textMine]}>
+            {message.content}
+          </Text>
+        )}
         <View style={bubbleStyles.footer}>
           <Text style={[bubbleStyles.time, isMine && bubbleStyles.timeMine]}>
             {formatTime(message.created_at)}
@@ -194,11 +400,6 @@ const bubbleStyles = StyleSheet.create({
   },
   bubbleTheirs: {
     backgroundColor: COLORS.theirMessage,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
   },
   bubbleTailMine: {
     borderBottomRightRadius: 4,
@@ -231,6 +432,42 @@ const bubbleStyles = StyleSheet.create({
   },
   readStatus: {
     marginLeft: 2,
+  },
+  // Voice message styles
+  voiceContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  playButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  waveform: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    flex: 1,
+  },
+  waveformBar: {
+    width: 3,
+    backgroundColor: COLORS.textSecondary,
+    borderRadius: 2,
+  },
+  waveformBarMine: {
+    backgroundColor: COLORS.primaryDark,
+  },
+  voiceDuration: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+  voiceDurationMine: {
+    color: 'rgba(0,0,0,0.5)',
   },
 });
 
@@ -306,10 +543,17 @@ export default function ChatScreen() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [typingUser, setTypingUser] = useState<string | undefined>(undefined);
+
+  // Voice recording states
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
 
   const flatListRef = useRef<FlatList>(null);
   const socketRef = useRef<Socket | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -324,6 +568,13 @@ export default function ChatScreen() {
       }
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
+      }
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+      }
+      // Stop any active recording
+      if (recording) {
+        recording.stopAndUnloadAsync();
       }
     };
   }, [id]);
@@ -346,13 +597,25 @@ export default function ChatScreen() {
       }
     });
 
-    socket.on('user_typing', (data: { user_id: string }) => {
+    // Real-time typing indicator from WebSocket
+    socket.on('user_typing', (data: { user_id: string; user_name?: string }) => {
       if (data.user_id !== user?.user_id) {
         setIsTyping(true);
+        setTypingUser(data.user_name);
         if (typingTimeoutRef.current) {
           clearTimeout(typingTimeoutRef.current);
         }
-        typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 2000);
+        typingTimeoutRef.current = setTimeout(() => {
+          setIsTyping(false);
+          setTypingUser(undefined);
+        }, 3000);
+      }
+    });
+
+    socket.on('user_stop_typing', (data: { user_id: string }) => {
+      if (data.user_id !== user?.user_id) {
+        setIsTyping(false);
+        setTypingUser(undefined);
       }
     });
 
@@ -380,6 +643,14 @@ export default function ChatScreen() {
     setNewMessage('');
     Keyboard.dismiss();
 
+    // Emit stop typing
+    if (socketRef.current) {
+      socketRef.current.emit('stop_typing', {
+        conversation_id: id,
+        user_id: user?.user_id,
+      });
+    }
+
     try {
       await conversationsApi.sendMessage(id!, content);
       setMessages((prev) => [
@@ -404,11 +675,121 @@ export default function ChatScreen() {
 
   const handleTyping = (text: string) => {
     setNewMessage(text);
-    if (socketRef.current && text) {
+    if (socketRef.current) {
+      // Emit typing event
       socketRef.current.emit('typing', {
         conversation_id: id,
         user_id: user?.user_id,
+        user_name: user?.name,
       });
+
+      // Clear previous timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Set timeout to stop typing indicator
+      typingTimeoutRef.current = setTimeout(() => {
+        if (socketRef.current) {
+          socketRef.current.emit('stop_typing', {
+            conversation_id: id,
+            user_id: user?.user_id,
+          });
+        }
+      }, 2000);
+    }
+  };
+
+  // Voice Recording Functions
+  const startRecording = async () => {
+    try {
+      const permission = await Audio.requestPermissionsAsync();
+      if (permission.status !== 'granted') {
+        Alert.alert('Permission Required', 'Please allow microphone access to record voice messages');
+        return;
+      }
+
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      const { recording: newRecording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+
+      setRecording(newRecording);
+      setIsRecording(true);
+      setRecordingDuration(0);
+
+      // Start duration timer
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingDuration((prev) => prev + 1);
+      }, 1000);
+    } catch (error) {
+      console.error('Failed to start recording:', error);
+      Alert.alert('Error', 'Failed to start recording');
+    }
+  };
+
+  const cancelRecording = async () => {
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current);
+    }
+
+    if (recording) {
+      try {
+        await recording.stopAndUnloadAsync();
+      } catch (error) {
+        console.error('Error stopping recording:', error);
+      }
+    }
+
+    setRecording(null);
+    setIsRecording(false);
+    setRecordingDuration(0);
+  };
+
+  const sendVoiceMessage = async () => {
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current);
+    }
+
+    if (!recording) return;
+
+    try {
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      const duration = recordingDuration;
+
+      // In a real app, you would upload the audio file and send a message with the audio URL
+      // For now, we'll simulate with a placeholder
+      const voiceContent = `[VOICE:${duration}s]`;
+
+      setSending(true);
+      await conversationsApi.sendMessage(id!, voiceContent);
+      
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `temp_${Date.now()}`,
+          conversation_id: id!,
+          sender_id: user?.user_id || '',
+          content: voiceContent,
+          read: false,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+    } catch (error) {
+      console.error('Error sending voice message:', error);
+      Alert.alert('Error', 'Failed to send voice message');
+    } finally {
+      setSending(false);
+      setRecording(null);
+      setIsRecording(false);
+      setRecordingDuration(0);
     }
   };
 
@@ -515,12 +896,9 @@ export default function ChatScreen() {
               {conversation?.other_user?.name || 'User'}
             </Text>
             {isTyping ? (
-              <Text style={styles.typingText}>typing...</Text>
+              <Text style={styles.typingStatusText}>typing...</Text>
             ) : (
-              <Text style={styles.headerStatus}>
-                <View style={styles.onlineDot} />
-                {' Online'}
-              </Text>
+              <Text style={styles.headerStatus}>Online</Text>
             )}
           </View>
         </TouchableOpacity>
@@ -593,60 +971,65 @@ export default function ChatScreen() {
         />
 
         {/* Typing Indicator */}
-        {isTyping && (
-          <View style={styles.typingIndicator}>
-            <View style={styles.typingBubble}>
-              <View style={[styles.typingDot, { opacity: 0.4 }]} />
-              <View style={[styles.typingDot, { opacity: 0.6 }]} />
-              <View style={[styles.typingDot, { opacity: 0.8 }]} />
-            </View>
-          </View>
-        )}
+        {isTyping && <TypingIndicator userName={typingUser || conversation?.other_user?.name} />}
 
         {/* Quick Replies */}
-        {messages.length === 0 && (
+        {messages.length === 0 && !isRecording && (
           <QuickReplies onSelect={(text) => setNewMessage(text)} />
         )}
 
+        {/* Voice Recording UI */}
+        <VoiceRecordingUI
+          isRecording={isRecording}
+          duration={recordingDuration}
+          onCancel={cancelRecording}
+          onSend={sendVoiceMessage}
+        />
+
         {/* Input Bar */}
-        <View style={styles.inputContainer}>
-          <TouchableOpacity style={styles.attachButton}>
-            <Ionicons name="add-circle" size={28} color={COLORS.primary} />
-          </TouchableOpacity>
-
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={styles.input}
-              placeholder="Type a message..."
-              placeholderTextColor={COLORS.textMuted}
-              value={newMessage}
-              onChangeText={handleTyping}
-              multiline
-              maxLength={1000}
-            />
-            <TouchableOpacity style={styles.emojiButton}>
-              <Ionicons name="happy-outline" size={22} color={COLORS.textSecondary} />
+        {!isRecording && (
+          <View style={styles.inputContainer}>
+            <TouchableOpacity style={styles.attachButton}>
+              <Ionicons name="add-circle" size={28} color={COLORS.primary} />
             </TouchableOpacity>
+
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                placeholder="Type a message..."
+                placeholderTextColor={COLORS.textMuted}
+                value={newMessage}
+                onChangeText={handleTyping}
+                multiline
+                maxLength={1000}
+              />
+              <TouchableOpacity style={styles.emojiButton}>
+                <Ionicons name="happy-outline" size={22} color={COLORS.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            {newMessage.trim() ? (
+              <TouchableOpacity
+                style={styles.sendButton}
+                onPress={handleSend}
+                disabled={sending}
+              >
+                {sending ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Ionicons name="send" size={18} color="#fff" />
+                )}
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.micButton}
+                onPress={startRecording}
+              >
+                <Ionicons name="mic" size={22} color={COLORS.primary} />
+              </TouchableOpacity>
+            )}
           </View>
-
-          {newMessage.trim() ? (
-            <TouchableOpacity
-              style={styles.sendButton}
-              onPress={handleSend}
-              disabled={sending}
-            >
-              {sending ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Ionicons name="send" size={18} color="#fff" />
-              )}
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity style={styles.micButton}>
-              <Ionicons name="mic" size={22} color={COLORS.primary} />
-            </TouchableOpacity>
-          )}
-        </View>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -714,17 +1097,8 @@ const styles = StyleSheet.create({
   headerStatus: {
     fontSize: 12,
     color: COLORS.textSecondary,
-    flexDirection: 'row',
-    alignItems: 'center',
   },
-  onlineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#4CAF50',
-    marginRight: 4,
-  },
-  typingText: {
+  typingStatusText: {
     fontSize: 12,
     color: COLORS.primary,
     fontStyle: 'italic',
@@ -815,32 +1189,6 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 4,
     textAlign: 'center',
-  },
-
-  // Typing Indicator
-  typingIndicator: {
-    paddingHorizontal: 60,
-    paddingBottom: 8,
-  },
-  typingBubble: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.surface,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 18,
-    alignSelf: 'flex-start',
-    gap: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  typingDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.textSecondary,
   },
 
   // Input
