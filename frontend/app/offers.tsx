@@ -139,23 +139,27 @@ const OfferCard = ({
 
       {/* Offer details */}
       <View style={styles.offerDetails}>
-        {/* Buyer info (for seller view) */}
-        {isSeller && (
-          <View style={styles.buyerRow}>
-            <Image 
-              source={{ uri: offer.buyer_picture || 'https://via.placeholder.com/40' }} 
-              style={styles.buyerAvatar} 
-            />
-            <View style={styles.buyerInfo}>
-              <Text style={styles.buyerName}>{offer.buyer_name}</Text>
-              <Text style={styles.offerTime}>{formatTimeAgo(offer.created_at)}</Text>
-            </View>
-            <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
-              <Ionicons name={statusConfig.icon as any} size={14} color={statusConfig.color} />
-              <Text style={[styles.statusText, { color: statusConfig.color }]}>{statusConfig.label}</Text>
-            </View>
+        {/* User info row - shows buyer for seller, seller for buyer */}
+        <View style={styles.buyerRow}>
+          <Image 
+            source={{ uri: isSeller 
+              ? (offer.buyer_picture || 'https://via.placeholder.com/40') 
+              : (offer.seller_picture || 'https://via.placeholder.com/40') 
+            }} 
+            style={styles.buyerAvatar} 
+          />
+          <View style={styles.buyerInfo}>
+            <Text style={styles.buyerLabel}>{isSeller ? 'From' : 'To'}</Text>
+            <Text style={styles.buyerName}>
+              {isSeller ? offer.buyer_name : (offer.seller_name || 'Seller')}
+            </Text>
+            <Text style={styles.offerTime}>{formatTimeAgo(offer.created_at)}</Text>
           </View>
-        )}
+          <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
+            <Ionicons name={statusConfig.icon as any} size={14} color={statusConfig.color} />
+            <Text style={[styles.statusText, { color: statusConfig.color }]}>{statusConfig.label}</Text>
+          </View>
+        </View>
 
         {/* Price comparison */}
         <View style={styles.priceComparison}>
