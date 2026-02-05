@@ -11,6 +11,7 @@ import {
   Alert,
   ScrollView,
   Modal,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,24 +19,33 @@ import { useRouter } from 'expo-router';
 import api from '../src/utils/api';
 import { useAuthStore } from '../src/store/authStore';
 import { formatDistanceToNow } from 'date-fns';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const COLORS = {
   primary: '#2E7D32',
   primaryLight: '#E8F5E9',
-  background: '#F5F5F5',
+  primaryDark: '#1B5E20',
+  background: '#F8F9FA',
   surface: '#FFFFFF',
-  text: '#212121',
-  textSecondary: '#757575',
-  border: '#E0E0E0',
-  error: '#D32F2F',
-  success: '#388E3C',
-  warning: '#F57C00',
-  info: '#1976D2',
-  unreadDot: '#4CAF50',
-  unreadBg: '#F1F8E9',
+  text: '#1A1A1A',
+  textSecondary: '#6B7280',
+  textLight: '#9CA3AF',
+  border: '#E5E7EB',
+  error: '#DC2626',
+  success: '#16A34A',
+  warning: '#F59E0B',
+  info: '#3B82F6',
+  unreadDot: '#22C55E',
+  unreadBg: '#F0FDF4',
+  messageColor: '#3B82F6',
+  followColor: '#8B5CF6',
+  reviewColor: '#F59E0B',
+  priceDropColor: '#10B981',
+  systemColor: '#6B7280',
 };
 
-// Type definitions
 type NotificationType = 'message' | 'follow' | 'review' | 'price_drop' | 'system';
 
 interface Notification {
@@ -57,154 +67,163 @@ interface Notification {
   meta?: Record<string, any>;
 }
 
-// Filter chips configuration
 const FILTER_CHIPS = [
   { key: 'all', label: 'All', icon: 'apps-outline' },
   { key: 'message', label: 'Messages', icon: 'chatbubble-outline' },
   { key: 'follow', label: 'Follows', icon: 'person-add-outline' },
   { key: 'review', label: 'Reviews', icon: 'star-outline' },
-  { key: 'price_drop', label: 'Price Drops', icon: 'pricetag-outline' },
-  { key: 'system', label: 'System', icon: 'shield-checkmark-outline' },
+  { key: 'price_drop', label: 'Deals', icon: 'pricetag-outline' },
+  { key: 'system', label: 'System', icon: 'shield-outline' },
 ];
 
-// Get icon for notification type
-const getNotificationIcon = (type: NotificationType) => {
+const getNotificationConfig = (type: NotificationType) => {
   switch (type) {
-    case 'message': return { name: 'chatbubble', color: COLORS.info };
-    case 'follow': return { name: 'person-add', color: COLORS.primary };
-    case 'review': return { name: 'star', color: '#FFB800' };
-    case 'price_drop': return { name: 'trending-down', color: COLORS.success };
-    case 'system': return { name: 'shield-checkmark', color: COLORS.textSecondary };
-    default: return { name: 'notifications', color: COLORS.textSecondary };
+    case 'message':
+      return { icon: 'chatbubble', color: COLORS.messageColor, gradient: ['#3B82F6', '#2563EB'] };
+    case 'follow':
+      return { icon: 'person-add', color: COLORS.followColor, gradient: ['#8B5CF6', '#7C3AED'] };
+    case 'review':
+      return { icon: 'star', color: COLORS.reviewColor, gradient: ['#F59E0B', '#D97706'] };
+    case 'price_drop':
+      return { icon: 'trending-down', color: COLORS.priceDropColor, gradient: ['#10B981', '#059669'] };
+    case 'system':
+      return { icon: 'shield-checkmark', color: COLORS.systemColor, gradient: ['#6B7280', '#4B5563'] };
+    default:
+      return { icon: 'notifications', color: COLORS.textSecondary, gradient: ['#9CA3AF', '#6B7280'] };
   }
 };
 
-// Get CTA label for notification type
-const getCtaLabel = (type: NotificationType) => {
-  switch (type) {
-    case 'message': return 'MESSAGE';
-    case 'follow': return 'VIEW';
-    case 'review': return 'REVIEW';
-    case 'price_drop': return 'VIEW';
-    case 'system': return 'VIEW';
-    default: return 'VIEW';
+const formatTimeAgo = (dateStr: string) => {
+  try {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m`;
+    if (diffHours < 24) return `${diffHours}h`;
+    if (diffDays < 7) return `${diffDays}d`;
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  } catch {
+    return '';
   }
 };
 
-// Get CTA color for notification type
-const getCtaColor = (type: NotificationType) => {
-  switch (type) {
-    case 'message': return COLORS.info;
-    case 'follow': return COLORS.primary;
-    case 'review': return '#FFB800';
-    case 'price_drop': return COLORS.success;
-    case 'system': return COLORS.textSecondary;
-    default: return COLORS.primary;
-  }
-};
-
-// Skeleton loader component
+// Skeleton loader
 const SkeletonItem = () => (
   <View style={styles.notificationCard}>
-    <View style={[styles.iconContainer, { backgroundColor: COLORS.border }]} />
-    <View style={styles.contentContainer}>
-      <View style={[styles.skeletonLine, { width: '60%', marginBottom: 8 }]} />
-      <View style={[styles.skeletonLine, { width: '90%', marginBottom: 4 }]} />
-      <View style={[styles.skeletonLine, { width: '40%' }]} />
+    <View style={[styles.skeletonCircle, { backgroundColor: COLORS.border }]} />
+    <View style={styles.skeletonContent}>
+      <View style={[styles.skeletonLine, { width: '50%' }]} />
+      <View style={[styles.skeletonLine, { width: '80%', marginTop: 8 }]} />
+      <View style={[styles.skeletonLine, { width: '30%', marginTop: 8 }]} />
     </View>
   </View>
 );
 
-// Notification item component
+// Notification Item Component
 const NotificationItem = ({
   notification,
   onPress,
-  onActionPress,
+  onSwipeAction,
 }: {
   notification: Notification;
   onPress: () => void;
-  onActionPress: () => void;
+  onSwipeAction?: () => void;
 }) => {
-  const icon = getNotificationIcon(notification.type);
-  const ctaLabel = notification.cta_label || getCtaLabel(notification.type);
-  const ctaColor = getCtaColor(notification.type);
-  
-  const timeAgo = formatDistanceToNow(new Date(notification.created_at), { addSuffix: false })
-    .replace('about ', '')
-    .replace('less than a minute', '1m')
-    .replace(' minutes', 'm')
-    .replace(' minute', 'm')
-    .replace(' hours', 'h')
-    .replace(' hour', 'h')
-    .replace(' days', 'd')
-    .replace(' day', 'd');
+  const config = getNotificationConfig(notification.type);
+  const timeAgo = formatTimeAgo(notification.created_at);
 
   return (
     <TouchableOpacity
-      style={[
-        styles.notificationCard,
-        !notification.read && styles.unreadCard,
-      ]}
+      style={[styles.notificationCard, !notification.read && styles.unreadCard]}
       onPress={onPress}
       activeOpacity={0.7}
     >
-      {/* Icon */}
-      {notification.image_url ? (
-        <Image source={{ uri: notification.image_url }} style={styles.thumbnailImage} />
-      ) : notification.actor_picture ? (
-        <Image source={{ uri: notification.actor_picture }} style={styles.actorImage} />
-      ) : (
-        <View style={[styles.iconContainer, { backgroundColor: `${icon.color}15` }]}>
-          <Ionicons name={icon.name as any} size={22} color={icon.color} />
-        </View>
-      )}
+      {/* Left Icon/Image */}
+      <View style={styles.avatarSection}>
+        {notification.actor_picture ? (
+          <Image source={{ uri: notification.actor_picture }} style={styles.actorAvatar} />
+        ) : notification.image_url ? (
+          <Image source={{ uri: notification.image_url }} style={styles.listingThumbnail} />
+        ) : (
+          <LinearGradient colors={config.gradient as any} style={styles.iconGradient}>
+            <Ionicons name={config.icon as any} size={20} color="#fff" />
+          </LinearGradient>
+        )}
+        {!notification.read && <View style={styles.unreadIndicator} />}
+      </View>
 
       {/* Content */}
-      <View style={styles.contentContainer}>
-        <Text style={styles.title} numberOfLines={1}>{notification.title}</Text>
-        <Text style={styles.body} numberOfLines={2}>{notification.body}</Text>
+      <View style={styles.contentSection}>
+        <View style={styles.headerRow}>
+          <Text style={[styles.notifTitle, !notification.read && styles.unreadTitle]} numberOfLines={1}>
+            {notification.title}
+          </Text>
+          <Text style={styles.timeText}>{timeAgo}</Text>
+        </View>
+        <Text style={styles.notifBody} numberOfLines={2}>
+          {notification.body}
+        </Text>
         
-        <View style={styles.metaRow}>
-          <Text style={styles.timeText}>{timeAgo} ago</Text>
+        {/* Action Button */}
+        <View style={styles.actionRow}>
+          <View style={[styles.typeBadge, { backgroundColor: `${config.color}15` }]}>
+            <Ionicons name={config.icon as any} size={12} color={config.color} />
+            <Text style={[styles.typeBadgeText, { color: config.color }]}>
+              {notification.type.replace('_', ' ')}
+            </Text>
+          </View>
           <TouchableOpacity
-            style={[styles.ctaButton, { backgroundColor: `${ctaColor}15` }]}
-            onPress={onActionPress}
+            style={[styles.ctaButton, { backgroundColor: config.color }]}
+            onPress={onPress}
           >
-            <Text style={[styles.ctaText, { color: ctaColor }]}>{ctaLabel}</Text>
+            <Text style={styles.ctaButtonText}>
+              {notification.cta_label || 'View'}
+            </Text>
+            <Ionicons name="chevron-forward" size={14} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* Unread indicator */}
-      {!notification.read && <View style={styles.unreadDot} />}
     </TouchableOpacity>
   );
 };
 
-// Empty state component
-const EmptyState = ({ type }: { type: 'all' | 'unread' }) => (
+// Empty State
+const EmptyState = ({ type, onSeedPress }: { type: string; onSeedPress?: () => void }) => (
   <View style={styles.emptyContainer}>
-    <View style={styles.emptyIcon}>
-      <Ionicons
-        name={type === 'unread' ? 'checkmark-circle-outline' : 'notifications-off-outline'}
-        size={64}
-        color={COLORS.textSecondary}
-      />
+    <View style={styles.emptyIconContainer}>
+      <LinearGradient colors={[COLORS.primaryLight, '#fff']} style={styles.emptyIconBg}>
+        <Ionicons
+          name={type === 'unread' ? 'checkmark-circle' : 'notifications-off'}
+          size={48}
+          color={COLORS.primary}
+        />
+      </LinearGradient>
     </View>
     <Text style={styles.emptyTitle}>
       {type === 'unread' ? "You're all caught up!" : 'No notifications yet'}
     </Text>
     <Text style={styles.emptySubtitle}>
       {type === 'unread'
-        ? 'You have no unread notifications'
-        : 'When you get notifications, they will appear here'}
+        ? 'All your notifications have been read'
+        : 'When you get notifications, they will show up here'}
     </Text>
+    {type !== 'unread' && onSeedPress && (
+      <TouchableOpacity style={styles.seedButton} onPress={onSeedPress}>
+        <Ionicons name="add-circle-outline" size={20} color={COLORS.primary} />
+        <Text style={styles.seedButtonText}>Load sample notifications</Text>
+      </TouchableOpacity>
+    )}
   </View>
 );
 
 export default function NotificationsScreen() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, token } = useAuthStore();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -213,13 +232,10 @@ export default function NotificationsScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const [typeCounts, setTypeCounts] = useState<Record<string, number>>({});
-  
-  // Filter state
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
   const [activeFilter, setActiveFilter] = useState('all');
-  
-  // Menu state
   const [showMenu, setShowMenu] = useState(false);
+  const [seeding, setSeeding] = useState(false);
 
   const fetchNotifications = useCallback(async (pageNum: number = 1, refresh: boolean = false) => {
     if (!isAuthenticated) {
@@ -228,18 +244,9 @@ export default function NotificationsScreen() {
     }
 
     try {
-      const params: Record<string, any> = {
-        page: pageNum,
-        limit: 20,
-      };
-      
-      if (activeTab === 'unread') {
-        params.unread_only = true;
-      }
-      
-      if (activeFilter !== 'all') {
-        params.notification_type = activeFilter;
-      }
+      const params: Record<string, any> = { page: pageNum, limit: 20 };
+      if (activeTab === 'unread') params.unread_only = true;
+      if (activeFilter !== 'all') params.notification_type = activeFilter;
 
       const response = await api.get('/notifications', { params });
       const data = response.data;
@@ -268,6 +275,7 @@ export default function NotificationsScreen() {
       router.replace('/login');
       return;
     }
+    setLoading(true);
     fetchNotifications(1, true);
   }, [isAuthenticated, activeTab, activeFilter]);
 
@@ -283,8 +291,20 @@ export default function NotificationsScreen() {
     }
   };
 
+  const handleSeedNotifications = async () => {
+    setSeeding(true);
+    try {
+      await api.post('/notifications/seed');
+      await fetchNotifications(1, true);
+      Alert.alert('Success', 'Sample notifications loaded!');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to load sample notifications');
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   const handleNotificationPress = async (notification: Notification) => {
-    // Mark as read
     if (!notification.read) {
       try {
         await api.put(`/notifications/${notification.id}/read`);
@@ -293,44 +313,30 @@ export default function NotificationsScreen() {
         );
         setUnreadCount(prev => Math.max(0, prev - 1));
       } catch (error) {
-        console.error('Error marking notification as read:', error);
+        console.error('Error marking as read:', error);
       }
     }
 
-    // Navigate to relevant screen
-    handleAction(notification);
-  };
-
-  const handleAction = (notification: Notification) => {
+    // Navigate based on type
     const route = notification.cta_route;
-    
     if (route) {
       router.push(route as any);
       return;
     }
 
-    // Default routes based on type
     switch (notification.type) {
       case 'message':
-        if (notification.meta?.thread_id) {
-          router.push(`/chat/${notification.meta.thread_id}`);
-        }
+        if (notification.meta?.thread_id) router.push(`/chat/${notification.meta.thread_id}`);
         break;
       case 'follow':
-        if (notification.actor_id) {
-          router.push(`/profile/public/${notification.actor_id}`);
-        }
-        break;
-      case 'review':
-        router.push('/profile/my-listings');
+        if (notification.actor_id) router.push(`/profile/public/${notification.actor_id}`);
         break;
       case 'price_drop':
-        if (notification.listing_id) {
-          router.push(`/listing/${notification.listing_id}`);
-        }
+      case 'review':
+        if (notification.listing_id) router.push(`/listing/${notification.listing_id}`);
         break;
       case 'system':
-        router.push('/settings');
+        router.push('/settings' as any);
         break;
     }
   };
@@ -340,63 +346,52 @@ export default function NotificationsScreen() {
       await api.put('/notifications/mark-all-read');
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       setUnreadCount(0);
-      setTypeCounts({});
       setShowMenu(false);
-      Alert.alert('Success', 'All notifications marked as read');
     } catch (error) {
-      Alert.alert('Error', 'Failed to mark notifications as read');
+      Alert.alert('Error', 'Failed to mark all as read');
     }
   };
 
-  const handleClearAll = async () => {
-    Alert.alert(
-      'Clear All Notifications',
-      'Are you sure you want to clear all notifications?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Clear All',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await api.delete('/notifications');
-              setNotifications([]);
-              setUnreadCount(0);
-              setTypeCounts({});
-              setShowMenu(false);
-            } catch (error) {
-              Alert.alert('Error', 'Failed to clear notifications');
-            }
-          },
+  const handleClearAll = () => {
+    Alert.alert('Clear All', 'Delete all notifications?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Clear',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await api.delete('/notifications');
+            setNotifications([]);
+            setUnreadCount(0);
+            setShowMenu(false);
+          } catch (error) {
+            Alert.alert('Error', 'Failed to clear notifications');
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const handleGoBack = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace('/');
-    }
+    router.canGoBack() ? router.back() : router.replace('/');
   };
 
   if (!isAuthenticated) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleGoBack}>
+          <TouchableOpacity onPress={handleGoBack} style={styles.headerBtn}>
             <Ionicons name="arrow-back" size={24} color={COLORS.text} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Notifications</Text>
-          <View style={{ width: 24 }} />
+          <View style={styles.headerBtn} />
         </View>
-        <View style={styles.loginRequired}>
-          <Ionicons name="notifications-off-outline" size={64} color={COLORS.textSecondary} />
-          <Text style={styles.loginTitle}>Sign in required</Text>
-          <Text style={styles.loginSubtitle}>Please sign in to view your notifications</Text>
-          <TouchableOpacity style={styles.signInBtn} onPress={() => router.push('/login')}>
-            <Text style={styles.signInBtnText}>Sign In</Text>
+        <View style={styles.authRequired}>
+          <Ionicons name="lock-closed-outline" size={64} color={COLORS.textSecondary} />
+          <Text style={styles.authTitle}>Sign in required</Text>
+          <Text style={styles.authSubtitle}>Sign in to view your notifications</Text>
+          <TouchableOpacity style={styles.signInButton} onPress={() => router.push('/login')}>
+            <Text style={styles.signInButtonText}>Sign In</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -407,17 +402,24 @@ export default function NotificationsScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleGoBack}>
+        <TouchableOpacity onPress={handleGoBack} style={styles.headerBtn}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Notifications</Text>
-        <TouchableOpacity onPress={() => setShowMenu(true)}>
-          <Ionicons name="ellipsis-vertical" size={24} color={COLORS.text} />
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle}>Notifications</Text>
+          {unreadCount > 0 && (
+            <View style={styles.headerBadge}>
+              <Text style={styles.headerBadgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
+            </View>
+          )}
+        </View>
+        <TouchableOpacity onPress={() => setShowMenu(true)} style={styles.headerBtn}>
+          <Ionicons name="ellipsis-horizontal" size={24} color={COLORS.text} />
         </TouchableOpacity>
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabsContainer}>
+      <View style={styles.tabBar}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'all' && styles.tabActive]}
           onPress={() => setActiveTab('all')}
@@ -429,7 +431,7 @@ export default function NotificationsScreen() {
           onPress={() => setActiveTab('unread')}
         >
           <Text style={[styles.tabText, activeTab === 'unread' && styles.tabTextActive]}>
-            Unread {unreadCount > 0 && `(${unreadCount > 99 ? '99+' : unreadCount})`}
+            Unread{unreadCount > 0 ? ` (${unreadCount})` : ''}
           </Text>
         </TouchableOpacity>
       </View>
@@ -438,29 +440,29 @@ export default function NotificationsScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.chipsContainer}
+        contentContainerStyle={styles.filterChips}
       >
         {FILTER_CHIPS.map(chip => {
           const count = chip.key === 'all' ? unreadCount : (typeCounts[chip.key] || 0);
           const isActive = activeFilter === chip.key;
-          
+
           return (
             <TouchableOpacity
               key={chip.key}
-              style={[styles.chip, isActive && styles.chipActive]}
+              style={[styles.filterChip, isActive && styles.filterChipActive]}
               onPress={() => setActiveFilter(chip.key)}
             >
               <Ionicons
                 name={chip.icon as any}
-                size={16}
-                color={isActive ? COLORS.primary : COLORS.textSecondary}
+                size={14}
+                color={isActive ? '#fff' : COLORS.textSecondary}
               />
-              <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
+              <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>
                 {chip.label}
               </Text>
-              {count > 0 && activeTab === 'all' && (
-                <View style={[styles.chipBadge, isActive && styles.chipBadgeActive]}>
-                  <Text style={[styles.chipBadgeText, isActive && styles.chipBadgeTextActive]}>
+              {count > 0 && (
+                <View style={[styles.filterChipBadge, isActive && styles.filterChipBadgeActive]}>
+                  <Text style={[styles.filterChipBadgeText, isActive && styles.filterChipBadgeTextActive]}>
                     {count > 99 ? '99+' : count}
                   </Text>
                 </View>
@@ -479,7 +481,7 @@ export default function NotificationsScreen() {
           contentContainerStyle={styles.listContent}
         />
       ) : notifications.length === 0 ? (
-        <EmptyState type={activeTab} />
+        <EmptyState type={activeTab} onSeedPress={handleSeedNotifications} />
       ) : (
         <FlatList
           data={notifications}
@@ -488,60 +490,67 @@ export default function NotificationsScreen() {
             <NotificationItem
               notification={item}
               onPress={() => handleNotificationPress(item)}
-              onActionPress={() => {
-                handleNotificationPress(item);
-              }}
             />
           )}
           contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              colors={[COLORS.primary]}
-              tintColor={COLORS.primary}
-            />
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={COLORS.primary} />
           }
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            loadingMore ? (
-              <ActivityIndicator style={{ padding: 20 }} color={COLORS.primary} />
-            ) : null
-          }
+          ListFooterComponent={loadingMore ? <ActivityIndicator style={{ padding: 20 }} color={COLORS.primary} /> : null}
+          showsVerticalScrollIndicator={false}
         />
       )}
 
+      {/* Seeding Indicator */}
+      {seeding && (
+        <View style={styles.seedingOverlay}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.seedingText}>Loading notifications...</Text>
+        </View>
+      )}
+
       {/* Menu Modal */}
-      <Modal
-        visible={showMenu}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowMenu(false)}
-      >
-        <TouchableOpacity
-          style={styles.menuOverlay}
-          activeOpacity={1}
-          onPress={() => setShowMenu(false)}
-        >
-          <View style={styles.menuContainer}>
+      <Modal visible={showMenu} transparent animationType="fade" onRequestClose={() => setShowMenu(false)}>
+        <TouchableOpacity style={styles.menuOverlay} activeOpacity={1} onPress={() => setShowMenu(false)}>
+          <View style={styles.menuSheet}>
+            <View style={styles.menuHandle} />
             <TouchableOpacity style={styles.menuItem} onPress={handleMarkAllRead}>
-              <Ionicons name="checkmark-done-outline" size={20} color={COLORS.text} />
-              <Text style={styles.menuItemText}>Mark all as read</Text>
+              <View style={[styles.menuIconBg, { backgroundColor: COLORS.primaryLight }]}>
+                <Ionicons name="checkmark-done" size={20} color={COLORS.primary} />
+              </View>
+              <View style={styles.menuItemContent}>
+                <Text style={styles.menuItemTitle}>Mark all as read</Text>
+                <Text style={styles.menuItemSubtitle}>Clear all unread indicators</Text>
+              </View>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => {
-                setShowMenu(false);
-                router.push('/settings/alerts');
-              }}
-            >
-              <Ionicons name="settings-outline" size={20} color={COLORS.text} />
-              <Text style={styles.menuItemText}>Notification settings</Text>
+            <TouchableOpacity style={styles.menuItem} onPress={() => { setShowMenu(false); router.push('/settings' as any); }}>
+              <View style={[styles.menuIconBg, { backgroundColor: '#F3F4F6' }]}>
+                <Ionicons name="settings-outline" size={20} color={COLORS.textSecondary} />
+              </View>
+              <View style={styles.menuItemContent}>
+                <Text style={styles.menuItemTitle}>Notification settings</Text>
+                <Text style={styles.menuItemSubtitle}>Manage your preferences</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuItem} onPress={handleSeedNotifications}>
+              <View style={[styles.menuIconBg, { backgroundColor: '#EFF6FF' }]}>
+                <Ionicons name="refresh" size={20} color={COLORS.info} />
+              </View>
+              <View style={styles.menuItemContent}>
+                <Text style={styles.menuItemTitle}>Load sample notifications</Text>
+                <Text style={styles.menuItemSubtitle}>For testing purposes</Text>
+              </View>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.menuItem, styles.menuItemDanger]} onPress={handleClearAll}>
-              <Ionicons name="trash-outline" size={20} color={COLORS.error} />
-              <Text style={[styles.menuItemText, { color: COLORS.error }]}>Clear all</Text>
+              <View style={[styles.menuIconBg, { backgroundColor: '#FEF2F2' }]}>
+                <Ionicons name="trash-outline" size={20} color={COLORS.error} />
+              </View>
+              <View style={styles.menuItemContent}>
+                <Text style={[styles.menuItemTitle, { color: COLORS.error }]}>Clear all notifications</Text>
+                <Text style={styles.menuItemSubtitle}>This cannot be undone</Text>
+              </View>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -552,193 +561,191 @@ export default function NotificationsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
+  
+  // Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
     paddingVertical: 12,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
+  headerBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  headerCenter: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
-  tabsContainer: {
+  headerBadge: {
+    backgroundColor: COLORS.error,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  headerBadgeText: { color: '#fff', fontSize: 12, fontWeight: '700' },
+
+  // Tabs
+  tabBar: {
     flexDirection: 'row',
     backgroundColor: COLORS.surface,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  tab: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginRight: 8,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
+  tab: { paddingVertical: 14, paddingHorizontal: 20, borderBottomWidth: 2, borderBottomColor: 'transparent' },
   tabActive: { borderBottomColor: COLORS.primary },
-  tabText: { fontSize: 14, fontWeight: '500', color: COLORS.textSecondary },
+  tabText: { fontSize: 15, fontWeight: '500', color: COLORS.textSecondary },
   tabTextActive: { color: COLORS.primary, fontWeight: '600' },
-  chipsContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: COLORS.surface,
-    gap: 8,
-  },
-  chip: {
+
+  // Filter Chips
+  filterChips: { paddingHorizontal: 16, paddingVertical: 12, backgroundColor: COLORS.surface, gap: 8 },
+  filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.background,
     marginRight: 8,
   },
-  chipActive: {
-    backgroundColor: COLORS.primaryLight,
-    borderColor: COLORS.primary,
-  },
-  chipText: { fontSize: 13, fontWeight: '500', color: COLORS.textSecondary },
-  chipTextActive: { color: COLORS.primary },
-  chipBadge: {
+  filterChipActive: { backgroundColor: COLORS.primary },
+  filterChipText: { fontSize: 13, fontWeight: '500', color: COLORS.textSecondary },
+  filterChipTextActive: { color: '#fff' },
+  filterChipBadge: {
     minWidth: 18,
     height: 18,
     borderRadius: 9,
     backgroundColor: COLORS.border,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 5,
+    paddingHorizontal: 4,
   },
-  chipBadgeActive: { backgroundColor: COLORS.primary },
-  chipBadgeText: { fontSize: 10, fontWeight: '700', color: COLORS.textSecondary },
-  chipBadgeTextActive: { color: '#fff' },
-  listContent: { padding: 16, paddingBottom: 100 },
+  filterChipBadgeActive: { backgroundColor: 'rgba(255,255,255,0.3)' },
+  filterChipBadgeText: { fontSize: 10, fontWeight: '700', color: COLORS.textSecondary },
+  filterChipBadgeTextActive: { color: '#fff' },
+
+  // List
+  listContent: { padding: 16 },
+
+  // Notification Card
   notificationCard: {
     flexDirection: 'row',
     backgroundColor: COLORS.surface,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 14,
     marginBottom: 10,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  unreadCard: {
-    backgroundColor: COLORS.unreadBg,
-    borderColor: COLORS.primaryLight,
+  unreadCard: { backgroundColor: COLORS.unreadBg, borderWidth: 1, borderColor: COLORS.primaryLight },
+  
+  avatarSection: { marginRight: 12, position: 'relative' },
+  actorAvatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: COLORS.border },
+  listingThumbnail: { width: 48, height: 48, borderRadius: 10, backgroundColor: COLORS.border },
+  iconGradient: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  unreadIndicator: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: COLORS.unreadDot,
+    borderWidth: 2,
+    borderColor: COLORS.surface,
   },
-  iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  thumbnailImage: {
-    width: 44,
-    height: 44,
-    borderRadius: 8,
-    marginRight: 12,
-  },
-  actorImage: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    marginRight: 12,
-  },
-  contentContainer: { flex: 1 },
-  title: { fontSize: 14, fontWeight: '600', color: COLORS.text, marginBottom: 4 },
-  body: { fontSize: 13, color: COLORS.textSecondary, lineHeight: 18, marginBottom: 8 },
-  metaRow: {
+
+  contentSection: { flex: 1 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  notifTitle: { fontSize: 14, fontWeight: '500', color: COLORS.text, flex: 1, marginRight: 8 },
+  unreadTitle: { fontWeight: '700' },
+  timeText: { fontSize: 12, color: COLORS.textLight },
+  notifBody: { fontSize: 13, color: COLORS.textSecondary, lineHeight: 18, marginBottom: 10 },
+
+  actionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  typeBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  typeBadgeText: { fontSize: 10, fontWeight: '600', textTransform: 'capitalize' },
+  ctaButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  timeText: { fontSize: 12, color: COLORS.textSecondary },
-  ctaButton: {
+    gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 14,
   },
-  ctaText: { fontSize: 11, fontWeight: '700' },
-  unreadDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: COLORS.unreadDot,
-    marginLeft: 8,
-    alignSelf: 'center',
-  },
-  skeletonLine: {
-    height: 12,
-    backgroundColor: COLORS.border,
-    borderRadius: 6,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-  },
-  emptyIcon: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: COLORS.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
+  ctaButtonText: { color: '#fff', fontSize: 11, fontWeight: '600' },
+
+  // Skeleton
+  skeletonCircle: { width: 48, height: 48, borderRadius: 24, backgroundColor: COLORS.border, marginRight: 12 },
+  skeletonContent: { flex: 1 },
+  skeletonLine: { height: 12, backgroundColor: COLORS.border, borderRadius: 6 },
+
+  // Empty State
+  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
+  emptyIconContainer: { marginBottom: 24 },
+  emptyIconBg: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center' },
   emptyTitle: { fontSize: 20, fontWeight: '700', color: COLORS.text, marginBottom: 8 },
-  emptySubtitle: { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center' },
-  loginRequired: {
-    flex: 1,
+  emptySubtitle: { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center', lineHeight: 20 },
+  seedButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: COLORS.primaryLight,
+  },
+  seedButtonText: { fontSize: 14, fontWeight: '600', color: COLORS.primary },
+
+  // Seeding Overlay
+  seedingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.9)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
-    gap: 12,
+    gap: 16,
   },
-  loginTitle: { fontSize: 20, fontWeight: '700', color: COLORS.text },
-  loginSubtitle: { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center' },
-  signInBtn: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  signInBtnText: { fontSize: 16, fontWeight: '600', color: '#fff' },
-  menuOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-end',
-  },
-  menuContainer: {
+  seedingText: { fontSize: 16, color: COLORS.textSecondary },
+
+  // Auth Required
+  authRequired: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32, gap: 12 },
+  authTitle: { fontSize: 20, fontWeight: '700', color: COLORS.text },
+  authSubtitle: { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center' },
+  signInButton: { backgroundColor: COLORS.primary, paddingVertical: 14, paddingHorizontal: 40, borderRadius: 12, marginTop: 8 },
+  signInButtonText: { fontSize: 16, fontWeight: '600', color: '#fff' },
+
+  // Menu
+  menuOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  menuSheet: {
     backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    marginTop: 60,
-    marginRight: 16,
-    minWidth: 200,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 40,
+  },
+  menuHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: COLORS.border,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 20,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    gap: 14,
   },
-  menuItemDanger: { borderBottomWidth: 0 },
-  menuItemText: { fontSize: 14, color: COLORS.text },
+  menuItemDanger: { marginTop: 8, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 22 },
+  menuIconBg: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  menuItemContent: { flex: 1 },
+  menuItemTitle: { fontSize: 15, fontWeight: '600', color: COLORS.text },
+  menuItemSubtitle: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
 });
