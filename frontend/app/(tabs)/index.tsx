@@ -285,6 +285,82 @@ export default function HomeScreen() {
     icon: string;
     subcategories: SubcategoryConfig[];
   } | null>(null);
+  const [subcategorySearch, setSubcategorySearch] = useState('');
+  const [subcategoryCounts, setSubcategoryCounts] = useState<Record<string, number>>({});
+  const [loadingCounts, setLoadingCounts] = useState(false);
+  const [recentSubcategories, setRecentSubcategories] = useState<Array<{
+    categoryId: string;
+    categoryName: string;
+    categoryIcon: string;
+    subcategoryId: string;
+    subcategoryName: string;
+    timestamp: number;
+  }>>([]);
+
+  // Filter subcategories based on search
+  const filteredSubcategories = useMemo(() => {
+    if (!selectedCategoryForSubcats) return [];
+    if (!subcategorySearch.trim()) return selectedCategoryForSubcats.subcategories;
+    return selectedCategoryForSubcats.subcategories.filter(sub =>
+      sub.name.toLowerCase().includes(subcategorySearch.toLowerCase())
+    );
+  }, [selectedCategoryForSubcats, subcategorySearch]);
+
+  // Load recent subcategories from storage
+  const loadRecentSubcategories = useCallback(async () => {
+    try {
+      const stored = await AsyncStorage.getItem(RECENT_SUBCATEGORIES_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Keep only last 10 and those from last 30 days
+        const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+        const recent = parsed
+          .filter((item: any) => item.timestamp > thirtyDaysAgo)
+          .slice(0, 10);
+        setRecentSubcategories(recent);
+      }
+    } catch (error) {
+      console.log('Error loading recent subcategories:', error);
+    }
+  }, []);
+
+  // Save a subcategory to recent history
+  const saveRecentSubcategory = useCallback(async (
+    categoryId: string,
+    categoryName: string,
+    categoryIcon: string,
+    subcategoryId: string,
+    subcategoryName: string
+  ) => {
+    try {
+      const newItem = {
+        categoryId,
+        categoryName,
+        categoryIcon,
+        subcategoryId,
+        subcategoryName,
+        timestamp: Date.now(),
+      };
+      
+      // Remove duplicates and add new item at the start
+      const updated = [
+        newItem,
+        ...recentSubcategories.filter(
+          item => !(item.categoryId === categoryId && item.subcategoryId === subcategoryId)
+        )
+      ].slice(0, 10);
+      
+      setRecentSubcategories(updated);
+      await AsyncStorage.setItem(RECENT_SUBCATEGORIES_KEY, JSON.stringify(updated));
+    } catch (error) {
+      console.log('Error saving recent subcategory:', error);
+    }
+  }, [recentSubcategories]);
+
+  // Load recent subcategories on mount
+  useEffect(() => {
+    loadRecentSubcategories();
+  }, []);
 
   // Popular cities list
   const POPULAR_CITIES = [
