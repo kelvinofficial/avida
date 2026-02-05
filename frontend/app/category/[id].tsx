@@ -1615,10 +1615,10 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   autoTitle: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
     color: COLORS.text,
-    lineHeight: 16,
+    lineHeight: 18,
     marginBottom: 4,
   },
   autoHighlights: {
