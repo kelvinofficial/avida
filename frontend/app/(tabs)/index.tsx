@@ -369,8 +369,31 @@ export default function HomeScreen() {
   };
 
   const handleCategoryPress = (categoryId: string) => {
-    // Navigate to category page for full browsing experience with subcategories
-    router.push(`/category/${categoryId}`);
+    // Get subcategories for this category
+    const category = FULL_CATEGORIES.find(c => c.id === categoryId);
+    if (!category) return;
+    
+    const subcategories = getSubcategories(categoryId);
+    
+    // Show subcategory selection modal
+    setSelectedCategoryForSubcats({
+      id: categoryId,
+      name: category.name,
+      icon: category.icon,
+      subcategories: subcategories,
+    });
+    setShowSubcategoryModal(true);
+  };
+
+  const handleSubcategorySelect = (categoryId: string, subcategoryId?: string) => {
+    setShowSubcategoryModal(false);
+    if (subcategoryId) {
+      // Navigate to category page with subcategory pre-selected
+      router.push(`/category/${categoryId}?subcategory=${subcategoryId}`);
+    } else {
+      // View all in category
+      router.push(`/category/${categoryId}`);
+    }
   };
 
   const handleCategoryLongPress = (categoryId: string) => {
