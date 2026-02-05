@@ -642,10 +642,12 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
       
       const endpoint = getApiEndpoint();
       const response = await api.get(endpoint, {
-        params: { limit: 10, include_sponsored: true }
+        params: { limit: 20, include_sponsored: true }
       });
       
-      setListings(response.data.listings || []);
+      const fetchedListings = response.data.listings || [];
+      setAllListings(fetchedListings);
+      setListings(fetchedListings);
     } catch (err) {
       console.error('Error fetching similar listings:', err);
       setError('Failed to load similar listings');
@@ -653,6 +655,37 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
       setLoading(false);
     }
   }, [propertyId, category]);
+
+  // Apply filters whenever filter state changes
+  useEffect(() => {
+    let filtered = [...allListings];
+    
+    if (filterSameCity) {
+      const firstCity = allListings[0]?.location?.city || allListings[0]?.city;
+      if (firstCity) {
+        filtered = filtered.filter(l => 
+          (l.location?.city || l.city) === firstCity
+        );
+      }
+    }
+    
+    if (filterSamePriceRange) {
+      const avgPrice = allListings.reduce((sum, l) => sum + (l.price || 0), 0) / allListings.length;
+      const minPrice = avgPrice * 0.7;
+      const maxPrice = avgPrice * 1.3;
+      filtered = filtered.filter(l => 
+        l.price && l.price >= minPrice && l.price <= maxPrice
+      );
+    }
+    
+    if (filterVerifiedOnly) {
+      filtered = filtered.filter(l => 
+        l.seller?.isVerified || l.seller?.verified || l.verification?.isVerified
+      );
+    }
+    
+    setListings(filtered);
+  }, [filterSameCity, filterSamePriceRange, filterVerifiedOnly, allListings]);
 
   useEffect(() => {
     if (propertyId) fetchSimilarListings();
