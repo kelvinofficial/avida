@@ -19,6 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { listingsApi, favoritesApi, conversationsApi, reportsApi, categoriesApi } from '../../src/utils/api';
+import api from '../../src/utils/api';
 import { Listing, Category } from '../../src/types';
 import { useAuthStore } from '../../src/store/authStore';
 import { formatDistanceToNow } from 'date-fns';
