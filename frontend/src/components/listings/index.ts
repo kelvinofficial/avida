@@ -1,3 +1,6 @@
-export { default as ListingCard, type ListingCardProps } from './ListingCard';
-export { default as PropertyListingCard } from './PropertyListingCard';
-export { default as AutoListingCard } from './AutoListingCard';
+import ListingCard from './ListingCard';
+import PropertyListingCard from './PropertyListingCard';
+import AutoListingCard from './AutoListingCard';
+
+export type { ListingCardProps } from './ListingCard';
+export { ListingCard, PropertyListingCard, AutoListingCard };
