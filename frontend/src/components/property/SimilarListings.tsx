@@ -859,12 +859,15 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginBottom: 8,
   },
+  headerContainer: {
+    paddingHorizontal: HORIZONTAL_PADDING,
+    marginBottom: 12,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: HORIZONTAL_PADDING,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -876,15 +879,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.text,
   },
-  seeAllBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
+  countText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
   },
-  seeAllText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.primary,
+  filtersRow: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
   },
   listContainer: {
     paddingHorizontal: HORIZONTAL_PADDING,
