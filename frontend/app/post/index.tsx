@@ -621,75 +621,106 @@ export default function PostListingScreen() {
     </View>
   );
 
-  // ============ STEP 1: CATEGORY SELECTION ============
-  const renderStep1 = () => (
-    <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.stepTitle}>What are you selling?</Text>
-      <Text style={styles.stepSubtitle}>Choose the category that best fits your item</Text>
-      
-      {categoriesLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading categories...</Text>
+  // ============ STEP 1: CATEGORY & SUBCATEGORY SELECTION ============
+  const renderStep1 = () => {
+    const selectedMainCategory = getMainCategory(selectedCategoryId);
+    
+    return (
+      <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
+        <Text style={styles.stepTitle}>What are you selling?</Text>
+        <Text style={styles.stepSubtitle}>Choose the category and subcategory for your item</Text>
+        
+        {/* Main Category Selection */}
+        <Text style={styles.sectionTitle}>Category <Text style={styles.required}>*</Text></Text>
+        <View style={styles.categoryGrid}>
+          {ALL_CATEGORIES.map((cat) => (
+            <TouchableOpacity
+              key={cat.id}
+              style={[
+                styles.categoryCard,
+                selectedCategoryId === cat.id && styles.categoryCardSelected,
+              ]}
+              onPress={() => {
+                setSelectedCategoryId(cat.id);
+                setSelectedSubcategoryId('');
+              }}
+            >
+              <View style={[
+                styles.categoryIconWrapper,
+                selectedCategoryId === cat.id && styles.categoryIconWrapperSelected,
+              ]}>
+                <Ionicons 
+                  name={cat.icon as any} 
+                  size={28} 
+                  color={selectedCategoryId === cat.id ? '#fff' : COLORS.primary} 
+                />
+              </View>
+              <Text style={[
+                styles.categoryName,
+                selectedCategoryId === cat.id && styles.categoryNameSelected,
+              ]} numberOfLines={2}>
+                {cat.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
-      ) : (
-      <View style={styles.categoryGrid}>
-        {allCategories.map((cat) => (
-          <TouchableOpacity
-            key={cat.id}
-            style={[
-              styles.categoryCard,
-              selectedCategoryId === cat.id && styles.categoryCardSelected,
-            ]}
-            onPress={() => {
-              setSelectedCategoryId(cat.id);
-              setSelectedSubcategory('');
-            }}
-          >
-            <View style={[
-              styles.categoryIconWrapper,
-              selectedCategoryId === cat.id && styles.categoryIconWrapperSelected,
-            ]}>
-              <Ionicons 
-                name={cat.icon as any} 
-                size={28} 
-                color={selectedCategoryId === cat.id ? '#fff' : COLORS.primary} 
-              />
-            </View>
-            <Text style={[
-              styles.categoryName,
-              selectedCategoryId === cat.id && styles.categoryNameSelected,
-            ]} numberOfLines={2}>
-              {cat.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      )}
+        {fieldErrors.category && (
+          <ValidationError message={fieldErrors.category} visible={true} />
+        )}
 
-      {/* Subcategory Selection */}
-      {selectedCategoryId && !categoriesLoading && (
-        <View style={styles.subcategorySection}>
-          <Text style={styles.sectionTitle}>Subcategory (Optional)</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {allCategories
-              .find((c) => c.id === selectedCategoryId)
-              ?.subcategories?.map((sub: string) => (
+        {/* Subcategory Selection - MANDATORY */}
+        {selectedCategoryId && availableSubcategories.length > 0 && (
+          <View style={styles.subcategorySection}>
+            <Text style={styles.sectionTitle}>
+              Subcategory <Text style={styles.required}>*</Text>
+            </Text>
+            <Text style={styles.sectionSubtitle}>
+              Select the specific type of {selectedMainCategory?.name.toLowerCase() || 'item'}
+            </Text>
+            
+            <View style={styles.subcategoryList}>
+              {availableSubcategories.map((sub) => (
                 <TouchableOpacity
-                  key={sub}
-                  style={[styles.chip, selectedSubcategory === sub && styles.chipSelected]}
-                  onPress={() => setSelectedSubcategory(selectedSubcategory === sub ? '' : sub)}
+                  key={sub.id}
+                  style={[
+                    styles.subcategoryItem,
+                    selectedSubcategoryId === sub.id && styles.subcategoryItemSelected,
+                    fieldErrors.subcategory && !selectedSubcategoryId && styles.subcategoryItemError,
+                  ]}
+                  onPress={() => setSelectedSubcategoryId(sub.id)}
                 >
-                  <Text style={[styles.chipText, selectedSubcategory === sub && styles.chipTextSelected]}>
-                    {sub}
-                  </Text>
+                  <View style={styles.subcategoryContent}>
+                    <Text style={[
+                      styles.subcategoryText,
+                      selectedSubcategoryId === sub.id && styles.subcategoryTextSelected,
+                    ]}>
+                      {sub.name}
+                    </Text>
+                  </View>
+                  {selectedSubcategoryId === sub.id && (
+                    <Ionicons name="checkmark-circle" size={22} color={COLORS.primary} />
+                  )}
                 </TouchableOpacity>
               ))}
-          </ScrollView>
-        </View>
-      )}
-    </ScrollView>
-  );
+            </View>
+            {fieldErrors.subcategory && (
+              <ValidationError message={fieldErrors.subcategory} visible={true} />
+            )}
+          </View>
+        )}
+        
+        {/* Selected Summary */}
+        {selectedCategoryId && selectedSubcategoryId && currentSubcategoryConfig && (
+          <View style={styles.selectionSummary}>
+            <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
+            <Text style={styles.selectionSummaryText}>
+              {selectedMainCategory?.name} → {currentSubcategoryConfig.name}
+            </Text>
+          </View>
+        )}
+      </ScrollView>
+    );
+  };
 
   // ============ STEP 2: IMAGES ============
   const renderStep2 = () => (
