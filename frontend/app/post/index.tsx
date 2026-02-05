@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,68 +11,223 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Switch,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { theme } from '../../src/utils/theme';
 import { listingsApi, categoriesApi } from '../../src/utils/api';
-import { Category } from '../../src/types';
 import { useAuthStore } from '../../src/store/authStore';
+import { getCategoryConfig, AttributeField, CategoryAttributeConfig } from '../../src/config/categoryAttributes';
+import { safeGoBack } from '../../src/utils/navigation';
 
-const CONDITIONS = ['New', 'Like New', 'Good', 'Fair', 'For Parts'];
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const MAX_IMAGES = 10;
 
+const COLORS = {
+  primary: '#2E7D32',
+  primaryLight: '#E8F5E9',
+  background: '#F5F5F5',
+  surface: '#FFFFFF',
+  text: '#1A1A1A',
+  textSecondary: '#666666',
+  border: '#E0E0E0',
+  error: '#D32F2F',
+  success: '#2E7D32',
+};
+
+const SELLER_TYPES = ['Individual', 'Dealer', 'Company'];
+const CONTACT_METHODS = ['Chat', 'WhatsApp', 'Phone Call', 'All'];
+
+// ============ DYNAMIC FIELD RENDERER ============
+interface DynamicFieldProps {
+  field: AttributeField;
+  value: any;
+  onChange: (value: any) => void;
+  parentValues?: Record<string, any>;
+}
+
+const DynamicField: React.FC<DynamicFieldProps> = ({ field, value, onChange, parentValues }) => {
+  // Get options for dependent dropdowns
+  const options = useMemo(() => {
+    if (field.dependsOn && field.dependentOptions && parentValues) {
+      const parentValue = parentValues[field.dependsOn];
+      return field.dependentOptions[parentValue] || field.dependentOptions['Other'] || [];
+    }
+    return field.options || [];
+  }, [field, parentValues]);
+
+  // Disable if dependent on a field that isn't set
+  const isDisabled = field.dependsOn && parentValues && !parentValues[field.dependsOn];
+
+  switch (field.type) {
+    case 'text':
+      return (
+        <View style={styles.fieldContainer}>
+          <Text style={styles.fieldLabel}>
+            {field.label} {field.required && <Text style={styles.required}>*</Text>}
+          </Text>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={[styles.input, isDisabled && styles.inputDisabled]}
+              placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+              placeholderTextColor={COLORS.textSecondary}
+              value={value || ''}
+              onChangeText={onChange}
+              editable={!isDisabled}
+            />
+            {field.suffix && <Text style={styles.inputSuffix}>{field.suffix}</Text>}
+          </View>
+        </View>
+      );
+
+    case 'number':
+      return (
+        <View style={styles.fieldContainer}>
+          <Text style={styles.fieldLabel}>
+            {field.label} {field.required && <Text style={styles.required}>*</Text>}
+          </Text>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={[styles.input, isDisabled && styles.inputDisabled]}
+              placeholder={field.placeholder || '0'}
+              placeholderTextColor={COLORS.textSecondary}
+              value={value?.toString() || ''}
+              onChangeText={(text) => onChange(text ? parseInt(text.replace(/\D/g, '')) : '')}
+              keyboardType="numeric"
+              editable={!isDisabled}
+            />
+            {field.suffix && <Text style={styles.inputSuffix}>{field.suffix}</Text>}
+          </View>
+        </View>
+      );
+
+    case 'select':
+      return (
+        <View style={styles.fieldContainer}>
+          <Text style={styles.fieldLabel}>
+            {field.label} {field.required && <Text style={styles.required}>*</Text>}
+          </Text>
+          {isDisabled ? (
+            <View style={[styles.input, styles.inputDisabled]}>
+              <Text style={styles.disabledText}>Select {field.dependsOn} first</Text>
+            </View>
+          ) : (
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.chipContainer}
+            >
+              {options.map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  style={[styles.chip, value === option && styles.chipSelected]}
+                  onPress={() => onChange(value === option ? '' : option)}
+                >
+                  <Text style={[styles.chipText, value === option && styles.chipTextSelected]}>
+                    {option}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+        </View>
+      );
+
+    case 'toggle':
+      return (
+        <View style={styles.fieldContainer}>
+          <View style={styles.toggleRow}>
+            <Text style={styles.fieldLabel}>{field.label}</Text>
+            <Switch
+              value={!!value}
+              onValueChange={onChange}
+              trackColor={{ false: COLORS.border, true: COLORS.primaryLight }}
+              thumbColor={value ? COLORS.primary : '#f4f4f4'}
+            />
+          </View>
+        </View>
+      );
+
+    default:
+      return null;
+  }
+};
+
+// ============ MAIN COMPONENT ============
 export default function PostListingScreen() {
   const { category: categoryId } = useLocalSearchParams<{ category: string }>();
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [category, setCategory] = useState<Category | null>(null);
+  const [categoryConfig, setCategoryConfig] = useState<CategoryAttributeConfig | null>(null);
+  const [allCategories, setAllCategories] = useState<any[]>([]);
   
-  // Form state
+  // Step 1: Category Selection
+  const [selectedCategoryId, setSelectedCategoryId] = useState(categoryId || '');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
+  
+  // Step 2: Images
   const [images, setImages] = useState<string[]>([]);
+  
+  // Step 3: Base Details
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [condition, setCondition] = useState('');
+  
+  // Step 4: Category-Specific Attributes
+  const [attributes, setAttributes] = useState<Record<string, any>>({});
+  
+  // Step 5: Price & Contact
   const [price, setPrice] = useState('');
   const [negotiable, setNegotiable] = useState(true);
-  const [condition, setCondition] = useState<string | null>(null);
+  const [currency, setCurrency] = useState('EUR');
   const [location, setLocation] = useState('');
-  const [subcategory, setSubcategory] = useState<string | null>(null);
-  const [attributes, setAttributes] = useState<Record<string, string>>({});
+  const [sellerType, setSellerType] = useState('Individual');
+  const [contactMethod, setContactMethod] = useState('Chat');
 
+  // Initialize
   useEffect(() => {
     if (!isAuthenticated) {
       router.replace('/login');
       return;
     }
-    
-    if (categoryId) {
-      fetchCategory();
-    }
-  }, [categoryId, isAuthenticated]);
+    fetchCategories();
+  }, [isAuthenticated]);
 
-  const fetchCategory = async () => {
+  useEffect(() => {
+    if (selectedCategoryId) {
+      const config = getCategoryConfig(selectedCategoryId);
+      setCategoryConfig(config);
+      // Reset attributes when category changes
+      setAttributes({});
+      setCondition('');
+    }
+  }, [selectedCategoryId]);
+
+  const fetchCategories = async () => {
     try {
-      const data = await categoriesApi.getOne(categoryId!);
-      setCategory(data);
+      const cats = await categoriesApi.getAll();
+      setAllCategories(cats);
     } catch (error) {
-      console.error('Error fetching category:', error);
+      console.error('Error fetching categories:', error);
     }
   };
 
+  // ============ IMAGE HANDLING ============
   const pickImage = async () => {
     if (images.length >= MAX_IMAGES) {
-      Alert.alert('Limit Reached', `You can only upload ${MAX_IMAGES} images`);
+      Alert.alert('Limit Reached', `Maximum ${MAX_IMAGES} images allowed`);
       return;
     }
 
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Please allow access to your photos');
+      Alert.alert('Permission Required', 'Please allow access to photos');
       return;
     }
 
@@ -93,24 +248,22 @@ export default function PostListingScreen() {
     setImages(images.filter((_, i) => i !== index));
   };
 
-  const moveImage = (fromIndex: number, direction: 'left' | 'right') => {
-    const toIndex = direction === 'left' ? fromIndex - 1 : fromIndex + 1;
-    if (toIndex < 0 || toIndex >= images.length) return;
-    
-    const newImages = [...images];
-    [newImages[fromIndex], newImages[toIndex]] = [newImages[toIndex], newImages[fromIndex]];
-    setImages(newImages);
-  };
-
-  const validateStep = () => {
+  // ============ VALIDATION ============
+  const validateStep = useCallback(() => {
     switch (step) {
       case 1:
+        if (!selectedCategoryId) {
+          Alert.alert('Required', 'Please select a category');
+          return false;
+        }
+        return true;
+      case 2:
         if (images.length === 0) {
           Alert.alert('Required', 'Please add at least one photo');
           return false;
         }
         return true;
-      case 2:
+      case 3:
         if (!title.trim()) {
           Alert.alert('Required', 'Please enter a title');
           return false;
@@ -120,13 +273,22 @@ export default function PostListingScreen() {
           return false;
         }
         return true;
-      case 3:
+      case 4:
+        // Validate required attributes
+        if (categoryConfig) {
+          for (const field of categoryConfig.attributes) {
+            if (field.required && !attributes[field.name]) {
+              Alert.alert('Required', `Please fill in ${field.label}`);
+              return false;
+            }
+          }
+        }
+        return true;
+      case 5:
         if (!price.trim() || isNaN(parseFloat(price))) {
           Alert.alert('Required', 'Please enter a valid price');
           return false;
         }
-        return true;
-      case 4:
         if (!location.trim()) {
           Alert.alert('Required', 'Please enter your location');
           return false;
@@ -135,7 +297,7 @@ export default function PostListingScreen() {
       default:
         return true;
     }
-  };
+  }, [step, selectedCategoryId, images, title, description, categoryConfig, attributes, price, location]);
 
   const nextStep = () => {
     if (validateStep()) {
@@ -147,10 +309,11 @@ export default function PostListingScreen() {
     if (step > 1) {
       setStep(step - 1);
     } else {
-      router.back();
+      safeGoBack(router);
     }
   };
 
+  // ============ SUBMIT ============
   const handlePublish = async () => {
     if (!validateStep()) return;
 
@@ -160,13 +323,18 @@ export default function PostListingScreen() {
         title: title.trim(),
         description: description.trim(),
         price: parseFloat(price),
+        currency,
         negotiable,
-        category_id: categoryId!,
-        subcategory: subcategory || undefined,
+        category_id: selectedCategoryId,
+        subcategory: selectedSubcategory || undefined,
         condition: condition || undefined,
         images,
         location: location.trim(),
-        attributes,
+        attributes: {
+          ...attributes,
+          seller_type: sellerType,
+          contact_method: contactMethod,
+        },
       };
 
       await listingsApi.create(listingData);
@@ -181,307 +349,423 @@ export default function PostListingScreen() {
     }
   };
 
+  // ============ STEP INDICATOR ============
+  const TOTAL_STEPS = 6;
+  const stepLabels = ['Category', 'Photos', 'Details', 'Attributes', 'Price', 'Review'];
+
   const renderStepIndicator = () => (
     <View style={styles.stepIndicator}>
-      {[1, 2, 3, 4, 5].map((s) => (
-        <View key={s} style={styles.stepRow}>
-          <View
-            style={[
+      {stepLabels.map((label, i) => {
+        const s = i + 1;
+        return (
+          <View key={s} style={styles.stepItem}>
+            <View style={[
               styles.stepDot,
               s === step && styles.stepDotActive,
               s < step && styles.stepDotComplete,
-            ]}
-          >
-            {s < step ? (
-              <Ionicons name="checkmark" size={14} color={theme.colors.onPrimary} />
-            ) : (
-              <Text style={[styles.stepNumber, s === step && styles.stepNumberActive]}>
-                {s}
-              </Text>
-            )}
-          </View>
-          {s < 5 && <View style={[styles.stepLine, s < step && styles.stepLineComplete]} />}
-        </View>
-      ))}
-    </View>
-  );
-
-  const renderStep1 = () => (
-    <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>Add Photos</Text>
-      <Text style={styles.stepSubtitle}>Add up to {MAX_IMAGES} photos. First photo will be the cover.</Text>
-      
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imagesContainer}>
-        <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
-          <Ionicons name="camera-outline" size={32} color={theme.colors.primary} />
-          <Text style={styles.addImageText}>Add Photo</Text>
-          <Text style={styles.imageCount}>{images.length}/{MAX_IMAGES}</Text>
-        </TouchableOpacity>
-        
-        {images.map((img, index) => (
-          <View key={index} style={styles.imageWrapper}>
-            <Image source={{ uri: img }} style={styles.imagePreview} />
-            {index === 0 && (
-              <View style={styles.coverBadge}>
-                <Text style={styles.coverText}>Cover</Text>
-              </View>
-            )}
-            <TouchableOpacity
-              style={styles.removeImageButton}
-              onPress={() => removeImage(index)}
-            >
-              <Ionicons name="close" size={16} color={theme.colors.onError} />
-            </TouchableOpacity>
-            <View style={styles.imageActions}>
-              {index > 0 && (
-                <TouchableOpacity
-                  style={styles.moveButton}
-                  onPress={() => moveImage(index, 'left')}
-                >
-                  <Ionicons name="chevron-back" size={16} color={theme.colors.onSurface} />
-                </TouchableOpacity>
-              )}
-              {index < images.length - 1 && (
-                <TouchableOpacity
-                  style={styles.moveButton}
-                  onPress={() => moveImage(index, 'right')}
-                >
-                  <Ionicons name="chevron-forward" size={16} color={theme.colors.onSurface} />
-                </TouchableOpacity>
+            ]}>
+              {s < step ? (
+                <Ionicons name="checkmark" size={14} color="#fff" />
+              ) : (
+                <Text style={[styles.stepNumber, (s === step || s < step) && styles.stepNumberActive]}>
+                  {s}
+                </Text>
               )}
             </View>
+            {s < TOTAL_STEPS && (
+              <View style={[styles.stepLine, s < step && styles.stepLineComplete]} />
+            )}
           </View>
-        ))}
-      </ScrollView>
+        );
+      })}
     </View>
   );
 
-  const renderStep2 = () => (
-    <ScrollView style={styles.stepContent}>
-      <Text style={styles.stepTitle}>Listing Details</Text>
+  // ============ STEP 1: CATEGORY SELECTION ============
+  const renderStep1 = () => (
+    <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
+      <Text style={styles.stepTitle}>What are you selling?</Text>
+      <Text style={styles.stepSubtitle}>Choose the category that best fits your item</Text>
       
-      <Text style={styles.inputLabel}>Title *</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="What are you selling?"
-        placeholderTextColor={theme.colors.onSurfaceVariant}
-        value={title}
-        onChangeText={setTitle}
-        maxLength={100}
-      />
-      <Text style={styles.charCount}>{title.length}/100</Text>
-      
-      <Text style={styles.inputLabel}>Description *</Text>
-      <TextInput
-        style={[styles.input, styles.textArea]}
-        placeholder="Describe your item in detail..."
-        placeholderTextColor={theme.colors.onSurfaceVariant}
-        value={description}
-        onChangeText={setDescription}
-        multiline
-        numberOfLines={5}
-        maxLength={2000}
-      />
-      <Text style={styles.charCount}>{description.length}/2000</Text>
-      
-      <Text style={styles.inputLabel}>Condition</Text>
-      <View style={styles.conditionRow}>
-        {CONDITIONS.map((c) => (
+      <View style={styles.categoryGrid}>
+        {allCategories.map((cat) => (
           <TouchableOpacity
-            key={c}
-            style={[styles.conditionChip, condition === c && styles.conditionChipSelected]}
-            onPress={() => setCondition(condition === c ? null : c)}
+            key={cat.id}
+            style={[
+              styles.categoryCard,
+              selectedCategoryId === cat.id && styles.categoryCardSelected,
+            ]}
+            onPress={() => {
+              setSelectedCategoryId(cat.id);
+              setSelectedSubcategory('');
+            }}
           >
-            <Text style={[styles.conditionText, condition === c && styles.conditionTextSelected]}>
-              {c}
+            <View style={[
+              styles.categoryIconWrapper,
+              selectedCategoryId === cat.id && styles.categoryIconWrapperSelected,
+            ]}>
+              <Ionicons 
+                name={cat.icon as any} 
+                size={28} 
+                color={selectedCategoryId === cat.id ? '#fff' : COLORS.primary} 
+              />
+            </View>
+            <Text style={[
+              styles.categoryName,
+              selectedCategoryId === cat.id && styles.categoryNameSelected,
+            ]} numberOfLines={2}>
+              {cat.name}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {category?.subcategories && category.subcategories.length > 0 && (
-        <>
-          <Text style={styles.inputLabel}>Subcategory</Text>
+      {/* Subcategory Selection */}
+      {selectedCategoryId && (
+        <View style={styles.subcategorySection}>
+          <Text style={styles.sectionTitle}>Subcategory (Optional)</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {category.subcategories.map((sub) => (
+            {allCategories
+              .find((c) => c.id === selectedCategoryId)
+              ?.subcategories?.map((sub: string) => (
+                <TouchableOpacity
+                  key={sub}
+                  style={[styles.chip, selectedSubcategory === sub && styles.chipSelected]}
+                  onPress={() => setSelectedSubcategory(selectedSubcategory === sub ? '' : sub)}
+                >
+                  <Text style={[styles.chipText, selectedSubcategory === sub && styles.chipTextSelected]}>
+                    {sub}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+          </ScrollView>
+        </View>
+      )}
+    </ScrollView>
+  );
+
+  // ============ STEP 2: IMAGES ============
+  const renderStep2 = () => (
+    <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
+      <Text style={styles.stepTitle}>Add Photos</Text>
+      <Text style={styles.stepSubtitle}>
+        Upload up to {MAX_IMAGES} photos. First photo will be the cover image.
+      </Text>
+
+      <View style={styles.imagesGrid}>
+        <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
+          <Ionicons name="camera-outline" size={36} color={COLORS.primary} />
+          <Text style={styles.addImageText}>Add Photo</Text>
+          <Text style={styles.imageCountText}>{images.length}/{MAX_IMAGES}</Text>
+        </TouchableOpacity>
+
+        {images.map((img, index) => (
+          <View key={index} style={styles.imageWrapper}>
+            <Image source={{ uri: img }} style={styles.imagePreview} />
+            {index === 0 && (
+              <View style={styles.coverBadge}>
+                <Text style={styles.coverBadgeText}>Cover</Text>
+              </View>
+            )}
+            <TouchableOpacity
+              style={styles.removeImageBtn}
+              onPress={() => removeImage(index)}
+            >
+              <Ionicons name="close" size={16} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.photoTips}>
+        <Text style={styles.tipsTitle}>📸 Photo Tips</Text>
+        <Text style={styles.tipText}>• Use good lighting</Text>
+        <Text style={styles.tipText}>• Show the item from multiple angles</Text>
+        <Text style={styles.tipText}>• Include any defects or damage</Text>
+      </View>
+    </ScrollView>
+  );
+
+  // ============ STEP 3: BASE DETAILS ============
+  const renderStep3 = () => (
+    <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
+      <Text style={styles.stepTitle}>Listing Details</Text>
+      <Text style={styles.stepSubtitle}>Describe what you're selling</Text>
+
+      <View style={styles.fieldContainer}>
+        <Text style={styles.fieldLabel}>Title <Text style={styles.required}>*</Text></Text>
+        <TextInput
+          style={styles.input}
+          placeholder="What are you selling?"
+          placeholderTextColor={COLORS.textSecondary}
+          value={title}
+          onChangeText={setTitle}
+          maxLength={100}
+        />
+        <Text style={styles.charCount}>{title.length}/100</Text>
+      </View>
+
+      <View style={styles.fieldContainer}>
+        <Text style={styles.fieldLabel}>Description <Text style={styles.required}>*</Text></Text>
+        <TextInput
+          style={[styles.input, styles.textArea]}
+          placeholder="Include details like condition, features, reason for selling..."
+          placeholderTextColor={COLORS.textSecondary}
+          value={description}
+          onChangeText={setDescription}
+          multiline
+          numberOfLines={6}
+          maxLength={2000}
+          textAlignVertical="top"
+        />
+        <Text style={styles.charCount}>{description.length}/2000</Text>
+      </View>
+
+      {/* Condition - Category specific options */}
+      {categoryConfig?.conditionOptions && (
+        <View style={styles.fieldContainer}>
+          <Text style={styles.fieldLabel}>Condition</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {categoryConfig.conditionOptions.map((c) => (
               <TouchableOpacity
-                key={sub}
-                style={[styles.conditionChip, subcategory === sub && styles.conditionChipSelected]}
-                onPress={() => setSubcategory(subcategory === sub ? null : sub)}
+                key={c}
+                style={[styles.chip, condition === c && styles.chipSelected]}
+                onPress={() => setCondition(condition === c ? '' : c)}
               >
-                <Text style={[styles.conditionText, subcategory === sub && styles.conditionTextSelected]}>
-                  {sub}
+                <Text style={[styles.chipText, condition === c && styles.chipTextSelected]}>
+                  {c}
                 </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
-        </>
+        </View>
       )}
     </ScrollView>
   );
 
-  const renderStep3 = () => (
-    <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>Set Your Price</Text>
-      
-      <View style={styles.priceInputContainer}>
-        <Text style={styles.currencySymbol}>$</Text>
+  // ============ STEP 4: DYNAMIC ATTRIBUTES ============
+  const renderStep4 = () => (
+    <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
+      <Text style={styles.stepTitle}>
+        {categoryConfig?.name || 'Category'} Details
+      </Text>
+      <Text style={styles.stepSubtitle}>
+        Fill in the specific details for your {categoryConfig?.name?.toLowerCase() || 'item'}
+      </Text>
+
+      {categoryConfig?.attributes.map((field) => (
+        <DynamicField
+          key={field.name}
+          field={field}
+          value={attributes[field.name]}
+          onChange={(value) => setAttributes({ ...attributes, [field.name]: value })}
+          parentValues={attributes}
+        />
+      ))}
+
+      {(!categoryConfig || categoryConfig.attributes.length === 0) && (
+        <View style={styles.noAttributesMessage}>
+          <Ionicons name="information-circle-outline" size={48} color={COLORS.textSecondary} />
+          <Text style={styles.noAttributesText}>
+            No additional details required for this category.
+          </Text>
+          <Text style={styles.noAttributesSubtext}>
+            You can proceed to the next step.
+          </Text>
+        </View>
+      )}
+    </ScrollView>
+  );
+
+  // ============ STEP 5: PRICE & CONTACT ============
+  const renderStep5 = () => (
+    <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
+      <Text style={styles.stepTitle}>Price & Contact</Text>
+      <Text style={styles.stepSubtitle}>Set your price and how buyers can reach you</Text>
+
+      <View style={styles.priceSection}>
+        <Text style={styles.fieldLabel}>Price <Text style={styles.required}>*</Text></Text>
+        <View style={styles.priceInputContainer}>
+          <Text style={styles.currencySymbol}>€</Text>
+          <TextInput
+            style={styles.priceInput}
+            placeholder="0"
+            placeholderTextColor={COLORS.textSecondary}
+            value={price}
+            onChangeText={setPrice}
+            keyboardType="numeric"
+          />
+        </View>
+        
+        <View style={styles.toggleRow}>
+          <Text style={styles.toggleLabel}>Price is negotiable (VB)</Text>
+          <Switch
+            value={negotiable}
+            onValueChange={setNegotiable}
+            trackColor={{ false: COLORS.border, true: COLORS.primaryLight }}
+            thumbColor={negotiable ? COLORS.primary : '#f4f4f4'}
+          />
+        </View>
+      </View>
+
+      <View style={styles.fieldContainer}>
+        <Text style={styles.fieldLabel}>Location <Text style={styles.required}>*</Text></Text>
         <TextInput
-          style={styles.priceInput}
-          placeholder="0"
-          placeholderTextColor={theme.colors.onSurfaceVariant}
-          value={price}
-          onChangeText={setPrice}
-          keyboardType="numeric"
+          style={styles.input}
+          placeholder="City, State (e.g., Berlin, Germany)"
+          placeholderTextColor={COLORS.textSecondary}
+          value={location}
+          onChangeText={setLocation}
         />
       </View>
-      
-      <TouchableOpacity
-        style={styles.negotiableToggle}
-        onPress={() => setNegotiable(!negotiable)}
-      >
-        <View style={[styles.checkbox, negotiable && styles.checkboxChecked]}>
-          {negotiable && <Ionicons name="checkmark" size={16} color={theme.colors.onPrimary} />}
-        </View>
-        <Text style={styles.negotiableText}>Price is negotiable (VB)</Text>
-      </TouchableOpacity>
-    </View>
-  );
 
-  const renderStep4 = () => (
-    <ScrollView style={styles.stepContent}>
-      <Text style={styles.stepTitle}>Location & Details</Text>
-      
-      <Text style={styles.inputLabel}>Location *</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="City, State or Neighborhood"
-        placeholderTextColor={theme.colors.onSurfaceVariant}
-        value={location}
-        onChangeText={setLocation}
-      />
-      
-      {category?.attributes && category.attributes.length > 0 && (
-        <>
-          <Text style={styles.sectionTitle}>Additional Details</Text>
-          {category.attributes.map((attr) => (
-            <View key={attr.name}>
-              <Text style={styles.inputLabel}>
-                {attr.name.replace(/_/g, ' ')}
-                {attr.required && ' *'}
+      <View style={styles.fieldContainer}>
+        <Text style={styles.fieldLabel}>Seller Type</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {SELLER_TYPES.map((type) => (
+            <TouchableOpacity
+              key={type}
+              style={[styles.chip, sellerType === type && styles.chipSelected]}
+              onPress={() => setSellerType(type)}
+            >
+              <Text style={[styles.chipText, sellerType === type && styles.chipTextSelected]}>
+                {type}
               </Text>
-              {attr.type === 'select' && attr.options ? (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  {attr.options.map((option) => (
-                    <TouchableOpacity
-                      key={option}
-                      style={[
-                        styles.conditionChip,
-                        attributes[attr.name] === option && styles.conditionChipSelected,
-                      ]}
-                      onPress={() => setAttributes({
-                        ...attributes,
-                        [attr.name]: attributes[attr.name] === option ? '' : option,
-                      })}
-                    >
-                      <Text
-                        style={[
-                          styles.conditionText,
-                          attributes[attr.name] === option && styles.conditionTextSelected,
-                        ]}
-                      >
-                        {option}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              ) : (
-                <TextInput
-                  style={styles.input}
-                  placeholder={`Enter ${attr.name.replace(/_/g, ' ')}`}
-                  placeholderTextColor={theme.colors.onSurfaceVariant}
-                  value={attributes[attr.name] || ''}
-                  onChangeText={(text) => setAttributes({ ...attributes, [attr.name]: text })}
-                  keyboardType={attr.type === 'number' ? 'numeric' : 'default'}
-                />
-              )}
-            </View>
+            </TouchableOpacity>
           ))}
-        </>
-      )}
+        </ScrollView>
+      </View>
+
+      <View style={styles.fieldContainer}>
+        <Text style={styles.fieldLabel}>Preferred Contact Method</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {CONTACT_METHODS.map((method) => (
+            <TouchableOpacity
+              key={method}
+              style={[styles.chip, contactMethod === method && styles.chipSelected]}
+              onPress={() => setContactMethod(method)}
+            >
+              <Text style={[styles.chipText, contactMethod === method && styles.chipTextSelected]}>
+                {method}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
     </ScrollView>
   );
 
-  const renderStep5 = () => (
-    <ScrollView style={styles.stepContent}>
+  // ============ STEP 6: REVIEW ============
+  const renderStep6 = () => (
+    <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
       <Text style={styles.stepTitle}>Review Your Listing</Text>
-      
+      <Text style={styles.stepSubtitle}>Make sure everything looks good before publishing</Text>
+
       <View style={styles.previewCard}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {images.map((img, index) => (
-            <Image key={index} source={{ uri: img }} style={styles.previewImage} />
+        {/* Images */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.previewImages}>
+          {images.map((img, i) => (
+            <Image key={i} source={{ uri: img }} style={styles.previewImage} />
           ))}
         </ScrollView>
-        
+
+        {/* Main Info */}
         <View style={styles.previewContent}>
           <Text style={styles.previewPrice}>
-            ${parseFloat(price || '0').toLocaleString()}
+            €{parseFloat(price || '0').toLocaleString()}
             {negotiable && <Text style={styles.previewVB}> VB</Text>}
           </Text>
           <Text style={styles.previewTitle}>{title}</Text>
+          
           <View style={styles.previewMeta}>
-            <Ionicons name="location-outline" size={14} color={theme.colors.onSurfaceVariant} />
+            <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
             <Text style={styles.previewLocation}>{location}</Text>
           </View>
+
           {condition && (
             <View style={styles.previewBadge}>
               <Text style={styles.previewBadgeText}>{condition}</Text>
             </View>
           )}
         </View>
-        
-        <View style={styles.previewDescription}>
-          <Text style={styles.previewDescTitle}>Description</Text>
-          <Text style={styles.previewDescText}>{description}</Text>
+
+        {/* Description */}
+        <View style={styles.previewSection}>
+          <Text style={styles.previewSectionTitle}>Description</Text>
+          <Text style={styles.previewDescription}>{description}</Text>
+        </View>
+
+        {/* Attributes */}
+        {Object.keys(attributes).length > 0 && (
+          <View style={styles.previewSection}>
+            <Text style={styles.previewSectionTitle}>Details</Text>
+            <View style={styles.attributesList}>
+              {Object.entries(attributes).map(([key, value]) => {
+                if (!value) return null;
+                const field = categoryConfig?.attributes.find(a => a.name === key);
+                return (
+                  <View key={key} style={styles.attributeRow}>
+                    <Text style={styles.attributeLabel}>
+                      {field?.label || key.replace(/_/g, ' ')}
+                    </Text>
+                    <Text style={styles.attributeValue}>
+                      {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
+        {/* Seller Info */}
+        <View style={styles.previewSection}>
+          <Text style={styles.previewSectionTitle}>Seller Information</Text>
+          <Text style={styles.previewSellerType}>{sellerType} • {contactMethod}</Text>
         </View>
       </View>
     </ScrollView>
   );
 
-  const TOTAL_STEPS = 5;
-
+  // ============ RENDER ============
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={prevStep}>
-          <Ionicons name="arrow-back" size={24} color={theme.colors.onSurface} />
+          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
-          {category?.name || 'Post Ad'}
+          {step === 1 ? 'New Listing' : stepLabels[step - 1]}
         </Text>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.cancelText}>Cancel</Text>
         </TouchableOpacity>
       </View>
 
+      {/* Step Indicator */}
       {renderStepIndicator()}
 
+      {/* Content */}
       <KeyboardAvoidingView
         style={styles.content}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={100}
       >
         {step === 1 && renderStep1()}
         {step === 2 && renderStep2()}
         {step === 3 && renderStep3()}
         {step === 4 && renderStep4()}
         {step === 5 && renderStep5()}
+        {step === 6 && renderStep6()}
       </KeyboardAvoidingView>
 
+      {/* Footer */}
       <View style={styles.footer}>
         {step < TOTAL_STEPS ? (
           <TouchableOpacity style={styles.nextButton} onPress={nextStep}>
             <Text style={styles.nextButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color={theme.colors.onPrimary} />
+            <Ionicons name="arrow-forward" size={20} color="#fff" />
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -490,10 +774,10 @@ export default function PostListingScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color={theme.colors.onPrimary} />
+              <ActivityIndicator color="#fff" />
             ) : (
               <>
-                <Ionicons name="checkmark-circle" size={20} color={theme.colors.onPrimary} />
+                <Ionicons name="checkmark-circle" size={20} color="#fff" />
                 <Text style={styles.publishButtonText}>Publish Listing</Text>
               </>
             )}
@@ -507,14 +791,17 @@ export default function PostListingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
   backButton: {
     width: 44,
@@ -522,22 +809,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
-    color: theme.colors.onSurface,
+    color: COLORS.text,
   },
   cancelText: {
-    color: theme.colors.error,
+    color: COLORS.error,
     fontWeight: '500',
+    fontSize: 15,
   },
   stepIndicator: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    backgroundColor: COLORS.surface,
   },
-  stepRow: {
+  stepItem: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -545,81 +834,139 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: theme.colors.surfaceVariant,
+    backgroundColor: COLORS.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
   stepDotActive: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: COLORS.primary,
   },
   stepDotComplete: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: COLORS.primary,
   },
   stepNumber: {
     fontSize: 12,
     fontWeight: '600',
-    color: theme.colors.onSurfaceVariant,
+    color: COLORS.textSecondary,
   },
   stepNumberActive: {
-    color: theme.colors.onPrimary,
+    color: '#fff',
   },
   stepLine: {
-    width: 32,
+    width: 24,
     height: 2,
-    backgroundColor: theme.colors.outlineVariant,
+    backgroundColor: COLORS.border,
     marginHorizontal: 4,
   },
   stepLineComplete: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: COLORS.primary,
   },
   content: {
     flex: 1,
   },
   stepContent: {
     flex: 1,
-    padding: theme.spacing.md,
+    padding: 16,
   },
   stepTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
-    color: theme.colors.onSurface,
-    marginBottom: theme.spacing.xs,
+    color: COLORS.text,
+    marginBottom: 4,
   },
   stepSubtitle: {
-    fontSize: 14,
-    color: theme.colors.onSurfaceVariant,
-    marginBottom: theme.spacing.lg,
+    fontSize: 15,
+    color: COLORS.textSecondary,
+    marginBottom: 24,
+    lineHeight: 20,
   },
-  imagesContainer: {
+  // Category Grid
+  categoryGrid: {
     flexDirection: 'row',
-    marginTop: theme.spacing.md,
+    flexWrap: 'wrap',
+    marginHorizontal: -6,
   },
-  addImageButton: {
-    width: 120,
-    height: 120,
-    borderRadius: theme.borderRadius.md,
+  categoryCard: {
+    width: (SCREEN_WIDTH - 56) / 3,
+    alignItems: 'center',
+    padding: 12,
+    marginHorizontal: 4,
+    marginBottom: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
     borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: theme.colors.primary,
+    borderColor: 'transparent',
+  },
+  categoryCardSelected: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryLight,
+  },
+  categoryIconWrapper: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: COLORS.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: theme.spacing.sm,
+    marginBottom: 8,
+  },
+  categoryIconWrapperSelected: {
+    backgroundColor: COLORS.primary,
+  },
+  categoryName: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: COLORS.text,
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  categoryNameSelected: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  subcategorySection: {
+    marginTop: 24,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 12,
+  },
+  // Images
+  imagesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -6,
+  },
+  addImageButton: {
+    width: (SCREEN_WIDTH - 56) / 3,
+    height: (SCREEN_WIDTH - 56) / 3,
+    margin: 6,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   addImageText: {
     fontSize: 13,
-    color: theme.colors.primary,
-    marginTop: theme.spacing.xs,
+    color: COLORS.primary,
+    fontWeight: '500',
+    marginTop: 4,
   },
-  imageCount: {
+  imageCountText: {
     fontSize: 11,
-    color: theme.colors.onSurfaceVariant,
+    color: COLORS.textSecondary,
     marginTop: 2,
   },
   imageWrapper: {
-    width: 120,
-    height: 120,
-    marginRight: theme.spacing.sm,
-    borderRadius: theme.borderRadius.md,
+    width: (SCREEN_WIDTH - 56) / 3,
+    height: (SCREEN_WIDTH - 56) / 3,
+    margin: 6,
+    borderRadius: 12,
     overflow: 'hidden',
     position: 'relative',
   },
@@ -631,149 +978,180 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 4,
     left: 4,
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: theme.spacing.sm,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: theme.borderRadius.sm,
+    borderRadius: 4,
   },
-  coverText: {
-    color: theme.colors.onPrimary,
+  coverBadgeText: {
+    color: '#fff',
     fontSize: 10,
     fontWeight: '600',
   },
-  removeImageButton: {
+  removeImageBtn: {
     position: 'absolute',
     top: 4,
     right: 4,
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: theme.colors.error,
+    backgroundColor: COLORS.error,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  imageActions: {
-    position: 'absolute',
-    bottom: 4,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: theme.spacing.xs,
+  photoTips: {
+    marginTop: 24,
+    padding: 16,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
   },
-  moveButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  inputLabel: {
+  tipsTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: theme.colors.onSurface,
-    marginTop: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
-    textTransform: 'capitalize',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  tipText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+  },
+  // Fields
+  fieldContainer: {
+    marginBottom: 20,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  required: {
+    color: COLORS.error,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   input: {
-    backgroundColor: theme.colors.surfaceVariant,
-    borderRadius: theme.borderRadius.md,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm + 4,
+    flex: 1,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 15,
-    color: theme.colors.onSurface,
+    color: COLORS.text,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  inputDisabled: {
+    backgroundColor: COLORS.background,
+    color: COLORS.textSecondary,
+  },
+  inputSuffix: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+  disabledText: {
+    color: COLORS.textSecondary,
+    fontStyle: 'italic',
   },
   textArea: {
-    minHeight: 120,
+    minHeight: 140,
     textAlignVertical: 'top',
   },
   charCount: {
     fontSize: 11,
-    color: theme.colors.onSurfaceVariant,
+    color: COLORS.textSecondary,
     textAlign: 'right',
     marginTop: 4,
   },
-  conditionRow: {
+  chipContainer: {
+    paddingVertical: 4,
+  },
+  chip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: COLORS.surface,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  chipSelected: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  chipText: {
+    fontSize: 14,
+    color: COLORS.text,
+  },
+  chipTextSelected: {
+    color: '#fff',
+    fontWeight: '500',
+  },
+  toggleRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.sm,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
   },
-  conditionChip: {
-    backgroundColor: theme.colors.surfaceVariant,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.full,
-    marginRight: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
+  toggleLabel: {
+    fontSize: 15,
+    color: COLORS.text,
   },
-  conditionChipSelected: {
-    backgroundColor: theme.colors.primary,
-  },
-  conditionText: {
-    fontSize: 13,
-    color: theme.colors.onSurface,
-  },
-  conditionTextSelected: {
-    color: theme.colors.onPrimary,
+  // Price
+  priceSection: {
+    marginBottom: 24,
   },
   priceInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surfaceVariant,
-    borderRadius: theme.borderRadius.lg,
-    paddingHorizontal: theme.spacing.lg,
-    marginTop: theme.spacing.lg,
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   currencySymbol: {
     fontSize: 32,
     fontWeight: '700',
-    color: theme.colors.primary,
+    color: COLORS.primary,
   },
   priceInput: {
     flex: 1,
     fontSize: 48,
     fontWeight: '700',
-    color: theme.colors.onSurface,
-    paddingVertical: theme.spacing.lg,
-    marginLeft: theme.spacing.sm,
+    color: COLORS.text,
+    paddingVertical: 20,
+    marginLeft: 8,
   },
-  negotiableToggle: {
-    flexDirection: 'row',
+  // No attributes message
+  noAttributesMessage: {
     alignItems: 'center',
-    marginTop: theme.spacing.xl,
+    paddingVertical: 40,
   },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: theme.colors.outline,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: theme.spacing.sm,
-  },
-  checkboxChecked: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  negotiableText: {
-    fontSize: 15,
-    color: theme.colors.onSurface,
-  },
-  sectionTitle: {
+  noAttributesText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.onSurface,
-    marginTop: theme.spacing.xl,
-    marginBottom: theme.spacing.sm,
+    color: COLORS.text,
+    marginTop: 16,
+    textAlign: 'center',
   },
+  noAttributesSubtext: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginTop: 4,
+  },
+  // Preview
   previewCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
     overflow: 'hidden',
-    ...theme.elevation.level2,
+  },
+  previewImages: {
+    flexDirection: 'row',
   },
   previewImage: {
     width: 200,
@@ -781,80 +1159,102 @@ const styles = StyleSheet.create({
     marginRight: 2,
   },
   previewContent: {
-    padding: theme.spacing.md,
+    padding: 16,
   },
   previewPrice: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
-    color: theme.colors.primary,
+    color: COLORS.primary,
   },
   previewVB: {
     fontSize: 14,
     fontWeight: '400',
-    color: theme.colors.onSurfaceVariant,
+    color: COLORS.textSecondary,
   },
   previewTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: theme.colors.onSurface,
-    marginTop: theme.spacing.xs,
+    color: COLORS.text,
+    marginTop: 4,
   },
   previewMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: theme.spacing.sm,
+    marginTop: 8,
     gap: 4,
   },
   previewLocation: {
-    fontSize: 13,
-    color: theme.colors.onSurfaceVariant,
+    fontSize: 14,
+    color: COLORS.textSecondary,
   },
   previewBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: theme.colors.primaryContainer,
-    paddingHorizontal: theme.spacing.sm,
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: theme.borderRadius.sm,
-    marginTop: theme.spacing.sm,
+    borderRadius: 6,
+    marginTop: 8,
   },
   previewBadgeText: {
     fontSize: 12,
-    color: theme.colors.primary,
+    color: COLORS.primary,
     fontWeight: '500',
   },
-  previewDescription: {
-    padding: theme.spacing.md,
+  previewSection: {
+    padding: 16,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.outlineVariant,
+    borderTopColor: COLORS.border,
   },
-  previewDescTitle: {
+  previewSectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: theme.colors.onSurface,
-    marginBottom: theme.spacing.xs,
+    color: COLORS.text,
+    marginBottom: 8,
   },
-  previewDescText: {
+  previewDescription: {
     fontSize: 14,
-    color: theme.colors.onSurfaceVariant,
+    color: COLORS.textSecondary,
     lineHeight: 20,
   },
+  attributesList: {
+    gap: 8,
+  },
+  attributeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  attributeLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textTransform: 'capitalize',
+  },
+  attributeValue: {
+    fontSize: 14,
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+  previewSellerType: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  // Footer
   footer: {
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
+    padding: 16,
+    backgroundColor: COLORS.surface,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.outlineVariant,
+    borderTopColor: COLORS.border,
   },
   nextButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.primary,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.full,
-    gap: theme.spacing.sm,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 16,
+    borderRadius: 28,
+    gap: 8,
   },
   nextButtonText: {
-    color: theme.colors.onPrimary,
+    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -862,16 +1262,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.primary,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.full,
-    gap: theme.spacing.sm,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 16,
+    borderRadius: 28,
+    gap: 8,
   },
   publishButtonDisabled: {
     opacity: 0.7,
   },
   publishButtonText: {
-    color: theme.colors.onPrimary,
+    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
