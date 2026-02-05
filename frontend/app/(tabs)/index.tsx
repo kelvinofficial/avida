@@ -588,25 +588,38 @@ export default function HomeScreen() {
     </View>
   );
 
-  // Calculate card width dynamically
-  const dynamicCardWidth = Math.floor((windowWidth - HORIZONTAL_PADDING * 2 - COLUMN_GAP) / 2);
+  // Calculate dynamic columns based on screen size
+  const { isMobile, isTablet, isDesktop, width: screenWidth } = useResponsive();
+  
+  // Calculate columns: 2 for mobile, 3 for tablet, 4-5 for desktop
+  const getColumns = () => {
+    if (isMobile) return 2;
+    if (isTablet) return 3;
+    if (screenWidth >= 1400) return 5;
+    return 4;
+  };
+  
+  const columns = getColumns();
+  const gridPadding = isDesktop ? 24 : isTablet ? 20 : HORIZONTAL_PADDING;
+  const gridGap = isDesktop ? 20 : isTablet ? 16 : COLUMN_GAP;
+  const dynamicCardWidth = Math.floor((screenWidth - gridPadding * 2 - gridGap * (columns - 1)) / columns);
 
-  // Render listings as grid manually - using row pairs for guaranteed 2-column layout
+  // Render listings as grid manually - responsive columns
   const renderGrid = () => {
     if (listings.length === 0) {
       return <EmptyState icon="pricetags-outline" title="No listings yet" description="Be the first to post an ad in your area!" />;
     }
     
-    // Create pairs of listings for 2-column layout
+    // Create rows based on column count
     const rows = [];
-    for (let i = 0; i < listings.length; i += 2) {
-      rows.push(listings.slice(i, i + 2));
+    for (let i = 0; i < listings.length; i += columns) {
+      rows.push(listings.slice(i, i + columns));
     }
     
     return (
-      <View>
+      <View style={{ paddingHorizontal: gridPadding }}>
         {rows.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.gridRow}>
+          <View key={rowIndex} style={[styles.gridRow, { gap: gridGap }]}>
             {row.map((item) => (
               <View key={item.id} style={[styles.cardWrapper, { width: dynamicCardWidth }]}>
                 <ListingCard
