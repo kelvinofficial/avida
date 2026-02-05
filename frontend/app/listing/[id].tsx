@@ -733,18 +733,16 @@ export default function ListingDetailScreen() {
           </TouchableOpacity>
           
           {/* Category Badge in Header */}
-          {listing.category_id && (
-            <View style={styles.headerCategoryBadge}>
-              <Ionicons 
-                name={getCategoryIcon(listing.category_id) as any} 
-                size={14} 
-                color={COLORS.primary} 
-              />
-              <Text style={styles.headerCategoryText}>
-                {category?.name || getCategoryName(listing.category_id)}
-              </Text>
-            </View>
-          )}
+          <View style={styles.headerCategoryBadge}>
+            <Ionicons 
+              name={(listing.category_id ? getCategoryIcon(listing.category_id) : 'pricetag-outline') as any} 
+              size={14} 
+              color={COLORS.primary} 
+            />
+            <Text style={styles.headerCategoryText}>
+              {category?.name || (listing.category_id ? getCategoryName(listing.category_id) : 'Item')}
+            </Text>
+          </View>
           
           <View style={styles.headerRight}>
             <TouchableOpacity style={styles.headerBtn} onPress={handleShare}>
