@@ -134,6 +134,8 @@ export default function PublicProfileScreen() {
     }
   };
 
+  const isOwnProfile = user?.user_id === id;
+
   const fetchProfile = useCallback(async () => {
     try {
       const [profileRes, listingsRes, reviewsRes] = await Promise.all([
