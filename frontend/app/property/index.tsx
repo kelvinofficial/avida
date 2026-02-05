@@ -1188,13 +1188,13 @@ const PropertyTypeTile = memo<PropertyTypeTileProps>(({ name, icon, count, onPre
   </TouchableOpacity>
 ));
 
-const TILE_WIDTH = (width - HORIZONTAL_PADDING * 2) / 4 - 4;
+const TILE_WIDTH = 80;
 
 const tileStyles = StyleSheet.create({
   container: {
     width: TILE_WIDTH,
     alignItems: 'center',
-    marginBottom: 12,
+    marginRight: 12,
     paddingVertical: 8,
     borderRadius: 12,
   },
@@ -1214,17 +1214,17 @@ const tileStyles = StyleSheet.create({
     backgroundColor: COLORS.primary,
   },
   name: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
     color: COLORS.text,
     textAlign: 'center',
-    lineHeight: 13,
+    lineHeight: 14,
   },
   nameSelected: {
     color: COLORS.primary,
   },
   count: {
-    fontSize: 9,
+    fontSize: 10,
     color: COLORS.textSecondary,
     marginTop: 2,
   },
