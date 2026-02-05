@@ -3428,7 +3428,7 @@ async def get_my_listings(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100)
 ):
-    """Get user's listings"""
+    """Get user's listings from all collections"""
     user = await require_auth(request)
     
     query = {"user_id": user.user_id}
@@ -3436,11 +3436,30 @@ async def get_my_listings(
         query["status"] = status
     
     skip = (page - 1) * limit
-    total = await db.listings.count_documents(query)
     
-    listings = await db.listings.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    # Get listings from all collections
+    listings = await db.listings.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    properties = await db.properties.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    auto_listings = await db.auto_listings.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
     
-    return {"listings": listings, "total": total, "page": page}
+    # Add type to each and combine
+    for l in listings:
+        l["type"] = "listing"
+    for p in properties:
+        p["type"] = "property"
+    for a in auto_listings:
+        a["type"] = "auto"
+    
+    all_listings = listings + properties + auto_listings
+    
+    # Sort by created_at descending
+    all_listings.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+    
+    # Paginate
+    total = len(all_listings)
+    paginated = all_listings[skip:skip + limit]
+    
+    return {"listings": paginated, "total": total, "page": page}
 
 @api_router.get("/profile/activity/purchases")
 async def get_purchases(
@@ -3459,10 +3478,20 @@ async def get_purchases(
         {"_id": 0}
     ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
-    # Get listing details
+    # Get listing details from all collections
     listing_ids = [c["listing_id"] for c in conversations]
+    
     listings = await db.listings.find({"id": {"$in": listing_ids}}, {"_id": 0}).to_list(len(listing_ids))
-    listings_map = {l["id"]: l for l in listings}
+    properties = await db.properties.find({"id": {"$in": listing_ids}}, {"_id": 0}).to_list(len(listing_ids))
+    auto_listings = await db.auto_listings.find({"id": {"$in": listing_ids}}, {"_id": 0}).to_list(len(listing_ids))
+    
+    listings_map = {}
+    for l in listings:
+        listings_map[l["id"]] = {**l, "type": "listing"}
+    for p in properties:
+        listings_map[p["id"]] = {**p, "type": "property"}
+    for a in auto_listings:
+        listings_map[a["id"]] = {**a, "type": "auto"}
     
     result = []
     for conv in conversations:
@@ -3488,10 +3517,26 @@ async def get_sales(
     skip = (page - 1) * limit
     query = {"user_id": user.user_id, "status": "sold"}
     
-    total = await db.listings.count_documents(query)
-    listings = await db.listings.find(query, {"_id": 0}).sort("updated_at", -1).skip(skip).limit(limit).to_list(limit)
+    # Get sold items from all collections
+    listings = await db.listings.find(query, {"_id": 0}).sort("updated_at", -1).to_list(500)
+    properties = await db.properties.find(query, {"_id": 0}).sort("updated_at", -1).to_list(500)
+    auto_listings = await db.auto_listings.find(query, {"_id": 0}).sort("updated_at", -1).to_list(500)
     
-    return {"sales": listings, "total": total, "page": page}
+    # Add type to each and combine
+    for l in listings:
+        l["type"] = "listing"
+    for p in properties:
+        p["type"] = "property"
+    for a in auto_listings:
+        a["type"] = "auto"
+    
+    all_sales = listings + properties + auto_listings
+    all_sales.sort(key=lambda x: x.get("updated_at", ""), reverse=True)
+    
+    total = len(all_sales)
+    paginated = all_sales[skip:skip + limit]
+    
+    return {"sales": paginated, "total": total, "page": page}
 
 @api_router.get("/profile/activity/recently-viewed")
 async def get_recently_viewed(
