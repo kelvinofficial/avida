@@ -253,7 +253,6 @@ export default function NotificationsScreen() {
       }
 
       setUnreadCount(data.unread_count || 0);
-      setTypeCounts(data.type_counts || {});
       setHasMore((data.notifications || []).length === 20);
       setPage(pageNum);
     } catch (error) {
