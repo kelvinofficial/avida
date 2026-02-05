@@ -70,19 +70,20 @@ const CATEGORY_STYLES: Record<string, { bg: string; icon: string }> = {
 
 // ============ CATEGORIES DATA ============
 const FULL_CATEGORIES = [
+  { id: 'all', name: 'All', icon: 'apps' },
   { id: 'vehicles', name: 'Auto', icon: 'car-sport' },
   { id: 'mobile', name: 'Mobile', icon: 'phone-portrait' },
   { id: 'property', name: 'Property', icon: 'home' },
-  { id: 'electronics', name: 'Electronics', icon: 'laptop' },
+  { id: 'electronics', name: 'Tech', icon: 'laptop' },
   { id: 'bikes', name: 'Bikes', icon: 'bicycle' },
   { id: 'services', name: 'Services', icon: 'construct' },
   { id: 'jobs', name: 'Jobs', icon: 'briefcase' },
   { id: 'home', name: 'Furniture', icon: 'bed' },
   { id: 'fashion', name: 'Fashion', icon: 'shirt' },
   { id: 'beauty', name: 'Beauty', icon: 'sparkles' },
-  { id: 'sports', name: 'Leisure', icon: 'football' },
+  { id: 'sports', name: 'Sports', icon: 'football' },
   { id: 'kids', name: 'Kids', icon: 'happy' },
-  { id: 'pets', name: 'Animals', icon: 'paw' },
+  { id: 'pets', name: 'Pets', icon: 'paw' },
   { id: 'industrial', name: 'Industry', icon: 'cog' },
 ];
 
