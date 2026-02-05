@@ -135,7 +135,7 @@ const PropertyListingCard = memo<ListingCardProps>(({ listing, onPress, onFavori
   const propertyType = attributes.property_type || listing.subcategory?.replace(/_/g, ' ');
 
   return (
-    <TouchableOpacity style={styles.propertyCard} onPress={onPress} activeOpacity={0.97}>
+    <TouchableOpacity style={[styles.propertyCard, listing.featured && styles.propertyCardFeatured]} onPress={onPress} activeOpacity={0.97}>
       {/* Image on Top */}
       <View style={styles.propertyImageContainer}>
         <Image
