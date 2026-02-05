@@ -452,7 +452,6 @@ export default function HomeScreen() {
       icon: category.icon,
       subcategories: subcategories,
     });
-    setSubcategorySearch('');
     setShowSubcategoryModal(true);
     
     // Fetch subcategory counts in background
