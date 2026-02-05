@@ -1122,7 +1122,7 @@ export default function PropertyDetailScreen() {
         <View style={styles.loading}>
           <Ionicons name="home-outline" size={48} color={COLORS.textSecondary} />
           <Text style={styles.loadingText}>Property not found</Text>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => safeGoBack(router)}>
             <Text style={styles.backButtonText}>Go Back</Text>
           </TouchableOpacity>
         </View>
