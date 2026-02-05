@@ -155,23 +155,33 @@ class APITester:
         except Exception as e:
             self.log_result("GET /api/listings - With filters", False, f"Exception: {str(e)}")
         
-        # Test create listing (auth required)
+        # Test create listing with seller preferences (auth required)
         try:
             listing_data = {
-                "title": "Test iPhone 15 Pro",
-                "description": "Brand new iPhone 15 Pro in excellent condition. Comes with original box and charger.",
-                "price": 899.99,
+                "title": "Test BMW 320i with Seller Preferences",
+                "description": "Testing seller preferences feature - accepts offers, exchanges, multiple contact methods",
+                "price": 25000,
+                "currency": "EUR",
                 "negotiable": True,
-                "category_id": "electronics",
-                "subcategory": "Phones",
-                "condition": "New",
+                "category_id": "vehicles",
+                "subcategory": "Cars",
+                "condition": "Used",
                 "location": "Berlin, Germany",
-                "images": ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="],
+                "images": [],
                 "attributes": {
-                    "brand": "Apple",
-                    "model": "iPhone 15 Pro",
-                    "storage": "256GB"
-                }
+                    "brand": "BMW",
+                    "model": "320i",
+                    "year": 2020,
+                    "mileage": 45000,
+                    "fuel_type": "Petrol",
+                    "transmission": "Automatic"
+                },
+                # New seller preference fields
+                "accepts_offers": True,
+                "accepts_exchanges": True,
+                "contact_methods": ["chat", "whatsapp", "call"],
+                "whatsapp_number": "+49123456789",
+                "phone_number": "+49987654321"
             }
             
             response = self.session.post(f"{API_URL}/listings", json=listing_data, timeout=10)
@@ -179,13 +189,105 @@ class APITester:
                 data = response.json()
                 if 'id' in data and data.get('title') == listing_data['title']:
                     self.created_listing_id = data['id']
-                    self.log_result("POST /api/listings - Create listing", True, f"Created listing: {data['id']}")
+                    
+                    # Verify seller preference fields in response
+                    seller_prefs_valid = True
+                    seller_prefs_details = []
+                    
+                    if data.get('accepts_offers') != True:
+                        seller_prefs_valid = False
+                        seller_prefs_details.append(f"accepts_offers: expected True, got {data.get('accepts_offers')}")
+                    
+                    if data.get('accepts_exchanges') != True:
+                        seller_prefs_valid = False
+                        seller_prefs_details.append(f"accepts_exchanges: expected True, got {data.get('accepts_exchanges')}")
+                    
+                    expected_methods = ["chat", "whatsapp", "call"]
+                    if data.get('contact_methods') != expected_methods:
+                        seller_prefs_valid = False
+                        seller_prefs_details.append(f"contact_methods: expected {expected_methods}, got {data.get('contact_methods')}")
+                    
+                    if data.get('whatsapp_number') != "+49123456789":
+                        seller_prefs_valid = False
+                        seller_prefs_details.append(f"whatsapp_number: expected +49123456789, got {data.get('whatsapp_number')}")
+                    
+                    if data.get('phone_number') != "+49987654321":
+                        seller_prefs_valid = False
+                        seller_prefs_details.append(f"phone_number: expected +49987654321, got {data.get('phone_number')}")
+                    
+                    if seller_prefs_valid:
+                        self.log_result("POST /api/listings - Create listing with seller preferences", True, f"Created listing: {data['id']} with all seller preferences")
+                    else:
+                        self.log_result("POST /api/listings - Create listing with seller preferences", False, f"Seller preferences validation failed: {'; '.join(seller_prefs_details)}", data)
                 else:
-                    self.log_result("POST /api/listings - Create listing", False, "Invalid response format", data)
+                    self.log_result("POST /api/listings - Create listing with seller preferences", False, "Invalid response format", data)
             else:
-                self.log_result("POST /api/listings - Create listing", False, f"Status: {response.status_code}", response.text)
+                self.log_result("POST /api/listings - Create listing with seller preferences", False, f"Status: {response.status_code}", response.text)
         except Exception as e:
-            self.log_result("POST /api/listings - Create listing", False, f"Exception: {str(e)}")
+            self.log_result("POST /api/listings - Create listing with seller preferences", False, f"Exception: {str(e)}")
+        
+        # Test create listing with default seller preferences
+        try:
+            listing_data_defaults = {
+                "title": "Test iPhone 15 Pro with Default Preferences",
+                "description": "Testing default seller preference values when fields are not provided",
+                "price": 899.99,
+                "currency": "EUR",
+                "negotiable": True,
+                "category_id": "electronics",
+                "subcategory": "Phones",
+                "condition": "New",
+                "location": "Munich, Germany",
+                "images": [],
+                "attributes": {
+                    "brand": "Apple",
+                    "model": "iPhone 15 Pro",
+                    "storage": "256GB"
+                }
+                # No seller preference fields - should use defaults
+            }
+            
+            response = self.session.post(f"{API_URL}/listings", json=listing_data_defaults, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                if 'id' in data:
+                    self.created_listing_id_defaults = data['id']
+                    
+                    # Verify default seller preference values
+                    defaults_valid = True
+                    defaults_details = []
+                    
+                    if data.get('accepts_offers') != True:  # Default: true
+                        defaults_valid = False
+                        defaults_details.append(f"accepts_offers default: expected True, got {data.get('accepts_offers')}")
+                    
+                    if data.get('accepts_exchanges') != False:  # Default: false
+                        defaults_valid = False
+                        defaults_details.append(f"accepts_exchanges default: expected False, got {data.get('accepts_exchanges')}")
+                    
+                    expected_default_methods = ["chat"]  # Default: ['chat']
+                    if data.get('contact_methods') != expected_default_methods:
+                        defaults_valid = False
+                        defaults_details.append(f"contact_methods default: expected {expected_default_methods}, got {data.get('contact_methods')}")
+                    
+                    if data.get('whatsapp_number') is not None:  # Default: None
+                        defaults_valid = False
+                        defaults_details.append(f"whatsapp_number default: expected None, got {data.get('whatsapp_number')}")
+                    
+                    if data.get('phone_number') is not None:  # Default: None
+                        defaults_valid = False
+                        defaults_details.append(f"phone_number default: expected None, got {data.get('phone_number')}")
+                    
+                    if defaults_valid:
+                        self.log_result("POST /api/listings - Create listing with default preferences", True, f"Created listing: {data['id']} with correct default values")
+                    else:
+                        self.log_result("POST /api/listings - Create listing with default preferences", False, f"Default values validation failed: {'; '.join(defaults_details)}", data)
+                else:
+                    self.log_result("POST /api/listings - Create listing with default preferences", False, "Invalid response format", data)
+            else:
+                self.log_result("POST /api/listings - Create listing with default preferences", False, f"Status: {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("POST /api/listings - Create listing with default preferences", False, f"Exception: {str(e)}")
         
         # Test get my listings (auth required)
         try:
