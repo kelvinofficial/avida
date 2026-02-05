@@ -341,7 +341,7 @@ export default function NotificationsScreen() {
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       setUnreadCount(0);
       setShowMenu(false);
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to mark all as read');
     }
   };
@@ -358,7 +358,7 @@ export default function NotificationsScreen() {
             setNotifications([]);
             setUnreadCount(0);
             setShowMenu(false);
-          } catch (error) {
+          } catch {
             Alert.alert('Error', 'Failed to clear notifications');
           }
         },
