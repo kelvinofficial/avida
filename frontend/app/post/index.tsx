@@ -1049,11 +1049,29 @@ const styles = StyleSheet.create({
   fieldContainer: {
     marginBottom: 20,
   },
+  fieldLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  fieldIconWrapper: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
   fieldLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.text,
-    marginBottom: 8,
+  },
+  toggleLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   required: {
     color: COLORS.error,
