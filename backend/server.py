@@ -403,10 +403,12 @@ async def get_session_token(request: Request) -> Optional[str]:
 async def get_current_user(request: Request) -> Optional[User]:
     """Get current authenticated user"""
     token = await get_session_token(request)
+    logging.info(f"Auth debug - Token extracted: {token}")
     if not token:
         return None
     
     session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    logging.info(f"Auth debug - Session found: {session is not None}")
     if not session:
         return None
     
