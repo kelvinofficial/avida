@@ -918,12 +918,12 @@ export default function CategoryScreen() {
       )}
 
       {/* Listings Grid */}
-      {isPropertyCategory ? (
+      {isSingleColumn ? (
         <FlatList
           data={listings}
           renderItem={renderListingCard}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.propertyListContent}
+          contentContainerStyle={isAutoCategory ? styles.autoListContent : styles.propertyListContent}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={COLORS.primary} />
           }
