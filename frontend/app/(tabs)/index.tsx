@@ -437,7 +437,7 @@ export default function HomeScreen() {
       {/* FULL-WIDTH DIVIDER */}
       <View style={styles.divider} />
 
-      {/* CATEGORY ICONS - ROUNDED SQUARES */}
+      {/* CATEGORY ICONS - CIRCULAR DESIGN */}
       <View style={styles.categoriesSection}>
         <ScrollView
           horizontal
@@ -450,7 +450,7 @@ export default function HomeScreen() {
               id={cat.id}
               name={cat.name}
               icon={cat.icon}
-              selected={selectedCategory === cat.id}
+              selected={cat.id === 'all' ? !selectedCategory : selectedCategory === cat.id}
               onPress={() => handleCategoryPress(cat.id)}
             />
           ))}
