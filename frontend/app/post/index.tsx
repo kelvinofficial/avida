@@ -1761,6 +1761,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
   },
+  previewPreferences: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
+  },
+  previewContactTitle: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  previewContactMethods: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  previewContactBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORS.background,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  previewContactText: {
+    fontSize: 12,
+    color: COLORS.text,
+    fontWeight: '500',
+  },
   // Footer
   footer: {
     padding: 16,
