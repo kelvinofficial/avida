@@ -272,6 +272,15 @@ export default function HomeScreen() {
   const [currentCity, setCurrentCity] = useState('All Locations');
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [locationSearch, setLocationSearch] = useState('');
+  
+  // Subcategory Modal State
+  const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
+  const [selectedCategoryForSubcats, setSelectedCategoryForSubcats] = useState<{
+    id: string;
+    name: string;
+    icon: string;
+    subcategories: SubcategoryConfig[];
+  } | null>(null);
 
   // Popular cities list
   const POPULAR_CITIES = [
