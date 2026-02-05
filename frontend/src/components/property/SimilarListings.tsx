@@ -785,9 +785,7 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
     <View style={styles.emptyContainer}>
       <Ionicons name={getCategoryIcon() as any} size={40} color={COLORS.textSecondary} />
       <Text style={styles.emptyTitle}>No similar listings found</Text>
-      <TouchableOpacity style={styles.browseBtn} onPress={() => router.push(getBrowseRoute())}>
-        <Text style={styles.browseBtnText}>Browse all listings</Text>
-      </TouchableOpacity>
+      <Text style={styles.emptySubtitle}>Try adjusting your filters</Text>
     </View>
   );
 
