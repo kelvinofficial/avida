@@ -39,14 +39,11 @@ const ICON_SIZE = 24;
 const TOUCH_TARGET = 48;
 
 // Category icon constants - CIRCULAR DESIGN
-const CATEGORY_ICON_SIZE = 56;
-const CATEGORY_ICON_RADIUS = 28; // Full circle
-const CATEGORY_INNER_ICON = 24;
+const CATEGORY_ICON_SIZE = 52;
+const CATEGORY_ICON_RADIUS = 26; // Full circle
+const CATEGORY_INNER_ICON = 22;
 const CATEGORY_GAP = 4;
-
-// Calculate how many categories fit in view (5 visible)
-const VISIBLE_CATEGORIES = 5;
-const CATEGORY_ITEM_WIDTH = (width - HORIZONTAL_PADDING * 2) / VISIBLE_CATEGORIES;
+const CATEGORY_ITEM_WIDTH = 70;
 
 // ============ CATEGORY COLORS - VIBRANT ============
 const CATEGORY_STYLES: Record<string, { bg: string; icon: string }> = {
