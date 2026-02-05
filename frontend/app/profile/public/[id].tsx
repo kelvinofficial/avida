@@ -146,20 +146,35 @@ export default function PublicProfileScreen() {
       setProfile(profileRes.data);
       setIsFollowing(profileRes.data.is_following || false);
       
-      // Fetch listings and reviews (optional, don't fail if these fail)
-      try {
-        const listingsRes = await api.get(`/users/${id}/listings`, { params: { status: 'active', limit: 20 } });
-        setListings(listingsRes.data.listings || []);
-      } catch (e) {
-        console.warn('Failed to fetch listings:', e);
+      // Fetch listings and reviews in parallel
+      const [listingsRes, reviewsRes] = await Promise.allSettled([
+        api.get(`/users/${id}/listings`, { params: { status: 'active', limit: 20 } }),
+        api.get(`/users/${id}/reviews`, { params: { limit: 20 } })
+      ]);
+      
+      // Handle listings
+      if (listingsRes.status === 'fulfilled') {
+        setListings(listingsRes.value.data.listings || []);
+      } else {
+        console.warn('Failed to fetch listings:', listingsRes.reason);
         setListings([]);
       }
       
-      try {
-        const reviewsRes = await api.get(`/users/${id}/reviews`, { params: { limit: 10 } });
-        setReviews(reviewsRes.data.reviews || []);
-      } catch (e) {
-        console.warn('Failed to fetch reviews:', e);
+      // Handle reviews
+      if (reviewsRes.status === 'fulfilled') {
+        const reviewData = reviewsRes.value.data;
+        setReviews(reviewData.reviews || []);
+        setRatingBreakdown(reviewData.rating_breakdown || {});
+        
+        // Check if current user has already reviewed
+        if (isAuthenticated && user?.user_id) {
+          const alreadyReviewed = (reviewData.reviews || []).some(
+            (r: any) => r.reviewer_id === user.user_id
+          );
+          setHasReviewed(alreadyReviewed);
+        }
+      } else {
+        console.warn('Failed to fetch reviews:', reviewsRes.reason);
         setReviews([]);
       }
     } catch (err: any) {
@@ -169,7 +184,7 @@ export default function PublicProfileScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [id]);
+  }, [id, isAuthenticated, user?.user_id]);
 
   useEffect(() => {
     fetchProfile();
