@@ -359,12 +359,19 @@ const activityStyles = StyleSheet.create({
 });
 
 // ============ TRUST SECTION ============
-const TrustSection = ({ profile }: { profile: UserProfile | null }) => {
+const TrustSection = ({ profile, onVerifyPress }: { profile: UserProfile | null; onVerifyPress: (type: string) => void }) => {
   const trustItems = [
-    { label: 'Email Verified', verified: profile?.email_verified || profile?.verified, icon: 'mail' },
-    { label: 'Phone Verified', verified: profile?.phone_verified, icon: 'call' },
-    { label: 'ID Verified', verified: false, icon: 'shield-checkmark' },
+    { id: 'email', label: 'Email Verified', verified: profile?.email_verified || profile?.verified, icon: 'mail', route: '/profile/verify-email' },
+    { id: 'phone', label: 'Phone Verified', verified: profile?.phone_verified, icon: 'call', route: '/profile/verify-phone' },
+    { id: 'id', label: 'ID Verified', verified: profile?.id_verified, icon: 'shield-checkmark', route: '/profile/verify-id', status: profile?.id_verification_status },
   ];
+
+  const getStatusText = (item: typeof trustItems[0]) => {
+    if (item.verified) return 'Verified';
+    if (item.id === 'id' && item.status === 'pending') return 'Under Review';
+    if (item.id === 'id' && item.status === 'rejected') return 'Try Again';
+    return 'Not Verified';
+  };
 
   return (
     <View style={trustStyles.container}>
@@ -375,23 +382,38 @@ const TrustSection = ({ profile }: { profile: UserProfile | null }) => {
       
       <View style={trustStyles.items}>
         {trustItems.map((item) => (
-          <View key={item.label} style={trustStyles.item}>
+          <TouchableOpacity 
+            key={item.label} 
+            style={trustStyles.item}
+            onPress={() => !item.verified && onVerifyPress(item.route)}
+            disabled={item.verified || item.status === 'pending'}
+          >
             <View style={[trustStyles.iconContainer, item.verified && trustStyles.iconContainerVerified]}>
               <Ionicons name={item.icon as any} size={18} color={item.verified ? COLORS.success : COLORS.textSecondary} />
             </View>
-            <Text style={[trustStyles.itemLabel, item.verified && trustStyles.itemLabelVerified]}>
-              {item.label}
-            </Text>
-            <Ionicons 
-              name={item.verified ? 'checkmark-circle' : 'ellipse-outline'} 
-              size={18} 
-              color={item.verified ? COLORS.success : COLORS.border} 
-            />
-          </View>
+            <View style={trustStyles.itemContent}>
+              <Text style={[trustStyles.itemLabel, item.verified && trustStyles.itemLabelVerified]}>
+                {item.label}
+              </Text>
+              <Text style={[trustStyles.statusText, item.verified && trustStyles.statusTextVerified]}>
+                {getStatusText(item)}
+              </Text>
+            </View>
+            {item.verified ? (
+              <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
+            ) : item.status === 'pending' ? (
+              <Ionicons name="hourglass-outline" size={20} color={COLORS.warning} />
+            ) : (
+              <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+            )}
+          </TouchableOpacity>
         ))}
       </View>
 
-      <TouchableOpacity style={trustStyles.publicProfileBtn}>
+      <TouchableOpacity 
+        style={trustStyles.publicProfileBtn}
+        onPress={() => onVerifyPress(`/profile/public/${profile?.user_id}`)}
+      >
         <Ionicons name="person-outline" size={18} color={COLORS.primary} />
         <Text style={trustStyles.publicProfileText}>View Public Profile</Text>
       </TouchableOpacity>
@@ -419,18 +441,20 @@ const trustStyles = StyleSheet.create({
     color: COLORS.text,
   },
   items: {
-    gap: 8,
+    gap: 4,
   },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingVertical: 8,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
   iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: COLORS.background,
     justifyContent: 'center',
     alignItems: 'center',
@@ -438,21 +462,31 @@ const trustStyles = StyleSheet.create({
   iconContainerVerified: {
     backgroundColor: '#E8F5E9',
   },
-  itemLabel: {
+  itemContent: {
     flex: 1,
-    fontSize: 14,
-    color: COLORS.textSecondary,
+  },
+  itemLabel: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: COLORS.text,
   },
   itemLabelVerified: {
     color: COLORS.text,
-    fontWeight: '500',
+  },
+  statusText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  statusTextVerified: {
+    color: COLORS.success,
   },
   publicProfileBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    marginTop: 12,
+    marginTop: 16,
     paddingVertical: 12,
     borderRadius: 12,
     backgroundColor: COLORS.primaryLight,
