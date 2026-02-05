@@ -84,7 +84,11 @@ const ListingCard = ({
 
 // Empty State for unauthenticated users
 const UnauthenticatedState = ({ onSignIn, onSignUp }: { onSignIn: () => void; onSignUp: () => void }) => (
-  <View style={styles.unauthContainer}>
+  <ScrollView 
+    style={styles.unauthScrollView}
+    contentContainerStyle={styles.unauthContainer}
+    showsVerticalScrollIndicator={false}
+  >
     {/* Illustration */}
     <View style={styles.unauthIllustration}>
       <View style={styles.unauthIconBg}>
@@ -134,7 +138,7 @@ const UnauthenticatedState = ({ onSignIn, onSignUp }: { onSignIn: () => void; on
     <TouchableOpacity style={styles.unauthSignUpBtn} onPress={onSignUp}>
       <Text style={styles.unauthSignUpBtnText}>Create Account</Text>
     </TouchableOpacity>
-  </View>
+  </ScrollView>
 );
 
 // Empty State for authenticated users with no items
