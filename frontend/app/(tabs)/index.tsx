@@ -421,50 +421,48 @@ export default function HomeScreen() {
     </View>
   );
 
-  const renderItem = ({ item, index }: { item: Listing; index: number }) => (
-    <View style={styles.cardWrapper}>
-      <ListingCard
-        listing={item}
-        onPress={() => router.push(`/listing/${item.id}`)}
-        onFavorite={() => toggleFavorite(item.id)}
-        isFavorited={favorites.has(item.id)}
-      />
-    </View>
-  );
-
-  if (loading && listings.length === 0) {
+  // Render listings as grid manually
+  const renderGrid = () => {
+    if (listings.length === 0) {
+      return <EmptyState icon="pricetags-outline" title="No listings yet" description="Be the first to post an ad in your area!" />;
+    }
+    
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        {renderHeader()}
-        <View style={styles.skeletonGrid}>
-          <View style={styles.skeletonRow}><SkeletonCard /><View style={{ width: COLUMN_GAP }} /><SkeletonCard /></View>
-          <View style={styles.skeletonRow}><SkeletonCard /><View style={{ width: COLUMN_GAP }} /><SkeletonCard /></View>
-        </View>
-      </SafeAreaView>
+      <View style={styles.gridContainer}>
+        {listings.map((item) => (
+          <View key={item.id} style={styles.cardWrapper}>
+            <ListingCard
+              listing={item}
+              onPress={() => router.push(`/listing/${item.id}`)}
+              onFavorite={() => toggleFavorite(item.id)}
+              isFavorited={favorites.has(item.id)}
+            />
+          </View>
+        ))}
+      </View>
     );
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <FlatList
-        data={listings}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        key="grid-two-columns"
-        columnWrapperStyle={styles.columnWrapper}
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={<EmptyState icon="pricetags-outline" title="No listings yet" description="Be the first to post an ad in your area!" />}
-        contentContainerStyle={styles.listContent}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2E7D32']} tintColor="#2E7D32" />}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={loading && listings.length > 0 ? <ActivityIndicator style={styles.footer} color="#2E7D32" /> : null}
-        removeClippedSubviews={true}
-        maxToRenderPerBatch={10}
-        windowSize={5}
-        initialNumToRender={6}
-      />
+        onScroll={({ nativeEvent }) => {
+          const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+          const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
+          if (isCloseToBottom && !loading && hasMore) {
+            loadMore();
+          }
+        }}
+        scrollEventThrottle={400}
+      >
+        {renderHeader()}
+        <View style={styles.listContent}>
+          {renderGrid()}
+          {loading && listings.length > 0 && <ActivityIndicator style={styles.footer} color="#2E7D32" />}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
