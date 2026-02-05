@@ -289,6 +289,7 @@ export default function PostListingScreen() {
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [categoryConfig, setCategoryConfig] = useState<CategoryAttributeConfig | null>(null);
   const [allCategories, setAllCategories] = useState<any[]>([]);
   
