@@ -3757,6 +3757,50 @@ async def seed_sample_notifications(request: Request):
     
     sample_notifications = [
         {
+            "type": "offer_received",
+            "title": "New offer received! 💰",
+            "body": "Sarah Miller offered €18,000 for your BMW 320d M Sport (20% off)",
+            "actor_name": "Sarah Miller",
+            "actor_picture": "https://randomuser.me/api/portraits/women/44.jpg",
+            "listing_id": "listing_car1",
+            "listing_title": "BMW 320d M Sport",
+            "image_url": "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=200",
+            "cta_label": "VIEW OFFER",
+            "meta": {"offer_id": "offer_123", "offered_price": 18000, "listed_price": 22500}
+        },
+        {
+            "type": "offer_accepted",
+            "title": "Offer accepted! 🎉",
+            "body": "Your offer of €15,000 for iPhone 14 Pro Max has been accepted!",
+            "listing_id": "listing_phone1",
+            "listing_title": "iPhone 14 Pro Max",
+            "image_url": "https://images.unsplash.com/photo-1591337676887-a217a6970a8a?w=200",
+            "cta_label": "MESSAGE SELLER",
+            "meta": {"offer_id": "offer_456", "offered_price": 15000}
+        },
+        {
+            "type": "offer_rejected",
+            "title": "Offer declined",
+            "body": "Unfortunately, your offer of €800 for MacBook Pro was declined",
+            "listing_id": "listing_laptop1",
+            "listing_title": "MacBook Pro 14\"",
+            "image_url": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=200",
+            "cta_label": "MAKE NEW OFFER",
+            "meta": {"offer_id": "offer_789", "offered_price": 800}
+        },
+        {
+            "type": "offer_received",
+            "title": "New offer on your apartment",
+            "body": "John Smith offered €280,000 for 3BR Apartment Munich (12% below asking)",
+            "actor_name": "John Smith",
+            "actor_picture": "https://randomuser.me/api/portraits/men/32.jpg",
+            "listing_id": "listing_apt1",
+            "listing_title": "3BR Apartment Munich",
+            "image_url": "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=200",
+            "cta_label": "VIEW OFFER",
+            "meta": {"offer_id": "offer_apt1", "offered_price": 280000, "listed_price": 320000}
+        },
+        {
             "type": "message",
             "title": "New message from Sarah",
             "body": "Hi! Is the iPhone 14 Pro still available? I'm very interested in buying it.",
@@ -3793,15 +3837,6 @@ async def seed_sample_notifications(request: Request):
             "cta_label": "VIEW DEAL"
         },
         {
-            "type": "price_drop",
-            "title": "Price reduced!",
-            "body": "3BR Apartment in Munich is now €50,000 less!",
-            "listing_id": "listing_def",
-            "listing_title": "3BR Apartment Munich",
-            "image_url": "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=200",
-            "cta_label": "VIEW"
-        },
-        {
             "type": "review",
             "title": "New review received",
             "body": "Emma Wilson left a 5-star review: 'Great seller, fast delivery!'",
@@ -3814,30 +3849,6 @@ async def seed_sample_notifications(request: Request):
             "title": "Listing approved",
             "body": "Your listing 'MacBook Pro 14\" M3' has been approved and is now live",
             "cta_label": "VIEW LISTING"
-        },
-        {
-            "type": "system",
-            "title": "Verify your email",
-            "body": "Please verify your email address to unlock all features",
-            "cta_label": "VERIFY"
-        },
-        {
-            "type": "message",
-            "title": "New message from Anna",
-            "body": "Thanks for the quick response! I'll take it. When can we meet?",
-            "actor_name": "Anna Brown",
-            "actor_picture": "https://randomuser.me/api/portraits/women/28.jpg",
-            "cta_label": "REPLY",
-            "meta": {"thread_id": "thread_789"}
-        },
-        {
-            "type": "follow",
-            "title": "New follower",
-            "body": "David Lee started following you",
-            "actor_name": "David Lee",
-            "actor_picture": "https://randomuser.me/api/portraits/men/45.jpg",
-            "actor_id": "user_456",
-            "cta_label": "VIEW PROFILE"
         },
     ]
     
