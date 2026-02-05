@@ -576,8 +576,35 @@ export default function PublicProfileScreen() {
             )
           ) : (
             <>
+              {/* Rating Summary */}
+              {reviews.length > 0 && (
+                <View style={styles.ratingSummary}>
+                  <View style={styles.ratingOverview}>
+                    <Text style={styles.ratingBig}>{profile?.rating?.toFixed(1) || '0.0'}</Text>
+                    <StarDisplay rating={profile?.rating || 0} size={24} />
+                    <Text style={styles.ratingCount}>{profile?.total_ratings || 0} reviews</Text>
+                  </View>
+                  <View style={styles.ratingBars}>
+                    {[5, 4, 3, 2, 1].map(star => {
+                      const count = ratingBreakdown[String(star)] || 0;
+                      const total = reviews.length || 1;
+                      const percentage = (count / total) * 100;
+                      return (
+                        <View key={star} style={styles.ratingBarRow}>
+                          <Text style={styles.ratingBarLabel}>{star}</Text>
+                          <View style={styles.ratingBarBg}>
+                            <View style={[styles.ratingBarFill, { width: `${percentage}%` }]} />
+                          </View>
+                          <Text style={styles.ratingBarCount}>{count}</Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                </View>
+              )}
+
               {/* Write Review Button */}
-              {!isOwnProfile && isAuthenticated && (
+              {!isOwnProfile && isAuthenticated && !hasReviewed && (
                 <TouchableOpacity
                   style={styles.writeReviewBtn}
                   onPress={() => setShowReviewModal(true)}
@@ -585,6 +612,15 @@ export default function PublicProfileScreen() {
                   <Ionicons name="create-outline" size={20} color={COLORS.primary} />
                   <Text style={styles.writeReviewBtnText}>Write a Review</Text>
                 </TouchableOpacity>
+              )}
+
+              {!isOwnProfile && isAuthenticated && hasReviewed && (
+                <View style={[styles.writeReviewBtn, styles.writeReviewBtnDisabled]}>
+                  <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
+                  <Text style={[styles.writeReviewBtnText, { color: COLORS.success }]}>
+                    You've already reviewed this seller
+                  </Text>
+                </View>
               )}
 
               {reviews.length === 0 ? (
