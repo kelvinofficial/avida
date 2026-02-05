@@ -198,7 +198,7 @@ export default function LoginScreen() {
               <View style={styles.logoIcon}>
                 <Ionicons name="storefront" size={24} color={COLORS.primary} />
               </View>
-              <Text style={styles.brandName}>LocalMarket</Text>
+              <Text style={styles.brandName}>avida</Text>
             </View>
             <Text style={styles.welcomeSubtitle}>
               Your neighborhood marketplace for buying and selling
