@@ -52,11 +52,8 @@ export default function RegisterScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const handleClose = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace('/');
-    }
+    // Always navigate to home - simpler and more reliable
+    router.replace('/');
   };
 
   const openLink = async (url: string) => {
