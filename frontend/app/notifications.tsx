@@ -236,7 +236,6 @@ export default function NotificationsScreen() {
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
   const [activeFilter, setActiveFilter] = useState('all');
   const [showMenu, setShowMenu] = useState(false);
-  const [seeding, setSeeding] = useState(false);
 
   const fetchNotifications = useCallback(async (pageNum: number = 1, refresh: boolean = false) => {
     if (!isAuthenticated) {
