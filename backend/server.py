@@ -850,7 +850,7 @@ async def create_listing(listing: ListingCreate, request: Request):
         "price": listing.price,
         "currency": listing.currency,
         "negotiable": listing.negotiable,
-        "category_id": listing.category_id,
+        "category_id": category_id,  # Use mapped category ID
         "subcategory": listing.subcategory,
         "condition": listing.condition,
         "images": listing.images[:10],  # Max 10 images
