@@ -721,63 +721,64 @@ export default function HomeScreen() {
   return (
     <ResponsiveLayout showSidebar={isDesktop || isTablet}>
       <SafeAreaView style={styles.container} edges={isMobile ? ['top'] : []}>
+        {mainContent}
 
-      {/* Location Picker Modal */}
-      <Modal
-        visible={showLocationModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowLocationModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Location</Text>
-              <TouchableOpacity onPress={() => setShowLocationModal(false)} style={styles.modalCloseBtn}>
-                <Ionicons name="close" size={24} color="#333" />
-              </TouchableOpacity>
-            </View>
-            
-            <View style={styles.searchInputContainer}>
-              <Ionicons name="search" size={20} color="#999" />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search cities..."
-                value={locationSearch}
-                onChangeText={setLocationSearch}
-                placeholderTextColor="#999"
-              />
-              {locationSearch.length > 0 && (
-                <TouchableOpacity onPress={() => setLocationSearch('')}>
-                  <Ionicons name="close-circle" size={20} color="#999" />
+        {/* Location Picker Modal */}
+        <Modal
+          visible={showLocationModal}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowLocationModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, (isDesktop || isTablet) && { maxWidth: 500, alignSelf: 'center' }]}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Select Location</Text>
+                <TouchableOpacity onPress={() => setShowLocationModal(false)} style={styles.modalCloseBtn}>
+                  <Ionicons name="close" size={24} color="#333" />
                 </TouchableOpacity>
-              )}
-            </View>
+              </View>
+              
+              <View style={styles.searchInputContainer}>
+                <Ionicons name="search" size={20} color="#999" />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search cities..."
+                  value={locationSearch}
+                  onChangeText={setLocationSearch}
+                  placeholderTextColor="#999"
+                />
+                {locationSearch.length > 0 && (
+                  <TouchableOpacity onPress={() => setLocationSearch('')}>
+                    <Ionicons name="close-circle" size={20} color="#999" />
+                  </TouchableOpacity>
+                )}
+              </View>
 
-            <ScrollView style={styles.citiesList} showsVerticalScrollIndicator={false}>
-              {filteredCities.map((city) => (
-                <TouchableOpacity
-                  key={city.name}
-                  style={[
-                    styles.cityItem,
-                    currentCity === city.name && styles.cityItemSelected
-                  ]}
-                  onPress={() => handleLocationSelect(city.name)}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons 
-                    name={city.icon as any} 
-                    size={20} 
-                    color={currentCity === city.name ? '#2E7D32' : '#666'} 
-                  />
-                  <Text style={[
-                    styles.cityName,
-                    currentCity === city.name && styles.cityNameSelected
-                  ]}>
-                    {city.name}
-                  </Text>
-                  {currentCity === city.name && (
-                    <Ionicons name="checkmark" size={20} color="#2E7D32" />
+              <ScrollView style={styles.citiesList} showsVerticalScrollIndicator={false}>
+                {filteredCities.map((city) => (
+                  <TouchableOpacity
+                    key={city.name}
+                    style={[
+                      styles.cityItem,
+                      currentCity === city.name && styles.cityItemSelected
+                    ]}
+                    onPress={() => handleLocationSelect(city.name)}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons 
+                      name={city.icon as any} 
+                      size={20} 
+                      color={currentCity === city.name ? '#2E7D32' : '#666'} 
+                    />
+                    <Text style={[
+                      styles.cityName,
+                      currentCity === city.name && styles.cityNameSelected
+                    ]}>
+                      {city.name}
+                    </Text>
+                    {currentCity === city.name && (
+                      <Ionicons name="checkmark" size={20} color="#2E7D32" />
                   )}
                 </TouchableOpacity>
               ))}
