@@ -1138,7 +1138,7 @@ export default function PostListingScreen() {
             <View style={styles.attributesList}>
               {Object.entries(attributes).map(([key, value]) => {
                 if (!value) return null;
-                const field = categoryConfig?.attributes.find(a => a.name === key);
+                const field = currentSubcategoryConfig?.attributes.find(a => a.name === key);
                 return (
                   <View key={key} style={styles.attributeRow}>
                     <Text style={styles.attributeLabel}>
