@@ -984,13 +984,13 @@ export default function ProfileScreen() {
             <View style={desktopStyles.sectionCard}>
               <Text style={desktopStyles.sectionTitle}>Your Activity</Text>
               <View style={desktopStyles.activityGrid}>
-                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/my-listings')}>
+                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/my-listings')}>
                   <View style={[desktopStyles.activityIcon, { backgroundColor: '#E8F5E9' }]}>
                     <Ionicons name="pricetags" size={24} color={COLORS.primary} />
                   </View>
                   <Text style={desktopStyles.activityLabel}>My Listings</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/favorites')}>
+                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/saved')}>
                   <View style={[desktopStyles.activityIcon, { backgroundColor: '#FFEBEE' }]}>
                     <Ionicons name="heart" size={24} color="#E53935" />
                   </View>
