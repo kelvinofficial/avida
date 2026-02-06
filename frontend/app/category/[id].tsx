@@ -632,8 +632,11 @@ export default function CategoryScreen() {
 
   // Desktop view
   if (isDesktop || isTablet) {
-    // Card width for 3 columns with proper spacing
-    const cardWidth = 200;
+    // Calculate card width dynamically to fill available space
+    // Available width = MAX_CONTENT_WIDTH - sidebar(280) - sidebarMargin(24) - paddingHorizontal(48) - grid margins(96 for 3 cols)
+    const sidebarWidth = 280;
+    const availableWidth = Math.min(screenWidth, 1200) - sidebarWidth - 24 - 48;
+    const cardWidth = Math.floor((availableWidth - 48) / 3); // 3 columns with 16px margin each side
 
     return (
       <View style={desktopStyles.pageWrapper}>
