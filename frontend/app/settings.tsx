@@ -332,6 +332,167 @@ export default function SettingsScreen() {
   const privacy = settings?.privacy || {};
   const appPrefs = settings?.app_preferences || {};
 
+  const [activeSection, setActiveSection] = useState('notifications');
+
+  const SETTINGS_SECTIONS = [
+    { key: 'notifications', icon: 'notifications-outline', label: 'Notifications' },
+    { key: 'security', icon: 'shield-outline', label: 'Security' },
+    { key: 'privacy', icon: 'eye-outline', label: 'Privacy' },
+    { key: 'preferences', icon: 'color-palette-outline', label: 'App Preferences' },
+    { key: 'account', icon: 'person-outline', label: 'Account' },
+  ];
+
+  // ============ DESKTOP VIEW ============
+  if (isLargeScreen) {
+    return (
+      <View style={desktopStyles.container}>
+        {/* Desktop Header */}
+        <View style={desktopStyles.header}>
+          <View style={desktopStyles.headerInner}>
+            <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+              <View style={desktopStyles.logoIcon}>
+                <Ionicons name="storefront" size={22} color="#fff" />
+              </View>
+              <Text style={desktopStyles.logoText}>avida</Text>
+            </TouchableOpacity>
+            <View style={desktopStyles.headerActions}>
+              <TouchableOpacity style={desktopStyles.headerBtn} onPress={() => router.push('/profile')}>
+                <Ionicons name="person-circle-outline" size={26} color={COLORS.text} />
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.postBtn} onPress={() => router.push('/post')}>
+                <Ionicons name="add" size={18} color="#fff" />
+                <Text style={desktopStyles.postBtnText}>Post Listing</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        <View style={desktopStyles.mainContent}>
+          {/* Sidebar Navigation */}
+          <View style={desktopStyles.sidebar}>
+            <View style={desktopStyles.sidebarHeader}>
+              <Ionicons name="settings" size={24} color={COLORS.primary} />
+              <Text style={desktopStyles.sidebarTitle}>Settings</Text>
+            </View>
+
+            <View style={desktopStyles.navItems}>
+              {SETTINGS_SECTIONS.map(section => (
+                <TouchableOpacity
+                  key={section.key}
+                  style={[desktopStyles.navItem, activeSection === section.key && desktopStyles.navItemActive]}
+                  onPress={() => setActiveSection(section.key)}
+                >
+                  <Ionicons 
+                    name={section.icon as any} 
+                    size={20} 
+                    color={activeSection === section.key ? COLORS.primary : COLORS.textSecondary} 
+                  />
+                  <Text style={[desktopStyles.navItemText, activeSection === section.key && desktopStyles.navItemTextActive]}>
+                    {section.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={desktopStyles.sidebarFooter}>
+              <Text style={desktopStyles.versionText}>avida v1.0.0</Text>
+            </View>
+          </View>
+
+          {/* Settings Content */}
+          <ScrollView style={desktopStyles.contentArea} contentContainerStyle={desktopStyles.contentInner}>
+            {saving && (
+              <View style={desktopStyles.savingIndicator}>
+                <ActivityIndicator size="small" color={COLORS.primary} />
+                <Text style={desktopStyles.savingText}>Saving...</Text>
+              </View>
+            )}
+
+            {activeSection === 'notifications' && (
+              <View style={desktopStyles.sectionCard}>
+                <Text style={desktopStyles.sectionTitle}>Notification Settings</Text>
+                <Text style={desktopStyles.sectionSubtitle}>Manage how you receive notifications</Text>
+                
+                <View style={desktopStyles.settingsGroup}>
+                  <ToggleRow label="Push Notifications" description="Receive alerts on your device" value={notifications.push ?? true} onChange={(v) => updateSettings('notifications.push', v)} />
+                  <ToggleRow label="Email Notifications" description="Get updates via email" value={notifications.email ?? true} onChange={(v) => updateSettings('notifications.email', v)} />
+                  <ToggleRow label="SMS Notifications" description="Receive text messages" value={notifications.sms ?? false} onChange={(v) => updateSettings('notifications.sms', v)} />
+                </View>
+
+                <Text style={desktopStyles.groupTitle}>Notification Types</Text>
+                <View style={desktopStyles.settingsGroup}>
+                  <ToggleRow label="Messages" value={notifications.messages ?? true} onChange={(v) => updateSettings('notifications.messages', v)} />
+                  <ToggleRow label="Offers" value={notifications.offers ?? true} onChange={(v) => updateSettings('notifications.offers', v)} />
+                  <ToggleRow label="Price Drops" value={notifications.price_drops ?? true} onChange={(v) => updateSettings('notifications.price_drops', v)} />
+                  <ToggleRow label="New Followers" value={notifications.new_followers ?? true} onChange={(v) => updateSettings('notifications.new_followers', v)} />
+                  <ToggleRow label="Reviews" value={notifications.reviews ?? true} onChange={(v) => updateSettings('notifications.reviews', v)} />
+                  <ToggleRow label="Promotions" description="Marketing and promotional content" value={notifications.promotions ?? false} onChange={(v) => updateSettings('notifications.promotions', v)} />
+                </View>
+              </View>
+            )}
+
+            {activeSection === 'security' && (
+              <View style={desktopStyles.sectionCard}>
+                <Text style={desktopStyles.sectionTitle}>Security Settings</Text>
+                <Text style={desktopStyles.sectionSubtitle}>Protect your account</Text>
+                
+                <View style={desktopStyles.settingsGroup}>
+                  <NavigationRow icon="key-outline" label="Change Password" onPress={() => router.push('/settings/change-password')} />
+                  <NavigationRow icon="finger-print-outline" label="Two-Factor Authentication" value={settings?.security?.two_factor_enabled ? 'On' : 'Off'} onPress={() => router.push('/settings/2fa')} />
+                  <NavigationRow icon="lock-closed-outline" label="App Lock" value={settings?.security?.app_lock_enabled ? 'Enabled' : 'Disabled'} onPress={() => router.push('/settings/app-lock')} />
+                  <NavigationRow icon="phone-portrait-outline" label="Active Sessions" onPress={() => router.push('/settings/sessions')} />
+                </View>
+              </View>
+            )}
+
+            {activeSection === 'privacy' && (
+              <View style={desktopStyles.sectionCard}>
+                <Text style={desktopStyles.sectionTitle}>Privacy Settings</Text>
+                <Text style={desktopStyles.sectionSubtitle}>Control your privacy and visibility</Text>
+                
+                <View style={desktopStyles.settingsGroup}>
+                  <ToggleRow label="Location Services" description="Allow app to access your location" value={privacy.location_services ?? true} onChange={(v) => updateSettings('privacy.location_services', v)} />
+                  <ToggleRow label="Show Online Status" value={privacy.show_online_status ?? true} onChange={(v) => updateSettings('privacy.show_online_status', v)} />
+                  <ToggleRow label="Show Last Seen" value={privacy.show_last_seen ?? true} onChange={(v) => updateSettings('privacy.show_last_seen', v)} />
+                  <ToggleRow label="Allow Profile Discovery" description="Let others find your profile in search" value={privacy.allow_profile_discovery ?? true} onChange={(v) => updateSettings('privacy.allow_profile_discovery', v)} />
+                  <ToggleRow label="Allow Direct Messages" value={privacy.allow_direct_messages ?? true} onChange={(v) => updateSettings('privacy.allow_direct_messages', v)} />
+                  <NavigationRow icon="ban-outline" label="Blocked Users" onPress={() => router.push('/settings/blocked-users')} />
+                </View>
+              </View>
+            )}
+
+            {activeSection === 'preferences' && (
+              <View style={desktopStyles.sectionCard}>
+                <Text style={desktopStyles.sectionTitle}>App Preferences</Text>
+                <Text style={desktopStyles.sectionSubtitle}>Customize your experience</Text>
+                
+                <View style={desktopStyles.settingsGroup}>
+                  <NavigationRow icon="language-outline" label="Language" value={appPrefs.language === 'en' ? 'English' : appPrefs.language || 'English'} onPress={() => router.push('/settings/language')} />
+                  <NavigationRow icon="cash-outline" label="Currency" value={appPrefs.currency || 'EUR'} onPress={() => router.push('/settings/currency')} />
+                  <NavigationRow icon="moon-outline" label="Dark Mode" value={appPrefs.dark_mode === 'system' ? 'System' : appPrefs.dark_mode === 'dark' ? 'Dark' : 'Light'} onPress={() => router.push('/settings/appearance')} />
+                  <NavigationRow icon="cloud-download-outline" label="Data & Storage" onPress={() => router.push('/settings/storage')} />
+                </View>
+              </View>
+            )}
+
+            {activeSection === 'account' && (
+              <View style={desktopStyles.sectionCard}>
+                <Text style={desktopStyles.sectionTitle}>Account</Text>
+                <Text style={desktopStyles.sectionSubtitle}>Manage your account</Text>
+                
+                <View style={desktopStyles.settingsGroup}>
+                  <NavigationRow icon="log-out-outline" label="Sign Out" onPress={handleSignOut} showChevron={false} />
+                  <NavigationRow icon="trash-outline" label="Delete Account" onPress={handleDeleteAccount} showChevron={false} danger />
+                </View>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      </View>
+    );
+  }
+
+  // ============ MOBILE VIEW ============
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
