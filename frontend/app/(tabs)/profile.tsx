@@ -657,6 +657,87 @@ export default function ProfileScreen() {
     router.push(route as any);
   };
 
+  // ============ DESKTOP VIEW - UNAUTHENTICATED ============
+  if (isLargeScreen && !isAuthenticated) {
+    return (
+      <View style={desktopStyles.container}>
+        {/* Desktop Header */}
+        <View style={desktopStyles.header}>
+          <View style={desktopStyles.headerInner}>
+            <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+              <View style={desktopStyles.logoIcon}>
+                <Ionicons name="storefront" size={22} color="#fff" />
+              </View>
+              <Text style={desktopStyles.logoText}>avida</Text>
+            </TouchableOpacity>
+            <View style={desktopStyles.headerActions}>
+              <TouchableOpacity style={desktopStyles.postBtn} onPress={() => router.push('/login')}>
+                <Text style={desktopStyles.postBtnText}>Sign In</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        <View style={desktopStyles.unauthContent}>
+          <View style={desktopStyles.unauthCard}>
+            <View style={desktopStyles.unauthIconContainer}>
+              <Ionicons name="person-circle-outline" size={80} color={COLORS.primary} />
+            </View>
+            <Text style={desktopStyles.unauthTitle}>Welcome to avida</Text>
+            <Text style={desktopStyles.unauthSubtitle}>Sign in to unlock all features</Text>
+
+            <View style={desktopStyles.featureGrid}>
+              <View style={desktopStyles.featureItem}>
+                <View style={[desktopStyles.featureIcon, { backgroundColor: '#FFEBEE' }]}>
+                  <Ionicons name="heart" size={24} color="#E53935" />
+                </View>
+                <Text style={desktopStyles.featureTitle}>Save Favorites</Text>
+                <Text style={desktopStyles.featureDesc}>Keep track of items you love</Text>
+              </View>
+              <View style={desktopStyles.featureItem}>
+                <View style={[desktopStyles.featureIcon, { backgroundColor: '#E3F2FD' }]}>
+                  <Ionicons name="chatbubbles" size={24} color="#1976D2" />
+                </View>
+                <Text style={desktopStyles.featureTitle}>View Messages</Text>
+                <Text style={desktopStyles.featureDesc}>Chat with buyers and sellers</Text>
+              </View>
+              <View style={desktopStyles.featureItem}>
+                <View style={[desktopStyles.featureIcon, { backgroundColor: '#E8F5E9' }]}>
+                  <Ionicons name="pricetags" size={24} color={COLORS.primary} />
+                </View>
+                <Text style={desktopStyles.featureTitle}>Manage Listings</Text>
+                <Text style={desktopStyles.featureDesc}>Post and edit your items</Text>
+              </View>
+              <View style={desktopStyles.featureItem}>
+                <View style={[desktopStyles.featureIcon, { backgroundColor: '#FFF3E0' }]}>
+                  <Ionicons name="notifications" size={24} color="#F57C00" />
+                </View>
+                <Text style={desktopStyles.featureTitle}>Get Notifications</Text>
+                <Text style={desktopStyles.featureDesc}>Stay updated on your activity</Text>
+              </View>
+            </View>
+
+            <View style={desktopStyles.unauthButtons}>
+              <TouchableOpacity style={desktopStyles.signInBtn} onPress={() => router.push('/login')}>
+                <Ionicons name="log-in-outline" size={20} color="#fff" />
+                <Text style={desktopStyles.signInBtnText}>Sign In</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.createAccountBtn} onPress={() => router.push('/login')}>
+                <Ionicons name="person-add-outline" size={20} color={COLORS.primary} />
+                <Text style={desktopStyles.createAccountBtnText}>Create Account</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={desktopStyles.browseGuestBtn} onPress={() => router.push('/')}>
+              <Text style={desktopStyles.browseGuestText}>Continue browsing as guest</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  // ============ MOBILE VIEW - UNAUTHENTICATED ============
   if (!isAuthenticated) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
