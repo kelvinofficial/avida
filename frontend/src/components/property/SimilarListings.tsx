@@ -847,13 +847,13 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isLargeScreen && desktopContainerStyles.container]}>
       {renderHeader()}
       
       {listings.length === 0 ? (
         renderEmpty()
       ) : (
-        <View style={styles.listContainer}>
+        <View style={[styles.listContainer, isLargeScreen && desktopContainerStyles.listContainer]}>
           {listings.map((item, index) => (
             <HorizontalListingCard
               key={item.id}
