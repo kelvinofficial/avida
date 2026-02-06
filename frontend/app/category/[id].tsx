@@ -626,12 +626,8 @@ export default function CategoryScreen() {
 
   // Desktop view
   if (isDesktop || isTablet) {
-    // Calculate card width for 3 columns
-    // Each card has 12px margin on each side (24px total horizontal margin per card)
-    // For 3 cards: total margin space = 3 * 24px = 72px
-    // Available width for cards: ~900px - 72px = 828px
-    // Card width = 828 / 3 = 276px (round down to 270 for safety)
-    const cardWidth = 270;
+    // Calculate card width for 3 columns - reduced by 50%
+    const cardWidth = 135;
 
     return (
       <View style={desktopStyles.pageWrapper}>
