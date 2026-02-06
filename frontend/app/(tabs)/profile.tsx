@@ -1637,6 +1637,7 @@ const desktopStyles = StyleSheet.create({
     width: 140,
     alignItems: 'center',
     padding: 16,
+    cursor: 'pointer',
   },
   featureIcon: {
     width: 56,
