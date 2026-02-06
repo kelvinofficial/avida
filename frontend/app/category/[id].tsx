@@ -1505,7 +1505,7 @@ const desktopStyles = StyleSheet.create({
     paddingTop: 8,
   },
   sidebar: {
-    width: 240,
+    width: 280,
     backgroundColor: COLORS.surface,
     borderRadius: 12,
     padding: 16,
