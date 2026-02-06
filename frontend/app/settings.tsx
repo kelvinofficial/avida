@@ -186,6 +186,9 @@ const navStyles = StyleSheet.create({
 export default function SettingsScreen() {
   const router = useRouter();
   const { isAuthenticated, logout } = useAuthStore();
+  const { isDesktop, isTablet } = useResponsive();
+  const isLargeScreen = isDesktop || isTablet;
+  
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
