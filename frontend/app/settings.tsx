@@ -369,8 +369,6 @@ export default function SettingsScreen() {
   const privacy = settings?.privacy || {};
   const appPrefs = settings?.app_preferences || {};
 
-  const [activeSection, setActiveSection] = useState('notifications');
-
   const SETTINGS_SECTIONS = [
     { key: 'notifications', icon: 'notifications-outline', label: 'Notifications' },
     { key: 'security', icon: 'shield-outline', label: 'Security' },
