@@ -2041,11 +2041,11 @@ const desktopStyles = StyleSheet.create({
   },
   thumbnailsRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
   },
   thumbnail: {
-    width: 80,
-    height: 60,
+    width: 95,
+    height: 72,
     borderRadius: 8,
     overflow: 'hidden',
     borderWidth: 2,
@@ -2059,8 +2059,8 @@ const desktopStyles = StyleSheet.create({
     height: '100%',
   },
   moreImages: {
-    width: 80,
-    height: 60,
+    width: 95,
+    height: 72,
     borderRadius: 8,
     backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
