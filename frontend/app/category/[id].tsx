@@ -1517,6 +1517,7 @@ const desktopStyles = StyleSheet.create({
     padding: 16,
     marginRight: 24,
     alignSelf: 'flex-start',
+    overflow: 'hidden',
   },
   sidebarSection: {
     marginBottom: 20,
