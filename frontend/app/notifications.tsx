@@ -18,6 +18,7 @@ import { useRouter } from 'expo-router';
 import api from '../src/utils/api';
 import { useAuthStore } from '../src/store/authStore';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useResponsive } from '../src/hooks/useResponsive';
 
 const COLORS = {
   primary: '#2E7D32',
