@@ -801,8 +801,32 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Desktop Header */}
+      {isLargeScreen && (
+        <View style={desktopStyles.header}>
+          <View style={desktopStyles.headerInner}>
+            <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+              <View style={desktopStyles.logoIcon}>
+                <Ionicons name="storefront" size={22} color="#fff" />
+              </View>
+              <Text style={desktopStyles.logoText}>avida</Text>
+            </TouchableOpacity>
+            <View style={desktopStyles.headerActions}>
+              <TouchableOpacity style={desktopStyles.headerBtn} onPress={() => router.push('/notifications')}>
+                <Ionicons name="notifications-outline" size={22} color={COLORS.text} />
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.postBtn} onPress={() => router.push('/post')}>
+                <Ionicons name="add" size={18} color="#fff" />
+                <Text style={desktopStyles.postBtnText}>Post Listing</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
+      
       <ScrollView
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={isLargeScreen ? desktopStyles.scrollContent : undefined}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -812,17 +836,19 @@ export default function ProfileScreen() {
           />
         }
       >
-        <ProfileHeader profile={profile} onEditPress={handleEditProfile} />
-        
-        <StatsRow stats={profile?.stats || null} />
-        
-        <ActivitySection onItemPress={handleActivityPress} />
-        
-        <TrustSection profile={profile} onVerifyPress={handleActivityPress} />
-        
-        <QuickActions router={router} onLogout={handleLogout} />
+        <View style={isLargeScreen ? desktopStyles.contentWrapper : undefined}>
+          <ProfileHeader profile={profile} onEditPress={handleEditProfile} />
+          
+          <StatsRow stats={profile?.stats || null} />
+          
+          <ActivitySection onItemPress={handleActivityPress} />
+          
+          <TrustSection profile={profile} onVerifyPress={handleActivityPress} />
+          
+          <QuickActions router={router} onLogout={handleLogout} />
 
-        <Text style={styles.version}>avida v1.0.0</Text>
+          <Text style={styles.version}>avida v1.0.0</Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
