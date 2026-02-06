@@ -80,11 +80,9 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
 
 const styles = StyleSheet.create({
   card: {
-    width: (SCREEN_WIDTH - 32) / 2,
+    width: '100%',
     backgroundColor: COLORS.surface,
     borderRadius: 12,
-    marginBottom: 12,
-    marginHorizontal: 4,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
