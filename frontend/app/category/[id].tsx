@@ -1548,6 +1548,7 @@ const desktopStyles = StyleSheet.create({
   },
   filterGroup: {
     marginBottom: 14,
+    width: '100%',
   },
   filterLabel: {
     fontSize: 13,
