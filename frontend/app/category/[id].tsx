@@ -764,34 +764,6 @@ export default function CategoryScreen() {
 
   // Mobile view (original)
   return (
-          </View>
-
-          {/* Listings Grid */}
-          <FlatList
-            data={listings}
-            renderItem={renderListingCard}
-            keyExtractor={(item) => item.id}
-            numColumns={isDesktop ? 3 : 2}
-            key={isDesktop ? 'desktop-3col' : 'tablet-2col'}
-            contentContainerStyle={desktopStyles.listContent}
-            columnWrapperStyle={desktopStyles.gridRow}
-            ListEmptyComponent={renderEmpty}
-            ListFooterComponent={renderFooter}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[COLORS.primary]} />
-            }
-            onEndReached={handleLoadMore}
-            onEndReachedThreshold={0.5}
-          />
-        </View>
-
-        {renderFiltersModal()}
-      </View>
-    );
-  }
-
-  // Mobile view (original)
-  return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
