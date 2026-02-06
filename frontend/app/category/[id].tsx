@@ -626,8 +626,8 @@ export default function CategoryScreen() {
 
   // Desktop view
   if (isDesktop || isTablet) {
-    // Calculate card width for 3 columns - reduced by 50%
-    const cardWidth = 135;
+    // Card width for 3 columns with proper spacing
+    const cardWidth = 200;
 
     return (
       <View style={desktopStyles.pageWrapper}>
