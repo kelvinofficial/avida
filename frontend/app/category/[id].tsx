@@ -1484,23 +1484,28 @@ const desktopStyles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
   },
-  // Main Container with Sidebar + Listings
-  mainContainer: {
+  // Scrollable Container
+  scrollContainer: {
     flex: 1,
-    alignItems: 'center',
   },
+  scrollContent: {
+    alignItems: 'center',
+    paddingBottom: 40,
+  },
+  // Main Container with Sidebar + Listings
   mainContainerInner: {
     flexDirection: 'row',
     width: '100%',
     maxWidth: MAX_CONTENT_WIDTH,
     paddingHorizontal: 24,
+    paddingTop: 8,
   },
   sidebar: {
     width: 240,
     backgroundColor: COLORS.surface,
     borderRadius: 12,
     padding: 16,
-    marginRight: 20,
+    marginRight: 24,
     alignSelf: 'flex-start',
   },
   sidebarSection: {
@@ -1599,13 +1604,16 @@ const desktopStyles = StyleSheet.create({
   listingsContainer: {
     flex: 1,
   },
-  listContent: {
-    paddingBottom: 24,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
   },
-  gridRow: {
-    justifyContent: 'flex-start',
-    gap: 16,
-    marginBottom: 16,
+  listingsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 24,
   },
   cardWrapper: {
     marginBottom: 0,
