@@ -191,17 +191,18 @@ const HorizontalListingCard = memo(({
         cardStyles.card,
         isFeatured && cardStyles.cardFeatured,
         listing.isSponsored && cardStyles.cardSponsored,
+        isDesktop && desktopCardStyles.card,
       ]}
       onPress={onPress}
       activeOpacity={0.9}
     >
       {/* LEFT: Image */}
-      <View style={cardStyles.imageContainer}>
+      <View style={[cardStyles.imageContainer, isDesktop && { width: imageSize, height: imageSize }]}>
         {imageSource ? (
           <Image source={imageSource} style={cardStyles.image} resizeMode="cover" />
         ) : (
           <View style={cardStyles.placeholderImage}>
-            <Ionicons name={getCategoryIcon()} size={32} color={COLORS.border} />
+            <Ionicons name={getCategoryIcon()} size={isDesktop ? 48 : 32} color={COLORS.border} />
           </View>
         )}
 
