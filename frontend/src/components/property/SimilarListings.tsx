@@ -613,6 +613,9 @@ const filterStyles = StyleSheet.create({
 // ============ MAIN COMPONENT ============
 const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category = 'property', onListingPress }) => {
   const router = useRouter();
+  const { isDesktop, isTablet } = useResponsive();
+  const isLargeScreen = isDesktop || isTablet;
+  
   const [listings, setListings] = useState<SimilarListing[]>([]);
   const [allListings, setAllListings] = useState<SimilarListing[]>([]);
   const [loading, setLoading] = useState(true);
