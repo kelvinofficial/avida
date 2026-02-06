@@ -34,6 +34,7 @@ import {
 } from '../../src/config/subcategories';
 import { safeGoBack } from '../../src/utils/navigation';
 import { SuccessModal } from '../../src/components/SuccessModal';
+import { useResponsive } from '../../src/hooks/useResponsive';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const MAX_IMAGES = 10;
