@@ -867,6 +867,7 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
               onChat={() => handleChat(item)}
               onCall={() => handleCall(item)}
               onWhatsApp={() => handleWhatsApp(item)}
+              isDesktop={isLargeScreen}
             />
           ))}
         </View>
