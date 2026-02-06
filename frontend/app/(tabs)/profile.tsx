@@ -1672,6 +1672,7 @@ const desktopStyles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 32,
     borderRadius: 12,
+    cursor: 'pointer',
   },
   signInBtnText: {
     fontSize: 16,
@@ -1688,6 +1689,7 @@ const desktopStyles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: COLORS.primary,
+    cursor: 'pointer',
   },
   createAccountBtnText: {
     fontSize: 16,
@@ -1696,6 +1698,7 @@ const desktopStyles = StyleSheet.create({
   },
   browseGuestBtn: {
     paddingVertical: 8,
+    cursor: 'pointer',
   },
   browseGuestText: {
     fontSize: 14,
