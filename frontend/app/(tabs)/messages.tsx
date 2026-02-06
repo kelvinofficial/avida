@@ -152,9 +152,11 @@ const filterStyles = StyleSheet.create({
 interface ConversationItemProps {
   conversation: Conversation;
   onPress: () => void;
+  isSelected?: boolean;
+  isDesktop?: boolean;
 }
 
-const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onPress }) => {
+const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onPress, isSelected, isDesktop }) => {
   const { user } = useAuthStore();
   const hasUnread = conversation.unread > 0;
   
