@@ -2013,11 +2013,11 @@ const desktopStyles = StyleSheet.create({
   },
   mainImage: {
     width: '100%',
-    height: 380,
+    height: 494,
   },
   imagePlaceholder: {
     width: '100%',
-    height: 380,
+    height: 494,
     backgroundColor: COLORS.border,
     justifyContent: 'center',
     alignItems: 'center',
