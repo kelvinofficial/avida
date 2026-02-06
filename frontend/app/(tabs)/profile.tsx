@@ -589,6 +589,9 @@ const quickActionsStyles = StyleSheet.create({
 export default function ProfileScreen() {
   const router = useRouter();
   const { isAuthenticated, user, logout } = useAuthStore();
+  const { isDesktop, isTablet } = useResponsive();
+  const isLargeScreen = isDesktop || isTablet;
+  
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
