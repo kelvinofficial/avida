@@ -961,4 +961,43 @@ const desktopStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
+  // Unauthenticated view styles
+  unauthContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  unauthCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 20,
+    padding: 48,
+    alignItems: 'center',
+    maxWidth: 400,
+    width: '100%',
+  },
+  unauthTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginTop: 20,
+    marginBottom: 8,
+  },
+  unauthSubtitle: {
+    fontSize: 15,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  signInBtn: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 14,
+    paddingHorizontal: 48,
+    borderRadius: 12,
+  },
+  signInBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
 });
