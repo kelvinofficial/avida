@@ -281,6 +281,9 @@ export default function CategoryScreen() {
   const isAutoCategory = categoryId === 'auto_vehicles';
   const isSingleColumn = isPropertyCategory || isAutoCategory;
 
+  // Calculate mobile card width for 2-column grid
+  const mobileCardWidth = (screenWidth - 32 - 8) / 2; // 16px padding on each side + 8px gap
+
   const renderListingCard = ({ item }: { item: any }) => {
     if (isPropertyCategory) {
       return (
@@ -302,13 +305,16 @@ export default function CategoryScreen() {
         />
       );
     }
+    // Wrap ListingCard in a container with specific width for mobile grid
     return (
-      <ListingCard
-        listing={item}
-        onPress={() => router.push(getListingRoute(item))}
-        onFavorite={() => handleFavorite(item.id)}
-        isFavorited={favorites.has(item.id)}
-      />
+      <View style={{ width: mobileCardWidth, marginBottom: 12 }}>
+        <ListingCard
+          listing={item}
+          onPress={() => router.push(getListingRoute(item))}
+          onFavorite={() => handleFavorite(item.id)}
+          isFavorited={favorites.has(item.id)}
+        />
+      </View>
     );
   };
 
