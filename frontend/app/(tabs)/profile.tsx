@@ -1305,6 +1305,10 @@ const styles = StyleSheet.create({
 
 // ============ DESKTOP STYLES ============
 const desktopStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
   header: {
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
@@ -1318,7 +1322,7 @@ const desktopStyles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 14,
     width: '100%',
-    maxWidth: 800,
+    maxWidth: 1200,
   },
   logoContainer: {
     flexDirection: 'row',
@@ -1365,13 +1369,336 @@ const desktopStyles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
-  scrollContent: {
-    alignItems: 'center',
-    paddingVertical: 24,
-  },
-  contentWrapper: {
+  // Main Content Layout
+  mainContent: {
+    flex: 1,
+    flexDirection: 'row',
+    maxWidth: 1200,
+    alignSelf: 'center',
     width: '100%',
+  },
+  // Sidebar
+  sidebar: {
+    width: 320,
+    backgroundColor: COLORS.surface,
+    borderRightWidth: 1,
+    borderRightColor: COLORS.border,
+    padding: 24,
+    gap: 20,
+  },
+  profileCard: {
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: COLORS.background,
+    borderRadius: 16,
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 16,
+  },
+  avatarPlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  avatarText: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  profileName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  profileEmail: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 8,
+  },
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  verifiedText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  editProfileBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  editProfileText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  // Stats Card
+  statsCard: {
+    backgroundColor: COLORS.background,
+    borderRadius: 16,
+    padding: 16,
+  },
+  statsTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 12,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  statItem: {
+    width: '50%',
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
+  // Quick Actions Card
+  quickActionsCard: {
+    backgroundColor: COLORS.background,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  quickAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  quickActionDanger: {
+    borderBottomWidth: 0,
+  },
+  quickActionText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.text,
+  },
+  // Content Area
+  contentArea: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  contentInner: {
+    padding: 24,
+    gap: 20,
+  },
+  // Section Card
+  sectionCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    padding: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 20,
+  },
+  // Activity Grid
+  activityGrid: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  activityItem: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+  },
+  activityIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  activityLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  // Trust Grid
+  trustGrid: {
+    gap: 12,
+  },
+  trustItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    padding: 14,
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+  },
+  trustIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  trustIconVerified: {
+    backgroundColor: COLORS.primaryLight,
+  },
+  trustContent: {
+    flex: 1,
+  },
+  trustLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  trustStatus: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  versionText: {
+    textAlign: 'center',
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 20,
+  },
+  // Unauthenticated Desktop Styles
+  unauthContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  unauthCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 24,
+    padding: 48,
+    alignItems: 'center',
     maxWidth: 600,
-    paddingHorizontal: 24,
+    width: '100%',
+  },
+  unauthIconContainer: {
+    marginBottom: 20,
+  },
+  unauthTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  unauthSubtitle: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    marginBottom: 32,
+  },
+  featureGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 20,
+    marginBottom: 32,
+  },
+  featureItem: {
+    width: 140,
+    alignItems: 'center',
+    padding: 16,
+  },
+  featureIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  featureTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  featureDesc: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+  },
+  unauthButtons: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 20,
+  },
+  signInBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+  },
+  signInBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  createAccountBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: COLORS.surface,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  createAccountBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  browseGuestBtn: {
+    paddingVertical: 8,
+  },
+  browseGuestText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textDecorationLine: 'underline',
   },
 });
