@@ -241,11 +241,15 @@ const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onPre
 export default function MessagesScreen() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
+  const { isDesktop, isTablet } = useResponsive();
+  const isLargeScreen = isDesktop || isTablet;
+  
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
 
   const fetchConversations = useCallback(async () => {
     if (!isAuthenticated) {
