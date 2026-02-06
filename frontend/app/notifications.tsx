@@ -225,6 +225,9 @@ const EmptyState = ({ type }: { type: string }) => (
 export default function NotificationsScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
+  const { isDesktop, isTablet } = useResponsive();
+  const isLargeScreen = isDesktop || isTablet;
+  
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
