@@ -85,6 +85,9 @@ const FAQItem = ({ item, isExpanded, onToggle }: { item: any; isExpanded: boolea
 export default function HelpSupportScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
+  const { isDesktop, isTablet } = useResponsive();
+  const isLargeScreen = isDesktop || isTablet;
+  
   const [activeTab, setActiveTab] = useState<'faq' | 'contact' | 'tickets'>('faq');
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
   const [subject, setSubject] = useState('');
