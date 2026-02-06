@@ -1568,13 +1568,15 @@ const desktopStyles = StyleSheet.create({
   priceInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
+    width: '100%',
   },
   priceInput: {
     flex: 1,
+    minWidth: 0,
     backgroundColor: COLORS.background,
     borderRadius: 6,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 8,
     fontSize: 13,
     color: COLORS.text,
