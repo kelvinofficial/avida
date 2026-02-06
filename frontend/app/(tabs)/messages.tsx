@@ -21,6 +21,7 @@ import { Conversation } from '../../src/types';
 import { EmptyState } from '../../src/components/EmptyState';
 import { useAuthStore } from '../../src/store/authStore';
 import { formatDistanceToNow, isToday, isYesterday, format } from 'date-fns';
+import { useResponsive } from '../../src/hooks/useResponsive';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
