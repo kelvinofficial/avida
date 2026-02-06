@@ -809,6 +809,422 @@ export default function ListingDetailScreen() {
   const images = listing.images || [];
   const highlights = generateHighlights(listing, category);
 
+  const getImageUri = (img: string) => {
+    if (img.startsWith('data:') || img.startsWith('http')) return img;
+    return `data:image/jpeg;base64,${img}`;
+  };
+
+  // ============ DESKTOP VIEW ============
+  if (isDesktop || isTablet) {
+    const MAX_CONTENT_WIDTH = 1200;
+    const imageGalleryWidth = 500;
+
+    return (
+      <View style={desktopStyles.pageWrapper}>
+        {/* Desktop Header Row 1 */}
+        <View style={desktopStyles.headerRow1}>
+          <View style={desktopStyles.headerRow1Inner}>
+            <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+              <View style={desktopStyles.logoIcon}>
+                <Ionicons name="storefront" size={22} color="#fff" />
+              </View>
+              <Text style={desktopStyles.logoText}>avida</Text>
+            </TouchableOpacity>
+            
+            <View style={desktopStyles.headerActions}>
+              {isAuthenticated ? (
+                <>
+                  <TouchableOpacity style={desktopStyles.notifBtn} onPress={() => router.push('/notifications')}>
+                    <Ionicons name="notifications-outline" size={22} color="#333" />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={desktopStyles.profileBtn} onPress={() => router.push('/profile')}>
+                    <Ionicons name="person-circle-outline" size={28} color="#333" />
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity style={desktopStyles.signInBtn} onPress={() => router.push('/login')}>
+                    <Text style={desktopStyles.signInBtnText}>Sign In</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={desktopStyles.signUpBtn} onPress={() => router.push('/login')}>
+                    <Text style={desktopStyles.signUpBtnText}>Sign Up</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+              <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => router.push('/create-listing')}>
+                <Ionicons name="add" size={18} color="#fff" />
+                <Text style={desktopStyles.postListingBtnText}>Post Listing</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* Breadcrumb */}
+        <View style={desktopStyles.breadcrumbRow}>
+          <View style={[desktopStyles.breadcrumbInner, { maxWidth: MAX_CONTENT_WIDTH }]}>
+            <TouchableOpacity onPress={() => router.push('/')} style={desktopStyles.breadcrumbLink}>
+              <Ionicons name="home-outline" size={16} color={COLORS.textSecondary} />
+              <Text style={desktopStyles.breadcrumbText}>Home</Text>
+            </TouchableOpacity>
+            <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
+            <TouchableOpacity onPress={() => router.push(`/category/${listing.category_id}`)} style={desktopStyles.breadcrumbLink}>
+              <Text style={desktopStyles.breadcrumbText}>{category?.name || getCategoryName(listing.category_id)}</Text>
+            </TouchableOpacity>
+            <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
+            <Text style={desktopStyles.breadcrumbCurrent} numberOfLines={1}>{listing.title}</Text>
+          </View>
+        </View>
+
+        {/* Main Content */}
+        <ScrollView 
+          style={desktopStyles.scrollContainer}
+          contentContainerStyle={desktopStyles.scrollContent}
+          showsVerticalScrollIndicator={true}
+        >
+          <View style={[desktopStyles.mainContainer, { maxWidth: MAX_CONTENT_WIDTH }]}>
+            {/* Left Column - Images */}
+            <View style={[desktopStyles.leftColumn, { width: imageGalleryWidth }]}>
+              {/* Main Image */}
+              <View style={desktopStyles.mainImageContainer}>
+                {images.length > 0 ? (
+                  <Image 
+                    source={{ uri: getImageUri(images[currentImageIndex]) }} 
+                    style={desktopStyles.mainImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={desktopStyles.imagePlaceholder}>
+                    <Ionicons name="image-outline" size={64} color={COLORS.textSecondary} />
+                  </View>
+                )}
+                {listing.featured && (
+                  <View style={desktopStyles.featuredBadge}>
+                    <Ionicons name="star" size={14} color="#fff" />
+                    <Text style={desktopStyles.featuredBadgeText}>Featured</Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Thumbnails */}
+              {images.length > 1 && (
+                <View style={desktopStyles.thumbnailsRow}>
+                  {images.slice(0, 5).map((img, index) => (
+                    <TouchableOpacity 
+                      key={index} 
+                      style={[
+                        desktopStyles.thumbnail,
+                        currentImageIndex === index && desktopStyles.thumbnailActive
+                      ]}
+                      onPress={() => setCurrentImageIndex(index)}
+                    >
+                      <Image 
+                        source={{ uri: getImageUri(img) }} 
+                        style={desktopStyles.thumbnailImage}
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
+                  ))}
+                  {images.length > 5 && (
+                    <View style={desktopStyles.moreImages}>
+                      <Text style={desktopStyles.moreImagesText}>+{images.length - 5}</Text>
+                    </View>
+                  )}
+                </View>
+              )}
+
+              {/* Seller Section on Desktop */}
+              <View style={desktopStyles.sellerCard}>
+                <Text style={desktopStyles.sectionTitle}>Listed by</Text>
+                {listing.seller && (
+                  <TouchableOpacity 
+                    style={desktopStyles.sellerInfo}
+                    onPress={() => router.push(`/profile/public/${listing.user_id}`)}
+                  >
+                    {listing.seller.picture ? (
+                      <Image source={{ uri: listing.seller.picture }} style={desktopStyles.sellerAvatar} />
+                    ) : (
+                      <View style={desktopStyles.sellerAvatarPlaceholder}>
+                        <Ionicons name="person" size={24} color={COLORS.primary} />
+                      </View>
+                    )}
+                    <View style={desktopStyles.sellerDetails}>
+                      <View style={desktopStyles.sellerNameRow}>
+                        <Text style={desktopStyles.sellerName}>{listing.seller.name}</Text>
+                        {listing.seller.verified && (
+                          <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+                        )}
+                      </View>
+                      {listing.seller.rating && (
+                        <View style={desktopStyles.sellerRating}>
+                          <Ionicons name="star" size={14} color="#FFB800" />
+                          <Text style={desktopStyles.sellerRatingText}>{listing.seller.rating.toFixed(1)}</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* Safety Tips */}
+              <View style={desktopStyles.safetyCard}>
+                <View style={desktopStyles.safetyHeader}>
+                  <Ionicons name="shield-checkmark" size={20} color={COLORS.primary} />
+                  <Text style={desktopStyles.sectionTitle}>Safety Tips</Text>
+                </View>
+                <View style={desktopStyles.safetyTips}>
+                  <View style={desktopStyles.safetyTip}>
+                    <Ionicons name="checkmark-circle" size={14} color={COLORS.primary} />
+                    <Text style={desktopStyles.safetyTipText}>Meet in a public place</Text>
+                  </View>
+                  <View style={desktopStyles.safetyTip}>
+                    <Ionicons name="checkmark-circle" size={14} color={COLORS.primary} />
+                    <Text style={desktopStyles.safetyTipText}>Check the item before paying</Text>
+                  </View>
+                </View>
+                <TouchableOpacity style={desktopStyles.reportBtn} onPress={() => setShowReportModal(true)}>
+                  <Ionicons name="flag-outline" size={16} color={COLORS.error} />
+                  <Text style={desktopStyles.reportBtnText}>Report this listing</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Right Column - Details */}
+            <View style={desktopStyles.rightColumn}>
+              {/* Price & Title Card */}
+              <View style={desktopStyles.detailCard}>
+                <View style={desktopStyles.priceRow}>
+                  <Text style={desktopStyles.price}>{formatPrice(listing.price)}</Text>
+                  {listing.negotiable && (
+                    <View style={desktopStyles.negotiableBadge}>
+                      <Text style={desktopStyles.negotiableText}>Negotiable</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={desktopStyles.title}>{listing.title}</Text>
+                
+                <View style={desktopStyles.locationRow}>
+                  <Ionicons name="location-outline" size={18} color={COLORS.textSecondary} />
+                  <Text style={desktopStyles.locationText}>{listing.location}</Text>
+                </View>
+
+                <View style={desktopStyles.statsRow}>
+                  <View style={desktopStyles.stat}>
+                    <Ionicons name="eye-outline" size={16} color={COLORS.textSecondary} />
+                    <Text style={desktopStyles.statText}>{listing.views || 0} views</Text>
+                  </View>
+                  <View style={desktopStyles.stat}>
+                    <Ionicons name="heart-outline" size={16} color={COLORS.textSecondary} />
+                    <Text style={desktopStyles.statText}>{listing.favorites_count || 0} saves</Text>
+                  </View>
+                  <View style={desktopStyles.stat}>
+                    <Ionicons name="time-outline" size={16} color={COLORS.textSecondary} />
+                    <Text style={desktopStyles.statText}>{getTimeAgo(listing.created_at)}</Text>
+                  </View>
+                </View>
+
+                {/* Action Buttons */}
+                {listing.user_id !== user?.user_id && (
+                  <View style={desktopStyles.actionButtons}>
+                    <TouchableOpacity style={desktopStyles.primaryActionBtn} onPress={() => setShowOfferModal(true)}>
+                      <Ionicons name="pricetag" size={20} color="#fff" />
+                      <Text style={desktopStyles.primaryActionText}>Make an Offer</Text>
+                    </TouchableOpacity>
+                    <View style={desktopStyles.secondaryActions}>
+                      <TouchableOpacity style={desktopStyles.secondaryActionBtn} onPress={handleChat}>
+                        <Ionicons name="chatbubble-outline" size={20} color={COLORS.primary} />
+                        <Text style={desktopStyles.secondaryActionText}>Chat</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={desktopStyles.iconBtn} onPress={handleToggleFavorite}>
+                        <Ionicons 
+                          name={isFavorited ? 'heart' : 'heart-outline'} 
+                          size={22} 
+                          color={isFavorited ? COLORS.error : COLORS.primary} 
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity style={desktopStyles.iconBtn} onPress={handleShare}>
+                        <Ionicons name="share-outline" size={22} color={COLORS.primary} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+              </View>
+
+              {/* Highlights */}
+              {highlights.length > 0 && (
+                <View style={desktopStyles.detailCard}>
+                  <Text style={desktopStyles.sectionTitle}>Highlights</Text>
+                  <View style={desktopStyles.highlightsGrid}>
+                    {highlights.map((item) => (
+                      <View key={item.id} style={desktopStyles.highlightItem}>
+                        <Ionicons name={item.icon as any} size={16} color={COLORS.primary} />
+                        <Text style={desktopStyles.highlightText}>{item.label}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {/* Key Details */}
+              {listing.attributes && Object.keys(listing.attributes).length > 0 && (
+                <View style={desktopStyles.detailCard}>
+                  <Text style={desktopStyles.sectionTitle}>Details</Text>
+                  <View style={desktopStyles.detailsGrid}>
+                    {category && (
+                      <View style={desktopStyles.detailItem}>
+                        <Text style={desktopStyles.detailLabel}>Category</Text>
+                        <Text style={desktopStyles.detailValue}>{category.name}</Text>
+                      </View>
+                    )}
+                    {listing.condition && (
+                      <View style={desktopStyles.detailItem}>
+                        <Text style={desktopStyles.detailLabel}>Condition</Text>
+                        <Text style={desktopStyles.detailValue}>{listing.condition}</Text>
+                      </View>
+                    )}
+                    {Object.entries(listing.attributes).map(([key, value]) => (
+                      <View key={key} style={desktopStyles.detailItem}>
+                        <Text style={desktopStyles.detailLabel}>{key.replace(/_/g, ' ')}</Text>
+                        <Text style={desktopStyles.detailValue}>{String(value)}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {/* Description */}
+              {listing.description && (
+                <View style={desktopStyles.detailCard}>
+                  <Text style={desktopStyles.sectionTitle}>Description</Text>
+                  <Text style={desktopStyles.descriptionText}>{listing.description}</Text>
+                </View>
+              )}
+
+              {/* Location */}
+              <View style={desktopStyles.detailCard}>
+                <Text style={desktopStyles.sectionTitle}>Location</Text>
+                <View style={desktopStyles.mapPlaceholder}>
+                  <Ionicons name="map" size={40} color={COLORS.primary} />
+                  <Text style={desktopStyles.mapText}>{listing.location}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Similar Listings - Full Width */}
+          <View style={[desktopStyles.similarSection, { maxWidth: MAX_CONTENT_WIDTH }]}>
+            <SimilarListings propertyId={id!} category="other" />
+          </View>
+        </ScrollView>
+
+        {/* Modals */}
+        <ReportModal
+          visible={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          onReport={handleReport}
+        />
+
+        {/* Offer Modal */}
+        <Modal visible={showOfferModal} animationType="fade" transparent>
+          <View style={desktopStyles.modalOverlay}>
+            <View style={desktopStyles.offerModalContent}>
+              <View style={desktopStyles.offerModalHeader}>
+                <Text style={desktopStyles.offerModalTitle}>Make an Offer</Text>
+                <TouchableOpacity onPress={() => setShowOfferModal(false)}>
+                  <Ionicons name="close" size={24} color={COLORS.text} />
+                </TouchableOpacity>
+              </View>
+              
+              <View style={desktopStyles.offerModalBody}>
+                <Text style={desktopStyles.offerLabel}>Your Offer</Text>
+                <View style={desktopStyles.offerPriceInput}>
+                  <Text style={desktopStyles.offerCurrency}>€</Text>
+                  <TextInput
+                    style={desktopStyles.offerInput}
+                    placeholder="Enter amount"
+                    placeholderTextColor="#9CA3AF"
+                    keyboardType="numeric"
+                    value={offerPrice}
+                    onChangeText={setOfferPrice}
+                  />
+                </View>
+                <Text style={desktopStyles.offerHint}>Listed price: {formatPrice(listing.price)}</Text>
+                
+                <Text style={[desktopStyles.offerLabel, { marginTop: 20 }]}>Message (optional)</Text>
+                <TextInput
+                  style={desktopStyles.offerMessageInput}
+                  placeholder="Add a message to the seller..."
+                  placeholderTextColor="#9CA3AF"
+                  multiline
+                  numberOfLines={4}
+                  value={offerMessage}
+                  onChangeText={setOfferMessage}
+                />
+              </View>
+              
+              <View style={desktopStyles.offerModalFooter}>
+                <TouchableOpacity 
+                  style={desktopStyles.offerCancelBtn} 
+                  onPress={() => setShowOfferModal(false)}
+                >
+                  <Text style={desktopStyles.offerCancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[desktopStyles.offerSubmitBtn, (!offerPrice || submittingOffer) && { opacity: 0.5 }]}
+                  onPress={handleSubmitOffer}
+                  disabled={!offerPrice || submittingOffer}
+                >
+                  {submittingOffer ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={desktopStyles.offerSubmitText}>Submit Offer</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Offer Success Modal */}
+        <Modal visible={showOfferSuccessModal} animationType="fade" transparent>
+          <View style={offerSuccessStyles.overlay}>
+            <View style={offerSuccessStyles.container}>
+              <View style={offerSuccessStyles.iconContainer}>
+                <Ionicons name="checkmark-circle" size={64} color="#4CAF50" />
+              </View>
+              <Text style={offerSuccessStyles.title}>Offer Sent!</Text>
+              <Text style={offerSuccessStyles.amount}>{submittedOfferAmount}</Text>
+              <Text style={offerSuccessStyles.description}>
+                Your offer has been sent to the seller.
+              </Text>
+              <View style={offerSuccessStyles.buttons}>
+                <TouchableOpacity 
+                  style={offerSuccessStyles.secondaryButton}
+                  onPress={() => setShowOfferSuccessModal(false)}
+                >
+                  <Text style={offerSuccessStyles.secondaryButtonText}>Continue Browsing</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={offerSuccessStyles.primaryButton}
+                  onPress={() => {
+                    setShowOfferSuccessModal(false);
+                    if (offerConversationId) {
+                      router.push(`/chat/${offerConversationId}`);
+                    }
+                  }}
+                >
+                  <Ionicons name="chatbubble" size={18} color="#fff" />
+                  <Text style={offerSuccessStyles.primaryButtonText}>View Chat</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      </View>
+    );
+  }
+
+  // ============ MOBILE VIEW ============
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header Actions (floating - outside ScrollView) */}
