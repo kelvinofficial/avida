@@ -1064,6 +1064,33 @@ export default function ProfileScreen() {
 
   // ============ MOBILE VIEW - AUTHENTICATED ============
   return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
+        }
+      >
+        <ProfileHeader profile={profile} onEditPress={handleEditProfile} />
+        
+        <StatsRow stats={profile?.stats || null} />
+        
+        <ActivitySection onItemPress={handleActivityPress} />
+        
+        <TrustSection profile={profile} onVerifyPress={handleActivityPress} />
+        
+        <QuickActions router={router} onLogout={handleLogout} />
+
+        <Text style={styles.version}>avida v1.0.0</Text>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
