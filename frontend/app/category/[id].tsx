@@ -626,11 +626,13 @@ export default function CategoryScreen() {
 
   // Desktop view
   if (isDesktop || isTablet) {
-    // Calculate card width for 4 columns
+    // Calculate card width for 3 columns
     const MAX_WIDTH = 1200;
     const sidebarWidth = 240;
-    const contentWidth = MAX_WIDTH - sidebarWidth - 48; // 48 for padding
-    const cardWidth = Math.floor((contentWidth - 60) / 4); // 60 for gaps (3 gaps * 20px)
+    const contentPadding = 48; // 24px on each side
+    const columnGap = 24; // Gap between columns
+    const contentWidth = MAX_WIDTH - sidebarWidth - contentPadding - 20; // 20 for sidebar margin
+    const cardWidth = Math.floor((contentWidth - columnGap * 2) / 3); // 3 columns with 2 gaps
 
     return (
       <View style={desktopStyles.pageWrapper}>
@@ -720,42 +722,44 @@ export default function CategoryScreen() {
           </View>
         </View>
 
-        {/* Main Content: Sidebar + Listings */}
-        <View style={desktopStyles.mainContainer}>
+        {/* Main Content: Sidebar + Listings - Scrollable */}
+        <ScrollView 
+          style={desktopStyles.scrollContainer}
+          contentContainerStyle={desktopStyles.scrollContent}
+          showsVerticalScrollIndicator={true}
+        >
           <View style={desktopStyles.mainContainerInner}>
             {/* Sidebar */}
             {renderDesktopSidebar()}
 
-            {/* Listings Grid - 4 columns */}
+            {/* Listings Grid - 3 columns */}
             <View style={desktopStyles.listingsContainer}>
-              <FlatList
-                data={listings}
-                renderItem={({ item }) => (
-                  <View style={[desktopStyles.cardWrapper, { width: cardWidth }]}>
-                    <ListingCard
-                      listing={item}
-                      onPress={() => router.push(getListingRoute(item))}
-                      onFavorite={() => toggleFavorite(item.id)}
-                      isFavorited={favorites.has(item.id)}
-                    />
+              {loading && listings.length === 0 ? (
+                <View style={desktopStyles.loadingContainer}>
+                  <ActivityIndicator size="large" color={COLORS.primary} />
+                </View>
+              ) : listings.length === 0 ? (
+                renderEmpty()
+              ) : (
+                <>
+                  <View style={desktopStyles.listingsGrid}>
+                    {listings.map((item) => (
+                      <View key={item.id} style={[desktopStyles.cardWrapper, { width: cardWidth }]}>
+                        <ListingCard
+                          listing={item}
+                          onPress={() => router.push(getListingRoute(item))}
+                          onFavorite={() => toggleFavorite(item.id)}
+                          isFavorited={favorites.has(item.id)}
+                        />
+                      </View>
+                    ))}
                   </View>
-                )}
-                keyExtractor={(item) => item.id}
-                numColumns={4}
-                key="desktop-4col"
-                contentContainerStyle={desktopStyles.listContent}
-                columnWrapperStyle={desktopStyles.gridRow}
-                ListEmptyComponent={renderEmpty}
-                ListFooterComponent={renderFooter}
-                refreshControl={
-                  <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[COLORS.primary]} />
-                }
-                onEndReached={handleLoadMore}
-                onEndReachedThreshold={0.5}
-              />
+                  {renderFooter()}
+                </>
+              )}
             </View>
           </View>
-        </View>
+        </ScrollView>
 
         {renderFiltersModal()}
       </View>
