@@ -148,6 +148,223 @@ export default function HelpSupportScreen() {
     }
   };
 
+  // Tab content renderer for both mobile and desktop
+  const renderFAQContent = () => (
+    <>
+      <View style={isLargeScreen ? desktopStyles.faqContainer : styles.faqContainer}>
+        {FAQ_DATA.map(item => (
+          <FAQItem
+            key={item.id}
+            item={item}
+            isExpanded={expandedFAQ === item.id}
+            onToggle={() => setExpandedFAQ(expandedFAQ === item.id ? null : item.id)}
+          />
+        ))}
+      </View>
+      <View style={styles.contactPrompt}>
+        <Text style={styles.contactPromptText}>Can't find what you're looking for?</Text>
+        <TouchableOpacity onPress={() => setActiveTab('contact')}>
+          <Text style={styles.contactPromptLink}>Contact Support</Text>
+        </TouchableOpacity>
+      </View>
+    </>
+  );
+
+  const renderContactContent = () => (
+    <>
+      {!isAuthenticated ? (
+        <View style={styles.loginPrompt}>
+          <Ionicons name="lock-closed-outline" size={48} color={COLORS.textSecondary} />
+          <Text style={styles.loginPromptText}>Please sign in to contact support</Text>
+          <TouchableOpacity style={styles.signInBtn} onPress={() => router.push('/login')}>
+            <Text style={styles.signInBtnText}>Sign In</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Subject</Text>
+            <TextInput
+              style={[styles.textInput, isLargeScreen && desktopStyles.textInput]}
+              value={subject}
+              onChangeText={setSubject}
+              placeholder="Brief description of your issue"
+              placeholderTextColor={COLORS.textSecondary}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Message</Text>
+            <TextInput
+              style={[styles.textInput, styles.messageInput, isLargeScreen && desktopStyles.messageInput]}
+              value={message}
+              onChangeText={setMessage}
+              placeholder="Describe your issue in detail..."
+              placeholderTextColor={COLORS.textSecondary}
+              multiline
+              textAlignVertical="top"
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.submitBtn, submitting && styles.submitBtnDisabled]}
+            onPress={handleSubmitTicket}
+            disabled={submitting}
+          >
+            {submitting ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.submitBtnText}>Submit Ticket</Text>
+            )}
+          </TouchableOpacity>
+
+          <View style={styles.alternativeContact}>
+            <Text style={styles.alternativeTitle}>Or reach us directly:</Text>
+            <TouchableOpacity style={styles.contactMethod} onPress={() => Linking.openURL('mailto:support@avida.com')}>
+              <Ionicons name="mail" size={20} color={COLORS.primary} />
+              <Text style={styles.contactMethodText}>support@avida.com</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.contactMethod} onPress={() => Linking.openURL('tel:+1234567890')}>
+              <Ionicons name="call" size={20} color={COLORS.primary} />
+              <Text style={styles.contactMethodText}>+1 (234) 567-890</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
+    </>
+  );
+
+  const renderTicketsContent = () => (
+    <>
+      {!isAuthenticated ? (
+        <View style={styles.loginPrompt}>
+          <Ionicons name="lock-closed-outline" size={48} color={COLORS.textSecondary} />
+          <Text style={styles.loginPromptText}>Please sign in to view your tickets</Text>
+          <TouchableOpacity style={styles.signInBtn} onPress={() => router.push('/login')}>
+            <Text style={styles.signInBtnText}>Sign In</Text>
+          </TouchableOpacity>
+        </View>
+      ) : loadingTickets ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      ) : tickets.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="ticket-outline" size={48} color={COLORS.textSecondary} />
+          <Text style={styles.emptyTitle}>No tickets yet</Text>
+          <Text style={styles.emptySubtitle}>Your support tickets will appear here</Text>
+        </View>
+      ) : (
+        <View style={styles.ticketsList}>
+          {tickets.map((ticket, index) => (
+            <TouchableOpacity key={index} style={[styles.ticketCard, isLargeScreen && desktopStyles.ticketCard]}>
+              <View style={styles.ticketHeader}>
+                <Text style={styles.ticketSubject} numberOfLines={1}>{ticket.subject}</Text>
+                <View style={[styles.ticketStatus, { backgroundColor: getStatusColor(ticket.status) + '20' }]}>
+                  <Text style={[styles.ticketStatusText, { color: getStatusColor(ticket.status) }]}>
+                    {ticket.status?.replace('_', ' ')}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.ticketMessage} numberOfLines={2}>{ticket.message}</Text>
+              <Text style={styles.ticketDate}>{new Date(ticket.created_at).toLocaleDateString()}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </>
+  );
+
+  // ============ DESKTOP VIEW ============
+  if (isLargeScreen) {
+    return (
+      <View style={desktopStyles.container}>
+        {/* Desktop Header */}
+        <View style={desktopStyles.header}>
+          <View style={desktopStyles.headerInner}>
+            <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+              <View style={desktopStyles.logoIcon}>
+                <Ionicons name="storefront" size={22} color="#fff" />
+              </View>
+              <Text style={desktopStyles.logoText}>avida</Text>
+            </TouchableOpacity>
+            <View style={desktopStyles.headerActions}>
+              <TouchableOpacity style={desktopStyles.headerBtn} onPress={() => router.push('/profile')}>
+                <Ionicons name="person-circle-outline" size={26} color={COLORS.text} />
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.postBtn} onPress={() => router.push('/post')}>
+                <Ionicons name="add" size={18} color="#fff" />
+                <Text style={desktopStyles.postBtnText}>Post Listing</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        <View style={desktopStyles.mainContent}>
+          {/* Sidebar */}
+          <View style={desktopStyles.sidebar}>
+            <View style={desktopStyles.sidebarHeader}>
+              <Ionicons name="help-buoy" size={24} color={COLORS.primary} />
+              <Text style={desktopStyles.sidebarTitle}>Help & Support</Text>
+            </View>
+
+            <View style={desktopStyles.navItems}>
+              {[
+                { key: 'faq', label: 'FAQ', icon: 'help-circle-outline' },
+                { key: 'contact', label: 'Contact Us', icon: 'mail-outline' },
+                { key: 'tickets', label: 'My Tickets', icon: 'ticket-outline' },
+              ].map(tab => (
+                <TouchableOpacity
+                  key={tab.key}
+                  style={[desktopStyles.navItem, activeTab === tab.key && desktopStyles.navItemActive]}
+                  onPress={() => setActiveTab(tab.key as any)}
+                >
+                  <Ionicons 
+                    name={tab.icon as any} 
+                    size={20} 
+                    color={activeTab === tab.key ? COLORS.primary : COLORS.textSecondary} 
+                  />
+                  <Text style={[desktopStyles.navItemText, activeTab === tab.key && desktopStyles.navItemTextActive]}>
+                    {tab.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={desktopStyles.quickLinks}>
+              <Text style={desktopStyles.quickLinksTitle}>QUICK LINKS</Text>
+              <TouchableOpacity style={desktopStyles.quickLink} onPress={() => Linking.openURL('mailto:support@avida.com')}>
+                <Ionicons name="mail" size={16} color={COLORS.textSecondary} />
+                <Text style={desktopStyles.quickLinkText}>support@avida.com</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.quickLink} onPress={() => Linking.openURL('tel:+1234567890')}>
+                <Ionicons name="call" size={16} color={COLORS.textSecondary} />
+                <Text style={desktopStyles.quickLinkText}>+1 (234) 567-890</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Content Area */}
+          <ScrollView style={desktopStyles.contentArea} contentContainerStyle={desktopStyles.contentInner}>
+            <View style={desktopStyles.sectionCard}>
+              <Text style={desktopStyles.sectionTitle}>
+                {activeTab === 'faq' ? 'Frequently Asked Questions' : activeTab === 'contact' ? 'Contact Support' : 'My Support Tickets'}
+              </Text>
+              <Text style={desktopStyles.sectionSubtitle}>
+                {activeTab === 'faq' ? 'Find answers to common questions' : activeTab === 'contact' ? 'Get help from our support team' : 'Track your support requests'}
+              </Text>
+
+              {activeTab === 'faq' && renderFAQContent()}
+              {activeTab === 'contact' && renderContactContent()}
+              {activeTab === 'tickets' && renderTicketsContent()}
+            </View>
+          </ScrollView>
+        </View>
+      </View>
+    );
+  }
+
+  // ============ MOBILE VIEW ============
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
