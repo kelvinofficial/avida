@@ -2172,3 +2172,230 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+// Desktop-specific styles
+const desktopStyles = StyleSheet.create({
+  container: {
+    backgroundColor: '#F0F2F5',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  cancelButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  cancelText: {
+    color: COLORS.error,
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  mainLayout: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  
+  // Sidebar
+  sidebar: {
+    width: 280,
+    backgroundColor: COLORS.surface,
+    borderRightWidth: 1,
+    borderRightColor: COLORS.border,
+    padding: 24,
+  },
+  sidebarContent: {
+    flex: 1,
+  },
+  sidebarTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 20,
+  },
+  sidebarStep: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    marginBottom: 4,
+  },
+  sidebarStepActive: {
+    backgroundColor: COLORS.primaryLight,
+  },
+  sidebarStepComplete: {
+    opacity: 0.8,
+  },
+  sidebarStepDot: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  sidebarStepDotActive: {
+    backgroundColor: COLORS.primary,
+  },
+  sidebarStepDotComplete: {
+    backgroundColor: COLORS.primary,
+  },
+  sidebarStepNumber: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  sidebarStepNumberActive: {
+    color: '#fff',
+  },
+  sidebarStepLabel: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+  },
+  sidebarStepLabelActive: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  sidebarStepLabelComplete: {
+    color: COLORS.text,
+  },
+  
+  // Sidebar Summary
+  sidebarSummary: {
+    marginTop: 24,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  summaryTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 12,
+  },
+  summaryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  summaryText: {
+    fontSize: 13,
+    color: COLORS.text,
+    fontWeight: '500',
+    flex: 1,
+  },
+  
+  // Content Area
+  contentArea: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  formContainer: {
+    flex: 1,
+    padding: 32,
+    maxWidth: 900,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  formCard: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    overflow: 'hidden',
+  },
+  formContent: {
+    flex: 1,
+  },
+  
+  // Form Footer
+  formFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    backgroundColor: '#FAFAFA',
+  },
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    gap: 8,
+  },
+  backBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  nextBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    gap: 8,
+  },
+  nextBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  publishBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    gap: 8,
+  },
+  publishBtnDisabled: {
+    opacity: 0.7,
+  },
+  publishBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+});
