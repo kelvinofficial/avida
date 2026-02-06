@@ -627,15 +627,11 @@ export default function CategoryScreen() {
   // Desktop view
   if (isDesktop || isTablet) {
     // Calculate card width for 3 columns
-    // Content area = total width - sidebar (240px) - sidebar margin (24px) 
-    // Each card has a 24px gap between them (2 gaps for 3 columns)
-    const sidebarWidth = 240;
-    const sidebarMargin = 24;
-    const columnGap = 24;
-    const numColumns = 3;
-    // Estimate usable content width
-    const contentAreaWidth = 680; // Fixed width for the listings grid area
-    const cardWidth = Math.floor((contentAreaWidth - columnGap * (numColumns - 1)) / numColumns);
+    // Sidebar width (240px) + margin (24px) + content padding (48px) = 312px taken
+    // Remaining width for cards: MAX_WIDTH - 312 = 888px
+    // For 3 columns with 2 gaps of 24px each = 48px for gaps
+    // Card width = (888 - 48) / 3 = 280px each
+    const cardWidth = 280;
 
     return (
       <View style={desktopStyles.pageWrapper}>
