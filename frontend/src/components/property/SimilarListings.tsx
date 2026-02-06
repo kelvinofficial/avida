@@ -956,4 +956,15 @@ const styles = StyleSheet.create({
   },
 });
 
+// Desktop container styles
+const desktopContainerStyles = StyleSheet.create({
+  container: {
+    paddingVertical: 24,
+    borderRadius: 12,
+  },
+  listContainer: {
+    paddingHorizontal: 24,
+  },
+});
+
 export default SimilarListings;
