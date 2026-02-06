@@ -539,6 +539,28 @@ const cardStyles = StyleSheet.create({
   },
 });
 
+// ============ DESKTOP CARD STYLES ============
+const desktopCardStyles = StyleSheet.create({
+  card: {
+    marginBottom: 16,
+  },
+  price: {
+    fontSize: 20,
+  },
+  title: {
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  specText: {
+    fontSize: 13,
+  },
+  actionButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+});
+
 // ============ FILTER CHIP COMPONENT ============
 const FilterChip = memo(({ 
   label, 
