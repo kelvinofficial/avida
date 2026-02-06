@@ -17,6 +17,7 @@ import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/store/authStore';
 import api from '../../src/utils/api';
 import { UserProfile, UserStats } from '../../src/types/settings';
+import { useResponsive } from '../../src/hooks/useResponsive';
 
 const COLORS = {
   primary: '#2E7D32',
