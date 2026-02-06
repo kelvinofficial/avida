@@ -507,38 +507,9 @@ export default function CategoryScreen() {
 
   const mainCategory = getMainCategory(categoryId);
 
-  // Desktop Sidebar Component
+  // Desktop Sidebar Component - Only subcategories and filters
   const renderDesktopSidebar = () => (
     <View style={desktopStyles.sidebar}>
-      {/* Logo */}
-      <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
-        <View style={desktopStyles.logoIcon}>
-          <Ionicons name="storefront" size={20} color="#fff" />
-        </View>
-        <Text style={desktopStyles.logoText}>avida</Text>
-      </TouchableOpacity>
-
-      {/* Categories Section */}
-      <View style={desktopStyles.sidebarSection}>
-        <Text style={desktopStyles.sidebarSectionTitle}>CATEGORIES</Text>
-        {ALL_CATEGORIES.map((cat) => (
-          <TouchableOpacity
-            key={cat.id}
-            style={[desktopStyles.categoryItem, categoryId === cat.id && desktopStyles.categoryItemActive]}
-            onPress={() => router.push(`/category/${cat.id}`)}
-          >
-            <Ionicons 
-              name={cat.icon as any} 
-              size={18} 
-              color={categoryId === cat.id ? COLORS.primary : COLORS.textSecondary} 
-            />
-            <Text style={[desktopStyles.categoryItemText, categoryId === cat.id && desktopStyles.categoryItemTextActive]}>
-              {cat.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
       {/* Subcategories Section */}
       {subcategories.length > 0 && (
         <View style={desktopStyles.sidebarSection}>
@@ -655,29 +626,144 @@ export default function CategoryScreen() {
 
   // Desktop view
   if (isDesktop || isTablet) {
+    // Calculate card width for 4 columns
+    const MAX_WIDTH = 1200;
+    const sidebarWidth = 240;
+    const contentWidth = MAX_WIDTH - sidebarWidth - 48; // 48 for padding
+    const cardWidth = Math.floor((contentWidth - 60) / 4); // 60 for gaps (3 gaps * 20px)
+
     return (
-      <View style={desktopStyles.container}>
-        {renderDesktopSidebar()}
-        <View style={desktopStyles.mainContent}>
-          {/* Desktop Header */}
-          <View style={desktopStyles.header}>
-            <View style={desktopStyles.headerLeft}>
-              <TouchableOpacity onPress={() => router.push('/')} style={desktopStyles.homeLink}>
-                <Ionicons name="home-outline" size={18} color={COLORS.textSecondary} />
-                <Text style={desktopStyles.breadcrumb}>Home</Text>
-              </TouchableOpacity>
-              <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
-              <Text style={desktopStyles.breadcrumbActive}>{mainCategory?.name}</Text>
-              {selectedSubcategory && (
+      <View style={desktopStyles.pageWrapper}>
+        {/* Row 1: Logo + Auth + Post Listing */}
+        <View style={desktopStyles.headerRow1}>
+          <View style={desktopStyles.headerRow1Inner}>
+            <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+              <View style={desktopStyles.logoIcon}>
+                <Ionicons name="storefront" size={22} color="#fff" />
+              </View>
+              <Text style={desktopStyles.logoText}>avida</Text>
+            </TouchableOpacity>
+            
+            <View style={desktopStyles.headerActions}>
+              {isAuthenticated ? (
                 <>
-                  <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
-                  <Text style={desktopStyles.breadcrumbActive}>
-                    {subcategories.find(s => s.id === selectedSubcategory)?.name}
-                  </Text>
+                  <TouchableOpacity style={desktopStyles.notifBtn} onPress={() => router.push('/notifications')}>
+                    <Ionicons name="notifications-outline" size={22} color="#333" />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={desktopStyles.profileBtn} onPress={() => router.push('/profile')}>
+                    <Ionicons name="person-circle-outline" size={28} color="#333" />
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity style={desktopStyles.signInBtn} onPress={() => router.push('/login')}>
+                    <Text style={desktopStyles.signInBtnText}>Sign In</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={desktopStyles.signUpBtn} onPress={() => router.push('/login')}>
+                    <Text style={desktopStyles.signUpBtnText}>Sign Up</Text>
+                  </TouchableOpacity>
                 </>
               )}
+              <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => router.push('/create-listing')}>
+                <Ionicons name="add" size={18} color="#fff" />
+                <Text style={desktopStyles.postListingBtnText}>Post Listing</Text>
+              </TouchableOpacity>
             </View>
-            <Text style={desktopStyles.resultsCount}>{total} results</Text>
+          </View>
+        </View>
+
+        {/* Row 2: Search + Location */}
+        <View style={desktopStyles.headerRow2}>
+          <View style={desktopStyles.headerRow2Inner}>
+            <TouchableOpacity style={desktopStyles.searchField} onPress={() => router.push('/search')} activeOpacity={0.8}>
+              <Ionicons name="search" size={20} color="#666" />
+              <Text style={desktopStyles.searchPlaceholder}>Search in {mainCategory?.name}...</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={desktopStyles.locationChip} activeOpacity={0.7}>
+              <Ionicons name="location" size={18} color="#2E7D32" />
+              <Text style={desktopStyles.locationText}>All Locations</Text>
+              <Ionicons name="chevron-down" size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Row 3: Breadcrumb */}
+        <View style={desktopStyles.breadcrumbRow}>
+          <View style={desktopStyles.breadcrumbInner}>
+            <TouchableOpacity onPress={() => router.push('/')} style={desktopStyles.breadcrumbLink}>
+              <Ionicons name="home-outline" size={16} color={COLORS.textSecondary} />
+              <Text style={desktopStyles.breadcrumbText}>Home</Text>
+            </TouchableOpacity>
+            <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
+            <Text style={desktopStyles.breadcrumbCurrent}>{mainCategory?.name}</Text>
+            {selectedSubcategory && (
+              <>
+                <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
+                <Text style={desktopStyles.breadcrumbCurrent}>
+                  {subcategories.find(s => s.id === selectedSubcategory)?.name}
+                </Text>
+              </>
+            )}
+          </View>
+        </View>
+
+        {/* Row 4: Category Heading + Results Count */}
+        <View style={desktopStyles.categoryHeadingRow}>
+          <View style={desktopStyles.categoryHeadingInner}>
+            <View style={desktopStyles.categoryTitleContainer}>
+              {mainCategory?.icon && (
+                <Ionicons name={mainCategory.icon as any} size={28} color={COLORS.primary} />
+              )}
+              <Text style={desktopStyles.categoryTitle}>{mainCategory?.name}</Text>
+            </View>
+            <Text style={desktopStyles.resultsCount}>{total} listings found</Text>
+          </View>
+        </View>
+
+        {/* Main Content: Sidebar + Listings */}
+        <View style={desktopStyles.mainContainer}>
+          <View style={desktopStyles.mainContainerInner}>
+            {/* Sidebar */}
+            {renderDesktopSidebar()}
+
+            {/* Listings Grid - 4 columns */}
+            <View style={desktopStyles.listingsContainer}>
+              <FlatList
+                data={listings}
+                renderItem={({ item }) => (
+                  <View style={[desktopStyles.cardWrapper, { width: cardWidth }]}>
+                    <ListingCard
+                      listing={item}
+                      onPress={() => router.push(getListingRoute(item))}
+                      onFavorite={() => toggleFavorite(item.id)}
+                      isFavorited={favorites.has(item.id)}
+                    />
+                  </View>
+                )}
+                keyExtractor={(item) => item.id}
+                numColumns={4}
+                key="desktop-4col"
+                contentContainerStyle={desktopStyles.listContent}
+                columnWrapperStyle={desktopStyles.gridRow}
+                ListEmptyComponent={renderEmpty}
+                ListFooterComponent={renderFooter}
+                refreshControl={
+                  <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[COLORS.primary]} />
+                }
+                onEndReached={handleLoadMore}
+                onEndReachedThreshold={0.5}
+              />
+            </View>
+          </View>
+        </View>
+
+        {renderFiltersModal()}
+      </View>
+    );
+  }
+
+  // Mobile view (original)
+  return (
           </View>
 
           {/* Listings Grid */}
