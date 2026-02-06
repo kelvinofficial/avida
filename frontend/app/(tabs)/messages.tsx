@@ -11,6 +11,7 @@ import {
   Dimensions,
   TextInput,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -24,6 +25,9 @@ import { formatDistanceToNow, isToday, isYesterday, format } from 'date-fns';
 import { useResponsive } from '../../src/hooks/useResponsive';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// Desktop sidebar width
+const SIDEBAR_WIDTH = 360;
 
 const COLORS = {
   primary: '#2E7D32',
