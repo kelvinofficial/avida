@@ -575,6 +575,7 @@ export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
+  const { isMobile, isTablet, isDesktop, width: screenWidth } = useResponsive();
   
   const [listing, setListing] = useState<Listing | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
@@ -588,6 +589,7 @@ export default function ListingDetailScreen() {
   const [submittedOfferAmount, setSubmittedOfferAmount] = useState('');
   const [offerConversationId, setOfferConversationId] = useState<string | null>(null);
   const [submittingOffer, setSubmittingOffer] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const fetchListing = useCallback(async () => {
     try {
