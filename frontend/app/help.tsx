@@ -675,4 +675,188 @@ const styles = StyleSheet.create({
   ticketStatusText: { fontSize: 11, fontWeight: '600', textTransform: 'capitalize' },
   ticketMessage: { fontSize: 14, color: COLORS.textSecondary, lineHeight: 20, marginBottom: 8 },
   ticketDate: { fontSize: 12, color: COLORS.border },
+  ticketCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+});
+
+// ============ DESKTOP STYLES ============
+const desktopStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  header: {
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    alignItems: 'center',
+  },
+  headerInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    width: '100%',
+    maxWidth: 1200,
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  logoIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  headerBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  postBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  postBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  mainContent: {
+    flex: 1,
+    flexDirection: 'row',
+    maxWidth: 1200,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  sidebar: {
+    width: 260,
+    backgroundColor: COLORS.surface,
+    borderRightWidth: 1,
+    borderRightColor: COLORS.border,
+    paddingTop: 24,
+  },
+  sidebarHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+  sidebarTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  navItems: {
+    paddingHorizontal: 12,
+    marginBottom: 24,
+  },
+  navItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    marginBottom: 4,
+  },
+  navItemActive: {
+    backgroundColor: COLORS.primaryLight,
+  },
+  navItemText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+  },
+  navItemTextActive: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  quickLinks: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  quickLinksTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    letterSpacing: 0.5,
+    marginBottom: 12,
+  },
+  quickLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 8,
+  },
+  quickLinkText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  contentArea: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  contentInner: {
+    padding: 32,
+  },
+  sectionCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    padding: 24,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 24,
+  },
+  faqContainer: {
+    gap: 12,
+  },
+  textInput: {
+    height: 52,
+  },
+  messageInput: {
+    height: 160,
+  },
+  ticketCard: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
 });
