@@ -44,6 +44,7 @@ const COLORS = {
 interface SimilarListing {
   id: string;
   title: string;
+  description?: string;
   price?: number;
   images?: string[];
   location?: { city?: string; area?: string };
