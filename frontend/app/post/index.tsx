@@ -1214,6 +1214,166 @@ export default function PostListingScreen() {
     );
   }
 
+  // Desktop Layout
+  if (isLargeScreen) {
+    return (
+      <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
+        {/* Desktop Header */}
+        <View style={desktopStyles.header}>
+          <TouchableOpacity style={desktopStyles.backButton} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text style={desktopStyles.headerTitle}>Create New Listing</Text>
+          <TouchableOpacity style={desktopStyles.cancelButton} onPress={() => router.back()}>
+            <Text style={desktopStyles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={desktopStyles.mainLayout}>
+          {/* Left Sidebar - Step Navigation */}
+          <View style={desktopStyles.sidebar}>
+            <View style={desktopStyles.sidebarContent}>
+              <Text style={desktopStyles.sidebarTitle}>Steps</Text>
+              {stepLabels.map((label, i) => {
+                const s = i + 1;
+                const isActive = s === step;
+                const isComplete = s < step;
+                return (
+                  <TouchableOpacity
+                    key={s}
+                    style={[
+                      desktopStyles.sidebarStep,
+                      isActive && desktopStyles.sidebarStepActive,
+                      isComplete && desktopStyles.sidebarStepComplete,
+                    ]}
+                    onPress={() => isComplete && setStep(s)}
+                    disabled={!isComplete}
+                  >
+                    <View style={[
+                      desktopStyles.sidebarStepDot,
+                      isActive && desktopStyles.sidebarStepDotActive,
+                      isComplete && desktopStyles.sidebarStepDotComplete,
+                    ]}>
+                      {isComplete ? (
+                        <Ionicons name="checkmark" size={14} color="#fff" />
+                      ) : (
+                        <Text style={[
+                          desktopStyles.sidebarStepNumber,
+                          (isActive || isComplete) && desktopStyles.sidebarStepNumberActive,
+                        ]}>
+                          {s}
+                        </Text>
+                      )}
+                    </View>
+                    <Text style={[
+                      desktopStyles.sidebarStepLabel,
+                      isActive && desktopStyles.sidebarStepLabelActive,
+                      isComplete && desktopStyles.sidebarStepLabelComplete,
+                    ]}>
+                      {label}
+                    </Text>
+                    {isActive && (
+                      <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* Current Selection Summary */}
+            {selectedCategoryId && (
+              <View style={desktopStyles.sidebarSummary}>
+                <Text style={desktopStyles.summaryTitle}>Selected</Text>
+                <View style={desktopStyles.summaryItem}>
+                  <Ionicons name="folder-outline" size={16} color={COLORS.primary} />
+                  <Text style={desktopStyles.summaryText} numberOfLines={1}>
+                    {getMainCategory(selectedCategoryId)?.name || 'Category'}
+                  </Text>
+                </View>
+                {selectedSubcategoryId && currentSubcategoryConfig && (
+                  <View style={desktopStyles.summaryItem}>
+                    <Ionicons name="pricetag-outline" size={16} color={COLORS.primary} />
+                    <Text style={desktopStyles.summaryText} numberOfLines={1}>
+                      {currentSubcategoryConfig.name}
+                    </Text>
+                  </View>
+                )}
+                {images.length > 0 && (
+                  <View style={desktopStyles.summaryItem}>
+                    <Ionicons name="images-outline" size={16} color={COLORS.primary} />
+                    <Text style={desktopStyles.summaryText}>{images.length} photo{images.length > 1 ? 's' : ''}</Text>
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+
+          {/* Main Content Area */}
+          <View style={desktopStyles.contentArea}>
+            <KeyboardAvoidingView
+              style={desktopStyles.formContainer}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
+              <View style={desktopStyles.formCard}>
+                {/* Step Content */}
+                <View style={desktopStyles.formContent}>
+                  {step === 1 && renderStep1()}
+                  {step === 2 && renderStep2()}
+                  {step === 3 && renderStep3()}
+                  {step === 4 && renderStep4()}
+                  {step === 5 && renderStep5()}
+                  {step === 6 && renderStep6()}
+                </View>
+
+                {/* Form Footer */}
+                <View style={desktopStyles.formFooter}>
+                  {step > 1 && (
+                    <TouchableOpacity style={desktopStyles.backBtn} onPress={prevStep}>
+                      <Ionicons name="arrow-back" size={18} color={COLORS.text} />
+                      <Text style={desktopStyles.backBtnText}>Back</Text>
+                    </TouchableOpacity>
+                  )}
+                  <View style={{ flex: 1 }} />
+                  {step < TOTAL_STEPS ? (
+                    <TouchableOpacity style={desktopStyles.nextBtn} onPress={nextStep}>
+                      <Text style={desktopStyles.nextBtnText}>Continue</Text>
+                      <Ionicons name="arrow-forward" size={18} color="#fff" />
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      style={[desktopStyles.publishBtn, loading && desktopStyles.publishBtnDisabled]}
+                      onPress={handlePublish}
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <ActivityIndicator color="#fff" />
+                      ) : (
+                        <>
+                          <Ionicons name="checkmark-circle" size={20} color="#fff" />
+                          <Text style={desktopStyles.publishBtnText}>Publish Listing</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            </KeyboardAvoidingView>
+          </View>
+        </View>
+
+        {/* Success Modal */}
+        <SuccessModal
+          visible={showSuccessModal}
+          title="Published!"
+          message="Your listing is now live and visible to buyers in your area."
+          buttonText="View Listings"
+          onClose={handleSuccessModalClose}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  // Mobile Layout
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
