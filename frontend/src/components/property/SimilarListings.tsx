@@ -231,13 +231,13 @@ const HorizontalListingCard = memo(({
       </View>
 
       {/* RIGHT: Content */}
-      <View style={cardStyles.content}>
+      <View style={[cardStyles.content, isDesktop && desktopCardStyles.content]}>
         {/* Price Row */}
         <View style={cardStyles.priceRow}>
-          <Text style={cardStyles.price}>{formatPrice(listing.price || 0)}</Text>
+          <Text style={[cardStyles.price, isDesktop && desktopCardStyles.price]}>{formatPrice(listing.price || 0)}</Text>
           {isNegotiable && (
-            <View style={cardStyles.negotiableBadge}>
-              <Text style={cardStyles.negotiableText}>VB</Text>
+            <View style={[cardStyles.negotiableBadge, isDesktop && desktopCardStyles.negotiableBadge]}>
+              <Text style={[cardStyles.negotiableText, isDesktop && desktopCardStyles.negotiableText]}>VB</Text>
             </View>
           )}
         </View>
