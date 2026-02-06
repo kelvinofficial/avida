@@ -687,34 +687,34 @@ export default function ProfileScreen() {
             <Text style={desktopStyles.unauthSubtitle}>Sign in to unlock all features</Text>
 
             <View style={desktopStyles.featureGrid}>
-              <View style={desktopStyles.featureItem}>
+              <TouchableOpacity style={desktopStyles.featureItem} onPress={() => router.push('/login')}>
                 <View style={[desktopStyles.featureIcon, { backgroundColor: '#FFEBEE' }]}>
                   <Ionicons name="heart" size={24} color="#E53935" />
                 </View>
                 <Text style={desktopStyles.featureTitle}>Save Favorites</Text>
                 <Text style={desktopStyles.featureDesc}>Keep track of items you love</Text>
-              </View>
-              <View style={desktopStyles.featureItem}>
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.featureItem} onPress={() => router.push('/login')}>
                 <View style={[desktopStyles.featureIcon, { backgroundColor: '#E3F2FD' }]}>
                   <Ionicons name="chatbubbles" size={24} color="#1976D2" />
                 </View>
                 <Text style={desktopStyles.featureTitle}>View Messages</Text>
                 <Text style={desktopStyles.featureDesc}>Chat with buyers and sellers</Text>
-              </View>
-              <View style={desktopStyles.featureItem}>
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.featureItem} onPress={() => router.push('/login')}>
                 <View style={[desktopStyles.featureIcon, { backgroundColor: '#E8F5E9' }]}>
                   <Ionicons name="pricetags" size={24} color={COLORS.primary} />
                 </View>
                 <Text style={desktopStyles.featureTitle}>Manage Listings</Text>
                 <Text style={desktopStyles.featureDesc}>Post and edit your items</Text>
-              </View>
-              <View style={desktopStyles.featureItem}>
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.featureItem} onPress={() => router.push('/login')}>
                 <View style={[desktopStyles.featureIcon, { backgroundColor: '#FFF3E0' }]}>
                   <Ionicons name="notifications" size={24} color="#F57C00" />
                 </View>
                 <Text style={desktopStyles.featureTitle}>Get Notifications</Text>
                 <Text style={desktopStyles.featureDesc}>Stay updated on your activity</Text>
-              </View>
+              </TouchableOpacity>
             </View>
 
             <View style={desktopStyles.unauthButtons}>
