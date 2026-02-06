@@ -290,6 +290,42 @@ export default function SettingsScreen() {
     );
   };
 
+  // ============ DESKTOP VIEW - UNAUTHENTICATED ============
+  if (isLargeScreen && !isAuthenticated) {
+    return (
+      <View style={desktopStyles.container}>
+        {/* Desktop Header */}
+        <View style={desktopStyles.header}>
+          <View style={desktopStyles.headerInner}>
+            <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+              <View style={desktopStyles.logoIcon}>
+                <Ionicons name="storefront" size={22} color="#fff" />
+              </View>
+              <Text style={desktopStyles.logoText}>avida</Text>
+            </TouchableOpacity>
+            <View style={desktopStyles.headerActions}>
+              <TouchableOpacity style={desktopStyles.postBtn} onPress={() => router.push('/login')}>
+                <Text style={desktopStyles.postBtnText}>Sign In</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        <View style={desktopStyles.unauthContainer}>
+          <View style={desktopStyles.unauthCard}>
+            <Ionicons name="settings-outline" size={64} color={COLORS.primary} />
+            <Text style={desktopStyles.unauthTitle}>Settings</Text>
+            <Text style={desktopStyles.unauthSubtitle}>Please sign in to access your settings</Text>
+            <TouchableOpacity style={desktopStyles.signInBtn} onPress={() => router.push('/login')}>
+              <Text style={desktopStyles.signInBtnText}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  // ============ MOBILE VIEW - UNAUTHENTICATED ============
   if (!isAuthenticated) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
