@@ -1612,9 +1612,10 @@ const desktopStyles = StyleSheet.create({
   listingsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 24,
+    marginHorizontal: -12,
   },
   cardWrapper: {
-    marginBottom: 0,
+    marginBottom: 24,
+    marginHorizontal: 12,
   },
 });
