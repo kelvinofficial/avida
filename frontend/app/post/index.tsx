@@ -298,6 +298,8 @@ export default function PostListingScreen() {
   const { category: categoryId } = useLocalSearchParams<{ category: string }>();
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
+  const { isDesktop, isTablet } = useResponsive();
+  const isLargeScreen = isDesktop || isTablet;
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
