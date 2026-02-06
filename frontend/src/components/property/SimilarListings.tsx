@@ -124,6 +124,7 @@ const HorizontalListingCard = memo(({
   onChat,
   onCall,
   onWhatsApp,
+  isDesktop = false,
 }: { 
   listing: SimilarListing; 
   index: number;
@@ -135,11 +136,13 @@ const HorizontalListingCard = memo(({
   onChat?: () => void;
   onCall?: () => void;
   onWhatsApp?: () => void;
+  isDesktop?: boolean;
 }) => {
   useEffect(() => { 
     trackEvent('impression', sourceId, listing.id, listing.isSponsored || false, index); 
   }, []);
 
+  const imageSize = isDesktop ? DESKTOP_IMAGE_SIZE : IMAGE_SIZE;
   const imageCount = listing.images?.length || 0;
   const imageSource = listing.images?.[0] ? { uri: listing.images[0] } : null;
   const isNegotiable = listing.priceNegotiable || listing.negotiable;
