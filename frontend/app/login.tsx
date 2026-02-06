@@ -288,6 +288,189 @@ export default function LoginScreen() {
     );
   }
 
+  // ============ DESKTOP VIEW ============
+  if (isLargeScreen) {
+    return (
+      <View style={desktopStyles.container}>
+        {/* Left Side - Branding */}
+        <LinearGradient
+          colors={[COLORS.gradientStart, COLORS.gradientEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={desktopStyles.leftPanel}
+        >
+          <View style={[styles.decorCircle, styles.circle1]} />
+          <View style={[styles.decorCircle, styles.circle2]} />
+          <View style={[styles.decorCircle, styles.circle3]} />
+          
+          <View style={desktopStyles.brandContent}>
+            <View style={desktopStyles.logoLarge}>
+              <Ionicons name="storefront" size={48} color="#fff" />
+            </View>
+            <Text style={desktopStyles.brandTitle}>avida</Text>
+            <Text style={desktopStyles.brandSubtitle}>Your local marketplace</Text>
+            
+            <View style={desktopStyles.featuresList}>
+              <View style={desktopStyles.featureItem}>
+                <View style={desktopStyles.featureIcon}>
+                  <Ionicons name="shield-checkmark" size={20} color="#fff" />
+                </View>
+                <Text style={desktopStyles.featureText}>Secure transactions</Text>
+              </View>
+              <View style={desktopStyles.featureItem}>
+                <View style={desktopStyles.featureIcon}>
+                  <Ionicons name="location" size={20} color="#fff" />
+                </View>
+                <Text style={desktopStyles.featureText}>Local listings nearby</Text>
+              </View>
+              <View style={desktopStyles.featureItem}>
+                <View style={desktopStyles.featureIcon}>
+                  <Ionicons name="chatbubbles" size={20} color="#fff" />
+                </View>
+                <Text style={desktopStyles.featureText}>Direct messaging</Text>
+              </View>
+            </View>
+          </View>
+        </LinearGradient>
+
+        {/* Right Side - Form */}
+        <View style={desktopStyles.rightPanel}>
+          <TouchableOpacity style={desktopStyles.closeBtn} onPress={handleClose}>
+            <Ionicons name="close" size={24} color={COLORS.textSecondary} />
+          </TouchableOpacity>
+
+          <ScrollView 
+            style={desktopStyles.formScroll}
+            contentContainerStyle={desktopStyles.formContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <Text style={desktopStyles.formTitle}>
+              {isLoginMode ? 'Welcome Back' : 'Create Account'}
+            </Text>
+            <Text style={desktopStyles.formSubtitle}>
+              {isLoginMode 
+                ? 'Sign in to continue to your account' 
+                : 'Join avida marketplace today'}
+            </Text>
+
+            {error && (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={20} color={COLORS.error} />
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            )}
+
+            {!isLoginMode && (
+              <View style={desktopStyles.inputGroup}>
+                <Text style={desktopStyles.inputLabel}>Full Name</Text>
+                <View style={desktopStyles.inputWrapper}>
+                  <Ionicons name="person-outline" size={20} color={COLORS.textSecondary} />
+                  <TextInput
+                    style={desktopStyles.input}
+                    placeholder="Enter your name"
+                    placeholderTextColor={COLORS.textLight}
+                    value={name}
+                    onChangeText={setName}
+                    autoCapitalize="words"
+                  />
+                </View>
+              </View>
+            )}
+
+            <View style={desktopStyles.inputGroup}>
+              <Text style={desktopStyles.inputLabel}>Email Address</Text>
+              <View style={desktopStyles.inputWrapper}>
+                <Ionicons name="mail-outline" size={20} color={COLORS.textSecondary} />
+                <TextInput
+                  style={desktopStyles.input}
+                  placeholder="Enter your email"
+                  placeholderTextColor={COLORS.textLight}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+            </View>
+
+            <View style={desktopStyles.inputGroup}>
+              <Text style={desktopStyles.inputLabel}>Password</Text>
+              <View style={desktopStyles.inputWrapper}>
+                <Ionicons name="lock-closed-outline" size={20} color={COLORS.textSecondary} />
+                <TextInput
+                  style={desktopStyles.input}
+                  placeholder="Enter your password"
+                  placeholderTextColor={COLORS.textLight}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                  <Ionicons 
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'} 
+                    size={20} 
+                    color={COLORS.textSecondary} 
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={desktopStyles.primaryBtn}
+              onPress={isLoginMode ? handleEmailLogin : handleEmailRegister}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={desktopStyles.primaryBtnText}>
+                  {isLoginMode ? 'Sign In' : 'Create Account'}
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            <View style={desktopStyles.divider}>
+              <View style={desktopStyles.dividerLine} />
+              <Text style={desktopStyles.dividerText}>or continue with</Text>
+              <View style={desktopStyles.dividerLine} />
+            </View>
+
+            <TouchableOpacity style={desktopStyles.googleBtn} onPress={handleGoogleLogin} disabled={loading}>
+              <Image
+                source={{ uri: 'https://developers.google.com/identity/images/g-logo.png' }}
+                style={desktopStyles.googleIcon}
+              />
+              <Text style={desktopStyles.googleBtnText}>Continue with Google</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={desktopStyles.guestBtn} onPress={() => router.replace('/')}>
+              <Ionicons name="compass-outline" size={20} color={COLORS.primary} />
+              <Text style={desktopStyles.guestBtnText}>Browse as Guest</Text>
+            </TouchableOpacity>
+
+            <View style={desktopStyles.toggleRow}>
+              <Text style={desktopStyles.toggleText}>
+                {isLoginMode ? "Don't have an account?" : "Already have an account?"}
+              </Text>
+              <TouchableOpacity onPress={toggleMode}>
+                <Text style={desktopStyles.toggleLink}>
+                  {isLoginMode ? 'Sign Up' : 'Sign In'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={desktopStyles.terms}>
+              By continuing, you agree to our{' '}
+              <Text style={desktopStyles.termsLink} onPress={handleTermsPress}>Terms of Service</Text> and{' '}
+              <Text style={desktopStyles.termsLink} onPress={handlePrivacyPress}>Privacy Policy</Text>
+            </Text>
+          </ScrollView>
+        </View>
+      </View>
+    );
+  }
+
+  // ============ MOBILE VIEW ============
   return (
     <KeyboardAvoidingView 
       style={styles.container}
