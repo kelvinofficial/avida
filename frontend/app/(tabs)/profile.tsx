@@ -880,10 +880,11 @@ export default function ProfileScreen() {
     );
   }
 
-  return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Desktop Header */}
-      {isLargeScreen && (
+  // ============ DESKTOP VIEW - AUTHENTICATED ============
+  if (isLargeScreen) {
+    return (
+      <View style={desktopStyles.container}>
+        {/* Desktop Header */}
         <View style={desktopStyles.header}>
           <View style={desktopStyles.headerInner}>
             <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
@@ -903,37 +904,166 @@ export default function ProfileScreen() {
             </View>
           </View>
         </View>
-      )}
-      
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={isLargeScreen ? desktopStyles.scrollContent : undefined}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            colors={[COLORS.primary]}
-            tintColor={COLORS.primary}
-          />
-        }
-      >
-        <View style={isLargeScreen ? desktopStyles.contentWrapper : undefined}>
-          <ProfileHeader profile={profile} onEditPress={handleEditProfile} />
-          
-          <StatsRow stats={profile?.stats || null} />
-          
-          <ActivitySection onItemPress={handleActivityPress} />
-          
-          <TrustSection profile={profile} onVerifyPress={handleActivityPress} />
-          
-          <QuickActions router={router} onLogout={handleLogout} />
 
-          <Text style={styles.version}>avida v1.0.0</Text>
+        <View style={desktopStyles.mainContent}>
+          {/* Left Sidebar - Profile Card */}
+          <View style={desktopStyles.sidebar}>
+            <View style={desktopStyles.profileCard}>
+              {profile?.picture ? (
+                <Image source={{ uri: profile.picture }} style={desktopStyles.avatar} />
+              ) : (
+                <View style={desktopStyles.avatarPlaceholder}>
+                  <Text style={desktopStyles.avatarText}>
+                    {profile?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
+                  </Text>
+                </View>
+              )}
+              <Text style={desktopStyles.profileName}>{profile?.name || 'User'}</Text>
+              {profile?.email && <Text style={desktopStyles.profileEmail}>{profile.email}</Text>}
+              {profile?.is_verified && (
+                <View style={desktopStyles.verifiedBadge}>
+                  <Ionicons name="checkmark-circle" size={14} color={COLORS.primary} />
+                  <Text style={desktopStyles.verifiedText}>Verified</Text>
+                </View>
+              )}
+              <TouchableOpacity style={desktopStyles.editProfileBtn} onPress={handleEditProfile}>
+                <Ionicons name="pencil" size={16} color={COLORS.primary} />
+                <Text style={desktopStyles.editProfileText}>Edit Profile</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Stats */}
+            <View style={desktopStyles.statsCard}>
+              <Text style={desktopStyles.statsTitle}>Statistics</Text>
+              <View style={desktopStyles.statsGrid}>
+                <View style={desktopStyles.statItem}>
+                  <Text style={desktopStyles.statValue}>{profile?.stats?.listings || 0}</Text>
+                  <Text style={desktopStyles.statLabel}>Listings</Text>
+                </View>
+                <View style={desktopStyles.statItem}>
+                  <Text style={desktopStyles.statValue}>{profile?.stats?.sales || 0}</Text>
+                  <Text style={desktopStyles.statLabel}>Sales</Text>
+                </View>
+                <View style={desktopStyles.statItem}>
+                  <Text style={desktopStyles.statValue}>{profile?.stats?.reviews || 0}</Text>
+                  <Text style={desktopStyles.statLabel}>Reviews</Text>
+                </View>
+                <View style={desktopStyles.statItem}>
+                  <Text style={desktopStyles.statValue}>{profile?.stats?.followers || 0}</Text>
+                  <Text style={desktopStyles.statLabel}>Followers</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Quick Actions */}
+            <View style={desktopStyles.quickActionsCard}>
+              <TouchableOpacity style={desktopStyles.quickAction} onPress={() => router.push('/settings')}>
+                <Ionicons name="settings-outline" size={20} color={COLORS.textSecondary} />
+                <Text style={desktopStyles.quickActionText}>Settings</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.quickAction} onPress={() => router.push('/help')}>
+                <Ionicons name="help-circle-outline" size={20} color={COLORS.textSecondary} />
+                <Text style={desktopStyles.quickActionText}>Help & Support</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[desktopStyles.quickAction, desktopStyles.quickActionDanger]} onPress={handleLogout}>
+                <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
+                <Text style={[desktopStyles.quickActionText, { color: COLORS.error }]}>Sign Out</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Right Content */}
+          <ScrollView 
+            style={desktopStyles.contentArea}
+            contentContainerStyle={desktopStyles.contentInner}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={COLORS.primary} />
+            }
+          >
+            {/* Activity Section */}
+            <View style={desktopStyles.sectionCard}>
+              <Text style={desktopStyles.sectionTitle}>Your Activity</Text>
+              <View style={desktopStyles.activityGrid}>
+                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/my-listings')}>
+                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#E8F5E9' }]}>
+                    <Ionicons name="pricetags" size={24} color={COLORS.primary} />
+                  </View>
+                  <Text style={desktopStyles.activityLabel}>My Listings</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/favorites')}>
+                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#FFEBEE' }]}>
+                    <Ionicons name="heart" size={24} color="#E53935" />
+                  </View>
+                  <Text style={desktopStyles.activityLabel}>Favorites</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/messages')}>
+                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#E3F2FD' }]}>
+                    <Ionicons name="chatbubbles" size={24} color="#1976D2" />
+                  </View>
+                  <Text style={desktopStyles.activityLabel}>Messages</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/offers')}>
+                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#FFF3E0' }]}>
+                    <Ionicons name="pricetag" size={24} color="#F57C00" />
+                  </View>
+                  <Text style={desktopStyles.activityLabel}>Offers</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Trust & Identity */}
+            <View style={desktopStyles.sectionCard}>
+              <Text style={desktopStyles.sectionTitle}>Trust & Identity</Text>
+              <Text style={desktopStyles.sectionSubtitle}>Verify your identity to build trust with buyers</Text>
+              <View style={desktopStyles.trustGrid}>
+                <View style={desktopStyles.trustItem}>
+                  <View style={[desktopStyles.trustIcon, profile?.verifications?.email && desktopStyles.trustIconVerified]}>
+                    <Ionicons name="mail" size={20} color={profile?.verifications?.email ? COLORS.primary : COLORS.textSecondary} />
+                  </View>
+                  <View style={desktopStyles.trustContent}>
+                    <Text style={desktopStyles.trustLabel}>Email</Text>
+                    <Text style={desktopStyles.trustStatus}>{profile?.verifications?.email ? 'Verified' : 'Not verified'}</Text>
+                  </View>
+                  {profile?.verifications?.email && (
+                    <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
+                  )}
+                </View>
+                <View style={desktopStyles.trustItem}>
+                  <View style={[desktopStyles.trustIcon, profile?.verifications?.phone && desktopStyles.trustIconVerified]}>
+                    <Ionicons name="call" size={20} color={profile?.verifications?.phone ? COLORS.primary : COLORS.textSecondary} />
+                  </View>
+                  <View style={desktopStyles.trustContent}>
+                    <Text style={desktopStyles.trustLabel}>Phone</Text>
+                    <Text style={desktopStyles.trustStatus}>{profile?.verifications?.phone ? 'Verified' : 'Not verified'}</Text>
+                  </View>
+                  {profile?.verifications?.phone && (
+                    <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
+                  )}
+                </View>
+                <View style={desktopStyles.trustItem}>
+                  <View style={[desktopStyles.trustIcon, profile?.verifications?.id && desktopStyles.trustIconVerified]}>
+                    <Ionicons name="card" size={20} color={profile?.verifications?.id ? COLORS.primary : COLORS.textSecondary} />
+                  </View>
+                  <View style={desktopStyles.trustContent}>
+                    <Text style={desktopStyles.trustLabel}>ID Document</Text>
+                    <Text style={desktopStyles.trustStatus}>{profile?.verifications?.id ? 'Verified' : 'Not verified'}</Text>
+                  </View>
+                  {profile?.verifications?.id && (
+                    <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
+                  )}
+                </View>
+              </View>
+            </View>
+
+            <Text style={desktopStyles.versionText}>avida v1.0.0</Text>
+          </ScrollView>
         </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
+      </View>
+    );
+  }
+
+  // ============ MOBILE VIEW - AUTHENTICATED ============
+  return (
 
 const styles = StyleSheet.create({
   container: {
