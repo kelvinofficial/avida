@@ -243,16 +243,23 @@ const HorizontalListingCard = memo(({
         </View>
 
         {/* Title */}
-        <Text style={cardStyles.title} numberOfLines={2}>
+        <Text style={[cardStyles.title, isDesktop && desktopCardStyles.title]} numberOfLines={2}>
           {listing.title}
         </Text>
+
+        {/* Description Row - Desktop only, truncated */}
+        {isDesktop && listing.description && (
+          <Text style={desktopCardStyles.description} numberOfLines={2}>
+            {listing.description}
+          </Text>
+        )}
 
         {/* Specs Row */}
         {specs.length > 0 && (
           <View style={cardStyles.specsRow}>
             {specs.map((spec, i) => (
               <React.Fragment key={i}>
-                <Text style={cardStyles.specText}>{spec}</Text>
+                <Text style={[cardStyles.specText, isDesktop && desktopCardStyles.specText]}>{spec}</Text>
                 {i < specs.length - 1 && <View style={cardStyles.specDot} />}
               </React.Fragment>
             ))}
@@ -261,8 +268,8 @@ const HorizontalListingCard = memo(({
 
         {/* Location */}
         <View style={cardStyles.locationRow}>
-          <Ionicons name="location-outline" size={12} color={COLORS.textSecondary} />
-          <Text style={cardStyles.locationText} numberOfLines={1}>
+          <Ionicons name="location-outline" size={isDesktop ? 14 : 12} color={COLORS.textSecondary} />
+          <Text style={[cardStyles.locationText, isDesktop && desktopCardStyles.locationText]} numberOfLines={1}>
             {locationText}
             {listing.distance && ` • ${listing.distance} km`}
           </Text>
