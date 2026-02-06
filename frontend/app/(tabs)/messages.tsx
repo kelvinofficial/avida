@@ -171,7 +171,12 @@ const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onPre
 
   return (
     <TouchableOpacity
-      style={[styles.conversationItem, hasUnread && styles.conversationItemUnread]}
+      style={[
+        styles.conversationItem, 
+        hasUnread && styles.conversationItemUnread,
+        isSelected && styles.conversationItemSelected,
+        Platform.OS === 'web' && { cursor: 'pointer' } as any,
+      ]}
       onPress={onPress}
       activeOpacity={0.7}
     >
