@@ -817,7 +817,7 @@ export default function ListingDetailScreen() {
   // ============ DESKTOP VIEW ============
   if (isDesktop || isTablet) {
     const MAX_CONTENT_WIDTH = 1200;
-    const imageGalleryWidth = 500;
+    const imageGalleryWidth = 650; // Increased by 30% from 500
 
     return (
       <View style={desktopStyles.pageWrapper}>
@@ -882,7 +882,7 @@ export default function ListingDetailScreen() {
           showsVerticalScrollIndicator={true}
         >
           <View style={[desktopStyles.mainContainer, { maxWidth: MAX_CONTENT_WIDTH }]}>
-            {/* Left Column - Images */}
+            {/* Left Column - Images, Highlights, Details, Description, Location */}
             <View style={[desktopStyles.leftColumn, { width: imageGalleryWidth }]}>
               {/* Main Image */}
               <View style={desktopStyles.mainImageContainer}>
@@ -908,7 +908,7 @@ export default function ListingDetailScreen() {
               {/* Thumbnails */}
               {images.length > 1 && (
                 <View style={desktopStyles.thumbnailsRow}>
-                  {images.slice(0, 5).map((img, index) => (
+                  {images.slice(0, 6).map((img, index) => (
                     <TouchableOpacity 
                       key={index} 
                       style={[
@@ -924,72 +924,75 @@ export default function ListingDetailScreen() {
                       />
                     </TouchableOpacity>
                   ))}
-                  {images.length > 5 && (
+                  {images.length > 6 && (
                     <View style={desktopStyles.moreImages}>
-                      <Text style={desktopStyles.moreImagesText}>+{images.length - 5}</Text>
+                      <Text style={desktopStyles.moreImagesText}>+{images.length - 6}</Text>
                     </View>
                   )}
                 </View>
               )}
 
-              {/* Seller Section on Desktop */}
-              <View style={desktopStyles.sellerCard}>
-                <Text style={desktopStyles.sectionTitle}>Listed by</Text>
-                {listing.seller && (
-                  <TouchableOpacity 
-                    style={desktopStyles.sellerInfo}
-                    onPress={() => router.push(`/profile/public/${listing.user_id}`)}
-                  >
-                    {listing.seller.picture ? (
-                      <Image source={{ uri: listing.seller.picture }} style={desktopStyles.sellerAvatar} />
-                    ) : (
-                      <View style={desktopStyles.sellerAvatarPlaceholder}>
-                        <Ionicons name="person" size={24} color={COLORS.primary} />
+              {/* Highlights - Moved to Left */}
+              {highlights.length > 0 && (
+                <View style={desktopStyles.detailCard}>
+                  <Text style={desktopStyles.sectionTitle}>Highlights</Text>
+                  <View style={desktopStyles.highlightsGrid}>
+                    {highlights.map((item) => (
+                      <View key={item.id} style={desktopStyles.highlightItem}>
+                        <Ionicons name={item.icon as any} size={16} color={COLORS.primary} />
+                        <Text style={desktopStyles.highlightText}>{item.label}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {/* Key Details - Moved to Left */}
+              {listing.attributes && Object.keys(listing.attributes).length > 0 && (
+                <View style={desktopStyles.detailCard}>
+                  <Text style={desktopStyles.sectionTitle}>Details</Text>
+                  <View style={desktopStyles.detailsGrid}>
+                    {category && (
+                      <View style={desktopStyles.detailItem}>
+                        <Text style={desktopStyles.detailLabel}>Category</Text>
+                        <Text style={desktopStyles.detailValue}>{category.name}</Text>
                       </View>
                     )}
-                    <View style={desktopStyles.sellerDetails}>
-                      <View style={desktopStyles.sellerNameRow}>
-                        <Text style={desktopStyles.sellerName}>{listing.seller.name}</Text>
-                        {listing.seller.verified && (
-                          <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
-                        )}
+                    {listing.condition && (
+                      <View style={desktopStyles.detailItem}>
+                        <Text style={desktopStyles.detailLabel}>Condition</Text>
+                        <Text style={desktopStyles.detailValue}>{listing.condition}</Text>
                       </View>
-                      {listing.seller.rating && (
-                        <View style={desktopStyles.sellerRating}>
-                          <Ionicons name="star" size={14} color="#FFB800" />
-                          <Text style={desktopStyles.sellerRatingText}>{listing.seller.rating.toFixed(1)}</Text>
-                        </View>
-                      )}
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
-                  </TouchableOpacity>
-                )}
-              </View>
+                    )}
+                    {Object.entries(listing.attributes).map(([key, value]) => (
+                      <View key={key} style={desktopStyles.detailItem}>
+                        <Text style={desktopStyles.detailLabel}>{key.replace(/_/g, ' ')}</Text>
+                        <Text style={desktopStyles.detailValue}>{String(value)}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
 
-              {/* Safety Tips */}
-              <View style={desktopStyles.safetyCard}>
-                <View style={desktopStyles.safetyHeader}>
-                  <Ionicons name="shield-checkmark" size={20} color={COLORS.primary} />
-                  <Text style={desktopStyles.sectionTitle}>Safety Tips</Text>
+              {/* Description - Moved to Left */}
+              {listing.description && (
+                <View style={desktopStyles.detailCard}>
+                  <Text style={desktopStyles.sectionTitle}>Description</Text>
+                  <Text style={desktopStyles.descriptionText}>{listing.description}</Text>
                 </View>
-                <View style={desktopStyles.safetyTips}>
-                  <View style={desktopStyles.safetyTip}>
-                    <Ionicons name="checkmark-circle" size={14} color={COLORS.primary} />
-                    <Text style={desktopStyles.safetyTipText}>Meet in a public place</Text>
-                  </View>
-                  <View style={desktopStyles.safetyTip}>
-                    <Ionicons name="checkmark-circle" size={14} color={COLORS.primary} />
-                    <Text style={desktopStyles.safetyTipText}>Check the item before paying</Text>
-                  </View>
+              )}
+
+              {/* Location - Moved to Left */}
+              <View style={desktopStyles.detailCard}>
+                <Text style={desktopStyles.sectionTitle}>Location</Text>
+                <View style={desktopStyles.mapPlaceholder}>
+                  <Ionicons name="map" size={40} color={COLORS.primary} />
+                  <Text style={desktopStyles.mapText}>{listing.location}</Text>
                 </View>
-                <TouchableOpacity style={desktopStyles.reportBtn} onPress={() => setShowReportModal(true)}>
-                  <Ionicons name="flag-outline" size={16} color={COLORS.error} />
-                  <Text style={desktopStyles.reportBtnText}>Report this listing</Text>
-                </TouchableOpacity>
               </View>
             </View>
 
-            {/* Right Column - Details */}
+            {/* Right Column - Price, Actions, Seller, Safety */}
             <View style={desktopStyles.rightColumn}>
               {/* Price & Title Card */}
               <View style={desktopStyles.detailCard}>
@@ -1050,63 +1053,60 @@ export default function ListingDetailScreen() {
                 )}
               </View>
 
-              {/* Highlights */}
-              {highlights.length > 0 && (
-                <View style={desktopStyles.detailCard}>
-                  <Text style={desktopStyles.sectionTitle}>Highlights</Text>
-                  <View style={desktopStyles.highlightsGrid}>
-                    {highlights.map((item) => (
-                      <View key={item.id} style={desktopStyles.highlightItem}>
-                        <Ionicons name={item.icon as any} size={16} color={COLORS.primary} />
-                        <Text style={desktopStyles.highlightText}>{item.label}</Text>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              )}
-
-              {/* Key Details */}
-              {listing.attributes && Object.keys(listing.attributes).length > 0 && (
-                <View style={desktopStyles.detailCard}>
-                  <Text style={desktopStyles.sectionTitle}>Details</Text>
-                  <View style={desktopStyles.detailsGrid}>
-                    {category && (
-                      <View style={desktopStyles.detailItem}>
-                        <Text style={desktopStyles.detailLabel}>Category</Text>
-                        <Text style={desktopStyles.detailValue}>{category.name}</Text>
+              {/* Seller Section - Moved to Right */}
+              <View style={desktopStyles.sellerCard}>
+                <Text style={desktopStyles.sectionTitle}>Listed by</Text>
+                {listing.seller && (
+                  <TouchableOpacity 
+                    style={desktopStyles.sellerInfo}
+                    onPress={() => router.push(`/profile/public/${listing.user_id}`)}
+                  >
+                    {listing.seller.picture ? (
+                      <Image source={{ uri: listing.seller.picture }} style={desktopStyles.sellerAvatar} />
+                    ) : (
+                      <View style={desktopStyles.sellerAvatarPlaceholder}>
+                        <Ionicons name="person" size={24} color={COLORS.primary} />
                       </View>
                     )}
-                    {listing.condition && (
-                      <View style={desktopStyles.detailItem}>
-                        <Text style={desktopStyles.detailLabel}>Condition</Text>
-                        <Text style={desktopStyles.detailValue}>{listing.condition}</Text>
+                    <View style={desktopStyles.sellerDetails}>
+                      <View style={desktopStyles.sellerNameRow}>
+                        <Text style={desktopStyles.sellerName}>{listing.seller.name}</Text>
+                        {listing.seller.verified && (
+                          <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+                        )}
                       </View>
-                    )}
-                    {Object.entries(listing.attributes).map(([key, value]) => (
-                      <View key={key} style={desktopStyles.detailItem}>
-                        <Text style={desktopStyles.detailLabel}>{key.replace(/_/g, ' ')}</Text>
-                        <Text style={desktopStyles.detailValue}>{String(value)}</Text>
-                      </View>
-                    ))}
+                      {listing.seller.rating && (
+                        <View style={desktopStyles.sellerRating}>
+                          <Ionicons name="star" size={14} color="#FFB800" />
+                          <Text style={desktopStyles.sellerRatingText}>{listing.seller.rating.toFixed(1)}</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* Safety Tips - Moved to Right */}
+              <View style={desktopStyles.safetyCard}>
+                <View style={desktopStyles.safetyHeader}>
+                  <Ionicons name="shield-checkmark" size={20} color={COLORS.primary} />
+                  <Text style={desktopStyles.sectionTitle}>Safety Tips</Text>
+                </View>
+                <View style={desktopStyles.safetyTips}>
+                  <View style={desktopStyles.safetyTip}>
+                    <Ionicons name="checkmark-circle" size={14} color={COLORS.primary} />
+                    <Text style={desktopStyles.safetyTipText}>Meet in a public place</Text>
+                  </View>
+                  <View style={desktopStyles.safetyTip}>
+                    <Ionicons name="checkmark-circle" size={14} color={COLORS.primary} />
+                    <Text style={desktopStyles.safetyTipText}>Check the item before paying</Text>
                   </View>
                 </View>
-              )}
-
-              {/* Description */}
-              {listing.description && (
-                <View style={desktopStyles.detailCard}>
-                  <Text style={desktopStyles.sectionTitle}>Description</Text>
-                  <Text style={desktopStyles.descriptionText}>{listing.description}</Text>
-                </View>
-              )}
-
-              {/* Location */}
-              <View style={desktopStyles.detailCard}>
-                <Text style={desktopStyles.sectionTitle}>Location</Text>
-                <View style={desktopStyles.mapPlaceholder}>
-                  <Ionicons name="map" size={40} color={COLORS.primary} />
-                  <Text style={desktopStyles.mapText}>{listing.location}</Text>
-                </View>
+                <TouchableOpacity style={desktopStyles.reportBtn} onPress={() => setShowReportModal(true)}>
+                  <Ionicons name="flag-outline" size={16} color={COLORS.error} />
+                  <Text style={desktopStyles.reportBtnText}>Report this listing</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </View>
