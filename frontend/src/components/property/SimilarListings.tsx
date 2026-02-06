@@ -12,12 +12,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { api } from '../../utils/api';
+import { useResponsive } from '../../hooks/useResponsive';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
 
 // Card dimensions - horizontal card (image left, content right)
 const IMAGE_SIZE = 130;
+const DESKTOP_IMAGE_SIZE = 200;
 
 const COLORS = {
   primary: '#2E7D32',
