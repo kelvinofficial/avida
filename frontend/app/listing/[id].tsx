@@ -1865,3 +1865,586 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
 });
+
+// ============ DESKTOP STYLES ============
+const desktopStyles = StyleSheet.create({
+  pageWrapper: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  // Header Row 1
+  headerRow1: {
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    alignItems: 'center',
+  },
+  headerRow1Inner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    width: '100%',
+    maxWidth: 1200,
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  logoIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  signInBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  signInBtnText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+  signUpBtn: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+  },
+  signUpBtnText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '600',
+  },
+  notifBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileBtn: {
+    padding: 4,
+  },
+  postListingBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  postListingBtnText: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  // Breadcrumb
+  breadcrumbRow: {
+    backgroundColor: COLORS.surface,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  breadcrumbInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    width: '100%',
+  },
+  breadcrumbLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  breadcrumbText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  breadcrumbCurrent: {
+    fontSize: 13,
+    color: COLORS.text,
+    fontWeight: '500',
+    flex: 1,
+  },
+  // Scroll Container
+  scrollContainer: {
+    flex: 1,
+  },
+  scrollContent: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    paddingBottom: 60,
+  },
+  // Main Container
+  mainContainer: {
+    flexDirection: 'row',
+    gap: 24,
+    paddingHorizontal: 24,
+    width: '100%',
+  },
+  // Left Column
+  leftColumn: {
+    gap: 16,
+  },
+  mainImageContainer: {
+    position: 'relative',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  mainImage: {
+    width: '100%',
+    height: 380,
+  },
+  imagePlaceholder: {
+    width: '100%',
+    height: 380,
+    backgroundColor: COLORS.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  featuredBadge: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FFB800',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  featuredBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  thumbnailsRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  thumbnail: {
+    width: 80,
+    height: 60,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  thumbnailActive: {
+    borderColor: COLORS.primary,
+  },
+  thumbnailImage: {
+    width: '100%',
+    height: '100%',
+  },
+  moreImages: {
+    width: 80,
+    height: 60,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  moreImagesText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  // Seller Card
+  sellerCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: 16,
+  },
+  sellerInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  sellerAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  sellerAvatarPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sellerDetails: {
+    flex: 1,
+  },
+  sellerNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  sellerName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  sellerRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  sellerRatingText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  // Safety Card
+  safetyCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: 16,
+  },
+  safetyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  safetyTips: {
+    gap: 8,
+  },
+  safetyTip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  safetyTipText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  reportBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.error,
+  },
+  reportBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.error,
+  },
+  // Right Column
+  rightColumn: {
+    flex: 1,
+    gap: 16,
+  },
+  detailCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 14,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 8,
+  },
+  price: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  negotiableBadge: {
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  negotiableText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: COLORS.text,
+    lineHeight: 28,
+    marginBottom: 12,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 16,
+  },
+  locationText: {
+    fontSize: 15,
+    color: COLORS.textSecondary,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  stat: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  statText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  // Action Buttons
+  actionButtons: {
+    marginTop: 20,
+    gap: 12,
+  },
+  primaryActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 16,
+    borderRadius: 10,
+  },
+  primaryActionText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  secondaryActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  secondaryActionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  secondaryActionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  iconBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  // Highlights Grid
+  highlightsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  highlightItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  highlightText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  // Details Grid
+  detailsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  detailItem: {
+    width: '50%',
+    paddingVertical: 10,
+    paddingRight: 12,
+  },
+  detailLabel: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    textTransform: 'capitalize',
+    marginBottom: 2,
+  },
+  detailValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  // Description
+  descriptionText: {
+    fontSize: 15,
+    lineHeight: 24,
+    color: COLORS.textSecondary,
+  },
+  // Map
+  mapPlaceholder: {
+    height: 150,
+    backgroundColor: COLORS.primaryLight,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mapText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.primary,
+    marginTop: 8,
+  },
+  // Similar Section
+  similarSection: {
+    width: '100%',
+    paddingHorizontal: 24,
+    marginTop: 24,
+  },
+  // Modal Overlay
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  offerModalContent: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    width: '100%',
+    maxWidth: 420,
+    maxHeight: '80%',
+  },
+  offerModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  offerModalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  offerModalBody: {
+    padding: 20,
+  },
+  offerLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  offerPriceInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+  },
+  offerCurrency: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginRight: 8,
+  },
+  offerInput: {
+    flex: 1,
+    height: 50,
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  offerHint: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginTop: 8,
+  },
+  offerMessageInput: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 14,
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  offerModalFooter: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  offerCancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+  },
+  offerCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  offerSubmitBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: COLORS.primary,
+  },
+  offerSubmitText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+  },
+});
