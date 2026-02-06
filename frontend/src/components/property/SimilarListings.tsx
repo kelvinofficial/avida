@@ -552,15 +552,36 @@ const desktopCardStyles = StyleSheet.create({
   card: {
     marginBottom: 16,
   },
+  content: {
+    padding: 16,
+  },
   price: {
-    fontSize: 20,
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  negotiableBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  negotiableText: {
+    fontSize: 11,
   },
   title: {
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 17,
+    lineHeight: 24,
+    marginBottom: 4,
+  },
+  description: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: COLORS.textSecondary,
+    marginBottom: 8,
   },
   specText: {
-    fontSize: 13,
+    fontSize: 14,
+  },
+  locationText: {
+    fontSize: 14,
   },
   actionButton: {
     width: 40,
