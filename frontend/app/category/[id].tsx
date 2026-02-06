@@ -1288,24 +1288,33 @@ const styles = StyleSheet.create({
 });
 
 // Desktop Styles
+const MAX_CONTENT_WIDTH = 1200;
+
 const desktopStyles = StyleSheet.create({
-  container: {
+  pageWrapper: {
     flex: 1,
-    flexDirection: 'row',
     backgroundColor: COLORS.background,
   },
-  sidebar: {
-    width: 280,
+  // Row 1: Logo + Auth
+  headerRow1: {
     backgroundColor: COLORS.surface,
-    borderRightWidth: 1,
-    borderRightColor: COLORS.border,
-    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    alignItems: 'center',
+  },
+  headerRow1Inner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
   },
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 24,
   },
   logoIcon: {
     width: 36,
@@ -1320,39 +1329,189 @@ const desktopStyles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.text,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  signInBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  signInBtnText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+  signUpBtn: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+  },
+  signUpBtnText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '600',
+  },
+  notifBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileBtn: {
+    padding: 4,
+  },
+  postListingBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  postListingBtnText: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  // Row 2: Search + Location
+  headerRow2: {
+    backgroundColor: COLORS.surface,
+    alignItems: 'center',
+  },
+  headerRow2Inner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    gap: 16,
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
+  },
+  searchField: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 10,
+  },
+  searchPlaceholder: {
+    fontSize: 14,
+    color: '#666',
+    flex: 1,
+  },
+  locationChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 8,
+    gap: 8,
+  },
+  locationText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+  // Row 3: Breadcrumb
+  breadcrumbRow: {
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    alignItems: 'center',
+  },
+  breadcrumbInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    gap: 8,
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
+  },
+  breadcrumbLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  breadcrumbText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  breadcrumbCurrent: {
+    fontSize: 13,
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+  // Row 4: Category Heading
+  categoryHeadingRow: {
+    backgroundColor: COLORS.background,
+    alignItems: 'center',
+  },
+  categoryHeadingInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
+  },
+  categoryTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  categoryTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  resultsCount: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  // Main Container with Sidebar + Listings
+  mainContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  mainContainerInner: {
+    flexDirection: 'row',
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
+    paddingHorizontal: 24,
+  },
+  sidebar: {
+    width: 240,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: 16,
+    marginRight: 20,
+    alignSelf: 'flex-start',
+  },
   sidebarSection: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   sidebarSectionTitle: {
     fontSize: 11,
     fontWeight: '600',
     color: COLORS.textSecondary,
     letterSpacing: 1,
-    marginBottom: 12,
-  },
-  categoryItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginBottom: 4,
-  },
-  categoryItemActive: {
-    backgroundColor: COLORS.primaryLight,
-  },
-  categoryItemText: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
-  categoryItemTextActive: {
-    color: COLORS.primary,
-    fontWeight: '600',
+    marginBottom: 10,
   },
   subcategoryItem: {
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     borderRadius: 6,
     marginBottom: 2,
   },
@@ -1368,7 +1527,7 @@ const desktopStyles = StyleSheet.create({
     fontWeight: '500',
   },
   filterGroup: {
-    marginBottom: 16,
+    marginBottom: 14,
   },
   filterLabel: {
     fontSize: 13,
@@ -1379,8 +1538,8 @@ const desktopStyles = StyleSheet.create({
   filterOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 8,
+    gap: 8,
+    paddingVertical: 6,
   },
   filterOptionActive: {},
   filterOptionText: {
@@ -1395,85 +1554,56 @@ const desktopStyles = StyleSheet.create({
   priceInput: {
     flex: 1,
     backgroundColor: COLORS.background,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 13,
     color: COLORS.text,
   },
   priceSeparator: {
-    fontSize: 14,
+    fontSize: 12,
     color: COLORS.textSecondary,
   },
   applyPriceBtn: {
     marginTop: 8,
     backgroundColor: COLORS.primary,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingVertical: 8,
+    borderRadius: 6,
     alignItems: 'center',
   },
   applyPriceBtnText: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
   },
   clearFiltersBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    borderRadius: 8,
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: COLORS.primary,
   },
   clearFiltersBtnText: {
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.primary,
     fontWeight: '500',
   },
-  mainContent: {
+  // Listings
+  listingsContainer: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  homeLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  breadcrumb: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
-  breadcrumbActive: {
-    fontSize: 14,
-    color: COLORS.text,
-    fontWeight: '500',
-  },
-  resultsCount: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
   listContent: {
-    padding: 24,
+    paddingBottom: 24,
   },
   gridRow: {
     justifyContent: 'flex-start',
-    gap: 20,
-    marginBottom: 20,
+    gap: 16,
+    marginBottom: 16,
+  },
+  cardWrapper: {
+    marginBottom: 0,
   },
 });
