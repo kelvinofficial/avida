@@ -315,7 +315,9 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   categoryCard: {
-    width: (SCREEN_WIDTH - 64) / 3,
+    flex: 1,
+    minWidth: 100,
+    maxWidth: 150,
     alignItems: 'center',
     marginHorizontal: 8,
     marginBottom: 16,
