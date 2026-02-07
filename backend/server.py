@@ -5551,6 +5551,66 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# =============================================================================
+# ADMIN FRONTEND PROXY - Forward /admin-ui/* to admin frontend on port 3001
+# =============================================================================
+
+ADMIN_FRONTEND_URL = "http://localhost:3001"
+
+@app.api_route("/admin-ui/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"])
+async def admin_frontend_proxy(request: Request, path: str):
+    """Proxy admin frontend requests to Next.js dev server"""
+    async with httpx.AsyncClient(timeout=60.0, follow_redirects=True) as client:
+        # Build the target URL
+        url = f"{ADMIN_FRONTEND_URL}/{path}"
+        
+        # Get query string
+        query_string = str(request.query_params)
+        if query_string:
+            url = f"{url}?{query_string}"
+        
+        # Get request body if any
+        body = None
+        if request.method in ["POST", "PUT", "PATCH"]:
+            body = await request.body()
+        
+        # Forward headers
+        headers = dict(request.headers)
+        headers.pop("host", None)
+        headers.pop("content-length", None)
+        
+        try:
+            response = await client.request(
+                method=request.method,
+                url=url,
+                headers=headers,
+                content=body
+            )
+            
+            # Build response headers
+            resp_headers = dict(response.headers)
+            resp_headers.pop("content-encoding", None)
+            resp_headers.pop("content-length", None)
+            resp_headers.pop("transfer-encoding", None)
+            
+            return Response(
+                content=response.content,
+                status_code=response.status_code,
+                headers=resp_headers,
+                media_type=response.headers.get("content-type")
+            )
+        except httpx.ConnectError:
+            raise HTTPException(status_code=503, detail="Admin frontend service unavailable")
+        except Exception as e:
+            logger.error(f"Admin frontend proxy error: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/admin-ui")
+async def admin_frontend_root():
+    """Redirect to admin-ui/ with trailing slash"""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/admin-ui/", status_code=307)
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
