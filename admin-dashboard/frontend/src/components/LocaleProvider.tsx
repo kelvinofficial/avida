@@ -3,8 +3,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import en from '@/locales/en.json';
 import es from '@/locales/es.json';
+import fr from '@/locales/fr.json';
+import de from '@/locales/de.json';
 
-type Locale = 'en' | 'es';
+type Locale = 'en' | 'es' | 'fr' | 'de';
 
 type TranslationKeys = typeof en;
 
@@ -18,11 +20,15 @@ interface LocaleContextType {
 const translations: Record<Locale, TranslationKeys> = {
   en,
   es,
+  fr,
+  de,
 };
 
 const availableLocales = [
   { code: 'en' as Locale, name: 'English', flag: '🇺🇸' },
   { code: 'es' as Locale, name: 'Español', flag: '🇪🇸' },
+  { code: 'fr' as Locale, name: 'Français', flag: '🇫🇷' },
+  { code: 'de' as Locale, name: 'Deutsch', flag: '🇩🇪' },
 ];
 
 const LocaleContext = createContext<LocaleContextType>({
