@@ -1507,7 +1507,6 @@ const desktopStyles = StyleSheet.create({
   mainContainerInner: {
     flexDirection: 'row',
     width: '100%',
-    maxWidth: 1800,
     paddingTop: 8,
   },
   sidebar: {
