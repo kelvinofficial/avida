@@ -852,7 +852,13 @@ export default function ListingDetailScreen() {
                     </TouchableOpacity>
                   </>
                 )}
-                <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => router.push('/post')}>
+                <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => {
+                  if (!isAuthenticated) {
+                    router.push('/login?redirect=/post');
+                  } else {
+                    router.push('/post');
+                  }
+                }}>
                   <Ionicons name="add" size={18} color="#fff" />
                   <Text style={desktopStyles.postListingBtnText}>Post Listing</Text>
                 </TouchableOpacity>
