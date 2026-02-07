@@ -82,6 +82,11 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
               <Text style={styles.autoImageCountText}>{listing.images.length}</Text>
             </View>
           )}
+          {/* Views Counter - Bottom Right */}
+          <View style={styles.viewsContainer}>
+            <Ionicons name="eye-outline" size={10} color="#fff" />
+            <Text style={styles.viewsText}>{listing.views || 0}</Text>
+          </View>
         </View>
 
         {/* Right: Content */}
