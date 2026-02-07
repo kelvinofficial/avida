@@ -814,9 +814,12 @@ export default function HomeScreen() {
       scrollEventThrottle={400}
       style={isDesktop || isTablet ? { flex: 1 } : undefined}
     >
-      {isDesktop || isTablet ? renderDesktopHeader() : renderHeader()}
-      <View style={[styles.listContent, (isDesktop || isTablet) && { paddingHorizontal: 0 }]}>
-        {renderGrid()}
+      {/* Content wrapper with light background */}
+      <View style={(isDesktop || isTablet) ? { backgroundColor: '#F5F5F5' } : undefined}>
+        {isDesktop || isTablet ? renderDesktopHeader() : renderHeader()}
+        <View style={[styles.listContent, (isDesktop || isTablet) && { paddingHorizontal: 0 }]}>
+          {renderGrid()}
+        </View>
       </View>
       {/* Footer for Desktop & Tablet */}
       {(isDesktop || isTablet) && <Footer isTablet={isTablet && !isDesktop} />}
