@@ -1903,7 +1903,7 @@ const styles = StyleSheet.create({
 const desktopStyles = StyleSheet.create({
   pageWrapper: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#1A1A1A', // Footer background color for full-width effect
   },
   // Header Row 1
   headerRow1: {
