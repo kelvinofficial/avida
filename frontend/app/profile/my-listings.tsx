@@ -376,13 +376,11 @@ export default function MyListingsScreen() {
     );
   };
 
-  // Show loading state until responsive layout is ready
+  // Show instant render without loading spinner
   if (!isReady) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: '#F0F2F5' }]} edges={['top']}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
+        <View style={{ flex: 1, backgroundColor: '#F0F2F5' }} />
       </SafeAreaView>
     );
   }
