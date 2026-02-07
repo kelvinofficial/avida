@@ -670,8 +670,8 @@ export default function HomeScreen() {
     
     return (
       <View style={[
-        { paddingHorizontal: gridPadding },
-        (isDesktop || isTablet) && { maxWidth: MAX_WIDTH, alignSelf: 'center', width: '100%' }
+        { marginHorizontal: gridPadding },
+        (isDesktop || isTablet) && { maxWidth: MAX_WIDTH, alignSelf: 'center', width: '100%', marginHorizontal: 0, paddingHorizontal: gridPadding }
       ]}>
         {rows.map((row, rowIndex) => (
           <View key={rowIndex} style={[styles.gridRow, { gap: gridGap }]}>
