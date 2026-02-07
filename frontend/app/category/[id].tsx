@@ -751,7 +751,7 @@ export default function CategoryScreen() {
                           onPress={() => router.push(getListingRoute(item))}
                           onFavorite={() => handleFavorite(item.id)}
                           isFavorited={favorites.has(item.id)}
-                          imageHeight={124}
+                          imageHeight={118}
                         />
                       </View>
                     ))}
