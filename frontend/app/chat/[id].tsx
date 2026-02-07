@@ -1453,12 +1453,6 @@ export default function ChatScreen() {
 
             <View style={desktopStyles.headerActions}>
               <TouchableOpacity style={desktopStyles.headerButton}>
-                <Ionicons name="call-outline" size={20} color={COLORS.primary} />
-              </TouchableOpacity>
-              <TouchableOpacity style={desktopStyles.headerButton}>
-                <Ionicons name="videocam-outline" size={20} color={COLORS.primary} />
-              </TouchableOpacity>
-              <TouchableOpacity style={desktopStyles.headerButton}>
                 <Ionicons name="ellipsis-vertical" size={20} color={COLORS.text} />
               </TouchableOpacity>
             </View>
