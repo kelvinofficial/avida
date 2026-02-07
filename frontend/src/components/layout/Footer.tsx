@@ -197,6 +197,7 @@ const styles = StyleSheet.create({
   footer: {
     backgroundColor: COLORS.background,
     marginTop: 60,
+    width: '100%',
   },
   footerContent: {
     flexDirection: 'row',
