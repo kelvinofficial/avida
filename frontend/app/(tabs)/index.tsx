@@ -1368,7 +1368,7 @@ const styles = StyleSheet.create({
 
   // LISTINGS GRID
   listContent: {
-    paddingHorizontal: 0, // Grid handles its own padding
+    paddingHorizontal: HORIZONTAL_PADDING,
     paddingBottom: 100,
   },
   gridRow: {
