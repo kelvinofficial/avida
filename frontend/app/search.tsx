@@ -267,10 +267,11 @@ const styles = StyleSheet.create({
   contentWrapper: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: COLORS.background,
+    backgroundColor: '#FFFFFF',
   },
   contentArea: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
   },
   desktopHeader: {
     maxWidth: 1280,
