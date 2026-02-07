@@ -105,6 +105,13 @@ Build a responsive desktop version of the marketplace application. The applicati
 ## Changelog
 
 ### February 7, 2026
+**Admin Dashboard P1/P2 Features Implemented**
+- **Users Bulk Actions**: Added checkbox selection, bulk ban/unban functionality with toolbar
+- **CSV Export**: Added export buttons to Users, Listings, and Categories pages
+- **Enhanced Users Page**: Complete rewrite with bulk selection, ban/unban dialogs, and snackbar notifications
+- **Listings Page**: Added Export CSV button
+- **Categories Page**: Added Export CSV button alongside existing drag-and-drop reorder
+
 **Admin Dashboard External Access Fixed (P0 RESOLVED)**
 - Fixed the critical blocker preventing external access to the Admin Dashboard
 - Configured Next.js basePath to `/api/admin-ui` for proper proxying through the main backend
