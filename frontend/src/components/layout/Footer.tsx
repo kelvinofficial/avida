@@ -66,10 +66,12 @@ export const Footer: React.FC<FooterProps> = ({ isTablet = false }) => {
 
   // For web, we need to use a style that breaks out of the parent container
   const fullWidthStyle = Platform.OS === 'web' ? {
-    marginLeft: -9999,
-    marginRight: -9999,
-    paddingLeft: 9999,
-    paddingRight: 9999,
+    position: 'relative' as const,
+    left: '50%',
+    right: '50%',
+    marginLeft: '-50vw',
+    marginRight: '-50vw',
+    width: '100vw',
   } : {};
 
   return (
