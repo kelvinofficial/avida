@@ -1,25 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { View, StyleSheet, Platform, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/store/authStore';
-import { useResponsive } from '../../src/hooks/useResponsive';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
-  const { isTablet, isDesktop, width: screenWidth, isReady } = useResponsive();
-
-  // Hide bottom nav on tablet and desktop (screen width > 768px on web)
-  // Use Dimensions as fallback if useResponsive isn't ready
-  const windowWidth = Platform.OS === 'web' && typeof window !== 'undefined' 
-    ? window.innerWidth 
-    : Dimensions.get('window').width;
   
-  const hideBottomNav = isTablet || isDesktop || (Platform.OS === 'web' && windowWidth > 768);
+  // State to track if we should hide bottom nav
+  const [hideBottomNav, setHideBottomNav] = useState(false);
+
+  useEffect(() => {
+    // Check screen width after component mounts
+    const checkScreenSize = () => {
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        setHideBottomNav(window.innerWidth > 768);
+      } else {
+        const { width } = Dimensions.get('window');
+        setHideBottomNav(width > 768);
+      }
+    };
+
+    checkScreenSize();
+
+    // Listen for resize events on web
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.addEventListener('resize', checkScreenSize);
+      return () => window.removeEventListener('resize', checkScreenSize);
+    }
+
+    // Listen for dimension changes on native
+    const subscription = Dimensions.addEventListener('change', checkScreenSize);
+    return () => subscription?.remove();
+  }, []);
 
   const handlePostPress = () => {
     if (!isAuthenticated) {
