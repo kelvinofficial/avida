@@ -236,6 +236,9 @@ const OfferCard = ({
 export default function OffersScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
+  const { isDesktop, isTablet, isReady } = useResponsive();
+  const isLargeScreen = isDesktop || isTablet;
+  
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
