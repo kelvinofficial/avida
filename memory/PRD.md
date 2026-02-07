@@ -117,9 +117,16 @@ Build a responsive desktop version of the marketplace application. The applicati
 
 **Page Views Counter on Listing Cards**
 - Added views counter overlay on bottom right of listing card images
-- Shows eye icon + view count (e.g., "49", "14")
+- Shows eye icon + view count (e.g., "147", "55", "111")
 - Semi-transparent dark background for visibility
-- Implemented across all listing card components
+- Implemented across ALL listing card components:
+  - `ListingCard.tsx` (shared component - used by Category page)
+  - `PropertyListingCard.tsx` (used for Properties category)
+  - `AutoListingCard.tsx` (used for Auto & Vehicles category)
+  - Home page inline card
+  - Saved page card
+  - Seller Profile page card
+  - My Listings page desktop card
 
 **Badge Color Scheme:**
 - **Just Listed**: Purple (#8B5CF6) - clock icon
