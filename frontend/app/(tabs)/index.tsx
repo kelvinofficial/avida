@@ -652,14 +652,14 @@ export default function HomeScreen() {
 
   // Render listings as grid manually - responsive columns
   const renderGrid = () => {
-    // Don't show empty state while loading - only show when loading is complete and no listings
-    if (listings.length === 0 && !loading) {
-      return <EmptyState icon="pricetags-outline" title="No listings yet" description="Be the first to post an ad in your area!" />;
+    // Don't show empty state until initial load is complete
+    if (!initialLoadDone) {
+      return null;
     }
     
-    // Show nothing while loading initially
-    if (listings.length === 0 && loading) {
-      return null;
+    // Show empty state only when initial load is done and no listings
+    if (listings.length === 0) {
+      return <EmptyState icon="pricetags-outline" title="No listings yet" description="Be the first to post an ad in your area!" />;
     }
     
     // Create rows based on column count
