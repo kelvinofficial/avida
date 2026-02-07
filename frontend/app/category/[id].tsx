@@ -628,8 +628,8 @@ export default function CategoryScreen() {
     const containerPadding = 48; // 24px on each side
     const cardGap = 24; // gap between cards
     
-    // Desktop: 3 columns, Tablet: 2 columns
-    const numColumns = isDesktop ? 3 : 2;
+    // Always 3 columns for desktop/tablet view
+    const numColumns = 3;
     
     // Use max content width of 1280px
     const contentWidth = Math.min(screenWidth, MAX_CONTENT_WIDTH);
