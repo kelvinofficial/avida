@@ -2532,11 +2532,21 @@ const desktopStyles = StyleSheet.create({
     marginHorizontal: -6,
   },
   subcategoryItem: {
-    width: '50%',
-    paddingHorizontal: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginHorizontal: 6,
     marginBottom: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    width: 'calc(50% - 12px)',
   },
   subcategoryItemSelected: {
-    // Styles inherited from inner content
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryLight,
   },
 });
