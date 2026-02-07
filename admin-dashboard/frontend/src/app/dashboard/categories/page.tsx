@@ -35,15 +35,31 @@ import {
   Delete,
   ExpandMore,
   ExpandLess,
-  Visibility,
-  VisibilityOff,
   DragIndicator,
   Settings,
+  Save,
 } from '@mui/icons-material';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { api } from '@/lib/api';
-import { Category } from '@/types';
+import { Category, CategoryAttribute } from '@/types';
 
-interface CategoryItemProps {
+interface SortableCategoryItemProps {
   category: Category;
   level: number;
   onEdit: (category: Category) => void;
@@ -51,22 +67,39 @@ interface CategoryItemProps {
   onManageAttributes: (category: Category) => void;
 }
 
-function CategoryItem({ category, level, onEdit, onDelete, onManageAttributes }: CategoryItemProps) {
+function SortableCategoryItem({ category, level, onEdit, onDelete, onManageAttributes }: SortableCategoryItemProps) {
   const [expanded, setExpanded] = useState(true);
   const hasChildren = category.children && category.children.length > 0;
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: category.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   return (
     <>
       <ListItem
+        ref={setNodeRef}
+        style={style}
         sx={{
           pl: 2 + level * 3,
-          bgcolor: level === 0 ? 'grey.50' : 'transparent',
+          bgcolor: isDragging ? 'action.hover' : level === 0 ? 'grey.50' : 'transparent',
           borderBottom: '1px solid',
           borderColor: 'divider',
         }}
       >
-        <ListItemIcon sx={{ minWidth: 32 }}>
-          <DragIndicator sx={{ color: 'grey.400', cursor: 'grab' }} />
+        <ListItemIcon sx={{ minWidth: 32, cursor: 'grab' }} {...attributes} {...listeners}>
+          <DragIndicator sx={{ color: 'grey.400' }} />
         </ListItemIcon>
         
         {hasChildren && (
@@ -79,17 +112,18 @@ function CategoryItem({ category, level, onEdit, onDelete, onManageAttributes }:
 
         <Box
           sx={{
-            width: 8,
-            height: 8,
+            width: 10,
+            height: 10,
             borderRadius: '50%',
             bgcolor: category.color || 'grey.400',
             mr: 1.5,
+            flexShrink: 0,
           }}
         />
 
         <ListItemText
           primary={
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
               <Typography fontWeight={level === 0 ? 600 : 400}>
                 {category.name}
               </Typography>
@@ -102,11 +136,20 @@ function CategoryItem({ category, level, onEdit, onDelete, onManageAttributes }:
                 variant="outlined"
                 sx={{ height: 20, fontSize: 11 }}
               />
+              {category.attributes?.length > 0 && (
+                <Chip
+                  label={`${category.attributes.length} attrs`}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                  sx={{ height: 20, fontSize: 11 }}
+                />
+              )}
             </Box>
           }
           secondary={
             <Typography variant="caption" color="text.secondary">
-              /{category.slug} • {category.attributes?.length || 0} attributes
+              /{category.slug} • Order: {category.order}
             </Typography>
           }
         />
@@ -126,16 +169,18 @@ function CategoryItem({ category, level, onEdit, onDelete, onManageAttributes }:
 
       {hasChildren && (
         <Collapse in={expanded}>
-          {category.children.map((child) => (
-            <CategoryItem
-              key={child.id}
-              category={child}
-              level={level + 1}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onManageAttributes={onManageAttributes}
-            />
-          ))}
+          <SortableContext items={category.children.map(c => c.id)} strategy={verticalListSortingStrategy}>
+            {category.children.map((child) => (
+              <SortableCategoryItem
+                key={child.id}
+                category={child}
+                level={level + 1}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onManageAttributes={onManageAttributes}
+              />
+            ))}
+          </SortableContext>
         </Collapse>
       )}
     </>
@@ -144,6 +189,7 @@ function CategoryItem({ category, level, onEdit, onDelete, onManageAttributes }:
 
 export default function CategoriesPage() {
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [flatCategories, setFlatCategories] = useState<Category[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -151,7 +197,18 @@ export default function CategoriesPage() {
   const [deleteCategory, setDeleteCategory] = useState<Category | null>(null);
   const [attributesCategory, setAttributesCategory] = useState<Category | null>(null);
   const [error, setError] = useState('');
-  const [saving, setSaving] = useState(false);
+  const [hasOrderChanges, setHasOrderChanges] = useState(false);
+
+  // Attribute dialog state
+  const [attributeDialogOpen, setAttributeDialogOpen] = useState(false);
+  const [editAttribute, setEditAttribute] = useState<CategoryAttribute | null>(null);
+  const [attributeForm, setAttributeForm] = useState({
+    name: '',
+    key: '',
+    type: 'text',
+    required: false,
+    options: '',
+  });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -164,6 +221,14 @@ export default function CategoriesPage() {
     is_visible: true,
     order: 0,
   });
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const loadCategories = async () => {
     try {
@@ -183,6 +248,57 @@ export default function CategoriesPage() {
   useEffect(() => {
     loadCategories();
   }, []);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      // Update order in flat categories
+      const oldIndex = flatCategories.findIndex(c => c.id === active.id);
+      const newIndex = flatCategories.findIndex(c => c.id === over.id);
+      
+      const newFlatCategories = arrayMove(flatCategories, oldIndex, newIndex);
+      
+      // Update order numbers
+      const updatedCategories = newFlatCategories.map((cat, index) => ({
+        ...cat,
+        order: index,
+      }));
+      
+      setFlatCategories(updatedCategories);
+      setHasOrderChanges(true);
+      
+      // Rebuild tree
+      const buildTree = (parentId: string | null = null): Category[] => {
+        return updatedCategories
+          .filter(c => c.parent_id === parentId)
+          .sort((a, b) => a.order - b.order)
+          .map(cat => ({
+            ...cat,
+            children: buildTree(cat.id),
+          }));
+      };
+      
+      setCategories(buildTree(null));
+    }
+  };
+
+  const saveOrderChanges = async () => {
+    setSaving(true);
+    try {
+      const orders = flatCategories.map((cat, index) => ({
+        id: cat.id,
+        order: index,
+      }));
+      await api.reorderCategories(orders);
+      setHasOrderChanges(false);
+    } catch (err) {
+      console.error('Failed to save order:', err);
+      setError('Failed to save category order');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleOpenDialog = (category?: Category) => {
     if (category) {
@@ -255,6 +371,76 @@ export default function CategoriesPage() {
     }
   };
 
+  const handleOpenAttributeDialog = (attr?: CategoryAttribute) => {
+    if (attr) {
+      setEditAttribute(attr);
+      setAttributeForm({
+        name: attr.name,
+        key: attr.key,
+        type: attr.type,
+        required: attr.required,
+        options: attr.options?.join(', ') || '',
+      });
+    } else {
+      setEditAttribute(null);
+      setAttributeForm({
+        name: '',
+        key: '',
+        type: 'text',
+        required: false,
+        options: '',
+      });
+    }
+    setAttributeDialogOpen(true);
+  };
+
+  const handleSaveAttribute = async () => {
+    if (!attributesCategory || !attributeForm.name || !attributeForm.key) return;
+
+    setSaving(true);
+    try {
+      const attrData = {
+        ...attributeForm,
+        category_id: attributesCategory.id,
+        options: attributeForm.options ? attributeForm.options.split(',').map(o => o.trim()) : undefined,
+        order: attributesCategory.attributes?.length || 0,
+      };
+
+      if (editAttribute) {
+        await api.updateAttribute(attributesCategory.id, editAttribute.id, attrData);
+      } else {
+        await api.addAttribute(attributesCategory.id, attrData);
+      }
+
+      setAttributeDialogOpen(false);
+      // Refresh category data
+      const updatedCat = await api.getCategory(attributesCategory.id);
+      setAttributesCategory(updatedCat);
+      await loadCategories();
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { detail?: string } } };
+      setError(error.response?.data?.detail || 'Failed to save attribute');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteAttribute = async (attr: CategoryAttribute) => {
+    if (!attributesCategory) return;
+
+    setSaving(true);
+    try {
+      await api.deleteAttribute(attributesCategory.id, attr.id);
+      const updatedCat = await api.getCategory(attributesCategory.id);
+      setAttributesCategory(updatedCat);
+      await loadCategories();
+    } catch (err) {
+      console.error('Failed to delete attribute:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const generateSlug = (name: string) => {
     return name
       .toLowerCase()
@@ -278,38 +464,68 @@ export default function CategoriesPage() {
             Categories
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Manage your marketplace category hierarchy and attributes
+            Manage your marketplace category hierarchy and attributes. Drag to reorder.
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => handleOpenDialog()}
-        >
-          Add Category
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {hasOrderChanges && (
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<Save />}
+              onClick={saveOrderChanges}
+              disabled={saving}
+            >
+              Save Order
+            </Button>
+          )}
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => handleOpenDialog()}
+          >
+            Add Category
+          </Button>
+        </Box>
       </Box>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+          {error}
+        </Alert>
+      )}
 
       <Card>
         <CardContent sx={{ p: 0 }}>
-          <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+          <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between' }}>
             <Typography variant="subtitle2" color="text.secondary">
-              {flatCategories.length} categories • Drag to reorder
+              {flatCategories.length} categories
             </Typography>
+            {hasOrderChanges && (
+              <Chip label="Unsaved changes" color="warning" size="small" />
+            )}
           </Box>
           
-          <List disablePadding>
-            {categories.map((category) => (
-              <CategoryItem
-                key={category.id}
-                category={category}
-                level={0}
-                onEdit={handleOpenDialog}
-                onDelete={setDeleteCategory}
-                onManageAttributes={setAttributesCategory}
-              />
-            ))}
-          </List>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext items={flatCategories.map(c => c.id)} strategy={verticalListSortingStrategy}>
+              <List disablePadding>
+                {categories.map((category) => (
+                  <SortableCategoryItem
+                    key={category.id}
+                    category={category}
+                    level={0}
+                    onEdit={handleOpenDialog}
+                    onDelete={setDeleteCategory}
+                    onManageAttributes={setAttributesCategory}
+                  />
+                ))}
+              </List>
+            </SortableContext>
+          </DndContext>
 
           {categories.length === 0 && (
             <Box sx={{ py: 8, textAlign: 'center' }}>
@@ -327,18 +543,12 @@ export default function CategoriesPage() {
         </CardContent>
       </Card>
 
-      {/* Create/Edit Dialog */}
+      {/* Create/Edit Category Dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>
           {editCategory ? 'Edit Category' : 'Create Category'}
         </DialogTitle>
         <DialogContent>
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-
           <TextField
             fullWidth
             label="Name"
@@ -450,7 +660,7 @@ export default function CategoriesPage() {
         </DialogActions>
       </Dialog>
 
-      {/* Attributes Dialog - Placeholder */}
+      {/* Attributes Management Dialog */}
       <Dialog
         open={!!attributesCategory}
         onClose={() => setAttributesCategory(null)}
@@ -462,30 +672,129 @@ export default function CategoriesPage() {
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Configure dynamic attributes for this category
+            Configure dynamic attributes for this category. These fields will appear when users create listings.
           </Typography>
           
           {attributesCategory?.attributes?.length ? (
-            <List>
+            <List sx={{ bgcolor: 'grey.50', borderRadius: 1 }}>
               {attributesCategory.attributes.map((attr) => (
-                <ListItem key={attr.id} divider>
+                <ListItem
+                  key={attr.id}
+                  divider
+                  secondaryAction={
+                    <Box>
+                      <IconButton size="small" onClick={() => handleOpenAttributeDialog(attr)}>
+                        <Edit fontSize="small" />
+                      </IconButton>
+                      <IconButton size="small" color="error" onClick={() => handleDeleteAttribute(attr)}>
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  }
+                >
                   <ListItemText
-                    primary={attr.name}
-                    secondary={`Type: ${attr.type} • Key: ${attr.key} ${attr.required ? '• Required' : ''}`}
+                    primary={
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        <Typography fontWeight={500}>{attr.name}</Typography>
+                        <Chip label={attr.type} size="small" variant="outlined" />
+                        {attr.required && <Chip label="Required" size="small" color="error" />}
+                      </Box>
+                    }
+                    secondary={`Key: ${attr.key}${attr.options ? ` • Options: ${attr.options.join(', ')}` : ''}`}
                   />
                 </ListItem>
               ))}
             </List>
           ) : (
-            <Box sx={{ py: 4, textAlign: 'center' }}>
+            <Box sx={{ py: 4, textAlign: 'center', bgcolor: 'grey.50', borderRadius: 1 }}>
               <Typography color="text.secondary">No attributes defined</Typography>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setAttributesCategory(null)}>Close</Button>
-          <Button variant="contained" startIcon={<Add />}>
+          <Button variant="contained" startIcon={<Add />} onClick={() => handleOpenAttributeDialog()}>
             Add Attribute
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add/Edit Attribute Dialog */}
+      <Dialog open={attributeDialogOpen} onClose={() => setAttributeDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {editAttribute ? 'Edit Attribute' : 'Add Attribute'}
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Name"
+            value={attributeForm.name}
+            onChange={(e) => setAttributeForm({
+              ...attributeForm,
+              name: e.target.value,
+              key: editAttribute ? attributeForm.key : generateSlug(e.target.value).replace(/-/g, '_'),
+            })}
+            sx={{ mb: 2, mt: 1 }}
+          />
+
+          <TextField
+            fullWidth
+            label="Key"
+            value={attributeForm.key}
+            onChange={(e) => setAttributeForm({ ...attributeForm, key: e.target.value })}
+            helperText="Internal identifier (snake_case)"
+            sx={{ mb: 2 }}
+          />
+
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Type</InputLabel>
+            <Select
+              value={attributeForm.type}
+              label="Type"
+              onChange={(e) => setAttributeForm({ ...attributeForm, type: e.target.value })}
+            >
+              <MenuItem value="text">Text</MenuItem>
+              <MenuItem value="number">Number</MenuItem>
+              <MenuItem value="currency">Currency</MenuItem>
+              <MenuItem value="dropdown">Dropdown</MenuItem>
+              <MenuItem value="multiselect">Multi-Select</MenuItem>
+              <MenuItem value="boolean">Boolean (Yes/No)</MenuItem>
+              <MenuItem value="date">Date</MenuItem>
+              <MenuItem value="year">Year</MenuItem>
+              <MenuItem value="range">Range</MenuItem>
+              <MenuItem value="rich_text">Rich Text</MenuItem>
+            </Select>
+          </FormControl>
+
+          {(attributeForm.type === 'dropdown' || attributeForm.type === 'multiselect') && (
+            <TextField
+              fullWidth
+              label="Options"
+              value={attributeForm.options}
+              onChange={(e) => setAttributeForm({ ...attributeForm, options: e.target.value })}
+              helperText="Comma-separated values (e.g., Option 1, Option 2, Option 3)"
+              sx={{ mb: 2 }}
+            />
+          )}
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={attributeForm.required}
+                onChange={(e) => setAttributeForm({ ...attributeForm, required: e.target.checked })}
+              />
+            }
+            label="Required field"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAttributeDialogOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={handleSaveAttribute}
+            disabled={saving || !attributeForm.name || !attributeForm.key}
+          >
+            {saving ? 'Saving...' : editAttribute ? 'Update' : 'Add'}
           </Button>
         </DialogActions>
       </Dialog>
