@@ -628,7 +628,18 @@ const styles = StyleSheet.create({
     top: 8,
     left: 8,
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 4,
+    maxWidth: '70%',
+  },
+  justListedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
   },
   featuredBadge: {
     flexDirection: 'row',
