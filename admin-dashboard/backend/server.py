@@ -1541,8 +1541,25 @@ async def get_listings_by_category(
     # Also check the original categories collection for backward compatibility
     original_categories = {c["id"]: c["name"] for c in await db.categories.find({"id": {"$in": category_ids}}, {"_id": 0, "id": 1, "name": 1}).to_list(100)}
     
-    # Merge categories (admin_categories take precedence)
-    all_categories = {**original_categories, **admin_categories}
+    # Fallback mapping for hardcoded categories (used by main marketplace)
+    hardcoded_categories = {
+        "auto_vehicles": "Auto & Vehicles",
+        "properties": "Properties",
+        "electronics": "Electronics",
+        "phones_tablets": "Phones & Tablets",
+        "home_furniture": "Home & Furniture",
+        "fashion_beauty": "Fashion & Beauty",
+        "jobs_services": "Jobs & Services",
+        "pets": "Pets",
+        "sports_hobbies": "Sports & Hobbies",
+        "kids_baby": "Kids & Baby",
+        "health_beauty": "Health & Beauty",
+        "agriculture_food": "Agriculture & Food",
+        "other": "Other",
+    }
+    
+    # Merge categories (admin_categories take precedence, then original, then hardcoded)
+    all_categories = {**hardcoded_categories, **original_categories, **admin_categories}
     
     return [
         {"category_id": r["_id"], "category_name": all_categories.get(r["_id"], "Unknown"), "count": r["count"]}
