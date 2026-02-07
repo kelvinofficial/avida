@@ -504,20 +504,31 @@ export default function OffersScreen() {
 
   const handleViewChat = async (offer: Offer) => {
     try {
-      // Create or get existing conversation with the other party
-      const otherUserId = role === 'seller' ? offer.buyer_id : offer.seller_id;
-      const response = await api.post('/conversations', {
-        listing_id: offer.listing_id,
-        other_user_id: otherUserId,
-      });
+      // Create or get existing conversation using query parameter
+      const response = await api.post(`/conversations?listing_id=${offer.listing_id}`);
       
       if (response.data?.id) {
         router.push(`/chat/${response.data.id}`);
       } else {
         Alert.alert('Error', 'Could not open chat');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to open chat:', error);
+      // If the user is the seller, use direct conversation endpoint
+      if (error.response?.status === 400) {
+        try {
+          const otherUserId = role === 'seller' ? offer.buyer_id : offer.seller_id;
+          const directResponse = await api.post('/conversations/direct', {
+            other_user_id: otherUserId,
+          });
+          if (directResponse.data?.id) {
+            router.push(`/chat/${directResponse.data.id}`);
+            return;
+          }
+        } catch (directError) {
+          console.error('Direct conversation failed:', directError);
+        }
+      }
       Alert.alert('Error', 'Could not open chat');
     }
   };
