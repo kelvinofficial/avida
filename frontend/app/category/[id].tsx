@@ -635,13 +635,12 @@ export default function CategoryScreen() {
     // Calculate card width dynamically to fill available space with 3 columns
     const sidebarWidth = 260;
     const sidebarMargin = 32;
-    const containerPadding = 48; // 24px on each side
+    const containerPadding = 80; // 40px on each side from scrollContent
     const cardGap = 28; // gap between cards
     const numColumns = 3;
     
-    // Use more screen width - up to 1600px on large screens
-    const maxContentWidth = Math.min(screenWidth - 80, 1600);
-    const availableForCards = maxContentWidth - sidebarWidth - sidebarMargin - containerPadding;
+    // Use screen width minus padding for full-width layout
+    const availableForCards = screenWidth - sidebarWidth - sidebarMargin - containerPadding;
     // Card width = (available - gaps between cards) / number of columns
     const cardWidth = Math.floor((availableForCards - (cardGap * (numColumns - 1))) / numColumns);
 
