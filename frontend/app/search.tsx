@@ -173,76 +173,78 @@ export default function SearchScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={isDesktop ? styles.desktopWrapper : styles.fullWidth}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={20} color={COLORS.textSecondary} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search listings..."
-              placeholderTextColor={COLORS.textSecondary}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={handleSearch}
-              returnKeyType="search"
-              autoFocus={!params.q}
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Ionicons name="close-circle" size={20} color={COLORS.textSecondary} />
-              </TouchableOpacity>
-            )}
+    <View style={styles.pageContainer}>
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={isDesktop ? styles.desktopWrapper : styles.fullWidth}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.backBtn}>
+              <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+            </TouchableOpacity>
+            <View style={styles.searchContainer}>
+              <Ionicons name="search" size={20} color={COLORS.textSecondary} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search listings..."
+                placeholderTextColor={COLORS.textSecondary}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmitEditing={handleSearch}
+                returnKeyType="search"
+                autoFocus={!params.q}
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchQuery('')}>
+                  <Ionicons name="close-circle" size={20} color={COLORS.textSecondary} />
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
-        </View>
 
-        {/* Content */}
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
-            <Text style={styles.loadingText}>Searching...</Text>
-          </View>
-        ) : hasSearched ? (
-          // Search Results
-          <FlatList
-            data={listings}
-            renderItem={renderListing}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.listContent}
-            ListHeaderComponent={() => (
-              <Text style={styles.resultsText}>
-                {listings.length} {listings.length === 1 ? 'result' : 'results'} for "{searchQuery}"
-              </Text>
-            )}
-            ListEmptyComponent={() => (
-              <View style={styles.emptyState}>
-                <Ionicons name="search-outline" size={48} color={COLORS.textSecondary} />
-                <Text style={styles.emptyTitle}>No results found</Text>
-                <Text style={styles.emptySubtitle}>
-                  Try different keywords or browse categories
-                </Text>
-              </View>
-            )}
-          />
-        ) : (
-          // Browse Categories
-          <View style={styles.browseContainer}>
-            <Text style={styles.sectionTitle}>Browse Categories</Text>
+          {/* Content */}
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+              <Text style={styles.loadingText}>Searching...</Text>
+            </View>
+          ) : hasSearched ? (
+            // Search Results
             <FlatList
-              data={categories}
-              renderItem={renderCategory}
+              data={listings}
+              renderItem={renderListing}
               keyExtractor={(item) => item.id}
-              numColumns={3}
-              contentContainerStyle={styles.categoriesGrid}
+              contentContainerStyle={styles.listContent}
+              ListHeaderComponent={() => (
+                <Text style={styles.resultsText}>
+                  {listings.length} {listings.length === 1 ? 'result' : 'results'} for "{searchQuery}"
+                </Text>
+              )}
+              ListEmptyComponent={() => (
+                <View style={styles.emptyState}>
+                  <Ionicons name="search-outline" size={48} color={COLORS.textSecondary} />
+                  <Text style={styles.emptyTitle}>No results found</Text>
+                  <Text style={styles.emptySubtitle}>
+                    Try different keywords or browse categories
+                  </Text>
+                </View>
+              )}
             />
-          </View>
-        )}
-      </View>
-    </SafeAreaView>
+          ) : (
+            // Browse Categories
+            <View style={styles.browseContainer}>
+              <Text style={styles.sectionTitle}>Browse Categories</Text>
+              <FlatList
+                data={categories}
+                renderItem={renderCategory}
+                keyExtractor={(item) => item.id}
+                numColumns={3}
+                contentContainerStyle={styles.categoriesGrid}
+              />
+            </View>
+          )}
+        </View>
+      </SafeAreaView>
+    </View>
   );
 }
 
