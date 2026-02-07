@@ -280,7 +280,7 @@ export default function NotificationsPage() {
               {notifications.length}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Total
+              {t('common.all')}
             </Typography>
           </CardContent>
         </Card>
@@ -290,7 +290,7 @@ export default function NotificationsPage() {
               {notifications.filter(n => n.status === 'sent').length}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Sent
+              {t('notifications.sent')}
             </Typography>
           </CardContent>
         </Card>
@@ -300,7 +300,7 @@ export default function NotificationsPage() {
               {notifications.filter(n => n.status === 'scheduled').length}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Scheduled
+              {t('notifications.scheduled')}
             </Typography>
           </CardContent>
         </Card>
@@ -310,7 +310,7 @@ export default function NotificationsPage() {
               {notifications.filter(n => n.status === 'draft').length}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Drafts
+              {t('notifications.draft')}
             </Typography>
           </CardContent>
         </Card>
@@ -323,22 +323,22 @@ export default function NotificationsPage() {
           onChange={(_, v) => { setTabValue(v); setPage(0); }}
           sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}
         >
-          <Tab label="All" />
-          <Tab label="Sent" />
-          <Tab label="Scheduled" />
-          <Tab label="Drafts" />
+          <Tab label={t('common.all')} />
+          <Tab label={t('notifications.sent')} />
+          <Tab label={t('notifications.scheduled')} />
+          <Tab label={t('notifications.draft')} />
         </Tabs>
         <TableContainer>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Notification</TableCell>
-                <TableCell>Type</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Audience</TableCell>
-                <TableCell>Sent/Scheduled</TableCell>
-                <TableCell align="right">Delivery</TableCell>
-                <TableCell align="right">Actions</TableCell>
+                <TableCell>{t('notifications.notificationTitle')}</TableCell>
+                <TableCell>{t('notifications.type')}</TableCell>
+                <TableCell>{t('common.status')}</TableCell>
+                <TableCell>{t('notifications.audience')}</TableCell>
+                <TableCell>{t('notifications.sent')}/{t('notifications.scheduled')}</TableCell>
+                <TableCell align="right">{t('notifications.delivery')}</TableCell>
+                <TableCell align="right">{t('common.actions')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -352,7 +352,7 @@ export default function NotificationsPage() {
                 <TableRow>
                   <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                     <NotificationsActive sx={{ fontSize: 48, color: 'grey.300', mb: 1 }} />
-                    <Typography color="text.secondary">No notifications found</Typography>
+                    <Typography color="text.secondary">{t('common.noData')}</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -387,7 +387,7 @@ export default function NotificationsPage() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                           <Group fontSize="small" color="action" />
                           <Typography variant="body2">
-                            {notif.target_type === 'all' ? 'All users' : `${notif.target_ids?.length || 0} users`}
+                            {notif.target_type === 'all' ? t('notifications.allUsers') : `${notif.target_ids?.length || 0} users`}
                           </Typography>
                         </Box>
                       </TableCell>
@@ -401,17 +401,17 @@ export default function NotificationsPage() {
                       <TableCell align="right">
                         {notif.status === 'sent' ? (
                           <Typography variant="body2">
-                            {notif.read_count}/{notif.total_recipients} read
+                            {notif.read_count}/{notif.total_recipients} {t('notifications.read')}
                           </Typography>
                         ) : (
                           <Typography variant="body2" color="text.secondary">
-                            {notif.total_recipients} recipients
+                            {notif.total_recipients} {t('notifications.recipients')}
                           </Typography>
                         )}
                       </TableCell>
                       <TableCell align="right">
                         {(notif.status === 'draft' || notif.status === 'scheduled') && (
-                          <Tooltip title="Send Now">
+                          <Tooltip title={t('notifications.sendNow')}>
                             <IconButton 
                               size="small" 
                               color="primary"
