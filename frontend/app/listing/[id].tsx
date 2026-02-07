@@ -880,7 +880,9 @@ export default function ListingDetailScreen() {
           contentContainerStyle={desktopStyles.scrollContent}
           showsVerticalScrollIndicator={true}
         >
-          <View style={[desktopStyles.mainContainer, { maxWidth: MAX_CONTENT_WIDTH }]}>
+          {/* Content wrapper with light background */}
+          <View style={desktopStyles.contentWrapper}>
+            <View style={[desktopStyles.mainContainer, { maxWidth: MAX_CONTENT_WIDTH }]}>
             {/* Left Column - Images, Highlights, Details, Description, Location */}
             <View style={[desktopStyles.leftColumn, { width: imageGalleryWidth }]}>
               {/* Main Image */}
