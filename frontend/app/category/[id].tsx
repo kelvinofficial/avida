@@ -1492,6 +1492,10 @@ const desktopStyles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
+    // Empty - no padding at bottom to allow full-width footer
+  },
+  contentWrapper: {
+    backgroundColor: COLORS.background,
     paddingBottom: 40,
   },
   // Main Container with Sidebar + Listings
