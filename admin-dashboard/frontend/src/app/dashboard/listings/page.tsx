@@ -246,6 +246,14 @@ export default function ListingsPage() {
           )}
           <Button
             variant="outlined"
+            startIcon={<Download />}
+            onClick={exportToCSV}
+            disabled={listings.length === 0}
+          >
+            Export CSV
+          </Button>
+          <Button
+            variant="outlined"
             startIcon={<Refresh />}
             onClick={loadListings}
             disabled={loading}
