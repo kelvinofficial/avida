@@ -42,6 +42,8 @@ import {
   ContentCopy,
 } from '@mui/icons-material';
 
+import { api } from '@/lib/api';
+
 interface AdPlacement {
   id: string;
   name: string;
@@ -54,45 +56,6 @@ interface AdPlacement {
   impressions?: number;
   clicks?: number;
 }
-
-const mockAds: AdPlacement[] = [
-  {
-    id: 'ad_1',
-    name: 'Home Banner',
-    platform: 'admob',
-    ad_type: 'banner',
-    placement_id: 'ca-app-pub-xxxx/1234567890',
-    is_active: true,
-    location: 'home_top',
-    created_at: '2026-02-01T00:00:00Z',
-    impressions: 15420,
-    clicks: 342,
-  },
-  {
-    id: 'ad_2',
-    name: 'Listing Detail Interstitial',
-    platform: 'admob',
-    ad_type: 'interstitial',
-    placement_id: 'ca-app-pub-xxxx/0987654321',
-    is_active: true,
-    location: 'listing_detail',
-    created_at: '2026-02-01T00:00:00Z',
-    impressions: 8920,
-    clicks: 156,
-  },
-  {
-    id: 'ad_3',
-    name: 'Search Results Native',
-    platform: 'adsense',
-    ad_type: 'native',
-    placement_id: 'ca-pub-xxxx/native-1',
-    is_active: false,
-    location: 'search_results',
-    created_at: '2026-02-03T00:00:00Z',
-    impressions: 0,
-    clicks: 0,
-  },
-];
 
 export default function AdsPage() {
   const [loading, setLoading] = useState(true);
@@ -117,11 +80,11 @@ export default function AdsPage() {
   const loadAds = useCallback(async () => {
     setLoading(true);
     try {
-      // In production, this would call the API
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setAds(mockAds);
+      const data = await api.getAds();
+      setAds(data);
     } catch (err) {
       console.error('Failed to load ads:', err);
+      setSnackbar({ open: true, message: 'Failed to load ads', severity: 'error' });
     } finally {
       setLoading(false);
     }
