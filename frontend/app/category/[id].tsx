@@ -1474,14 +1474,15 @@ const desktopStyles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    alignItems: 'flex-start',
+    alignItems: 'center',
     paddingBottom: 40,
-    paddingHorizontal: 24,
   },
   // Main Container with Sidebar + Listings
   mainContainerInner: {
     flexDirection: 'row',
     width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
+    paddingHorizontal: 24,
     paddingTop: 8,
   },
   sidebar: {
