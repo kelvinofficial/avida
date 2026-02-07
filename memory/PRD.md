@@ -105,6 +105,17 @@ Build a responsive desktop version of the marketplace application. The applicati
 ## Changelog
 
 ### February 7, 2026
+**Admin Dashboard External Access Fixed (P0 RESOLVED)**
+- Fixed the critical blocker preventing external access to the Admin Dashboard
+- Configured Next.js basePath to `/api/admin-ui` for proper proxying through the main backend
+- Added reverse proxy routes in main backend (`/app/backend/server.py`) for admin UI:
+  - `/api/admin-ui/{path}` → Next.js admin frontend on port 3001
+  - `/api/admin-ui` redirect to `/api/admin-ui/`
+- Admin Dashboard is now accessible at: `https://admin-panel-144.preview.emergentagent.com/api/admin-ui/`
+- Full authentication flow works: login → dashboard with real data
+- Dashboard shows: 34 users, 158 listings, analytics charts, navigation sidebar
+- Admin credentials: admin@marketplace.com / Admin@123456
+
 **Listing Detail Page - Dark Bar Fix**
 - Fixed the dark bar/space that appeared between the breadcrumb and listing image
 - Modified `/app/frontend/app/_layout.tsx` to set `contentStyle: { backgroundColor: '#F5F5F5' }` for the listing screen
