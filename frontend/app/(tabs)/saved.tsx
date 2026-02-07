@@ -126,6 +126,11 @@ const ListingCard = ({
         >
           <Ionicons name="heart" size={isDesktop ? 22 : 20} color={COLORS.error} />
         </TouchableOpacity>
+        {/* Views Counter - Bottom Right */}
+        <View style={styles.viewsContainer}>
+          <Ionicons name="eye-outline" size={11} color="#fff" />
+          <Text style={styles.viewsText}>{item.views || 0}</Text>
+        </View>
       </View>
       <View style={[styles.cardContent, isDesktop && desktopStyles.cardContent]}>
         <Text style={[styles.cardPrice, isDesktop && desktopStyles.cardPrice]}>
