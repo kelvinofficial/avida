@@ -78,6 +78,10 @@ RATE_LIMITS = {
     "image_upload": 20
 }
 
+# Online users tracking
+online_users: Dict[str, str] = {}  # user_id -> socket_id
+user_sockets: Dict[str, str] = {}  # socket_id -> user_id
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
