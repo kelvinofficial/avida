@@ -193,5 +193,16 @@ Build a responsive desktop version of the marketplace application. The applicati
 - Featured badge (amber with star icon)
 - TOP badge (red with arrow icon)
 
+### February 7, 2026
+**Bottom Navigation Bar Hidden on Tablet/Desktop**
+- Fixed the bottom navigation tab bar to be hidden on tablet and desktop screen sizes (> 768px)
+- Modified `/app/frontend/app/(tabs)/_layout.tsx` to use a client-side mounting pattern
+- Used `isMounted` state to avoid SSR hydration mismatch issues
+- The bottom nav bar now:
+  - **Visible** on mobile (< 768px width)
+  - **Hidden** on tablet (768px - 1024px width)
+  - **Hidden** on desktop (> 1024px width)
+- Responds to window resize events dynamically
+
 ---
-Last Updated: December 7, 2025
+Last Updated: February 7, 2026
