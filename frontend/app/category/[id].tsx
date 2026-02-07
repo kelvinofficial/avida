@@ -729,7 +729,9 @@ export default function CategoryScreen() {
           contentContainerStyle={desktopStyles.scrollContent}
           showsVerticalScrollIndicator={true}
         >
-          <View style={desktopStyles.mainContainerInner}>
+          {/* Content wrapper with light background */}
+          <View style={desktopStyles.contentWrapper}>
+            <View style={desktopStyles.mainContainerInner}>
             {/* Sidebar */}
             {renderDesktopSidebar()}
 
