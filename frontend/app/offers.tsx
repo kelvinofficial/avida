@@ -767,7 +767,7 @@ export default function OffersScreen() {
               onPress={() => setRole('buyer')}
             >
               <Ionicons 
-                name="upload-outline" 
+                name="paper-plane-outline" 
                 size={18} 
                 color={role === 'buyer' ? COLORS.primary : COLORS.textSecondary} 
               />
