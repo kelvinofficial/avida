@@ -42,6 +42,23 @@ const SkeletonItem = ({ isDesktop }: { isDesktop?: boolean }) => (
   </View>
 );
 
+// Helper function to format time ago
+const formatTimeAgo = (dateString: string): string => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInMins = Math.floor(diffInMs / (1000 * 60));
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (diffInMins < 1) return 'Just now';
+  if (diffInMins < 60) return `${diffInMins} min ago`;
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+  if (diffInDays < 30) return `${Math.floor(diffInDays / 7)}w ago`;
+  return date.toLocaleDateString();
+};
+
 // Desktop Card Component
 const DesktopListingCard = ({
   item,
@@ -57,14 +74,31 @@ const DesktopListingCard = ({
     onPress={onPress}
     activeOpacity={0.8}
   >
-    <Image
-      source={{ uri: item.images?.[0] || 'https://via.placeholder.com/200' }}
-      style={desktopStyles.cardImage}
-    />
-    {/* Remove Button */}
-    <TouchableOpacity style={desktopStyles.heartBtn} onPress={onRemove}>
-      <Ionicons name="heart" size={22} color={COLORS.error} />
-    </TouchableOpacity>
+    <View style={desktopStyles.cardImageContainer}>
+      <Image
+        source={{ uri: item.images?.[0] || 'https://via.placeholder.com/200' }}
+        style={desktopStyles.cardImage}
+      />
+      {/* Badges */}
+      <View style={desktopStyles.cardBadges}>
+        {item.is_featured && (
+          <View style={desktopStyles.featuredBadge}>
+            <Ionicons name="star" size={10} color="#fff" />
+            <Text style={desktopStyles.badgeText}>Featured</Text>
+          </View>
+        )}
+        {item.is_top && (
+          <View style={desktopStyles.topBadge}>
+            <Ionicons name="arrow-up" size={10} color="#fff" />
+            <Text style={desktopStyles.badgeText}>TOP</Text>
+          </View>
+        )}
+      </View>
+      {/* Heart Button */}
+      <TouchableOpacity style={desktopStyles.heartBtn} onPress={onRemove}>
+        <Ionicons name="heart" size={22} color={COLORS.error} />
+      </TouchableOpacity>
+    </View>
     
     <View style={desktopStyles.cardContent}>
       <Text style={desktopStyles.cardPrice}>€{item.price?.toLocaleString()}</Text>
@@ -77,8 +111,8 @@ const DesktopListingCard = ({
         </Text>
       </View>
       
-      <Text style={desktopStyles.savedDate}>
-        Saved {item.saved_at ? new Date(item.saved_at).toLocaleDateString() : 'recently'}
+      <Text style={desktopStyles.cardTime}>
+        {formatTimeAgo(item.created_at)}
       </Text>
     </View>
   </TouchableOpacity>
