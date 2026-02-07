@@ -1333,15 +1333,29 @@ const desktopStyles = StyleSheet.create({
     backgroundColor: '#F0F2F5',
   },
   
+  // Page wrapper for max-width constraint
+  pageWrapper: {
+    flex: 1,
+    maxWidth: 1400,
+    width: '100%',
+    alignSelf: 'center',
+    backgroundColor: COLORS.surface,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: COLORS.border,
+  },
+  
   // Master-Detail Layout
   masterDetailContainer: {
     flex: 1,
     flexDirection: 'row',
   },
   
-  // Sidebar (Conversation List)
+  // Sidebar (Conversation List) - 25% width
   sidebarContainer: {
-    width: SIDEBAR_WIDTH,
+    width: '25%',
+    minWidth: 280,
+    maxWidth: 350,
     backgroundColor: COLORS.surface,
     borderRightWidth: 1,
     borderRightColor: COLORS.border,
@@ -1350,20 +1364,20 @@ const desktopStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
   sidebarTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
     color: COLORS.text,
   },
   composeBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: COLORS.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
@@ -1372,54 +1386,276 @@ const desktopStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.background,
-    marginHorizontal: 16,
-    marginVertical: 12,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    height: 40,
-    gap: 8,
+    marginHorizontal: 12,
+    marginTop: 12,
+    marginBottom: 8,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    height: 36,
+    gap: 6,
   },
   searchInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.text,
   },
-  filterScroll: {
-    maxHeight: 50,
+  
+  // Filter Chips - wrapped, all visible
+  filterChipsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    gap: 6,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: COLORS.background,
+    gap: 4,
+  },
+  filterChipActive: {
+    backgroundColor: COLORS.primaryLight,
+  },
+  filterChipText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+  },
+  filterChipTextActive: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  filterChipBadge: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  filterChipBadgeText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '700',
+  },
+  
   conversationList: {
     flexGrow: 1,
   },
   listSeparator: {
     height: 1,
     backgroundColor: COLORS.border,
-    marginLeft: 70,
+    marginLeft: 60,
   },
   sidebarEmptyState: {
-    padding: 32,
+    padding: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sidebarEmptyTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: COLORS.text,
-    marginTop: 12,
+    marginTop: 10,
     textAlign: 'center',
   },
   sidebarEmptyDesc: {
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.textSecondary,
     marginTop: 4,
     textAlign: 'center',
   },
   
-  // Detail Panel
-  detailContainer: {
+  // Chat Container - 75% width
+  chatContainer: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  chatWrapper: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  
+  // Chat Header
+  chatHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  chatUserInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  chatAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
+  chatAvatarPlaceholder: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chatAvatarInitial: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  chatHeaderTextInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  chatHeaderName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  chatHeaderListing: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  chatHeaderActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  viewListingBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    gap: 6,
+  },
+  viewListingBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  
+  // Chat Messages Area
+  chatMessagesArea: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+  chatLoadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+  },
+  chatLoadingText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  messagesListContent: {
+    padding: 16,
+    flexGrow: 1,
+  },
+  messageBubbleRow: {
+    marginBottom: 8,
+  },
+  messageBubbleRowOwn: {
+    alignItems: 'flex-end',
+  },
+  messageBubbleRowOther: {
+    alignItems: 'flex-start',
+  },
+  messageBubble: {
+    maxWidth: '70%',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
+  },
+  messageBubbleOwn: {
+    backgroundColor: COLORS.primary,
+    borderBottomRightRadius: 4,
+  },
+  messageBubbleOther: {
+    backgroundColor: COLORS.surface,
+    borderBottomLeftRadius: 4,
+  },
+  messageText: {
+    fontSize: 14,
+    color: COLORS.text,
+    lineHeight: 20,
+  },
+  messageTextOwn: {
+    color: '#fff',
+  },
+  messageTime: {
+    fontSize: 10,
+    color: COLORS.textMuted,
+    marginTop: 4,
+    alignSelf: 'flex-end',
+  },
+  messageTimeOwn: {
+    color: 'rgba(255,255,255,0.7)',
+  },
+  noMessagesContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  noMessagesText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginTop: 16,
+  },
+  noMessagesSubtext: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginTop: 4,
+  },
+  
+  // Chat Input
+  chatInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    padding: 12,
+    backgroundColor: COLORS.surface,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    gap: 10,
+  },
+  chatInput: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: COLORS.text,
+    maxHeight: 100,
+  },
+  sendBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendBtnDisabled: {
+    backgroundColor: COLORS.border,
   },
   
   // Empty Detail State
@@ -1430,218 +1666,38 @@ const desktopStyles = StyleSheet.create({
     padding: 40,
   },
   emptyDetailIcon: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     backgroundColor: COLORS.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   emptyDetailTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
     color: COLORS.text,
     marginBottom: 8,
   },
   emptyDetailText: {
-    fontSize: 16,
+    fontSize: 14,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    maxWidth: 400,
-    lineHeight: 24,
+    maxWidth: 300,
   },
   browseListingsBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 10,
     gap: 8,
-    marginTop: 24,
+    marginTop: 20,
   },
   browseListingsBtnText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  
-  // Chat Preview Container
-  chatPreviewContainer: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-    margin: 24,
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  chatHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: COLORS.background,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  chatAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-  },
-  chatAvatarPlaceholder: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.primaryLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  chatAvatarInitial: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: COLORS.primary,
-  },
-  chatHeaderInfo: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  chatHeaderName: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  chatHeaderStatus: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  openChatBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-    gap: 6,
-  },
-  openChatBtnText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  
-  // Listing Banner
-  listingBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    backgroundColor: '#FAFAFA',
-  },
-  listingBannerImage: {
-    width: 64,
-    height: 64,
-    borderRadius: 10,
-  },
-  listingBannerInfo: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  listingBannerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  listingBannerPrice: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
-  listingBannerAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    gap: 4,
-  },
-  listingBannerActionText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.primary,
-  },
-  
-  // Conversation Summary
-  conversationSummary: {
-    padding: 24,
-    gap: 20,
-  },
-  summaryItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  summaryLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    width: 100,
-  },
-  summaryValue: {
-    flex: 1,
-    fontSize: 15,
-    color: COLORS.text,
-    lineHeight: 22,
-  },
-  
-  // Action Buttons
-  actionButtonsRow: {
-    flexDirection: 'row',
-    padding: 20,
-    gap: 12,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    marginTop: 'auto',
-  },
-  primaryActionBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.primary,
-    paddingVertical: 14,
-    borderRadius: 12,
-    gap: 8,
-  },
-  primaryActionBtnText: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  secondaryActionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.surface,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    gap: 6,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  secondaryActionBtnText: {
-    color: COLORS.primary,
     fontSize: 14,
     fontWeight: '600',
   },
