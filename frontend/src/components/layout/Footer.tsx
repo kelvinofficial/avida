@@ -75,8 +75,11 @@ export const Footer: React.FC<FooterProps> = ({ isTablet = false }) => {
     marginRight: '-50vw',
   } : {};
 
+  // Add data attribute for CSS targeting on web
+  const webProps = Platform.OS === 'web' ? { 'data-footer': 'true' } : {};
+
   return (
-    <View style={[styles.footer, fullWidthStyle]}>
+    <View style={[styles.footer, fullWidthStyle]} {...webProps}>
       {/* Main Footer Content */}
       <View style={[styles.footerContent, isTablet && styles.footerContentTablet]}>
         {/* Brand Section */}
