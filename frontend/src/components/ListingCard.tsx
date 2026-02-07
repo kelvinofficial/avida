@@ -63,7 +63,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
       onPress={onPress}
       activeOpacity={0.9}
     >
-      <View style={styles.imageContainer}>
+      <View style={[styles.imageContainer, { height: imageHeight }]}>
         {imageSource ? (
           <Image source={imageSource} style={styles.image} resizeMode="cover" />
         ) : (
