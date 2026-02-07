@@ -39,6 +39,16 @@ const formatTimeAgo = (dateString: string): string => {
   return date.toLocaleDateString();
 };
 
+// Helper function to check if listing is less than 24 hours old
+const isJustListed = (dateString: string): boolean => {
+  if (!dateString) return false;
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInHours = diffInMs / (1000 * 60 * 60);
+  return diffInHours < 24;
+};
+
 export interface ListingCardProps {
   listing: any;
   onPress: () => void;
@@ -63,8 +73,14 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
           style={styles.image}
           resizeMode="cover"
         />
-        {/* Badges - Featured & TOP */}
+        {/* Badges - Just Listed, Featured & TOP */}
         <View style={styles.badgesContainer}>
+          {isJustListed(listing.created_at) && (
+            <View style={styles.justListedBadge}>
+              <Ionicons name="time" size={10} color="#fff" />
+              <Text style={styles.badgeText}>Just Listed</Text>
+            </View>
+          )}
           {listing.is_featured && (
             <View style={styles.featuredBadge}>
               <Ionicons name="star" size={10} color="#fff" />
@@ -140,7 +156,18 @@ const styles = StyleSheet.create({
     top: 8,
     left: 8,
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 6,
+    maxWidth: '70%',
+  },
+  justListedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
   featuredBadge: {
     flexDirection: 'row',
