@@ -195,6 +195,7 @@ export default function CategoryScreen() {
     } finally {
       setLoading(false);
       setRefreshing(false);
+      setInitialLoadDone(true);
     }
   }, [categoryId, page, isAuthenticated, selectedSubcategory, priceRange, selectedCondition, sortBy, activeFilters]);
 
