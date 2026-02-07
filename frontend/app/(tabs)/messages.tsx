@@ -896,18 +896,26 @@ export default function MessagesScreen() {
                         <Text style={desktopStyles.chatHeaderName}>
                           {selectedConversation.other_user?.name || 'Unknown User'}
                         </Text>
-                        {/* Online/Last Seen Status */}
-                        {selectedConversation.other_user?.user_id && (
-                          <Text style={desktopStyles.chatHeaderStatus}>
-                            {userStatuses[selectedConversation.other_user.user_id]?.is_online 
-                              ? '● Online' 
-                              : userStatuses[selectedConversation.other_user.user_id]?.last_seen
-                                ? `Last seen ${formatLastSeen(userStatuses[selectedConversation.other_user.user_id]?.last_seen)}`
-                                : selectedConversation.listing?.title 
-                                  ? `Re: ${selectedConversation.listing.title}`
-                                  : ''}
-                          </Text>
-                        )}
+                        {/* Online/Last Seen Status - Always show if we have user_id */}
+                        <View style={desktopStyles.statusRow}>
+                          {selectedConversation.other_user?.user_id && 
+                            userStatuses[selectedConversation.other_user.user_id]?.is_online === true ? (
+                            <Text style={[desktopStyles.chatHeaderStatus, desktopStyles.onlineText]}>
+                              ● Online
+                            </Text>
+                          ) : selectedConversation.other_user?.user_id && 
+                            userStatuses[selectedConversation.other_user.user_id]?.last_seen ? (
+                            <Text style={desktopStyles.chatHeaderStatus}>
+                              Last seen {formatLastSeen(userStatuses[selectedConversation.other_user.user_id]?.last_seen)}
+                            </Text>
+                          ) : (
+                            <Text style={desktopStyles.chatHeaderStatus}>
+                              {selectedConversation.listing?.title 
+                                ? `Re: ${selectedConversation.listing.title}`
+                                : 'Offline'}
+                            </Text>
+                          )}
+                        </View>
                       </View>
                     </TouchableOpacity>
                     <View style={desktopStyles.chatHeaderActions}>
