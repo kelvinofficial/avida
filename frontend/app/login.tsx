@@ -114,7 +114,7 @@ export default function LoginScreen() {
         await setToken(result.session_token);
         setUser(result.user);
         await saveUserData(result.user);
-        router.replace('/');
+        router.replace(redirectAfterLogin as any);
       }
     } catch (err: any) {
       console.error('Login error:', err);
