@@ -1,208 +1,200 @@
 <analysis>**original_problem_statement:**
-The user wants to build a production-ready Admin Dashboard for their existing marketplace application.
+The initial P0 task was to make the admin dashboard, which is a separate Next.js application, externally accessible. This required investigating the existing proxy setup, configuring the main backend to act as a reverse proxy for both the admin UI and its API, and setting up the Next.js application's  to work correctly under the new URL structure.
 
-**PRODUCT REQUIREMENTS:**
-- **Tech Stack:** React (Next.js) admin panel, FastAPI backend, and extend the existing MongoDB database.
-- **Authentication:** JWT with refresh tokens, secure cookies, password reset, and optional 2FA.
-- **RBAC:** Implement roles (Super Admin, Admin, Moderator, etc.) with permissions enforced on the backend.
-- **Audit Logs:** Every mutation (create, update, delete) must be logged.
-- **Core Modules:**
-    - **Category Management:** A hierarchical (tree structure) manager with drag-and-drop reordering, dynamic attributes, and CRUD operations.
-    - **Dynamic Attributes:** An attribute builder linked to categories with various field types (text, number, dropdown, etc.) and validation rules.
-    - **User Management:** Full CRUD, search/filter, and actions like ban, assign role, and GDPR tools.
-    - **Listing Management:** Full CRUD, moderation workflow (approve/reject), and bulk actions.
-    - **Moderation & Support:** A ticketing system for user reports and support cases.
-    - **Ads Management:** A module to manage AdMob/AdSense placement IDs.
-    - **Notifications:** A center to create and send broadcast, targeted, and scheduled notifications.
-    - **Analytics:** Dashboards for marketplace KPIs and advanced analytics (users by location, listings growth, etc.).
-    - **Settings:** Global app configuration, feature flags, and content management.
-- **UI/UX:**
-    - **Layout:** Standard dashboard with a left sidebar, top bar, and main content area.
-    - **Features:** Dark/light mode, localization-ready, pagination, data export (CSV), and responsive design for desktop/tablet.
-- **Deliverables:**
-    - Admin web app code, backend code, database schema, and seed scripts.
-    -  templates and deployment instructions.
-    - Postman collection for APIs.
+After successfully exposing the admin dashboard, the user provided a multi-phase plan to build out its features:
+- **PRODUCT REQUIREMENTS (from user prompts):**
+  - **P0:** Make Admin Dashboard externally accessible. (COMPLETED)
+  - **P1:** Connect all pages to live API data, implement missing pages like Audit Logs, add bulk actions to the Users page, and add CSV export functionality. (COMPLETED)
+  - **P2:** Add an Ads Management module, a Notifications Center, a dark/light mode toggle, localization (i18n), and CSV import functionality. (IN PROGRESS)
+  - **Future:** Implement real-time updates via WebSockets, integrate with a push notification service (FCM/OneSignal), and apply translations to all UI components. (NOT STARTED)
 
-The user clarified that this new system should **connect to the existing marketplace database** and extend it with new collections for the admin panel, rather than creating a separate database.
-
-**User's preferred language**: English
+**User's preferred language**: The user's primary language is English. The next agent MUST respond in English.
 
 **what currently exists?**
-A comprehensive admin dashboard application has been scaffolded and partially built. It consists of two main parts:
-1.  **Admin Backend ():** A FastAPI application running on port . It includes JWT authentication, RBAC, audit logging middleware, and foundational API endpoints for users, roles, and categories. It connects to the existing MongoDB database. The API is accessible externally by being reverse-proxied through the main application's backend at the  path.
-2.  **Admin Frontend ():** A Next.js application with Material UI 3 running on port . It includes a login page, a main dashboard layout with a sidebar, and several pages (Overview, Categories, Users, Listings, Reports, Tickets, Analytics). Most pages are placeholders or use mock data.
+A full-stack admin dashboard application is in place and externally accessible via the main application's reverse proxy.
 
-**Crucially, the admin frontend is running but is NOT externally accessible via a public URL.** A temporary info page has been added to the main marketplace app at the  route to explain how to access it during local development.
+- **Frontend (Next.js):** A comprehensive dashboard with pages for Analytics, Users, Categories, Listings, Audit Logs, Ads Management, and Notifications. It includes features like dark/light mode, a language switcher (EN, ES, FR, DE), bulk actions, and CSV export/import capabilities. Most pages are connected to the live backend API.
+- **Backend (FastAPI):** An admin-specific API server providing CRUD endpoints for all managed entities (Users, Categories, Ads, Notifications, etc.), along with endpoints for analytics and audit logs.
+- **Proxy:** The main backend reverse-proxies requests to the admin frontend () and admin backend (), unifying access under a single domain.
 
 **Last working item**:
-- **Last item agent was working:** The agent was creating the UI pages for the Admin Dashboard as requested by the user. The last specific file created was the Analytics page ().
+- **Last item agent was working:** Adding the foundation for a real push notification system. This involved creating a placeholder  in a new file () and updating the notification sending endpoint in  to call this service.
 - **Status:** IN PROGRESS
 - **Agent Testing Done:** N
-- **Which testing method agent to use?** Frontend testing agent
+- **Which testing method agent to use?** backend testing agent
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-- **Issue 1:** External Access for Admin Frontend (Priority: P0)
-- **Issue 2:** Category Drag-and-Drop is not implemented (Priority: P1)
-- **Issue 3:** Admin UI pages are using mock data (Priority: P2)
+- **Issue 1 (P1):** Notifications page uses mock data.
+- **Issue 2 (P2):** UI text is not translated.
+- **Issue 3 (P2):** CSV import is missing from the Categories page.
+- **Issue 4 (P3):** Real-time updates via WebSocket are not implemented.
 
 **Issues Detail:**
-- **Issue 1: External Access for Admin Frontend**
-    - **Description:** The admin frontend is running on  and cannot be accessed via the public preview URL, which only exposes the main application. This is the biggest blocker for user verification and further development.
-    - **Attempted fixes:** The agent tried to modify Nginx configurations but found they were managed by the platform. The agent successfully proxied the backend API but not the frontend UI. The final workaround was creating an info page () in the main app, which is not a real solution.
+- **Issue 1:** Notifications page not connected to backend
+    - **Attempted fixes:** The backend API and frontend API client methods were created, but the page component itself was not updated.
     - **Next debug checklist:**
-        1.  Investigate platform-specific documentation for exposing multiple services or using subdomains/path-based routing.
-        2.  A common solution is to configure the main Nginx/proxy server to route traffic from a specific path (e.g., ) to the admin frontend service ().
-        3.  Check the file  or similar proxy configurations to add a new  block.
-    - **Why fix this issue and what will be achieved with the fix?** Fixing this will make the Admin Dashboard accessible via a public URL, allowing the user to test the UI, verify features, and unblock all future frontend work.
+      1. Edit .
+      2. Replace the  data source with an SWR hook to fetch data from .
+      3. Wire up the action buttons (Send, Edit, Delete) to their corresponding API client methods.
+    - **Why fix this issue and what will be achieved with the fix?** This will make the Notifications Center a fully functional module, allowing admins to manage notifications through the UI.
     - **Status:** NOT STARTED
-    - **Is recurring issue?** Y
+    - **Is recurring issue?** N
+    - **Should Test frontend/backend/both after fix?** Both
+    - **Blocked on other issue:** None
+
+- **Issue 2:** UI is not translated
+    - **Attempted fixes:** The foundational i18n framework (context, hook, language switcher) has been implemented.
+    - **Next debug checklist:**
+      1. Create empty translation files for French () and German ().
+      2. Systematically edit all components under  to replace hardcoded strings with the  function from the  hook.
+      3. Populate the , , , and  files with the corresponding translations.
+    - **Why fix this issue and what will be achieved with the fix?** To complete the localization feature and make the dashboard accessible to a multilingual user base.
+    - **Status:** IN PROGRESS
+    - **Is recurring issue?** N
     - **Should Test frontend/backend/both after fix?** Frontend
-    - **Blocked on other issue:** None. This issue is blocking others.
+    - **Blocked on other issue:** None
 
-- **Issue 2: Category Drag-and-Drop is not implemented**
-    - **Description:** The user requested drag-and-drop reordering for the category hierarchy. The agent installed the  library but did not complete the implementation in .
+- **Issue 3:** CSV import missing on Categories page
+    - **Attempted fixes:** A reusable  component and a backend import endpoint for users were created. No work has been done for categories.
     - **Next debug checklist:**
-        1.  Review .
-        2.  Implement the necessary hooks and components from  to make the category list sortable.
-        3.  Create a new backend API endpoint in  to receive and persist the new category order.
-        4.  Call this new endpoint from the frontend after a drag-and-drop operation completes.
-    - **Why fix this issue and what will be achieved with the fix?** Fulfills a critical requirement for the category management module.
+      1. Edit .
+      2. Add an Import CSV button to the header and wire it to a state variable to control the dialog.
+      3. Implement the  logic to call the  endpoint (which needs to be added to the frontend  client).
+    - **Why fix this issue and what will be achieved with the fix?** To allow admins to bulk-create or update categories, improving efficiency.
     - **Status:** NOT STARTED
     - **Is recurring issue?** N
     - **Should Test frontend/backend/both after fix?** Both
+    - **Blocked on other issue:** None
 
-- **Issue 3: Admin UI pages are using mock data**
-    - **Description:** Pages like Users, Listings, Reports, and Analytics are built with placeholder components and do not fetch data from the live backend API.
+- **Issue 4:** Real-time updates via WebSocket are not implemented
+    - **Attempted fixes:** A placeholder  hook was created. No other work was done.
     - **Next debug checklist:**
-        1.  For each page (, , etc.), replace the mock data with API calls to the corresponding admin backend endpoint (e.g., ).
-        2.  Use a library like  or  for data fetching.
-        3.  Handle loading states, error states, and display the fetched data in the Material UI tables/charts.
-    - **Why fix this issue and what will be achieved with the fix?** This will make the admin dashboard functional and reflect the actual state of the application's data.
+      1. Implement a WebSocket endpoint in the admin backend ().
+      2. Flesh out the  hook on the frontend to connect to the endpoint and handle incoming messages.
+      3. Integrate the hook into the main dashboard layout to show real-time toasts/notifications.
+    - **Why fix this issue and what will be achieved with the fix?** To provide admins with immediate feedback on system events without requiring a page refresh.
     - **Status:** NOT STARTED
     - **Is recurring issue?** N
     - **Should Test frontend/backend/both after fix?** Both
+    - **Blocked on other issue:** None
 
 **In progress Task List**:
-- **Task 1: Build Admin Dashboard**
-    - **Where to resume:** The foundational backend and frontend are in place. The next step is to solve the external access issue (Issue #1), then begin implementing the remaining features.
-    - **What will be achieved with this?** A fully functional, production-ready admin dashboard as per the user's requirements.
-    - **Status:** IN PROGRESS
-    - **Should Test frontend/backend/both after fix?** Both
-    - **Blocked on something:** External access for the frontend (Issue #1).
+There are no tasks that were started and left partially finished, but the above issues represent the next steps for features that are in progress.
 
 **Upcoming and Future Tasks**
-**Upcoming Tasks:**
--   **P0: Configure subdomain/path routing for external admin frontend access.**
--   **P1: Implement Audit Logs viewer page** to display data from the  collection.
--   **P1: Complete the Tickets page** with a case management and response system.
--   **P2: Implement the dynamic Attribute Builder** linked to categories.
--   **P2: Implement bulk actions** for Users and Listings management pages.
+- **Upcoming Tasks:**
+  - **P2 - Connect to a Real Push Notification Service:** Integrate a service like Firebase Cloud Messaging (FCM) into the placeholder  on the backend.
+  - **P3 - Implement WebSocket Listeners:** Complete the implementation of the  hook and the corresponding backend endpoint for real-time updates.
 
-**Future Tasks:**
--   Implement CSV import/export functionality for users, categories, etc.
--   Implement Ads Management module.
--   Implement Notifications Center module.
--   Implement advanced features like duplicate listing detection and user quality scores.
--   Add localization (i18n) and dark/light mode toggles.
+- **Future Tasks:**
+  - Complete and populate translation files for all supported languages.
+  - Add CSV import functionality to other relevant pages (e.g., Listings).
 
 **Completed work in this session**
-- **Admin Backend Setup ():**
-    - Created a FastAPI application with a structured layout (, , , ).
-    - Implemented JWT-based authentication and Role-Based Access Control (RBAC).
-    - Created an audit log middleware to record all mutations.
-    - Seeded the database with default admin users and roles.
-    - Configured the backend to run on port .
-- **Admin Frontend Setup ():**
-    - Initialized a Next.js project with Material UI 3.
-    - Created a login page () and a main .
-    - Created placeholder pages for all major modules: Overview, Categories, Users, Listings, Reports, Tickets, and Analytics.
-    - Configured the frontend to run on port .
-- **API Proxy Configuration:**
-    - Modified the main marketplace backend () to reverse proxy requests from  to the admin backend service, making the admin API externally accessible.
-- **Temporary Access Solution:**
-    - Created an info page () in the main app to guide the user on how to access the admin panel locally.
+- **External Admin Dashboard Access (DONE):** Successfully configured a reverse proxy in  and the Next.js  to make the admin dashboard accessible.
+- **Admin Dashboard Pages (DONE):** Implemented and/or connected pages for Audit Logs, Users, Categories, and Listings to live backend data.
+- **Bug Fixes (DONE):** Resolved a JSON serialization error with MongoDB ObjectIds and fixed an analytics chart bug where category names appeared as Unknown.
+- **Core Features (DONE):** Added bulk actions to the Users page and CSV export to Users, Listings, and Categories pages.
+- **Enhancements (DONE):**
+  - **Ads Management:** Built the frontend UI and backend API.
+  - **Notifications Center:** Built the frontend UI and backend API (UI not yet connected).
+  - **Theme Toggle:** Implemented a dark/light mode switcher.
+  - **Localization (i18n):** Set up the foundational context and language switcher.
+  - **Code Quality:** Migrated the Analytics page from MUI Grid v1 to v2.
+  - **CSV Import:** Created a reusable import component and implemented it on the Users page.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1: External routing for the admin frontend.** This was identified and attempted but not solved. It remains the highest priority pending issue.
+None that are not already captured in the Pending/In progress Issue list.
 
 **Known issue recurrence from previous fork**
-- None.
+None.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Backend:** FastAPI, Beanie (ODM for MongoDB), Pydantic, JWT for authentication, Middleware for RBAC and Audit Logging.
--   **Frontend:** Next.js, React, Material UI 3 (MUI), Context API for auth state.
--   **Architecture:** Decoupled frontend/backend architecture. The admin system is a separate set of services that integrates with the main application's database. A reverse proxy is used to expose the admin API.
+- **Frontend:** Next.js 14, React, TypeScript, Material-UI (MUI), SWR, dnd-kit.
+- **Backend:** Python, FastAPI, Motor (async MongoDB driver).
+- **Architecture:** A microservices-style pattern with a central gateway () proxying requests to the  (frontend) and  (API) services.
 
 **key DB schema**
--   **users:** (Stores user data, extended with admin roles)
--   **roles_permissions:** { name: string, permissions: list[string] }
--   **categories:** (Stores category tree)
--   **attributes:** (Stores attribute definitions linked to categories)
--   **audit_logs:** { user_id: ObjectId, action: string, details: dict, timestamp: datetime }
--   *(Other collections like , , , etc., are planned)*
+- : { email, hashed_password, role }
+- : { id, name, parent_id, order, attributes }
+- : { name, description, category_id }
+- : { timestamp, admin_email, action, entity, entity_id }
+- : { id, name, platform, type, placement_id }
+- : { id, title, message, type, status }
+
+**changes in tech stack**
+None.
 
 **All files of reference**
--   : Core admin backend logic, including API routers and middleware.
--   : Defines the database schema for all new admin-related collections.
--   : The entry point for the admin UI.
--   : The main persistent UI shell with navigation.
--   : Placeholder for the category management feature.
--   : Modified to include a reverse proxy for the admin API.
--   : The temporary info page created as a workaround for the access issue.
+- : Contains the critical reverse proxy logic for routing external traffic to the admin services.
+- : The core of the admin API; contains all endpoints, business logic, and bug fixes related to routing.
+- : Defines the , essential for correct asset loading and routing.
+- : The main dashboard UI shell, contains navigation, the theme toggle, and the language switcher.
+- : The Notifications page component, **currently uses mock data.**
+- : The context provider for the i18n system.
+- : The reusable component for CSV file imports.
+- : A placeholder file for a future push notification service integration.
+
+**Areas that need refactoring**:
+- **Notifications Page:** The component at  must be refactored to fetch data from the live API instead of using static mock data.
+- **Localization:** All UI components need to be refactored to use the  translation function instead of hardcoded strings. The  and  files must be created.
 
 **key api endpoints**
--   : Authenticates an admin user and returns a JWT token.
--   : Retrieves a list of users.
--   : Retrieves the category tree.
--   *(Other standard CRUD endpoints for each module are scaffolded in )*
+- : Serves the Next.js admin frontend.
+- : Base path for all admin backend APIs.
+- : CRUD for Ad placements.
+- : CRUD for Notifications.
+- : Endpoint for bulk-importing users.
+- : Endpoint for bulk-importing categories.
 
 **Critical Info for New Agent**
-The most critical task is to solve the external accessibility of the admin frontend. The current setup (running on ) is not viable for the user. You must devise a way to route traffic to it, either via a path prefix (e.g., ) on the main domain or by investigating how the platform can expose a new service on a subdomain. The temporary info page at  in the main app should be removed once a real solution is in place. After solving the access issue, your priority should be to connect the existing UI pages to the backend API to make them functional, starting with the  page and its drag-and-drop feature.
+- **Routing is key:** The entire system relies on the reverse proxy in . The admin frontend is at  and its  is set accordingly. The admin backend is at . Any issues with 404s on the external URL should first be investigated by checking this proxy configuration.
+- **Backend Route Registration:** When adding new routes in , they must be defined *before* the line . Failure to do so will result in the routes not being registered and returning a 404, even if the syntax is correct.
+- **Incomplete Features:** The Notifications page UI is not connected to its backend, and the localization feature is only partially implemented (foundational context is there, but UI text is not translated). These are high-priority follow-up tasks.
 
 **documents and test reports created in this job**
-- : Updated with the progress on the admin dashboard.
+- 
+- 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Configure subdomain routing for external admin frontend access Complete Tickets page with response system Add Analytics page with advanced charts Implement Audit Logs viewer - **Status: Partially Addressed.** Analytics/Tickets pages were created as placeholders, but routing and Audit Log viewer are pending.
-2.  **User:** whats the admin dashboard url - **Status: Answered.** Agent explained the UI is not yet deployed externally.
-3.  **User:** 1 (in response to Build and deploy the Admin Frontend UI?) - **Status: In Progress.** Agent started building the UI.
-4.  **User:** 1. the Admin Dashboard connect to your existing marketplace backend... 5. use my existing MongoDB database and extend it - **Status: Implemented.** Agent configured the admin backend to use the existing database.
-5.  **User:** You are a senior product engineer. Generate a production-ready Admin Dashboard... - **Status: In Progress.** This was the main prompt that initiated the entire task.
-6.  **User:** Modify the see you screen for dekstop version. Make it have 1280px max width - **Status: Completed.**
-7.  **User:** Sign out page: Modify the Ui to for Desktop version - **Status: Completed.**
-8.  **User:** If unauthenticated user clicks Post Listing, redirect to Login. After successful authentication, automatically redirect user back to Post Listing page, not homepage. - **Status: Completed.**
-9.  **User:** Desktop version :The Post Listing button on the header is linked to.../create-listing . Fix this issue - **Status: Completed.**
-10. **User:** Fix bottom navigation bar only - **Status: Completed.**
+1. **User (Msg 455):** Requested implementation of FCM/OneSignal, CSV import for Categories, and applying translations. (Status: IN PROGRESS)
+2. **User (Msg 454):** Provided a list of future tasks. (Status: ACKNOWLEDGED)
+3. **User (Msg 418):** Requested adding more languages, CSV import dialogs, WebSocket listeners, and push notification connection. (Status: PARTIALLY DONE)
+4. **User (Msg 417):** Provided a list of future tasks. (Status: ACKNOWLEDGED)
+5. **User (Msg 323):** Requested backend APIs for Ads/Notifications, localization, CSV import, and WebSockets. (Status: PARTIALLY DONE)
+6. **User (Msg 322):** Provided a list of future tasks. (Status: ACKNOWLEDGED)
+7. **User (Msg 278):** Requested implementation of Ads, Notifications, Dark Mode, i18n, and more. (Status: MOSTLY DONE)
+8. **User (Msg 277):** Provided a list of future tasks. (Status: ACKNOWLEDGED)
+9. **User (Msg 235):** Signaled to proceed with P1/P2 tasks. (Status: DONE)
+10. **User (Msg 234):** Provided initial P1/P2/Future task list. (Status: ACKNOWLEDGED)
 
 **Project Health Check:**
 - **Broken:**
-    - External access/routing for the Admin Dashboard frontend. The UI is inaccessible to the user.
+  - The Notifications Center page is not functional as it's disconnected from the backend.
 - **Mocked:**
-    - Nearly all data displayed in the admin frontend is mocked (Users, Listings, Categories, etc.). The pages need to be connected to the live backend API.
+  - The push notification service () is a placeholder.
+  - The WebSocket hook () is a placeholder.
+  - The majority of the UI lacks translations, making the localization feature incomplete.
 
 **3rd Party Integrations**
--   **@mui/material, @emotion/react, @emotion/styled:** For the Material UI 3 component library in the admin frontend.
--   **@dnd-kit/core:** Installed for drag-and-drop functionality in the category manager (implementation pending).
--   **fastapi, uvicorn:** Core framework for the Python backend.
--   **beanie, pydantic:** For MongoDB object-document mapping and data validation in the backend.
--   **python-jose, passlib:** For JWT handling and password hashing in the backend.
+- None currently active. A future task is to integrate a push notification service like Firebase Cloud Messaging (FCM) or OneSignal, which will require user-provided API keys.
 
 **Testing status**
--   **Testing agent used after significant changes:** NO
--   **Troubleshoot agent used after agent stuck in loop:** YES (for port conflicts)
--   **Test files created:** []
--   **Known regressions:** None
+- **Testing agent used after significant changes:** YES
+- **Troubleshoot agent used after agent stuck in loop:** NO
+- **Test files created:** None
+- **Known regressions:** None
 
 **Credentials to test flow:**
-Admin credentials have been seeded into the database:
--   **Email:** 
--   **Password:** 
+- **Admin Username:** 
+- **Admin Password:** 
 
 **What agent forgot to execute**
--   The agent did not successfully configure external access for the admin frontend, which was a recurring request and a major blocker.
--   The agent did not create the Audit Logs viewer page, which was part of the user's most recent request.</analysis>
+- The agent built the localization framework (context, switcher) but forgot to apply the translations to the UI components, leaving the feature visually incomplete.
+- The agent added French and German to the language switcher UI but forgot to create the corresponding  and  files in the  directory.
+- The agent built both the frontend and backend for the Notifications Center but forgot to connect them, leaving the UI with mock data.
+- The agent created a placeholder  hook as requested but did not implement the actual WebSocket functionality on either the frontend or backend.</analysis>
