@@ -756,6 +756,8 @@ export default function CategoryScreen() {
               )}
             </View>
           </View>
+          {/* Footer */}
+          <Footer isTablet={isTablet && !isDesktop} />
         </ScrollView>
 
         {renderFiltersModal()}
