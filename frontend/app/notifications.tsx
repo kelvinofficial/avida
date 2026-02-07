@@ -272,13 +272,13 @@ export default function NotificationsScreen() {
   }, [isAuthenticated, activeTab, activeFilter]);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.replace('/login');
-      return;
+    if (isAuthenticated) {
+      setLoading(true);
+      fetchNotifications(1, true);
+    } else {
+      setLoading(false);
     }
-    setLoading(true);
-    fetchNotifications(1, true);
-  }, [isAuthenticated, activeTab, activeFilter, fetchNotifications, router]);
+  }, [isAuthenticated, activeTab, activeFilter, fetchNotifications]);
 
   const handleRefresh = () => {
     setRefreshing(true);
