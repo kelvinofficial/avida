@@ -239,6 +239,15 @@ export default function UsersPage() {
     setSnackbar({ open: true, message: 'Users exported to CSV', severity: 'success' });
   };
 
+  // CSV Import Handler
+  const handleImportUsers = async (file: File) => {
+    const result = await api.importUsersCSV(file);
+    if (result.imported > 0) {
+      await loadUsers();
+    }
+    return result;
+  };
+
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-US', {
       year: 'numeric',
