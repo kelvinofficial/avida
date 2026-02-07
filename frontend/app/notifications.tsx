@@ -382,6 +382,52 @@ export default function NotificationsScreen() {
   };
 
   if (!isAuthenticated) {
+    // Desktop unauthenticated
+    if (isLargeScreen && isReady) {
+      return (
+        <SafeAreaView style={[styles.container, { backgroundColor: '#F0F2F5' }]} edges={['top']}>
+          <View style={desktopStyles.globalHeader}>
+            <View style={desktopStyles.globalHeaderInner}>
+              <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+                <View style={desktopStyles.logoIcon}>
+                  <Ionicons name="storefront" size={20} color="#fff" />
+                </View>
+                <Text style={desktopStyles.logoText}>avida</Text>
+              </TouchableOpacity>
+              <View style={desktopStyles.headerActions}>
+                <TouchableOpacity style={desktopStyles.signInBtn} onPress={() => router.push('/login')}>
+                  <Text style={desktopStyles.signInBtnText}>Sign In</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={desktopStyles.signUpBtn} onPress={() => router.push('/login')}>
+                  <Text style={desktopStyles.signUpBtnText}>Sign Up</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={desktopStyles.postBtn} onPress={() => router.push('/post')}>
+                  <Ionicons name="add" size={18} color="#fff" />
+                  <Text style={desktopStyles.postBtnText}>Post Listing</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+          <View style={desktopStyles.pageWrapper}>
+            <View style={desktopStyles.unauthContainer}>
+              <View style={desktopStyles.unauthIcon}>
+                <Ionicons name="notifications-outline" size={64} color={COLORS.primary} />
+              </View>
+              <Text style={desktopStyles.unauthTitle}>Sign in to view notifications</Text>
+              <Text style={desktopStyles.unauthSubtitle}>
+                Stay updated on offers, messages, and activity
+              </Text>
+              <TouchableOpacity style={desktopStyles.unauthSignInBtn} onPress={() => router.push('/login')}>
+                <Ionicons name="log-in-outline" size={20} color="#fff" />
+                <Text style={desktopStyles.unauthSignInBtnText}>Sign In</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
+      );
+    }
+    
+    // Mobile unauthenticated
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.header}>
@@ -403,158 +449,32 @@ export default function NotificationsScreen() {
     );
   }
 
-  return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleGoBack} style={styles.headerBtn}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-        </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Notifications</Text>
-          {unreadCount > 0 && (
-            <View style={styles.headerBadge}>
-              <Text style={styles.headerBadgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
-            </View>
-          )}
+  // Loading state
+  if (!isReady) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: '#F0F2F5' }]} edges={['top']}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
-        <TouchableOpacity onPress={() => setShowMenu(true)} style={styles.headerBtn}>
-          <Ionicons name="ellipsis-horizontal" size={24} color={COLORS.text} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Tabs */}
-      <View style={styles.tabBar}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'all' && styles.tabActive]}
-          onPress={() => setActiveTab('all')}
-        >
-          <Text style={[styles.tabText, activeTab === 'all' && styles.tabTextActive]}>All</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'unread' && styles.tabActive]}
-          onPress={() => setActiveTab('unread')}
-        >
-          <Text style={[styles.tabText, activeTab === 'unread' && styles.tabTextActive]}>
-            Unread{unreadCount > 0 ? ` (${unreadCount})` : ''}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Filter Chips */}
-      <View style={styles.filterChipsWrapper}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterChips}
-        >
-          {FILTER_CHIPS.map(chip => {
-            const isActive = activeFilter === chip.key;
-
-            return (
-              <TouchableOpacity
-                key={chip.key}
-                style={[styles.filterChip, isActive && styles.filterChipActive]}
-                onPress={() => setActiveFilter(chip.key)}
-              >
-                <Ionicons
-                  name={chip.icon as any}
-                  size={14}
-                  color={isActive ? '#fff' : COLORS.textSecondary}
-                />
-                <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>
-                  {chip.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
-
-      {/* Notifications List */}
-      {loading ? (
-        <FlatList
-          data={[1, 2, 3, 4, 5]}
-          keyExtractor={(item) => item.toString()}
-          renderItem={() => <SkeletonItem />}
-          contentContainerStyle={styles.listContent}
-        />
-      ) : notifications.length === 0 ? (
-        <EmptyState type={activeTab} />
-      ) : (
-        <FlatList
-          data={notifications}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <NotificationItem
-              notification={item}
-              onPress={() => handleNotificationPress(item)}
-            />
-          )}
-          contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={COLORS.primary} />
-          }
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={loadingMore ? <ActivityIndicator style={{ padding: 20 }} color={COLORS.primary} /> : null}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
-
-      {/* Menu Modal */}
-      <Modal visible={showMenu} transparent animationType="fade" onRequestClose={() => setShowMenu(false)}>
-        <TouchableOpacity style={styles.menuOverlay} activeOpacity={1} onPress={() => setShowMenu(false)}>
-          <View style={styles.menuSheet}>
-            <View style={styles.menuHandle} />
-            <TouchableOpacity style={styles.menuItem} onPress={handleMarkAllRead}>
-              <View style={[styles.menuIconBg, { backgroundColor: COLORS.primaryLight }]}>
-                <Ionicons name="checkmark-done" size={20} color={COLORS.primary} />
-              </View>
-              <View style={styles.menuItemContent}>
-                <Text style={styles.menuItemTitle}>Mark all as read</Text>
-                <Text style={styles.menuItemSubtitle}>Clear all unread indicators</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => { setShowMenu(false); router.push('/settings' as any); }}>
-              <View style={[styles.menuIconBg, { backgroundColor: '#F3F4F6' }]}>
-                <Ionicons name="settings-outline" size={20} color={COLORS.textSecondary} />
-              </View>
-              <View style={styles.menuItemContent}>
-                <Text style={styles.menuItemTitle}>Notification settings</Text>
-                <Text style={styles.menuItemSubtitle}>Manage your preferences</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.menuItem, styles.menuItemDanger]} onPress={handleClearAll}>
-              <View style={[styles.menuIconBg, { backgroundColor: '#FEF2F2' }]}>
-                <Ionicons name="trash-outline" size={20} color={COLORS.error} />
-              </View>
-              <View style={styles.menuItemContent}>
-                <Text style={[styles.menuItemTitle, { color: COLORS.error }]}>Clear all notifications</Text>
-                <Text style={styles.menuItemSubtitle}>This cannot be undone</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
-    </SafeAreaView>
-  );
+      </SafeAreaView>
+    );
+  }
 
   // ============ DESKTOP VIEW ============
   if (isLargeScreen) {
     return (
-      <View style={desktopStyles.container}>
-        {/* Desktop Header */}
-        <View style={desktopStyles.header}>
-          <View style={desktopStyles.headerInner}>
+      <SafeAreaView style={[styles.container, { backgroundColor: '#F0F2F5' }]} edges={['top']}>
+        {/* Global Header */}
+        <View style={desktopStyles.globalHeader}>
+          <View style={desktopStyles.globalHeaderInner}>
             <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
               <View style={desktopStyles.logoIcon}>
-                <Ionicons name="storefront" size={22} color="#fff" />
+                <Ionicons name="storefront" size={20} color="#fff" />
               </View>
               <Text style={desktopStyles.logoText}>avida</Text>
             </TouchableOpacity>
             <View style={desktopStyles.headerActions}>
-              <TouchableOpacity style={desktopStyles.headerBtn} onPress={() => router.push('/profile')}>
+              <TouchableOpacity style={desktopStyles.headerIconBtn} onPress={() => router.push('/profile')}>
                 <Ionicons name="person-circle-outline" size={26} color={COLORS.text} />
               </TouchableOpacity>
               <TouchableOpacity style={desktopStyles.postBtn} onPress={() => router.push('/post')}>
@@ -565,68 +485,66 @@ export default function NotificationsScreen() {
           </View>
         </View>
 
-        {/* Main Content */}
-        <View style={desktopStyles.mainContent}>
-          {/* Sidebar */}
-          <View style={desktopStyles.sidebar}>
-            <View style={desktopStyles.sidebarHeader}>
-              <Ionicons name="notifications" size={24} color={COLORS.primary} />
-              <Text style={desktopStyles.sidebarTitle}>Notifications</Text>
-              {unreadCount > 0 && (
-                <View style={desktopStyles.badge}>
-                  <Text style={desktopStyles.badgeText}>{unreadCount}</Text>
-                </View>
-              )}
-            </View>
+        {/* Page Content */}
+        <View style={desktopStyles.pageWrapper}>
+          {/* Page Header */}
+          <View style={desktopStyles.pageHeader}>
+            <TouchableOpacity style={desktopStyles.backBtn} onPress={handleGoBack}>
+              <Ionicons name="arrow-back" size={20} color={COLORS.text} />
+            </TouchableOpacity>
+            <Text style={desktopStyles.pageTitle}>Notifications</Text>
+            {unreadCount > 0 && (
+              <View style={desktopStyles.pageBadge}>
+                <Text style={desktopStyles.pageBadgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
+              </View>
+            )}
+            <View style={{ flex: 1 }} />
+            <TouchableOpacity style={desktopStyles.menuBtn} onPress={handleMarkAllRead}>
+              <Ionicons name="checkmark-done" size={18} color={COLORS.primary} />
+              <Text style={desktopStyles.menuBtnText}>Mark all read</Text>
+            </TouchableOpacity>
+          </View>
 
-            {/* Tabs */}
-            <View style={desktopStyles.sidebarTabs}>
+          {/* Tabs & Filters Row */}
+          <View style={desktopStyles.tabsRow}>
+            <View style={desktopStyles.tabs}>
               <TouchableOpacity
-                style={[desktopStyles.sidebarTab, activeTab === 'all' && desktopStyles.sidebarTabActive]}
+                style={[desktopStyles.tab, activeTab === 'all' && desktopStyles.tabActive]}
                 onPress={() => setActiveTab('all')}
               >
-                <Ionicons name="list" size={18} color={activeTab === 'all' ? COLORS.primary : COLORS.textSecondary} />
-                <Text style={[desktopStyles.sidebarTabText, activeTab === 'all' && desktopStyles.sidebarTabTextActive]}>All Notifications</Text>
+                <Text style={[desktopStyles.tabText, activeTab === 'all' && desktopStyles.tabTextActive]}>All</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[desktopStyles.sidebarTab, activeTab === 'unread' && desktopStyles.sidebarTabActive]}
+                style={[desktopStyles.tab, activeTab === 'unread' && desktopStyles.tabActive]}
                 onPress={() => setActiveTab('unread')}
               >
-                <Ionicons name="mail-unread" size={18} color={activeTab === 'unread' ? COLORS.primary : COLORS.textSecondary} />
-                <Text style={[desktopStyles.sidebarTabText, activeTab === 'unread' && desktopStyles.sidebarTabTextActive]}>
-                  Unread {unreadCount > 0 ? `(${unreadCount})` : ''}
+                <Text style={[desktopStyles.tabText, activeTab === 'unread' && desktopStyles.tabTextActive]}>
+                  Unread{unreadCount > 0 ? ` (${unreadCount})` : ''}
                 </Text>
               </TouchableOpacity>
             </View>
-
-            {/* Filter Categories */}
-            <View style={desktopStyles.filterSection}>
-              <Text style={desktopStyles.filterTitle}>FILTER BY TYPE</Text>
+            
+            {/* Filter Chips */}
+            <View style={desktopStyles.filterChips}>
               {FILTER_CHIPS.map(chip => {
                 const isActive = activeFilter === chip.key;
                 return (
                   <TouchableOpacity
                     key={chip.key}
-                    style={[desktopStyles.filterItem, isActive && desktopStyles.filterItemActive]}
+                    style={[desktopStyles.filterChip, isActive && desktopStyles.filterChipActive]}
                     onPress={() => setActiveFilter(chip.key)}
                   >
-                    <Ionicons name={chip.icon as any} size={18} color={isActive ? COLORS.primary : COLORS.textSecondary} />
-                    <Text style={[desktopStyles.filterItemText, isActive && desktopStyles.filterItemTextActive]}>{chip.label}</Text>
+                    <Ionicons
+                      name={chip.icon as any}
+                      size={14}
+                      color={isActive ? '#fff' : COLORS.textSecondary}
+                    />
+                    <Text style={[desktopStyles.filterChipText, isActive && desktopStyles.filterChipTextActive]}>
+                      {chip.label}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
-            </View>
-
-            {/* Actions */}
-            <View style={desktopStyles.sidebarActions}>
-              <TouchableOpacity style={desktopStyles.actionBtn} onPress={handleMarkAllRead}>
-                <Ionicons name="checkmark-done" size={18} color={COLORS.primary} />
-                <Text style={desktopStyles.actionBtnText}>Mark all read</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[desktopStyles.actionBtn, desktopStyles.actionBtnDanger]} onPress={handleClearAll}>
-                <Ionicons name="trash-outline" size={18} color={COLORS.error} />
-                <Text style={[desktopStyles.actionBtnText, { color: COLORS.error }]}>Clear all</Text>
-              </TouchableOpacity>
             </View>
           </View>
 
@@ -635,46 +553,87 @@ export default function NotificationsScreen() {
             {loading ? (
               <View style={desktopStyles.loadingContainer}>
                 <ActivityIndicator size="large" color={COLORS.primary} />
+                <Text style={desktopStyles.loadingText}>Loading notifications...</Text>
               </View>
             ) : notifications.length === 0 ? (
               <View style={desktopStyles.emptyContainer}>
                 <View style={desktopStyles.emptyIcon}>
-                  <Ionicons name={activeTab === 'unread' ? 'checkmark-circle' : 'notifications-off'} size={64} color={COLORS.primary} />
+                  <Ionicons
+                    name={activeTab === 'unread' ? 'checkmark-circle' : 'notifications-off'}
+                    size={64}
+                    color={COLORS.primary}
+                  />
                 </View>
                 <Text style={desktopStyles.emptyTitle}>
                   {activeTab === 'unread' ? "You're all caught up!" : 'No notifications yet'}
                 </Text>
                 <Text style={desktopStyles.emptySubtitle}>
-                  {activeTab === 'unread' ? 'All notifications have been read' : 'Notifications will appear here'}
+                  {activeTab === 'unread'
+                    ? 'All your notifications have been read'
+                    : 'When you get notifications, they will show up here'}
                 </Text>
               </View>
             ) : (
               <FlatList
                 data={notifications}
                 keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                  <TouchableOpacity style={desktopStyles.notificationCard} onPress={() => handleNotificationPress(item)}>
-                    <View style={[desktopStyles.notificationIcon, { backgroundColor: getNotificationStyle(item.type).color + '20' }]}>
-                      <Ionicons name={getNotificationStyle(item.type).icon as any} size={20} color={getNotificationStyle(item.type).color} />
-                    </View>
-                    <View style={desktopStyles.notificationContent}>
-                      <Text style={desktopStyles.notificationTitle}>{item.title}</Text>
-                      <Text style={desktopStyles.notificationMessage} numberOfLines={2}>{item.message}</Text>
-                      <Text style={desktopStyles.notificationTime}>{formatTimeAgo(item.created_at)}</Text>
-                    </View>
-                    {!item.read && <View style={desktopStyles.unreadDot} />}
-                  </TouchableOpacity>
-                )}
+                renderItem={({ item }) => {
+                  const config = getNotificationConfig(item.type);
+                  return (
+                    <TouchableOpacity
+                      style={[desktopStyles.notificationCard, !item.read && desktopStyles.notificationCardUnread]}
+                      onPress={() => handleNotificationPress(item)}
+                    >
+                      {item.actor_picture ? (
+                        <Image source={{ uri: item.actor_picture }} style={desktopStyles.notificationAvatar} />
+                      ) : item.image_url ? (
+                        <Image source={{ uri: item.image_url }} style={desktopStyles.notificationImage} />
+                      ) : (
+                        <LinearGradient colors={config.gradient as any} style={desktopStyles.notificationIconBg}>
+                          <Ionicons name={config.icon as any} size={22} color="#fff" />
+                        </LinearGradient>
+                      )}
+                      <View style={desktopStyles.notificationContent}>
+                        <View style={desktopStyles.notificationHeader}>
+                          <Text style={[desktopStyles.notificationTitle, !item.read && desktopStyles.notificationTitleUnread]} numberOfLines={1}>
+                            {item.title}
+                          </Text>
+                          <Text style={desktopStyles.notificationTime}>{formatTimeAgo(item.created_at)}</Text>
+                        </View>
+                        <Text style={desktopStyles.notificationBody} numberOfLines={2}>{item.body}</Text>
+                        <View style={desktopStyles.notificationFooter}>
+                          <View style={[desktopStyles.typeBadge, { backgroundColor: `${config.color}15` }]}>
+                            <Ionicons name={config.icon as any} size={12} color={config.color} />
+                            <Text style={[desktopStyles.typeBadgeText, { color: config.color }]}>
+                              {item.type === 'offer_received' ? 'Offer' :
+                               item.type === 'offer_accepted' ? 'Accepted' :
+                               item.type === 'offer_rejected' ? 'Declined' :
+                               item.type.replace('_', ' ')}
+                            </Text>
+                          </View>
+                          <TouchableOpacity style={[desktopStyles.ctaBtn, { backgroundColor: config.color }]}>
+                            <Text style={desktopStyles.ctaBtnText}>{item.cta_label || 'View'}</Text>
+                            <Ionicons name="chevron-forward" size={14} color="#fff" />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                      {!item.read && <View style={desktopStyles.unreadDot} />}
+                    </TouchableOpacity>
+                  );
+                }}
                 contentContainerStyle={desktopStyles.listContent}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={COLORS.primary} />}
+                refreshControl={
+                  <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={COLORS.primary} />
+                }
                 onEndReached={handleLoadMore}
                 onEndReachedThreshold={0.5}
                 ListFooterComponent={loadingMore ? <ActivityIndicator style={{ padding: 20 }} color={COLORS.primary} /> : null}
+                showsVerticalScrollIndicator={false}
               />
             )}
           </View>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
