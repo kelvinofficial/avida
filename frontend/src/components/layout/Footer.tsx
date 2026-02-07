@@ -304,6 +304,43 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  downloadSection: {
+    minWidth: 200,
+    maxWidth: 280,
+  },
+  downloadText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: COLORS.textSecondary,
+    marginBottom: 16,
+  },
+  appStoreButtons: {
+    flexDirection: 'column',
+    gap: 10,
+  },
+  appStoreBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a1a1a',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    gap: 10,
+  },
+  appStoreBtnText: {
+    flexDirection: 'column',
+  },
+  appStoreLabel: {
+    fontSize: 10,
+    color: '#ccc',
+    lineHeight: 12,
+  },
+  appStoreName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+    lineHeight: 18,
+  },
   footerBottom: {
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
