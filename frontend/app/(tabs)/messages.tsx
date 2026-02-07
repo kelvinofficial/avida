@@ -333,6 +333,102 @@ export default function MessagesScreen() {
     }
   });
 
+  // Fetch chat messages when conversation is selected (desktop only)
+  const fetchChatMessages = useCallback(async (conversationId: string) => {
+    if (!isLargeScreen) return;
+    
+    setChatLoading(true);
+    try {
+      const data = await conversationsApi.getOne(conversationId);
+      setChatMessages(data.messages || []);
+      setTimeout(() => chatListRef.current?.scrollToEnd({ animated: false }), 100);
+    } catch (error) {
+      console.error('Error fetching chat messages:', error);
+    } finally {
+      setChatLoading(false);
+    }
+  }, [isLargeScreen]);
+
+  // Connect to socket for real-time messages
+  const connectSocket = useCallback((conversationId: string) => {
+    if (socketRef.current) {
+      socketRef.current.emit('leave_conversation', { conversation_id: socketRef.current.conversationId });
+      socketRef.current.disconnect();
+    }
+
+    const socket = io(BACKEND_URL, {
+      transports: ['websocket'],
+      autoConnect: true,
+    }) as Socket & { conversationId?: string };
+    
+    socket.conversationId = conversationId;
+
+    socket.on('connect', () => {
+      socket.emit('join_conversation', { conversation_id: conversationId });
+    });
+
+    socket.on('new_message', (data: { conversation_id: string; message: Message }) => {
+      if (data.conversation_id === conversationId) {
+        setChatMessages((prev) => [...prev, data.message]);
+        setTimeout(() => chatListRef.current?.scrollToEnd({ animated: true }), 100);
+      }
+    });
+
+    socketRef.current = socket;
+  }, []);
+
+  // Handle selecting a conversation
+  const handleSelectConversation = useCallback((conversation: Conversation) => {
+    setSelectedConversation(conversation);
+    if (isLargeScreen) {
+      fetchChatMessages(conversation.id);
+      connectSocket(conversation.id);
+    }
+  }, [isLargeScreen, fetchChatMessages, connectSocket]);
+
+  // Send message
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || sending || !selectedConversation) return;
+
+    const content = newMessage.trim();
+    const tempId = `temp_${Date.now()}`;
+    
+    // Optimistic update
+    const optimisticMessage: Message = {
+      id: tempId,
+      conversation_id: selectedConversation.id,
+      sender_id: user?.user_id || '',
+      content,
+      message_type: 'text',
+      read: false,
+      created_at: new Date().toISOString(),
+    };
+    
+    setChatMessages((prev) => [...prev, optimisticMessage]);
+    setNewMessage('');
+    setTimeout(() => chatListRef.current?.scrollToEnd({ animated: true }), 50);
+
+    setSending(true);
+    try {
+      await conversationsApi.sendMessage(selectedConversation.id, content);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setChatMessages((prev) => prev.filter(m => m.id !== tempId));
+      setNewMessage(content);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  // Cleanup socket on unmount
+  useEffect(() => {
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, []);
+
   // Header Component
   const renderHeader = () => (
     <View style={styles.headerContainer}>
