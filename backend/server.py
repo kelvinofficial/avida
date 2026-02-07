@@ -5552,12 +5552,12 @@ app.add_middleware(
 )
 
 # =============================================================================
-# ADMIN FRONTEND PROXY - Forward /admin-ui/* to admin frontend on port 3001
+# ADMIN FRONTEND PROXY - Forward /api/admin-ui/* to admin frontend on port 3001
 # =============================================================================
 
 ADMIN_FRONTEND_URL = "http://localhost:3001"
 
-@app.api_route("/admin-ui/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"])
+@api_router.api_route("/admin-ui/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"])
 async def admin_frontend_proxy(request: Request, path: str):
     """Proxy admin frontend requests to Next.js dev server"""
     async with httpx.AsyncClient(timeout=60.0, follow_redirects=True) as client:
@@ -5605,11 +5605,11 @@ async def admin_frontend_proxy(request: Request, path: str):
             logger.error(f"Admin frontend proxy error: {e}")
             raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/admin-ui")
+@api_router.get("/admin-ui")
 async def admin_frontend_root():
     """Redirect to admin-ui/ with trailing slash"""
     from fastapi.responses import RedirectResponse
-    return RedirectResponse(url="/admin-ui/", status_code=307)
+    return RedirectResponse(url="/api/admin-ui/", status_code=307)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
