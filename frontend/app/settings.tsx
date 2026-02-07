@@ -860,6 +860,9 @@ const desktopStyles = StyleSheet.create({
     borderRightColor: COLORS.border,
     paddingTop: 24,
   },
+  sidebarScrollView: {
+    flex: 1,
+  },
   sidebarHeader: {
     flexDirection: 'row',
     alignItems: 'center',
