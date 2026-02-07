@@ -2025,8 +2025,7 @@ const desktopStyles = StyleSheet.create({
   },
   scrollContent: {
     paddingVertical: 24,
-    paddingBottom: 60,
-    backgroundColor: COLORS.background, // Light background for content area
+    paddingBottom: 0, // Remove padding at bottom for full-width footer
   },
   // Main Container
   mainContainer: {
