@@ -416,10 +416,47 @@ export default function MessagesScreen() {
     }
   }, [isLargeScreen]);
 
-  // Connect to socket for real-time messages
+  // Main socket connection for online status tracking
+  useEffect(() => {
+    if (!isAuthenticated || !user?.user_id) return;
+
+    const mainSocket = io(BACKEND_URL, {
+      transports: ['websocket'],
+      autoConnect: true,
+    });
+
+    mainSocket.on('connect', () => {
+      // Emit user_online to register as online
+      mainSocket.emit('user_online', { user_id: user.user_id });
+    });
+
+    // Listen for other users' online status changes
+    mainSocket.on('user_online_status', (data: { user_id: string; is_online: boolean }) => {
+      setUserStatuses(prev => ({
+        ...prev,
+        [data.user_id]: { ...prev[data.user_id], is_online: data.is_online }
+      }));
+    });
+
+    mainSocket.on('user_offline', (data: { user_id: string }) => {
+      setUserStatuses(prev => ({
+        ...prev,
+        [data.user_id]: { ...prev[data.user_id], is_online: false, last_seen: new Date().toISOString() }
+      }));
+    });
+
+    // Store the main socket for cleanup
+    const mainSocketRef = mainSocket;
+
+    return () => {
+      mainSocketRef.disconnect();
+    };
+  }, [isAuthenticated, user?.user_id]);
+
+  // Connect to socket for real-time messages in a specific conversation
   const connectSocket = useCallback((conversationId: string) => {
     if (socketRef.current) {
-      socketRef.current.emit('leave_conversation', { conversation_id: socketRef.current.conversationId });
+      socketRef.current.emit('leave_conversation', { conversation_id: (socketRef.current as any).conversationId });
       socketRef.current.disconnect();
     }
 
@@ -431,6 +468,10 @@ export default function MessagesScreen() {
     socket.conversationId = conversationId;
 
     socket.on('connect', () => {
+      // Also emit user_online from chat socket
+      if (user?.user_id) {
+        socket.emit('user_online', { user_id: user.user_id });
+      }
       socket.emit('join_conversation', { conversation_id: conversationId });
     });
 
@@ -442,7 +483,7 @@ export default function MessagesScreen() {
     });
 
     socketRef.current = socket;
-  }, []);
+  }, [user?.user_id]);
 
   // Handle selecting a conversation
   const handleSelectConversation = useCallback((conversation: Conversation) => {
