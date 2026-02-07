@@ -41,10 +41,12 @@ import {
   LightMode,
   Campaign,
   NotificationsActive,
+  Language,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
 import { useThemeMode } from '@/components/ThemeRegistry';
+import { useLocale } from '@/components/LocaleProvider';
 
 const DRAWER_WIDTH = 260;
 
