@@ -228,6 +228,33 @@ export default function DashboardLayout({
             </IconButton>
           </Tooltip>
 
+          <Tooltip title="Change language">
+            <IconButton onClick={(e) => setLangAnchorEl(e.currentTarget)} sx={{ mr: 1 }}>
+              <Language />
+            </IconButton>
+          </Tooltip>
+
+          <Menu
+            anchorEl={langAnchorEl}
+            open={Boolean(langAnchorEl)}
+            onClose={() => setLangAnchorEl(null)}
+            PaperProps={{ sx: { width: 160 } }}
+          >
+            {availableLocales.map((loc) => (
+              <MenuItem
+                key={loc.code}
+                onClick={() => {
+                  setLocale(loc.code);
+                  setLangAnchorEl(null);
+                }}
+                selected={locale === loc.code}
+              >
+                <Typography sx={{ mr: 1 }}>{loc.flag}</Typography>
+                {loc.name}
+              </MenuItem>
+            ))}
+          </Menu>
+
           <IconButton>
             <Notifications />
           </IconButton>
@@ -252,7 +279,7 @@ export default function DashboardLayout({
               <ListItemIcon>
                 <Logout fontSize="small" />
               </ListItemIcon>
-              Logout
+              {t('auth.signOut')}
             </MenuItem>
           </Menu>
         </Toolbar>
