@@ -21,10 +21,12 @@ import { Listing, Category } from '../../src/types';
 import { ListingCard } from '../../src/components/ListingCard';
 import { EmptyState } from '../../src/components/EmptyState';
 import { useAuthStore } from '../../src/store/authStore';
+import { useResponsive } from '../../src/hooks/useResponsive';
 
 const { width } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
 const COLUMN_GAP = 12;
+const MAX_CONTENT_WIDTH = 1280;
 
 const CONDITIONS = [
   { value: 'New', label: 'New', icon: 'sparkles' },
