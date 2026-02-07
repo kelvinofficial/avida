@@ -449,6 +449,31 @@ export default function CategoriesPage() {
       .replace(/(^-|-$)/g, '');
   };
 
+  const exportToCSV = () => {
+    const headers = ['ID', 'Name', 'Slug', 'Parent ID', 'Order', 'Is Visible', 'Listings Count', 'Attributes Count'];
+    const rows = flatCategories.map(cat => [
+      cat.id,
+      cat.name,
+      cat.slug,
+      cat.parent_id || '',
+      cat.order,
+      cat.is_visible ? 'Yes' : 'No',
+      cat.listings_count || 0,
+      cat.attributes?.length || 0,
+    ]);
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `categories_export_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
