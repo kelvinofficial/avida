@@ -113,6 +113,12 @@ Additionally, build an Admin Dashboard with:
 ## Changelog
 
 ### February 8, 2026
+**Notification Templates Feature Complete**
+- Added 12 predefined notification templates across 9 categories (Onboarding, Promotion, Engagement, Transaction, Account, Re-engagement, Reminder, System, Announcement)
+- Backend API: GET /api/admin/notification-templates with category filtering
+- Frontend: Template selector in Create Notification dialog with category chips, grid view, and auto-fill on selection
+- Templates include: Welcome Message, Listing Featured, Sale Alert, Price Drop, New Message, Listing Sold, Account Verified, Weekly Digest, Inactive Reminder, Listing Expiring, System Maintenance, New Feature Announcement
+
 **Notifications & Categories Integration Complete**
 - **Notifications Page Connected to Live API**: Replaced mock data with real API calls (getNotifications, createNotification, updateNotification, sendNotification, deleteNotification)
 - **Categories CSV Import**: Added Import CSV button and CSVImportDialog to Categories page
