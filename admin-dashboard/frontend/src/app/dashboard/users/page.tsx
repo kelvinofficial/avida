@@ -30,6 +30,11 @@ import {
   InputLabel,
   Select,
   Alert,
+  Checkbox,
+  Toolbar,
+  alpha,
+  Tooltip,
+  Snackbar,
 } from '@mui/material';
 import {
   Search,
@@ -41,6 +46,11 @@ import {
   CalendarToday,
   Refresh,
   FilterList,
+  Download,
+  Delete,
+  PersonOff,
+  PersonAdd,
+  SelectAll,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { User, PaginatedResponse } from '@/types';
@@ -60,6 +70,13 @@ export default function UsersPage() {
   const [banDuration, setBanDuration] = useState<number | ''>('');
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  // Bulk selection state
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
+  const [bulkAction, setBulkAction] = useState<'ban' | 'unban' | ''>('');
+  const [bulkBanReason, setBulkBanReason] = useState('');
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -83,6 +100,11 @@ export default function UsersPage() {
     loadUsers();
   }, [loadUsers]);
 
+  // Clear selection when data changes
+  useEffect(() => {
+    setSelectedUserIds(new Set());
+  }, [page, rowsPerPage, statusFilter]);
+
   const handleSearch = () => {
     setPage(0);
     loadUsers();
@@ -104,6 +126,7 @@ export default function UsersPage() {
       setBanDuration('');
       setSelectedUser(null);
       await loadUsers();
+      setSnackbar({ open: true, message: 'User banned successfully', severity: 'success' });
     } catch (err: unknown) {
       const error = err as { response?: { data?: { detail?: string } } };
       setError(error.response?.data?.detail || 'Failed to ban user');
@@ -117,11 +140,100 @@ export default function UsersPage() {
     try {
       await api.unbanUser(user.user_id);
       await loadUsers();
+      setSnackbar({ open: true, message: 'User unbanned successfully', severity: 'success' });
     } catch (err) {
       console.error('Failed to unban user:', err);
+      setSnackbar({ open: true, message: 'Failed to unban user', severity: 'error' });
     } finally {
       setActionLoading(false);
     }
+  };
+
+  // Bulk action handlers
+  const handleSelectAll = () => {
+    if (selectedUserIds.size === users.length) {
+      setSelectedUserIds(new Set());
+    } else {
+      setSelectedUserIds(new Set(users.map(u => u.user_id)));
+    }
+  };
+
+  const handleSelectUser = (userId: string) => {
+    const newSelected = new Set(selectedUserIds);
+    if (newSelected.has(userId)) {
+      newSelected.delete(userId);
+    } else {
+      newSelected.add(userId);
+    }
+    setSelectedUserIds(newSelected);
+  };
+
+  const handleBulkAction = async () => {
+    if (selectedUserIds.size === 0 || !bulkAction) return;
+    
+    setActionLoading(true);
+    try {
+      const userIds = Array.from(selectedUserIds);
+      let successCount = 0;
+      let errorCount = 0;
+      
+      for (const userId of userIds) {
+        try {
+          if (bulkAction === 'ban') {
+            await api.banUser(userId, bulkBanReason || 'Bulk ban action');
+          } else if (bulkAction === 'unban') {
+            await api.unbanUser(userId);
+          }
+          successCount++;
+        } catch (err) {
+          errorCount++;
+        }
+      }
+      
+      setBulkDialogOpen(false);
+      setBulkAction('');
+      setBulkBanReason('');
+      setSelectedUserIds(new Set());
+      await loadUsers();
+      
+      const action = bulkAction === 'ban' ? 'banned' : 'unbanned';
+      setSnackbar({
+        open: true,
+        message: `${successCount} user(s) ${action} successfully${errorCount > 0 ? `, ${errorCount} failed` : ''}`,
+        severity: errorCount > 0 ? 'error' : 'success'
+      });
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Bulk action failed', severity: 'error' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // CSV Export
+  const exportToCSV = () => {
+    const headers = ['User ID', 'Name', 'Email', 'Phone', 'Status', 'Created At', 'Listings Count'];
+    const rows = users.map(user => [
+      user.user_id,
+      user.name || '',
+      user.email || '',
+      user.phone || '',
+      user.status || 'active',
+      user.created_at,
+      user.listings_count || 0,
+    ]);
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `users_export_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    
+    setSnackbar({ open: true, message: 'Users exported to CSV', severity: 'success' });
   };
 
   const formatDate = (dateStr: string) => {
@@ -131,6 +243,8 @@ export default function UsersPage() {
       day: 'numeric',
     });
   };
+
+  const numSelected = selectedUserIds.size;
 
   return (
     <Box>
@@ -143,14 +257,24 @@ export default function UsersPage() {
             Manage marketplace users and accounts
           </Typography>
         </Box>
-        <Button
-          variant="outlined"
-          startIcon={<Refresh />}
-          onClick={loadUsers}
-          disabled={loading}
-        >
-          Refresh
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            startIcon={<Download />}
+            onClick={exportToCSV}
+            disabled={users.length === 0}
+          >
+            Export CSV
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<Refresh />}
+            onClick={loadUsers}
+            disabled={loading}
+          >
+            Refresh
+          </Button>
+        </Box>
       </Box>
 
       {/* Filters */}
@@ -194,12 +318,72 @@ export default function UsersPage() {
         </CardContent>
       </Card>
 
+      {/* Bulk Action Toolbar */}
+      {numSelected > 0 && (
+        <Toolbar
+          sx={{
+            mb: 2,
+            pl: { sm: 2 },
+            pr: { xs: 1, sm: 1 },
+            bgcolor: (theme) =>
+              alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
+            borderRadius: 1,
+          }}
+        >
+          <Typography sx={{ flex: '1 1 100%' }} color="inherit" variant="subtitle1">
+            {numSelected} user(s) selected
+          </Typography>
+          <Tooltip title="Ban Selected">
+            <Button
+              variant="contained"
+              color="error"
+              size="small"
+              startIcon={<PersonOff />}
+              onClick={() => {
+                setBulkAction('ban');
+                setBulkDialogOpen(true);
+              }}
+              sx={{ mr: 1 }}
+            >
+              Ban
+            </Button>
+          </Tooltip>
+          <Tooltip title="Unban Selected">
+            <Button
+              variant="contained"
+              color="success"
+              size="small"
+              startIcon={<PersonAdd />}
+              onClick={() => {
+                setBulkAction('unban');
+                setBulkDialogOpen(true);
+              }}
+              sx={{ mr: 1 }}
+            >
+              Unban
+            </Button>
+          </Tooltip>
+          <Tooltip title="Clear Selection">
+            <IconButton onClick={() => setSelectedUserIds(new Set())}>
+              <Delete />
+            </IconButton>
+          </Tooltip>
+        </Toolbar>
+      )}
+
       {/* Users Table */}
       <Card>
         <TableContainer>
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    indeterminate={numSelected > 0 && numSelected < users.length}
+                    checked={users.length > 0 && numSelected === users.length}
+                    onChange={handleSelectAll}
+                  />
+                </TableCell>
                 <TableCell>User</TableCell>
                 <TableCell>Email</TableCell>
                 <TableCell>Phone</TableCell>
@@ -211,86 +395,86 @@ export default function UsersPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                  <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                     <CircularProgress size={32} />
                   </TableCell>
                 </TableRow>
               ) : users.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                  <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                     <Typography color="text.secondary">No users found</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
-                users.map((user) => (
-                  <TableRow key={user.user_id} hover>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Avatar sx={{ bgcolor: 'primary.main', width: 36, height: 36 }}>
-                          {user.name?.charAt(0) || '?'}
-                        </Avatar>
-                        <Box>
-                          <Typography fontWeight={500}>{user.name || 'Unknown'}</Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            ID: {user.user_id.slice(0, 12)}...
-                          </Typography>
+                users.map((user) => {
+                  const isSelected = selectedUserIds.has(user.user_id);
+                  return (
+                    <TableRow
+                      key={user.user_id}
+                      hover
+                      selected={isSelected}
+                      onClick={() => handleSelectUser(user.user_id)}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={() => handleSelectUser(user.user_id)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Avatar sx={{ bgcolor: 'primary.main' }}>
+                            {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                          </Avatar>
+                          <Box>
+                            <Typography fontWeight={500}>{user.name || 'Unknown User'}</Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              ID: {user.user_id.slice(0, 12)}...
+                            </Typography>
+                          </Box>
                         </Box>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Email fontSize="small" color="action" />
-                        {user.email}
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      {user.phone ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Email fontSize="small" color="action" />
+                          <Typography variant="body2">{user.email || '-'}</Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Phone fontSize="small" color="action" />
-                          {user.phone}
+                          <Typography variant="body2">{user.phone || '-'}</Typography>
                         </Box>
-                      ) : (
-                        <Typography color="text.secondary">-</Typography>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {user.is_banned ? (
+                      </TableCell>
+                      <TableCell>
                         <Chip
-                          label="Banned"
-                          color="error"
+                          icon={user.status === 'banned' ? <Block /> : <CheckCircle />}
+                          label={user.status === 'banned' ? 'Banned' : 'Active'}
+                          color={user.status === 'banned' ? 'error' : 'success'}
                           size="small"
-                          icon={<Block />}
                         />
-                      ) : user.verified ? (
-                        <Chip
-                          label="Verified"
-                          color="success"
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <CalendarToday fontSize="small" color="action" />
+                          <Typography variant="body2">{formatDate(user.created_at)}</Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                        <IconButton
                           size="small"
-                          icon={<CheckCircle />}
-                        />
-                      ) : (
-                        <Chip label="Active" color="default" size="small" />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <CalendarToday fontSize="small" color="action" />
-                        {formatDate(user.created_at)}
-                      </Box>
-                    </TableCell>
-                    <TableCell align="right">
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          setAnchorEl(e.currentTarget);
-                          setSelectedUser(user);
-                        }}
-                      >
-                        <MoreVert />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))
+                          onClick={(e) => {
+                            setAnchorEl(e.currentTarget);
+                            setSelectedUser(user);
+                          }}
+                        >
+                          <MoreVert />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
@@ -313,22 +497,16 @@ export default function UsersPage() {
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
-        onClose={() => {
-          setAnchorEl(null);
-          setSelectedUser(null);
-        }}
+        onClose={() => setAnchorEl(null)}
       >
-        <MenuItem disabled>
-          <Typography variant="caption">User Actions</Typography>
-        </MenuItem>
-        {selectedUser?.is_banned ? (
+        {selectedUser?.status === 'banned' ? (
           <MenuItem
             onClick={() => {
-              if (selectedUser) handleUnbanUser(selectedUser);
+              handleUnbanUser(selectedUser);
               setAnchorEl(null);
             }}
           >
-            <CheckCircle fontSize="small" sx={{ mr: 1 }} color="success" />
+            <CheckCircle sx={{ mr: 1 }} color="success" />
             Unban User
           </MenuItem>
         ) : (
@@ -338,13 +516,13 @@ export default function UsersPage() {
               setAnchorEl(null);
             }}
           >
-            <Block fontSize="small" sx={{ mr: 1 }} color="error" />
+            <Block sx={{ mr: 1 }} color="error" />
             Ban User
           </MenuItem>
         )}
       </Menu>
 
-      {/* Ban Dialog */}
+      {/* Ban User Dialog */}
       <Dialog open={banDialogOpen} onClose={() => setBanDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Ban User</DialogTitle>
         <DialogContent>
@@ -353,40 +531,93 @@ export default function UsersPage() {
               {error}
             </Alert>
           )}
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Banning &quot;{selectedUser?.name}&quot; ({selectedUser?.email})
+          <Typography gutterBottom>
+            Are you sure you want to ban <strong>{selectedUser?.name || selectedUser?.email}</strong>?
           </Typography>
           <TextField
-            fullWidth
             label="Ban Reason"
             value={banReason}
             onChange={(e) => setBanReason(e.target.value)}
+            fullWidth
+            required
             multiline
             rows={3}
-            required
-            sx={{ mb: 2 }}
+            sx={{ mt: 2 }}
           />
           <TextField
-            fullWidth
-            type="number"
             label="Duration (days)"
             value={banDuration}
             onChange={(e) => setBanDuration(e.target.value ? Number(e.target.value) : '')}
+            type="number"
+            fullWidth
+            sx={{ mt: 2 }}
             helperText="Leave empty for permanent ban"
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setBanDialogOpen(false)}>Cancel</Button>
           <Button
+            onClick={handleBanUser}
             variant="contained"
             color="error"
-            onClick={handleBanUser}
-            disabled={actionLoading || !banReason}
+            disabled={!banReason || actionLoading}
           >
-            {actionLoading ? 'Banning...' : 'Ban User'}
+            {actionLoading ? <CircularProgress size={20} /> : 'Ban User'}
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Bulk Action Dialog */}
+      <Dialog open={bulkDialogOpen} onClose={() => setBulkDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {bulkAction === 'ban' ? 'Bulk Ban Users' : 'Bulk Unban Users'}
+        </DialogTitle>
+        <DialogContent>
+          <Typography gutterBottom>
+            You are about to {bulkAction} <strong>{numSelected}</strong> user(s).
+          </Typography>
+          {bulkAction === 'ban' && (
+            <TextField
+              label="Ban Reason"
+              value={bulkBanReason}
+              onChange={(e) => setBulkBanReason(e.target.value)}
+              fullWidth
+              required
+              multiline
+              rows={3}
+              sx={{ mt: 2 }}
+              placeholder="Reason for bulk ban..."
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setBulkDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleBulkAction}
+            variant="contained"
+            color={bulkAction === 'ban' ? 'error' : 'success'}
+            disabled={actionLoading || (bulkAction === 'ban' && !bulkBanReason)}
+          >
+            {actionLoading ? <CircularProgress size={20} /> : `${bulkAction === 'ban' ? 'Ban' : 'Unban'} ${numSelected} Users`}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          variant="filled"
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
