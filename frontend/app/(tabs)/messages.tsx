@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,22 +12,28 @@ import {
   TextInput,
   ScrollView,
   Platform,
+  KeyboardAvoidingView,
+  Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { conversationsApi } from '../../src/utils/api';
-import { Conversation } from '../../src/types';
+import { Conversation, Message } from '../../src/types';
 import { EmptyState } from '../../src/components/EmptyState';
 import { useAuthStore } from '../../src/store/authStore';
 import { formatDistanceToNow, isToday, isYesterday, format } from 'date-fns';
 import { useResponsive } from '../../src/hooks/useResponsive';
+import { io, Socket } from 'socket.io-client';
+import Constants from 'expo-constants';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Desktop sidebar width
-const SIDEBAR_WIDTH = 360;
+// Get backend URL
+const BACKEND_URL = Constants.expoConfig?.extra?.EXPO_BACKEND_URL || 
+                    process.env.EXPO_PUBLIC_BACKEND_URL || 
+                    'http://localhost:8001';
 
 const COLORS = {
   primary: '#2E7D32',
