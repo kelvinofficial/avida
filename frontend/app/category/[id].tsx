@@ -1491,6 +1491,9 @@ const desktopStyles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
   },
+  scrollContainer: {
+    flex: 1,
+  },
   scrollContent: {
     // Empty - no padding at bottom to allow full-width footer
   },
