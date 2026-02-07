@@ -21,6 +21,7 @@ import {
   Chip,
   useMediaQuery,
   useTheme,
+  Tooltip,
 } from '@mui/material';
 import {
   Dashboard,
@@ -36,9 +37,14 @@ import {
   Logout,
   AccountCircle,
   Notifications,
+  DarkMode,
+  LightMode,
+  Campaign,
+  NotificationsActive,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
+import { useThemeMode } from '@/components/ThemeRegistry';
 
 const DRAWER_WIDTH = 260;
 
@@ -50,6 +56,8 @@ const menuItems = [
   { text: 'Reports', icon: <Report />, path: '/dashboard/reports' },
   { text: 'Tickets', icon: <SupportAgent />, path: '/dashboard/tickets' },
   { text: 'Analytics', icon: <Analytics />, path: '/dashboard/analytics' },
+  { text: 'Ads', icon: <Campaign />, path: '/dashboard/ads' },
+  { text: 'Notifications', icon: <NotificationsActive />, path: '/dashboard/notifications' },
   { text: 'Settings', icon: <Settings />, path: '/dashboard/settings' },
   { text: 'Audit Logs', icon: <History />, path: '/dashboard/audit-logs' },
 ];
@@ -63,6 +71,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { mode, toggleTheme } = useThemeMode();
   
   const [mobileOpen, setMobileOpen] = useState(false);
   const [admin, setAdmin] = useState<Admin | null>(null);
@@ -134,7 +143,7 @@ export default function DashboardLayout({
 
       <Divider />
 
-      <List sx={{ flex: 1, px: 1, py: 2 }}>
+      <List sx={{ flex: 1, px: 1, py: 2, overflowY: 'auto' }}>
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
@@ -193,7 +202,7 @@ export default function DashboardLayout({
           ml: { md: `${DRAWER_WIDTH}px` },
           bgcolor: 'background.paper',
           color: 'text.primary',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+          boxShadow: mode === 'light' ? '0 1px 3px rgba(0,0,0,0.08)' : '0 1px 3px rgba(0,0,0,0.3)',
         }}
       >
         <Toolbar>
@@ -208,6 +217,12 @@ export default function DashboardLayout({
           <Typography variant="h6" fontWeight={600} sx={{ flex: 1 }}>
             {menuItems.find((item) => item.path === pathname)?.text || 'Dashboard'}
           </Typography>
+
+          <Tooltip title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}>
+            <IconButton onClick={toggleTheme} sx={{ mr: 1 }}>
+              {mode === 'light' ? <DarkMode /> : <LightMode />}
+            </IconButton>
+          </Tooltip>
 
           <IconButton>
             <Notifications />
@@ -252,7 +267,10 @@ export default function DashboardLayout({
           ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: 'block', md: 'none' },
-            '& .MuiDrawer-paper': { width: DRAWER_WIDTH },
+            '& .MuiDrawer-paper': { 
+              width: DRAWER_WIDTH,
+              bgcolor: 'background.paper',
+            },
           }}
         >
           {drawer}
@@ -263,7 +281,12 @@ export default function DashboardLayout({
           variant="permanent"
           sx={{
             display: { xs: 'none', md: 'block' },
-            '& .MuiDrawer-paper': { width: DRAWER_WIDTH, borderRight: '1px solid #E0E0E0' },
+            '& .MuiDrawer-paper': { 
+              width: DRAWER_WIDTH, 
+              borderRight: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
+            },
           }}
           open
         >
