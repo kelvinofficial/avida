@@ -506,6 +506,7 @@ export default function OffersScreen() {
   };
 
   const handleViewChat = async (offer: Offer) => {
+    setOpeningChatForOffer(offer.id);
     try {
       // Create or get existing conversation using query parameter
       const response = await api.post(`/conversations?listing_id=${offer.listing_id}`);
@@ -533,6 +534,8 @@ export default function OffersScreen() {
         }
       }
       Alert.alert('Error', 'Could not open chat');
+    } finally {
+      setOpeningChatForOffer(null);
     }
   };
 
