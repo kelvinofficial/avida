@@ -1491,7 +1491,7 @@ const desktopStyles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderRadius: 12,
     padding: 16,
-    marginRight: 32,
+    marginRight: 24,
     alignSelf: 'flex-start',
     overflow: 'hidden',
   },
