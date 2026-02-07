@@ -1534,12 +1534,18 @@ async def get_listings_by_category(
     ]
     results = await db.listings.aggregate(pipeline).to_list(100)
     
-    # Get category names
+    # Get category names from admin_categories first
     category_ids = [r["_id"] for r in results if r["_id"]]
-    categories = {c["id"]: c["name"] for c in await db.admin_categories.find({"id": {"$in": category_ids}}, {"_id": 0, "id": 1, "name": 1}).to_list(100)}
+    admin_categories = {c["id"]: c["name"] for c in await db.admin_categories.find({"id": {"$in": category_ids}}, {"_id": 0, "id": 1, "name": 1}).to_list(100)}
+    
+    # Also check the original categories collection for backward compatibility
+    original_categories = {c["id"]: c["name"] for c in await db.categories.find({"id": {"$in": category_ids}}, {"_id": 0, "id": 1, "name": 1}).to_list(100)}
+    
+    # Merge categories (admin_categories take precedence)
+    all_categories = {**original_categories, **admin_categories}
     
     return [
-        {"category_id": r["_id"], "category_name": categories.get(r["_id"], "Unknown"), "count": r["count"]}
+        {"category_id": r["_id"], "category_name": all_categories.get(r["_id"], "Unknown"), "count": r["count"]}
         for r in results
     ]
 
