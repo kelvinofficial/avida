@@ -1917,12 +1917,13 @@ const desktopStyles = StyleSheet.create({
   // Header Section - wraps header and breadcrumb
   headerSection: {
     backgroundColor: COLORS.surface,
-    marginBottom: -1, // Overlap slightly to prevent gap
+    paddingBottom: 1,
   },
   // Main Content Area - wraps scroll container
   mainContentArea: {
     flex: 1,
     backgroundColor: COLORS.background,
+    marginTop: -1,
   },
   // Header Row 1
   headerRow1: {
