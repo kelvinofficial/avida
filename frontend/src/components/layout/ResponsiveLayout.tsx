@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   },
   mainContent: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#1A1A1A', // Dark footer background - content areas have their own light backgrounds
   },
 });
 
