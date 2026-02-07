@@ -1137,7 +1137,10 @@ export default function ListingDetailScreen() {
               
               <View style={desktopStyles.offerModalBody}>
                 <Text style={desktopStyles.offerLabel}>Your Offer</Text>
-                <View style={desktopStyles.offerPriceInput}>
+                <View style={[
+                  desktopStyles.offerPriceInput,
+                  offerPrice && parseInt(offerPrice) >= listing.price && desktopStyles.offerPriceInputError
+                ]}>
                   <Text style={desktopStyles.offerCurrency}>€</Text>
                   <TextInput
                     style={desktopStyles.offerInput}
@@ -1148,7 +1151,32 @@ export default function ListingDetailScreen() {
                     onChangeText={setOfferPrice}
                   />
                 </View>
-                <Text style={desktopStyles.offerHint}>Listed price: {formatPrice(listing.price)}</Text>
+                
+                {/* Price validation messages */}
+                {offerPrice && parseInt(offerPrice) >= listing.price ? (
+                  <View style={desktopStyles.priceErrorContainer}>
+                    <Ionicons name="alert-circle" size={16} color="#DC2626" />
+                    <Text style={desktopStyles.priceErrorText}>
+                      Offer must be below the listed price of {formatPrice(listing.price)}
+                    </Text>
+                  </View>
+                ) : offerPrice && parseInt(offerPrice) < listing.price * 0.1 ? (
+                  <View style={desktopStyles.priceWarningContainer}>
+                    <Ionicons name="warning" size={16} color="#F59E0B" />
+                    <Text style={desktopStyles.priceWarningText}>
+                      Offer seems too low. Minimum: {formatPrice(listing.price * 0.1)}
+                    </Text>
+                  </View>
+                ) : offerPrice && parseInt(offerPrice) < listing.price ? (
+                  <View style={desktopStyles.priceValidContainer}>
+                    <Ionicons name="checkmark-circle" size={16} color="#16A34A" />
+                    <Text style={desktopStyles.priceValidText}>
+                      {Math.round((1 - parseInt(offerPrice) / listing.price) * 100)}% off listed price
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={desktopStyles.offerHint}>Listed price: {formatPrice(listing.price)}</Text>
+                )}
                 
                 <Text style={[desktopStyles.offerLabel, { marginTop: 20 }]}>Message (optional)</Text>
                 <TextInput
@@ -1170,9 +1198,12 @@ export default function ListingDetailScreen() {
                   <Text style={desktopStyles.offerCancelText}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[desktopStyles.offerSubmitBtn, (!offerPrice || submittingOffer) && { opacity: 0.5 }]}
+                  style={[
+                    desktopStyles.offerSubmitBtn, 
+                    (!offerPrice || submittingOffer || (offerPrice && parseInt(offerPrice) >= listing.price)) && { opacity: 0.5 }
+                  ]}
                   onPress={handleSubmitOffer}
-                  disabled={!offerPrice || submittingOffer}
+                  disabled={!offerPrice || submittingOffer || (offerPrice && parseInt(offerPrice) >= listing.price)}
                 >
                   {submittingOffer ? (
                     <ActivityIndicator size="small" color="#fff" />
