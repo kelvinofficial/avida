@@ -272,6 +272,13 @@ export default function UsersPage() {
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             variant="outlined"
+            startIcon={<CloudUpload />}
+            onClick={() => setImportDialogOpen(true)}
+          >
+            Import CSV
+          </Button>
+          <Button
+            variant="outlined"
             startIcon={<Download />}
             onClick={exportToCSV}
             disabled={users.length === 0}
