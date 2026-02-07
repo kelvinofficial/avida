@@ -1114,6 +1114,9 @@ export default function ListingDetailScreen() {
           <View style={[desktopStyles.similarSection, { maxWidth: MAX_CONTENT_WIDTH }]}>
             <SimilarListings propertyId={id!} category="other" />
           </View>
+          
+          {/* Footer */}
+          <Footer isTablet={isTablet && !isDesktop} />
         </ScrollView>
 
         {/* Modals */}

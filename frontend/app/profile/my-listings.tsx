@@ -567,6 +567,8 @@ export default function MyListingsScreen() {
                   <Text style={desktopStyles.loadMoreBtnText}>Load More</Text>
                 </TouchableOpacity>
               )}
+              {/* Footer */}
+              <Footer isTablet={isTablet && !isDesktop} />
             </ScrollView>
           )}
         </View>

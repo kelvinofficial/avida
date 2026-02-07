@@ -426,6 +426,8 @@ export default function SavedItemsScreen() {
                   <Text style={desktopStyles.loadMoreBtnText}>Load More</Text>
                 </TouchableOpacity>
               )}
+              {/* Footer */}
+              <Footer isTablet={isTablet && !isDesktop} />
             </ScrollView>
           )}
         </View>
