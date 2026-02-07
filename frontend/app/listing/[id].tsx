@@ -1126,6 +1126,7 @@ export default function ListingDetailScreen() {
           {/* Footer */}
           <Footer isTablet={isTablet && !isDesktop} />
         </ScrollView>
+        </View>
 
         {/* Modals */}
         <ReportModal
