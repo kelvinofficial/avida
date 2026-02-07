@@ -298,7 +298,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   
   const formatTime = (date: string) => {
     try {
-      return format(new Date(date), 'HH:mm');
+      // Ensure the string is treated as UTC if no timezone specified
+      const d = new Date(date.endsWith('Z') ? date : date + 'Z');
+      return format(d, 'HH:mm');
     } catch {
       return '';
     }
