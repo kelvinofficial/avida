@@ -210,9 +210,7 @@ export const Footer: React.FC<FooterProps> = ({ isTablet = false }) => {
 const styles = StyleSheet.create({
   footer: {
     backgroundColor: COLORS.background,
-    marginTop: 60,
-    width: '100vw',
-    marginLeft: 'calc(-50vw + 50%)',
+    marginTop: 0,
   },
   footerContent: {
     flexDirection: 'row',
