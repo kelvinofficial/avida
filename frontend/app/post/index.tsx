@@ -2422,7 +2422,16 @@ const desktopStyles = StyleSheet.create({
   },
   categoryCard: {
     width: '25%',
-    paddingHorizontal: 8,
-    marginBottom: 16,
+    padding: 8,
+    marginHorizontal: 0,
+    marginBottom: 0,
+  },
+  categoryCardInner: {
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
   },
 });
