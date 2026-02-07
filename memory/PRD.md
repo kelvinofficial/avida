@@ -7,9 +7,17 @@ Build a responsive desktop version of the marketplace application. The applicati
 - Consistent 1280px max-width across all desktop pages
 - Global header with logo, search, location, and auth buttons
 
+Additionally, build an Admin Dashboard with:
+- External access via reverse proxy
+- CRUD for all entities (Users, Categories, Listings, Ads, Notifications)
+- Analytics and Audit Logs
+- CSV import/export functionality
+- Dark/Light mode and Localization (4 languages)
+
 ## User Personas
 - **Buyers**: Users browsing and saving listings, messaging sellers
 - **Sellers**: Users posting listings, managing their items, responding to inquiries
+- **Admins**: Managing marketplace content, users, categories, and notifications
 
 ## Core Requirements
 
