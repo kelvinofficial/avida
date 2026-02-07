@@ -1602,6 +1602,17 @@ const desktopStyles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.primary,
   },
+  chatOnlineIndicator: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#4CAF50',
+    borderWidth: 2,
+    borderColor: COLORS.surface,
+  },
   chatHeaderTextInfo: {
     marginLeft: 12,
     flex: 1,
@@ -1610,6 +1621,11 @@ const desktopStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.text,
+  },
+  chatHeaderStatus: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 2,
   },
   chatHeaderListing: {
     fontSize: 13,
