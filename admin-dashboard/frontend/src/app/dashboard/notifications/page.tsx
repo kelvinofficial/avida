@@ -505,10 +505,117 @@ export default function NotificationsPage() {
       </Card>
 
       {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{editingNotif ? t('common.edit') : t('common.create')} {t('notifications.notificationTitle')}</DialogTitle>
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>
+          {editingNotif ? t('common.edit') : t('common.create')} {t('notifications.notificationTitle')}
+        </DialogTitle>
         <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+          {/* Templates Section - Only show for new notifications */}
+          {!editingNotif && showTemplates && templates.length > 0 && (
+            <Box sx={{ mb: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Description color="primary" />
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Choose a Template
+                  </Typography>
+                </Box>
+                <Button 
+                  size="small" 
+                  onClick={() => setShowTemplates(false)}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Skip, write from scratch
+                </Button>
+              </Box>
+              
+              {/* Category Filter */}
+              <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                <Chip 
+                  label="All" 
+                  onClick={() => setSelectedTemplateCategory('')}
+                  color={selectedTemplateCategory === '' ? 'primary' : 'default'}
+                  variant={selectedTemplateCategory === '' ? 'filled' : 'outlined'}
+                />
+                {templateCategories.map(cat => (
+                  <Chip 
+                    key={cat}
+                    label={cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', ' ')}
+                    onClick={() => setSelectedTemplateCategory(cat)}
+                    color={selectedTemplateCategory === cat ? 'primary' : 'default'}
+                    variant={selectedTemplateCategory === cat ? 'filled' : 'outlined'}
+                  />
+                ))}
+              </Box>
+              
+              {/* Template Grid */}
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 2, maxHeight: 300, overflowY: 'auto', p: 1 }}>
+                {filteredTemplates.map(template => (
+                  <Paper
+                    key={template.id}
+                    elevation={1}
+                    sx={{
+                      p: 2,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        elevation: 4,
+                        bgcolor: 'action.hover',
+                        transform: 'translateY(-2px)',
+                      },
+                      border: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                    onClick={() => handleSelectTemplate(template)}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                      <Typography sx={{ fontSize: 24 }}>{template.icon}</Typography>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="subtitle2" fontWeight={600} noWrap>
+                          {template.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                          {template.category}
+                        </Typography>
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary" 
+                          sx={{ 
+                            mt: 0.5,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          {template.title}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Paper>
+                ))}
+              </Box>
+              <Divider sx={{ my: 2 }} />
+            </Box>
+          )}
+
+          {/* Show "Use Template" button when form is showing */}
+          {!editingNotif && !showTemplates && templates.length > 0 && (
+            <Box sx={{ mb: 2 }}>
+              <Button 
+                size="small"
+                startIcon={<Description />}
+                onClick={() => setShowTemplates(true)}
+                sx={{ textTransform: 'none' }}
+              >
+                Choose from templates
+              </Button>
+            </Box>
+          )}
+
+          {/* Form Fields */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: showTemplates ? 0 : 1 }}>
             <TextField
               label={t('notifications.notificationTitle')}
               value={formData.title}
