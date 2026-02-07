@@ -639,8 +639,9 @@ export default function CategoryScreen() {
     const cardGap = 24; // gap between cards
     const numColumns = 3;
     
-    // Available width for cards = total - sidebar - margins - padding
-    const availableForCards = Math.min(screenWidth, 1200) - sidebarWidth - sidebarMargin - containerPadding;
+    // Available width for cards = total content width - sidebar
+    const maxContentWidth = Math.min(screenWidth, 1400); // Increased max width
+    const availableForCards = maxContentWidth - sidebarWidth - sidebarMargin - containerPadding;
     // Card width = (available - gaps between cards) / number of columns
     const cardWidth = Math.floor((availableForCards - (cardGap * (numColumns - 1))) / numColumns);
 
