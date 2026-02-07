@@ -128,6 +128,21 @@ Build a responsive desktop version of the marketplace application. The applicati
   - Seller Profile page card
   - My Listings page desktop card
 
+**Loading Indicators Removed - Instant Rendering**
+- Removed ALL ActivityIndicator spinners across pages
+- Removed ALL skeleton loaders
+- Pages now render immediately with empty containers while data fetches
+- Data silently updates when API calls complete
+- Improved perceived load speed significantly
+- Pages affected:
+  - Root layout (`_layout.tsx`)
+  - Home page (`(tabs)/index.tsx`)
+  - Saved page (`(tabs)/saved.tsx`)
+  - Category page (`category/[id].tsx`)
+  - Listing detail page (`listing/[id].tsx`)
+  - My Listings page (`profile/my-listings.tsx`)
+  - Public Profile page (`profile/public/[id].tsx`)
+
 **Badge Color Scheme:**
 - **Just Listed**: Purple (#8B5CF6) - clock icon
 - **Featured**: Amber (#F59E0B) - star icon  
