@@ -135,16 +135,32 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: COLORS.border,
   },
-  featuredBadge: {
+  badgesContainer: {
     position: 'absolute',
     top: 8,
     left: 8,
-    backgroundColor: COLORS.primary,
+    flexDirection: 'row',
+    gap: 6,
+  },
+  featuredBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#F59E0B',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
   },
-  featuredText: {
+  topBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#EF4444',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  badgeText: {
     color: '#fff',
     fontSize: 10,
     fontWeight: '700',
@@ -180,25 +196,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    marginBottom: 4,
   },
   location: {
     fontSize: 12,
     color: COLORS.textSecondary,
     flex: 1,
   },
-  subcategoryTag: {
-    marginTop: 6,
-    backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-    alignSelf: 'flex-start',
-  },
-  subcategoryTagText: {
-    fontSize: 10,
-    color: COLORS.primary,
-    fontWeight: '500',
-    textTransform: 'capitalize',
+  timePosted: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
   },
 });
 
