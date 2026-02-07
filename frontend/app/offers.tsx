@@ -522,6 +522,145 @@ export default function OffersScreen() {
     }
   };
 
+  // Render Counter Modal (used by both mobile and desktop)
+  const renderCounterModal = () => (
+    <Modal visible={showCounterModal} animationType="slide" presentationStyle="pageSheet">
+      <SafeAreaView style={styles.modalContainer}>
+        <View style={styles.modalHeader}>
+          <TouchableOpacity onPress={() => setShowCounterModal(false)}>
+            <Ionicons name="close" size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text style={styles.modalTitle}>Counter Offer</Text>
+          <View style={{ width: 24 }} />
+        </View>
+
+        {selectedOffer && (
+          <View style={styles.modalContent}>
+            <View style={styles.priceRange}>
+              <View style={styles.priceRangeItem}>
+                <Text style={styles.priceRangeLabel}>Their Offer</Text>
+                <Text style={styles.priceRangeValue}>{formatPrice(selectedOffer.offered_price)}</Text>
+              </View>
+              <Ionicons name="arrow-forward" size={20} color={COLORS.textLight} />
+              <View style={styles.priceRangeItem}>
+                <Text style={styles.priceRangeLabel}>Listed Price</Text>
+                <Text style={styles.priceRangeValue}>{formatPrice(selectedOffer.listed_price)}</Text>
+              </View>
+            </View>
+
+            <Text style={styles.inputLabel}>Your Counter Offer</Text>
+            <View style={styles.priceInputContainer}>
+              <Text style={styles.currencySymbol}>€</Text>
+              <TextInput
+                style={styles.priceInput}
+                placeholder="Enter amount"
+                keyboardType="numeric"
+                value={counterPrice}
+                onChangeText={setCounterPrice}
+              />
+            </View>
+
+            <Text style={styles.inputLabel}>Message (optional)</Text>
+            <TextInput
+              style={styles.messageInput}
+              placeholder="Add a message..."
+              multiline
+              numberOfLines={3}
+              value={counterMessage}
+              onChangeText={setCounterMessage}
+            />
+
+            <TouchableOpacity
+              style={[styles.submitBtn, submitting && styles.submitBtnDisabled]}
+              onPress={submitCounter}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.submitBtnText}>Send Counter Offer</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+      </SafeAreaView>
+    </Modal>
+  );
+
+  // Render global desktop header
+  const renderGlobalHeader = () => (
+    <View style={desktopStyles.globalHeader}>
+      {/* Row 1: Logo + Auth + Post Listing */}
+      <View style={desktopStyles.globalHeaderRow1}>
+        <View style={desktopStyles.globalHeaderInner}>
+          {/* Logo */}
+          <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+            <View style={desktopStyles.logoIcon}>
+              <Ionicons name="storefront" size={20} color="#fff" />
+            </View>
+            <Text style={desktopStyles.logoText}>avida</Text>
+          </TouchableOpacity>
+          
+          {/* Header Actions */}
+          <View style={desktopStyles.globalHeaderActions}>
+            {isAuthenticated ? (
+              <>
+                <TouchableOpacity 
+                  style={desktopStyles.headerIconBtn} 
+                  onPress={() => router.push('/notifications')}
+                >
+                  <Ionicons name="notifications-outline" size={22} color={COLORS.text} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={desktopStyles.headerIconBtn} 
+                  onPress={() => router.push('/profile')}
+                >
+                  <Ionicons name="person-circle-outline" size={26} color={COLORS.text} />
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <TouchableOpacity style={desktopStyles.signInHeaderBtn} onPress={() => router.push('/login')}>
+                  <Text style={desktopStyles.signInHeaderBtnText}>Sign In</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={desktopStyles.signUpHeaderBtn} onPress={() => router.push('/login')}>
+                  <Text style={desktopStyles.signUpHeaderBtnText}>Sign Up</Text>
+                </TouchableOpacity>
+              </>
+            )}
+            <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => router.push('/post')}>
+              <Ionicons name="add" size={18} color="#fff" />
+              <Text style={desktopStyles.postListingBtnText}>Post Listing</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+      
+      {/* Row 2: Search + Location */}
+      <View style={desktopStyles.globalHeaderRow2}>
+        <View style={desktopStyles.globalHeaderInner}>
+          <TouchableOpacity 
+            style={desktopStyles.searchField} 
+            onPress={() => router.push('/search')} 
+            activeOpacity={0.8}
+          >
+            <Ionicons name="search" size={20} color={COLORS.textSecondary} />
+            <Text style={desktopStyles.searchPlaceholder}>Search for anything...</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={desktopStyles.locationChip} 
+            activeOpacity={0.7} 
+            onPress={() => router.push('/')}
+          >
+            <Ionicons name="location" size={18} color={COLORS.primary} />
+            <Text style={desktopStyles.locationText} numberOfLines={1}>All Locations</Text>
+            <Ionicons name="chevron-down" size={16} color={COLORS.textSecondary} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+
   if (!isAuthenticated) {
     if (!isReady) {
       return (
