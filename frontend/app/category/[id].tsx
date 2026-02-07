@@ -690,39 +690,6 @@ export default function CategoryScreen() {
           </View>
         </View>
 
-        {/* Row 3: Breadcrumb */}
-        <View style={desktopStyles.breadcrumbRow}>
-          <View style={desktopStyles.breadcrumbInner}>
-            <TouchableOpacity onPress={() => router.push('/')} style={desktopStyles.breadcrumbLink}>
-              <Ionicons name="home-outline" size={16} color={COLORS.textSecondary} />
-              <Text style={desktopStyles.breadcrumbText}>Home</Text>
-            </TouchableOpacity>
-            <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
-            <Text style={desktopStyles.breadcrumbCurrent}>{mainCategory?.name}</Text>
-            {selectedSubcategory && (
-              <>
-                <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
-                <Text style={desktopStyles.breadcrumbCurrent}>
-                  {subcategories.find(s => s.id === selectedSubcategory)?.name}
-                </Text>
-              </>
-            )}
-          </View>
-        </View>
-
-        {/* Row 4: Category Heading + Results Count */}
-        <View style={desktopStyles.categoryHeadingRow}>
-          <View style={desktopStyles.categoryHeadingInner}>
-            <View style={desktopStyles.categoryTitleContainer}>
-              {mainCategory?.icon && (
-                <Ionicons name={mainCategory.icon as any} size={28} color={COLORS.primary} />
-              )}
-              <Text style={desktopStyles.categoryTitle}>{mainCategory?.name}</Text>
-            </View>
-            <Text style={desktopStyles.resultsCount}>{total} listings found</Text>
-          </View>
-        </View>
-
         {/* Main Content: Sidebar + Listings - Scrollable */}
         <ScrollView 
           style={desktopStyles.scrollContainer}
@@ -731,6 +698,39 @@ export default function CategoryScreen() {
         >
           {/* Content wrapper with light background */}
           <View style={desktopStyles.contentWrapper}>
+            {/* Row 3: Breadcrumb - Now inside ScrollView */}
+            <View style={desktopStyles.breadcrumbRow}>
+              <View style={desktopStyles.breadcrumbInner}>
+                <TouchableOpacity onPress={() => router.push('/')} style={desktopStyles.breadcrumbLink}>
+                  <Ionicons name="home-outline" size={16} color={COLORS.textSecondary} />
+                  <Text style={desktopStyles.breadcrumbText}>Home</Text>
+                </TouchableOpacity>
+                <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
+                <Text style={desktopStyles.breadcrumbCurrent}>{mainCategory?.name}</Text>
+                {selectedSubcategory && (
+                  <>
+                    <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
+                    <Text style={desktopStyles.breadcrumbCurrent}>
+                      {subcategories.find(s => s.id === selectedSubcategory)?.name}
+                    </Text>
+                  </>
+                )}
+              </View>
+            </View>
+
+            {/* Row 4: Category Heading + Results Count - Now inside ScrollView */}
+            <View style={desktopStyles.categoryHeadingRow}>
+              <View style={desktopStyles.categoryHeadingInner}>
+                <View style={desktopStyles.categoryTitleContainer}>
+                  {mainCategory?.icon && (
+                    <Ionicons name={mainCategory.icon as any} size={28} color={COLORS.primary} />
+                  )}
+                  <Text style={desktopStyles.categoryTitle}>{mainCategory?.name}</Text>
+                </View>
+                <Text style={desktopStyles.resultsCount}>{total} listings found</Text>
+              </View>
+            </View>
+
             <View style={desktopStyles.mainContainerInner}>
             {/* Sidebar */}
             {renderDesktopSidebar()}
