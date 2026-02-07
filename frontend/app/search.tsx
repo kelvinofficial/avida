@@ -33,7 +33,6 @@ export default function SearchScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { isAuthenticated } = useAuthStore();
-  const { isDesktop } = useResponsive();
   
   const [searchQuery, setSearchQuery] = useState((params.q as string) || '');
   const [listings, setListings] = useState<any[]>([]);
