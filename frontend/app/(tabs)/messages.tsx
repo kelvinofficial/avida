@@ -873,25 +873,39 @@ export default function MessagesScreen() {
                       style={desktopStyles.chatUserInfo}
                       onPress={() => router.push(`/profile/public/${selectedConversation.other_user?.user_id}`)}
                     >
-                      {selectedConversation.other_user?.picture ? (
-                        <Image
-                          source={{ uri: selectedConversation.other_user.picture }}
-                          style={desktopStyles.chatAvatar}
-                        />
-                      ) : (
-                        <View style={desktopStyles.chatAvatarPlaceholder}>
-                          <Text style={desktopStyles.chatAvatarInitial}>
-                            {(selectedConversation.other_user?.name || 'U')[0].toUpperCase()}
-                          </Text>
-                        </View>
-                      )}
+                      <View style={desktopStyles.chatAvatarContainer}>
+                        {selectedConversation.other_user?.picture ? (
+                          <Image
+                            source={{ uri: selectedConversation.other_user.picture }}
+                            style={desktopStyles.chatAvatar}
+                          />
+                        ) : (
+                          <View style={desktopStyles.chatAvatarPlaceholder}>
+                            <Text style={desktopStyles.chatAvatarInitial}>
+                              {(selectedConversation.other_user?.name || 'U')[0].toUpperCase()}
+                            </Text>
+                          </View>
+                        )}
+                        {/* Online indicator on avatar */}
+                        {selectedConversation.other_user?.user_id && 
+                          userStatuses[selectedConversation.other_user.user_id]?.is_online && (
+                          <View style={desktopStyles.chatOnlineIndicator} />
+                        )}
+                      </View>
                       <View style={desktopStyles.chatHeaderTextInfo}>
                         <Text style={desktopStyles.chatHeaderName}>
                           {selectedConversation.other_user?.name || 'Unknown User'}
                         </Text>
-                        {selectedConversation.listing && (
-                          <Text style={desktopStyles.chatHeaderListing} numberOfLines={1}>
-                            Re: {selectedConversation.listing.title}
+                        {/* Online/Last Seen Status */}
+                        {selectedConversation.other_user?.user_id && (
+                          <Text style={desktopStyles.chatHeaderStatus}>
+                            {userStatuses[selectedConversation.other_user.user_id]?.is_online 
+                              ? '● Online' 
+                              : userStatuses[selectedConversation.other_user.user_id]?.last_seen
+                                ? `Last seen ${formatLastSeen(userStatuses[selectedConversation.other_user.user_id]?.last_seen)}`
+                                : selectedConversation.listing?.title 
+                                  ? `Re: ${selectedConversation.listing.title}`
+                                  : ''}
                           </Text>
                         )}
                       </View>
