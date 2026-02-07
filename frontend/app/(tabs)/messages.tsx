@@ -1027,6 +1027,7 @@ export default function MessagesScreen() {
           <ConversationItem
             conversation={item}
             onPress={() => router.push(`/chat/${item.id}`)}
+            userStatus={item.other_user?.user_id ? userStatuses[item.other_user.user_id] : undefined}
           />
         )}
         keyExtractor={(item) => item.id}
