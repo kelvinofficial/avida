@@ -620,8 +620,10 @@ export default function CategoryScreen() {
     </View>
   );
 
-  // Desktop view
-  if (isDesktop || isTablet) {
+  // Desktop view - use screen width to force desktop layout on web for any width > 768
+  const isDesktopLayout = isDesktop || isTablet || (Platform.OS === 'web' && screenWidth > 768);
+  
+  if (isDesktopLayout) {
     // Calculate card width dynamically
     const sidebarWidth = 260;
     const sidebarMargin = 24;
