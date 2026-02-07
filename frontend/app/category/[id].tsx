@@ -1488,7 +1488,6 @@ const desktopStyles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    alignItems: 'center',
     paddingBottom: 40,
   },
   // Main Container with Sidebar + Listings
@@ -1498,6 +1497,7 @@ const desktopStyles = StyleSheet.create({
     maxWidth: MAX_CONTENT_WIDTH,
     paddingHorizontal: 24,
     paddingTop: 8,
+    alignSelf: 'center',
   },
   sidebar: {
     width: 260,
