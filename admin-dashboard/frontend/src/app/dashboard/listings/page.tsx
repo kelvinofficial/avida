@@ -44,6 +44,7 @@ import {
   Pause,
   PlayArrow,
   Image as ImageIcon,
+  Download,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Listing, Category } from '@/types';
