@@ -19,6 +19,7 @@ import { useRouter } from 'expo-router';
 import api, { favoritesApi } from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
 import { useResponsive } from '../../src/hooks/useResponsive';
+import { Footer } from '../../src/components/layout';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
