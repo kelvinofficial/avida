@@ -26,7 +26,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { formatDistanceToNow } from 'date-fns';
 import { getSubcategories, SubcategoryConfig, getMainCategory } from '../../src/config/subcategories';
 import { useResponsive } from '../../src/hooks/useResponsive';
-import { ResponsiveLayout } from '../../src/components/layout';
+import { ResponsiveLayout, Footer } from '../../src/components/layout';
 
 const { width } = Dimensions.get('window');
 
