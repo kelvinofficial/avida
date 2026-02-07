@@ -850,6 +850,7 @@ export default function OffersScreen() {
                       onCounter={() => handleCounter(item)}
                       onViewListing={() => router.push(`/listing/${item.listing_id}`)}
                       onViewChat={() => handleViewChat(item)}
+                      isOpeningChat={openingChatForOffer === item.id}
                     />
                   </View>
                 ))}
