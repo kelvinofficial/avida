@@ -45,6 +45,8 @@ import {
   Person,
   Campaign,
 } from '@mui/icons-material';
+import { api } from '@/lib/api';
+import { useLocale } from '@/components/LocaleProvider';
 
 interface Notification {
   id: string;
@@ -61,56 +63,8 @@ interface Notification {
   total_recipients?: number;
 }
 
-const mockNotifications: Notification[] = [
-  {
-    id: 'notif_1',
-    title: 'Welcome to Avida!',
-    message: 'Thank you for joining our marketplace. Start exploring listings today!',
-    type: 'broadcast',
-    target_type: 'all',
-    status: 'sent',
-    sent_at: '2026-02-06T10:00:00Z',
-    created_at: '2026-02-06T09:00:00Z',
-    read_count: 28,
-    total_recipients: 34,
-  },
-  {
-    id: 'notif_2',
-    title: 'Your listing has new views!',
-    message: 'Check out who viewed your listing today.',
-    type: 'targeted',
-    target_type: 'users',
-    target_ids: ['user_1', 'user_2'],
-    status: 'sent',
-    sent_at: '2026-02-05T14:00:00Z',
-    created_at: '2026-02-05T13:00:00Z',
-    read_count: 2,
-    total_recipients: 2,
-  },
-  {
-    id: 'notif_3',
-    title: 'Weekend Sale Reminder',
-    message: 'Don\'t miss out on our weekend deals!',
-    type: 'scheduled',
-    target_type: 'all',
-    scheduled_at: '2026-02-08T09:00:00Z',
-    status: 'scheduled',
-    created_at: '2026-02-07T10:00:00Z',
-    total_recipients: 34,
-  },
-  {
-    id: 'notif_4',
-    title: 'New Features Update',
-    message: 'We\'ve added exciting new features to the app!',
-    type: 'broadcast',
-    target_type: 'all',
-    status: 'draft',
-    created_at: '2026-02-07T12:00:00Z',
-    total_recipients: 34,
-  },
-];
-
 export default function NotificationsPage() {
+  const { t } = useLocale();
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -136,14 +90,17 @@ export default function NotificationsPage() {
   const loadNotifications = useCallback(async () => {
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setNotifications(mockNotifications);
+      const data = await api.getNotifications();
+      // Handle both array and paginated response
+      const notificationList = Array.isArray(data) ? data : (data.items || []);
+      setNotifications(notificationList);
     } catch (err) {
       console.error('Failed to load notifications:', err);
+      setSnackbar({ open: true, message: t('common.error'), severity: 'error' });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     loadNotifications();
@@ -177,46 +134,41 @@ export default function NotificationsPage() {
   const handleSave = async (sendNow: boolean = false) => {
     setActionLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const status = sendNow ? 'sent' : (formData.type === 'scheduled' ? 'scheduled' : 'draft');
+      const notificationData = {
+        title: formData.title,
+        message: formData.message,
+        type: formData.type,
+        target_type: formData.target_type,
+        target_ids: formData.target_ids.length > 0 ? formData.target_ids : undefined,
+        scheduled_at: formData.scheduled_at || undefined,
+      };
       
       if (editingNotif) {
-        setNotifications(prev => prev.map(n => 
-          n.id === editingNotif.id 
-            ? { 
-                ...n, 
-                ...formData, 
-                status,
-                sent_at: sendNow ? new Date().toISOString() : n.sent_at,
-              }
-            : n
-        ));
+        await api.updateNotification(editingNotif.id, notificationData);
+        if (sendNow) {
+          await api.sendNotification(editingNotif.id);
+        }
         setSnackbar({ 
           open: true, 
-          message: sendNow ? 'Notification sent!' : 'Notification updated', 
+          message: sendNow ? t('notifications.sent') + '!' : t('common.success'), 
           severity: 'success' 
         });
       } else {
-        const newNotif: Notification = {
-          id: `notif_${Date.now()}`,
-          ...formData,
-          status,
-          created_at: new Date().toISOString(),
-          sent_at: sendNow ? new Date().toISOString() : undefined,
-          total_recipients: 34,
-          read_count: 0,
-        };
-        setNotifications(prev => [newNotif, ...prev]);
+        const created = await api.createNotification(notificationData);
+        if (sendNow && created.id) {
+          await api.sendNotification(created.id);
+        }
         setSnackbar({ 
           open: true, 
-          message: sendNow ? 'Notification sent!' : 'Notification saved as draft', 
+          message: sendNow ? t('notifications.sent') + '!' : t('notifications.saveDraft'), 
           severity: 'success' 
         });
       }
       setDialogOpen(false);
+      await loadNotifications();
     } catch (err) {
-      setSnackbar({ open: true, message: 'Failed to save notification', severity: 'error' });
+      console.error('Failed to save notification:', err);
+      setSnackbar({ open: true, message: t('common.error'), severity: 'error' });
     } finally {
       setActionLoading(false);
     }
@@ -226,13 +178,14 @@ export default function NotificationsPage() {
     if (!notifToDelete) return;
     setActionLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setNotifications(prev => prev.filter(n => n.id !== notifToDelete.id));
-      setSnackbar({ open: true, message: 'Notification deleted', severity: 'success' });
+      await api.deleteNotification(notifToDelete.id);
+      setSnackbar({ open: true, message: t('common.success'), severity: 'success' });
       setDeleteDialogOpen(false);
       setNotifToDelete(null);
+      await loadNotifications();
     } catch (err) {
-      setSnackbar({ open: true, message: 'Failed to delete notification', severity: 'error' });
+      console.error('Failed to delete notification:', err);
+      setSnackbar({ open: true, message: t('common.error'), severity: 'error' });
     } finally {
       setActionLoading(false);
     }
@@ -241,15 +194,12 @@ export default function NotificationsPage() {
   const handleSendNow = async (notif: Notification) => {
     setActionLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setNotifications(prev => prev.map(n => 
-        n.id === notif.id 
-          ? { ...n, status: 'sent' as const, sent_at: new Date().toISOString() }
-          : n
-      ));
-      setSnackbar({ open: true, message: 'Notification sent!', severity: 'success' });
+      await api.sendNotification(notif.id);
+      setSnackbar({ open: true, message: t('notifications.sent') + '!', severity: 'success' });
+      await loadNotifications();
     } catch (err) {
-      setSnackbar({ open: true, message: 'Failed to send notification', severity: 'error' });
+      console.error('Failed to send notification:', err);
+      setSnackbar({ open: true, message: t('common.error'), severity: 'error' });
     } finally {
       setActionLoading(false);
     }
@@ -297,10 +247,10 @@ export default function NotificationsPage() {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
           <Typography variant="h4" fontWeight={600} gutterBottom>
-            Notifications Center
+            {t('notifications.title')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Create and manage push notifications for your users
+            {t('notifications.subtitle')}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -310,14 +260,14 @@ export default function NotificationsPage() {
             onClick={loadNotifications}
             disabled={loading}
           >
-            Refresh
+            {t('common.refresh')}
           </Button>
           <Button
             variant="contained"
             startIcon={<Add />}
             onClick={() => handleOpenDialog()}
           >
-            Create Notification
+            {t('notifications.createNotification')}
           </Button>
         </Box>
       </Box>
