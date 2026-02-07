@@ -237,7 +237,7 @@ export default function AnalyticsPage() {
 
       {/* User Growth Chart */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} lg={8}>
+        <Grid size={{ xs: 12, lg: 8 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -291,7 +291,7 @@ export default function AnalyticsPage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} lg={4}>
+        <Grid size={{ xs: 12, lg: 4 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
