@@ -249,9 +249,12 @@ export default function SearchScreen() {
 }
 
 const styles = StyleSheet.create({
+  pageContainer: {
+    flex: 1,
+    backgroundColor: '#D0D0D0',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#E8E8E8',
     alignItems: 'center',
   },
   desktopWrapper: {
