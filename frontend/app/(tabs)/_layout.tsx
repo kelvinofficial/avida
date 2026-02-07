@@ -6,13 +6,21 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/store/authStore';
 
+// Check if we're on desktop at module load (for web only)
+const getInitialHideNav = () => {
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    return window.innerWidth > 768;
+  }
+  return Dimensions.get('window').width > 768;
+};
+
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
   
-  // State to track if we should hide bottom nav
-  const [hideBottomNav, setHideBottomNav] = useState(false);
+  // Initialize with the current screen size check
+  const [hideBottomNav, setHideBottomNav] = useState(getInitialHideNav);
 
   useEffect(() => {
     // Check screen width after component mounts
