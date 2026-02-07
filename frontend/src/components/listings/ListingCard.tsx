@@ -21,6 +21,24 @@ const COLORS = {
   border: '#E0E0E0',
 };
 
+// Helper function to format time ago
+const formatTimeAgo = (dateString: string): string => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInMins = Math.floor(diffInMs / (1000 * 60));
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (diffInMins < 1) return 'Just now';
+  if (diffInMins < 60) return `${diffInMins} min ago`;
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+  if (diffInDays < 30) return `${Math.floor(diffInDays / 7)}w ago`;
+  return date.toLocaleDateString();
+};
+
 export interface ListingCardProps {
   listing: any;
   onPress: () => void;
@@ -45,11 +63,22 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
           style={styles.image}
           resizeMode="cover"
         />
-        {listing.featured && (
-          <View style={styles.featuredBadge}>
-            <Text style={styles.featuredText}>TOP</Text>
-          </View>
-        )}
+        {/* Badges - Featured & TOP */}
+        <View style={styles.badgesContainer}>
+          {listing.is_featured && (
+            <View style={styles.featuredBadge}>
+              <Ionicons name="star" size={10} color="#fff" />
+              <Text style={styles.badgeText}>Featured</Text>
+            </View>
+          )}
+          {(listing.is_top || listing.featured) && (
+            <View style={styles.topBadge}>
+              <Ionicons name="arrow-up" size={10} color="#fff" />
+              <Text style={styles.badgeText}>TOP</Text>
+            </View>
+          )}
+        </View>
+        {/* Heart Button */}
         <TouchableOpacity
           style={styles.favoriteButton}
           onPress={(e) => { e.stopPropagation(); onFavorite(); }}
@@ -64,15 +93,17 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
       <View style={styles.cardContent}>
         <Text style={styles.price}>{formatPrice(listing.price)}</Text>
         <Text style={styles.title} numberOfLines={2}>{listing.title}</Text>
+        {/* Location */}
         <View style={styles.locationRow}>
           <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
-          <Text style={styles.location} numberOfLines={1}>{listing.location}</Text>
+          <Text style={styles.location} numberOfLines={1}>
+            {listing.location?.city || listing.location || 'Unknown'}
+          </Text>
         </View>
-        {listing.subcategory && (
-          <View style={styles.subcategoryTag}>
-            <Text style={styles.subcategoryTagText}>{listing.subcategory.replace(/_/g, ' ')}</Text>
-          </View>
-        )}
+        {/* Time Posted */}
+        <Text style={styles.timePosted}>
+          {formatTimeAgo(listing.created_at)}
+        </Text>
       </View>
     </TouchableOpacity>
   );
