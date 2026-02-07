@@ -178,7 +178,7 @@ export default function SearchScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header Wrapper - full width background */}
       <View style={styles.headerWrapper}>
-        <View style={[styles.header, isDesktop && { maxWidth: MAX_CONTENT_WIDTH, width: '100%' }]}>
+        <View style={[styles.header, isDesktop && styles.desktopHeader]}>
           <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={24} color={COLORS.text} />
           </TouchableOpacity>
