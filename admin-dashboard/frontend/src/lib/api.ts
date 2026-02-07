@@ -301,6 +301,16 @@ class ApiClient {
     return data;
   }
 
+  async getNotificationTemplates(category?: string) {
+    const { data } = await this.client.get('/notification-templates', { params: category ? { category } : {} });
+    return data;
+  }
+
+  async getNotificationTemplate(templateId: string) {
+    const { data } = await this.client.get(`/notification-templates/${templateId}`);
+    return data;
+  }
+
   async createNotification(notification: { title: string; message: string; type: string; target_type?: string; target_ids?: string[]; scheduled_at?: string }) {
     const { data } = await this.client.post('/notifications', notification);
     return data;
