@@ -598,10 +598,44 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     overflow: 'hidden',
   },
+  cardImageContainer: {
+    position: 'relative',
+    width: '100%',
+  },
   cardImage: {
     width: '100%',
     height: 140,
     backgroundColor: COLORS.border,
+  },
+  badgesContainer: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    flexDirection: 'row',
+    gap: 4,
+  },
+  featuredBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#F59E0B',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  topBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#EF4444',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '700',
   },
   heartBtn: {
     position: 'absolute',
@@ -619,6 +653,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 13, color: COLORS.text, marginTop: 4, lineHeight: 18 },
   cardMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6 },
   cardLocation: { fontSize: 11, color: COLORS.textSecondary, flex: 1 },
+  timePosted: { fontSize: 10, color: COLORS.textMuted, marginTop: 4 },
   skeletonContainer: { padding: 16 },
   skeletonRow: { flexDirection: 'row', gap: 12, marginBottom: 12 },
   skeletonCard: {
