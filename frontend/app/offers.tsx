@@ -383,6 +383,9 @@ export default function OffersScreen() {
   const [counterPrice, setCounterPrice] = useState('');
   const [counterMessage, setCounterMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  
+  // Chat loading state
+  const [openingChatForOffer, setOpeningChatForOffer] = useState<string | null>(null);
 
   const fetchOffers = useCallback(async () => {
     if (!isAuthenticated) {
