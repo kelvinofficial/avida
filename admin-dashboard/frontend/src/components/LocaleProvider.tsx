@@ -47,7 +47,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setMounted(true);
     const savedLocale = localStorage.getItem('admin-locale') as Locale;
-    if (savedLocale && (savedLocale === 'en' || savedLocale === 'es')) {
+    if (savedLocale && ['en', 'es', 'fr', 'de'].includes(savedLocale)) {
       setLocaleState(savedLocale);
     }
   }, []);
