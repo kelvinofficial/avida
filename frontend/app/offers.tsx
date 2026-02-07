@@ -583,6 +583,71 @@ export default function OffersScreen() {
     );
   }
 
+  // Render Counter Modal (used by both mobile and desktop)
+  const renderCounterModal = () => (
+    <Modal visible={showCounterModal} animationType="slide" presentationStyle="pageSheet">
+      <SafeAreaView style={styles.modalContainer}>
+        <View style={styles.modalHeader}>
+          <TouchableOpacity onPress={() => setShowCounterModal(false)}>
+            <Ionicons name="close" size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text style={styles.modalTitle}>Counter Offer</Text>
+          <View style={{ width: 24 }} />
+        </View>
+
+        {selectedOffer && (
+          <View style={styles.modalContent}>
+            <View style={styles.priceRange}>
+              <View style={styles.priceRangeItem}>
+                <Text style={styles.priceRangeLabel}>Their Offer</Text>
+                <Text style={styles.priceRangeValue}>{formatPrice(selectedOffer.offered_price)}</Text>
+              </View>
+              <Ionicons name="arrow-forward" size={20} color={COLORS.textLight} />
+              <View style={styles.priceRangeItem}>
+                <Text style={styles.priceRangeLabel}>Listed Price</Text>
+                <Text style={styles.priceRangeValue}>{formatPrice(selectedOffer.listed_price)}</Text>
+              </View>
+            </View>
+
+            <Text style={styles.inputLabel}>Your Counter Offer</Text>
+            <View style={styles.priceInputContainer}>
+              <Text style={styles.currencySymbol}>€</Text>
+              <TextInput
+                style={styles.priceInput}
+                placeholder="Enter amount"
+                keyboardType="numeric"
+                value={counterPrice}
+                onChangeText={setCounterPrice}
+              />
+            </View>
+
+            <Text style={styles.inputLabel}>Message (optional)</Text>
+            <TextInput
+              style={styles.messageInput}
+              placeholder="Add a message..."
+              multiline
+              numberOfLines={3}
+              value={counterMessage}
+              onChangeText={setCounterMessage}
+            />
+
+            <TouchableOpacity
+              style={[styles.submitBtn, submitting && styles.submitBtnDisabled]}
+              onPress={submitCounter}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.submitBtnText}>Send Counter Offer</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+      </SafeAreaView>
+    </Modal>
+  );
+
   // Render global desktop header
   const renderGlobalHeader = () => (
     <View style={desktopStyles.globalHeader}>
