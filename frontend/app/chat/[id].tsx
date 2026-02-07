@@ -864,6 +864,8 @@ export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuthStore();
+  const { isDesktop, isTablet, isReady } = useResponsive();
+  const isLargeScreen = isDesktop || isTablet;
 
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
