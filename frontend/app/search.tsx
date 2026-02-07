@@ -275,14 +275,12 @@ const styles = StyleSheet.create({
   desktopHeader: {
     maxWidth: 1280,
     width: '100%',
-    borderWidth: 2,
-    borderColor: 'red',
+    backgroundColor: '#FFD700',
   },
   desktopContentArea: {
     maxWidth: 1280,
     width: '100%',
-    borderWidth: 2,
-    borderColor: 'blue',
+    backgroundColor: '#ADD8E6',
   },
   header: {
     flexDirection: 'row',
