@@ -49,7 +49,8 @@ const COLORS = {
 // Date separator component
 const DateSeparator = ({ date }: { date: string }) => {
   const getLabel = () => {
-    const d = new Date(date);
+    // Ensure the string is treated as UTC if no timezone specified
+    const d = new Date(date.endsWith('Z') ? date : date + 'Z');
     if (isToday(d)) return 'Today';
     if (isYesterday(d)) return 'Yesterday';
     return format(d, 'EEEE, MMMM d');
