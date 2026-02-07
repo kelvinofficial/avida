@@ -263,9 +263,13 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.border,
     alignItems: 'center',
   },
+  contentWrapper: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+  },
   contentArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: 'row',
