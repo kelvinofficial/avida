@@ -2413,4 +2413,16 @@ const desktopStyles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  
+  // Desktop Category Grid - 4 columns
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -8,
+  },
+  categoryCard: {
+    width: '25%',
+    paddingHorizontal: 8,
+    marginBottom: 16,
+  },
 });
