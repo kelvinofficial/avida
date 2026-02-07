@@ -1296,7 +1296,7 @@ const MAX_CONTENT_WIDTH = 1280;
 const desktopStyles = StyleSheet.create({
   pageWrapper: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#1A1A1A', // Dark footer background for full-width effect
   },
   // Row 1: Logo + Auth
   headerRow1: {
