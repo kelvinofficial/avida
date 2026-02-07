@@ -646,13 +646,45 @@ export default function PublicProfileScreen() {
                               style={desktopStyles.listingCard}
                               onPress={() => router.push(getListingRoute(item))}
                             >
-                              <Image
-                                source={{ uri: item.images?.[0] || 'https://via.placeholder.com/150' }}
-                                style={desktopStyles.listingImage}
-                              />
+                              <View style={desktopStyles.listingImageContainer}>
+                                <Image
+                                  source={{ uri: item.images?.[0] || 'https://via.placeholder.com/150' }}
+                                  style={desktopStyles.listingImage}
+                                />
+                                {/* Badges */}
+                                <View style={desktopStyles.listingBadges}>
+                                  {item.is_featured && (
+                                    <View style={desktopStyles.featuredBadge}>
+                                      <Ionicons name="star" size={10} color="#fff" />
+                                      <Text style={desktopStyles.featuredBadgeText}>Featured</Text>
+                                    </View>
+                                  )}
+                                  {item.is_top && (
+                                    <View style={desktopStyles.topBadge}>
+                                      <Ionicons name="arrow-up" size={10} color="#fff" />
+                                      <Text style={desktopStyles.topBadgeText}>TOP</Text>
+                                    </View>
+                                  )}
+                                </View>
+                                {/* Heart Icon */}
+                                <TouchableOpacity style={desktopStyles.heartButton}>
+                                  <Ionicons name="heart-outline" size={20} color="#fff" />
+                                </TouchableOpacity>
+                              </View>
                               <View style={desktopStyles.listingInfo}>
                                 <Text style={desktopStyles.listingPrice}>€{item.price?.toLocaleString()}</Text>
                                 <Text style={desktopStyles.listingTitle} numberOfLines={2}>{item.title}</Text>
+                                {/* Location */}
+                                {item.location && (
+                                  <View style={desktopStyles.listingLocation}>
+                                    <Ionicons name="location-outline" size={12} color={COLORS.textSecondary} />
+                                    <Text style={desktopStyles.listingLocationText} numberOfLines={1}>{item.location}</Text>
+                                  </View>
+                                )}
+                                {/* Time Posted */}
+                                <Text style={desktopStyles.listingTime}>
+                                  {formatTimeAgo(item.created_at)}
+                                </Text>
                               </View>
                             </TouchableOpacity>
                           </View>
