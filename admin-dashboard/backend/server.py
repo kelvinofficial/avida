@@ -1830,9 +1830,6 @@ async def health_check():
     except Exception as e:
         return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
 
-# Include router
-app.include_router(api_router)
-
 # Root redirect
 @app.get("/")
 async def root():
