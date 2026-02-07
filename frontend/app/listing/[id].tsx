@@ -2376,6 +2376,7 @@ const desktopStyles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 24,
     marginTop: 24,
+    alignSelf: 'center',
   },
   // Modal Overlay
   modalOverlay: {
