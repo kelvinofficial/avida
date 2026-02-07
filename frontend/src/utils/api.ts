@@ -218,6 +218,14 @@ export const usersApi = {
   unblock: async (userId: string) => {
     const response = await api.post(`/users/unblock/${userId}`);
     return response.data;
+  },
+  getStatus: async (userId: string) => {
+    const response = await api.get(`/users/${userId}/status`);
+    return response.data;
+  },
+  getStatusBatch: async (userIds: string[]) => {
+    const response = await api.post('/users/status/batch', userIds);
+    return response.data;
   }
 };
 
