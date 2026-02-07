@@ -489,23 +489,7 @@ export default function CategoryScreen() {
     </Modal>
   );
 
-  if (loading && listings.length === 0) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Loading...</Text>
-          <View style={{ width: 40 }} />
-        </View>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
+  // Remove initial loading state - render immediately with empty content
   const mainCategory = getMainCategory(categoryId);
 
   // Desktop Sidebar Component - Only subcategories and filters
