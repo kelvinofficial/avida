@@ -818,6 +818,8 @@ export default function HomeScreen() {
       <View style={[styles.listContent, (isDesktop || isTablet) && { paddingHorizontal: 0 }]}>
         {renderGrid()}
       </View>
+      {/* Footer for Desktop & Tablet */}
+      {(isDesktop || isTablet) && <Footer isTablet={isTablet && !isDesktop} />}
     </ScrollView>
   );
 
