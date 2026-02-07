@@ -5561,8 +5561,8 @@ ADMIN_FRONTEND_URL = "http://localhost:3001"
 async def admin_frontend_proxy(request: Request, path: str):
     """Proxy admin frontend requests to Next.js dev server"""
     async with httpx.AsyncClient(timeout=60.0, follow_redirects=True) as client:
-        # Build the target URL - include /admin-ui prefix for Next.js basePath
-        url = f"{ADMIN_FRONTEND_URL}/admin-ui/{path}" if path else f"{ADMIN_FRONTEND_URL}/admin-ui"
+        # Build the target URL - include /api/admin-ui prefix for Next.js basePath
+        url = f"{ADMIN_FRONTEND_URL}/api/admin-ui/{path}" if path else f"{ADMIN_FRONTEND_URL}/api/admin-ui"
         
         # Get query string
         query_string = str(request.query_params)
