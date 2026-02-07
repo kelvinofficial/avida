@@ -816,7 +816,7 @@ export default function ListingDetailScreen() {
 
   // ============ DESKTOP VIEW ============
   if (isDesktop || isTablet) {
-    const MAX_CONTENT_WIDTH = 1200;
+    const MAX_CONTENT_WIDTH = 1280;
     const imageGalleryWidth = 650; // Increased by 30% from 500
 
     return (
