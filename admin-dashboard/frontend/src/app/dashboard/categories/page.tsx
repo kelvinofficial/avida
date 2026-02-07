@@ -506,6 +506,14 @@ export default function CategoriesPage() {
             </Button>
           )}
           <Button
+            variant="outlined"
+            startIcon={<Download />}
+            onClick={exportToCSV}
+            disabled={flatCategories.length === 0}
+          >
+            Export CSV
+          </Button>
+          <Button
             variant="contained"
             startIcon={<Add />}
             onClick={() => handleOpenDialog()}
