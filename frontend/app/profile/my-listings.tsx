@@ -97,15 +97,32 @@ const DesktopListingCard = ({
     onPress={onPress}
     activeOpacity={0.8}
   >
-    <Image
-      source={{ uri: item.images?.[0] || 'https://via.placeholder.com/200' }}
-      style={desktopStyles.cardImage}
-    />
-    {/* Status Badge */}
-    <View style={[desktopStyles.statusOverlay, { backgroundColor: getStatusColor(item.status) + 'E6' }]}>
-      <Text style={desktopStyles.statusOverlayText}>
-        {item.status?.charAt(0).toUpperCase() + item.status?.slice(1)}
-      </Text>
+    <View style={desktopStyles.cardImageContainer}>
+      <Image
+        source={{ uri: item.images?.[0] || 'https://via.placeholder.com/200' }}
+        style={desktopStyles.cardImage}
+      />
+      {/* Top Left Badges */}
+      <View style={desktopStyles.cardBadges}>
+        {item.is_featured && (
+          <View style={desktopStyles.featuredBadge}>
+            <Ionicons name="star" size={10} color="#fff" />
+            <Text style={desktopStyles.badgeText}>Featured</Text>
+          </View>
+        )}
+        {item.is_top && (
+          <View style={desktopStyles.topBadge}>
+            <Ionicons name="arrow-up" size={10} color="#fff" />
+            <Text style={desktopStyles.badgeText}>TOP</Text>
+          </View>
+        )}
+      </View>
+      {/* Status Badge */}
+      <View style={[desktopStyles.statusOverlay, { backgroundColor: getStatusColor(item.status) + 'E6' }]}>
+        <Text style={desktopStyles.statusOverlayText}>
+          {item.status?.charAt(0).toUpperCase() + item.status?.slice(1)}
+        </Text>
+      </View>
     </View>
     
     {/* Actions Menu */}
@@ -127,20 +144,29 @@ const DesktopListingCard = ({
       <Text style={desktopStyles.cardPrice}>€{item.price?.toLocaleString()}</Text>
       <Text style={desktopStyles.cardTitle} numberOfLines={2}>{item.title}</Text>
       
-      <View style={desktopStyles.cardMeta}>
-        <Text style={desktopStyles.cardDate}>
-          {new Date(item.created_at).toLocaleDateString()}
-        </Text>
-      </View>
+      {/* Location */}
+      {item.location && (
+        <View style={desktopStyles.cardLocation}>
+          <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
+          <Text style={desktopStyles.cardLocationText} numberOfLines={1}>
+            {item.location?.city || item.location}
+          </Text>
+        </View>
+      )}
+      
+      {/* Time Posted */}
+      <Text style={desktopStyles.cardDate}>
+        {formatTimeAgo(item.created_at)}
+      </Text>
       
       <View style={desktopStyles.cardStats}>
         <View style={desktopStyles.cardStat}>
           <Ionicons name="eye-outline" size={14} color={COLORS.textSecondary} />
-          <Text style={desktopStyles.cardStatText}>{item.views || 0} views</Text>
+          <Text style={desktopStyles.cardStatText}>{item.views || 0}</Text>
         </View>
         <View style={desktopStyles.cardStat}>
           <Ionicons name="heart-outline" size={14} color={COLORS.textSecondary} />
-          <Text style={desktopStyles.cardStatText}>{item.favorites_count || 0} saves</Text>
+          <Text style={desktopStyles.cardStatText}>{item.favorites_count || 0}</Text>
         </View>
       </View>
     </View>
