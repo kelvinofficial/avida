@@ -649,10 +649,7 @@ export default function MyListingsScreen() {
         onEndReachedThreshold={0.5}
         ListEmptyComponent={!loading ? <EmptyState status={activeTab} /> : null}
         ListFooterComponent={null}
-            ) : null
-          }
-        />
-      )}
+      />
     </SafeAreaView>
   );
 }
