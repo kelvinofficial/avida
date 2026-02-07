@@ -1581,6 +1581,9 @@ const desktopStyles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
+  chatAvatarContainer: {
+    position: 'relative',
+  },
   chatAvatar: {
     width: 44,
     height: 44,
