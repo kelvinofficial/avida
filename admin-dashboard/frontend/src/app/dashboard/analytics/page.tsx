@@ -197,7 +197,7 @@ export default function AnalyticsPage() {
 
       {/* KPI Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="Total Users"
             value={overview?.users.total.toLocaleString() || 0}
@@ -206,7 +206,7 @@ export default function AnalyticsPage() {
             color="#2196F3"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="Active Listings"
             value={overview?.listings.active.toLocaleString() || 0}
@@ -215,7 +215,7 @@ export default function AnalyticsPage() {
             color="#4CAF50"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="Total Views"
             value={((overview?.listings.total || 0) * 150).toLocaleString()}
@@ -224,7 +224,7 @@ export default function AnalyticsPage() {
             color="#9C27B0"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="Conversion Rate"
             value="3.2%"
