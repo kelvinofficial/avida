@@ -194,6 +194,18 @@ Build a responsive desktop version of the marketplace application. The applicati
 - TOP badge (red with arrow icon)
 
 ### February 7, 2026
+**Sign Out Page Created for Desktop**
+- Created dedicated Sign Out confirmation page (`/app/frontend/app/signout.tsx`)
+- Desktop view features:
+  - Clean centered card with sign out icon
+  - User info display (name, email, avatar)
+  - Warning message about re-authentication requirement
+  - Cancel and Sign Out buttons side by side
+  - Help and Back to Settings links
+- Mobile view with full-width buttons (Sign Out / Cancel stacked)
+- Settings page now navigates to `/signout` instead of using browser confirm dialog
+- Both views have consistent styling with the app theme
+
 **Bottom Navigation Bar Hidden on Tablet/Desktop**
 - Fixed the bottom navigation tab bar to be hidden on tablet and desktop screen sizes (> 768px)
 - Modified `/app/frontend/app/(tabs)/_layout.tsx` to use a client-side mounting pattern
