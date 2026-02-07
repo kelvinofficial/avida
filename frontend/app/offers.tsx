@@ -864,7 +864,7 @@ export default function OffersScreen() {
           style={[styles.roleBtn, role === 'buyer' && styles.roleBtnActive]}
           onPress={() => setRole('buyer')}
         >
-          <Ionicons name="upload-outline" size={18} color={role === 'buyer' ? '#fff' : COLORS.textSecondary} />
+          <Ionicons name="paper-plane-outline" size={18} color={role === 'buyer' ? '#fff' : COLORS.textSecondary} />
           <Text style={[styles.roleBtnText, role === 'buyer' && styles.roleBtnTextActive]}>Sent</Text>
         </TouchableOpacity>
       </View>
