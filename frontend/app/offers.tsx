@@ -110,7 +110,8 @@ const DesktopOfferCard = ({
   onReject, 
   onCounter,
   onViewListing,
-  onViewChat 
+  onViewChat,
+  isOpeningChat,
 }: {
   offer: Offer;
   isSeller: boolean;
@@ -119,6 +120,7 @@ const DesktopOfferCard = ({
   onCounter: () => void;
   onViewListing: () => void;
   onViewChat: () => void;
+  isOpeningChat?: boolean;
 }) => {
   const statusConfig = getStatusConfig(offer.status);
   const savings = offer.listed_price - offer.offered_price;
