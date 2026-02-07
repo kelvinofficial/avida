@@ -224,6 +224,91 @@ export default function LoginScreen() {
 
   // Welcome Back screen shown after sign out
   if (showWelcomeBack) {
+    // Desktop version of See You Soon screen
+    if (isLargeScreen) {
+      return (
+        <View style={desktopStyles.seeYouContainer}>
+          {/* Header */}
+          <View style={desktopStyles.seeYouHeader}>
+            <View style={desktopStyles.seeYouHeaderInner}>
+              <TouchableOpacity style={desktopStyles.logoContainer} onPress={handleClose}>
+                <View style={desktopStyles.logoIcon}>
+                  <Ionicons name="storefront" size={22} color="#fff" />
+                </View>
+                <Text style={desktopStyles.logoText}>avida</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Main Content */}
+          <View style={desktopStyles.seeYouMain}>
+            <View style={desktopStyles.seeYouCard}>
+              {/* Gradient Background */}
+              <LinearGradient
+                colors={[COLORS.gradientStart, COLORS.gradientEnd]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={desktopStyles.seeYouGradient}
+              >
+                {/* Decorative circles */}
+                <View style={[styles.decorCircle, { width: 120, height: 120, top: -30, right: -30 }]} />
+                <View style={[styles.decorCircle, { width: 80, height: 80, bottom: 40, left: -20 }]} />
+
+                {/* Content */}
+                <View style={desktopStyles.seeYouContent}>
+                  <View style={desktopStyles.seeYouIconContainer}>
+                    <Ionicons name="hand-right" size={56} color="#fff" />
+                  </View>
+                  <Text style={desktopStyles.seeYouTitle}>See You Soon!</Text>
+                  <Text style={desktopStyles.seeYouSubtitle}>
+                    You've been signed out successfully.{'\n'}Come back anytime!
+                  </Text>
+
+                  {/* Sign In Options */}
+                  <View style={desktopStyles.seeYouOptions}>
+                    <TouchableOpacity 
+                      style={desktopStyles.seeYouPrimaryBtn}
+                      onPress={() => setShowWelcomeBack(false)}
+                    >
+                      <Ionicons name="log-in-outline" size={22} color={COLORS.primary} />
+                      <Text style={desktopStyles.seeYouPrimaryBtnText}>Sign In Again</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                      style={desktopStyles.seeYouGoogleBtn}
+                      onPress={handleGoogleLogin}
+                      disabled={loading}
+                    >
+                      <Image 
+                        source={{ uri: 'https://developers.google.com/identity/images/g-logo.png' }}
+                        style={styles.googleIconSmall}
+                      />
+                      <Text style={desktopStyles.seeYouGoogleBtnText}>Continue with Google</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                      style={desktopStyles.seeYouSecondaryBtn}
+                      onPress={handleClose}
+                    >
+                      <Ionicons name="home-outline" size={20} color="#fff" />
+                      <Text style={desktopStyles.seeYouSecondaryBtnText}>Browse as Guest</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Footer branding */}
+                <View style={desktopStyles.seeYouFooter}>
+                  <Ionicons name="storefront" size={18} color="rgba(255,255,255,0.7)" />
+                  <Text style={desktopStyles.seeYouFooterText}>avida marketplace</Text>
+                </View>
+              </LinearGradient>
+            </View>
+          </View>
+        </View>
+      );
+    }
+
+    // Mobile version
     return (
       <SafeAreaView style={styles.container}>
         <LinearGradient
