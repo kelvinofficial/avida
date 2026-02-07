@@ -929,6 +929,10 @@ const desktopStyles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
+  cardImageContainer: {
+    position: 'relative',
+    width: '100%',
+  },
   cardImage: { height: 180 },
   heartBtn: {
     width: 36,
@@ -941,6 +945,7 @@ const desktopStyles = StyleSheet.create({
   cardPrice: { fontSize: 18 },
   cardTitle: { fontSize: 15, lineHeight: 20 },
   cardLocation: { fontSize: 13 },
+  timePosted: { fontSize: 11, marginTop: 6 },
   
   // Skeleton
   skeletonCard: { borderRadius: 16 },
