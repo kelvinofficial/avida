@@ -1682,11 +1682,11 @@ const desktopStyles = StyleSheet.create({
     flexDirection: 'row',
   },
   
-  // Sidebar (Conversation List) - 25% width
+  // Sidebar (Conversation List) - 33% width
   sidebarContainer: {
-    width: '25%',
-    minWidth: 280,
-    maxWidth: 350,
+    width: '33%',
+    minWidth: 300,
+    maxWidth: 420,
     backgroundColor: COLORS.surface,
     borderRightWidth: 1,
     borderRightColor: COLORS.border,
