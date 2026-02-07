@@ -2028,8 +2028,11 @@ const desktopStyles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingVertical: 24,
-    paddingBottom: 0, // Remove padding at bottom for full-width footer
+    paddingTop: 24,
+  },
+  contentWrapper: {
+    backgroundColor: COLORS.background,
+    paddingBottom: 40,
   },
   // Main Container
   mainContainer: {
