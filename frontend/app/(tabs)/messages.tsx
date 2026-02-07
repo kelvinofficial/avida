@@ -998,7 +998,7 @@ export default function MessagesScreen() {
                                   desktopStyles.messageTime,
                                   isOwn && desktopStyles.messageTimeOwn,
                                 ]}>
-                                  {msg.created_at ? format(new Date(msg.created_at), 'HH:mm') : ''}
+                                  {formatMessageTime(msg.created_at)}
                                 </Text>
                               </View>
                             </View>
