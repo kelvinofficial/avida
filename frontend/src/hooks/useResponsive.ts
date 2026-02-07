@@ -12,6 +12,7 @@ export interface ResponsiveInfo {
   isDesktop: boolean;
   isWeb: boolean;
   columns: number;
+  isReady: boolean;
 }
 
 const BREAKPOINTS = {
@@ -38,8 +39,12 @@ export const useResponsive = (): ResponsiveInfo => {
     const { width, height } = Dimensions.get('window');
     return { width, height };
   });
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
+    // Mark as ready after first render to prevent layout flash
+    setIsReady(true);
+    
     const subscription = Dimensions.addEventListener('change', ({ window }) => {
       setDimensions({ width: window.width, height: window.height });
     });
@@ -59,6 +64,7 @@ export const useResponsive = (): ResponsiveInfo => {
     isDesktop: screenSize === 'desktop',
     isWeb,
     columns: getColumns(screenSize),
+    isReady,
   };
 };
 
