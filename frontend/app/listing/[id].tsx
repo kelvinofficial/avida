@@ -1912,18 +1912,16 @@ const styles = StyleSheet.create({
 const desktopStyles = StyleSheet.create({
   pageWrapper: {
     flex: 1,
-    backgroundColor: '#1A1A1A', // Footer background color for full-width effect
+    backgroundColor: COLORS.background, // Changed from #1A1A1A to prevent dark gaps
   },
   // Header Section - wraps header and breadcrumb
   headerSection: {
     backgroundColor: COLORS.surface,
-    paddingBottom: 1,
   },
   // Main Content Area - wraps scroll container
   mainContentArea: {
     flex: 1,
     backgroundColor: COLORS.background,
-    marginTop: -1,
   },
   // Header Row 1
   headerRow1: {
