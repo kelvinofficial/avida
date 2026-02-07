@@ -1545,6 +1545,14 @@ const desktopStyles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
+  },
+  globalHeaderRow1: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  globalHeaderRow2: {
     paddingVertical: 12,
     paddingHorizontal: 24,
   },
@@ -1622,6 +1630,38 @@ const desktopStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#fff',
+  },
+  
+  // Search and Location in header row 2
+  searchField: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginRight: 12,
+    gap: 10,
+  },
+  searchPlaceholder: {
+    fontSize: 15,
+    color: COLORS.textSecondary,
+  },
+  locationChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 6,
+  },
+  locationText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.text,
+    maxWidth: 120,
   },
   
   // Page wrapper for max-width constraint
