@@ -691,222 +691,264 @@ export default function MessagesScreen() {
 
   const emptyState = getEmptyState();
 
-  // Desktop: Master-Detail Layout
+  // Desktop: Master-Detail Layout with Embedded Chat
   if (isLargeScreen) {
     return (
       <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
-        <View style={desktopStyles.masterDetailContainer}>
-          {/* Left Sidebar - Conversation List */}
-          <View style={desktopStyles.sidebarContainer}>
-            {/* Sidebar Header */}
-            <View style={desktopStyles.sidebarHeader}>
-              <Text style={desktopStyles.sidebarTitle}>Messages</Text>
-              <TouchableOpacity style={desktopStyles.composeBtn}>
-                <Ionicons name="create-outline" size={22} color={COLORS.primary} />
-              </TouchableOpacity>
-            </View>
-
-            {/* Search Bar */}
-            <View style={desktopStyles.searchContainer}>
-              <Ionicons name="search" size={18} color={COLORS.textSecondary} />
-              <TextInput
-                style={desktopStyles.searchInput}
-                placeholder="Search conversations..."
-                placeholderTextColor={COLORS.textMuted}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
-              {searchQuery.length > 0 && (
-                <TouchableOpacity onPress={() => setSearchQuery('')}>
-                  <Ionicons name="close-circle" size={18} color={COLORS.textSecondary} />
+        <View style={desktopStyles.pageWrapper}>
+          <View style={desktopStyles.masterDetailContainer}>
+            {/* Left Sidebar - Conversation List (25% width) */}
+            <View style={desktopStyles.sidebarContainer}>
+              {/* Sidebar Header - NOT sticky */}
+              <View style={desktopStyles.sidebarHeader}>
+                <Text style={desktopStyles.sidebarTitle}>Messages</Text>
+                <TouchableOpacity style={desktopStyles.composeBtn}>
+                  <Ionicons name="create-outline" size={20} color={COLORS.primary} />
                 </TouchableOpacity>
-              )}
+              </View>
+
+              {/* Search Bar */}
+              <View style={desktopStyles.searchContainer}>
+                <Ionicons name="search" size={16} color={COLORS.textSecondary} />
+                <TextInput
+                  style={desktopStyles.searchInput}
+                  placeholder="Search..."
+                  placeholderTextColor={COLORS.textMuted}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity onPress={() => setSearchQuery('')}>
+                    <Ionicons name="close-circle" size={16} color={COLORS.textSecondary} />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* Filter Chips - All visible, wrapped */}
+              <View style={desktopStyles.filterChipsContainer}>
+                {[
+                  { id: 'all', label: 'All', icon: 'chatbubbles-outline' },
+                  { id: 'unread', label: 'Unread', icon: 'mail-unread-outline', badge: unreadCount },
+                  { id: 'buying', label: 'Buying', icon: 'cart-outline' },
+                  { id: 'selling', label: 'Selling', icon: 'pricetag-outline' },
+                ].map((filter) => (
+                  <TouchableOpacity
+                    key={filter.id}
+                    style={[
+                      desktopStyles.filterChip,
+                      activeFilter === filter.id && desktopStyles.filterChipActive,
+                    ]}
+                    onPress={() => setActiveFilter(filter.id)}
+                  >
+                    <Ionicons
+                      name={filter.icon as any}
+                      size={14}
+                      color={activeFilter === filter.id ? COLORS.primary : COLORS.textSecondary}
+                    />
+                    <Text style={[
+                      desktopStyles.filterChipText,
+                      activeFilter === filter.id && desktopStyles.filterChipTextActive,
+                    ]}>
+                      {filter.label}
+                    </Text>
+                    {filter.badge && filter.badge > 0 && (
+                      <View style={desktopStyles.filterChipBadge}>
+                        <Text style={desktopStyles.filterChipBadgeText}>
+                          {filter.badge > 99 ? '99+' : filter.badge}
+                        </Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Conversation List */}
+              <FlatList
+                data={filteredConversations}
+                renderItem={({ item }) => (
+                  <ConversationItem
+                    conversation={item}
+                    onPress={() => handleSelectConversation(item)}
+                    isSelected={selectedConversation?.id === item.id}
+                    isDesktop={true}
+                  />
+                )}
+                keyExtractor={(item) => item.id}
+                ListEmptyComponent={
+                  <View style={desktopStyles.sidebarEmptyState}>
+                    <Ionicons name={emptyState.icon as any} size={32} color={COLORS.textMuted} />
+                    <Text style={desktopStyles.sidebarEmptyTitle}>{emptyState.title}</Text>
+                    <Text style={desktopStyles.sidebarEmptyDesc}>{emptyState.description}</Text>
+                  </View>
+                }
+                contentContainerStyle={desktopStyles.conversationList}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    colors={[COLORS.primary]}
+                    tintColor={COLORS.primary}
+                  />
+                }
+                ItemSeparatorComponent={() => <View style={desktopStyles.listSeparator} />}
+                showsVerticalScrollIndicator={false}
+              />
             </View>
 
-            {/* Filter Tabs */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={desktopStyles.filterScroll}>
-              <FilterTabs
-                activeFilter={activeFilter}
-                onFilterChange={setActiveFilter}
-                unreadCount={unreadCount}
-              />
-            </ScrollView>
-
-            {/* Conversation List */}
-            <FlatList
-              data={filteredConversations}
-              renderItem={({ item }) => (
-                <ConversationItem
-                  conversation={item}
-                  onPress={() => setSelectedConversation(item)}
-                  isSelected={selectedConversation?.id === item.id}
-                  isDesktop={true}
-                />
-              )}
-              keyExtractor={(item) => item.id}
-              ListEmptyComponent={
-                <View style={desktopStyles.sidebarEmptyState}>
-                  <Ionicons name={emptyState.icon as any} size={40} color={COLORS.textMuted} />
-                  <Text style={desktopStyles.sidebarEmptyTitle}>{emptyState.title}</Text>
-                  <Text style={desktopStyles.sidebarEmptyDesc}>{emptyState.description}</Text>
-                </View>
-              }
-              contentContainerStyle={desktopStyles.conversationList}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                  colors={[COLORS.primary]}
-                  tintColor={COLORS.primary}
-                />
-              }
-              ItemSeparatorComponent={() => <View style={desktopStyles.listSeparator} />}
-              showsVerticalScrollIndicator={false}
-            />
-          </View>
-
-          {/* Right Panel - Chat Detail or Placeholder */}
-          <View style={desktopStyles.detailContainer}>
-            {selectedConversation ? (
-              // Selected conversation - show chat preview with link to full chat
-              <View style={desktopStyles.chatPreviewContainer}>
-                {/* Chat Header */}
-                <View style={desktopStyles.chatHeader}>
-                  {selectedConversation.other_user?.picture ? (
-                    <Image
-                      source={{ uri: selectedConversation.other_user.picture }}
-                      style={desktopStyles.chatAvatar}
-                    />
-                  ) : (
-                    <View style={desktopStyles.chatAvatarPlaceholder}>
-                      <Text style={desktopStyles.chatAvatarInitial}>
-                        {(selectedConversation.other_user?.name || 'U')[0].toUpperCase()}
-                      </Text>
+            {/* Right Panel - Full Chat View */}
+            <View style={desktopStyles.chatContainer}>
+              {selectedConversation ? (
+                <View style={desktopStyles.chatWrapper}>
+                  {/* Chat Header */}
+                  <View style={desktopStyles.chatHeader}>
+                    <TouchableOpacity
+                      style={desktopStyles.chatUserInfo}
+                      onPress={() => router.push(`/profile/public/${selectedConversation.other_user?.user_id}`)}
+                    >
+                      {selectedConversation.other_user?.picture ? (
+                        <Image
+                          source={{ uri: selectedConversation.other_user.picture }}
+                          style={desktopStyles.chatAvatar}
+                        />
+                      ) : (
+                        <View style={desktopStyles.chatAvatarPlaceholder}>
+                          <Text style={desktopStyles.chatAvatarInitial}>
+                            {(selectedConversation.other_user?.name || 'U')[0].toUpperCase()}
+                          </Text>
+                        </View>
+                      )}
+                      <View style={desktopStyles.chatHeaderTextInfo}>
+                        <Text style={desktopStyles.chatHeaderName}>
+                          {selectedConversation.other_user?.name || 'Unknown User'}
+                        </Text>
+                        {selectedConversation.listing && (
+                          <Text style={desktopStyles.chatHeaderListing} numberOfLines={1}>
+                            Re: {selectedConversation.listing.title}
+                          </Text>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                    <View style={desktopStyles.chatHeaderActions}>
+                      {selectedConversation.listing && (
+                        <TouchableOpacity
+                          style={desktopStyles.viewListingBtn}
+                          onPress={() => router.push(`/listing/${selectedConversation.listing!.id}`)}
+                        >
+                          <Ionicons name="eye-outline" size={16} color={COLORS.primary} />
+                          <Text style={desktopStyles.viewListingBtnText}>View Listing</Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
-                  )}
-                  <View style={desktopStyles.chatHeaderInfo}>
-                    <Text style={desktopStyles.chatHeaderName}>
-                      {selectedConversation.other_user?.name || 'Unknown User'}
-                    </Text>
-                    <Text style={desktopStyles.chatHeaderStatus}>
-                      {selectedConversation.listing?.title || 'Direct Message'}
-                    </Text>
                   </View>
-                  <TouchableOpacity
-                    style={desktopStyles.openChatBtn}
-                    onPress={() => router.push(`/chat/${selectedConversation.id}`)}
-                  >
-                    <Ionicons name="open-outline" size={18} color="#fff" />
-                    <Text style={desktopStyles.openChatBtnText}>Open Chat</Text>
-                  </TouchableOpacity>
-                </View>
 
-                {/* Listing Banner (if applicable) */}
-                {selectedConversation.listing && (
-                  <TouchableOpacity
-                    style={desktopStyles.listingBanner}
-                    onPress={() => router.push(`/listing/${selectedConversation.listing!.id}`)}
-                  >
-                    {selectedConversation.listing.images?.[0] && (
-                      <Image
-                        source={{ 
-                          uri: selectedConversation.listing.images[0].startsWith('data:') 
-                            ? selectedConversation.listing.images[0] 
-                            : selectedConversation.listing.images[0].startsWith('http')
-                              ? selectedConversation.listing.images[0]
-                              : `data:image/jpeg;base64,${selectedConversation.listing.images[0]}`
+                  {/* Chat Messages */}
+                  <View style={desktopStyles.chatMessagesArea}>
+                    {chatLoading ? (
+                      <View style={desktopStyles.chatLoadingContainer}>
+                        <ActivityIndicator size="large" color={COLORS.primary} />
+                        <Text style={desktopStyles.chatLoadingText}>Loading messages...</Text>
+                      </View>
+                    ) : (
+                      <FlatList
+                        ref={chatListRef}
+                        data={chatMessages}
+                        renderItem={({ item: msg }) => {
+                          const isOwn = msg.sender_id === user?.user_id;
+                          return (
+                            <View style={[
+                              desktopStyles.messageBubbleRow,
+                              isOwn ? desktopStyles.messageBubbleRowOwn : desktopStyles.messageBubbleRowOther,
+                            ]}>
+                              <View style={[
+                                desktopStyles.messageBubble,
+                                isOwn ? desktopStyles.messageBubbleOwn : desktopStyles.messageBubbleOther,
+                              ]}>
+                                <Text style={[
+                                  desktopStyles.messageText,
+                                  isOwn && desktopStyles.messageTextOwn,
+                                ]}>
+                                  {msg.content}
+                                </Text>
+                                <Text style={[
+                                  desktopStyles.messageTime,
+                                  isOwn && desktopStyles.messageTimeOwn,
+                                ]}>
+                                  {msg.created_at ? format(new Date(msg.created_at), 'HH:mm') : ''}
+                                </Text>
+                              </View>
+                            </View>
+                          );
                         }}
-                        style={desktopStyles.listingBannerImage}
+                        keyExtractor={(item) => item.id}
+                        contentContainerStyle={desktopStyles.messagesListContent}
+                        showsVerticalScrollIndicator={false}
+                        ListEmptyComponent={
+                          <View style={desktopStyles.noMessagesContainer}>
+                            <Ionicons name="chatbubble-ellipses-outline" size={48} color={COLORS.textMuted} />
+                            <Text style={desktopStyles.noMessagesText}>No messages yet</Text>
+                            <Text style={desktopStyles.noMessagesSubtext}>Start the conversation!</Text>
+                          </View>
+                        }
                       />
                     )}
-                    <View style={desktopStyles.listingBannerInfo}>
-                      <Text style={desktopStyles.listingBannerTitle}>
-                        {selectedConversation.listing.title}
-                      </Text>
-                      <Text style={desktopStyles.listingBannerPrice}>
-                        €{selectedConversation.listing.price?.toLocaleString()}
-                      </Text>
-                    </View>
-                    <View style={desktopStyles.listingBannerAction}>
-                      <Text style={desktopStyles.listingBannerActionText}>View Listing</Text>
-                      <Ionicons name="chevron-forward" size={14} color={COLORS.primary} />
-                    </View>
-                  </TouchableOpacity>
-                )}
+                  </View>
 
-                {/* Conversation Summary */}
-                <View style={desktopStyles.conversationSummary}>
-                  <View style={desktopStyles.summaryItem}>
-                    <Ionicons name="chatbubble-outline" size={20} color={COLORS.primary} />
-                    <Text style={desktopStyles.summaryLabel}>Last Message</Text>
-                    <Text style={desktopStyles.summaryValue} numberOfLines={2}>
-                      {selectedConversation.last_message || 'No messages yet'}
-                    </Text>
+                  {/* Message Input */}
+                  <View style={desktopStyles.chatInputContainer}>
+                    <TextInput
+                      style={desktopStyles.chatInput}
+                      placeholder="Type a message..."
+                      placeholderTextColor={COLORS.textMuted}
+                      value={newMessage}
+                      onChangeText={setNewMessage}
+                      multiline
+                      maxLength={1000}
+                      onSubmitEditing={handleSendMessage}
+                    />
+                    <TouchableOpacity
+                      style={[
+                        desktopStyles.sendBtn,
+                        (!newMessage.trim() || sending) && desktopStyles.sendBtnDisabled,
+                      ]}
+                      onPress={handleSendMessage}
+                      disabled={!newMessage.trim() || sending}
+                    >
+                      {sending ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                      ) : (
+                        <Ionicons name="send" size={20} color="#fff" />
+                      )}
+                    </TouchableOpacity>
                   </View>
-                  <View style={desktopStyles.summaryItem}>
-                    <Ionicons name="time-outline" size={20} color={COLORS.primary} />
-                    <Text style={desktopStyles.summaryLabel}>Last Active</Text>
-                    <Text style={desktopStyles.summaryValue}>
-                      {selectedConversation.last_message_time 
-                        ? getTimeLabel(selectedConversation.last_message_time) 
-                        : 'Never'}
-                    </Text>
+                </View>
+              ) : (
+                // No conversation selected
+                <View style={desktopStyles.emptyDetailContainer}>
+                  <View style={desktopStyles.emptyDetailIcon}>
+                    <Ionicons name="chatbubbles-outline" size={56} color={COLORS.primary} />
                   </View>
-                  {selectedConversation.unread > 0 && (
-                    <View style={desktopStyles.summaryItem}>
-                      <Ionicons name="mail-unread-outline" size={20} color={COLORS.unread} />
-                      <Text style={desktopStyles.summaryLabel}>Unread</Text>
-                      <Text style={[desktopStyles.summaryValue, { color: COLORS.unread, fontWeight: '700' }]}>
-                        {selectedConversation.unread} message{selectedConversation.unread > 1 ? 's' : ''}
-                      </Text>
-                    </View>
+                  <Text style={desktopStyles.emptyDetailTitle}>Select a Conversation</Text>
+                  <Text style={desktopStyles.emptyDetailText}>
+                    Choose a conversation from the list to start chatting
+                  </Text>
+                  {filteredConversations.length === 0 && (
+                    <TouchableOpacity
+                      style={desktopStyles.browseListingsBtn}
+                      onPress={() => router.push('/')}
+                    >
+                      <Ionicons name="search-outline" size={18} color="#fff" />
+                      <Text style={desktopStyles.browseListingsBtnText}>Browse Listings</Text>
+                    </TouchableOpacity>
                   )}
                 </View>
-
-                {/* Action Buttons */}
-                <View style={desktopStyles.actionButtonsRow}>
-                  <TouchableOpacity
-                    style={desktopStyles.primaryActionBtn}
-                    onPress={() => router.push(`/chat/${selectedConversation.id}`)}
-                  >
-                    <Ionicons name="chatbubbles" size={20} color="#fff" />
-                    <Text style={desktopStyles.primaryActionBtnText}>Continue Conversation</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={desktopStyles.secondaryActionBtn}
-                    onPress={() => router.push(`/profile/public/${selectedConversation.other_user?.user_id}`)}
-                  >
-                    <Ionicons name="person-outline" size={18} color={COLORS.primary} />
-                    <Text style={desktopStyles.secondaryActionBtnText}>View Profile</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ) : (
-              // No conversation selected - show placeholder
-              <View style={desktopStyles.emptyDetailContainer}>
-                <View style={desktopStyles.emptyDetailIcon}>
-                  <Ionicons name="chatbubbles-outline" size={64} color={COLORS.primary} />
-                </View>
-                <Text style={desktopStyles.emptyDetailTitle}>Select a Conversation</Text>
-                <Text style={desktopStyles.emptyDetailText}>
-                  Choose a conversation from the list to view details and continue chatting
-                </Text>
-                {filteredConversations.length === 0 && (
-                  <TouchableOpacity
-                    style={desktopStyles.browseListingsBtn}
-                    onPress={() => router.push('/')}
-                  >
-                    <Ionicons name="search-outline" size={18} color="#fff" />
-                    <Text style={desktopStyles.browseListingsBtnText}>Browse Listings</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
+              )}
+            </View>
           </View>
         </View>
       </SafeAreaView>
     );
   }
+
 
   // Mobile Layout
   return (
