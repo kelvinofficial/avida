@@ -236,13 +236,11 @@ export default function SavedScreen() {
     }
   };
 
-  // Show loading state until responsive layout is ready
+  // Show loading state until responsive layout is ready - render immediately without spinner
   if (!isReady) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: '#F0F2F5' }]} edges={['top']}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
+        <View style={{ flex: 1, backgroundColor: '#F0F2F5' }} />
       </SafeAreaView>
     );
   }
