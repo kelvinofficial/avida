@@ -317,22 +317,30 @@ export default function CategoryScreen() {
     );
   };
 
-  const renderEmpty = () => (
-    <View style={styles.emptyState}>
-      <Ionicons name="search-outline" size={48} color={COLORS.textSecondary} />
-      <Text style={styles.emptyTitle}>No listings found</Text>
-      <Text style={styles.emptySubtitle}>
-        {activeFilterCount > 0 
-          ? 'Try adjusting your filters to see more results'
-          : 'There are no listings in this category yet.'}
-      </Text>
-      {activeFilterCount > 0 && (
-        <TouchableOpacity style={styles.clearFiltersButton} onPress={handleClearFilters}>
-          <Text style={styles.clearFiltersText}>Clear all filters</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
+  // Only show empty state when loading is complete and no listings found
+  const renderEmpty = () => {
+    // Don't show empty state while still loading
+    if (loading) {
+      return null;
+    }
+    
+    return (
+      <View style={styles.emptyState}>
+        <Ionicons name="search-outline" size={48} color={COLORS.textSecondary} />
+        <Text style={styles.emptyTitle}>No listings found</Text>
+        <Text style={styles.emptySubtitle}>
+          {activeFilterCount > 0 
+            ? 'Try adjusting your filters to see more results'
+            : 'There are no listings in this category yet.'}
+        </Text>
+        {activeFilterCount > 0 && (
+          <TouchableOpacity style={styles.clearFiltersButton} onPress={handleClearFilters}>
+            <Text style={styles.clearFiltersText}>Clear all filters</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  };
 
   const renderFooter = () => {
     // No loading indicator - data loads silently
