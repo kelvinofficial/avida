@@ -1381,12 +1381,21 @@ export default function ChatScreen() {
     [user, conversation, getMessagesWithSeparators, isSeller]
   );
 
-  if (loading) {
+  if (loading || !isReady) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
+      <SafeAreaView style={[styles.container, isLargeScreen && desktopStyles.outerContainer]}>
+        {isLargeScreen && (
+          <View style={desktopStyles.pageWrapper}>
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+            </View>
+          </View>
+        )}
+        {!isLargeScreen && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+          </View>
+        )}
       </SafeAreaView>
     );
   }
@@ -1400,6 +1409,183 @@ export default function ChatScreen() {
         : { uri: `data:image/jpeg;base64,${listingImage}` }
     : null;
 
+  // Desktop Layout
+  if (isLargeScreen) {
+    return (
+      <SafeAreaView style={[styles.container, desktopStyles.outerContainer]} edges={['top']}>
+        <View style={desktopStyles.pageWrapper}>
+          {/* Desktop Header */}
+          <View style={desktopStyles.header}>
+            <TouchableOpacity style={desktopStyles.backButton} onPress={() => router.back()}>
+              <Ionicons name="arrow-back" size={22} color={COLORS.text} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={desktopStyles.headerContent}
+              onPress={() =>
+                conversation?.other_user?.user_id &&
+                router.push(`/profile/public/${conversation.other_user.user_id}`)
+              }
+            >
+              {conversation?.other_user?.picture ? (
+                <Image
+                  source={{ uri: conversation.other_user.picture }}
+                  style={desktopStyles.headerAvatar}
+                />
+              ) : (
+                <View style={desktopStyles.headerAvatarPlaceholder}>
+                  <Text style={desktopStyles.headerAvatarInitial}>
+                    {(conversation?.other_user?.name || 'U')[0].toUpperCase()}
+                  </Text>
+                </View>
+              )}
+              <View style={desktopStyles.headerText}>
+                <Text style={desktopStyles.headerName} numberOfLines={1}>
+                  {conversation?.other_user?.name || 'User'}
+                </Text>
+                {isTyping ? (
+                  <Text style={desktopStyles.typingStatusText}>typing...</Text>
+                ) : (
+                  <Text style={desktopStyles.headerStatus}>Online</Text>
+                )}
+              </View>
+            </TouchableOpacity>
+
+            <View style={desktopStyles.headerActions}>
+              <TouchableOpacity style={desktopStyles.headerButton}>
+                <Ionicons name="call-outline" size={20} color={COLORS.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.headerButton}>
+                <Ionicons name="videocam-outline" size={20} color={COLORS.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.headerButton}>
+                <Ionicons name="ellipsis-vertical" size={20} color={COLORS.text} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Desktop Listing Banner */}
+          {conversation?.listing && (
+            <TouchableOpacity
+              style={desktopStyles.listingBanner}
+              onPress={() => router.push(`/listing/${conversation.listing!.id}`)}
+              activeOpacity={0.8}
+            >
+              {imageSource && (
+                <Image source={imageSource} style={desktopStyles.listingBannerImage} />
+              )}
+              <View style={desktopStyles.listingBannerInfo}>
+                <Text style={desktopStyles.listingBannerTitle} numberOfLines={1}>
+                  {conversation.listing.title}
+                </Text>
+                <Text style={desktopStyles.listingBannerPrice}>
+                  {formatPrice(conversation.listing.price)}
+                </Text>
+              </View>
+              <View style={desktopStyles.listingBannerAction}>
+                <Text style={desktopStyles.listingBannerActionText}>View Listing</Text>
+                <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
+              </View>
+            </TouchableOpacity>
+          )}
+
+          {/* Desktop Chat Container */}
+          <View style={desktopStyles.chatContainer}>
+            <FlatList
+              ref={flatListRef}
+              data={getMessagesWithSeparators()}
+              renderItem={renderItem}
+              keyExtractor={(item, index) =>
+                (item as any).type === 'date' ? `date-${index}` : (item as Message).id
+              }
+              contentContainerStyle={desktopStyles.messagesContent}
+              onContentSizeChange={() =>
+                flatListRef.current?.scrollToEnd({ animated: false })
+              }
+              ListEmptyComponent={
+                <View style={desktopStyles.emptyChat}>
+                  <View style={desktopStyles.emptyChatIcon}>
+                    <Ionicons
+                      name="chatbubble-ellipses-outline"
+                      size={56}
+                      color={COLORS.primary}
+                    />
+                  </View>
+                  <Text style={desktopStyles.emptyChatText}>Start the conversation!</Text>
+                  <Text style={desktopStyles.emptyChatSubtext}>
+                    Send a message to inquire about this item
+                  </Text>
+                </View>
+              }
+            />
+
+            {/* Typing Indicator */}
+            {isTyping && <TypingIndicator userName={typingUser || conversation?.other_user?.name} />}
+
+            {/* Quick Replies */}
+            {messages.length === 0 && !isRecording && (
+              <QuickReplies onSelect={(text) => setNewMessage(text)} />
+            )}
+
+            {/* Voice Recording UI */}
+            <VoiceRecordingUI
+              isRecording={isRecording}
+              duration={recordingDuration}
+              onCancel={cancelRecording}
+              onSend={sendVoiceMessage}
+            />
+
+            {/* Desktop Input Bar */}
+            {!isRecording && (
+              <View style={desktopStyles.inputContainer}>
+                <TouchableOpacity style={desktopStyles.attachButton} onPress={showAttachmentOptions}>
+                  <Ionicons name="add-circle" size={26} color={COLORS.primary} />
+                </TouchableOpacity>
+
+                <View style={desktopStyles.inputWrapper}>
+                  <TextInput
+                    style={desktopStyles.input}
+                    placeholder="Type a message..."
+                    placeholderTextColor={COLORS.textMuted}
+                    value={newMessage}
+                    onChangeText={handleTyping}
+                    multiline
+                    maxLength={1000}
+                  />
+                  <TouchableOpacity style={desktopStyles.emojiButton}>
+                    <Ionicons name="happy-outline" size={22} color={COLORS.textSecondary} />
+                  </TouchableOpacity>
+                </View>
+
+                {newMessage.trim() ? (
+                  <TouchableOpacity
+                    style={desktopStyles.sendButton}
+                    onPress={handleSend}
+                    disabled={sending}
+                  >
+                    {sending ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <Ionicons name="send" size={18} color="#fff" />
+                    )}
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={desktopStyles.micButton}
+                    onPress={startRecording}
+                  >
+                    <Ionicons name="mic" size={22} color={COLORS.primary} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Mobile Layout
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
