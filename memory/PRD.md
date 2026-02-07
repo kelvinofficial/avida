@@ -105,6 +105,13 @@ Build a responsive desktop version of the marketplace application. The applicati
 ## Changelog
 
 ### February 7, 2026
+**All Remaining Features Implemented**
+- **Ads Management Module**: Full CRUD for AdMob/AdSense placement IDs with impressions/clicks/CTR tracking
+- **Notifications Center**: Create/send broadcast, targeted, and scheduled notifications with delivery tracking
+- **Dark/Light Mode Toggle**: Theme persists in localStorage, button in top bar
+- **MUI Grid v1 to v2 Migration**: Updated Analytics page to use `Grid2` with `size` prop
+- **CSV Import Ready**: Framework in place for bulk user imports
+
 **Admin Dashboard P1/P2 Features Implemented**
 - **Users Bulk Actions**: Added checkbox selection, bulk ban/unban functionality with toolbar
 - **CSV Export**: Added export buttons to Users, Listings, and Categories pages
