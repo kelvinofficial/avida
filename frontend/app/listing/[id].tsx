@@ -877,15 +877,16 @@ export default function ListingDetailScreen() {
           </View>
         </View>
 
-        {/* Main Content */}
-        <ScrollView 
-          style={desktopStyles.scrollContainer}
-          contentContainerStyle={desktopStyles.scrollContent}
-          showsVerticalScrollIndicator={true}
-        >
-          {/* Content wrapper with light background */}
-          <View style={desktopStyles.contentWrapper}>
-            <View style={[desktopStyles.mainContainer, { maxWidth: MAX_CONTENT_WIDTH }]}>
+        {/* Main Content - starts immediately after header section */}
+        <View style={desktopStyles.mainContentArea}>
+          <ScrollView 
+            style={desktopStyles.scrollContainer}
+            contentContainerStyle={desktopStyles.scrollContent}
+            showsVerticalScrollIndicator={true}
+          >
+            {/* Content wrapper with light background */}
+            <View style={desktopStyles.contentWrapper}>
+              <View style={[desktopStyles.mainContainer, { maxWidth: MAX_CONTENT_WIDTH }]}>
             {/* Left Column - Images, Highlights, Details, Description, Location */}
             <View style={[desktopStyles.leftColumn, { width: imageGalleryWidth }]}>
               {/* Main Image */}
