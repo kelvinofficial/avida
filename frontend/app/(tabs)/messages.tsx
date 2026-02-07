@@ -611,6 +611,9 @@ export default function MessagesScreen() {
     if (isLargeScreen) {
       return (
         <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
+          {/* Global Header */}
+          {renderGlobalHeader()}
+          
           <View style={desktopStyles.splitContainer}>
             {/* Left side - Promo illustration */}
             <View style={desktopStyles.unauthLeftPanel}>
