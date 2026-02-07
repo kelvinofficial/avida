@@ -64,8 +64,16 @@ export const Footer: React.FC<FooterProps> = ({ isTablet = false }) => {
     router.push(`/category/${categoryId}` as any);
   };
 
+  // For web, we need to use a style that breaks out of the parent container
+  const fullWidthStyle = Platform.OS === 'web' ? {
+    marginLeft: -9999,
+    marginRight: -9999,
+    paddingLeft: 9999,
+    paddingRight: 9999,
+  } : {};
+
   return (
-    <View style={styles.footer}>
+    <View style={[styles.footer, fullWidthStyle]}>
       {/* Main Footer Content */}
       <View style={[styles.footerContent, isTablet && styles.footerContentTablet]}>
         {/* Brand Section */}
