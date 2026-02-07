@@ -635,12 +635,13 @@ export default function PostListingScreen() {
         
         {/* Main Category Selection */}
         <Text style={styles.sectionTitle}>Category <Text style={styles.required}>*</Text></Text>
-        <View style={styles.categoryGrid}>
+        <View style={[styles.categoryGrid, isLargeScreen && desktopStyles.categoryGrid]}>
           {ALL_CATEGORIES.map((cat) => (
             <TouchableOpacity
               key={cat.id}
               style={[
                 styles.categoryCard,
+                isLargeScreen && desktopStyles.categoryCard,
                 selectedCategoryId === cat.id && styles.categoryCardSelected,
               ]}
               onPress={() => {
