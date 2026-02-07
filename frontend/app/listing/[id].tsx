@@ -1912,7 +1912,7 @@ const styles = StyleSheet.create({
 const desktopStyles = StyleSheet.create({
   pageWrapper: {
     flex: 1,
-    backgroundColor: COLORS.background, // Changed from #1A1A1A to prevent dark gaps
+    backgroundColor: COLORS.background,
   },
   // Header Section - wraps header and breadcrumb
   headerSection: {
