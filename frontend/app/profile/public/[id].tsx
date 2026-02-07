@@ -680,6 +680,12 @@ export default function PublicProfileScreen() {
                                 />
                                 {/* Badges */}
                                 <View style={desktopStyles.listingBadges}>
+                                  {isJustListed(item.created_at) && (
+                                    <View style={desktopStyles.justListedBadge}>
+                                      <Ionicons name="time" size={10} color="#fff" />
+                                      <Text style={desktopStyles.justListedBadgeText}>Just Listed</Text>
+                                    </View>
+                                  )}
                                   {item.is_featured && (
                                     <View style={desktopStyles.featuredBadge}>
                                       <Ionicons name="star" size={10} color="#fff" />
