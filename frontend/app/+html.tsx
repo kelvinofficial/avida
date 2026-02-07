@@ -48,4 +48,14 @@ const responsiveStyle = `
   * {
     box-sizing: border-box;
   }
+  
+  /* Full-width footer styles */
+  [data-footer="true"] {
+    width: 100vw !important;
+    position: relative !important;
+    left: 50% !important;
+    right: 50% !important;
+    margin-left: -50vw !important;
+    margin-right: -50vw !important;
+  }
 `;
