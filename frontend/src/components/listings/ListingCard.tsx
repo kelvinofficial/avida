@@ -105,6 +105,11 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
             color={isFavorited ? '#E53935' : '#FFFFFF'}
           />
         </TouchableOpacity>
+        {/* Views Counter - Bottom Right */}
+        <View style={styles.viewsContainer}>
+          <Ionicons name="eye-outline" size={12} color="#fff" />
+          <Text style={styles.viewsText}>{listing.views || 0}</Text>
+        </View>
       </View>
       <View style={styles.cardContent}>
         <Text style={styles.price}>{formatPrice(listing.price)}</Text>
