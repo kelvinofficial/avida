@@ -51,13 +51,16 @@ import {
   PersonOff,
   PersonAdd,
   SelectAll,
+  CloudUpload,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { User, PaginatedResponse } from '@/types';
+import CSVImportDialog from '@/components/CSVImportDialog';
 
 export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
