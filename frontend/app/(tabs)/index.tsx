@@ -598,7 +598,7 @@ export default function HomeScreen() {
   const { isMobile, isTablet, isDesktop, width: screenWidth } = useResponsive();
   
   // Max content width for desktop
-  const MAX_WIDTH = 1200;
+  const MAX_WIDTH = 1280;
   const effectiveWidth = isDesktop ? Math.min(screenWidth, MAX_WIDTH) : screenWidth;
   
   // Calculate columns: 2 for mobile, 3 for tablet, 4-5 for desktop
@@ -975,7 +975,7 @@ export default function HomeScreen() {
 }
 
 // Desktop/Tablet specific styles
-const MAX_CONTENT_WIDTH = 1200;
+const MAX_CONTENT_WIDTH = 1280;
 
 const desktopStyles = StyleSheet.create({
   headerWrapper: {

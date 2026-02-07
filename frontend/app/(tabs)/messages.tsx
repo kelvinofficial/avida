@@ -1560,7 +1560,7 @@ const desktopStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    maxWidth: 1400,
+    maxWidth: 1280,
     width: '100%',
     alignSelf: 'center',
   },
@@ -1667,7 +1667,7 @@ const desktopStyles = StyleSheet.create({
   // Page wrapper for max-width constraint
   pageWrapper: {
     flex: 1,
-    maxWidth: 1400,
+    maxWidth: 1280,
     width: '100%',
     alignSelf: 'center',
     backgroundColor: COLORS.surface,
