@@ -154,17 +154,40 @@ const filterStyles = StyleSheet.create({
   },
 });
 
+// Helper function to format last seen
+const formatLastSeen = (lastSeen: string | null): string => {
+  if (!lastSeen) return '';
+  try {
+    const date = new Date(lastSeen);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return format(date, 'MMM d');
+  } catch {
+    return '';
+  }
+};
+
 // Conversation Item Component
 interface ConversationItemProps {
   conversation: Conversation;
   onPress: () => void;
   isSelected?: boolean;
   isDesktop?: boolean;
+  userStatus?: { is_online: boolean | null; last_seen: string | null };
 }
 
-const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onPress, isSelected, isDesktop }) => {
+const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onPress, isSelected, isDesktop, userStatus }) => {
   const { user } = useAuthStore();
   const hasUnread = conversation.unread > 0;
+  const isOnline = userStatus?.is_online === true;
   
   const listingImage = conversation.listing?.images?.[0];
   const imageSource = listingImage
@@ -200,8 +223,8 @@ const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onPre
             </Text>
           </View>
         )}
-        {/* Online indicator - could be dynamic */}
-        {Math.random() > 0.5 && (
+        {/* Online indicator */}
+        {isOnline && (
           <View style={styles.onlineIndicator} />
         )}
       </View>
