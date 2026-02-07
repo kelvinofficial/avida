@@ -2508,11 +2508,9 @@ const desktopStyles = StyleSheet.create({
     flexWrap: 'wrap',
     marginHorizontal: -8,
   },
-  categoryCard: {
+  categoryCardWrapper: {
     width: '25%',
     padding: 8,
-    marginHorizontal: 0,
-    marginBottom: 0,
   },
   categoryCardInner: {
     alignItems: 'center',
@@ -2520,6 +2518,25 @@ const desktopStyles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: COLORS.border,
+  },
+  categoryCardSelected: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryLight,
+  },
+  
+  // Desktop Subcategory Grid - 2 columns
+  subcategoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -6,
+  },
+  subcategoryItem: {
+    width: '50%',
+    paddingHorizontal: 6,
+    marginBottom: 12,
+  },
+  subcategoryItemSelected: {
+    // Styles inherited from inner content
   },
 });
