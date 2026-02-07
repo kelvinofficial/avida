@@ -820,57 +820,60 @@ export default function ListingDetailScreen() {
 
     return (
       <View style={desktopStyles.pageWrapper}>
-        {/* Desktop Header Row 1 */}
-        <View style={desktopStyles.headerRow1}>
-          <View style={desktopStyles.headerRow1Inner}>
-            <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
-              <View style={desktopStyles.logoIcon}>
-                <Ionicons name="storefront" size={22} color="#fff" />
-              </View>
-              <Text style={desktopStyles.logoText}>avida</Text>
-            </TouchableOpacity>
-            
-            <View style={desktopStyles.headerActions}>
-              {isAuthenticated ? (
-                <>
-                  <TouchableOpacity style={desktopStyles.notifBtn} onPress={() => router.push('/notifications')}>
-                    <Ionicons name="notifications-outline" size={22} color="#333" />
-                  </TouchableOpacity>
-                  <TouchableOpacity style={desktopStyles.profileBtn} onPress={() => router.push('/profile')}>
-                    <Ionicons name="person-circle-outline" size={28} color="#333" />
-                  </TouchableOpacity>
-                </>
-              ) : (
-                <>
-                  <TouchableOpacity style={desktopStyles.signInBtn} onPress={() => router.push('/login')}>
-                    <Text style={desktopStyles.signInBtnText}>Sign In</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={desktopStyles.signUpBtn} onPress={() => router.push('/login')}>
-                    <Text style={desktopStyles.signUpBtnText}>Sign Up</Text>
-                  </TouchableOpacity>
-                </>
-              )}
-              <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => router.push('/create-listing')}>
-                <Ionicons name="add" size={18} color="#fff" />
-                <Text style={desktopStyles.postListingBtnText}>Post Listing</Text>
+        {/* Header Section - contains header and breadcrumb */}
+        <View style={desktopStyles.headerSection}>
+          {/* Desktop Header Row 1 */}
+          <View style={desktopStyles.headerRow1}>
+            <View style={desktopStyles.headerRow1Inner}>
+              <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+                <View style={desktopStyles.logoIcon}>
+                  <Ionicons name="storefront" size={22} color="#fff" />
+                </View>
+                <Text style={desktopStyles.logoText}>avida</Text>
               </TouchableOpacity>
+              
+              <View style={desktopStyles.headerActions}>
+                {isAuthenticated ? (
+                  <>
+                    <TouchableOpacity style={desktopStyles.notifBtn} onPress={() => router.push('/notifications')}>
+                      <Ionicons name="notifications-outline" size={22} color="#333" />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={desktopStyles.profileBtn} onPress={() => router.push('/profile')}>
+                      <Ionicons name="person-circle-outline" size={28} color="#333" />
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <>
+                    <TouchableOpacity style={desktopStyles.signInBtn} onPress={() => router.push('/login')}>
+                      <Text style={desktopStyles.signInBtnText}>Sign In</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={desktopStyles.signUpBtn} onPress={() => router.push('/login')}>
+                      <Text style={desktopStyles.signUpBtnText}>Sign Up</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+                <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => router.push('/create-listing')}>
+                  <Ionicons name="add" size={18} color="#fff" />
+                  <Text style={desktopStyles.postListingBtnText}>Post Listing</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
 
-        {/* Breadcrumb */}
-        <View style={desktopStyles.breadcrumbRow}>
-          <View style={[desktopStyles.breadcrumbInner, { maxWidth: MAX_CONTENT_WIDTH }]}>
-            <TouchableOpacity onPress={() => router.push('/')} style={desktopStyles.breadcrumbLink}>
-              <Ionicons name="home-outline" size={16} color={COLORS.textSecondary} />
-              <Text style={desktopStyles.breadcrumbText}>Home</Text>
-            </TouchableOpacity>
-            <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
-            <TouchableOpacity onPress={() => router.push(`/category/${listing.category_id}`)} style={desktopStyles.breadcrumbLink}>
-              <Text style={desktopStyles.breadcrumbText}>{category?.name || getCategoryName(listing.category_id)}</Text>
-            </TouchableOpacity>
-            <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
-            <Text style={desktopStyles.breadcrumbCurrent} numberOfLines={1}>{listing.title}</Text>
+          {/* Breadcrumb */}
+          <View style={desktopStyles.breadcrumbRow}>
+            <View style={[desktopStyles.breadcrumbInner, { maxWidth: MAX_CONTENT_WIDTH }]}>
+              <TouchableOpacity onPress={() => router.push('/')} style={desktopStyles.breadcrumbLink}>
+                <Ionicons name="home-outline" size={16} color={COLORS.textSecondary} />
+                <Text style={desktopStyles.breadcrumbText}>Home</Text>
+              </TouchableOpacity>
+              <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
+              <TouchableOpacity onPress={() => router.push(`/category/${listing.category_id}`)} style={desktopStyles.breadcrumbLink}>
+                <Text style={desktopStyles.breadcrumbText}>{category?.name || getCategoryName(listing.category_id)}</Text>
+              </TouchableOpacity>
+              <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
+              <Text style={desktopStyles.breadcrumbCurrent} numberOfLines={1}>{listing.title}</Text>
+            </View>
           </View>
         </View>
 
