@@ -391,6 +391,41 @@ export default function OffersScreen() {
   };
 
   if (!isAuthenticated) {
+    if (!isReady) {
+      return (
+        <SafeAreaView style={[styles.container, { backgroundColor: '#F0F2F5' }]} edges={['top']}>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+          </View>
+        </SafeAreaView>
+      );
+    }
+    
+    // Desktop unauthenticated
+    if (isLargeScreen) {
+      return (
+        <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
+          {renderGlobalHeader()}
+          <View style={desktopStyles.pageWrapper}>
+            <View style={desktopStyles.unauthContainer}>
+              <View style={desktopStyles.unauthIcon}>
+                <Ionicons name="pricetag-outline" size={64} color={COLORS.primary} />
+              </View>
+              <Text style={desktopStyles.unauthTitle}>Sign in to view your offers</Text>
+              <Text style={desktopStyles.unauthSubtitle}>
+                Manage your offers, negotiate prices, and close deals
+              </Text>
+              <TouchableOpacity style={desktopStyles.unauthSignInBtn} onPress={() => router.push('/login')}>
+                <Ionicons name="log-in-outline" size={20} color="#fff" />
+                <Text style={desktopStyles.unauthSignInBtnText}>Sign In</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
+      );
+    }
+    
+    // Mobile unauthenticated
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.authRequired}>
@@ -401,6 +436,191 @@ export default function OffersScreen() {
             <Text style={styles.signInBtnText}>Sign In</Text>
           </TouchableOpacity>
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Show loading state until responsive layout is ready
+  if (!isReady) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: '#F0F2F5' }]} edges={['top']}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Render global desktop header
+  const renderGlobalHeader = () => (
+    <View style={desktopStyles.globalHeader}>
+      {/* Row 1: Logo + Auth + Post Listing */}
+      <View style={desktopStyles.globalHeaderRow1}>
+        <View style={desktopStyles.globalHeaderInner}>
+          {/* Logo */}
+          <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+            <View style={desktopStyles.logoIcon}>
+              <Ionicons name="storefront" size={20} color="#fff" />
+            </View>
+            <Text style={desktopStyles.logoText}>avida</Text>
+          </TouchableOpacity>
+          
+          {/* Header Actions */}
+          <View style={desktopStyles.globalHeaderActions}>
+            <TouchableOpacity 
+              style={desktopStyles.headerIconBtn} 
+              onPress={() => router.push('/notifications')}
+            >
+              <Ionicons name="notifications-outline" size={22} color={COLORS.text} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={desktopStyles.headerIconBtn} 
+              onPress={() => router.push('/profile')}
+            >
+              <Ionicons name="person-circle-outline" size={26} color={COLORS.text} />
+            </TouchableOpacity>
+            <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => router.push('/post')}>
+              <Ionicons name="add" size={18} color="#fff" />
+              <Text style={desktopStyles.postListingBtnText}>Post Listing</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+      
+      {/* Row 2: Search + Location */}
+      <View style={desktopStyles.globalHeaderRow2}>
+        <View style={desktopStyles.globalHeaderInner}>
+          <TouchableOpacity 
+            style={desktopStyles.searchField} 
+            onPress={() => router.push('/search')} 
+            activeOpacity={0.8}
+          >
+            <Ionicons name="search" size={20} color={COLORS.textSecondary} />
+            <Text style={desktopStyles.searchPlaceholder}>Search for anything...</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={desktopStyles.locationChip} 
+            activeOpacity={0.7} 
+            onPress={() => router.push('/')}
+          >
+            <Ionicons name="location" size={18} color={COLORS.primary} />
+            <Text style={desktopStyles.locationText} numberOfLines={1}>All Locations</Text>
+            <Ionicons name="chevron-down" size={16} color={COLORS.textSecondary} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+
+  // Desktop authenticated view
+  if (isLargeScreen) {
+    return (
+      <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
+        {renderGlobalHeader()}
+        
+        <View style={desktopStyles.pageWrapper}>
+          {/* Page Header */}
+          <View style={desktopStyles.pageHeader}>
+            <View style={desktopStyles.pageHeaderLeft}>
+              <TouchableOpacity 
+                style={desktopStyles.backBtn} 
+                onPress={handleGoBack}
+              >
+                <Ionicons name="arrow-back" size={20} color={COLORS.text} />
+              </TouchableOpacity>
+              <Text style={desktopStyles.pageTitle}>Offers</Text>
+              {pendingCount > 0 && role === 'seller' && (
+                <View style={desktopStyles.pendingBadge}>
+                  <Text style={desktopStyles.pendingBadgeText}>{pendingCount} pending</Text>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* Role Toggle */}
+          <View style={desktopStyles.roleToggleContainer}>
+            <TouchableOpacity
+              style={[desktopStyles.roleBtn, role === 'seller' && desktopStyles.roleBtnActive]}
+              onPress={() => setRole('seller')}
+            >
+              <Ionicons 
+                name="download-outline" 
+                size={18} 
+                color={role === 'seller' ? COLORS.primary : COLORS.textSecondary} 
+              />
+              <Text style={[desktopStyles.roleBtnText, role === 'seller' && desktopStyles.roleBtnTextActive]}>
+                Received
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[desktopStyles.roleBtn, role === 'buyer' && desktopStyles.roleBtnActive]}
+              onPress={() => setRole('buyer')}
+            >
+              <Ionicons 
+                name="upload-outline" 
+                size={18} 
+                color={role === 'buyer' ? COLORS.primary : COLORS.textSecondary} 
+              />
+              <Text style={[desktopStyles.roleBtnText, role === 'buyer' && desktopStyles.roleBtnTextActive]}>
+                Sent
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Content */}
+          {loading ? (
+            <View style={desktopStyles.loadingContainer}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+              <Text style={desktopStyles.loadingText}>Loading offers...</Text>
+            </View>
+          ) : offers.length === 0 ? (
+            <View style={desktopStyles.emptyContainer}>
+              <View style={desktopStyles.emptyIcon}>
+                <Ionicons name="pricetag-outline" size={64} color={COLORS.textLight} />
+              </View>
+              <Text style={desktopStyles.emptyTitle}>
+                {role === 'seller' ? 'No offers received yet' : 'No offers sent yet'}
+              </Text>
+              <Text style={desktopStyles.emptySubtitle}>
+                {role === 'seller' 
+                  ? 'When buyers make offers on your listings, they will appear here'
+                  : 'Offers you make on listings will appear here'}
+              </Text>
+              <TouchableOpacity style={desktopStyles.browseBtn} onPress={() => router.push('/')}>
+                <Ionicons name="search-outline" size={18} color={COLORS.primary} />
+                <Text style={desktopStyles.browseBtnText}>Browse Listings</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <ScrollView 
+              style={desktopStyles.scrollView}
+              contentContainerStyle={desktopStyles.offersContainer}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={COLORS.primary} />
+              }
+            >
+              <View style={desktopStyles.offersGrid}>
+                {offers.map((item) => (
+                  <View key={item.id} style={desktopStyles.offerGridItem}>
+                    <DesktopOfferCard
+                      offer={item}
+                      isSeller={role === 'seller'}
+                      onAccept={() => handleAccept(item)}
+                      onReject={() => handleReject(item)}
+                      onCounter={() => handleCounter(item)}
+                      onViewListing={() => router.push(`/listing/${item.listing_id}`)}
+                      onViewChat={() => handleViewChat(item)}
+                    />
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
+          )}
+        </View>
+
+        {/* Counter Modal */}
+        {renderCounterModal()}
       </SafeAreaView>
     );
   }
