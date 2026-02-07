@@ -249,18 +249,19 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: '#E8E8E8',
+    alignItems: 'center',
   },
   desktopWrapper: {
     flex: 1,
     maxWidth: 1280,
     width: '100%',
-    marginLeft: 'auto',
-    marginRight: 'auto',
     backgroundColor: COLORS.background,
   },
   fullWidth: {
     flex: 1,
+    width: '100%',
+    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: 'row',
