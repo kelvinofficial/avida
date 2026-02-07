@@ -105,6 +105,11 @@ Build a responsive desktop version of the marketplace application. The applicati
 ## Changelog
 
 ### February 7, 2026
+**Listing Detail Page - Dark Bar Fix**
+- Fixed the dark bar/space that appeared between the breadcrumb and listing image
+- Modified `/app/frontend/app/_layout.tsx` to set `contentStyle: { backgroundColor: '#F5F5F5' }` for the listing screen
+- Also restructured `/app/frontend/app/listing/[id].tsx` with proper header section and main content area wrapping
+
 **Desktop Search Screen Max-Width Implementation**
 - Modified `/app/frontend/app/search.tsx` to constrain content to 1280px on desktop
 - Header and content area are now centered within 1280px max-width
