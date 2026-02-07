@@ -623,41 +623,32 @@ export default function MyListingsScreen() {
         ))}
       </View>
 
-      {loading && !refreshing ? (
-        <FlatList
-          data={[1, 2, 3, 4, 5]}
-          keyExtractor={(item) => item.toString()}
-          renderItem={() => <SkeletonItem />}
-          contentContainerStyle={styles.list}
-        />
-      ) : (
-        <FlatList
-          data={listings}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <ListingItem
-              item={item}
-              onPress={() => router.push(`/listing/${item.id}`)}
-              onEdit={() => router.push(`/post?edit=${item.id}`)}
-              onMarkSold={() => handleMarkSold(item)}
-              onDelete={() => handleDelete(item)}
-            />
-          )}
-          contentContainerStyle={styles.list}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              colors={[COLORS.primary]}
-              tintColor={COLORS.primary}
-            />
-          }
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          ListEmptyComponent={<EmptyState status={activeTab} />}
-          ListFooterComponent={
-            hasMore && listings.length > 0 ? (
-              <ActivityIndicator style={{ padding: 20 }} color={COLORS.primary} />
+      {/* Render immediately without skeleton */}
+      <FlatList
+        data={listings}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <ListingItem
+            item={item}
+            onPress={() => router.push(`/listing/${item.id}`)}
+            onEdit={() => router.push(`/post?edit=${item.id}`)}
+            onMarkSold={() => handleMarkSold(item)}
+            onDelete={() => handleDelete(item)}
+          />
+        )}
+        contentContainerStyle={styles.list}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
+        }
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListEmptyComponent={!loading ? <EmptyState status={activeTab} /> : null}
+        ListFooterComponent={null}
             ) : null
           }
         />
