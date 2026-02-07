@@ -1219,6 +1219,22 @@ const desktopStyles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: COLORS.background,
   },
+  signInHeaderBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: COLORS.background,
+  },
+  signInHeaderBtnText: { fontSize: 14, fontWeight: '600', color: COLORS.text },
+  signUpHeaderBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: 'transparent',
+  },
+  signUpHeaderBtnText: { fontSize: 14, fontWeight: '600', color: COLORS.primary },
   postListingBtn: {
     flexDirection: 'row',
     alignItems: 'center',
