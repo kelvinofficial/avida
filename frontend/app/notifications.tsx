@@ -969,49 +969,119 @@ const styles = StyleSheet.create({
 
 // ============ DESKTOP STYLES ============
 const desktopStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
+  // Global Header
+  globalHeader: {
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
-    alignItems: 'center',
   },
-  headerInner: {
+  globalHeaderInner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    width: '100%',
     maxWidth: 1280,
+    width: '100%',
+    alignSelf: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
   },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
+  logoContainer: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   logoIcon: {
     width: 36,
     height: 36,
-    borderRadius: 8,
+    borderRadius: 10,
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logoText: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: COLORS.text,
+  logoText: { fontSize: 22, fontWeight: '700', color: COLORS.text },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  headerIconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
   },
-  headerActions: {
+  signInBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: COLORS.background,
+  },
+  signInBtnText: { fontSize: 14, fontWeight: '600', color: COLORS.text },
+  signUpBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  signUpBtnText: { fontSize: 14, fontWeight: '600', color: COLORS.primary },
+  postBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+  },
+  postBtnText: { fontSize: 14, fontWeight: '600', color: '#fff' },
+  
+  // Page Wrapper
+  pageWrapper: {
+    flex: 1,
+    maxWidth: 1280,
+    width: '100%',
+    alignSelf: 'center',
+    backgroundColor: COLORS.surface,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: COLORS.border,
+  },
+  
+  // Unauthenticated
+  unauthContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  unauthIcon: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  unauthTitle: { fontSize: 24, fontWeight: '700', color: COLORS.text, marginBottom: 8 },
+  unauthSubtitle: { fontSize: 16, color: COLORS.textSecondary, textAlign: 'center', maxWidth: 400, lineHeight: 24, marginBottom: 24 },
+  unauthSignInBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primary,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    gap: 8,
+  },
+  unauthSignInBtnText: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  
+  // Page Header
+  pageHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
     gap: 12,
   },
-  headerBtn: {
+  backBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -1019,134 +1089,71 @@ const desktopStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  postBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  postBtnText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  mainContent: {
-    flex: 1,
-    flexDirection: 'row',
-    maxWidth: 1280,
-    alignSelf: 'center',
-    width: '100%',
-  },
-  sidebar: {
-    width: 280,
-    backgroundColor: COLORS.surface,
-    borderRightWidth: 1,
-    borderRightColor: COLORS.border,
-    padding: 20,
-  },
-  sidebarHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 24,
-  },
-  sidebarTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text,
-    flex: 1,
-  },
-  badge: {
+  pageTitle: { fontSize: 24, fontWeight: '700', color: COLORS.text },
+  pageBadge: {
     backgroundColor: COLORS.error,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
-  badgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  sidebarTabs: {
-    gap: 4,
-    marginBottom: 24,
-  },
-  sidebarTab: {
+  pageBadgeText: { color: '#fff', fontSize: 13, fontWeight: '700' },
+  menuBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    paddingVertical: 12,
+    gap: 6,
     paddingHorizontal: 14,
-    borderRadius: 10,
-  },
-  sidebarTabActive: {
-    backgroundColor: COLORS.primaryLight,
-  },
-  sidebarTabText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.textSecondary,
-  },
-  sidebarTabTextActive: {
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
-  filterSection: {
-    marginBottom: 24,
-  },
-  filterTitle: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-    letterSpacing: 0.5,
-    marginBottom: 12,
-  },
-  filterItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 8,
-    marginBottom: 2,
-  },
-  filterItemActive: {
     backgroundColor: COLORS.primaryLight,
   },
-  filterItemText: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
-  filterItemTextActive: {
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
-  sidebarActions: {
-    gap: 8,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-  },
-  actionBtn: {
+  menuBtnText: { fontSize: 14, fontWeight: '600', color: COLORS.primary },
+  
+  // Tabs Row
+  tabsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
     paddingVertical: 12,
-    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  tabs: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  tab: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 8,
     backgroundColor: COLORS.background,
   },
-  actionBtnDanger: {
-    backgroundColor: '#FEF2F2',
+  tabActive: { backgroundColor: COLORS.primaryLight },
+  tabText: { fontSize: 14, fontWeight: '500', color: COLORS.textSecondary },
+  tabTextActive: { color: COLORS.primary, fontWeight: '600' },
+  
+  // Filter Chips
+  filterChips: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
   },
-  actionBtnText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.primary,
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: COLORS.background,
   },
+  filterChipActive: { backgroundColor: COLORS.primary },
+  filterChipText: { fontSize: 13, fontWeight: '500', color: COLORS.textSecondary },
+  filterChipTextActive: { color: '#fff' },
+  
+  // List Container
   listContainer: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -1158,7 +1165,11 @@ const desktopStyles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 12,
   },
+  loadingText: { fontSize: 14, color: COLORS.textSecondary },
+  
+  // Empty State
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -1174,55 +1185,77 @@ const desktopStyles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
+  emptyTitle: { fontSize: 22, fontWeight: '700', color: COLORS.text, marginBottom: 8 },
+  emptySubtitle: { fontSize: 15, color: COLORS.textSecondary, textAlign: 'center', maxWidth: 400, lineHeight: 22 },
+  
+  // Notification Card
   notificationCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     backgroundColor: COLORS.surface,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 12,
     gap: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  notificationIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  notificationCardUnread: {
+    backgroundColor: COLORS.unreadBg,
+    borderWidth: 1,
+    borderColor: COLORS.primaryLight,
+  },
+  notificationAvatar: { width: 52, height: 52, borderRadius: 26 },
+  notificationImage: { width: 52, height: 52, borderRadius: 12 },
+  notificationIconBg: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  notificationContent: {
-    flex: 1,
-  },
-  notificationTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.text,
+  notificationContent: { flex: 1 },
+  notificationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 4,
   },
-  notificationMessage: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    lineHeight: 20,
-    marginBottom: 6,
+  notificationTitle: { fontSize: 15, fontWeight: '500', color: COLORS.text, flex: 1, marginRight: 8 },
+  notificationTitleUnread: { fontWeight: '700' },
+  notificationTime: { fontSize: 12, color: COLORS.textLight },
+  notificationBody: { fontSize: 14, color: COLORS.textSecondary, lineHeight: 20, marginBottom: 12 },
+  notificationFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  notificationTime: {
-    fontSize: 12,
-    color: COLORS.textLight,
+  typeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
+  typeBadgeText: { fontSize: 11, fontWeight: '600', textTransform: 'capitalize' },
+  ctaBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+  },
+  ctaBtnText: { color: '#fff', fontSize: 12, fontWeight: '600' },
   unreadDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: COLORS.primary,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: COLORS.unreadDot,
+    marginTop: 4,
   },
 });
