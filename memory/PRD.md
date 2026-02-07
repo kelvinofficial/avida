@@ -115,6 +115,12 @@ Build a responsive desktop version of the marketplace application. The applicati
   - My Listings page desktop card
 - Badge appears with other badges (Featured, TOP) and wraps if needed
 
+**Page Views Counter on Listing Cards**
+- Added views counter overlay on bottom right of listing card images
+- Shows eye icon + view count (e.g., "49", "14")
+- Semi-transparent dark background for visibility
+- Implemented across all listing card components
+
 **Badge Color Scheme:**
 - **Just Listed**: Purple (#8B5CF6) - clock icon
 - **Featured**: Amber (#F59E0B) - star icon  
