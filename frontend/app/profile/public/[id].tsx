@@ -111,6 +111,9 @@ export default function PublicProfileScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const { isAuthenticated, user } = useAuthStore();
+  const { isDesktop, isTablet, isReady } = useResponsive();
+  const isLargeScreen = isDesktop || isTablet;
+  
   const [profile, setProfile] = useState<any>(null);
   const [listings, setListings] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
