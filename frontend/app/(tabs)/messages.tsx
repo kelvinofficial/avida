@@ -184,6 +184,18 @@ const formatLastSeen = (lastSeen: string | null): string => {
   }
 };
 
+// Helper function to format message time (converts UTC to local)
+const formatMessageTime = (timestamp: string | null): string => {
+  if (!timestamp) return '';
+  try {
+    // Ensure the string is treated as UTC if no timezone specified
+    const date = new Date(timestamp.endsWith('Z') ? timestamp : timestamp + 'Z');
+    return format(date, 'HH:mm');
+  } catch {
+    return '';
+  }
+};
+
 // Conversation Item Component
 interface ConversationItemProps {
   conversation: Conversation;
