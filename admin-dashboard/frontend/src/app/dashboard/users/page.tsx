@@ -637,6 +637,17 @@ export default function UsersPage() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {/* CSV Import Dialog */}
+      <CSVImportDialog
+        open={importDialogOpen}
+        onClose={() => setImportDialogOpen(false)}
+        onImport={handleImportUsers}
+        title="Import Users"
+        description="Upload a CSV file to bulk import users. Each user will be created with 'active' status."
+        sampleHeaders={['email', 'name', 'phone']}
+        entityName="user"
+      />
     </Box>
   );
 }
