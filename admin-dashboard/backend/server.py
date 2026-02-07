@@ -1971,6 +1971,153 @@ class NotificationUpdate(BaseModel):
     target_ids: Optional[List[str]] = None
     scheduled_at: Optional[str] = None
 
+# Predefined notification templates
+NOTIFICATION_TEMPLATES = [
+    {
+        "id": "welcome",
+        "name": "Welcome Message",
+        "category": "onboarding",
+        "title": "Welcome to Avida Marketplace!",
+        "message": "Thank you for joining our community! Start exploring thousands of listings or create your first listing today. Happy buying and selling!",
+        "icon": "👋",
+        "recommended_type": "targeted"
+    },
+    {
+        "id": "listing_featured",
+        "name": "Listing Featured",
+        "category": "promotion",
+        "title": "Your Listing is Now Featured!",
+        "message": "Great news! Your listing has been selected as a featured item. It will now appear at the top of search results and get more visibility.",
+        "icon": "⭐",
+        "recommended_type": "targeted"
+    },
+    {
+        "id": "sale_alert",
+        "name": "Sale Alert",
+        "category": "promotion",
+        "title": "Flash Sale - Limited Time Offers!",
+        "message": "Don't miss out! Amazing deals are happening right now on the marketplace. Check out the latest offers before they're gone!",
+        "icon": "🔥",
+        "recommended_type": "broadcast"
+    },
+    {
+        "id": "price_drop",
+        "name": "Price Drop",
+        "category": "engagement",
+        "title": "Price Drop on Items You Saved!",
+        "message": "Good news! Some items in your saved list have dropped in price. Check them out now and grab these deals!",
+        "icon": "💰",
+        "recommended_type": "targeted"
+    },
+    {
+        "id": "new_message",
+        "name": "New Message",
+        "category": "engagement",
+        "title": "You Have a New Message!",
+        "message": "Someone is interested in your listing! Check your messages to respond and close the deal.",
+        "icon": "💬",
+        "recommended_type": "targeted"
+    },
+    {
+        "id": "listing_sold",
+        "name": "Listing Sold",
+        "category": "transaction",
+        "title": "Congratulations! Your Item Sold!",
+        "message": "Your listing has been marked as sold. Thank you for using Avida Marketplace! Ready to list more items?",
+        "icon": "🎉",
+        "recommended_type": "targeted"
+    },
+    {
+        "id": "account_verified",
+        "name": "Account Verified",
+        "category": "account",
+        "title": "Your Account is Now Verified!",
+        "message": "Your account has been successfully verified. You now have access to all features and your listings will be trusted by buyers.",
+        "icon": "✅",
+        "recommended_type": "targeted"
+    },
+    {
+        "id": "weekly_digest",
+        "name": "Weekly Digest",
+        "category": "engagement",
+        "title": "Your Weekly Marketplace Update",
+        "message": "Here's what happened this week: new listings in your favorite categories, trending items, and exclusive deals just for you!",
+        "icon": "📊",
+        "recommended_type": "broadcast"
+    },
+    {
+        "id": "inactive_reminder",
+        "name": "Inactive Reminder",
+        "category": "re-engagement",
+        "title": "We Miss You!",
+        "message": "It's been a while since your last visit. Come back and see what's new - there are fresh listings waiting for you!",
+        "icon": "👀",
+        "recommended_type": "targeted"
+    },
+    {
+        "id": "listing_expiring",
+        "name": "Listing Expiring Soon",
+        "category": "reminder",
+        "title": "Your Listing is About to Expire",
+        "message": "Your listing will expire soon. Renew it now to keep it visible to potential buyers and increase your chances of selling!",
+        "icon": "⏰",
+        "recommended_type": "targeted"
+    },
+    {
+        "id": "system_maintenance",
+        "name": "System Maintenance",
+        "category": "system",
+        "title": "Scheduled Maintenance Notice",
+        "message": "We'll be performing scheduled maintenance on [DATE] from [TIME] to [TIME]. The marketplace may be temporarily unavailable during this period.",
+        "icon": "🔧",
+        "recommended_type": "broadcast"
+    },
+    {
+        "id": "new_feature",
+        "name": "New Feature Announcement",
+        "category": "announcement",
+        "title": "Exciting New Feature!",
+        "message": "We've just launched a new feature to make your experience even better! Check it out and let us know what you think.",
+        "icon": "🚀",
+        "recommended_type": "broadcast"
+    }
+]
+
+@api_router.get("/notification-templates")
+async def list_notification_templates(
+    category: Optional[str] = None,
+    admin: dict = Depends(require_permission(Permission.VIEW_REPORTS))
+):
+    """List all notification templates"""
+    templates = NOTIFICATION_TEMPLATES
+    if category:
+        templates = [t for t in templates if t["category"] == category]
+    
+    # Group by category
+    categories = {}
+    for template in NOTIFICATION_TEMPLATES:
+        cat = template["category"]
+        if cat not in categories:
+            categories[cat] = []
+        categories[cat].append(template)
+    
+    return {
+        "templates": templates,
+        "categories": list(categories.keys()),
+        "by_category": categories
+    }
+
+@api_router.get("/notification-templates/{template_id}")
+async def get_notification_template(
+    template_id: str,
+    admin: dict = Depends(require_permission(Permission.VIEW_REPORTS))
+):
+    """Get a specific notification template"""
+    template = next((t for t in NOTIFICATION_TEMPLATES if t["id"] == template_id), None)
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return template
+
 @api_router.get("/notifications")
 async def list_notifications(
     page: int = Query(1, ge=1),
