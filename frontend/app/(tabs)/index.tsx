@@ -211,8 +211,14 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
             <Ionicons name="image-outline" size={32} color="#CCC" />
           </View>
         )}
-        {/* Badges - Featured & TOP */}
+        {/* Badges - Just Listed, Featured & TOP */}
         <View style={cardStyles.badgesContainer}>
+          {isJustListed(listing.created_at) && (
+            <View style={cardStyles.justListedBadge}>
+              <Ionicons name="time" size={9} color="#fff" />
+              <Text style={cardStyles.badgeText}>Just Listed</Text>
+            </View>
+          )}
           {listing.is_featured && (
             <View style={cardStyles.featuredBadge}>
               <Ionicons name="star" size={9} color="#fff" />
