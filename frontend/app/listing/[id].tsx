@@ -2024,7 +2024,6 @@ const desktopStyles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    alignItems: 'center',
     paddingVertical: 24,
     paddingBottom: 60,
   },
@@ -2034,6 +2033,7 @@ const desktopStyles = StyleSheet.create({
     gap: 24,
     paddingHorizontal: 24,
     width: '100%',
+    alignSelf: 'center',
   },
   // Left Column
   leftColumn: {
