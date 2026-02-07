@@ -10,7 +10,6 @@ import {
   Image,
   Dimensions,
   Keyboard,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,7 +17,6 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { listingsApi, categoriesApi, favoritesApi } from '../src/utils/api';
 import { useAuthStore } from '../src/store/authStore';
 import { safeGoBack } from '../src/utils/navigation';
-import { useResponsive } from '../src/hooks/useResponsive';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
