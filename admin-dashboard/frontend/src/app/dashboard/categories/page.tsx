@@ -39,6 +39,7 @@ import {
   Settings,
   Save,
   Download,
+  Upload,
 } from '@mui/icons-material';
 import {
   DndContext,
@@ -59,6 +60,8 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { api } from '@/lib/api';
 import { Category, CategoryAttribute } from '@/types';
+import CSVImportDialog from '@/components/CSVImportDialog';
+import { useLocale } from '@/components/LocaleProvider';
 
 interface SortableCategoryItemProps {
   category: Category;
@@ -189,6 +192,7 @@ function SortableCategoryItem({ category, level, onEdit, onDelete, onManageAttri
 }
 
 export default function CategoriesPage() {
+  const { t } = useLocale();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -199,6 +203,7 @@ export default function CategoriesPage() {
   const [attributesCategory, setAttributesCategory] = useState<Category | null>(null);
   const [error, setError] = useState('');
   const [hasOrderChanges, setHasOrderChanges] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // Attribute dialog state
   const [attributeDialogOpen, setAttributeDialogOpen] = useState(false);
@@ -474,6 +479,12 @@ export default function CategoriesPage() {
     link.click();
   };
 
+  const handleCategoriesImport = async (file: File) => {
+    const result = await api.importCategoriesCSV(file);
+    await loadCategories();
+    return result;
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -487,10 +498,10 @@ export default function CategoriesPage() {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
           <Typography variant="h4" fontWeight={600} gutterBottom>
-            Categories
+            {t('categories.title')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Manage your marketplace category hierarchy and attributes. Drag to reorder.
+            {t('categories.subtitle')}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -502,23 +513,30 @@ export default function CategoriesPage() {
               onClick={saveOrderChanges}
               disabled={saving}
             >
-              Save Order
+              {t('categories.saveOrder')}
             </Button>
           )}
+          <Button
+            variant="outlined"
+            startIcon={<Upload />}
+            onClick={() => setImportDialogOpen(true)}
+          >
+            {t('common.import')}
+          </Button>
           <Button
             variant="outlined"
             startIcon={<Download />}
             onClick={exportToCSV}
             disabled={flatCategories.length === 0}
           >
-            Export CSV
+            {t('common.export')}
           </Button>
           <Button
             variant="contained"
             startIcon={<Add />}
             onClick={() => handleOpenDialog()}
           >
-            Add Category
+            {t('categories.addCategory')}
           </Button>
         </Box>
       </Box>
