@@ -2529,7 +2529,7 @@ const desktopStyles = StyleSheet.create({
   subcategoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -6,
+    gap: 12,
   },
   subcategoryItem: {
     flexDirection: 'row',
@@ -2537,13 +2537,13 @@ const desktopStyles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    marginHorizontal: 6,
-    marginBottom: 12,
     backgroundColor: COLORS.surface,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: COLORS.border,
-    width: 'calc(50% - 12px)',
+    flex: 1,
+    minWidth: '45%',
+    maxWidth: '48%',
   },
   subcategoryItemSelected: {
     borderColor: COLORS.primary,
