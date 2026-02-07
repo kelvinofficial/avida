@@ -202,9 +202,21 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
             <Ionicons name="image-outline" size={32} color="#CCC" />
           </View>
         )}
-        {listing.featured && (
-          <View style={cardStyles.topBadge}><Text style={cardStyles.topBadgeText}>TOP</Text></View>
-        )}
+        {/* Badges - Featured & TOP */}
+        <View style={cardStyles.badgesContainer}>
+          {listing.is_featured && (
+            <View style={cardStyles.featuredBadge}>
+              <Ionicons name="star" size={9} color="#fff" />
+              <Text style={cardStyles.badgeText}>Featured</Text>
+            </View>
+          )}
+          {(listing.is_top || listing.featured) && (
+            <View style={cardStyles.topBadge}>
+              <Ionicons name="arrow-up" size={9} color="#fff" />
+              <Text style={cardStyles.badgeText}>TOP</Text>
+            </View>
+          )}
+        </View>
         {onFavorite && (
           <TouchableOpacity style={cardStyles.favoriteButton} onPress={(e) => { e.stopPropagation(); onFavorite(); }}>
             <Ionicons name={isFavorited ? 'heart' : 'heart-outline'} size={20} color={isFavorited ? '#E91E63' : '#fff'} />
