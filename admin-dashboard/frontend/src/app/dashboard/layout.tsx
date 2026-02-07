@@ -1,0 +1,290 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import {
+  Box,
+  Drawer,
+  AppBar,
+  Toolbar,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+  IconButton,
+  Avatar,
+  Menu,
+  MenuItem,
+  Divider,
+  Chip,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
+import {
+  Dashboard,
+  Category,
+  People,
+  Inventory,
+  Report,
+  SupportAgent,
+  Analytics,
+  Settings,
+  History,
+  Menu as MenuIcon,
+  Logout,
+  AccountCircle,
+  Notifications,
+} from '@mui/icons-material';
+import { api } from '@/lib/api';
+import { Admin } from '@/types';
+
+const DRAWER_WIDTH = 260;
+
+const menuItems = [
+  { text: 'Overview', icon: <Dashboard />, path: '/dashboard' },
+  { text: 'Categories', icon: <Category />, path: '/dashboard/categories' },
+  { text: 'Users', icon: <People />, path: '/dashboard/users' },
+  { text: 'Listings', icon: <Inventory />, path: '/dashboard/listings' },
+  { text: 'Reports', icon: <Report />, path: '/dashboard/reports' },
+  { text: 'Tickets', icon: <SupportAgent />, path: '/dashboard/tickets' },
+  { text: 'Analytics', icon: <Analytics />, path: '/dashboard/analytics' },
+  { text: 'Settings', icon: <Settings />, path: '/dashboard/settings' },
+  { text: 'Audit Logs', icon: <History />, path: '/dashboard/audit-logs' },
+];
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [admin, setAdmin] = useState<Admin | null>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadAdmin = async () => {
+      try {
+        api.loadToken();
+        const data = await api.getMe();
+        setAdmin(data);
+      } catch {
+        router.push('/');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadAdmin();
+  }, [router]);
+
+  const handleLogout = async () => {
+    await api.logout();
+    router.push('/');
+  };
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'super_admin': return 'error';
+      case 'admin': return 'primary';
+      case 'moderator': return 'warning';
+      default: return 'default';
+    }
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+        <Typography>Loading...</Typography>
+      </Box>
+    );
+  }
+
+  const drawer = (
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box
+          sx={{
+            width: 40,
+            height: 40,
+            borderRadius: 1.5,
+            bgcolor: 'primary.main',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Dashboard sx={{ color: 'white' }} />
+        </Box>
+        <Box>
+          <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1.2 }}>
+            Admin
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Marketplace
+          </Typography>
+        </Box>
+      </Box>
+
+      <Divider />
+
+      <List sx={{ flex: 1, px: 1, py: 2 }}>
+        {menuItems.map((item) => (
+          <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
+            <ListItemButton
+              onClick={() => {
+                router.push(item.path);
+                if (isMobile) setMobileOpen(false);
+              }}
+              selected={pathname === item.path}
+              sx={{
+                borderRadius: 2,
+                '&.Mui-selected': {
+                  bgcolor: 'primary.light',
+                  color: 'white',
+                  '& .MuiListItemIcon-root': { color: 'white' },
+                  '&:hover': { bgcolor: 'primary.main' },
+                },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+
+      <Divider />
+
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Avatar sx={{ bgcolor: 'primary.main', width: 36, height: 36 }}>
+            {admin?.name?.charAt(0) || 'A'}
+          </Avatar>
+          <Box sx={{ flex: 1, overflow: 'hidden' }}>
+            <Typography variant="body2" fontWeight={500} noWrap>
+              {admin?.name}
+            </Typography>
+            <Chip
+              label={admin?.role?.replace('_', ' ')}
+              size="small"
+              color={getRoleColor(admin?.role || '')}
+              sx={{ height: 20, fontSize: 10 }}
+            />
+          </Box>
+        </Box>
+      </Box>
+    </Box>
+  );
+
+  return (
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+      {/* AppBar */}
+      <AppBar
+        position="fixed"
+        sx={{
+          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
+          ml: { md: `${DRAWER_WIDTH}px` },
+          bgcolor: 'background.paper',
+          color: 'text.primary',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+        }}
+      >
+        <Toolbar>
+          <IconButton
+            edge="start"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            sx={{ mr: 2, display: { md: 'none' } }}
+          >
+            <MenuIcon />
+          </IconButton>
+
+          <Typography variant="h6" fontWeight={600} sx={{ flex: 1 }}>
+            {menuItems.find((item) => item.path === pathname)?.text || 'Dashboard'}
+          </Typography>
+
+          <IconButton>
+            <Notifications />
+          </IconButton>
+
+          <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+            <AccountCircle />
+          </IconButton>
+
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={() => setAnchorEl(null)}
+            PaperProps={{ sx: { width: 200 } }}
+          >
+            <MenuItem disabled>
+              <Typography variant="body2" color="text.secondary">
+                {admin?.email}
+              </Typography>
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={handleLogout}>
+              <ListItemIcon>
+                <Logout fontSize="small" />
+              </ListItemIcon>
+              Logout
+            </MenuItem>
+          </Menu>
+        </Toolbar>
+      </AppBar>
+
+      {/* Sidebar */}
+      <Box
+        component="nav"
+        sx={{ width: { md: DRAWER_WIDTH }, flexShrink: { md: 0 } }}
+      >
+        {/* Mobile drawer */}
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+          ModalProps={{ keepMounted: true }}
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            '& .MuiDrawer-paper': { width: DRAWER_WIDTH },
+          }}
+        >
+          {drawer}
+        </Drawer>
+
+        {/* Desktop drawer */}
+        <Drawer
+          variant="permanent"
+          sx={{
+            display: { xs: 'none', md: 'block' },
+            '& .MuiDrawer-paper': { width: DRAWER_WIDTH, borderRight: '1px solid #E0E0E0' },
+          }}
+          open
+        >
+          {drawer}
+        </Drawer>
+      </Box>
+
+      {/* Main content */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
+          bgcolor: 'background.default',
+          minHeight: '100vh',
+          mt: '64px',
+        }}
+      >
+        {children}
+      </Box>
+    </Box>
+  );
+}
