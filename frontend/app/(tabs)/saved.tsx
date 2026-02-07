@@ -469,6 +469,8 @@ export default function SavedScreen() {
                 </View>
               ))}
             </View>
+            {/* Footer */}
+            <Footer isTablet={isTablet && !isDesktop} />
           </ScrollView>
         )}
       </View>
