@@ -255,7 +255,8 @@ const styles = StyleSheet.create({
     flex: 1,
     maxWidth: 1280,
     width: '100%',
-    alignSelf: 'center',
+    marginLeft: 'auto',
+    marginRight: 'auto',
     backgroundColor: COLORS.background,
   },
   fullWidth: {
