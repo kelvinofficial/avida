@@ -969,6 +969,8 @@ const styles = StyleSheet.create({
 
 // ============ DESKTOP STYLES ============
 const desktopStyles = StyleSheet.create({
+  container: { backgroundColor: '#1A1A1A' }, // Dark footer background
+  
   // Global Header
   globalHeader: {
     backgroundColor: COLORS.surface,
