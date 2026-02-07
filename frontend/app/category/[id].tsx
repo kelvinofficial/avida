@@ -672,7 +672,7 @@ export default function CategoryScreen() {
                   </TouchableOpacity>
                 </>
               )}
-              <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => router.push('/create-listing')}>
+              <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => router.push('/post')}>
                 <Ionicons name="add" size={18} color="#fff" />
                 <Text style={desktopStyles.postListingBtnText}>Post Listing</Text>
               </TouchableOpacity>
