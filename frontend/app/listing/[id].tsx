@@ -2026,6 +2026,7 @@ const desktopStyles = StyleSheet.create({
   scrollContent: {
     paddingVertical: 24,
     paddingBottom: 60,
+    backgroundColor: COLORS.background, // Light background for content area
   },
   // Main Container
   mainContainer: {
