@@ -2180,15 +2180,17 @@ const desktopStyles = StyleSheet.create({
   container: {
     backgroundColor: '#F0F2F5',
   },
+  headerWrapper: {
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 32,
     paddingVertical: 16,
-    backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
     maxWidth: 1280,
     width: '100%',
     alignSelf: 'center',
