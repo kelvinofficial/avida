@@ -531,18 +531,8 @@ export default function MyListingsScreen() {
             ))}
           </View>
 
-          {/* Content */}
-          {loading && !refreshing ? (
-            <View style={desktopStyles.gridContainer}>
-              <View style={desktopStyles.grid}>
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <View key={i} style={desktopStyles.gridItem}>
-                    <SkeletonItem isDesktop />
-                  </View>
-                ))}
-              </View>
-            </View>
-          ) : listings.length === 0 ? (
+          {/* Content - Render immediately */}
+          {listings.length === 0 && !loading ? (
             <EmptyState status={activeTab} isDesktop />
           ) : (
             <ScrollView 
