@@ -65,6 +65,16 @@ const formatTimeAgo = (dateString: string): string => {
   return date.toLocaleDateString();
 };
 
+// Helper function to check if listing is less than 24 hours old
+const isJustListed = (dateString: string): boolean => {
+  if (!dateString) return false;
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInHours = diffInMs / (1000 * 60 * 60);
+  return diffInHours < 24;
+};
+
 // Listing Card
 const ListingCard = ({ 
   item, 
