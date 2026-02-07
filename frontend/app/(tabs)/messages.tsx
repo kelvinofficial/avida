@@ -53,7 +53,8 @@ const COLORS = {
 const getTimeLabel = (date?: string) => {
   if (!date) return '';
   try {
-    const d = new Date(date);
+    // Ensure the string is treated as UTC if no timezone specified
+    const d = new Date(date.endsWith('Z') ? date : date + 'Z');
     if (isToday(d)) {
       return format(d, 'HH:mm');
     } else if (isYesterday(d)) {
