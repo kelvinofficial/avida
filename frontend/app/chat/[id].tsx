@@ -1334,7 +1334,9 @@ export default function ChatScreen() {
     let lastDate: string | null = null;
 
     messages.forEach((msg) => {
-      const msgDate = format(new Date(msg.created_at), 'yyyy-MM-dd');
+      // Ensure the string is treated as UTC if no timezone specified
+      const d = new Date(msg.created_at.endsWith('Z') ? msg.created_at : msg.created_at + 'Z');
+      const msgDate = format(d, 'yyyy-MM-dd');
       if (msgDate !== lastDate) {
         result.push({ type: 'date', date: msg.created_at });
         lastDate = msgDate;
