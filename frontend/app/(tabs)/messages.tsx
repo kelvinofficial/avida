@@ -267,6 +267,14 @@ export default function MessagesScreen() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  
+  // Embedded chat states
+  const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [newMessage, setNewMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const chatListRef = useRef<FlatList>(null);
+  const socketRef = useRef<Socket | null>(null);
 
   const fetchConversations = useCallback(async () => {
     if (!isAuthenticated) {
