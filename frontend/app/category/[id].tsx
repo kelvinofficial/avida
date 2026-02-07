@@ -622,12 +622,14 @@ export default function CategoryScreen() {
 
   // Desktop view
   if (isDesktop || isTablet) {
-    // Calculate card width dynamically to fill available space with 3 columns
+    // Calculate card width dynamically
     const sidebarWidth = 260;
     const sidebarMargin = 24;
     const containerPadding = 48; // 24px on each side
     const cardGap = 24; // gap between cards
-    const numColumns = 3;
+    
+    // Desktop: 3 columns, Tablet: 2 columns
+    const numColumns = isDesktop ? 3 : 2;
     
     // Use max content width of 1280px
     const contentWidth = Math.min(screenWidth, MAX_CONTENT_WIDTH);
