@@ -1872,6 +1872,36 @@ async def connect(sid, environ):
 @sio.event
 async def disconnect(sid):
     logger.info(f"Client disconnected: {sid}")
+    # Remove user from online tracking
+    if sid in user_sockets:
+        user_id = user_sockets[sid]
+        del user_sockets[sid]
+        if user_id in online_users:
+            del online_users[user_id]
+        # Update last_seen in database
+        await db.users.update_one(
+            {"user_id": user_id},
+            {"$set": {"last_seen": datetime.now(timezone.utc)}}
+        )
+        # Broadcast offline status
+        await sio.emit("user_offline", {"user_id": user_id})
+        logger.info(f"User {user_id} went offline")
+
+@sio.event
+async def user_online(sid, data):
+    """Track user as online"""
+    user_id = data.get("user_id")
+    if user_id:
+        online_users[user_id] = sid
+        user_sockets[sid] = user_id
+        # Update last_seen and online status in database
+        await db.users.update_one(
+            {"user_id": user_id},
+            {"$set": {"last_seen": datetime.now(timezone.utc), "is_online": True}}
+        )
+        # Broadcast online status
+        await sio.emit("user_online_status", {"user_id": user_id, "is_online": True})
+        logger.info(f"User {user_id} is now online")
 
 @sio.event
 async def join_conversation(sid, data):
