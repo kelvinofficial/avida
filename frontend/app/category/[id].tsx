@@ -635,7 +635,7 @@ export default function CategoryScreen() {
     // Calculate card width dynamically to fill available space with 3 columns
     const sidebarWidth = 260;
     const sidebarMargin = 32;
-    const containerPadding = 80; // 40px on each side from scrollContent
+    const containerPadding = 48; // 24px on each side from scrollContent
     const cardGap = 28; // gap between cards
     const numColumns = 3;
     
