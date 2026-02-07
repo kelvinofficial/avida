@@ -1912,6 +1912,10 @@ const desktopStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1A1A1A', // Footer background color for full-width effect
   },
+  // Header Section - wraps header and breadcrumb
+  headerSection: {
+    backgroundColor: COLORS.surface,
+  },
   // Header Row 1
   headerRow1: {
     backgroundColor: COLORS.surface,
