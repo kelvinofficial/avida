@@ -32,6 +32,9 @@ import {
   Tooltip,
   Snackbar,
   Autocomplete,
+  Grid,
+  Paper,
+  Divider,
 } from '@mui/material';
 import {
   Add,
@@ -44,6 +47,7 @@ import {
   Group,
   Person,
   Campaign,
+  Description,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { useLocale } from '@/components/LocaleProvider';
@@ -63,6 +67,16 @@ interface Notification {
   total_recipients?: number;
 }
 
+interface NotificationTemplate {
+  id: string;
+  name: string;
+  category: string;
+  title: string;
+  message: string;
+  icon: string;
+  recommended_type: string;
+}
+
 export default function NotificationsPage() {
   const { t } = useLocale();
   const [loading, setLoading] = useState(true);
@@ -76,6 +90,12 @@ export default function NotificationsPage() {
   const [tabValue, setTabValue] = useState(0);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  
+  // Templates state
+  const [templates, setTemplates] = useState<NotificationTemplate[]>([]);
+  const [templateCategories, setTemplateCategories] = useState<string[]>([]);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [selectedTemplateCategory, setSelectedTemplateCategory] = useState<string>('');
 
   // Form state
   const [formData, setFormData] = useState({
@@ -101,6 +121,16 @@ export default function NotificationsPage() {
       setLoading(false);
     }
   }, [t]);
+
+  const loadTemplates = useCallback(async () => {
+    try {
+      const data = await api.getNotificationTemplates();
+      setTemplates(data.templates || []);
+      setTemplateCategories(data.categories || []);
+    } catch (err) {
+      console.error('Failed to load templates:', err);
+    }
+  }, []);
 
   useEffect(() => {
     loadNotifications();
