@@ -440,6 +440,11 @@ async def get_current_user(request: Request) -> Optional[User]:
     
     user_doc = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
     if user_doc:
+        # Update last_seen timestamp for activity tracking
+        await db.users.update_one(
+            {"user_id": session["user_id"]},
+            {"$set": {"last_seen": datetime.now(timezone.utc)}}
+        )
         return User(**user_doc)
     return None
 
