@@ -275,6 +275,9 @@ export default function MessagesScreen() {
   const [sending, setSending] = useState(false);
   const chatListRef = useRef<FlatList>(null);
   const socketRef = useRef<Socket | null>(null);
+  
+  // User online status tracking
+  const [userStatuses, setUserStatuses] = useState<Record<string, { is_online: boolean | null; last_seen: string | null }>>({});
 
   const fetchConversations = useCallback(async () => {
     if (!isAuthenticated) {
@@ -285,6 +288,20 @@ export default function MessagesScreen() {
     try {
       const data = await conversationsApi.getAll();
       setConversations(data);
+      
+      // Fetch online status for all conversation users
+      const userIds = data
+        .map((c: Conversation) => c.other_user?.user_id)
+        .filter((id: string | undefined): id is string => !!id);
+      
+      if (userIds.length > 0) {
+        try {
+          const statuses = await usersApi.getStatusBatch(userIds);
+          setUserStatuses(statuses);
+        } catch (err) {
+          console.error('Error fetching user statuses:', err);
+        }
+      }
     } catch (error) {
       console.error('Error fetching conversations:', error);
     } finally {
@@ -298,6 +315,33 @@ export default function MessagesScreen() {
       fetchConversations();
     }, [fetchConversations])
   );
+
+  // Listen for online/offline status changes via socket
+  useEffect(() => {
+    if (!socketRef.current) return;
+    
+    const handleUserOnline = (data: { user_id: string; is_online: boolean }) => {
+      setUserStatuses(prev => ({
+        ...prev,
+        [data.user_id]: { ...prev[data.user_id], is_online: data.is_online }
+      }));
+    };
+    
+    const handleUserOffline = (data: { user_id: string }) => {
+      setUserStatuses(prev => ({
+        ...prev,
+        [data.user_id]: { ...prev[data.user_id], is_online: false, last_seen: new Date().toISOString() }
+      }));
+    };
+    
+    socketRef.current.on('user_online_status', handleUserOnline);
+    socketRef.current.on('user_offline', handleUserOffline);
+    
+    return () => {
+      socketRef.current?.off('user_online_status', handleUserOnline);
+      socketRef.current?.off('user_offline', handleUserOffline);
+    };
+  }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
