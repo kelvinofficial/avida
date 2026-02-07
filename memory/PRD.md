@@ -105,6 +105,21 @@ Build a responsive desktop version of the marketplace application. The applicati
 ## Changelog
 
 ### February 7, 2026
+**"Just Listed" Badge Feature Added**
+- Added "Just Listed" badge (purple with clock icon) for listings less than 24 hours old
+- Implemented across ALL listing card components:
+  - `ListingCard.tsx` (shared component)
+  - Home page inline card
+  - Saved page card
+  - Seller Profile page card
+  - My Listings page desktop card
+- Badge appears with other badges (Featured, TOP) and wraps if needed
+
+**Badge Color Scheme:**
+- **Just Listed**: Purple (#8B5CF6) - clock icon
+- **Featured**: Amber (#F59E0B) - star icon  
+- **TOP**: Red (#EF4444) - arrow-up icon
+
 **Listing Card Standardization Complete**
 - Updated `ListingCard` component (`/app/frontend/src/components/listings/ListingCard.tsx`) with standardized design
 - Added time posted display using `formatTimeAgo()` helper
@@ -121,6 +136,7 @@ Build a responsive desktop version of the marketplace application. The applicati
 - Location with icon
 - Time posted (relative)
 - Heart icon for favorites
+- Just Listed badge (purple with clock icon) - for listings < 24 hours old
 - Featured badge (amber with star icon)
 - TOP badge (red with arrow icon)
 
