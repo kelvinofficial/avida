@@ -781,13 +781,11 @@ export default function ListingDetailScreen() {
     }
   };
 
-  if (loading) {
+  // Render immediately without loading state - show empty container while data fetches
+  if (loading && !listing) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.loading}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading listing...</Text>
-        </View>
+        <View style={{ flex: 1, backgroundColor: COLORS.background }} />
       </SafeAreaView>
     );
   }
