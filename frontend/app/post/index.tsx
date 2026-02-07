@@ -1218,15 +1218,17 @@ export default function PostListingScreen() {
   if (isLargeScreen) {
     return (
       <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
-        {/* Desktop Header */}
-        <View style={desktopStyles.header}>
-          <TouchableOpacity style={desktopStyles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <Text style={desktopStyles.headerTitle}>Create New Listing</Text>
-          <TouchableOpacity style={desktopStyles.cancelButton} onPress={() => router.back()}>
-            <Text style={desktopStyles.cancelText}>Cancel</Text>
-          </TouchableOpacity>
+        {/* Desktop Header Wrapper */}
+        <View style={desktopStyles.headerWrapper}>
+          <View style={desktopStyles.header}>
+            <TouchableOpacity style={desktopStyles.backButton} onPress={() => router.back()}>
+              <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+            </TouchableOpacity>
+            <Text style={desktopStyles.headerTitle}>Create New Listing</Text>
+            <TouchableOpacity style={desktopStyles.cancelButton} onPress={() => router.back()}>
+              <Text style={desktopStyles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={desktopStyles.mainLayout}>
