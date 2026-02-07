@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid,
   FormControl,
   InputLabel,
   Select,
@@ -15,6 +14,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   TrendingUp,
   TrendingDown,
