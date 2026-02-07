@@ -374,33 +374,11 @@ export default function PublicProfileScreen() {
     return `/listing/${item.id}`;
   };
 
+  // Render immediately without loading spinner - show empty container
   if (loading || !isReady) {
     return (
       <SafeAreaView style={[styles.container, isLargeScreen && desktopStyles.container]} edges={['top']}>
-        {isLargeScreen && (
-          <View style={desktopStyles.globalHeader}>
-            <View style={desktopStyles.globalHeaderInner}>
-              <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
-                <View style={desktopStyles.logoIcon}>
-                  <Ionicons name="storefront" size={20} color="#fff" />
-                </View>
-                <Text style={desktopStyles.logoText}>avida</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-        {!isLargeScreen && (
-          <View style={styles.header}>
-            <TouchableOpacity onPress={handleGoBack}>
-              <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Profile</Text>
-            <View style={{ width: 24 }} />
-          </View>
-        )}
-        <View style={[styles.centerContent, isLargeScreen && desktopStyles.pageWrapper]}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
+        <View style={{ flex: 1, backgroundColor: COLORS.background }} />
       </SafeAreaView>
     );
   }
