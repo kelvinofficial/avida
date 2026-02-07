@@ -1042,6 +1042,7 @@ const styles = StyleSheet.create({
   },
   welcomeBackOptions: {
     width: '100%',
+    maxWidth: 400,
     gap: 12,
   },
   welcomeBackPrimaryBtn: {
