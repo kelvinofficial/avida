@@ -1603,7 +1603,7 @@ const desktopStyles = StyleSheet.create({
   listingsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 28,
+    gap: 24,
   },
   cardWrapper: {
     marginBottom: 12,
