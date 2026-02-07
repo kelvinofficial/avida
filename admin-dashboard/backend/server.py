@@ -773,6 +773,8 @@ async def create_category(
     await db.admin_categories.insert_one(new_category)
     await log_audit(admin["id"], admin["email"], AuditAction.CREATE, "category", category_id, {"name": category_data.name}, request)
     
+    # Remove _id that MongoDB added and add additional fields
+    new_category.pop("_id", None)
     new_category["listings_count"] = 0
     new_category["children"] = []
     return new_category
