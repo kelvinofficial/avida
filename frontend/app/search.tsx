@@ -251,6 +251,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  desktopWrapper: {
+    flex: 1,
+    maxWidth: 1280,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  fullWidth: {
+    flex: 1,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
