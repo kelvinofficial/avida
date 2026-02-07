@@ -52,8 +52,24 @@ export default function LoginScreen() {
   const router = useRouter();
   const { signedOut, redirect } = useLocalSearchParams<{ signedOut?: string; redirect?: string }>();
   const { setUser, setToken } = useAuthStore();
-  const { isDesktop, isTablet, isReady } = useResponsive();
-  const isLargeScreen = isReady && (isDesktop || isTablet);
+  const { isDesktop, isTablet } = useResponsive();
+  
+  // Use client-side state for large screen detection to avoid SSR hydration mismatch
+  const [isClient, setIsClient] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+    // Check screen size on client
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      setIsLargeScreen(window.innerWidth > 768);
+      const handleResize = () => setIsLargeScreen(window.innerWidth > 768);
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    } else {
+      setIsLargeScreen(isDesktop || isTablet);
+    }
+  }, [isDesktop, isTablet]);
   
   // Determine where to redirect after successful login
   const redirectAfterLogin = redirect || '/';
