@@ -2075,7 +2075,9 @@ async def send_notification(
     request: Request,
     admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
 ):
-    """Send a notification immediately"""
+    """Send a notification immediately via push notification service"""
+    from push_service import send_push_notification, get_user_tokens
+    
     existing = await db.admin_notifications.find_one({"id": notif_id})
     if not existing:
         raise HTTPException(status_code=404, detail="Notification not found")
@@ -2085,21 +2087,48 @@ async def send_notification(
     
     now = datetime.now(timezone.utc).isoformat()
     
-    # In production, this would trigger push notification service
-    # For now, just update status and store notification records
-    await db.admin_notifications.update_one(
-        {"id": notif_id},
-        {"$set": {"status": "sent", "sent_at": now, "updated_at": now}}
-    )
-    
-    # Create notification records for users
+    # Get target users
     if existing.get("target_type") == "all":
         users = await db.users.find({}, {"user_id": 1}).to_list(10000)
+        user_ids = [u["user_id"] for u in users]
+        segments = ["All"]
     elif existing.get("target_ids"):
-        users = [{"user_id": uid} for uid in existing["target_ids"]]
+        user_ids = existing["target_ids"]
+        users = [{"user_id": uid} for uid in user_ids]
+        segments = None
     else:
         users = []
+        user_ids = []
+        segments = None
     
+    # Get FCM tokens for users
+    fcm_tokens = await get_user_tokens(db, user_ids) if user_ids else []
+    
+    # Send push notification
+    push_result = await send_push_notification(
+        title=existing.get("title", ""),
+        body=existing.get("message", ""),
+        user_ids=user_ids,
+        fcm_tokens=fcm_tokens,
+        segments=segments,
+        data={
+            "notification_id": notif_id,
+            "type": existing.get("type", "broadcast")
+        }
+    )
+    
+    # Update notification status
+    await db.admin_notifications.update_one(
+        {"id": notif_id},
+        {"$set": {
+            "status": "sent", 
+            "sent_at": now, 
+            "updated_at": now,
+            "push_result": push_result
+        }}
+    )
+    
+    # Create notification records for users (in-app notifications)
     if users:
         notification_records = [
             {
@@ -2113,9 +2142,20 @@ async def send_notification(
         ]
         await db.user_notifications.insert_many(notification_records)
     
-    await log_audit(admin["id"], admin["email"], AuditAction.UPDATE, "notification", notif_id, {"action": "send"}, request)
+    # Broadcast to connected WebSocket clients
+    await broadcast_admin_event("notification_sent", {
+        "notification_id": notif_id,
+        "recipients": len(users),
+        "push_result": push_result
+    })
     
-    return {"message": "Notification sent successfully", "recipients": len(users)}
+    await log_audit(admin["id"], admin["email"], AuditAction.UPDATE, "notification", notif_id, {"action": "send", "recipients": len(users)}, request)
+    
+    return {
+        "message": "Notification sent successfully", 
+        "recipients": len(users),
+        "push_result": push_result
+    }
 
 @api_router.delete("/notifications/{notif_id}")
 async def delete_notification(
