@@ -29,6 +29,7 @@ import SimilarListings from '../../src/components/property/SimilarListings';
 import { safeGoBack } from '../../src/utils/navigation';
 import { getCategoryIcon, getCategoryName } from '../../src/config/categoryAttributes';
 import { useResponsive } from '../../src/hooks/useResponsive';
+import { Footer } from '../../src/components/layout';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
