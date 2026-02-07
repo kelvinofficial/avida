@@ -2033,12 +2033,14 @@ const desktopStyles = StyleSheet.create({
   // Scroll Container
   scrollContainer: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
   scrollContent: {
-    paddingTop: 24,
+    paddingTop: 0,
   },
   contentWrapper: {
     backgroundColor: COLORS.background,
+    paddingTop: 24,
     paddingBottom: 40,
   },
   // Main Container
