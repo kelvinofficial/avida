@@ -1839,6 +1839,515 @@ async def root():
     return {"message": "Admin Dashboard API", "docs": "/docs"}
 
 # =============================================================================
+# ADS MANAGEMENT ENDPOINTS
+# =============================================================================
+
+class AdPlacementCreate(BaseModel):
+    name: str
+    platform: str = Field(..., pattern="^(admob|adsense|custom)$")
+    ad_type: str = Field(..., pattern="^(banner|interstitial|native|rewarded)$")
+    placement_id: str
+    location: str
+    is_active: bool = True
+
+class AdPlacementUpdate(BaseModel):
+    name: Optional[str] = None
+    platform: Optional[str] = None
+    ad_type: Optional[str] = None
+    placement_id: Optional[str] = None
+    location: Optional[str] = None
+    is_active: Optional[bool] = None
+
+@api_router.get("/ads")
+async def list_ad_placements(
+    admin: dict = Depends(require_permission(Permission.VIEW_SETTINGS))
+):
+    """List all ad placements"""
+    ads = await db.ad_placements.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return ads
+
+@api_router.post("/ads")
+async def create_ad_placement(
+    ad_data: AdPlacementCreate,
+    request: Request,
+    admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
+):
+    """Create a new ad placement"""
+    ad_id = f"ad_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc).isoformat()
+    
+    new_ad = {
+        "id": ad_id,
+        **ad_data.model_dump(),
+        "impressions": 0,
+        "clicks": 0,
+        "created_at": now,
+        "updated_at": now,
+    }
+    
+    await db.ad_placements.insert_one(new_ad)
+    await log_audit(admin["id"], admin["email"], AuditAction.CREATE, "ad_placement", ad_id, {"name": ad_data.name}, request)
+    
+    new_ad.pop("_id", None)
+    return new_ad
+
+@api_router.get("/ads/{ad_id}")
+async def get_ad_placement(
+    ad_id: str,
+    admin: dict = Depends(require_permission(Permission.VIEW_SETTINGS))
+):
+    """Get a specific ad placement"""
+    ad = await db.ad_placements.find_one({"id": ad_id}, {"_id": 0})
+    if not ad:
+        raise HTTPException(status_code=404, detail="Ad placement not found")
+    return ad
+
+@api_router.patch("/ads/{ad_id}")
+async def update_ad_placement(
+    ad_id: str,
+    ad_data: AdPlacementUpdate,
+    request: Request,
+    admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
+):
+    """Update an ad placement"""
+    existing = await db.ad_placements.find_one({"id": ad_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Ad placement not found")
+    
+    update_data = {k: v for k, v in ad_data.model_dump().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.ad_placements.update_one({"id": ad_id}, {"$set": update_data})
+    await log_audit(admin["id"], admin["email"], AuditAction.UPDATE, "ad_placement", ad_id, update_data, request)
+    
+    updated = await db.ad_placements.find_one({"id": ad_id}, {"_id": 0})
+    return updated
+
+@api_router.delete("/ads/{ad_id}")
+async def delete_ad_placement(
+    ad_id: str,
+    request: Request,
+    admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
+):
+    """Delete an ad placement"""
+    existing = await db.ad_placements.find_one({"id": ad_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Ad placement not found")
+    
+    await db.ad_placements.delete_one({"id": ad_id})
+    await log_audit(admin["id"], admin["email"], AuditAction.DELETE, "ad_placement", ad_id, {"name": existing.get("name")}, request)
+    
+    return {"message": "Ad placement deleted successfully"}
+
+@api_router.post("/ads/{ad_id}/track")
+async def track_ad_event(
+    ad_id: str,
+    event_type: str = Query(..., pattern="^(impression|click)$")
+):
+    """Track ad impression or click (public endpoint for client apps)"""
+    existing = await db.ad_placements.find_one({"id": ad_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Ad placement not found")
+    
+    field = "impressions" if event_type == "impression" else "clicks"
+    await db.ad_placements.update_one({"id": ad_id}, {"$inc": {field: 1}})
+    
+    return {"message": f"{event_type} tracked"}
+
+# =============================================================================
+# NOTIFICATIONS ENDPOINTS
+# =============================================================================
+
+class NotificationCreate(BaseModel):
+    title: str
+    message: str
+    type: str = Field(..., pattern="^(broadcast|targeted|scheduled)$")
+    target_type: str = Field(default="all", pattern="^(all|users|segments)$")
+    target_ids: Optional[List[str]] = None
+    scheduled_at: Optional[str] = None
+
+class NotificationUpdate(BaseModel):
+    title: Optional[str] = None
+    message: Optional[str] = None
+    type: Optional[str] = None
+    target_type: Optional[str] = None
+    target_ids: Optional[List[str]] = None
+    scheduled_at: Optional[str] = None
+
+@api_router.get("/notifications")
+async def list_notifications(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    status: Optional[str] = None,
+    admin: dict = Depends(require_permission(Permission.VIEW_REPORTS))
+):
+    """List all notifications"""
+    query = {}
+    if status:
+        query["status"] = status
+    
+    total = await db.admin_notifications.count_documents(query)
+    skip = (page - 1) * limit
+    
+    notifications = await db.admin_notifications.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    return {
+        "items": notifications,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "pages": (total + limit - 1) // limit
+    }
+
+@api_router.post("/notifications")
+async def create_notification(
+    notif_data: NotificationCreate,
+    request: Request,
+    admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
+):
+    """Create a new notification"""
+    notif_id = f"notif_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Determine initial status
+    status = "draft"
+    if notif_data.type == "scheduled" and notif_data.scheduled_at:
+        status = "scheduled"
+    
+    # Get total recipients count
+    total_recipients = await db.users.count_documents({})
+    if notif_data.target_type == "users" and notif_data.target_ids:
+        total_recipients = len(notif_data.target_ids)
+    
+    new_notification = {
+        "id": notif_id,
+        **notif_data.model_dump(),
+        "status": status,
+        "sent_at": None,
+        "read_count": 0,
+        "total_recipients": total_recipients,
+        "created_by": admin["id"],
+        "created_at": now,
+        "updated_at": now,
+    }
+    
+    await db.admin_notifications.insert_one(new_notification)
+    await log_audit(admin["id"], admin["email"], AuditAction.CREATE, "notification", notif_id, {"title": notif_data.title}, request)
+    
+    new_notification.pop("_id", None)
+    return new_notification
+
+@api_router.get("/notifications/{notif_id}")
+async def get_notification(
+    notif_id: str,
+    admin: dict = Depends(require_permission(Permission.VIEW_REPORTS))
+):
+    """Get a specific notification"""
+    notif = await db.admin_notifications.find_one({"id": notif_id}, {"_id": 0})
+    if not notif:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    return notif
+
+@api_router.patch("/notifications/{notif_id}")
+async def update_notification(
+    notif_id: str,
+    notif_data: NotificationUpdate,
+    request: Request,
+    admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
+):
+    """Update a notification"""
+    existing = await db.admin_notifications.find_one({"id": notif_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    
+    if existing.get("status") == "sent":
+        raise HTTPException(status_code=400, detail="Cannot update a sent notification")
+    
+    update_data = {k: v for k, v in notif_data.model_dump().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.admin_notifications.update_one({"id": notif_id}, {"$set": update_data})
+    await log_audit(admin["id"], admin["email"], AuditAction.UPDATE, "notification", notif_id, update_data, request)
+    
+    updated = await db.admin_notifications.find_one({"id": notif_id}, {"_id": 0})
+    return updated
+
+@api_router.post("/notifications/{notif_id}/send")
+async def send_notification(
+    notif_id: str,
+    request: Request,
+    admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
+):
+    """Send a notification immediately"""
+    existing = await db.admin_notifications.find_one({"id": notif_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    
+    if existing.get("status") == "sent":
+        raise HTTPException(status_code=400, detail="Notification already sent")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # In production, this would trigger push notification service
+    # For now, just update status and store notification records
+    await db.admin_notifications.update_one(
+        {"id": notif_id},
+        {"$set": {"status": "sent", "sent_at": now, "updated_at": now}}
+    )
+    
+    # Create notification records for users
+    if existing.get("target_type") == "all":
+        users = await db.users.find({}, {"user_id": 1}).to_list(10000)
+    elif existing.get("target_ids"):
+        users = [{"user_id": uid} for uid in existing["target_ids"]]
+    else:
+        users = []
+    
+    if users:
+        notification_records = [
+            {
+                "id": f"nr_{uuid.uuid4().hex[:12]}",
+                "notification_id": notif_id,
+                "user_id": u["user_id"],
+                "is_read": False,
+                "created_at": now,
+            }
+            for u in users
+        ]
+        await db.user_notifications.insert_many(notification_records)
+    
+    await log_audit(admin["id"], admin["email"], AuditAction.UPDATE, "notification", notif_id, {"action": "send"}, request)
+    
+    return {"message": "Notification sent successfully", "recipients": len(users)}
+
+@api_router.delete("/notifications/{notif_id}")
+async def delete_notification(
+    notif_id: str,
+    request: Request,
+    admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
+):
+    """Delete a notification"""
+    existing = await db.admin_notifications.find_one({"id": notif_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    
+    await db.admin_notifications.delete_one({"id": notif_id})
+    # Also delete any user notification records
+    await db.user_notifications.delete_many({"notification_id": notif_id})
+    
+    await log_audit(admin["id"], admin["email"], AuditAction.DELETE, "notification", notif_id, {"title": existing.get("title")}, request)
+    
+    return {"message": "Notification deleted successfully"}
+
+# =============================================================================
+# CSV IMPORT ENDPOINTS
+# =============================================================================
+
+@api_router.post("/users/import")
+async def import_users_csv(
+    file: UploadFile = File(...),
+    request: Request = None,
+    admin: dict = Depends(require_permission(Permission.MANAGE_USERS))
+):
+    """Import users from CSV file"""
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="File must be a CSV")
+    
+    import csv
+    import io
+    
+    content = await file.read()
+    decoded = content.decode('utf-8')
+    reader = csv.DictReader(io.StringIO(decoded))
+    
+    imported = 0
+    errors = []
+    now = datetime.now(timezone.utc).isoformat()
+    
+    for i, row in enumerate(reader):
+        try:
+            # Validate required fields
+            email = row.get('email', '').strip()
+            name = row.get('name', '').strip()
+            
+            if not email:
+                errors.append(f"Row {i+2}: Missing email")
+                continue
+            
+            # Check if user already exists
+            existing = await db.users.find_one({"email": email})
+            if existing:
+                errors.append(f"Row {i+2}: User with email {email} already exists")
+                continue
+            
+            # Create user
+            user_id = f"user_{uuid.uuid4().hex[:12]}"
+            new_user = {
+                "user_id": user_id,
+                "email": email,
+                "name": name or email.split('@')[0],
+                "phone": row.get('phone', '').strip() or None,
+                "status": "active",
+                "created_at": now,
+                "updated_at": now,
+                "imported": True,
+            }
+            
+            await db.users.insert_one(new_user)
+            imported += 1
+            
+        except Exception as e:
+            errors.append(f"Row {i+2}: {str(e)}")
+    
+    await log_audit(admin["id"], admin["email"], AuditAction.CREATE, "users", "bulk_import", {"imported": imported, "errors": len(errors)}, request)
+    
+    return {
+        "message": f"Import completed",
+        "imported": imported,
+        "errors": errors[:10],  # Return first 10 errors
+        "total_errors": len(errors)
+    }
+
+@api_router.post("/categories/import")
+async def import_categories_csv(
+    file: UploadFile = File(...),
+    request: Request = None,
+    admin: dict = Depends(require_permission(Permission.MANAGE_CATEGORIES))
+):
+    """Import categories from CSV file"""
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="File must be a CSV")
+    
+    import csv
+    import io
+    
+    content = await file.read()
+    decoded = content.decode('utf-8')
+    reader = csv.DictReader(io.StringIO(decoded))
+    
+    imported = 0
+    errors = []
+    now = datetime.now(timezone.utc).isoformat()
+    
+    for i, row in enumerate(reader):
+        try:
+            name = row.get('name', '').strip()
+            
+            if not name:
+                errors.append(f"Row {i+2}: Missing name")
+                continue
+            
+            cat_id = f"cat_{uuid.uuid4().hex[:8]}"
+            slug = name.lower().replace(' ', '-').replace('&', 'and')
+            slug = re.sub(r'[^a-z0-9-]', '', slug)
+            
+            new_category = {
+                "id": cat_id,
+                "name": name,
+                "slug": slug,
+                "parent_id": row.get('parent_id', '').strip() or None,
+                "order": int(row.get('order', 0)),
+                "is_visible": row.get('is_visible', 'true').lower() == 'true',
+                "icon": row.get('icon', '').strip() or None,
+                "color": row.get('color', '').strip() or None,
+                "description": row.get('description', '').strip() or None,
+                "attributes": [],
+                "created_at": now,
+                "updated_at": now,
+            }
+            
+            await db.admin_categories.insert_one(new_category)
+            imported += 1
+            
+        except Exception as e:
+            errors.append(f"Row {i+2}: {str(e)}")
+    
+    await log_audit(admin["id"], admin["email"], AuditAction.CREATE, "categories", "bulk_import", {"imported": imported, "errors": len(errors)}, request)
+    
+    return {
+        "message": f"Import completed",
+        "imported": imported,
+        "errors": errors[:10],
+        "total_errors": len(errors)
+    }
+
+# =============================================================================
+# WEBSOCKET FOR REAL-TIME NOTIFICATIONS
+# =============================================================================
+
+from fastapi import WebSocket, WebSocketDisconnect
+from typing import Set
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[str, Set[WebSocket]] = {}
+    
+    async def connect(self, websocket: WebSocket, admin_id: str):
+        await websocket.accept()
+        if admin_id not in self.active_connections:
+            self.active_connections[admin_id] = set()
+        self.active_connections[admin_id].add(websocket)
+    
+    def disconnect(self, websocket: WebSocket, admin_id: str):
+        if admin_id in self.active_connections:
+            self.active_connections[admin_id].discard(websocket)
+    
+    async def send_personal_message(self, message: dict, admin_id: str):
+        if admin_id in self.active_connections:
+            for connection in self.active_connections[admin_id]:
+                try:
+                    await connection.send_json(message)
+                except:
+                    pass
+    
+    async def broadcast(self, message: dict):
+        for admin_id, connections in self.active_connections.items():
+            for connection in connections:
+                try:
+                    await connection.send_json(message)
+                except:
+                    pass
+
+ws_manager = ConnectionManager()
+
+@app.websocket("/ws/admin/{token}")
+async def websocket_admin_endpoint(websocket: WebSocket, token: str):
+    """WebSocket endpoint for real-time admin notifications"""
+    try:
+        # Verify token
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        admin_id = payload.get("sub")
+        if not admin_id:
+            await websocket.close(code=4001)
+            return
+        
+        await ws_manager.connect(websocket, admin_id)
+        
+        try:
+            while True:
+                # Keep connection alive and handle incoming messages
+                data = await websocket.receive_json()
+                
+                # Handle ping/pong
+                if data.get("type") == "ping":
+                    await websocket.send_json({"type": "pong"})
+                
+        except WebSocketDisconnect:
+            ws_manager.disconnect(websocket, admin_id)
+    except JWTError:
+        await websocket.close(code=4001)
+
+# Helper function to broadcast events to all connected admins
+async def broadcast_admin_event(event_type: str, data: dict):
+    """Broadcast an event to all connected admin WebSocket clients"""
+    message = {
+        "type": event_type,
+        "data": data,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+    await ws_manager.broadcast(message)
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
