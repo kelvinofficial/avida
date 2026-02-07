@@ -716,7 +716,7 @@ const desktopStyles = StyleSheet.create({
     marginHorizontal: -8,
   },
   gridItem: {
-    width: '33.333%',
+    width: '25%',
     paddingHorizontal: 8,
     marginBottom: 16,
   },
