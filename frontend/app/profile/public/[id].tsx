@@ -1408,3 +1408,365 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 });
+
+// ============ DESKTOP STYLES ============
+const desktopStyles = StyleSheet.create({
+  container: { backgroundColor: '#F0F2F5' },
+  
+  // Global Header
+  globalHeader: {
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  globalHeaderInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    maxWidth: 1280,
+    width: '100%',
+    alignSelf: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
+  logoContainer: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  logoIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: { fontSize: 22, fontWeight: '700', color: COLORS.text },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  headerIconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+  },
+  signInBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: COLORS.background,
+  },
+  signInBtnText: { fontSize: 14, fontWeight: '600', color: COLORS.text },
+  signUpBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  signUpBtnText: { fontSize: 14, fontWeight: '600', color: COLORS.primary },
+  postBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+  },
+  postBtnText: { fontSize: 14, fontWeight: '600', color: '#fff' },
+
+  // Page Wrapper
+  pageWrapper: {
+    maxWidth: 1280,
+    width: '100%',
+    alignSelf: 'center',
+    backgroundColor: COLORS.surface,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: COLORS.border,
+    minHeight: '100%',
+  },
+  
+  // Page Header
+  pageHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    gap: 12,
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pageTitle: { fontSize: 20, fontWeight: '700', color: COLORS.text },
+  shareBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: COLORS.primaryLight,
+  },
+  shareBtnText: { fontSize: 14, fontWeight: '600', color: COLORS.primary },
+
+  // Profile Layout - 2 Column
+  profileLayout: {
+    flexDirection: 'row',
+    padding: 24,
+    gap: 24,
+  },
+  profileSidebar: {
+    width: 320,
+  },
+  profileCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  mainContent: {
+    flex: 1,
+  },
+
+  // Avatar
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 3,
+    borderColor: COLORS.primaryLight,
+  },
+  avatarPlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: COLORS.primary,
+  },
+  avatarInitials: { fontSize: 42, fontWeight: '700', color: COLORS.primary },
+  profileName: { fontSize: 24, fontWeight: '700', color: COLORS.text, marginTop: 16 },
+  
+  // Badges
+  badgesRow: { flexDirection: 'row', gap: 8, marginTop: 12, flexWrap: 'wrap', justifyContent: 'center' },
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  badgeText: { fontSize: 12, fontWeight: '500', color: COLORS.success },
+
+  // Location
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 12,
+  },
+  locationText: { fontSize: 14, color: COLORS.textSecondary },
+  
+  // Bio
+  bio: {
+    fontSize: 14,
+    color: COLORS.text,
+    textAlign: 'center',
+    marginTop: 16,
+    lineHeight: 22,
+  },
+
+  // Rating
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 16,
+  },
+  ratingText: { fontSize: 14, color: COLORS.textSecondary },
+
+  // Stats
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 24,
+    gap: 16,
+  },
+  stat: { alignItems: 'center' },
+  statValue: { fontSize: 22, fontWeight: '700', color: COLORS.text },
+  statLabel: { fontSize: 12, color: COLORS.textSecondary, marginTop: 4 },
+  memberSince: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginTop: 20,
+  },
+
+  // Action Buttons
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 24,
+    width: '100%',
+  },
+  followBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  followingBtn: {
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  followBtnText: { fontSize: 15, fontWeight: '600', color: '#fff' },
+  followingBtnText: { color: COLORS.primary },
+  messageBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  messageBtnText: { fontSize: 15, fontWeight: '600', color: COLORS.primary },
+
+  // Tabs
+  tabsContainer: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginBottom: 20,
+    overflow: 'hidden',
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 16,
+  },
+  tabActive: { backgroundColor: COLORS.primaryLight },
+  tabText: { fontSize: 15, fontWeight: '500', color: COLORS.textSecondary },
+  tabTextActive: { color: COLORS.primary, fontWeight: '600' },
+
+  // Content
+  content: {},
+
+  // Empty State
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  emptyText: { fontSize: 16, color: COLORS.textSecondary, marginTop: 12 },
+  emptySubtext: { fontSize: 14, color: COLORS.textSecondary, marginTop: 4 },
+
+  // Listings Grid - 3 columns
+  listingsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -8,
+  },
+  listingCardWrapper: {
+    width: '33.333%',
+    padding: 8,
+  },
+  listingCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  listingImage: {
+    width: '100%',
+    height: 140,
+    backgroundColor: COLORS.border,
+  },
+  listingInfo: { padding: 12 },
+  listingPrice: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
+  listingTitle: { fontSize: 14, color: COLORS.text, marginTop: 4, lineHeight: 20 },
+
+  // Rating Summary
+  ratingSummary: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    gap: 24,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  ratingOverview: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingRight: 24,
+    borderRightWidth: 1,
+    borderRightColor: COLORS.border,
+  },
+  ratingBig: { fontSize: 48, fontWeight: '700', color: COLORS.text },
+  ratingCount: { fontSize: 14, color: COLORS.textSecondary, marginTop: 8 },
+  ratingBars: { flex: 1, justifyContent: 'center', gap: 6 },
+  ratingBarRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  ratingBarLabel: { fontSize: 14, color: COLORS.textSecondary, width: 16, textAlign: 'center' },
+  ratingBarBg: {
+    flex: 1,
+    height: 10,
+    backgroundColor: COLORS.border,
+    borderRadius: 5,
+    overflow: 'hidden',
+  },
+  ratingBarFill: {
+    height: '100%',
+    backgroundColor: COLORS.warning,
+    borderRadius: 5,
+  },
+  ratingBarCount: { fontSize: 14, color: COLORS.textSecondary, width: 24, textAlign: 'right' },
+
+  // Write Review
+  writeReviewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: COLORS.primaryLight,
+    paddingVertical: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  writeReviewBtnText: { fontSize: 16, fontWeight: '600', color: COLORS.primary },
+
+  // Reviews List
+  reviewsList: { gap: 16 },
+});
