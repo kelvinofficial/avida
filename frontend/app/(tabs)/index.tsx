@@ -457,7 +457,7 @@ export default function HomeScreen() {
         fetchNotificationCount();
       }
     } catch (error) { console.error('Error fetching data:', error); }
-    finally { setLoading(false); setRefreshing(false); }
+    finally { setLoading(false); setRefreshing(false); setInitialLoadDone(true); }
   }, [selectedCategory, currentCity, page, isAuthenticated, fetchNotificationCount]);
 
   useEffect(() => { fetchData(true); }, [selectedCategory, currentCity]);
