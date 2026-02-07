@@ -174,19 +174,11 @@ export default function SearchScreen() {
 
   const MAX_CONTENT_WIDTH = 1280;
 
-  const headerStyle = isDesktop 
-    ? [styles.header, { maxWidth: MAX_CONTENT_WIDTH, width: '100%', alignSelf: 'center' as const }]
-    : styles.header;
-
-  const contentContainerStyle = isDesktop
-    ? { maxWidth: MAX_CONTENT_WIDTH, width: '100%', alignSelf: 'center' as const }
-    : {};
-
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
+      {/* Header Wrapper - full width background */}
       <View style={styles.headerWrapper}>
-        <View style={headerStyle}>
+        <View style={[styles.header, isDesktop && { maxWidth: MAX_CONTENT_WIDTH, width: '100%' }]}>
           <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={24} color={COLORS.text} />
           </TouchableOpacity>
@@ -211,48 +203,50 @@ export default function SearchScreen() {
         </View>
       </View>
 
-      {/* Content */}
-      <View style={[styles.contentArea, isDesktop && contentContainerStyle]}>
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
-            <Text style={styles.loadingText}>Searching...</Text>
-          </View>
-        ) : hasSearched ? (
-          // Search Results
-          <FlatList
-            data={listings}
-            renderItem={renderListing}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.listContent}
-            ListHeaderComponent={() => (
-              <Text style={styles.resultsText}>
-                {listings.length} {listings.length === 1 ? 'result' : 'results'} for "{searchQuery}"
-              </Text>
-            )}
-            ListEmptyComponent={() => (
-              <View style={styles.emptyState}>
-                <Ionicons name="search-outline" size={48} color={COLORS.textSecondary} />
-                <Text style={styles.emptyTitle}>No results found</Text>
-                <Text style={styles.emptySubtitle}>
-                  Try different keywords or browse categories
-                </Text>
-              </View>
-            )}
-          />
-        ) : (
-          // Browse Categories
-          <View style={styles.browseContainer}>
-            <Text style={styles.sectionTitle}>Browse Categories</Text>
+      {/* Content Wrapper - full width background */}
+      <View style={styles.contentWrapper}>
+        <View style={[styles.contentArea, isDesktop && { maxWidth: MAX_CONTENT_WIDTH, width: '100%' }]}>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+              <Text style={styles.loadingText}>Searching...</Text>
+            </View>
+          ) : hasSearched ? (
+            // Search Results
             <FlatList
-              data={categories}
-              renderItem={renderCategory}
+              data={listings}
+              renderItem={renderListing}
               keyExtractor={(item) => item.id}
-              numColumns={3}
-              contentContainerStyle={styles.categoriesGrid}
+              contentContainerStyle={styles.listContent}
+              ListHeaderComponent={() => (
+                <Text style={styles.resultsText}>
+                  {listings.length} {listings.length === 1 ? 'result' : 'results'} for "{searchQuery}"
+                </Text>
+              )}
+              ListEmptyComponent={() => (
+                <View style={styles.emptyState}>
+                  <Ionicons name="search-outline" size={48} color={COLORS.textSecondary} />
+                  <Text style={styles.emptyTitle}>No results found</Text>
+                  <Text style={styles.emptySubtitle}>
+                    Try different keywords or browse categories
+                  </Text>
+                </View>
+              )}
             />
-          </View>
-        )}
+          ) : (
+            // Browse Categories
+            <View style={styles.browseContainer}>
+              <Text style={styles.sectionTitle}>Browse Categories</Text>
+              <FlatList
+                data={categories}
+                renderItem={renderCategory}
+                keyExtractor={(item) => item.id}
+                numColumns={3}
+                contentContainerStyle={styles.categoriesGrid}
+              />
+            </View>
+          )}
+        </View>
       </View>
     </SafeAreaView>
   );
