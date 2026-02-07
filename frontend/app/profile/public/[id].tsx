@@ -347,17 +347,31 @@ export default function PublicProfileScreen() {
     return `/listing/${item.id}`;
   };
 
-  if (loading) {
+  if (loading || !isReady) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={handleGoBack}>
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profile</Text>
-          <View style={{ width: 24 }} />
-        </View>
-        <View style={styles.centerContent}>
+      <SafeAreaView style={[styles.container, isLargeScreen && desktopStyles.container]} edges={['top']}>
+        {isLargeScreen && (
+          <View style={desktopStyles.globalHeader}>
+            <View style={desktopStyles.globalHeaderInner}>
+              <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+                <View style={desktopStyles.logoIcon}>
+                  <Ionicons name="storefront" size={20} color="#fff" />
+                </View>
+                <Text style={desktopStyles.logoText}>avida</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+        {!isLargeScreen && (
+          <View style={styles.header}>
+            <TouchableOpacity onPress={handleGoBack}>
+              <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Profile</Text>
+            <View style={{ width: 24 }} />
+          </View>
+        )}
+        <View style={[styles.centerContent, isLargeScreen && desktopStyles.pageWrapper]}>
           <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
       </SafeAreaView>
@@ -366,15 +380,29 @@ export default function PublicProfileScreen() {
 
   if (error) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={handleGoBack}>
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profile</Text>
-          <View style={{ width: 24 }} />
-        </View>
-        <View style={styles.centerContent}>
+      <SafeAreaView style={[styles.container, isLargeScreen && desktopStyles.container]} edges={['top']}>
+        {isLargeScreen && (
+          <View style={desktopStyles.globalHeader}>
+            <View style={desktopStyles.globalHeaderInner}>
+              <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+                <View style={desktopStyles.logoIcon}>
+                  <Ionicons name="storefront" size={20} color="#fff" />
+                </View>
+                <Text style={desktopStyles.logoText}>avida</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+        {!isLargeScreen && (
+          <View style={styles.header}>
+            <TouchableOpacity onPress={handleGoBack}>
+              <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Profile</Text>
+            <View style={{ width: 24 }} />
+          </View>
+        )}
+        <View style={[styles.centerContent, isLargeScreen && desktopStyles.pageWrapper]}>
           <Ionicons name="alert-circle-outline" size={48} color={COLORS.error} />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryBtn} onPress={fetchProfile}>
@@ -385,7 +413,363 @@ export default function PublicProfileScreen() {
     );
   }
 
-  return (
+  // ============ DESKTOP VIEW ============
+  if (isLargeScreen) {
+    return (
+      <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
+        {/* Global Header */}
+        <View style={desktopStyles.globalHeader}>
+          <View style={desktopStyles.globalHeaderInner}>
+            <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+              <View style={desktopStyles.logoIcon}>
+                <Ionicons name="storefront" size={20} color="#fff" />
+              </View>
+              <Text style={desktopStyles.logoText}>avida</Text>
+            </TouchableOpacity>
+            <View style={desktopStyles.headerActions}>
+              {isAuthenticated ? (
+                <>
+                  <TouchableOpacity style={desktopStyles.headerIconBtn} onPress={() => router.push('/notifications')}>
+                    <Ionicons name="notifications-outline" size={22} color={COLORS.text} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={desktopStyles.headerIconBtn} onPress={() => router.push('/profile')}>
+                    <Ionicons name="person-circle-outline" size={26} color={COLORS.text} />
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity style={desktopStyles.signInBtn} onPress={() => router.push('/login')}>
+                    <Text style={desktopStyles.signInBtnText}>Sign In</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={desktopStyles.signUpBtn} onPress={() => router.push('/login')}>
+                    <Text style={desktopStyles.signUpBtnText}>Sign Up</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+              <TouchableOpacity style={desktopStyles.postBtn} onPress={() => router.push('/post')}>
+                <Ionicons name="add" size={18} color="#fff" />
+                <Text style={desktopStyles.postBtnText}>Post Listing</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* Page Content */}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[COLORS.primary]} />
+          }
+        >
+          <View style={desktopStyles.pageWrapper}>
+            {/* Back Button */}
+            <View style={desktopStyles.pageHeader}>
+              <TouchableOpacity style={desktopStyles.backBtn} onPress={handleGoBack}>
+                <Ionicons name="arrow-back" size={20} color={COLORS.text} />
+              </TouchableOpacity>
+              <Text style={desktopStyles.pageTitle}>Seller Profile</Text>
+              <View style={{ flex: 1 }} />
+              <TouchableOpacity style={desktopStyles.shareBtn} onPress={handleShare}>
+                <Ionicons name="share-outline" size={18} color={COLORS.primary} />
+                <Text style={desktopStyles.shareBtnText}>Share</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Desktop Profile Layout - 2 Column */}
+            <View style={desktopStyles.profileLayout}>
+              {/* Left Sidebar - Profile Info */}
+              <View style={desktopStyles.profileSidebar}>
+                <View style={desktopStyles.profileCard}>
+                  {profile?.picture ? (
+                    <Image source={{ uri: profile.picture }} style={desktopStyles.avatar} />
+                  ) : (
+                    <View style={desktopStyles.avatarPlaceholder}>
+                      <Text style={desktopStyles.avatarInitials}>{getInitials(profile?.name)}</Text>
+                    </View>
+                  )}
+                  
+                  <Text style={desktopStyles.profileName}>{profile?.name}</Text>
+                  
+                  {/* Trust Badges */}
+                  <View style={desktopStyles.badgesRow}>
+                    {profile?.email_verified && (
+                      <View style={desktopStyles.badge}>
+                        <Ionicons name="mail" size={12} color={COLORS.success} />
+                        <Text style={desktopStyles.badgeText}>Email</Text>
+                      </View>
+                    )}
+                    {profile?.phone_verified && (
+                      <View style={desktopStyles.badge}>
+                        <Ionicons name="call" size={12} color={COLORS.success} />
+                        <Text style={desktopStyles.badgeText}>Phone</Text>
+                      </View>
+                    )}
+                    {profile?.id_verified && (
+                      <View style={desktopStyles.badge}>
+                        <Ionicons name="shield-checkmark" size={12} color={COLORS.success} />
+                        <Text style={desktopStyles.badgeText}>ID</Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {profile?.location && (
+                    <View style={desktopStyles.locationRow}>
+                      <Ionicons name="location-outline" size={16} color={COLORS.textSecondary} />
+                      <Text style={desktopStyles.locationText}>{profile.location}</Text>
+                    </View>
+                  )}
+
+                  {profile?.bio && (
+                    <Text style={desktopStyles.bio}>{profile.bio}</Text>
+                  )}
+
+                  {/* Rating */}
+                  <View style={desktopStyles.ratingContainer}>
+                    <StarDisplay rating={profile?.rating || 0} size={18} />
+                    <Text style={desktopStyles.ratingText}>
+                      {profile?.rating?.toFixed(1) || '0.0'} ({profile?.total_ratings || 0} reviews)
+                    </Text>
+                  </View>
+
+                  {/* Stats */}
+                  <View style={desktopStyles.statsRow}>
+                    <View style={desktopStyles.stat}>
+                      <Text style={desktopStyles.statValue}>{profile?.stats?.active_listings || 0}</Text>
+                      <Text style={desktopStyles.statLabel}>Listings</Text>
+                    </View>
+                    <View style={desktopStyles.stat}>
+                      <Text style={desktopStyles.statValue}>{profile?.stats?.sold_listings || 0}</Text>
+                      <Text style={desktopStyles.statLabel}>Sold</Text>
+                    </View>
+                    <View style={desktopStyles.stat}>
+                      <Text style={desktopStyles.statValue}>{profile?.stats?.followers || 0}</Text>
+                      <Text style={desktopStyles.statLabel}>Followers</Text>
+                    </View>
+                    <View style={desktopStyles.stat}>
+                      <Text style={desktopStyles.statValue}>{profile?.stats?.following || 0}</Text>
+                      <Text style={desktopStyles.statLabel}>Following</Text>
+                    </View>
+                  </View>
+
+                  <Text style={desktopStyles.memberSince}>
+                    Member since {new Date(profile?.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </Text>
+
+                  {/* Action Buttons */}
+                  {!isOwnProfile && (
+                    <View style={desktopStyles.actionButtons}>
+                      <TouchableOpacity
+                        style={[desktopStyles.followBtn, isFollowing && desktopStyles.followingBtn]}
+                        onPress={handleFollow}
+                        disabled={followLoading}
+                      >
+                        {followLoading ? (
+                          <ActivityIndicator size="small" color={isFollowing ? COLORS.primary : '#fff'} />
+                        ) : (
+                          <>
+                            <Ionicons
+                              name={isFollowing ? 'checkmark' : 'person-add-outline'}
+                              size={18}
+                              color={isFollowing ? COLORS.primary : '#fff'}
+                            />
+                            <Text style={[desktopStyles.followBtnText, isFollowing && desktopStyles.followingBtnText]}>
+                              {isFollowing ? 'Following' : 'Follow'}
+                            </Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
+                      
+                      <TouchableOpacity 
+                        style={[desktopStyles.messageBtn, messageLoading && { opacity: 0.7 }]} 
+                        onPress={handleMessage}
+                        disabled={messageLoading}
+                      >
+                        {messageLoading ? (
+                          <ActivityIndicator size="small" color={COLORS.primary} />
+                        ) : (
+                          <>
+                            <Ionicons name="chatbubble-outline" size={18} color={COLORS.primary} />
+                            <Text style={desktopStyles.messageBtnText}>Message</Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              </View>
+
+              {/* Right Content - Listings & Reviews */}
+              <View style={desktopStyles.mainContent}>
+                {/* Tabs */}
+                <View style={desktopStyles.tabsContainer}>
+                  <TouchableOpacity
+                    style={[desktopStyles.tab, activeTab === 'listings' && desktopStyles.tabActive]}
+                    onPress={() => setActiveTab('listings')}
+                  >
+                    <Ionicons
+                      name="grid-outline"
+                      size={18}
+                      color={activeTab === 'listings' ? COLORS.primary : COLORS.textSecondary}
+                    />
+                    <Text style={[desktopStyles.tabText, activeTab === 'listings' && desktopStyles.tabTextActive]}>
+                      Listings ({listings.length})
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[desktopStyles.tab, activeTab === 'reviews' && desktopStyles.tabActive]}
+                    onPress={() => setActiveTab('reviews')}
+                  >
+                    <Ionicons
+                      name="star-outline"
+                      size={18}
+                      color={activeTab === 'reviews' ? COLORS.primary : COLORS.textSecondary}
+                    />
+                    <Text style={[desktopStyles.tabText, activeTab === 'reviews' && desktopStyles.tabTextActive]}>
+                      Reviews ({reviews.length})
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Content */}
+                <View style={desktopStyles.content}>
+                  {activeTab === 'listings' ? (
+                    listings.length === 0 ? (
+                      <View style={desktopStyles.emptyState}>
+                        <Ionicons name="cube-outline" size={48} color={COLORS.textSecondary} />
+                        <Text style={desktopStyles.emptyText}>No active listings</Text>
+                      </View>
+                    ) : (
+                      <View style={desktopStyles.listingsGrid}>
+                        {listings.map(item => (
+                          <View key={item.id} style={desktopStyles.listingCardWrapper}>
+                            <TouchableOpacity 
+                              style={desktopStyles.listingCard}
+                              onPress={() => router.push(getListingRoute(item))}
+                            >
+                              <Image
+                                source={{ uri: item.images?.[0] || 'https://via.placeholder.com/150' }}
+                                style={desktopStyles.listingImage}
+                              />
+                              <View style={desktopStyles.listingInfo}>
+                                <Text style={desktopStyles.listingPrice}>€{item.price?.toLocaleString()}</Text>
+                                <Text style={desktopStyles.listingTitle} numberOfLines={2}>{item.title}</Text>
+                              </View>
+                            </TouchableOpacity>
+                          </View>
+                        ))}
+                      </View>
+                    )
+                  ) : (
+                    <>
+                      {/* Rating Summary */}
+                      {reviews.length > 0 && (
+                        <View style={desktopStyles.ratingSummary}>
+                          <View style={desktopStyles.ratingOverview}>
+                            <Text style={desktopStyles.ratingBig}>{profile?.rating?.toFixed(1) || '0.0'}</Text>
+                            <StarDisplay rating={profile?.rating || 0} size={24} />
+                            <Text style={desktopStyles.ratingCount}>{profile?.total_ratings || 0} reviews</Text>
+                          </View>
+                          <View style={desktopStyles.ratingBars}>
+                            {[5, 4, 3, 2, 1].map(star => {
+                              const count = ratingBreakdown[String(star)] || 0;
+                              const total = reviews.length || 1;
+                              const percentage = (count / total) * 100;
+                              return (
+                                <View key={star} style={desktopStyles.ratingBarRow}>
+                                  <Text style={desktopStyles.ratingBarLabel}>{star}</Text>
+                                  <View style={desktopStyles.ratingBarBg}>
+                                    <View style={[desktopStyles.ratingBarFill, { width: `${percentage}%` }]} />
+                                  </View>
+                                  <Text style={desktopStyles.ratingBarCount}>{count}</Text>
+                                </View>
+                              );
+                            })}
+                          </View>
+                        </View>
+                      )}
+
+                      {/* Write Review Button */}
+                      {!isOwnProfile && isAuthenticated && !hasReviewed && (
+                        <TouchableOpacity
+                          style={desktopStyles.writeReviewBtn}
+                          onPress={() => setShowReviewModal(true)}
+                        >
+                          <Ionicons name="create-outline" size={20} color={COLORS.primary} />
+                          <Text style={desktopStyles.writeReviewBtnText}>Write a Review</Text>
+                        </TouchableOpacity>
+                      )}
+
+                      {!isOwnProfile && isAuthenticated && hasReviewed && (
+                        <View style={[desktopStyles.writeReviewBtn, { backgroundColor: COLORS.surface, borderColor: COLORS.border }]}>
+                          <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
+                          <Text style={[desktopStyles.writeReviewBtnText, { color: COLORS.success }]}>
+                            You've already reviewed this seller
+                          </Text>
+                        </View>
+                      )}
+
+                      {reviews.length === 0 ? (
+                        <View style={desktopStyles.emptyState}>
+                          <Ionicons name="chatbubble-outline" size={48} color={COLORS.textSecondary} />
+                          <Text style={desktopStyles.emptyText}>No reviews yet</Text>
+                          {!isOwnProfile && (
+                            <Text style={desktopStyles.emptySubtext}>Be the first to leave a review!</Text>
+                          )}
+                        </View>
+                      ) : (
+                        <View style={desktopStyles.reviewsList}>
+                          {reviews.map(review => (
+                            <ReviewCard key={review.id} review={review} />
+                          ))}
+                        </View>
+                      )}
+                    </>
+                  )}
+                </View>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+
+        {/* Review Modal */}
+        <Modal visible={showReviewModal} animationType="slide" presentationStyle="pageSheet">
+          <SafeAreaView style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <TouchableOpacity onPress={() => setShowReviewModal(false)}>
+                <Text style={styles.modalCancel}>Cancel</Text>
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>Write a Review</Text>
+              <TouchableOpacity onPress={handleSubmitReview} disabled={submittingReview || reviewRating === 0}>
+                {submittingReview ? (
+                  <ActivityIndicator size="small" color={COLORS.primary} />
+                ) : (
+                  <Text style={[styles.modalSubmit, reviewRating === 0 && styles.modalSubmitDisabled]}>Submit</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+            <View style={styles.modalContent}>
+              <Text style={styles.ratingLabel}>How was your experience?</Text>
+              <StarRatingInput rating={reviewRating} onRatingChange={setReviewRating} />
+              <Text style={styles.commentLabel}>Leave a comment (optional)</Text>
+              <TextInput
+                style={styles.commentInput}
+                value={reviewComment}
+                onChangeText={setReviewComment}
+                placeholder="Share your experience with this seller..."
+                placeholderTextColor={COLORS.textSecondary}
+                multiline
+                maxLength={500}
+                textAlignVertical="top"
+              />
+              <Text style={styles.charCount}>{reviewComment.length}/500</Text>
+            </View>
+          </SafeAreaView>
+        </Modal>
+      </SafeAreaView>
+    );
+  }
+
+  // ============ MOBILE VIEW ============
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack}>
