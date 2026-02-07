@@ -52,8 +52,8 @@ export default function LoginScreen() {
   const router = useRouter();
   const { signedOut, redirect } = useLocalSearchParams<{ signedOut?: string; redirect?: string }>();
   const { setUser, setToken } = useAuthStore();
-  const { isDesktop, isTablet } = useResponsive();
-  const isLargeScreen = isDesktop || isTablet;
+  const { isDesktop, isTablet, isReady } = useResponsive();
+  const isLargeScreen = isReady && (isDesktop || isTablet);
   
   // Determine where to redirect after successful login
   const redirectAfterLogin = redirect || '/';
