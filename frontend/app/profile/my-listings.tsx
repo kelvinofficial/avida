@@ -1054,6 +1054,23 @@ const desktopStyles = StyleSheet.create({
     color: '#fff',
     textTransform: 'uppercase',
   },
+  viewsOverlay: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  viewsOverlayText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '600',
+  },
   cardActions: {
     position: 'absolute',
     top: 10,
