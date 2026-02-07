@@ -17,6 +17,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { listingsApi, categoriesApi, favoritesApi } from '../src/utils/api';
 import { useAuthStore } from '../src/store/authStore';
 import { safeGoBack } from '../src/utils/navigation';
+import { useResponsive } from '../src/hooks/useResponsive';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
