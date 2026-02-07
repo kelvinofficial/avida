@@ -158,13 +158,22 @@ const filterStyles = StyleSheet.create({
 const formatLastSeen = (lastSeen: string | null): string => {
   if (!lastSeen) return '';
   try {
-    const date = new Date(lastSeen);
+    // Parse the date - handle both ISO strings and timestamps
+    let date: Date;
+    if (typeof lastSeen === 'string') {
+      // Ensure the string is treated as UTC if no timezone specified
+      date = new Date(lastSeen.endsWith('Z') ? lastSeen : lastSeen + 'Z');
+    } else {
+      date = new Date(lastSeen);
+    }
+    
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
     
+    if (diffMins < 0) return 'Just now'; // Handle slight time drift
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
