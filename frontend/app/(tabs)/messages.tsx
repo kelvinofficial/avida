@@ -856,17 +856,29 @@ export default function MessagesScreen() {
     return (
       <SafeAreaView style={[styles.container, isLargeScreen && desktopStyles.container]} edges={['top']}>
         {isLargeScreen ? (
-          <View style={desktopStyles.masterDetailContainer}>
-            <View style={desktopStyles.sidebarContainer}>
-              {renderHeader()}
-            </View>
-            <View style={desktopStyles.detailContainer}>
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={COLORS.primary} />
-                <Text style={styles.loadingText}>Loading conversations...</Text>
+          <>
+            {/* Global Header */}
+            {renderGlobalHeader()}
+            
+            <View style={desktopStyles.pageWrapper}>
+              <View style={desktopStyles.masterDetailContainer}>
+                <View style={desktopStyles.sidebarContainer}>
+                  <View style={desktopStyles.sidebarHeader}>
+                    <Text style={desktopStyles.sidebarTitle}>Messages</Text>
+                  </View>
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={COLORS.primary} />
+                  </View>
+                </View>
+                <View style={desktopStyles.chatContainer}>
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={COLORS.primary} />
+                    <Text style={styles.loadingText}>Loading conversations...</Text>
+                  </View>
+                </View>
               </View>
             </View>
-          </View>
+          </>
         ) : (
           <>
             {renderHeader()}
