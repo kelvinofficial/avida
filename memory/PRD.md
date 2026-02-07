@@ -116,6 +116,16 @@ Build a responsive desktop version of the marketplace application. The applicati
 - Dashboard shows: 34 users, 158 listings, analytics charts, navigation sidebar
 - Admin credentials: admin@marketplace.com / Admin@123456
 
+**Audit Logs Page Implemented**
+- Created full Audit Logs viewer page at `/app/admin-dashboard/frontend/src/app/dashboard/audit-logs/page.tsx`
+- Features: Pagination, filtering by action type and entity type, detailed log view dialog
+- Displays: Timestamp, admin email, action (CREATE/UPDATE/DELETE/LOGIN), entity type, entity ID, IP address
+- Connected to live API at `/api/admin/audit-logs`
+
+**Bug Fixes Applied**
+- Fixed MongoDB ObjectId serialization in category creation response (added `pop("_id", None)`)
+- Fixed "Listings by Category" chart showing "Unknown" for category names by adding hardcoded fallback mapping
+
 **Listing Detail Page - Dark Bar Fix**
 - Fixed the dark bar/space that appeared between the breadcrumb and listing image
 - Modified `/app/frontend/app/_layout.tsx` to set `contentStyle: { backgroundColor: '#F5F5F5' }` for the listing screen
