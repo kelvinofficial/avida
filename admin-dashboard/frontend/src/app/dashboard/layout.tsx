@@ -74,10 +74,12 @@ export default function DashboardLayout({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { mode, toggleTheme } = useThemeMode();
+  const { locale, setLocale, t, availableLocales } = useLocale();
   
   const [mobileOpen, setMobileOpen] = useState(false);
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [langAnchorEl, setLangAnchorEl] = useState<null | HTMLElement>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
