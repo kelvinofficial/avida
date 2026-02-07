@@ -105,6 +105,13 @@ Build a responsive desktop version of the marketplace application. The applicati
 ## Changelog
 
 ### February 7, 2026
+**Desktop Search Screen Max-Width Implementation**
+- Modified `/app/frontend/app/search.tsx` to constrain content to 1280px on desktop
+- Header and content area are now centered within 1280px max-width
+- Categories display in a neat 3-column grid within the constrained area
+- Implementation uses headerWrapper/contentWrapper pattern with `alignItems: 'center'`
+- Desktop styles applied unconditionally on web platform
+
 **"Just Listed" Badge Feature Added**
 - Added "Just Listed" badge (purple with clock icon) for listings less than 24 hours old
 - Implemented across ALL listing card components:
