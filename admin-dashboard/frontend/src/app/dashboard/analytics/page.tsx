@@ -325,7 +325,7 @@ export default function AnalyticsPage() {
 
       {/* Category Performance */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -350,7 +350,7 @@ export default function AnalyticsPage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -378,7 +378,7 @@ export default function AnalyticsPage() {
 
       {/* Activity & Engagement */}
       <Grid container spacing={3}>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -421,7 +421,7 @@ export default function AnalyticsPage() {
 
       {/* Summary Stats */}
       <Grid container spacing={3} sx={{ mt: 2 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12 }} sm={6} md={3}>
           <Card sx={{ bgcolor: 'primary.light', color: 'white' }}>
             <CardContent>
               <Typography variant="body2" sx={{ opacity: 0.9 }}>Avg. Listings/Day</Typography>
@@ -431,7 +431,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12 }} sm={6} md={3}>
           <Card sx={{ bgcolor: 'info.light', color: 'white' }}>
             <CardContent>
               <Typography variant="body2" sx={{ opacity: 0.9 }}>Avg. Users/Day</Typography>
@@ -441,7 +441,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12 }} sm={6} md={3}>
           <Card sx={{ bgcolor: 'warning.light', color: 'white' }}>
             <CardContent>
               <Typography variant="body2" sx={{ opacity: 0.9 }}>Pending Review</Typography>
@@ -451,7 +451,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12 }} sm={6} md={3}>
           <Card sx={{ bgcolor: 'error.light', color: 'white' }}>
             <CardContent>
               <Typography variant="body2" sx={{ opacity: 0.9 }}>Open Reports</Typography>
