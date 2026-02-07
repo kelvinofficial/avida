@@ -114,6 +114,12 @@ const DesktopListingCard = ({
       />
       {/* Top Left Badges */}
       <View style={desktopStyles.cardBadges}>
+        {isJustListed(item.created_at) && (
+          <View style={desktopStyles.justListedBadge}>
+            <Ionicons name="time" size={10} color="#fff" />
+            <Text style={desktopStyles.badgeText}>Just Listed</Text>
+          </View>
+        )}
         {item.is_featured && (
           <View style={desktopStyles.featuredBadge}>
             <Ionicons name="star" size={10} color="#fff" />
