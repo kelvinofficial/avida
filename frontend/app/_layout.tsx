@@ -87,7 +87,7 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: theme.colors.background },
+          contentStyle: { backgroundColor: '#1A1A1A' }, // Dark footer background
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
