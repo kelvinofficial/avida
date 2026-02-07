@@ -5491,6 +5491,55 @@ async def root():
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
+# =============================================================================
+# ADMIN API PROXY - Forward /api/admin/* to admin backend on port 8002
+# =============================================================================
+
+ADMIN_BACKEND_URL = "http://localhost:8002"
+
+@app.api_route("/api/admin/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
+async def admin_proxy(request: Request, path: str):
+    """Proxy all admin requests to the admin backend"""
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        # Build the target URL
+        url = f"{ADMIN_BACKEND_URL}/api/admin/{path}"
+        
+        # Get query string
+        query_string = str(request.query_params)
+        if query_string:
+            url = f"{url}?{query_string}"
+        
+        # Get request body if any
+        body = None
+        if request.method in ["POST", "PUT", "PATCH"]:
+            body = await request.body()
+        
+        # Forward headers
+        headers = dict(request.headers)
+        headers.pop("host", None)
+        headers.pop("content-length", None)
+        
+        # Make the request
+        try:
+            response = await client.request(
+                method=request.method,
+                url=url,
+                headers=headers,
+                content=body
+            )
+            
+            # Return the response
+            return Response(
+                content=response.content,
+                status_code=response.status_code,
+                headers=dict(response.headers),
+                media_type=response.headers.get("content-type")
+            )
+        except httpx.ConnectError:
+            raise HTTPException(status_code=503, detail="Admin service unavailable")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
 # Include the router in the main app
 app.include_router(api_router)
 
