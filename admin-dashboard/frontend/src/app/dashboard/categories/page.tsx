@@ -850,6 +850,17 @@ export default function CategoriesPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* CSV Import Dialog */}
+      <CSVImportDialog
+        open={importDialogOpen}
+        onClose={() => setImportDialogOpen(false)}
+        onImport={handleCategoriesImport}
+        title={t('categories.title') + ' - ' + t('common.import')}
+        description="Upload a CSV file to import categories. The file should contain columns for name, slug, parent_id (optional), and is_visible (optional)."
+        sampleHeaders={['name', 'slug', 'parent_id', 'is_visible', 'order']}
+        entityName="category"
+      />
     </Box>
   );
 }
