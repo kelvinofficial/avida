@@ -758,7 +758,7 @@ export default function CategoryScreen() {
                         <ListingCard
                           listing={item}
                           onPress={() => router.push(getListingRoute(item))}
-                          onFavorite={() => toggleFavorite(item.id)}
+                          onFavorite={() => handleFavorite(item.id)}
                           isFavorited={favorites.has(item.id)}
                         />
                       </View>
