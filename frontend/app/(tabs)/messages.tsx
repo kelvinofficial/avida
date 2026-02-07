@@ -606,6 +606,17 @@ export default function MessagesScreen() {
     }
   };
 
+  // Show loading state until responsive layout is ready (prevents layout flash)
+  if (!isReady) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   // Render global desktop header
   const renderGlobalHeader = () => (
     <View style={desktopStyles.globalHeader}>
