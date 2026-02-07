@@ -249,31 +249,8 @@ export default function SettingsScreen() {
   };
 
   const handleSignOut = async () => {
-    if (Platform.OS === 'web') {
-      // Use window.confirm on web
-      const confirmed = window.confirm('Are you sure you want to sign out?');
-      if (confirmed) {
-        await logout();
-        router.replace('/login?signedOut=true');
-      }
-    } else {
-      // Use Alert on native
-      Alert.alert(
-        'Sign Out',
-        'Are you sure you want to sign out?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { 
-            text: 'Sign Out', 
-            style: 'destructive',
-            onPress: async () => {
-              await logout();
-              router.replace('/login?signedOut=true');
-            }
-          },
-        ]
-      );
-    }
+    // Navigate to dedicated sign out page for better UX
+    router.push('/signout');
   };
 
   const handleDeleteAccount = () => {
