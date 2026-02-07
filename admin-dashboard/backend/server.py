@@ -2147,7 +2147,7 @@ async def delete_notification(
 async def import_users_csv(
     file: UploadFile = File(...),
     request: Request = None,
-    admin: dict = Depends(require_permission(Permission.MANAGE_USERS))
+    admin: dict = Depends(require_permission(Permission.EDIT_USERS))
 ):
     """Import users from CSV file"""
     if not file.filename.endswith('.csv'):
