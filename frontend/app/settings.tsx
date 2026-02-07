@@ -782,7 +782,7 @@ const styles = StyleSheet.create({
 const desktopStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#1A1A1A', // Dark footer background
   },
   header: {
     backgroundColor: COLORS.surface,
