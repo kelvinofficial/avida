@@ -2187,6 +2187,9 @@ const desktopStyles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
+    maxWidth: 1280,
+    width: '100%',
+    alignSelf: 'center',
   },
   backButton: {
     width: 44,
@@ -2213,6 +2216,13 @@ const desktopStyles = StyleSheet.create({
   mainLayout: {
     flex: 1,
     flexDirection: 'row',
+    maxWidth: 1280,
+    width: '100%',
+    alignSelf: 'center',
+    backgroundColor: COLORS.surface,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: COLORS.border,
   },
   
   // Sidebar
