@@ -9,12 +9,15 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  ScrollView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import api from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
+import { useResponsive } from '../../src/hooks/useResponsive';
 
 const COLORS = {
   primary: '#2E7D32',
@@ -23,14 +26,15 @@ const COLORS = {
   surface: '#FFFFFF',
   text: '#212121',
   textSecondary: '#757575',
+  textMuted: '#9E9E9E',
   border: '#E0E0E0',
   error: '#D32F2F',
 };
 
 // Skeleton Loader
-const SkeletonItem = () => (
-  <View style={styles.skeletonItem}>
-    <View style={styles.skeletonImage} />
+const SkeletonItem = ({ isDesktop }: { isDesktop?: boolean }) => (
+  <View style={[styles.skeletonItem, isDesktop && desktopStyles.skeletonItem]}>
+    <View style={[styles.skeletonImage, isDesktop && desktopStyles.skeletonImage]} />
     <View style={styles.skeletonContent}>
       <View style={[styles.skeletonLine, { width: '70%' }]} />
       <View style={[styles.skeletonLine, { width: '40%' }]} />
@@ -38,7 +42,49 @@ const SkeletonItem = () => (
   </View>
 );
 
-// Listing Item
+// Desktop Card Component
+const DesktopListingCard = ({
+  item,
+  onPress,
+  onRemove,
+}: {
+  item: any;
+  onPress: () => void;
+  onRemove: () => void;
+}) => (
+  <TouchableOpacity 
+    style={[desktopStyles.card, Platform.OS === 'web' && { cursor: 'pointer' } as any]} 
+    onPress={onPress}
+    activeOpacity={0.8}
+  >
+    <Image
+      source={{ uri: item.images?.[0] || 'https://via.placeholder.com/200' }}
+      style={desktopStyles.cardImage}
+    />
+    {/* Remove Button */}
+    <TouchableOpacity style={desktopStyles.heartBtn} onPress={onRemove}>
+      <Ionicons name="heart" size={22} color={COLORS.error} />
+    </TouchableOpacity>
+    
+    <View style={desktopStyles.cardContent}>
+      <Text style={desktopStyles.cardPrice}>€{item.price?.toLocaleString()}</Text>
+      <Text style={desktopStyles.cardTitle} numberOfLines={2}>{item.title}</Text>
+      
+      <View style={desktopStyles.cardMeta}>
+        <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
+        <Text style={desktopStyles.cardLocation} numberOfLines={1}>
+          {item.location?.city || item.location || 'Unknown'}
+        </Text>
+      </View>
+      
+      <Text style={desktopStyles.savedDate}>
+        Saved {item.saved_at ? new Date(item.saved_at).toLocaleDateString() : 'recently'}
+      </Text>
+    </View>
+  </TouchableOpacity>
+);
+
+// Mobile Listing Item
 const ListingItem = ({ 
   item, 
   onPress, 
@@ -71,14 +117,14 @@ const ListingItem = ({
 );
 
 // Empty State
-const EmptyState = () => (
-  <View style={styles.emptyContainer}>
-    <View style={styles.emptyIcon}>
-      <Ionicons name="heart-outline" size={48} color={COLORS.textSecondary} />
+const EmptyState = ({ isDesktop }: { isDesktop?: boolean }) => (
+  <View style={[styles.emptyContainer, isDesktop && desktopStyles.emptyContainer]}>
+    <View style={[styles.emptyIcon, isDesktop && desktopStyles.emptyIcon]}>
+      <Ionicons name="heart-outline" size={isDesktop ? 64 : 48} color={COLORS.textSecondary} />
     </View>
-    <Text style={styles.emptyTitle}>No saved items</Text>
-    <Text style={styles.emptySubtitle}>
-      Items you save will appear here
+    <Text style={[styles.emptyTitle, isDesktop && desktopStyles.emptyTitle]}>No saved items</Text>
+    <Text style={[styles.emptySubtitle, isDesktop && desktopStyles.emptySubtitle]}>
+      Items you save will appear here. Tap the heart icon on any listing to save it.
     </Text>
   </View>
 );
@@ -86,6 +132,9 @@ const EmptyState = () => (
 export default function SavedItemsScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
+  const { isDesktop, isTablet, isReady } = useResponsive();
+  const isLargeScreen = isDesktop || isTablet;
+  
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -160,6 +209,196 @@ export default function SavedItemsScreen() {
     );
   };
 
+  // Show loading state until responsive layout is ready
+  if (!isReady) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: '#F0F2F5' }]} edges={['top']}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Render global desktop header
+  const renderGlobalHeader = () => (
+    <View style={desktopStyles.globalHeader}>
+      {/* Row 1: Logo + Auth + Post Listing */}
+      <View style={desktopStyles.globalHeaderRow1}>
+        <View style={desktopStyles.globalHeaderInner}>
+          {/* Logo */}
+          <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+            <View style={desktopStyles.logoIcon}>
+              <Ionicons name="storefront" size={20} color="#fff" />
+            </View>
+            <Text style={desktopStyles.logoText}>avida</Text>
+          </TouchableOpacity>
+          
+          {/* Header Actions */}
+          <View style={desktopStyles.globalHeaderActions}>
+            {isAuthenticated ? (
+              <>
+                <TouchableOpacity 
+                  style={desktopStyles.headerIconBtn} 
+                  onPress={() => router.push('/notifications')}
+                >
+                  <Ionicons name="notifications-outline" size={22} color={COLORS.text} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={desktopStyles.headerIconBtn} 
+                  onPress={() => router.push('/profile')}
+                >
+                  <Ionicons name="person-circle-outline" size={26} color={COLORS.text} />
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <TouchableOpacity style={desktopStyles.signInHeaderBtn} onPress={() => router.push('/login')}>
+                  <Text style={desktopStyles.signInHeaderBtnText}>Sign In</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={desktopStyles.signUpHeaderBtn} onPress={() => router.push('/login')}>
+                  <Text style={desktopStyles.signUpHeaderBtnText}>Sign Up</Text>
+                </TouchableOpacity>
+              </>
+            )}
+            <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => router.push('/post')}>
+              <Ionicons name="add" size={18} color="#fff" />
+              <Text style={desktopStyles.postListingBtnText}>Post Listing</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+      
+      {/* Row 2: Search + Location */}
+      <View style={desktopStyles.globalHeaderRow2}>
+        <View style={desktopStyles.globalHeaderInner}>
+          <TouchableOpacity 
+            style={desktopStyles.searchField} 
+            onPress={() => router.push('/search')} 
+            activeOpacity={0.8}
+          >
+            <Ionicons name="search" size={20} color={COLORS.textSecondary} />
+            <Text style={desktopStyles.searchPlaceholder}>Search for anything...</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={desktopStyles.locationChip} 
+            activeOpacity={0.7} 
+            onPress={() => router.push('/')}
+          >
+            <Ionicons name="location" size={18} color={COLORS.primary} />
+            <Text style={desktopStyles.locationText} numberOfLines={1}>All Locations</Text>
+            <Ionicons name="chevron-down" size={16} color={COLORS.textSecondary} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+
+  // Desktop unauthenticated view
+  if (isLargeScreen && !isAuthenticated) {
+    return (
+      <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
+        {renderGlobalHeader()}
+        
+        <View style={desktopStyles.pageWrapper}>
+          <View style={desktopStyles.unauthContainer}>
+            <View style={desktopStyles.unauthIcon}>
+              <Ionicons name="heart-outline" size={64} color={COLORS.error} />
+            </View>
+            <Text style={desktopStyles.unauthTitle}>Sign in to view saved items</Text>
+            <Text style={desktopStyles.unauthSubtitle}>
+              Keep track of your favorite listings and access them anytime
+            </Text>
+            <TouchableOpacity style={desktopStyles.unauthSignInBtn} onPress={() => router.push('/login')}>
+              <Ionicons name="log-in-outline" size={20} color="#fff" />
+              <Text style={desktopStyles.unauthSignInBtnText}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Desktop authenticated view
+  if (isLargeScreen) {
+    return (
+      <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
+        {renderGlobalHeader()}
+        
+        <View style={desktopStyles.pageWrapper}>
+          {/* Page Header */}
+          <View style={desktopStyles.pageHeader}>
+            <View style={desktopStyles.pageHeaderLeft}>
+              <TouchableOpacity 
+                style={desktopStyles.backBtn} 
+                onPress={() => router.back()}
+              >
+                <Ionicons name="arrow-back" size={20} color={COLORS.text} />
+              </TouchableOpacity>
+              <Text style={desktopStyles.pageTitle}>Saved Items</Text>
+              {total > 0 && (
+                <View style={desktopStyles.totalBadge}>
+                  <Text style={desktopStyles.totalBadgeText}>{total}</Text>
+                </View>
+              )}
+            </View>
+            <TouchableOpacity style={desktopStyles.browseBtn} onPress={() => router.push('/')}>
+              <Ionicons name="search-outline" size={18} color={COLORS.primary} />
+              <Text style={desktopStyles.browseBtnText}>Browse More</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Content */}
+          {loading && !refreshing ? (
+            <View style={desktopStyles.gridContainer}>
+              <View style={desktopStyles.grid}>
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <View key={i} style={desktopStyles.gridItem}>
+                    <SkeletonItem isDesktop />
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : items.length === 0 ? (
+            <EmptyState isDesktop />
+          ) : (
+            <ScrollView 
+              style={desktopStyles.scrollView}
+              contentContainerStyle={desktopStyles.gridContainer}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                  colors={[COLORS.primary]}
+                  tintColor={COLORS.primary}
+                />
+              }
+            >
+              <View style={desktopStyles.grid}>
+                {items.map((item) => (
+                  <View key={item.id} style={desktopStyles.gridItem}>
+                    <DesktopListingCard
+                      item={item}
+                      onPress={() => router.push(`/listing/${item.id}`)}
+                      onRemove={() => handleRemove(item)}
+                    />
+                  </View>
+                ))}
+              </View>
+              {hasMore && items.length > 0 && (
+                <TouchableOpacity style={desktopStyles.loadMoreBtn} onPress={handleLoadMore}>
+                  <Text style={desktopStyles.loadMoreBtnText}>Load More</Text>
+                </TouchableOpacity>
+              )}
+            </ScrollView>
+          )}
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Mobile unauthenticated view
   if (!isAuthenticated) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
@@ -181,6 +420,7 @@ export default function SavedItemsScreen() {
     );
   }
 
+  // Mobile authenticated view
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
@@ -321,4 +561,263 @@ const styles = StyleSheet.create({
   },
   emptyTitle: { fontSize: 18, fontWeight: '600', color: COLORS.text, marginBottom: 8 },
   emptySubtitle: { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center' },
+});
+
+// Desktop-specific styles
+const desktopStyles = StyleSheet.create({
+  container: { backgroundColor: '#F0F2F5' },
+  
+  // Global Header
+  globalHeader: {
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  globalHeaderRow1: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  globalHeaderRow2: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+  },
+  globalHeaderInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    maxWidth: 1280,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  logoContainer: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  logoIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: { fontSize: 22, fontWeight: '700', color: COLORS.text },
+  globalHeaderActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  headerIconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+  },
+  signInHeaderBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: COLORS.background,
+  },
+  signInHeaderBtnText: { fontSize: 14, fontWeight: '600', color: COLORS.text },
+  signUpHeaderBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: COLORS.primaryLight,
+  },
+  signUpHeaderBtnText: { fontSize: 14, fontWeight: '600', color: COLORS.primary },
+  postListingBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+  },
+  postListingBtnText: { fontSize: 14, fontWeight: '600', color: '#fff' },
+  searchField: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginRight: 12,
+    gap: 10,
+  },
+  searchPlaceholder: { fontSize: 15, color: COLORS.textSecondary },
+  locationChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 6,
+  },
+  locationText: { fontSize: 14, fontWeight: '500', color: COLORS.text, maxWidth: 120 },
+  
+  // Page Wrapper
+  pageWrapper: {
+    flex: 1,
+    maxWidth: 1280,
+    width: '100%',
+    alignSelf: 'center',
+    backgroundColor: COLORS.surface,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: COLORS.border,
+  },
+  
+  // Page Header
+  pageHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  pageHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pageTitle: { fontSize: 24, fontWeight: '700', color: COLORS.text },
+  totalBadge: {
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  totalBadgeText: { fontSize: 13, fontWeight: '600', color: COLORS.primary },
+  browseBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: COLORS.primaryLight,
+  },
+  browseBtnText: { fontSize: 14, fontWeight: '600', color: COLORS.primary },
+  
+  // Grid
+  scrollView: { flex: 1 },
+  gridContainer: { padding: 24 },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -8,
+  },
+  gridItem: {
+    width: '33.333%',
+    paddingHorizontal: 8,
+    marginBottom: 16,
+  },
+  
+  // Desktop Card
+  card: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  cardImage: {
+    width: '100%',
+    height: 180,
+    backgroundColor: COLORS.border,
+  },
+  heartBtn: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardContent: { padding: 14 },
+  cardPrice: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
+  cardTitle: { fontSize: 15, fontWeight: '500', color: COLORS.text, marginTop: 4, lineHeight: 20 },
+  cardMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 },
+  cardLocation: { fontSize: 13, color: COLORS.textSecondary, flex: 1 },
+  savedDate: { fontSize: 12, color: COLORS.textMuted, marginTop: 6 },
+  
+  // Skeleton
+  skeletonItem: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  skeletonImage: { width: '100%', height: 180 },
+  
+  // Empty State
+  emptyContainer: { paddingVertical: 80 },
+  emptyIcon: { width: 120, height: 120, borderRadius: 60, marginBottom: 20 },
+  emptyTitle: { fontSize: 22 },
+  emptySubtitle: { fontSize: 15, maxWidth: 400 },
+  
+  // Unauthenticated
+  unauthContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  unauthIcon: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#FFEBEE',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  unauthTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  unauthSubtitle: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    maxWidth: 400,
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  unauthSignInBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primary,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    gap: 8,
+  },
+  unauthSignInBtnText: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  
+  // Load More
+  loadMoreBtn: {
+    alignSelf: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 10,
+    backgroundColor: COLORS.primaryLight,
+    marginTop: 8,
+  },
+  loadMoreBtnText: { fontSize: 14, fontWeight: '600', color: COLORS.primary },
 });
