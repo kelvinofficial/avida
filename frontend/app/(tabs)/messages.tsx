@@ -339,33 +339,6 @@ export default function MessagesScreen() {
     }, [fetchConversations])
   );
 
-  // Listen for online/offline status changes via socket
-  useEffect(() => {
-    if (!socketRef.current) return;
-    
-    const handleUserOnline = (data: { user_id: string; is_online: boolean }) => {
-      setUserStatuses(prev => ({
-        ...prev,
-        [data.user_id]: { ...prev[data.user_id], is_online: data.is_online }
-      }));
-    };
-    
-    const handleUserOffline = (data: { user_id: string }) => {
-      setUserStatuses(prev => ({
-        ...prev,
-        [data.user_id]: { ...prev[data.user_id], is_online: false, last_seen: new Date().toISOString() }
-      }));
-    };
-    
-    socketRef.current.on('user_online_status', handleUserOnline);
-    socketRef.current.on('user_offline', handleUserOffline);
-    
-    return () => {
-      socketRef.current?.off('user_online_status', handleUserOnline);
-      socketRef.current?.off('user_offline', handleUserOffline);
-    };
-  }, []);
-
   const onRefresh = () => {
     setRefreshing(true);
     fetchConversations();
