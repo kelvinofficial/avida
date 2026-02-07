@@ -38,6 +38,7 @@ import {
   DragIndicator,
   Settings,
   Save,
+  Download,
 } from '@mui/icons-material';
 import {
   DndContext,
