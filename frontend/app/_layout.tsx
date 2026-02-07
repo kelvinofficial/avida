@@ -74,13 +74,10 @@ export default function RootLayout() {
     return () => subscription.remove();
   }, [mounted, processingAuth]);
 
-  // Show loading only briefly
-  if (!mounted || (isLoading && !processingAuth)) {
+  // Render immediately without loading state
+  if (!mounted) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={{ marginTop: 16, color: theme.colors.onSurfaceVariant }}>Loading...</Text>
-      </View>
+      <View style={{ flex: 1, backgroundColor: theme.colors.background }} />
     );
   }
 
