@@ -101,4 +101,28 @@ Build a responsive desktop version of the marketplace application. The applicati
 - `POST /conversations/:id/messages` - Send message
 
 ---
-Last Updated: December 2025
+
+## Changelog
+
+### February 7, 2026
+**Listing Card Standardization Complete**
+- Updated `ListingCard` component (`/app/frontend/src/components/listings/ListingCard.tsx`) with standardized design
+- Added time posted display using `formatTimeAgo()` helper
+- Added Featured/TOP badges with distinct colors (amber for Featured, red for TOP)
+- Updated location display to handle both string and object location formats
+- Updated Home page inline `ListingCard` with same design pattern
+- Updated Saved page `ListingCard` with time posted, location, and badges
+- Updated My Listings page `DesktopListingCard` with full style definitions
+- Fixed `toggleFavorite` to `handleFavorite` bug in Category page
+
+**Standardized Card Elements:**
+- Price (green, prominent)
+- Title (2-line max)
+- Location with icon
+- Time posted (relative)
+- Heart icon for favorites
+- Featured badge (amber with star icon)
+- TOP badge (red with arrow icon)
+
+---
+Last Updated: February 7, 2026
