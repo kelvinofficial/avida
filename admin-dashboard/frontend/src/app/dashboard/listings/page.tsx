@@ -68,6 +68,33 @@ export default function ListingsPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // CSV Export function
+  const exportToCSV = () => {
+    const headers = ['Listing ID', 'Title', 'Price', 'Currency', 'Status', 'Category', 'Location', 'Created At', 'User ID'];
+    const rows = listings.map(listing => [
+      listing.id,
+      listing.title || '',
+      listing.price || 0,
+      listing.currency || 'EUR',
+      listing.status || 'active',
+      listing.category_id || '',
+      listing.location?.city || '',
+      listing.created_at,
+      listing.user_id || '',
+    ]);
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `listings_export_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
   const loadListings = useCallback(async () => {
     setLoading(true);
     try {
