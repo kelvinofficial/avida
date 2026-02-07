@@ -205,7 +205,7 @@ export default function SearchScreen() {
 
       {/* Content Wrapper - full width background */}
       <View style={styles.contentWrapper}>
-        <View style={[styles.contentArea, isDesktop && { maxWidth: MAX_CONTENT_WIDTH, width: '100%' }]}>
+        <View style={[styles.contentArea, isDesktop && styles.desktopContentArea]}>
           {loading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={COLORS.primary} />
