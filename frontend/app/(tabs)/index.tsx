@@ -243,6 +243,11 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
             <Text style={cardStyles.imageCountText}>{imageCount}</Text>
           </View>
         )}
+        {/* Views Counter - Bottom Right */}
+        <View style={cardStyles.viewsOverlay}>
+          <Ionicons name="eye-outline" size={11} color="#fff" />
+          <Text style={cardStyles.viewsOverlayText}>{listing.views || 0}</Text>
+        </View>
       </View>
       <View style={cardStyles.content}>
         <View style={cardStyles.locationRow}>
