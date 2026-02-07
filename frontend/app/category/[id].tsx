@@ -29,6 +29,7 @@ import {
   AutoListingCard,
 } from '../../src/components/listings';
 import { useResponsive } from '../../src/hooks/useResponsive';
+import { Footer } from '../../src/components/layout';
 
 const COLORS = {
   primary: '#2E7D32',
