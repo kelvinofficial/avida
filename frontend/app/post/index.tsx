@@ -2506,11 +2506,15 @@ const desktopStyles = StyleSheet.create({
   categoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -8,
+    marginLeft: -8,
+    marginRight: -8,
   },
   categoryCardWrapper: {
-    width: '25%',
-    padding: 8,
+    flexBasis: '25%',
+    maxWidth: '25%',
+    paddingLeft: 8,
+    paddingRight: 8,
+    paddingBottom: 16,
   },
   categoryCardInner: {
     alignItems: 'center',
