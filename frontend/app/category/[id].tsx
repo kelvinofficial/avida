@@ -335,12 +335,8 @@ export default function CategoryScreen() {
   );
 
   const renderFooter = () => {
-    if (!hasMore) return null;
-    return (
-      <View style={styles.footer}>
-        <ActivityIndicator size="small" color={COLORS.primary} />
-      </View>
-    );
+    // No loading indicator - data loads silently
+    return null;
   };
 
   // ============ FILTERS MODAL ============
