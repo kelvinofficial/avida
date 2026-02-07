@@ -5557,7 +5557,7 @@ app.add_middleware(
 
 ADMIN_FRONTEND_URL = "http://localhost:3001"
 
-@api_router.api_route("/admin-ui/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"])
+@app.api_route("/api/admin-ui/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"])
 async def admin_frontend_proxy(request: Request, path: str):
     """Proxy admin frontend requests to Next.js dev server"""
     async with httpx.AsyncClient(timeout=60.0, follow_redirects=True) as client:
@@ -5605,7 +5605,7 @@ async def admin_frontend_proxy(request: Request, path: str):
             logger.error(f"Admin frontend proxy error: {e}")
             raise HTTPException(status_code=500, detail=str(e))
 
-@api_router.get("/admin-ui")
+@app.get("/api/admin-ui")
 async def admin_frontend_root():
     """Redirect to admin-ui/ with trailing slash"""
     from fastapi.responses import RedirectResponse
