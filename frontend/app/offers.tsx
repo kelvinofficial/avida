@@ -403,12 +403,12 @@ export default function OffersScreen() {
   }, [isAuthenticated, role]);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.replace('/login');
-      return;
+    if (isAuthenticated) {
+      setLoading(true);
+      fetchOffers();
+    } else {
+      setLoading(false);
     }
-    setLoading(true);
-    fetchOffers();
   }, [isAuthenticated, role]);
 
   const handleRefresh = () => {
