@@ -227,9 +227,19 @@ const DesktopOfferCard = ({
 
       {/* Chat button for non-pending */}
       {(offer.status !== 'pending' || !isSeller) && (
-        <TouchableOpacity style={desktopStyles.chatBtn} onPress={onViewChat}>
-          <Ionicons name="chatbubble-outline" size={18} color={COLORS.primary} />
-          <Text style={desktopStyles.chatBtnText}>Message</Text>
+        <TouchableOpacity 
+          style={[desktopStyles.chatBtn, isOpeningChat && { opacity: 0.6 }]} 
+          onPress={onViewChat}
+          disabled={isOpeningChat}
+        >
+          {isOpeningChat ? (
+            <ActivityIndicator size="small" color={COLORS.primary} />
+          ) : (
+            <>
+              <Ionicons name="chatbubble-outline" size={18} color={COLORS.primary} />
+              <Text style={desktopStyles.chatBtnText}>Message</Text>
+            </>
+          )}
         </TouchableOpacity>
       )}
     </View>
