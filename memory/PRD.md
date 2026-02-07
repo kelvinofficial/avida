@@ -148,6 +148,19 @@ Build a responsive desktop version of the marketplace application. The applicati
 - **Featured**: Amber (#F59E0B) - star icon  
 - **TOP**: Red (#EF4444) - arrow-up icon
 
+**Responsive Footer Implemented**
+- Created new Footer component at `/app/frontend/src/components/layout/Footer.tsx`
+- Footer displays on desktop/tablet only (hidden on mobile)
+- Contains: Avida branding, Categories links, Quick Links, Support links, Newsletter section, Legal links
+- Added Footer to all main pages:
+  - Home page (`(tabs)/index.tsx`)
+  - Category page (`category/[id].tsx`)
+  - Listing detail page (`listing/[id].tsx`)
+  - Saved page (both `(tabs)/saved.tsx` and `profile/saved.tsx`)
+  - My Listings page (`profile/my-listings.tsx`)
+- Footer respects `isTablet` prop for responsive adjustments
+- Max-width 1280px, consistent with page layout
+
 **Listing Card Standardization Complete**
 - Updated `ListingCard` component (`/app/frontend/src/components/listings/ListingCard.tsx`) with standardized design
 - Added time posted display using `formatTimeAgo()` helper
