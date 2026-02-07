@@ -30,6 +30,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   onFavorite,
   isFavorited = false,
   compact = false,
+  imageHeight = 130,
 }) => {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
