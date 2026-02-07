@@ -457,17 +457,20 @@ export default function SavedScreen() {
               />
             }
           >
-            <View style={desktopStyles.grid}>
-              {items.map((item) => (
-                <View key={item.id} style={desktopStyles.gridItem}>
-                  <ListingCard
-                    item={item}
-                    onPress={() => handlePress(item)}
-                    onRemove={() => handleRemove(item)}
-                    isDesktop
-                  />
-                </View>
-              ))}
+            {/* Content wrapper with light background */}
+            <View style={{ backgroundColor: '#F0F2F5', paddingBottom: 40 }}>
+              <View style={desktopStyles.grid}>
+                {items.map((item) => (
+                  <View key={item.id} style={desktopStyles.gridItem}>
+                    <ListingCard
+                      item={item}
+                      onPress={() => handlePress(item)}
+                      onRemove={() => handleRemove(item)}
+                      isDesktop
+                    />
+                  </View>
+                ))}
+              </View>
             </View>
             {/* Footer */}
             <Footer isTablet={isTablet && !isDesktop} />
