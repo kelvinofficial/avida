@@ -169,8 +169,6 @@ export const Footer: React.FC<FooterProps> = ({ isTablet = false }) => {
           </View>
         )}
       </View>
-
-      {/* Footer Bottom */}
       <View style={styles.footerBottom}>
         <View style={[styles.footerBottomContent, isTablet && styles.footerBottomContentTablet]}>
           <Text style={styles.copyright}>
