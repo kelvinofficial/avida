@@ -766,10 +766,43 @@ const desktopStyles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
+  cardImageContainer: {
+    position: 'relative',
+  },
   cardImage: {
     width: '100%',
     height: 180,
     backgroundColor: COLORS.border,
+  },
+  cardBadges: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    flexDirection: 'row',
+    gap: 6,
+  },
+  featuredBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#F59E0B',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  topBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#EF4444',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
   },
   heartBtn: {
     position: 'absolute',
@@ -787,7 +820,7 @@ const desktopStyles = StyleSheet.create({
   cardTitle: { fontSize: 15, fontWeight: '500', color: COLORS.text, marginTop: 4, lineHeight: 20 },
   cardMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 },
   cardLocation: { fontSize: 13, color: COLORS.textSecondary, flex: 1 },
-  savedDate: { fontSize: 12, color: COLORS.textMuted, marginTop: 6 },
+  cardTime: { fontSize: 12, color: COLORS.textMuted, marginTop: 6 },
   
   // Skeleton
   skeletonItem: {
