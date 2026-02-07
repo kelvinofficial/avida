@@ -87,6 +87,11 @@ const PropertyListingCard = memo<ListingCardProps>(({ listing, onPress, onFavori
             <Text style={styles.propertyTypeBadgeText}>{propertyType}</Text>
           </View>
         )}
+        {/* Views Counter - Bottom Right */}
+        <View style={styles.viewsContainer}>
+          <Ionicons name="eye-outline" size={11} color="#fff" />
+          <Text style={styles.viewsText}>{listing.views || 0}</Text>
+        </View>
       </View>
 
       {/* Content Below */}
@@ -197,7 +202,7 @@ const styles = StyleSheet.create({
   imageCountBadge: {
     position: 'absolute',
     bottom: 10,
-    right: 10,
+    left: 50,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
@@ -207,6 +212,23 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   imageCountText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  viewsContainer: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  viewsText: {
     color: '#fff',
     fontSize: 11,
     fontWeight: '600',
