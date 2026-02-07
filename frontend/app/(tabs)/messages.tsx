@@ -1635,6 +1635,15 @@ const desktopStyles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 2,
   },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  onlineText: {
+    color: '#4CAF50',
+    fontWeight: '500',
+  },
   chatHeaderListing: {
     fontSize: 13,
     color: COLORS.textSecondary,
