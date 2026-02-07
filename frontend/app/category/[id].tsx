@@ -1302,7 +1302,7 @@ const styles = StyleSheet.create({
 });
 
 // Desktop Styles
-const MAX_CONTENT_WIDTH = 1200;
+const MAX_CONTENT_WIDTH = 1280;
 
 const desktopStyles = StyleSheet.create({
   pageWrapper: {
