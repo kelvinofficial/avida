@@ -1917,6 +1917,7 @@ const desktopStyles = StyleSheet.create({
   // Header Section - wraps header and breadcrumb
   headerSection: {
     backgroundColor: COLORS.surface,
+    marginBottom: -1, // Overlap slightly to prevent gap
   },
   // Main Content Area - wraps scroll container
   mainContentArea: {
