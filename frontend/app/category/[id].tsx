@@ -319,10 +319,10 @@ export default function CategoryScreen() {
     );
   };
 
-  // Only show empty state when loading is complete and no listings found
+  // Only show empty state when initial load is complete and no listings found
   const renderEmpty = () => {
-    // Don't show empty state while still loading
-    if (loading) {
+    // Don't show empty state until initial load is done
+    if (!initialLoadDone) {
       return null;
     }
     
