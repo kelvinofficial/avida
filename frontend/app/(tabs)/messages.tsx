@@ -606,6 +606,54 @@ export default function MessagesScreen() {
     }
   };
 
+  // Render global desktop header
+  const renderGlobalHeader = () => (
+    <View style={desktopStyles.globalHeader}>
+      <View style={desktopStyles.globalHeaderInner}>
+        {/* Logo */}
+        <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+          <View style={desktopStyles.logoIcon}>
+            <Ionicons name="storefront" size={20} color="#fff" />
+          </View>
+          <Text style={desktopStyles.logoText}>avida</Text>
+        </TouchableOpacity>
+        
+        {/* Header Actions */}
+        <View style={desktopStyles.globalHeaderActions}>
+          {isAuthenticated ? (
+            <>
+              <TouchableOpacity 
+                style={desktopStyles.headerIconBtn} 
+                onPress={() => router.push('/notifications')}
+              >
+                <Ionicons name="notifications-outline" size={22} color={COLORS.text} />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={desktopStyles.headerIconBtn} 
+                onPress={() => router.push('/profile')}
+              >
+                <Ionicons name="person-circle-outline" size={26} color={COLORS.text} />
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity style={desktopStyles.signInBtn} onPress={() => router.push('/login')}>
+                <Text style={desktopStyles.signInBtnText}>Sign In</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.signUpBtn} onPress={() => router.push('/login')}>
+                <Text style={desktopStyles.signUpBtnText}>Sign Up</Text>
+              </TouchableOpacity>
+            </>
+          )}
+          <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => router.push('/post')}>
+            <Ionicons name="add" size={18} color="#fff" />
+            <Text style={desktopStyles.postListingBtnText}>Post Listing</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+
   if (!isAuthenticated) {
     // Desktop unauthenticated - split screen layout
     if (isLargeScreen) {
