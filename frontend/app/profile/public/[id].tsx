@@ -770,6 +770,7 @@ export default function PublicProfileScreen() {
   }
 
   // ============ MOBILE VIEW ============
+  return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack}>
