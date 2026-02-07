@@ -139,6 +139,11 @@ const DesktopListingCard = ({
           {item.status?.charAt(0).toUpperCase() + item.status?.slice(1)}
         </Text>
       </View>
+      {/* Views Counter - Bottom Right */}
+      <View style={desktopStyles.viewsOverlay}>
+        <Ionicons name="eye-outline" size={11} color="#fff" />
+        <Text style={desktopStyles.viewsOverlayText}>{item.views || 0}</Text>
+      </View>
     </View>
     
     {/* Actions Menu */}
