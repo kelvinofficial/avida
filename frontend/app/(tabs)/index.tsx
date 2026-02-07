@@ -811,7 +811,6 @@ export default function HomeScreen() {
       {isDesktop || isTablet ? renderDesktopHeader() : renderHeader()}
       <View style={[styles.listContent, (isDesktop || isTablet) && { paddingHorizontal: 0 }]}>
         {renderGrid()}
-        {loading && listings.length > 0 && <ActivityIndicator style={styles.footer} color="#2E7D32" />}
       </View>
     </ScrollView>
   );
