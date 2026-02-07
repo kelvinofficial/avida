@@ -723,11 +723,7 @@ export default function CategoryScreen() {
 
             {/* Listings Grid - 3 columns */}
             <View style={desktopStyles.listingsContainer}>
-              {loading && listings.length === 0 ? (
-                <View style={desktopStyles.loadingContainer}>
-                  <ActivityIndicator size="large" color={COLORS.primary} />
-                </View>
-              ) : listings.length === 0 ? (
+              {listings.length === 0 ? (
                 renderEmpty()
               ) : (
                 <>
