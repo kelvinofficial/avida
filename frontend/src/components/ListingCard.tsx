@@ -21,6 +21,7 @@ interface ListingCardProps {
   onFavorite?: () => void;
   isFavorited?: boolean;
   compact?: boolean;
+  imageHeight?: number;
 }
 
 export const ListingCard: React.FC<ListingCardProps> = ({
