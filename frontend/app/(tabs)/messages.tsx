@@ -303,7 +303,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onPre
 export default function MessagesScreen() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
-  const { isDesktop, isTablet } = useResponsive();
+  const { isDesktop, isTablet, isReady } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
   
   const [conversations, setConversations] = useState<Conversation[]>([]);
