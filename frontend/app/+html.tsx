@@ -30,6 +30,7 @@ const responsiveStyle = `
     width: 100%;
     margin: 0;
     padding: 0;
+    background-color: #1A1A1A; /* Dark footer color */
   }
   
   body {
