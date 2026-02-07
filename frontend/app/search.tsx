@@ -259,22 +259,18 @@ export default function SearchScreen() {
 }
 
 const styles = StyleSheet.create({
-  pageContainer: {
-    flex: 1,
-  },
   container: {
     flex: 1,
-    alignItems: 'center',
-  },
-  desktopWrapper: {
-    flex: 1,
-    maxWidth: 1280,
-    width: '100%',
     backgroundColor: COLORS.background,
   },
-  fullWidth: {
+  headerWrapper: {
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    alignItems: 'center',
+  },
+  contentArea: {
     flex: 1,
-    width: '100%',
     backgroundColor: COLORS.background,
   },
   header: {
@@ -282,10 +278,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
     gap: 12,
+    width: '100%',
   },
   backBtn: {
     width: 40,
