@@ -2267,7 +2267,7 @@ const styles = StyleSheet.create({
 // Desktop-specific styles
 const desktopStyles = StyleSheet.create({
   container: {
-    backgroundColor: '#F0F2F5',
+    backgroundColor: '#1A1A1A', // Dark footer background
   },
   headerWrapper: {
     backgroundColor: COLORS.surface,
