@@ -628,6 +628,95 @@ export default function PostListingScreen() {
   const renderStep1 = () => {
     const selectedMainCategory = getMainCategory(selectedCategoryId);
     
+    // Desktop-specific category grid
+    if (isLargeScreen) {
+      return (
+        <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
+          <Text style={styles.stepTitle}>What are you selling?</Text>
+          <Text style={styles.stepSubtitle}>Choose the category and subcategory for your item</Text>
+          
+          {/* Main Category Selection - Desktop 4-column grid */}
+          <Text style={styles.sectionTitle}>Category <Text style={styles.required}>*</Text></Text>
+          <View style={desktopStyles.categoryGrid}>
+            {ALL_CATEGORIES.map((cat) => (
+              <View key={cat.id} style={desktopStyles.categoryCardWrapper}>
+                <TouchableOpacity
+                  style={[
+                    desktopStyles.categoryCardInner,
+                    selectedCategoryId === cat.id && desktopStyles.categoryCardSelected,
+                  ]}
+                  onPress={() => {
+                    setSelectedCategoryId(cat.id);
+                    setSelectedSubcategoryId('');
+                  }}
+                >
+                  <View style={[
+                    styles.categoryIconWrapper,
+                    selectedCategoryId === cat.id && styles.categoryIconWrapperSelected,
+                  ]}>
+                    <Ionicons 
+                      name={cat.icon as any} 
+                      size={28} 
+                      color={selectedCategoryId === cat.id ? '#fff' : COLORS.primary} 
+                    />
+                  </View>
+                  <Text style={[
+                    styles.categoryName,
+                    selectedCategoryId === cat.id && styles.categoryNameSelected,
+                  ]} numberOfLines={2}>
+                    {cat.name}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+          {fieldErrors.category && (
+            <ValidationError message={fieldErrors.category} visible={true} />
+          )}
+
+          {/* Subcategory Selection - MANDATORY */}
+          {selectedCategoryId && availableSubcategories.length > 0 && (
+            <View style={styles.subcategorySection}>
+              <Text style={styles.sectionTitle}>
+                Subcategory <Text style={styles.required}>*</Text>
+              </Text>
+              <Text style={styles.sectionSubtitle}>
+                Select the specific type of {selectedMainCategory?.name.toLowerCase() || 'item'}
+              </Text>
+              
+              <View style={desktopStyles.subcategoryGrid}>
+                {availableSubcategories.map((sub) => (
+                  <TouchableOpacity
+                    key={sub.id}
+                    style={[
+                      desktopStyles.subcategoryItem,
+                      selectedSubcategoryId === sub.id && desktopStyles.subcategoryItemSelected,
+                      fieldErrors.subcategory && !selectedSubcategoryId && styles.subcategoryItemError,
+                    ]}
+                    onPress={() => setSelectedSubcategoryId(sub.id)}
+                  >
+                    <Text style={[
+                      styles.subcategoryText,
+                      selectedSubcategoryId === sub.id && styles.subcategoryTextSelected,
+                    ]}>
+                      {sub.name}
+                    </Text>
+                    {selectedSubcategoryId === sub.id && (
+                      <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+          {fieldErrors.subcategory && (
+            <ValidationError message={fieldErrors.subcategory} visible={true} />
+          )}
+        </ScrollView>
+      );
+    }
+    
+    // Mobile layout
     return (
       <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
         <Text style={styles.stepTitle}>What are you selling?</Text>
@@ -635,13 +724,12 @@ export default function PostListingScreen() {
         
         {/* Main Category Selection */}
         <Text style={styles.sectionTitle}>Category <Text style={styles.required}>*</Text></Text>
-        <View style={[styles.categoryGrid, isLargeScreen && desktopStyles.categoryGrid]}>
+        <View style={styles.categoryGrid}>
           {ALL_CATEGORIES.map((cat) => (
             <TouchableOpacity
               key={cat.id}
               style={[
                 styles.categoryCard,
-                isLargeScreen && desktopStyles.categoryCard,
                 selectedCategoryId === cat.id && styles.categoryCardSelected,
               ]}
               onPress={() => {
