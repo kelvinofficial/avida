@@ -1,16 +1,20 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { theme } from '../../src/utils/theme';
 import { useAuthStore } from '../../src/store/authStore';
+import { useResponsive } from '../../src/hooks/useResponsive';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
+  const { isTablet, isDesktop, width: screenWidth } = useResponsive();
+
+  // Hide bottom nav on tablet and desktop
+  const hideBottomNav = isTablet || isDesktop || (Platform.OS === 'web' && screenWidth > 768);
 
   const handlePostPress = () => {
     if (!isAuthenticated) {
@@ -23,7 +27,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarStyle: [
+        tabBarStyle: hideBottomNav ? { display: 'none' } : [
           styles.tabBar,
           { paddingBottom: Platform.OS === 'ios' ? insets.bottom : 12 },
         ],
