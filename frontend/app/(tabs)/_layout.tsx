@@ -48,7 +48,7 @@ export default function TabLayout() {
 
   const handlePostPress = () => {
     if (!isAuthenticated) {
-      router.push('/login');
+      router.push('/login?redirect=/post');
     } else {
       router.push('/post');
     }
