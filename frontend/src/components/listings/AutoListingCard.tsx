@@ -189,6 +189,23 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '600',
   },
+  viewsContainer: {
+    position: 'absolute',
+    bottom: 6,
+    right: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  viewsText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '600',
+  },
   autoCardContent: {
     flex: 1,
     paddingVertical: 8,
