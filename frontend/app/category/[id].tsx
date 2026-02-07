@@ -758,6 +758,8 @@ export default function CategoryScreen() {
               )}
             </View>
           </View>
+          </View>
+          {/* End content wrapper */}
           {/* Footer */}
           <Footer isTablet={isTablet && !isDesktop} />
         </ScrollView>
