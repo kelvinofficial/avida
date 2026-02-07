@@ -2012,8 +2012,6 @@ const desktopStyles = StyleSheet.create({
   breadcrumbRow: {
     backgroundColor: COLORS.surface,
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
   },
   breadcrumbInner: {
     flexDirection: 'row',
