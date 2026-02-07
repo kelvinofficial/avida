@@ -102,6 +102,138 @@ const getStatusConfig = (status: string) => {
   }
 };
 
+// Desktop Offer Card Component
+const DesktopOfferCard = ({ 
+  offer, 
+  isSeller, 
+  onAccept, 
+  onReject, 
+  onCounter,
+  onViewListing,
+  onViewChat 
+}: {
+  offer: Offer;
+  isSeller: boolean;
+  onAccept: () => void;
+  onReject: () => void;
+  onCounter: () => void;
+  onViewListing: () => void;
+  onViewChat: () => void;
+}) => {
+  const statusConfig = getStatusConfig(offer.status);
+  const savings = offer.listed_price - offer.offered_price;
+
+  return (
+    <View style={[desktopStyles.offerCard, Platform.OS === 'web' && { cursor: 'default' } as any]}>
+      {/* Header with listing info */}
+      <TouchableOpacity style={desktopStyles.listingRow} onPress={onViewListing}>
+        <Image 
+          source={{ uri: offer.listing_image || 'https://via.placeholder.com/80' }} 
+          style={desktopStyles.listingImage} 
+        />
+        <View style={desktopStyles.listingInfo}>
+          <Text style={desktopStyles.listingTitle} numberOfLines={2}>{offer.listing_title}</Text>
+          <Text style={desktopStyles.listedPrice}>Listed: {formatPrice(offer.listed_price)}</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={COLORS.textLight} />
+      </TouchableOpacity>
+
+      {/* Divider */}
+      <View style={desktopStyles.divider} />
+
+      {/* Offer details */}
+      <View style={desktopStyles.offerDetails}>
+        {/* User info row */}
+        <View style={desktopStyles.buyerRow}>
+          <Image 
+            source={{ uri: isSeller 
+              ? (offer.buyer_picture || 'https://via.placeholder.com/40') 
+              : (offer.seller_picture || 'https://via.placeholder.com/40') 
+            }} 
+            style={desktopStyles.buyerAvatar} 
+          />
+          <View style={desktopStyles.buyerInfo}>
+            <Text style={desktopStyles.buyerLabel}>{isSeller ? 'From' : 'To'}</Text>
+            <Text style={desktopStyles.buyerName}>
+              {isSeller ? offer.buyer_name : (offer.seller_name || 'Seller')}
+            </Text>
+            <Text style={desktopStyles.offerTime}>{formatTimeAgo(offer.created_at)}</Text>
+          </View>
+          <View style={[desktopStyles.statusBadge, { backgroundColor: statusConfig.bg }]}>
+            <Ionicons name={statusConfig.icon as any} size={14} color={statusConfig.color} />
+            <Text style={[desktopStyles.statusText, { color: statusConfig.color }]}>{statusConfig.label}</Text>
+          </View>
+        </View>
+
+        {/* Price comparison */}
+        <View style={desktopStyles.priceComparison}>
+          <View style={desktopStyles.priceBlock}>
+            <Text style={desktopStyles.priceLabel}>Offer</Text>
+            <Text style={desktopStyles.offerPrice}>{formatPrice(offer.offered_price)}</Text>
+          </View>
+          <View style={desktopStyles.savingsBlock}>
+            <Ionicons name="trending-down" size={20} color={COLORS.success} />
+            <Text style={desktopStyles.savingsText}>{offer.discount_percent}% off</Text>
+          </View>
+          <View style={desktopStyles.priceBlock}>
+            <Text style={desktopStyles.priceLabel}>Savings</Text>
+            <Text style={desktopStyles.savingsAmount}>{formatPrice(savings)}</Text>
+          </View>
+        </View>
+
+        {/* Message */}
+        {offer.message && (
+          <View style={desktopStyles.messageBox}>
+            <Ionicons name="chatbubble-outline" size={14} color={COLORS.textSecondary} />
+            <Text style={desktopStyles.messageText} numberOfLines={2}>{offer.message}</Text>
+          </View>
+        )}
+
+        {/* Counter offer display */}
+        {offer.status === 'countered' && offer.counter_price && (
+          <View style={desktopStyles.counterBox}>
+            <Ionicons name="swap-horizontal" size={16} color={COLORS.primary} />
+            <Text style={desktopStyles.counterText}>Counter offer: {formatPrice(offer.counter_price)}</Text>
+          </View>
+        )}
+
+        {/* Response message */}
+        {offer.response_message && (
+          <View style={desktopStyles.responseBox}>
+            <Text style={desktopStyles.responseText}>"{offer.response_message}"</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Actions */}
+      {isSeller && offer.status === 'pending' && (
+        <View style={desktopStyles.actions}>
+          <TouchableOpacity style={desktopStyles.rejectBtn} onPress={onReject}>
+            <Ionicons name="close" size={18} color={COLORS.error} />
+            <Text style={desktopStyles.rejectBtnText}>Decline</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={desktopStyles.counterBtn} onPress={onCounter}>
+            <Ionicons name="swap-horizontal" size={18} color={COLORS.primary} />
+            <Text style={desktopStyles.counterBtnText}>Counter</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={desktopStyles.acceptBtn} onPress={onAccept}>
+            <Ionicons name="checkmark" size={18} color="#fff" />
+            <Text style={desktopStyles.acceptBtnText}>Accept</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Chat button for non-pending */}
+      {(offer.status !== 'pending' || !isSeller) && (
+        <TouchableOpacity style={desktopStyles.chatBtn} onPress={onViewChat}>
+          <Ionicons name="chatbubble-outline" size={18} color={COLORS.primary} />
+          <Text style={desktopStyles.chatBtnText}>Message</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
+
 const OfferCard = ({ 
   offer, 
   isSeller, 
