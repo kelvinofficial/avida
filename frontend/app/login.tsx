@@ -157,7 +157,7 @@ export default function LoginScreen() {
         setUser(result.user);
         await saveUserData(result.user);
         Alert.alert('Success', 'Account created successfully!');
-        router.replace('/');
+        router.replace(redirectAfterLogin as any);
       }
     } catch (err: any) {
       console.error('Registration error:', err);
