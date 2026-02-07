@@ -122,28 +122,15 @@ export default function AdsPage() {
   const handleSave = async () => {
     setActionLoading(true);
     try {
-      // In production, this would call the API
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
       if (editingAd) {
-        setAds(prev => prev.map(ad => 
-          ad.id === editingAd.id 
-            ? { ...ad, ...formData }
-            : ad
-        ));
+        await api.updateAd(editingAd.id, formData);
         setSnackbar({ open: true, message: 'Ad placement updated successfully', severity: 'success' });
       } else {
-        const newAd: AdPlacement = {
-          id: `ad_${Date.now()}`,
-          ...formData,
-          created_at: new Date().toISOString(),
-          impressions: 0,
-          clicks: 0,
-        };
-        setAds(prev => [...prev, newAd]);
+        await api.createAd(formData);
         setSnackbar({ open: true, message: 'Ad placement created successfully', severity: 'success' });
       }
       setDialogOpen(false);
+      await loadAds();
     } catch (err) {
       setSnackbar({ open: true, message: 'Failed to save ad placement', severity: 'error' });
     } finally {
@@ -155,11 +142,11 @@ export default function AdsPage() {
     if (!adToDelete) return;
     setActionLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setAds(prev => prev.filter(ad => ad.id !== adToDelete.id));
+      await api.deleteAd(adToDelete.id);
       setSnackbar({ open: true, message: 'Ad placement deleted successfully', severity: 'success' });
       setDeleteDialogOpen(false);
       setAdToDelete(null);
+      await loadAds();
     } catch (err) {
       setSnackbar({ open: true, message: 'Failed to delete ad placement', severity: 'error' });
     } finally {
@@ -169,9 +156,8 @@ export default function AdsPage() {
 
   const handleToggleActive = async (ad: AdPlacement) => {
     try {
-      setAds(prev => prev.map(a => 
-        a.id === ad.id ? { ...a, is_active: !a.is_active } : a
-      ));
+      await api.updateAd(ad.id, { is_active: !ad.is_active });
+      await loadAds();
       setSnackbar({ 
         open: true, 
         message: `Ad ${ad.is_active ? 'deactivated' : 'activated'} successfully`, 
