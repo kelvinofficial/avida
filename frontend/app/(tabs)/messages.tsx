@@ -838,6 +838,7 @@ export default function MessagesScreen() {
                     onPress={() => handleSelectConversation(item)}
                     isSelected={selectedConversation?.id === item.id}
                     isDesktop={true}
+                    userStatus={item.other_user?.user_id ? userStatuses[item.other_user.user_id] : undefined}
                   />
                 )}
                 keyExtractor={(item) => item.id}
