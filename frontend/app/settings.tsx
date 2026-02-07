@@ -410,24 +410,26 @@ export default function SettingsScreen() {
               <Text style={desktopStyles.sidebarTitle}>Settings</Text>
             </View>
 
-            <View style={desktopStyles.navItems}>
-              {SETTINGS_SECTIONS.map(section => (
-                <TouchableOpacity
-                  key={section.key}
-                  style={[desktopStyles.navItem, activeSection === section.key && desktopStyles.navItemActive]}
-                  onPress={() => setActiveSection(section.key)}
-                >
-                  <Ionicons 
-                    name={section.icon as any} 
-                    size={20} 
-                    color={activeSection === section.key ? COLORS.primary : COLORS.textSecondary} 
-                  />
-                  <Text style={[desktopStyles.navItemText, activeSection === section.key && desktopStyles.navItemTextActive]}>
-                    {section.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <ScrollView style={desktopStyles.sidebarScrollView} showsVerticalScrollIndicator={false}>
+              <View style={desktopStyles.navItems}>
+                {SETTINGS_SECTIONS.map(section => (
+                  <TouchableOpacity
+                    key={section.key}
+                    style={[desktopStyles.navItem, activeSection === section.key && desktopStyles.navItemActive]}
+                    onPress={() => setActiveSection(section.key)}
+                  >
+                    <Ionicons 
+                      name={section.icon as any} 
+                      size={20} 
+                      color={activeSection === section.key ? COLORS.primary : COLORS.textSecondary} 
+                    />
+                    <Text style={[desktopStyles.navItemText, activeSection === section.key && desktopStyles.navItemTextActive]}>
+                      {section.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
 
             <View style={desktopStyles.sidebarFooter}>
               <Text style={desktopStyles.versionText}>avida v1.0.0</Text>
