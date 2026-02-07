@@ -458,18 +458,18 @@ export default function NotificationsPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{editingNotif ? 'Edit Notification' : 'Create Notification'}</DialogTitle>
+        <DialogTitle>{editingNotif ? t('common.edit') : t('common.create')} {t('notifications.notificationTitle')}</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
             <TextField
-              label="Title"
+              label={t('notifications.notificationTitle')}
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               fullWidth
               required
             />
             <TextField
-              label="Message"
+              label={t('notifications.message')}
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               fullWidth
@@ -478,23 +478,23 @@ export default function NotificationsPage() {
               rows={3}
             />
             <FormControl fullWidth>
-              <InputLabel>Type</InputLabel>
+              <InputLabel>{t('notifications.type')}</InputLabel>
               <Select
                 value={formData.type}
-                label="Type"
+                label={t('notifications.type')}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
               >
-                <MenuItem value="broadcast">Broadcast (All Users)</MenuItem>
-                <MenuItem value="targeted">Targeted (Specific Users)</MenuItem>
-                <MenuItem value="scheduled">Scheduled</MenuItem>
+                <MenuItem value="broadcast">{t('notifications.broadcast')}</MenuItem>
+                <MenuItem value="targeted">{t('notifications.targeted')}</MenuItem>
+                <MenuItem value="scheduled">{t('notifications.scheduled')}</MenuItem>
               </Select>
             </FormControl>
             {formData.type === 'targeted' && (
               <FormControl fullWidth>
-                <InputLabel>Target</InputLabel>
+                <InputLabel>{t('notifications.audience')}</InputLabel>
                 <Select
                   value={formData.target_type}
-                  label="Target"
+                  label={t('notifications.audience')}
                   onChange={(e) => setFormData({ ...formData, target_type: e.target.value as any })}
                 >
                   <MenuItem value="users">Specific Users</MenuItem>
@@ -504,7 +504,7 @@ export default function NotificationsPage() {
             )}
             {formData.type === 'scheduled' && (
               <TextField
-                label="Schedule Date & Time"
+                label={t('notifications.scheduleDateTime')}
                 type="datetime-local"
                 value={formData.scheduled_at}
                 onChange={(e) => setFormData({ ...formData, scheduled_at: e.target.value })}
@@ -515,13 +515,13 @@ export default function NotificationsPage() {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
           <Button
             onClick={() => handleSave(false)}
             variant="outlined"
             disabled={!formData.title || !formData.message || actionLoading}
           >
-            Save Draft
+            {t('notifications.saveDraft')}
           </Button>
           <Button
             onClick={() => handleSave(true)}
@@ -529,23 +529,23 @@ export default function NotificationsPage() {
             startIcon={<Send />}
             disabled={!formData.title || !formData.message || actionLoading}
           >
-            {actionLoading ? <CircularProgress size={20} /> : 'Send Now'}
+            {actionLoading ? <CircularProgress size={20} /> : t('notifications.sendNow')}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Delete Dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Delete Notification</DialogTitle>
+        <DialogTitle>{t('common.delete')}</DialogTitle>
         <DialogContent>
           <Typography>
             Are you sure you want to delete <strong>{notifToDelete?.title}</strong>?
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setDeleteDialogOpen(false)}>{t('common.cancel')}</Button>
           <Button onClick={handleDelete} color="error" variant="contained" disabled={actionLoading}>
-            {actionLoading ? <CircularProgress size={20} /> : 'Delete'}
+            {actionLoading ? <CircularProgress size={20} /> : t('common.delete')}
           </Button>
         </DialogActions>
       </Dialog>
