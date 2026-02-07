@@ -1886,7 +1886,7 @@ const desktopStyles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 14,
     width: '100%',
-    maxWidth: 1200,
+    maxWidth: 1280,
   },
   logoContainer: {
     flexDirection: 'row',
