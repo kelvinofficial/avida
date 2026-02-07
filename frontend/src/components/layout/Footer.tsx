@@ -137,17 +137,35 @@ export const Footer: React.FC<FooterProps> = ({ isTablet = false }) => {
           ))}
         </View>
 
-        {/* Newsletter Section - Desktop Only */}
+        {/* Download App Section - Desktop Only */}
         {!isTablet && (
-          <View style={[styles.footerSection, styles.newsletterSection]}>
-            <Text style={styles.sectionTitle}>Stay Updated</Text>
-            <Text style={styles.newsletterText}>
-              Get notified about new listings and deals in your area.
+          <View style={[styles.footerSection, styles.downloadSection]}>
+            <Text style={styles.sectionTitle}>Get the App</Text>
+            <Text style={styles.downloadText}>
+              Download our mobile app for the best experience. Buy and sell on the go!
             </Text>
-            <TouchableOpacity style={styles.subscribeButton}>
-              <Ionicons name="notifications-outline" size={18} color="#fff" />
-              <Text style={styles.subscribeButtonText}>Enable Notifications</Text>
-            </TouchableOpacity>
+            <View style={styles.appStoreButtons}>
+              <TouchableOpacity 
+                style={styles.appStoreBtn}
+                onPress={() => Linking.openURL('https://apps.apple.com')}
+              >
+                <Ionicons name="logo-apple" size={20} color="#fff" />
+                <View style={styles.appStoreBtnText}>
+                  <Text style={styles.appStoreLabel}>Download on the</Text>
+                  <Text style={styles.appStoreName}>App Store</Text>
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.appStoreBtn}
+                onPress={() => Linking.openURL('https://play.google.com')}
+              >
+                <Ionicons name="logo-google-playstore" size={20} color="#fff" />
+                <View style={styles.appStoreBtnText}>
+                  <Text style={styles.appStoreLabel}>Get it on</Text>
+                  <Text style={styles.appStoreName}>Google Play</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       </View>
