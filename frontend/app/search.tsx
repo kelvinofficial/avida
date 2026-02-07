@@ -175,15 +175,15 @@ export default function SearchScreen() {
 
   const MAX_CONTENT_WIDTH = 1280;
   
-  // Use Platform check for web to avoid hydration issues
+  // For web platform, always apply desktop styles when on larger screens
+  // This avoids hydration issues with useResponsive hook
   const isWeb = Platform.OS === 'web';
-  const shouldApplyDesktopStyles = isDesktop && isWeb;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header Wrapper - full width background */}
       <View style={styles.headerWrapper}>
-        <View style={[styles.header, shouldApplyDesktopStyles && styles.desktopHeader]}>
+        <View style={[styles.header, isWeb && styles.desktopHeader]}>
           <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={24} color={COLORS.text} />
           </TouchableOpacity>
@@ -210,7 +210,7 @@ export default function SearchScreen() {
 
       {/* Content Wrapper - full width background */}
       <View style={styles.contentWrapper}>
-        <View style={[styles.contentArea, shouldApplyDesktopStyles && styles.desktopContentArea]}>
+        <View style={[styles.contentArea, isWeb && styles.desktopContentArea]}>
           {loading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={COLORS.primary} />
