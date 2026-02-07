@@ -28,11 +28,15 @@ Build a responsive desktop version of the marketplace application. The applicati
    - 3-column grid layout
    - Status tabs (All, Active, Reserved, Sold)
 4. **Saved Items Page** (`profile/saved.tsx`) - ✅ Done
-   - 3-column grid layout
+   - 4-column grid layout
    - Heart icon for saved items
-5. **Post Listing Page** (`PostListingScreen.tsx`) - ✅ Done
-6. **Login Page** (`login.tsx`) - ✅ Done
-7. **Category Page** (`category/[id].tsx`) - ✅ Done
+5. **Offers Page** (`offers.tsx`) - ✅ Done (Dec 2025)
+   - 2-column offer cards grid
+   - Role toggle (Received/Sent)
+   - Price comparison, action buttons
+6. **Post Listing Page** (`PostListingScreen.tsx`) - ✅ Done
+7. **Login Page** (`login.tsx`) - ✅ Done
+8. **Category Page** (`category/[id].tsx`) - ✅ Done
 
 ## Technical Architecture
 
