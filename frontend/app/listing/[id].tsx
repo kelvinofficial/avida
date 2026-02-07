@@ -1917,6 +1917,11 @@ const desktopStyles = StyleSheet.create({
   headerSection: {
     backgroundColor: COLORS.surface,
   },
+  // Main Content Area - wraps scroll container
+  mainContentArea: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
   // Header Row 1
   headerRow1: {
     backgroundColor: COLORS.surface,
