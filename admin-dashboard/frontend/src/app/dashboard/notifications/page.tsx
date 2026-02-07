@@ -134,7 +134,8 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     loadNotifications();
-  }, [loadNotifications]);
+    loadTemplates();
+  }, [loadNotifications, loadTemplates]);
 
   const handleOpenDialog = (notif?: Notification) => {
     if (notif) {
@@ -147,6 +148,7 @@ export default function NotificationsPage() {
         target_ids: notif.target_ids || [],
         scheduled_at: notif.scheduled_at || '',
       });
+      setShowTemplates(false);
     } else {
       setEditingNotif(null);
       setFormData({
@@ -157,9 +159,25 @@ export default function NotificationsPage() {
         target_ids: [],
         scheduled_at: '',
       });
+      setShowTemplates(true);
+      setSelectedTemplateCategory('');
     }
     setDialogOpen(true);
   };
+
+  const handleSelectTemplate = (template: NotificationTemplate) => {
+    setFormData({
+      ...formData,
+      title: template.title,
+      message: template.message,
+      type: template.recommended_type as 'broadcast' | 'targeted' | 'scheduled',
+    });
+    setShowTemplates(false);
+  };
+
+  const filteredTemplates = selectedTemplateCategory 
+    ? templates.filter(t => t.category === selectedTemplateCategory)
+    : templates;
 
   const handleSave = async (sendNow: boolean = false) => {
     setActionLoading(true);
