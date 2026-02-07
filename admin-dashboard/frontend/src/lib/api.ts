@@ -268,6 +268,77 @@ class ApiClient {
     const { data } = await this.client.patch(`/admins/${id}`, updates);
     return data;
   }
+
+  // Ads Management
+  async getAds() {
+    const { data } = await this.client.get('/ads');
+    return data;
+  }
+
+  async createAd(ad: { name: string; platform: string; ad_type: string; placement_id: string; location: string; is_active?: boolean }) {
+    const { data } = await this.client.post('/ads', ad);
+    return data;
+  }
+
+  async updateAd(id: string, updates: Record<string, unknown>) {
+    const { data } = await this.client.patch(`/ads/${id}`, updates);
+    return data;
+  }
+
+  async deleteAd(id: string) {
+    const { data } = await this.client.delete(`/ads/${id}`);
+    return data;
+  }
+
+  async trackAdEvent(adId: string, eventType: 'impression' | 'click') {
+    const { data } = await this.client.post(`/ads/${adId}/track?event_type=${eventType}`);
+    return data;
+  }
+
+  // Notifications
+  async getNotifications(params?: { page?: number; limit?: number; status?: string }) {
+    const { data } = await this.client.get('/notifications', { params });
+    return data;
+  }
+
+  async createNotification(notification: { title: string; message: string; type: string; target_type?: string; target_ids?: string[]; scheduled_at?: string }) {
+    const { data } = await this.client.post('/notifications', notification);
+    return data;
+  }
+
+  async updateNotification(id: string, updates: Record<string, unknown>) {
+    const { data } = await this.client.patch(`/notifications/${id}`, updates);
+    return data;
+  }
+
+  async sendNotification(id: string) {
+    const { data } = await this.client.post(`/notifications/${id}/send`);
+    return data;
+  }
+
+  async deleteNotification(id: string) {
+    const { data } = await this.client.delete(`/notifications/${id}`);
+    return data;
+  }
+
+  // CSV Import
+  async importUsersCSV(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await this.client.post('/users/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return data;
+  }
+
+  async importCategoriesCSV(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await this.client.post('/categories/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return data;
+  }
 }
 
 export const api = new ApiClient();
