@@ -775,10 +775,15 @@ async def get_user_status(user_id: str):
     # Check if user is currently online (in memory)
     is_online = user_id in online_users
     
+    # Convert last_seen to ISO string
+    last_seen = user.get("last_seen")
+    if last_seen and isinstance(last_seen, datetime):
+        last_seen = last_seen.isoformat() + "Z" if last_seen.tzinfo is None else last_seen.isoformat()
+    
     response = {
         "user_id": user_id,
         "is_online": is_online if show_online else None,
-        "last_seen": user.get("last_seen") if show_last_seen and not is_online else None,
+        "last_seen": last_seen if show_last_seen and not is_online else None,
     }
     
     return response
@@ -811,9 +816,14 @@ async def get_users_status_batch(user_ids: List[str]):
         # Check if user is currently online (in memory)
         is_online = user_id in online_users
         
+        # Convert last_seen to ISO string
+        last_seen = user.get("last_seen")
+        if last_seen and isinstance(last_seen, datetime):
+            last_seen = last_seen.isoformat() + "Z" if last_seen.tzinfo is None else last_seen.isoformat()
+        
         result[user_id] = {
             "is_online": is_online if show_online else None,
-            "last_seen": user.get("last_seen") if show_last_seen and not is_online else None,
+            "last_seen": last_seen if show_last_seen and not is_online else None,
         }
     
     return result
