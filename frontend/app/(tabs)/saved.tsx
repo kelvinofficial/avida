@@ -98,8 +98,14 @@ const ListingCard = ({
           source={{ uri: item.images?.[0] || 'https://via.placeholder.com/150' }}
           style={[styles.cardImage, isDesktop && desktopStyles.cardImage]}
         />
-        {/* Badges - Featured & TOP */}
+        {/* Badges - Just Listed, Featured & TOP */}
         <View style={styles.badgesContainer}>
+          {isJustListed(item.created_at) && (
+            <View style={styles.justListedBadge}>
+              <Ionicons name="time" size={10} color="#fff" />
+              <Text style={styles.badgeText}>Just Listed</Text>
+            </View>
+          )}
           {item.is_featured && (
             <View style={styles.featuredBadge}>
               <Ionicons name="star" size={10} color="#fff" />
