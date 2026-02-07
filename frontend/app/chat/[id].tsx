@@ -15,6 +15,7 @@ import {
   Animated,
   Alert,
   ActionSheetIOS,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -26,6 +27,7 @@ import { conversationsApi } from '../../src/utils/api';
 import { Conversation, Message } from '../../src/types';
 import { useAuthStore } from '../../src/store/authStore';
 import { format, isToday, isYesterday } from 'date-fns';
+import { useResponsive } from '../../src/hooks/useResponsive';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
