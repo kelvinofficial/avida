@@ -5633,6 +5633,68 @@ async def admin_frontend_root():
     from fastapi.responses import RedirectResponse
     return RedirectResponse(url="/api/admin-ui/", status_code=307)
 
+# Background task for expiring boosts
+async def expire_boosts_task():
+    """Background task that runs every 60 seconds to expire boosts"""
+    while True:
+        try:
+            now = datetime.now(timezone.utc).isoformat()
+            
+            # Find all expired but still active boosts
+            expired_boosts = await db.listing_boosts.find({
+                "status": "active",
+                "expires_at": {"$lte": now}
+            }).to_list(100)
+            
+            for boost in expired_boosts:
+                # Update boost status
+                await db.listing_boosts.update_one(
+                    {"id": boost["id"]},
+                    {"$set": {"status": "expired"}}
+                )
+                
+                # Update listing - remove boost flag if no other active boosts
+                listing_id = boost.get("listing_id")
+                if listing_id:
+                    # Check if listing has other active boosts
+                    other_active = await db.listing_boosts.count_documents({
+                        "listing_id": listing_id,
+                        "status": "active",
+                        "id": {"$ne": boost["id"]}
+                    })
+                    
+                    if other_active == 0:
+                        # No other active boosts, remove is_boosted flag
+                        await db.listings.update_one(
+                            {"id": listing_id},
+                            {"$set": {"is_boosted": False, "boost_priority": 0}}
+                        )
+                    
+                    # Remove specific boost type from listing
+                    boost_type = boost.get("boost_type")
+                    if boost_type:
+                        await db.listings.update_one(
+                            {"id": listing_id},
+                            {"$unset": {f"boosts.{boost_type}": ""}}
+                        )
+                
+                logger.info(f"Expired boost {boost['id']} for listing {listing_id}")
+            
+            if expired_boosts:
+                logger.info(f"Expired {len(expired_boosts)} boosts")
+                
+        except Exception as e:
+            logger.error(f"Error in expire_boosts_task: {e}")
+        
+        # Wait 60 seconds before next check
+        await asyncio.sleep(60)
+
+@app.on_event("startup")
+async def startup_event():
+    """Start background tasks on server startup"""
+    asyncio.create_task(expire_boosts_task())
+    logger.info("Started boost expiration background task")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
