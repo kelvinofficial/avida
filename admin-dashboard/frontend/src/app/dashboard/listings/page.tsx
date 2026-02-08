@@ -736,6 +736,288 @@ export default function ListingsPage() {
         sampleHeaders={['name', 'price', 'description', 'category_id', 'location', 'status', 'condition', 'currency']}
         entityName="listing"
       />
+
+      {/* Edit Listing Dialog */}
+      <Dialog 
+        open={editDialogOpen} 
+        onClose={() => setEditDialogOpen(false)} 
+        maxWidth="md" 
+        fullWidth
+        PaperProps={{ sx: { maxHeight: '90vh' } }}
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Edit color="primary" />
+            <Typography variant="h6">{t('common.edit')} Listing</Typography>
+          </Box>
+          <IconButton onClick={() => setEditDialogOpen(false)} size="small">
+            <Close />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers sx={{ p: 3 }}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+              {error}
+            </Alert>
+          )}
+          
+          {/* Images Section */}
+          <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
+            Images
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3 }}>
+            {editImages.map((img, idx) => (
+              <Box
+                key={idx}
+                sx={{
+                  position: 'relative',
+                  width: 120,
+                  height: 120,
+                  borderRadius: 1,
+                  overflow: 'hidden',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                }}
+              >
+                <img
+                  src={img}
+                  alt={`Image ${idx + 1}`}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+                <IconButton
+                  size="small"
+                  onClick={() => handleRemoveImage(idx)}
+                  sx={{
+                    position: 'absolute',
+                    top: 4,
+                    right: 4,
+                    bgcolor: 'error.main',
+                    color: 'white',
+                    '&:hover': { bgcolor: 'error.dark' },
+                    width: 24,
+                    height: 24,
+                  }}
+                >
+                  <Close fontSize="small" />
+                </IconButton>
+              </Box>
+            ))}
+            <Box
+              component="label"
+              sx={{
+                width: 120,
+                height: 120,
+                borderRadius: 1,
+                border: '2px dashed',
+                borderColor: 'divider',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' },
+              }}
+            >
+              <CloudUpload color="action" />
+              <Typography variant="caption" color="text.secondary">
+                Add Image
+              </Typography>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                hidden
+                onChange={handleImageUpload}
+              />
+            </Box>
+          </Box>
+
+          {/* Basic Info */}
+          <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
+            Basic Information
+          </Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, mb: 3 }}>
+            <TextField
+              label="Title"
+              value={editForm.name}
+              onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              fullWidth
+              required
+            />
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <TextField
+                label="Price"
+                type="number"
+                value={editForm.price}
+                onChange={(e) => setEditForm({ ...editForm, price: parseFloat(e.target.value) || 0 })}
+                sx={{ flex: 2 }}
+                required
+              />
+              <FormControl sx={{ flex: 1 }}>
+                <InputLabel>Currency</InputLabel>
+                <Select
+                  value={editForm.currency}
+                  label="Currency"
+                  onChange={(e) => setEditForm({ ...editForm, currency: e.target.value })}
+                >
+                  <MenuItem value="EUR">EUR</MenuItem>
+                  <MenuItem value="USD">USD</MenuItem>
+                  <MenuItem value="GBP">GBP</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+            <TextField
+              label="Description"
+              value={editForm.description}
+              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+              fullWidth
+              multiline
+              rows={3}
+              sx={{ gridColumn: { md: 'span 2' } }}
+            />
+          </Box>
+
+          {/* Category & Status */}
+          <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
+            Category & Status
+          </Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, mb: 3 }}>
+            <FormControl fullWidth>
+              <InputLabel>{t('categories.title')}</InputLabel>
+              <Select
+                value={editForm.category_id}
+                label={t('categories.title')}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+              >
+                <MenuItem value="">-- Select Category --</MenuItem>
+                {categories.map((cat) => (
+                  <MenuItem key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel>{t('common.status')}</InputLabel>
+              <Select
+                value={editForm.status}
+                label={t('common.status')}
+                onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+              >
+                <MenuItem value="active">Active</MenuItem>
+                <MenuItem value="pending">Pending</MenuItem>
+                <MenuItem value="paused">Paused</MenuItem>
+                <MenuItem value="rejected">Rejected</MenuItem>
+                <MenuItem value="deleted">Deleted</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel>Condition</InputLabel>
+              <Select
+                value={editForm.condition}
+                label="Condition"
+                onChange={(e) => setEditForm({ ...editForm, condition: e.target.value })}
+              >
+                <MenuItem value="new">New</MenuItem>
+                <MenuItem value="like_new">Like New</MenuItem>
+                <MenuItem value="good">Good</MenuItem>
+                <MenuItem value="fair">Fair</MenuItem>
+                <MenuItem value="poor">Poor</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              label="Location"
+              value={editForm.location}
+              onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+              fullWidth
+            />
+          </Box>
+
+          {/* Category Attributes */}
+          {categoryAttributes.length > 0 && (
+            <>
+              <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
+                Category Attributes
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, mb: 3 }}>
+                {categoryAttributes.map((attr) => (
+                  <Box key={attr.id}>
+                    {attr.type === 'select' && attr.options ? (
+                      <FormControl fullWidth>
+                        <InputLabel>{attr.name}</InputLabel>
+                        <Select
+                          value={editForm.attributes[attr.id] || ''}
+                          label={attr.name}
+                          onChange={(e) => setEditForm({
+                            ...editForm,
+                            attributes: { ...editForm.attributes, [attr.id]: e.target.value }
+                          })}
+                        >
+                          <MenuItem value="">-- Select --</MenuItem>
+                          {attr.options.map((opt) => (
+                            <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    ) : attr.type === 'number' ? (
+                      <TextField
+                        label={attr.name}
+                        type="number"
+                        value={editForm.attributes[attr.id] || ''}
+                        onChange={(e) => setEditForm({
+                          ...editForm,
+                          attributes: { ...editForm.attributes, [attr.id]: e.target.value }
+                        })}
+                        fullWidth
+                      />
+                    ) : (
+                      <TextField
+                        label={attr.name}
+                        value={editForm.attributes[attr.id] || ''}
+                        onChange={(e) => setEditForm({
+                          ...editForm,
+                          attributes: { ...editForm.attributes, [attr.id]: e.target.value }
+                        })}
+                        fullWidth
+                      />
+                    )}
+                  </Box>
+                ))}
+              </Box>
+            </>
+          )}
+
+          {/* Contact Info */}
+          <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
+            Contact Information
+          </Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            <TextField
+              label="Contact Phone"
+              value={editForm.contact_phone}
+              onChange={(e) => setEditForm({ ...editForm, contact_phone: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Contact Email"
+              value={editForm.contact_email}
+              onChange={(e) => setEditForm({ ...editForm, contact_email: e.target.value })}
+              fullWidth
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setEditDialogOpen(false)}>{t('common.cancel')}</Button>
+          <Button
+            variant="contained"
+            onClick={handleSaveEdit}
+            disabled={actionLoading || !editForm.name}
+            startIcon={actionLoading ? <CircularProgress size={16} /> : null}
+          >
+            {actionLoading ? 'Saving...' : t('common.save')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
