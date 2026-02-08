@@ -215,6 +215,23 @@ const descStyles = StyleSheet.create({
 
 // ============ SELLER SECTION ============
 const SellerSection = memo(({ listing, onPress }: { listing: Listing; onPress: () => void }) => {
+  const [sellerBadges, setSellerBadges] = useState<Badge[]>([]);
+  
+  useEffect(() => {
+    // Fetch seller badges
+    if (listing.seller?.user_id) {
+      api.get(`/analytics/badges/seller/${listing.seller.user_id}`)
+        .then(response => {
+          if (response.data && Array.isArray(response.data)) {
+            setSellerBadges(response.data);
+          }
+        })
+        .catch(() => {
+          // Silently fail - badges are optional
+        });
+    }
+  }, [listing.seller?.user_id]);
+  
   if (!listing.seller) return null;
   
   // Get contact methods from listing
@@ -254,6 +271,12 @@ const SellerSection = memo(({ listing, onPress }: { listing: Listing; onPress: (
               Member since {new Date(listing.seller.created_at).getFullYear()}
             </Text>
           </View>
+          {/* Seller Performance Badges */}
+          {sellerBadges.length > 0 && (
+            <View style={{ marginTop: 8 }}>
+              <BadgeRow badges={sellerBadges} maxDisplay={4} size="small" />
+            </View>
+          )}
         </View>
         <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
       </TouchableOpacity>
