@@ -34,8 +34,9 @@ Build a comprehensive admin dashboard for a marketplace application with feature
     ├── src/
     │   ├── app/          # Next.js App Router pages
     │   │   └── dashboard/
-    │   │       ├── settings/page.tsx  # Locations, Deeplinks, Auth settings
-    │   │       └── users/page.tsx     # User management with Edit
+    │   │       ├── categories/page.tsx # Categories with icon uploader
+    │   │       ├── settings/page.tsx   # Locations, Deeplinks, Auth settings
+    │   │       └── users/page.tsx      # User management with Edit
     │   ├── lib/api.ts    # API client
     │   └── components/   # Reusable components
     ├── next.config.ts    # basePath: "/api/admin-ui"
@@ -60,9 +61,14 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 - [x] Backend APIs for Locations, Deeplinks, Auth Settings (Feb 8)
 - [x] Settings page frontend - Locations, Deeplinks, Auth tabs (Feb 8)
 - [x] User Edit dialog in Users page (Feb 8)
-- [x] **Icon Upload for Categories** - POST/DELETE /categories/{id}/icon (Feb 8)
-- [x] **Icon Upload for Attributes** - POST/DELETE /categories/{cat_id}/attributes/{attr_id}/icon (Feb 8)
-- [x] Settings navigation link in sidebar
+- [x] Icon Upload for Categories - Backend API (Feb 8)
+- [x] Icon Upload for Attributes - Backend API (Feb 8)
+- [x] **Visual Icon Uploader in Categories UI** (Feb 8)
+  - Icon preview box with live upload
+  - File type validation (PNG, JPG, SVG)
+  - Size limit (500KB)
+  - One-click delete
+  - Alternative text icon name input
 
 ### Backend API Endpoints (All Tested & Working)
 | Endpoint | Status |
@@ -72,8 +78,8 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 | GET/POST/PUT/DELETE /api/admin/deeplinks | ✅ |
 | GET/PUT /api/admin/settings/auth | ✅ |
 | PUT /api/admin/users/{user_id} | ✅ |
-| POST/DELETE /api/admin/categories/{id}/icon | ✅ NEW |
-| POST/DELETE /api/admin/categories/{cat_id}/attributes/{attr_id}/icon | ✅ NEW |
+| POST/DELETE /api/admin/categories/{id}/icon | ✅ |
+| POST/DELETE /api/admin/categories/{cat_id}/attributes/{attr_id}/icon | ✅ |
 
 ### Icon Upload Specifications
 - **Category Icons**: PNG, JPG, SVG - Max 500KB - Stored as base64 data URL
@@ -83,8 +89,8 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 - [ ] Frontend UI for Notification Scheduling
 - [ ] Custom Template Management UI  
 - [ ] Real-time Dashboard Updates (WebSocket)
+- [ ] Icon uploader for Attributes dialog
 - [ ] Execute backend refactoring (split server.py per REFACTORING.md)
-- [ ] Icon picker/uploader in Categories UI
 
 ### Future/Backlog
 - CSV Import for Users
@@ -100,12 +106,10 @@ Build a comprehensive admin dashboard for a marketplace application with feature
   - Iteration 4: 21/21 (icon upload)
 - **Test Reports**: `/app/test_reports/iteration_*.json`
 
-## Bugs Fixed
-1. User update endpoint used wrong field name `id` instead of `user_id`
-2. User response included password_hash - now excluded
-3. Backend server.py had duplicated code causing IndentationError
-4. bcrypt 4.1.3 incompatible with passlib - downgraded to 4.0.1
-5. Routing issue due to basePath configuration - identified and documented
+## Screenshots
+- Dashboard with sidebar: Shows all navigation including Settings link
+- Settings page: Locations, Deeplinks, Auth tabs
+- Categories page: Icon uploader visible in Edit dialog
 
 ---
 Last Updated: February 8, 2026
