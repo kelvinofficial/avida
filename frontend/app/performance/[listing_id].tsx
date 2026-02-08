@@ -325,11 +325,6 @@ export default function ListingPerformanceScreen() {
             <Text style={styles.metricLabel}>Total Views</Text>
           </View>
           <View style={styles.metricCard}>
-            <Ionicons name="people" size={24} color="#2196F3" />
-            <Text style={styles.metricValue} data-testid="unique-views">{metrics?.unique_views || 0}</Text>
-            <Text style={styles.metricLabel}>Unique Views</Text>
-          </View>
-          <View style={styles.metricCard}>
             <Ionicons name="heart" size={24} color="#E91E63" />
             <Text style={styles.metricValue} data-testid="saves">{metrics?.saves || 0}</Text>
             <Text style={styles.metricLabel}>Saves</Text>
@@ -338,6 +333,11 @@ export default function ListingPerformanceScreen() {
             <Ionicons name="chatbubble" size={24} color="#9C27B0" />
             <Text style={styles.metricValue} data-testid="chats">{metrics?.chats_initiated || 0}</Text>
             <Text style={styles.metricLabel}>Chats</Text>
+          </View>
+          <View style={styles.metricCard}>
+            <Ionicons name="pricetag" size={24} color="#FF9800" />
+            <Text style={styles.metricValue} data-testid="offers">{metrics?.offers_received || 0}</Text>
+            <Text style={styles.metricLabel}>Offers</Text>
           </View>
         </View>
 
