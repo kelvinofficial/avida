@@ -727,21 +727,114 @@ export default function CategoriesPage() {
             </Select>
           </FormControl>
 
-          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-            <TextField
-              label="Icon"
-              value={formData.icon}
-              onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-              placeholder="e.g., car, laptop"
-              sx={{ flex: 1 }}
-            />
-            <TextField
-              type="color"
-              label="Color"
-              value={formData.color}
-              onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-              sx={{ width: 100 }}
-            />
+          <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'flex-start' }}>
+            {/* Icon Upload Section */}
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                Category Icon
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                {/* Icon Preview */}
+                <Box
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 2,
+                    border: '2px dashed',
+                    borderColor: iconPreview ? 'primary.main' : 'grey.300',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: iconPreview ? 'grey.50' : 'transparent',
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {uploadingIcon ? (
+                    <CircularProgress size={24} />
+                  ) : iconPreview ? (
+                    <>
+                      <img
+                        src={iconPreview}
+                        alt="Icon preview"
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                      />
+                      <IconButton
+                        size="small"
+                        onClick={handleRemoveIcon}
+                        sx={{
+                          position: 'absolute',
+                          top: -8,
+                          right: -8,
+                          bgcolor: 'error.main',
+                          color: 'white',
+                          '&:hover': { bgcolor: 'error.dark' },
+                          width: 20,
+                          height: 20,
+                        }}
+                      >
+                        <Close sx={{ fontSize: 14 }} />
+                      </IconButton>
+                    </>
+                  ) : (
+                    <ImageIcon sx={{ color: 'grey.400', fontSize: 28 }} />
+                  )}
+                </Box>
+                
+                {/* Upload Button */}
+                <Box sx={{ flex: 1 }}>
+                  <input
+                    ref={iconInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/svg+xml"
+                    onChange={handleIconFileSelect}
+                    style={{ display: 'none' }}
+                    id="icon-upload"
+                  />
+                  <label htmlFor="icon-upload">
+                    <Button
+                      component="span"
+                      variant="outlined"
+                      size="small"
+                      startIcon={<CloudUpload />}
+                      disabled={uploadingIcon}
+                      data-testid="upload-icon-btn"
+                    >
+                      Upload Icon
+                    </Button>
+                  </label>
+                  <Typography variant="caption" display="block" color="text.secondary" sx={{ mt: 0.5 }}>
+                    PNG, JPG, SVG (max 500KB)
+                  </Typography>
+                  
+                  {/* Alternative: Text icon name */}
+                  {!iconPreview && (
+                    <TextField
+                      label="Or use icon name"
+                      value={formData.icon}
+                      onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                      placeholder="e.g., car, laptop"
+                      size="small"
+                      sx={{ mt: 1, width: '100%' }}
+                    />
+                  )}
+                </Box>
+              </Box>
+            </Box>
+            
+            {/* Color Picker */}
+            <Box>
+              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                Color
+              </Typography>
+              <TextField
+                type="color"
+                value={formData.color}
+                onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                sx={{ width: 64 }}
+                inputProps={{ style: { height: 40, cursor: 'pointer' } }}
+              />
+            </Box>
           </Box>
 
           <TextField
