@@ -122,6 +122,7 @@ export default function AttributesPage() {
   const [loading, setLoading] = useState(true);
   const [attributes, setAttributes] = useState<Attribute[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [templates, setTemplates] = useState<AttributeTemplate[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAttr, setEditingAttr] = useState<Attribute | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -131,6 +132,18 @@ export default function AttributesPage() {
   const [success, setSuccess] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [showInherited, setShowInherited] = useState(true);
+  
+  // Bulk operations state
+  const [selectedAttrs, setSelectedAttrs] = useState<string[]>([]);
+  const [bulkMenuAnchor, setBulkMenuAnchor] = useState<null | HTMLElement>(null);
+  const [copyDialogOpen, setCopyDialogOpen] = useState(false);
+  const [copyTargetCategory, setCopyTargetCategory] = useState('');
+  
+  // Template dialog state
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [templateCategory, setTemplateCategory] = useState('');
 
   // Form state
   const [formData, setFormData] = useState({
