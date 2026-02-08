@@ -1145,4 +1145,44 @@ def create_boost_router(db, get_current_user, get_current_admin):
         count = await boost_system.expire_boosts()
         return {"expired_count": count}
     
+    # =========================================================================
+    # PAYMENT METHODS ADMIN ENDPOINTS
+    # =========================================================================
+    
+    @router.get("/admin/payment-methods")
+    async def admin_get_payment_methods(
+        admin: dict = Depends(get_current_admin)
+    ):
+        """Get all payment methods for admin management"""
+        return await boost_system.get_payment_methods(enabled_only=False)
+    
+    @router.get("/admin/payment-methods/{method_id}")
+    async def admin_get_payment_method(
+        method_id: str,
+        admin: dict = Depends(get_current_admin)
+    ):
+        """Get single payment method"""
+        method = await boost_system.get_payment_method(method_id)
+        if not method:
+            raise HTTPException(status_code=404, detail="Payment method not found")
+        return method
+    
+    @router.put("/admin/payment-methods/{method_id}")
+    async def admin_update_payment_method(
+        method_id: str,
+        data: UpdatePaymentMethodRequest,
+        admin: dict = Depends(get_current_admin)
+    ):
+        """Update payment method configuration"""
+        return await boost_system.update_payment_method(method_id, data)
+    
+    @router.put("/admin/payment-methods/{method_id}/toggle")
+    async def admin_toggle_payment_method(
+        method_id: str,
+        enabled: bool = Query(...),
+        admin: dict = Depends(get_current_admin)
+    ):
+        """Enable or disable a payment method"""
+        return await boost_system.toggle_payment_method(method_id, enabled)
+    
     return router, boost_system
