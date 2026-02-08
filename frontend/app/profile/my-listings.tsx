@@ -162,6 +162,9 @@ const DesktopListingCard = ({
       </TouchableOpacity>
       {item.status === 'active' && (
         <>
+          <TouchableOpacity style={[desktopStyles.cardActionBtn, { backgroundColor: '#E3F2FD' }]} onPress={onPerformance}>
+            <Ionicons name="stats-chart" size={16} color="#2196F3" />
+          </TouchableOpacity>
           <TouchableOpacity style={[desktopStyles.cardActionBtn, { backgroundColor: '#E8F5E9' }]} onPress={onBoost}>
             <Ionicons name="rocket" size={16} color="#4CAF50" />
           </TouchableOpacity>
