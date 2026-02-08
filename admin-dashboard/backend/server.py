@@ -4075,6 +4075,53 @@ async def broadcast_admin_event(event_type: str, data: dict):
 app.include_router(api_router)
 
 # =============================================================================
+# BOOST SYSTEM ROUTER
+# =============================================================================
+try:
+    from boost_system import create_boost_router, BoostSystem
+    
+    # Create a simple user auth dependency for sellers
+    async def get_current_user_for_boost(request: Request):
+        """Get current user from token for boost system"""
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        
+        token = auth_header.replace("Bearer ", "")
+        try:
+            payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+            user_id = payload.get("sub")
+            if not user_id:
+                raise HTTPException(status_code=401, detail="Invalid token")
+            return {"user_id": user_id}
+        except JWTError:
+            raise HTTPException(status_code=401, detail="Invalid token")
+    
+    boost_router, boost_system = create_boost_router(
+        db=db,
+        get_current_user=get_current_user_for_boost,
+        get_current_admin=get_current_admin
+    )
+    app.include_router(boost_router, prefix="/api/admin")
+    
+    # Stripe webhook endpoint (outside router for direct access)
+    @app.post("/api/webhook/stripe")
+    async def stripe_webhook(request: Request):
+        """Handle Stripe webhook events"""
+        body = await request.body()
+        signature = request.headers.get("Stripe-Signature")
+        return await boost_system.handle_stripe_webhook(request, body, signature)
+    
+    # Initialize boost system on startup
+    @app.on_event("startup")
+    async def init_boost_system():
+        await boost_system.initialize_default_data()
+    
+    logger.info("Boost system loaded successfully")
+except ImportError as e:
+    logger.warning(f"Boost system not loaded: {e}")
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
