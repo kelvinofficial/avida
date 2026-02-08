@@ -189,7 +189,7 @@ class TestStripePurchaseStillWorks:
         })
         
         if login_response.status_code == 200:
-            self.token = login_response.json().get('token')
+            self.token = login_response.json().get('session_token')
             self.headers = {
                 "Authorization": f"Bearer {self.token}",
                 "Content-Type": "application/json"
