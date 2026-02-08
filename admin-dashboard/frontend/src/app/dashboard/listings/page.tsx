@@ -45,11 +45,15 @@ import {
   PlayArrow,
   Image as ImageIcon,
   Download,
+  Upload,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Listing, Category } from '@/types';
+import CSVImportDialog from '@/components/CSVImportDialog';
+import { useLocale } from '@/components/LocaleProvider';
 
 export default function ListingsPage() {
+  const { t } = useLocale();
   const [loading, setLoading] = useState(true);
   const [listings, setListings] = useState<Listing[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -58,6 +62,7 @@ export default function ListingsPage() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
