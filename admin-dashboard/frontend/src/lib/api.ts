@@ -615,6 +615,117 @@ class ApiClient {
     const { data } = await this.client.get(`/deeplinks/${id}/stats`);
     return data;
   }
+
+  // =========================================================================
+  // BOOST SYSTEM
+  // =========================================================================
+
+  // Credit Packages (Admin)
+  async getBoostPackages(activeOnly: boolean = true) {
+    const endpoint = activeOnly ? '/boost/packages' : '/boost/admin/packages';
+    const { data } = await this.client.get(endpoint);
+    return data;
+  }
+
+  async createBoostPackage(pkg: { name: string; description?: string; price: number; credits: number; bonus_credits?: number; is_active?: boolean; is_popular?: boolean }) {
+    const { data } = await this.client.post('/boost/admin/packages', pkg);
+    return data;
+  }
+
+  async updateBoostPackage(id: string, updates: Record<string, unknown>) {
+    const { data } = await this.client.put(`/boost/admin/packages/${id}`, updates);
+    return data;
+  }
+
+  async deleteBoostPackage(id: string) {
+    const { data } = await this.client.delete(`/boost/admin/packages/${id}`);
+    return data;
+  }
+
+  // Boost Pricing (Admin)
+  async getBoostPricing() {
+    const { data } = await this.client.get('/boost/pricing');
+    return data;
+  }
+
+  async getBoostPricingAdmin() {
+    const { data } = await this.client.get('/boost/admin/pricing');
+    return data;
+  }
+
+  async setBoostPricing(pricing: { boost_type: string; name: string; description?: string; credits_per_hour: number; credits_per_day: number; min_duration_hours?: number; max_duration_days?: number; is_enabled?: boolean; priority?: number }) {
+    const { data } = await this.client.put('/boost/admin/pricing', pricing);
+    return data;
+  }
+
+  async toggleBoostType(boostType: string, enabled: boolean) {
+    const { data } = await this.client.put(`/boost/admin/pricing/${boostType}/toggle?enabled=${enabled}`);
+    return data;
+  }
+
+  // Boost Analytics (Admin)
+  async getBoostAnalytics() {
+    const { data } = await this.client.get('/boost/admin/analytics');
+    return data;
+  }
+
+  // Seller Credits (Admin)
+  async getBoostSellers(page: number = 1, limit: number = 20) {
+    const { data } = await this.client.get('/boost/admin/sellers', { params: { page, limit } });
+    return data;
+  }
+
+  async adjustSellerCredits(sellerId: string, amount: number, reason: string) {
+    const { data } = await this.client.post('/boost/admin/credits/adjust', { seller_id: sellerId, amount, reason });
+    return data;
+  }
+
+  async expireBoosts() {
+    const { data } = await this.client.post('/boost/admin/expire-boosts');
+    return data;
+  }
+
+  // Seller Credit Operations
+  async getMyCredits() {
+    const { data } = await this.client.get('/boost/credits/balance');
+    return data;
+  }
+
+  async getMyCreditHistory(limit: number = 50) {
+    const { data } = await this.client.get('/boost/credits/history', { params: { limit } });
+    return data;
+  }
+
+  async purchaseCredits(packageId: string, originUrl: string, provider: string = 'stripe') {
+    const { data } = await this.client.post('/boost/credits/purchase', { package_id: packageId, origin_url: originUrl, provider });
+    return data;
+  }
+
+  async checkPaymentStatus(sessionId: string) {
+    const { data } = await this.client.get(`/boost/credits/payment-status/${sessionId}`);
+    return data;
+  }
+
+  // Boost Operations
+  async calculateBoostCost(boostType: string, durationHours: number) {
+    const { data } = await this.client.get('/boost/calculate', { params: { boost_type: boostType, duration_hours: durationHours } });
+    return data;
+  }
+
+  async createBoost(boostData: { listing_id: string; boost_type: string; duration_hours: number; location_id?: string; category_id?: string }) {
+    const { data } = await this.client.post('/boost/create', boostData);
+    return data;
+  }
+
+  async getMyBoosts(activeOnly: boolean = false) {
+    const { data } = await this.client.get('/boost/my-boosts', { params: { active_only: activeOnly } });
+    return data;
+  }
+
+  async getListingBoosts(listingId: string) {
+    const { data } = await this.client.get(`/boost/listing/${listingId}`);
+    return data;
+  }
 }
 
 export const api = new ApiClient();
