@@ -18,6 +18,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import api from '../../src/utils/api';
 import { UserProfile, UserStats } from '../../src/types/settings';
 import { useResponsive } from '../../src/hooks/useResponsive';
+import { BadgeIcon, Badge } from '../../src/components/SellerBadges';
 
 const COLORS = {
   primary: '#2E7D32',
