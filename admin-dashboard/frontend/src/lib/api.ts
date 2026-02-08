@@ -519,6 +519,21 @@ class ApiClient {
     return data;
   }
 
+  // Attribute Icon Upload
+  async uploadAttributeIcon(categoryId: string, attributeId: string, file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await this.client.post(`/categories/${categoryId}/attributes/${attributeId}/icon`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return data;
+  }
+
+  async deleteAttributeIcon(categoryId: string, attributeId: string) {
+    const { data } = await this.client.delete(`/categories/${categoryId}/attributes/${attributeId}/icon`);
+    return data;
+  }
+
   // Location Management
   async getLocations(params?: { page?: number; limit?: number; type?: string; parent_id?: string; search?: string; is_active?: boolean }) {
     const { data } = await this.client.get('/locations', { params });
