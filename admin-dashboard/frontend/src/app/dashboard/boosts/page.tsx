@@ -55,6 +55,10 @@ import {
   Person,
   Visibility,
   RocketLaunch,
+  Payment,
+  CreditCard,
+  PhoneAndroid,
+  Public,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 
