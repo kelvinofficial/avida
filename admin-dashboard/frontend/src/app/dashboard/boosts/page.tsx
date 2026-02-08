@@ -162,6 +162,7 @@ export default function BoostsPage() {
   const [sellersTotal, setSellersTotal] = useState(0);
   const [sellersPage, setSellersPage] = useState(0);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
 
   // Dialog state
   const [packageDialogOpen, setPackageDialogOpen] = useState(false);
