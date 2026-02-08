@@ -550,6 +550,14 @@ export default function AttributesPage() {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    checked={allSelected}
+                    indeterminate={selectedAttrs.length > 0 && !allSelected}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                    disabled={selectableAttrs.length === 0}
+                  />
+                </TableCell>
                 <TableCell width={50}></TableCell>
                 <TableCell>Attribute Name</TableCell>
                 <TableCell>Type</TableCell>
@@ -562,25 +570,50 @@ export default function AttributesPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                  <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
                     <CircularProgress />
                   </TableCell>
                 </TableRow>
               ) : filteredAttributes.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                  <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
                     <Typography color="text.secondary">No attributes found</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredAttributes.map((attr) => (
-                  <TableRow key={attr.id} hover>
+                  <TableRow 
+                    key={`${attr.category_id}-${attr.id}`} 
+                    hover
+                    sx={attr.is_inherited ? { bgcolor: 'action.hover', opacity: 0.8 } : {}}
+                  >
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={selectedAttrs.includes(attr.id)}
+                        onChange={(e) => handleSelectAttr(attr.id, e.target.checked)}
+                        disabled={attr.is_inherited}
+                      />
+                    </TableCell>
                     <TableCell>
                       <Typography sx={{ fontSize: 20 }}>{attr.icon || '📝'}</Typography>
                     </TableCell>
                     <TableCell>
                       <Box>
-                        <Typography fontWeight={500}>{attr.name}</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography fontWeight={500}>{attr.name}</Typography>
+                          {attr.is_inherited && (
+                            <Tooltip title={`Inherited from ${attr.inherited_from_name}`}>
+                              <Chip 
+                                icon={<LinkIcon sx={{ fontSize: 14 }} />}
+                                label="Inherited" 
+                                size="small" 
+                                variant="outlined"
+                                color="info"
+                                sx={{ height: 20, '& .MuiChip-label': { px: 1, fontSize: 10 } }}
+                              />
+                            </Tooltip>
+                          )}
+                        </Box>
                         <Typography variant="caption" color="text.secondary">
                           key: {attr.key}
                         </Typography>
@@ -614,19 +647,23 @@ export default function AttributesPage() {
                       )}
                     </TableCell>
                     <TableCell align="right">
-                      <IconButton size="small" onClick={() => handleOpenDialog(attr)}>
-                        <Edit fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => {
-                          setAttrToDelete(attr);
-                          setDeleteDialogOpen(true);
-                        }}
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
+                      {!attr.is_inherited && (
+                        <>
+                          <IconButton size="small" onClick={() => handleOpenDialog(attr)}>
+                            <Edit fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => {
+                              setAttrToDelete(attr);
+                              setDeleteDialogOpen(true);
+                            }}
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
