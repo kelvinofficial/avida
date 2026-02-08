@@ -1,0 +1,108 @@
+{
+  "summary": "Tested Admin Dashboard Analytics page with 3 tabs. Backend APIs (13 tests) all pass. Tab 1 (Platform Analytics) works correctly. Tabs 2 and 3 fail due to CRITICAL auth mismatch - admin dashboard sends JWT token but main app backend expects session_token.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "/api/analytics/admin/settings, /api/analytics/admin/engagement-notification-config",
+        "issue": "Authentication mismatch: Admin dashboard sends admin JWT token but main app backend expects main app session_token. The analytics admin endpoints in main app use get_current_user() which requires main app auth, not admin JWT.",
+        "priority": "CRITICAL",
+        "root_cause": "In server.py line 5608-5614, get_current_admin_for_analytics() calls get_current_user() which validates main app session tokens, not admin dashboard JWT tokens"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Seller Analytics Settings tab",
+        "issue": "Shows 'Unable to load settings. Please try again.' due to 401 Unauthorized from backend",
+        "selector": "Tab 2 content area",
+        "priority": "HIGH"
+      },
+      {
+        "component": "Engagement Notifications tab",
+        "issue": "Shows 'Unable to load notification settings. Please try again.' due to 401 Unauthorized from backend",
+        "selector": "Tab 3 content area",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Admin Dashboard -> Main App Analytics Endpoints",
+        "issue": "Admin dashboard api.ts sends admin JWT token to main app backend, but main app expects session_token from its own auth system",
+        "affected_selectors": ["Tab 2 content", "Tab 3 content"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_admin_analytics.py",
+    "/app/test_reports/pytest/admin_analytics_results.xml"
+  ],
+  "action_items": [
+    "CRITICAL: Fix authentication for analytics admin endpoints to accept admin dashboard JWT tokens OR add a proxy endpoint in admin backend that forwards requests with proper auth",
+    "Option 1: Modify get_current_admin_for_analytics() in server.py to also accept admin JWT tokens",
+    "Option 2: Add admin proxy endpoints in admin backend that validate admin JWT and then call main app endpoints with a service token"
+  ],
+  "critical_code_review_comments": [
+    "Tab 1 (Platform Analytics) works correctly - shows 4 KPI cards (Users, Listings, Views, Conversion Rate), User Growth chart with LINE/AREA/BAR toggle, Listing Status Distribution pie chart, and Time Range selector",
+    "Backend APIs work when called with main app session_token (tested via pytest - 13/13 passed)",
+    "The api.ts mainAppClient uses admin accessToken which is JWT from admin login - this is wrong for main app endpoints",
+    "Main app get_current_admin_for_analytics() expects main app user authentication, not admin JWT"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_admin_analytics.py"
+  ],
+  "success_rate": {
+    "backend": "100% (13/13 pytest tests passed - using main app session_token)",
+    "frontend": "33% - Tab 1 works, Tabs 2 and 3 fail due to auth issue"
+  },
+  "test_credentials": {
+    "admin": {"email": "admin@marketplace.com", "password": "Admin@123456"},
+    "seller": {"email": "seller@test.com", "password": "test1234"}
+  },
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "main_agent_can_self_test": false,
+  "context_for_next_testing_agent": "Backend APIs for analytics admin endpoints work correctly when called with main app session_token. The issue is frontend integration - admin dashboard sends admin JWT but main app expects its own session_token. Fix requires either modifying main app auth to accept admin JWT or adding proxy endpoints in admin backend.",
+  "features_verified": {
+    "Tab 1 - Platform Analytics": {
+      "status": "WORKING",
+      "KPI_Cards": ["Total Users", "Active Listings", "Total Views", "Conversion Rate"],
+      "Charts": ["User Growth (LINE/AREA/BAR toggle)", "Listing Status Distribution (Pie)"],
+      "Time_Range_Selector": "Present (Last 30 days dropdown)"
+    },
+    "Tab 2 - Seller Analytics Settings": {
+      "status": "NOT WORKING - 401 Auth Error",
+      "expected_features": ["Seller Analytics toggle", "Availability dropdown (All/Verified/Premium/Manual)", "Visible Metrics toggles", "AI-Powered Insights toggle", "Save Settings button"]
+    },
+    "Tab 3 - Engagement Notifications": {
+      "status": "NOT WORKING - 401 Auth Error",
+      "expected_features": ["Engagement Boost toggle", "Threshold sliders (Views/Saves/Chats spike)", "Timing settings (Cooldown, Check Interval)", "Trigger Manual Check button", "Notification Preview"]
+    },
+    "Backend APIs Tested": {
+      "GET /api/analytics/admin/settings": "WORKING (with session_token)",
+      "PUT /api/analytics/admin/settings": "WORKING (with session_token)",
+      "GET /api/analytics/admin/engagement-notification-config": "WORKING (with session_token)",
+      "PUT /api/analytics/admin/engagement-notification-config": "WORKING (with session_token)",
+      "POST /api/analytics/admin/trigger-engagement-check": "WORKING (with session_token)"
+    }
+  },
+  "rca_of_the_issue": {
+    "problem": "Admin Dashboard Tabs 2 and 3 show 'Unable to load settings' error",
+    "root_cause": "Authentication system mismatch between admin dashboard and main app backend",
+    "technical_details": [
+      "1. Admin dashboard login returns JWT access_token from admin auth system",
+      "2. api.ts mainAppClient sends this JWT to main app /api/analytics/* endpoints",
+      "3. Main app get_current_admin_for_analytics() calls get_current_user() which validates session_token (not JWT)",
+      "4. Result: 401 Unauthorized because JWT is not a valid session_token"
+    ],
+    "reproduction_steps": [
+      "1. Login to admin dashboard with admin@marketplace.com",
+      "2. Navigate to Analytics page",
+      "3. Click on 'Seller Analytics Settings' tab",
+      "4. Observe 'Unable to load settings. Please try again.' error"
+    ],
+    "mitigation": "Fix authentication in server.py to accept admin JWT tokens for analytics admin endpoints, OR add proxy endpoints in admin backend"
+  }
+}
