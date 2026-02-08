@@ -652,7 +652,7 @@ export default function HomeScreen() {
   const gridGap = isDesktop ? 20 : isTablet ? 16 : COLUMN_GAP;
   const dynamicCardWidth = Math.floor((effectiveWidth - gridPadding * 2 - gridGap * (columns - 1)) / columns);
 
-  // Render listings as grid manually - responsive columns
+  // Render listings as grid manually - responsive columns with banner injection
   const renderGrid = () => {
     // Don't show empty state until initial load is complete
     if (!initialLoadDone) {
@@ -665,29 +665,52 @@ export default function HomeScreen() {
     }
     
     // Create rows based on column count
-    const rows = [];
+    const rows: (Listing[] | { type: 'banner'; position: number })[] = [];
+    const BANNER_INTERVAL = 5; // Show banner after every 5 rows (10-20 listings depending on columns)
+    
+    let rowCount = 0;
     for (let i = 0; i < listings.length; i += columns) {
       rows.push(listings.slice(i, i + columns));
+      rowCount++;
+      
+      // Inject banner after every BANNER_INTERVAL rows
+      if (rowCount % BANNER_INTERVAL === 0 && i + columns < listings.length) {
+        rows.push({ type: 'banner', position: rowCount * columns });
+      }
     }
     
     return (
       <View style={[
         (isDesktop || isTablet) && { paddingHorizontal: gridPadding, maxWidth: MAX_WIDTH, alignSelf: 'center', width: '100%' }
       ]}>
-        {rows.map((row, rowIndex) => (
-          <View key={rowIndex} style={[styles.gridRow, { gap: gridGap }]}>
-            {row.map((item) => (
-              <View key={item.id} style={[styles.cardWrapper, { width: dynamicCardWidth }]}>
-                <ListingCard
-                  listing={item}
-                  onPress={() => router.push(`/listing/${item.id}`)}
-                  onFavorite={() => toggleFavorite(item.id)}
-                  isFavorited={favorites.has(item.id)}
-                />
-              </View>
-            ))}
-          </View>
-        ))}
+        {rows.map((row, rowIndex) => {
+          // Check if this is a banner row
+          if ('type' in row && row.type === 'banner') {
+            return (
+              <FeedBanner 
+                key={`banner-${row.position}`}
+                position={row.position}
+                category={selectedCategory || undefined}
+              />
+            );
+          }
+          
+          // Regular listing row
+          return (
+            <View key={rowIndex} style={[styles.gridRow, { gap: gridGap }]}>
+              {(row as Listing[]).map((item) => (
+                <View key={item.id} style={[styles.cardWrapper, { width: dynamicCardWidth }]}>
+                  <ListingCard
+                    listing={item}
+                    onPress={() => router.push(`/listing/${item.id}`)}
+                    onFavorite={() => toggleFavorite(item.id)}
+                    isFavorited={favorites.has(item.id)}
+                  />
+                </View>
+              ))}
+            </View>
+          );
+        })}
       </View>
     );
   };
