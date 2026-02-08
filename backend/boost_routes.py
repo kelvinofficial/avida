@@ -192,6 +192,42 @@ def create_boost_routes(db, get_current_user):
     # PUBLIC ENDPOINTS
     # =========================================================================
     
+    @router.get("/payment-providers")
+    async def get_payment_providers():
+        """Get available payment providers"""
+        providers = [
+            {
+                "id": "stripe",
+                "name": "Credit/Debit Card",
+                "description": "Pay securely with Visa, Mastercard, Amex",
+                "icon": "card",
+                "available": True
+            }
+        ]
+        
+        # Check if PayPal is configured
+        paypal_client_id = os.environ.get('PAYPAL_CLIENT_ID')
+        paypal_secret = os.environ.get('PAYPAL_SECRET')
+        
+        if PAYPAL_AVAILABLE and paypal_client_id and paypal_secret:
+            providers.append({
+                "id": "paypal",
+                "name": "PayPal",
+                "description": "Pay with your PayPal account",
+                "icon": "logo-paypal",
+                "available": True
+            })
+        else:
+            providers.append({
+                "id": "paypal",
+                "name": "PayPal",
+                "description": "Coming soon",
+                "icon": "logo-paypal",
+                "available": False
+            })
+        
+        return providers
+    
     @router.get("/packages")
     async def get_credit_packages():
         """Get available credit packages"""
