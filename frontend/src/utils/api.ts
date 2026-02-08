@@ -308,11 +308,13 @@ export const boostApi = {
   },
   
   // Purchase Credits
-  purchaseCredits: async (packageId: string, originUrl: string, provider: string = 'stripe') => {
+  purchaseCredits: async (packageId: string, originUrl: string, provider: string = 'stripe', phoneNumber?: string, mobileNetwork?: string) => {
     const response = await api.post('/boost/credits/purchase', { 
       package_id: packageId, 
       origin_url: originUrl,
-      provider
+      provider,
+      phone_number: phoneNumber,
+      mobile_network: mobileNetwork
     });
     return response.data;
   },
