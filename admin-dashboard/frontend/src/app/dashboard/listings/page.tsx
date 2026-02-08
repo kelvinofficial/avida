@@ -72,6 +72,138 @@ export default function ListingsPage() {
   const [actionReason, setActionReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  // Edit listing state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingListing, setEditingListing] = useState<Listing | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    description: '',
+    price: 0,
+    currency: 'EUR',
+    category_id: '',
+    location: '',
+    condition: 'new',
+    status: 'active',
+    contact_phone: '',
+    contact_email: '',
+    negotiable: false,
+    attributes: {} as Record<string, unknown>,
+  });
+  const [editImages, setEditImages] = useState<string[]>([]);
+  const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
+  const [categoryAttributes, setCategoryAttributes] = useState<Array<{id: string; name: string; type: string; options?: string[]}>>([]);
+
+  const handleOpenEditDialog = async (listing: Listing) => {
+    setEditingListing(listing);
+    setEditForm({
+      name: listing.name || listing.title || '',
+      description: listing.description || '',
+      price: listing.price || 0,
+      currency: listing.currency || 'EUR',
+      category_id: listing.category_id || '',
+      location: typeof listing.location === 'string' ? listing.location : listing.location?.city || '',
+      condition: listing.condition || 'new',
+      status: listing.status || 'active',
+      contact_phone: listing.contact_phone || '',
+      contact_email: listing.contact_email || '',
+      negotiable: listing.negotiable || false,
+      attributes: listing.attributes || {},
+    });
+    setEditImages(listing.images || []);
+    setNewImageFiles([]);
+    
+    // Load category attributes if category is set
+    if (listing.category_id) {
+      try {
+        const attrs = await api.getCategoryAttributes(listing.category_id);
+        setCategoryAttributes(attrs || []);
+      } catch (err) {
+        console.error('Failed to load attributes:', err);
+        setCategoryAttributes([]);
+      }
+    } else {
+      setCategoryAttributes([]);
+    }
+    
+    setEditDialogOpen(true);
+  };
+
+  const handleCategoryChange = async (categoryId: string) => {
+    setEditForm({ ...editForm, category_id: categoryId, attributes: {} });
+    if (categoryId) {
+      try {
+        const attrs = await api.getCategoryAttributes(categoryId);
+        setCategoryAttributes(attrs || []);
+      } catch (err) {
+        console.error('Failed to load attributes:', err);
+        setCategoryAttributes([]);
+      }
+    } else {
+      setCategoryAttributes([]);
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setNewImageFiles(prev => [...prev, ...files]);
+    
+    // Preview new images
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setEditImages(prev => [...prev, ev.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setEditImages(prev => prev.filter((_, i) => i !== index));
+    // Adjust new files if removing a newly added one
+    const existingCount = editingListing?.images?.length || 0;
+    if (index >= existingCount) {
+      setNewImageFiles(prev => prev.filter((_, i) => i !== (index - existingCount)));
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingListing) return;
+    setActionLoading(true);
+    setError('');
+    
+    try {
+      // Update listing data
+      await api.updateListing(editingListing.id, {
+        name: editForm.name,
+        description: editForm.description,
+        price: editForm.price,
+        currency: editForm.currency,
+        category_id: editForm.category_id,
+        location: editForm.location,
+        condition: editForm.condition,
+        status: editForm.status,
+        contact_phone: editForm.contact_phone,
+        contact_email: editForm.contact_email,
+        negotiable: editForm.negotiable,
+        attributes: editForm.attributes,
+        images: editImages.filter(img => !img.startsWith('data:')), // Only keep existing URLs
+      });
+      
+      // Upload new images if any
+      if (newImageFiles.length > 0) {
+        await api.uploadListingImages(editingListing.id, newImageFiles);
+      }
+      
+      setEditDialogOpen(false);
+      await loadListings();
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save changes';
+      setError(errorMessage);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   // CSV Export function
   const exportToCSV = () => {
