@@ -93,9 +93,16 @@ export interface User {
   email: string;
   phone?: string;
   avatar?: string;
+  location?: string;
+  bio?: string;
+  role?: string;
   is_banned: boolean;
+  is_verified?: boolean;
+  is_active?: boolean;
   ban_reason?: string;
   verified: boolean;
+  status?: string;
+  listings_count?: number;
   created_at: string;
   stats?: {
     listings_count: number;
