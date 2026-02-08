@@ -9,7 +9,8 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 - User data editing and authentication settings
 - Deeplink management
 - Icon uploads for categories/attributes
-- **Seller Boost & Promotion System** (NEW)
+- **Seller Boost & Promotion System**
+- **Seller Product Performance & Analytics** (NEW)
 
 ## Architecture
 
@@ -18,7 +19,8 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 - **Frontend (Mobile)**: React Native/Expo, port 3000
 - **Frontend (Admin)**: Next.js 16 with Turbopack, TypeScript, Material-UI, port 3001
 - **Database**: MongoDB (database: classifieds_db)
-- **Payments**: Stripe (integrated), PayPal (planned), Mobile Money (planned)
+- **Payments**: Stripe (integrated), PayPal (integrated), Mobile Money/Flutterwave (integrated)
+- **AI**: GPT-5.2 via Emergent LLM key for analytics insights
 - **Real-time**: WebSockets
 
 ### Important Configuration
@@ -28,6 +30,7 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 
 ### Credentials
 - Admin: admin@example.com / admin123
+- Test Seller: seller@test.com / test1234
 - Database: classifieds_db
 
 ---
@@ -46,125 +49,80 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 - [x] User Edit dialog in Users page
 - [x] Icon Upload for Categories - Backend API + UI
 - [x] Icon Upload for Attributes - Backend API + UI
-- [x] **Seller Boost & Promotion System - Admin Side** (Feb 8)
+- [x] **Seller Boost & Promotion System - Complete** (Feb 8)
   - Credit packages management (CRUD)
   - Boost pricing configuration (5 types)
-  - Analytics dashboard
-  - Seller credits management with adjustment
-- [x] **Seller Boost System - Mobile App Integration** (Feb 8)
-  - Credits page with package display and purchase flow
-  - Boost listing page with type selection and duration
-  - ListingCard with boost badges (Featured, Urgent, Spotlight, etc.)
-  - Profile page with "Credits & Boosts" navigation link
-  - My Listings page with Boost button on active listings
-  - Backend boost routes integrated at `/api/boost/*`
-- [x] **Background Job for Auto-expiring Boosts** (Feb 8)
-  - Runs every 60 seconds to expire boosts
-  - Updates listing `is_boosted` flag and removes expired boost types
-- [x] **PayPal Integration** (Feb 8)
-  - Backend PayPal SDK integrated (paypal-server-sdk v2.2.0)
-  - PayPal credentials configured and working
-- [x] **Boosted Listings Ranking Algorithm** (Feb 8)
-  - Listings sorted by is_boosted (desc) > boost_priority (desc) > regular sort
-  - Uses MongoDB aggregation pipeline for efficient sorting
-  - Boosted listings always appear first in search results
-- [x] **Mobile Money Integration** (Feb 8)
-  - Flutterwave SDK (python-flutterwave v1.2.2) for M-Pesa and MTN MoMo
-  - M-Pesa (Kenya), MTN Mobile Money (Ghana, Uganda, Zambia)
-  - Phone number input UI + Network selector (MTN/VODAFONE/TIGO)
-  - Flutterwave credentials configured and ACTIVE ✅
-- [x] **Enhanced Payment Method Selector UI** (Feb 8)
-  - 2x2 grid layout showing 4 payment options (all active)
-  - Credit/Debit Card ✅, PayPal ✅, M-Pesa ✅, MTN Mobile Money ✅
-  - Visual feedback for selected/disabled states
+  - PayPal and Mobile Money (Flutterwave) integrations
+  - Admin dashboard for payment method management
+- [x] **Seller Product Performance & Analytics - Complete** (Feb 8)
+  - Backend analytics system (`/app/backend/analytics_system.py`)
+  - Performance screen with key metrics (Views, Saves, Chats, Offers)
+  - Time-based trends with CSS bar charts
+  - Conversion rates display
+  - Boost impact comparison
+  - AI-powered insights via GPT-5.2
+  - Location-based view breakdown
+  - Comparison vs seller average
+  - Performance button on My Listings page (desktop + mobile)
 
-### Boost System Details
+### Analytics System Details
 
-**Credit Packages (Default):**
-| Package | Price | Credits | Bonus |
-|---------|-------|---------|-------|
-| Starter | $5 | 50 | 0 |
-| Popular | $10 | 100 | +20 |
-| Pro | $25 | 250 | +100 |
-
-**Boost Types:**
-| Type | Per Hour | Per Day | Priority |
-|------|----------|---------|----------|
-| Homepage Spotlight | 3 cr | 25 cr | 6 |
-| Featured Placement | 1 cr | 10 cr | 5 |
-| Location Boost | 2 cr | 15 cr | 4 |
-| Category Boost | 2 cr | 12 cr | 4 |
-| Urgent Badge | 1 cr | 5 cr | 3 |
+**Metrics Tracked:**
+- Views (total & unique)
+- Saves/Favorites
+- Chats initiated
+- Offers received
+- Conversion rates (View→Chat, View→Offer)
+- Boost impact (before vs. after)
+- Location breakdown
+- Time trends (hourly, daily)
 
 **Backend Collections:**
-- `credit_packages` - Credit package definitions
-- `boost_pricing` - Boost type configurations
-- `seller_credits` - Seller credit balances
-- `credit_transactions` - Transaction history
-- `payment_transactions` - Payment records
-- `listing_boosts` - Active/expired boosts
+- `analytics_events` - Individual tracking events
+- `analytics_settings` - Global admin settings
+- `seller_analytics_overrides` - Per-seller overrides
 
-### Pending Tasks (P1-P2)
-- [ ] Mobile Money integration for credit purchase (M-Pesa/MTN)
+**API Endpoints - Analytics (/api/analytics/*):**
+- `GET /api/analytics/access` - Check user analytics access
+- `GET /api/analytics/listing/{id}?period=` - Get listing metrics
+- `GET /api/analytics/listing/{id}/insights` - AI-powered insights
+- `GET /api/analytics/listing/{id}/comparison` - vs. seller average
+- `GET /api/analytics/seller/dashboard` - Seller dashboard metrics
+- `POST /api/analytics/track` - Track an event
+- `GET /api/analytics/admin/settings` - Admin get settings
+- `PUT /api/analytics/admin/settings` - Admin update settings
 
-### Future/Backlog
+### Pending Tasks (P1)
+- [ ] Admin Dashboard UI for Analytics Management (view platform metrics, toggle settings)
+- [ ] Location-based analytics with map visualization
+
+### Future/Backlog (P2)
 - CSV Import for Users
 - Notification Template Analytics
 - Full A/B Testing Logic and UI
-- Granular Notification Targeting
 - Backend Refactoring (server.py is 5600+ lines - should be split)
 
 ---
 
-## API Endpoints - Boost System
-
-### Public (Mobile App - /api/boost/*)
-- `GET /api/boost/packages` - Get active packages
-- `GET /api/boost/pricing` - Get enabled pricing
-- `GET /api/boost/calculate` - Calculate boost cost
-
-### Seller (Auth Required - /api/boost/*)
-- `GET /api/boost/credits/balance` - Get my credits
-- `GET /api/boost/credits/history` - Get transaction history
-- `POST /api/boost/credits/purchase` - Start Stripe checkout
-- `GET /api/boost/credits/payment-status/{id}` - Check payment
-- `POST /api/boost/create` - Create new boost
-- `GET /api/boost/my-boosts` - Get my boosts
-- `GET /api/boost/listing/{listing_id}` - Get boosts for listing
-
-### Admin (/api/admin/boost/*)
-- `GET/POST/PUT/DELETE /api/admin/boost/admin/packages` - Package CRUD
-- `GET/PUT /api/admin/boost/admin/pricing` - Pricing management
-- `PUT /api/admin/boost/admin/pricing/{type}/toggle` - Enable/disable
-- `GET /api/admin/boost/admin/analytics` - Analytics
-- `GET /api/admin/boost/admin/sellers` - Seller credits list
-- `POST /api/admin/boost/admin/credits/adjust` - Adjust credits
-- `POST /api/admin/boost/admin/expire-boosts` - Trigger expiration
-
----
-
-## Key Files - Boost System
+## Key Files - Analytics System
 
 ### Backend
-- `/app/backend/boost_routes.py` - Mobile app boost routes
-- `/app/admin-dashboard/backend/boost_system.py` - Admin backend boost routes
-- `/app/backend/server.py` - Main backend with boost router + expiration background task
+- `/app/backend/analytics_system.py` - Complete analytics backend (1135 lines)
+- `/app/backend/server.py` - Main backend with analytics router integration
 
 ### Frontend (Mobile)
-- `/app/frontend/app/credits/index.tsx` - Credits purchase page
-- `/app/frontend/app/boost/[listing_id].tsx` - Boost listing page
-- `/app/frontend/src/components/ListingCard.tsx` - Boost badges display
-- `/app/frontend/src/utils/api.ts` - API client with boostApi
+- `/app/frontend/app/performance/[listing_id].tsx` - Performance screen
+- `/app/frontend/app/profile/my-listings.tsx` - My Listings with Performance button
 
-### Frontend (Admin)
-- `/app/admin-dashboard/frontend/src/app/dashboard/boosts/page.tsx` - Admin boost management
+### Tests
+- `/app/backend/tests/test_performance_analytics.py` - Backend API tests
 
 ---
 
 ## Test Results
 - Backend Tests: 52/52 passed (core features)
-- Boost System Backend: 100% pass (testing agent iteration 5)
-- Boost System Frontend: 100% pass (testing agent iteration 5)
+- Analytics Backend: 100% pass (14/14 tests - iteration 10)
+- Analytics Frontend: 100% verified
 
 ---
 Last Updated: February 8, 2026
