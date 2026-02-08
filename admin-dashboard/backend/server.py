@@ -64,12 +64,14 @@ class Permission(str, Enum):
     EDIT_USERS = "edit_users"
     BAN_USERS = "ban_users"
     DELETE_USERS = "delete_users"
+    MANAGE_USERS = "manage_users"
     
     # Listing management
     VIEW_LISTINGS = "view_listings"
     EDIT_LISTINGS = "edit_listings"
     DELETE_LISTINGS = "delete_listings"
     FEATURE_LISTINGS = "feature_listings"
+    MANAGE_LISTINGS = "manage_listings"
     
     # Category management
     VIEW_CATEGORIES = "view_categories"
