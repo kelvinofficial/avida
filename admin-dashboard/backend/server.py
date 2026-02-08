@@ -1231,6 +1231,140 @@ async def update_listing_status(
     await log_audit(admin["id"], admin["email"], action, "listing", listing_id, {"status": status_data.status, "reason": status_data.reason}, request)
     return {"message": f"Listing status updated to {status_data.status}"}
 
+class ListingFullUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[float] = None
+    currency: Optional[str] = None
+    category_id: Optional[str] = None
+    location: Optional[str] = None
+    condition: Optional[str] = None
+    status: Optional[str] = None
+    images: Optional[List[str]] = None
+    attributes: Optional[dict] = None
+    contact_phone: Optional[str] = None
+    contact_email: Optional[str] = None
+    negotiable: Optional[bool] = None
+
+@api_router.put("/listings/{listing_id}")
+async def update_listing_full(
+    request: Request,
+    listing_id: str,
+    listing_data: ListingFullUpdate,
+    admin: dict = Depends(require_permission(Permission.EDIT_LISTINGS))
+):
+    """Full update of a listing - allows admin to edit all fields"""
+    listing = await db.listings.find_one({"id": listing_id})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    
+    # Build update data from non-None fields
+    update_data = {k: v for k, v in listing_data.model_dump().items() if v is not None}
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    # Sanitize text fields
+    if "name" in update_data:
+        update_data["name"] = sanitize_input(update_data["name"])
+    if "description" in update_data:
+        update_data["description"] = sanitize_input(update_data["description"])
+    
+    # Add metadata
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    update_data["updated_by"] = admin["id"]
+    
+    # If category changed, update category name
+    if "category_id" in update_data:
+        category = await db.admin_categories.find_one({"id": update_data["category_id"]})
+        if category:
+            update_data["category_name"] = category.get("name")
+    
+    await db.listings.update_one(
+        {"id": listing_id},
+        {"$set": update_data}
+    )
+    
+    # Log the changes
+    changes_summary = list(update_data.keys())
+    await log_audit(
+        admin["id"], 
+        admin["email"], 
+        AuditAction.UPDATE, 
+        "listing", 
+        listing_id, 
+        {"fields_updated": changes_summary, "listing_name": listing.get("name")}, 
+        request
+    )
+    
+    # Return updated listing
+    updated_listing = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+    return updated_listing
+
+@api_router.post("/listings/{listing_id}/images")
+async def upload_listing_images(
+    listing_id: str,
+    files: List[UploadFile] = File(...),
+    admin: dict = Depends(require_permission(Permission.EDIT_LISTINGS))
+):
+    """Upload new images for a listing"""
+    import base64
+    
+    listing = await db.listings.find_one({"id": listing_id})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    
+    current_images = listing.get("images", [])
+    new_images = []
+    
+    for file in files:
+        if not file.content_type.startswith("image/"):
+            continue
+        
+        content = await file.read()
+        # Store as base64 data URL for simplicity (in production, use cloud storage)
+        image_data = f"data:{file.content_type};base64,{base64.b64encode(content).decode()}"
+        new_images.append(image_data)
+    
+    all_images = current_images + new_images
+    
+    await db.listings.update_one(
+        {"id": listing_id},
+        {"$set": {
+            "images": all_images,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"message": f"Added {len(new_images)} images", "total_images": len(all_images)}
+
+@api_router.delete("/listings/{listing_id}/images/{image_index}")
+async def delete_listing_image(
+    listing_id: str,
+    image_index: int,
+    admin: dict = Depends(require_permission(Permission.EDIT_LISTINGS))
+):
+    """Delete a specific image from a listing"""
+    listing = await db.listings.find_one({"id": listing_id})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    
+    images = listing.get("images", [])
+    if image_index < 0 or image_index >= len(images):
+        raise HTTPException(status_code=400, detail="Invalid image index")
+    
+    images.pop(image_index)
+    
+    await db.listings.update_one(
+        {"id": listing_id},
+        {"$set": {
+            "images": images,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"message": "Image deleted", "remaining_images": len(images)}
+
 @api_router.post("/listings/{listing_id}/feature")
 async def toggle_listing_feature(
     request: Request,
