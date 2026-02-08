@@ -56,6 +56,14 @@ except ImportError as e:
     ANALYTICS_ROUTES_AVAILABLE = False
     logging.warning(f"Analytics routes not available: {e}")
 
+# Banner System Routes
+try:
+    from banner_system import create_banner_router
+    BANNER_ROUTES_AVAILABLE = True
+except ImportError as e:
+    BANNER_ROUTES_AVAILABLE = False
+    logging.warning(f"Banner routes not available: {e}")
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
