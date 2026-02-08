@@ -86,6 +86,22 @@ Build a comprehensive admin dashboard for a marketplace application with feature
   - **Badge unlock notifications**: Push notification when seller earns new badge
     - "Congratulations! 🚀 You've earned the Rising Star badge!"
     - Tapping notification navigates to profile
+- [x] **Dynamic Banner Management System - Complete** (Feb 8)
+  - **Backend** (`/app/backend/banner_system.py`):
+    - 15 predefined placement slots (header, footer, feed, detail, etc.)
+    - 9 banner size presets (728x90 Leaderboard, 300x250 Medium Rectangle, etc.)
+    - Support for Image, HTML, and Script (AdSense/AdMob) banner types
+    - Targeting: devices, countries, categories
+    - Scheduling: start/end dates, days of week, hours
+    - Rotation rules: Random, Weighted Priority, Fixed
+    - Impression & click tracking with CTR calculation
+    - Seller banner marketplace with pricing & approval workflow
+  - **Admin Dashboard** (`/app/admin-dashboard/frontend/src/app/dashboard/banners/page.tsx`):
+    - All Banners tab with filters (placement, status) and CRUD
+    - Analytics tab with totals and daily breakdown chart
+    - Pending Approval tab for seller banner moderation
+    - Create/Edit dialog with full targeting options
+    - CSV export for analytics
 
 ### Analytics System Details
 
