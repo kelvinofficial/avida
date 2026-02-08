@@ -148,6 +148,11 @@ export default function AttributesPage() {
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [templateCategory, setTemplateCategory] = useState('');
 
+  // Icon upload state
+  const [iconPreview, setIconPreview] = useState<string | null>(null);
+  const [uploadingIcon, setUploadingIcon] = useState(false);
+  const iconInputRef = useRef<HTMLInputElement>(null);
+
   // Form state
   const [formData, setFormData] = useState({
     category_id: '',
