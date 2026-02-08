@@ -463,19 +463,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#666',
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  paymentMethodRow: {
+  paymentMethodGrid: {
     flexDirection: 'row',
-    gap: 12,
+    flexWrap: 'wrap',
+    gap: 10,
   },
   paymentMethodCard: {
-    flex: 1,
+    width: '48%',
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     borderWidth: 2,
     borderColor: '#eee',
     gap: 10,
@@ -486,17 +487,23 @@ const styles = StyleSheet.create({
   },
   paymentMethodDisabled: {
     backgroundColor: '#f5f5f5',
-    opacity: 0.7,
+    opacity: 0.6,
+  },
+  paymentMethodInfo: {
+    flex: 1,
   },
   paymentMethodName: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '600',
     color: '#333',
-    flex: 1,
+  },
+  paymentMethodDesc: {
+    fontSize: 10,
+    color: '#888',
+    marginTop: 2,
   },
   paymentMethodNameSelected: {
     color: '#4CAF50',
-    fontWeight: '600',
   },
   paymentMethodNameDisabled: {
     color: '#999',
