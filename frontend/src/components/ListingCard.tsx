@@ -99,10 +99,24 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           </View>
         )}
         
-        {/* Top badges */}
-        {listing.featured && (
-          <View style={styles.topBadge}>
-            <Text style={styles.topBadgeText}>TOP</Text>
+        {/* Top badges - show boost type badges */}
+        {primaryBoost && BOOST_BADGES[primaryBoost] && (
+          <View style={[styles.topBadge, { backgroundColor: BOOST_BADGES[primaryBoost].color }]}>
+            <Ionicons name={BOOST_BADGES[primaryBoost].icon} size={10} color="#fff" style={{ marginRight: 3 }} />
+            <Text style={styles.topBadgeText}>{BOOST_BADGES[primaryBoost].label}</Text>
+          </View>
+        )}
+        
+        {/* Secondary boost badges (if multiple boosts) */}
+        {activeBoosts.length > 1 && (
+          <View style={styles.secondaryBadges}>
+            {activeBoosts.slice(0, 3).filter(type => type !== primaryBoost).map((type) => (
+              BOOST_BADGES[type] && (
+                <View key={type} style={[styles.smallBadge, { backgroundColor: BOOST_BADGES[type].color }]}>
+                  <Ionicons name={BOOST_BADGES[type].icon} size={8} color="#fff" />
+                </View>
+              )
+            ))}
           </View>
         )}
         
