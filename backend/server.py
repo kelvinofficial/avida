@@ -40,6 +40,14 @@ except ImportError:
     SENDGRID_AVAILABLE = False
     logging.warning("SendGrid not available. Email notifications disabled.")
 
+# Boost Routes
+try:
+    from boost_routes import create_boost_routes
+    BOOST_ROUTES_AVAILABLE = True
+except ImportError:
+    BOOST_ROUTES_AVAILABLE = False
+    logging.warning("Boost routes not available. Credit system disabled.")
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
