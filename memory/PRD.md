@@ -113,6 +113,43 @@ Additionally, build an Admin Dashboard with:
 ## Changelog
 
 ### February 8, 2026
+**Major Feature Update - Advanced Notifications & Admin Features**
+
+**1. Recurring Notification Scheduling**
+- Backend support for daily, weekly, and monthly recurring notifications
+- Next run time calculation for scheduled recurring
+- Target filters for granular user segmentation
+
+**2. Custom Template Management**
+- Full CRUD API for admin-created custom templates
+- Custom templates stored in MongoDB with usage tracking
+- Variables support for dynamic content
+
+**3. A/B Testing for Notifications**
+- Split testing with configurable percentages
+- Variant A/B title and message support
+- Results tracking for sent/read counts
+
+**4. User Segments for Targeting**
+- 16 predefined segments (All, Active, Inactive, Sellers, Buyers, New Users, + locations)
+- Dynamic filtering based on user attributes
+- Location-based targeting from user data
+
+**5. Template Analytics**
+- Usage tracking for all templates
+- Read rate calculations
+- Top performing templates dashboard
+
+**6. CSV Import for Listings**
+- Backend endpoint for bulk listing import
+- Frontend Import CSV button on Listings page
+- Support for create and update operations
+
+**7. Backend Enhancements**
+- Added MANAGE_LISTINGS and MANAGE_USERS permissions
+- Build target filter query helper function
+- Calculate next run time for recurring schedules
+
 **Notification Templates Feature Complete**
 - Added 12 predefined notification templates across 9 categories (Onboarding, Promotion, Engagement, Transaction, Account, Re-engagement, Reminder, System, Announcement)
 - Backend API: GET /api/admin/notification-templates with category filtering
