@@ -1292,6 +1292,77 @@ async def bulk_listing_action(
     await log_audit(admin["id"], admin["email"], AuditAction.UPDATE, "listings", "bulk", {"action": action_data.action, "count": result.modified_count}, request)
     return {"message": f"Updated {result.modified_count} listings", "modified_count": result.modified_count}
 
+@api_router.post("/listings/import")
+async def import_listings_csv(
+    file: UploadFile = File(...),
+    admin: dict = Depends(require_permission(Permission.MANAGE_LISTINGS))
+):
+    """Import listings from CSV file"""
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="File must be a CSV")
+    
+    content = await file.read()
+    try:
+        import csv
+        import io
+        
+        csv_reader = csv.DictReader(io.StringIO(content.decode('utf-8')))
+        
+        created = 0
+        updated = 0
+        errors = []
+        
+        for row_num, row in enumerate(csv_reader, start=2):
+            try:
+                # Required fields
+                if not row.get('name') or not row.get('price'):
+                    errors.append(f"Row {row_num}: Missing required fields (name, price)")
+                    continue
+                
+                listing_data = {
+                    "name": sanitize_input(row.get('name', '')),
+                    "description": sanitize_input(row.get('description', '')),
+                    "price": float(row.get('price', 0)),
+                    "currency": row.get('currency', 'EUR'),
+                    "category_id": row.get('category_id'),
+                    "location": row.get('location'),
+                    "status": row.get('status', 'active'),
+                    "condition": row.get('condition', 'new'),
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }
+                
+                # Check if listing exists by ID
+                if row.get('id'):
+                    existing = await db.listings.find_one({"id": row['id']})
+                    if existing:
+                        await db.listings.update_one({"id": row['id']}, {"$set": listing_data})
+                        updated += 1
+                        continue
+                
+                # Create new listing
+                listing_data["id"] = f"listing_{uuid.uuid4().hex[:12]}"
+                listing_data["created_at"] = datetime.now(timezone.utc).isoformat()
+                listing_data["views"] = 0
+                listing_data["favorites"] = 0
+                listing_data["images"] = []
+                
+                await db.listings.insert_one(listing_data)
+                created += 1
+                
+            except Exception as e:
+                errors.append(f"Row {row_num}: {str(e)}")
+        
+        return {
+            "success": True,
+            "created": created,
+            "updated": updated,
+            "errors": errors[:10],  # Return first 10 errors
+            "total_errors": len(errors)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to parse CSV: {str(e)}")
+
 # =============================================================================
 # REPORTS MANAGEMENT ENDPOINTS
 # =============================================================================
