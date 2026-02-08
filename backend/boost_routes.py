@@ -482,6 +482,81 @@ def create_boost_routes(db, get_current_user):
                 logger.error(f"PayPal error: {e}")
                 raise HTTPException(status_code=500, detail=f"PayPal payment failed: {str(e)}")
         
+        # Handle Mobile Money (M-Pesa, MTN)
+        if data.provider in [PaymentProvider.MPESA, PaymentProvider.MTN]:
+            if not FLUTTERWAVE_AVAILABLE:
+                raise HTTPException(status_code=400, detail="Mobile Money payments not available")
+            
+            flutterwave_key = os.environ.get('FW_SECRET_KEY')
+            if not flutterwave_key:
+                raise HTTPException(status_code=500, detail="Mobile Money not configured. Set FW_SECRET_KEY.")
+            
+            if not data.phone_number:
+                raise HTTPException(status_code=400, detail="Phone number is required for Mobile Money payments")
+            
+            # Set the API key for Flutterwave
+            import python_flutterwave.charge.mobile as flw_mobile
+            flw_mobile.token = flutterwave_key
+            
+            tx_ref = f"credits_{uuid.uuid4().hex[:12]}"
+            user_email = user.get("email", "customer@example.com")
+            
+            try:
+                if data.provider == PaymentProvider.MPESA:
+                    # M-Pesa (Kenya - KES)
+                    result = initiate_mpesa_charge(
+                        amount=int(package["price"] * 130),  # Approx USD to KES conversion
+                        email=user_email,
+                        tx_ref=tx_ref,
+                        phone_number=data.phone_number
+                    )
+                    currency = "KES"
+                else:
+                    # MTN Mobile Money (Ghana - GHS)
+                    network = data.mobile_network or "MTN"
+                    result = initiate_ghana_mobile_charge(
+                        amount=int(package["price"] * 15),  # Approx USD to GHS conversion
+                        email=user_email,
+                        tx_ref=tx_ref,
+                        phone_number=data.phone_number,
+                        network=network
+                    )
+                    currency = "GHS"
+                
+                # Create payment transaction record
+                payment = {
+                    "id": f"ptx_{uuid.uuid4().hex[:12]}",
+                    "seller_id": seller_id,
+                    "package_id": data.package_id,
+                    "provider": data.provider.value,
+                    "session_id": tx_ref,
+                    "amount": package["price"],
+                    "currency": currency,
+                    "credits_to_add": package["credits"],
+                    "bonus_credits": package.get("bonus_credits", 0),
+                    "status": PaymentStatus.PENDING.value,
+                    "metadata": {
+                        "tx_ref": tx_ref,
+                        "phone_number": data.phone_number,
+                        "flutterwave_response": result
+                    },
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "completed_at": None
+                }
+                await db.payment_transactions.insert_one(payment)
+                
+                return {
+                    "status": result.get("status"),
+                    "message": result.get("message", "Payment initiated. Check your phone for the payment prompt."),
+                    "session_id": tx_ref,
+                    "provider": data.provider.value,
+                    "package": package,
+                    "data": result.get("data")
+                }
+            except Exception as e:
+                logger.error(f"Mobile Money error: {e}")
+                raise HTTPException(status_code=500, detail=f"Mobile Money payment failed: {str(e)}")
+        
         # Handle Stripe (default)
         host_url = str(request.base_url).rstrip('/')
         webhook_url = f"{host_url}/api/webhook/stripe"
