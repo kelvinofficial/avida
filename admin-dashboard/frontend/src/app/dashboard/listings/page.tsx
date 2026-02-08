@@ -608,6 +608,15 @@ export default function ListingsPage() {
           setSelectedListing(null);
         }}
       >
+        <MenuItem
+          onClick={() => {
+            if (selectedListing) handleOpenEditDialog(selectedListing);
+            setAnchorEl(null);
+          }}
+        >
+          <Edit fontSize="small" sx={{ mr: 1 }} color="primary" />
+          {t('common.edit')}
+        </MenuItem>
         {selectedListing?.status === 'pending' && (
           <>
             <MenuItem
