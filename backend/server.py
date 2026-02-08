@@ -48,6 +48,14 @@ except ImportError:
     BOOST_ROUTES_AVAILABLE = False
     logging.warning("Boost routes not available. Credit system disabled.")
 
+# Analytics Routes
+try:
+    from analytics_system import create_analytics_router
+    ANALYTICS_ROUTES_AVAILABLE = True
+except ImportError as e:
+    ANALYTICS_ROUTES_AVAILABLE = False
+    logging.warning(f"Analytics routes not available: {e}")
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
