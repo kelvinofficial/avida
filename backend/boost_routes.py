@@ -386,7 +386,7 @@ def create_boost_routes(db, get_current_user):
                 )
                 
                 orders_controller = client.orders
-                result = orders_controller.orders_create({"body": order_request})
+                result = orders_controller.create_order({"body": order_request})
                 
                 # Create payment transaction record
                 payment = {
