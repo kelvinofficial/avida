@@ -80,6 +80,19 @@ export default function UsersPage() {
   const [bulkAction, setBulkAction] = useState<'ban' | 'unban' | ''>('');
   const [bulkBanReason, setBulkBanReason] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  
+  // Edit User state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    location: '',
+    bio: '',
+    is_verified: false,
+    is_active: true,
+    role: 'user',
+  });
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
