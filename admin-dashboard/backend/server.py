@@ -534,7 +534,9 @@ api_router = APIRouter(prefix="/api/admin")
 @api_router.post("/auth/login", response_model=TokenResponse)
 async def admin_login(request: Request, login_data: LoginRequest):
     """Admin login endpoint"""
+    print(f"Login attempt for: {login_data.email}")
     admin = await db.admin_users.find_one({"email": login_data.email.lower()}, {"_id": 0})
+    print(f"Admin found: {admin is not None}")
     
     if not admin:
         raise HTTPException(status_code=401, detail="Invalid email or password")
@@ -542,7 +544,11 @@ async def admin_login(request: Request, login_data: LoginRequest):
     if not admin.get("is_active", True):
         raise HTTPException(status_code=403, detail="Account is deactivated")
     
-    if not verify_password(login_data.password, admin.get("password_hash", "")):
+    print(f"Password hash exists: {'password_hash' in admin}")
+    pwd_check = verify_password(login_data.password, admin.get("password_hash", ""))
+    print(f"Password verification: {pwd_check}")
+    
+    if not pwd_check:
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
     # Check 2FA if enabled
