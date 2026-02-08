@@ -172,23 +172,100 @@ export default function AttributesPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [attrsData, catsData] = await Promise.all([
-        api.getAllAttributes(),
+      const [attrsData, catsData, templatesData] = await Promise.all([
+        api.getAllAttributes(showInherited),
         api.getCategories({ flat: true }),
+        api.getAttributeTemplates(),
       ]);
       setAttributes(attrsData.attributes || []);
       setCategories(catsData || []);
+      setTemplates(templatesData.templates || []);
     } catch (err) {
       console.error('Failed to load data:', err);
       setError('Failed to load attributes');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showInherited]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Bulk operations handlers
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedAttrs(filteredAttributes.filter(a => !a.is_inherited).map(a => a.id));
+    } else {
+      setSelectedAttrs([]);
+    }
+  };
+
+  const handleSelectAttr = (attrId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedAttrs([...selectedAttrs, attrId]);
+    } else {
+      setSelectedAttrs(selectedAttrs.filter(id => id !== attrId));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!categoryFilter) {
+      setError('Please filter by a specific category first');
+      return;
+    }
+    setActionLoading(true);
+    try {
+      await api.bulkAttributeAction(categoryFilter, selectedAttrs, 'delete');
+      setSuccess(`Deleted ${selectedAttrs.length} attributes`);
+      setSelectedAttrs([]);
+      await loadData();
+    } catch (err) {
+      setError('Failed to delete attributes');
+    } finally {
+      setActionLoading(false);
+      setBulkMenuAnchor(null);
+    }
+  };
+
+  const handleBulkCopy = async () => {
+    if (!categoryFilter || !copyTargetCategory) {
+      setError('Please select source and target categories');
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const result = await api.bulkAttributeAction(categoryFilter, selectedAttrs, 'copy', undefined, copyTargetCategory);
+      setSuccess(`Copied ${result.affected} attributes`);
+      setSelectedAttrs([]);
+      setCopyDialogOpen(false);
+      await loadData();
+    } catch (err) {
+      setError('Failed to copy attributes');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleApplyTemplate = async () => {
+    if (!templateCategory || !selectedTemplate) {
+      setError('Please select a category and template');
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const result = await api.applyAttributeTemplate(templateCategory, selectedTemplate, true);
+      setSuccess(`Added ${result.added} attributes from template`);
+      setTemplateDialogOpen(false);
+      setSelectedTemplate('');
+      setTemplateCategory('');
+      await loadData();
+    } catch (err) {
+      setError('Failed to apply template');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const handleOpenDialog = (attr?: Attribute) => {
     if (attr) {
