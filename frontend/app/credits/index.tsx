@@ -179,6 +179,44 @@ export default function CreditsPage() {
 
       {/* Credit Packages */}
       <Text style={styles.sectionTitle}>Buy Credits</Text>
+      
+      {/* Payment Method Selector */}
+      {providers.length > 0 && (
+        <View style={styles.paymentMethodSection}>
+          <Text style={styles.paymentMethodLabel}>Payment Method</Text>
+          <View style={styles.paymentMethodRow}>
+            {providers.map((provider) => (
+              <TouchableOpacity
+                key={provider.id}
+                style={[
+                  styles.paymentMethodCard,
+                  selectedProvider === provider.id && styles.paymentMethodSelected,
+                  !provider.available && styles.paymentMethodDisabled
+                ]}
+                onPress={() => provider.available && setSelectedProvider(provider.id)}
+                disabled={!provider.available}
+              >
+                <Ionicons 
+                  name={provider.icon as any} 
+                  size={24} 
+                  color={selectedProvider === provider.id ? '#4CAF50' : provider.available ? '#666' : '#ccc'} 
+                />
+                <Text style={[
+                  styles.paymentMethodName,
+                  selectedProvider === provider.id && styles.paymentMethodNameSelected,
+                  !provider.available && styles.paymentMethodNameDisabled
+                ]}>
+                  {provider.name}
+                </Text>
+                {selectedProvider === provider.id && (
+                  <Ionicons name="checkmark-circle" size={18} color="#4CAF50" style={styles.paymentMethodCheck} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
+      
       <View style={styles.packagesContainer}>
         {packages.map((pkg) => (
           <TouchableOpacity
