@@ -24,6 +24,15 @@ interface ListingCardProps {
   imageHeight?: number;
 }
 
+// Boost badge configuration
+const BOOST_BADGES: Record<string, { label: string; color: string; icon: keyof typeof Ionicons.glyphMap }> = {
+  featured: { label: 'TOP', color: '#FFD700', icon: 'star' },
+  homepage: { label: 'SPOTLIGHT', color: '#FF6B6B', icon: 'home' },
+  urgent: { label: 'URGENT', color: '#FF9800', icon: 'flash' },
+  location: { label: 'LOCAL', color: '#4CAF50', icon: 'location' },
+  category: { label: 'PROMOTED', color: '#2196F3', icon: 'grid' },
+};
+
 export const ListingCard: React.FC<ListingCardProps> = ({
   listing,
   onPress,
@@ -56,6 +65,24 @@ export const ListingCard: React.FC<ListingCardProps> = ({
     : null;
 
   const imageCount = listing.images?.length || 0;
+
+  // Get active boost badges
+  const activeBoosts = listing.boosts 
+    ? Object.entries(listing.boosts)
+        .filter(([_, boost]) => boost?.is_active)
+        .map(([type]) => type)
+    : [];
+  
+  // Check if listing is boosted (use is_boosted flag or check boosts object)
+  const isBoosted = listing.is_boosted || activeBoosts.length > 0 || listing.featured;
+  
+  // Get the primary badge to show (highest priority boost)
+  const primaryBoost = activeBoosts.length > 0 
+    ? activeBoosts.includes('homepage') ? 'homepage'
+    : activeBoosts.includes('featured') ? 'featured'
+    : activeBoosts.includes('urgent') ? 'urgent'
+    : activeBoosts[0]
+    : listing.featured ? 'featured' : null;
 
   return (
     <TouchableOpacity
