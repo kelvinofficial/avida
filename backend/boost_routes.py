@@ -23,7 +23,7 @@ from emergentintegrations.payments.stripe.checkout import (
 # PayPal integration
 try:
     from paypalserversdk.http.auth.o_auth_2 import ClientCredentialsAuthCredentials
-    from paypalserversdk.paypalserversdk_client import PaypalserversdkClient
+    from paypalserversdk.paypal_serversdk_client import PaypalServersdkClient
     from paypalserversdk.models.order_request import OrderRequest
     from paypalserversdk.models.checkout_payment_intent import CheckoutPaymentIntent
     from paypalserversdk.models.purchase_unit_request import PurchaseUnitRequest
