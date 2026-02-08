@@ -482,15 +482,16 @@ class TestUserEditing:
         
         # Store a user ID for update test if available
         if data["items"]:
-            TestUserEditing.created_user_id = data["items"][0].get("user_id") or data["items"][0].get("id")
+            TestUserEditing.created_user_id = data["items"][0].get("user_id")
 
     def test_update_user(self, authenticated_client):
         """Test updating a user"""
         if not TestUserEditing.created_user_id:
             pytest.skip("No user to update")
         
+        unique_suffix = uuid.uuid4().hex[:8]
         update_payload = {
-            "name": f"Updated User {uuid.uuid4().hex[:8]}",
+            "name": f"Updated User {unique_suffix}",
             "bio": "Updated via API test",
             "is_verified": True,
             "is_active": True
@@ -511,7 +512,27 @@ class TestUserEditing:
         data = response.json()
         assert "Updated" in data.get("name", "")
         assert data.get("bio") == "Updated via API test"
+        
+        # Security check: password_hash should not be returned
+        assert "password_hash" not in data or data.get("password_hash") is None
+        
         print(f"Updated user: {TestUserEditing.created_user_id}")
+
+    def test_get_user_verifies_update(self, authenticated_client):
+        """Verify user update persisted by GET"""
+        if not TestUserEditing.created_user_id:
+            pytest.skip("No user to verify")
+        
+        response = authenticated_client.get(f"{BASE_URL}/users/{TestUserEditing.created_user_id}")
+        
+        if response.status_code == 404:
+            pytest.skip("User not found")
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert "Updated" in data.get("name", "")
+        assert data.get("bio") == "Updated via API test"
+        print(f"Verified user update persisted: {data.get('name')}")
 
     def test_update_nonexistent_user(self, authenticated_client):
         """Test updating a non-existent user"""
