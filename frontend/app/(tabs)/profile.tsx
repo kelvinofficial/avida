@@ -1212,6 +1212,8 @@ export default function ProfileScreen() {
         
         <StatsRow stats={profile?.stats || null} />
         
+        <MyBadgesSection userId={profile?.user_id || ''} />
+        
         <ActivitySection onItemPress={handleActivityPress} />
         
         <TrustSection profile={profile} onVerifyPress={handleActivityPress} />
