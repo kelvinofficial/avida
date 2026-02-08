@@ -80,6 +80,8 @@ class TestIconUploadSetup:
 class TestCategoryIconUpload(TestIconUploadSetup):
     """Test category icon upload and delete"""
     
+    category_id_to_use = TEST_CATEGORY_ID
+    
     def test_01_verify_category_exists(self, auth_headers):
         """Verify the test category exists before testing icon upload"""
         response = requests.get(
@@ -96,9 +98,8 @@ class TestCategoryIconUpload(TestIconUploadSetup):
             categories = list_response.json()
             assert len(categories) > 0, "No categories found in database"
             # Use first available category for testing
-            global TEST_CATEGORY_ID
-            TEST_CATEGORY_ID = categories[0]["id"]
-            print(f"Using category: {TEST_CATEGORY_ID} ({categories[0]['name']}) for testing")
+            TestCategoryIconUpload.category_id_to_use = categories[0]["id"]
+            print(f"Using category: {TestCategoryIconUpload.category_id_to_use} ({categories[0]['name']}) for testing")
         else:
             assert response.status_code == 200, f"Failed to get category: {response.text}"
             data = response.json()
