@@ -1009,25 +1009,141 @@ async def add_category_attribute(
     await log_audit(admin["id"], admin["email"], AuditAction.CREATE, "attribute", attr_id, {"category_id": category_id, "name": attribute.name}, request)
     return new_attr
 
+# Attribute Templates - Predefined attribute sets for quick setup
+ATTRIBUTE_TEMPLATES = {
+    "vehicle": {
+        "name": "Vehicle Attributes",
+        "description": "Standard attributes for cars, motorcycles, and other vehicles",
+        "icon": "🚗",
+        "attributes": [
+            {"name": "Make", "key": "make", "type": "dropdown", "required": True, "icon": "🏭", "options": ["Toyota", "Honda", "Ford", "BMW", "Mercedes", "Audi", "Volkswagen", "Other"]},
+            {"name": "Model", "key": "model", "type": "text", "required": True, "icon": "📝", "max_length": 100},
+            {"name": "Year", "key": "year", "type": "number", "required": True, "icon": "📅", "min_value": 1900, "max_value": 2030},
+            {"name": "Mileage", "key": "mileage", "type": "number", "required": True, "icon": "🛣️", "unit": "km", "min_value": 0},
+            {"name": "Fuel Type", "key": "fuel_type", "type": "dropdown", "required": True, "icon": "⛽", "options": ["Petrol", "Diesel", "Electric", "Hybrid", "LPG"]},
+            {"name": "Transmission", "key": "transmission", "type": "dropdown", "required": True, "icon": "⚙️", "options": ["Automatic", "Manual", "Semi-Auto"]},
+            {"name": "Color", "key": "color", "type": "dropdown", "required": False, "icon": "🎨", "options": ["Black", "White", "Silver", "Red", "Blue", "Green", "Grey", "Other"]},
+            {"name": "Engine Size", "key": "engine_size", "type": "text", "required": False, "icon": "🔧", "placeholder": "e.g., 2.0L"},
+        ]
+    },
+    "property": {
+        "name": "Property Attributes",
+        "description": "Standard attributes for real estate listings",
+        "icon": "🏠",
+        "attributes": [
+            {"name": "Property Type", "key": "property_type", "type": "dropdown", "required": True, "icon": "🏢", "options": ["Apartment", "House", "Villa", "Studio", "Penthouse", "Townhouse", "Land"]},
+            {"name": "Bedrooms", "key": "bedrooms", "type": "number", "required": True, "icon": "🛏️", "min_value": 0, "max_value": 20},
+            {"name": "Bathrooms", "key": "bathrooms", "type": "number", "required": True, "icon": "🚿", "min_value": 0, "max_value": 10},
+            {"name": "Area", "key": "area", "type": "number", "required": True, "icon": "📐", "unit": "m²", "min_value": 1},
+            {"name": "Floor", "key": "floor", "type": "number", "required": False, "icon": "🏗️", "min_value": -2, "max_value": 100},
+            {"name": "Furnished", "key": "furnished", "type": "dropdown", "required": False, "icon": "🛋️", "options": ["Furnished", "Semi-Furnished", "Unfurnished"]},
+            {"name": "Parking", "key": "parking", "type": "checkbox", "required": False, "icon": "🅿️", "options": ["Garage", "Street Parking", "Private Lot"]},
+            {"name": "Amenities", "key": "amenities", "type": "checkbox", "required": False, "icon": "✨", "options": ["Pool", "Gym", "Garden", "Balcony", "Security", "Elevator"]},
+        ]
+    },
+    "electronics": {
+        "name": "Electronics Attributes",
+        "description": "Standard attributes for phones, computers, and electronics",
+        "icon": "📱",
+        "attributes": [
+            {"name": "Brand", "key": "brand", "type": "dropdown", "required": True, "icon": "🏷️", "options": ["Apple", "Samsung", "Sony", "LG", "HP", "Dell", "Lenovo", "Asus", "Other"]},
+            {"name": "Model", "key": "model", "type": "text", "required": True, "icon": "📝", "max_length": 100},
+            {"name": "Condition", "key": "item_condition", "type": "dropdown", "required": True, "icon": "✅", "options": ["New", "Like New", "Good", "Fair", "For Parts"]},
+            {"name": "Storage", "key": "storage", "type": "dropdown", "required": False, "icon": "💾", "options": ["16GB", "32GB", "64GB", "128GB", "256GB", "512GB", "1TB", "2TB"]},
+            {"name": "Color", "key": "color", "type": "text", "required": False, "icon": "🎨"},
+            {"name": "Warranty", "key": "warranty", "type": "dropdown", "required": False, "icon": "🛡️", "options": ["No Warranty", "Under Warranty", "Extended Warranty"]},
+        ]
+    },
+    "fashion": {
+        "name": "Fashion Attributes",
+        "description": "Standard attributes for clothing and accessories",
+        "icon": "👗",
+        "attributes": [
+            {"name": "Size", "key": "size", "type": "dropdown", "required": True, "icon": "📏", "options": ["XS", "S", "M", "L", "XL", "XXL", "XXXL"]},
+            {"name": "Color", "key": "color", "type": "text", "required": True, "icon": "🎨"},
+            {"name": "Brand", "key": "brand", "type": "text", "required": False, "icon": "🏷️"},
+            {"name": "Material", "key": "material", "type": "text", "required": False, "icon": "🧵"},
+            {"name": "Condition", "key": "condition", "type": "dropdown", "required": True, "icon": "✅", "options": ["New with Tags", "New without Tags", "Like New", "Good", "Fair"]},
+            {"name": "Gender", "key": "gender", "type": "dropdown", "required": False, "icon": "👤", "options": ["Men", "Women", "Unisex", "Boys", "Girls"]},
+        ]
+    },
+    "jobs": {
+        "name": "Jobs & Services Attributes",
+        "description": "Standard attributes for job listings and services",
+        "icon": "💼",
+        "attributes": [
+            {"name": "Job Type", "key": "job_type", "type": "dropdown", "required": True, "icon": "📋", "options": ["Full-time", "Part-time", "Contract", "Freelance", "Internship"]},
+            {"name": "Experience Level", "key": "experience", "type": "dropdown", "required": True, "icon": "📊", "options": ["Entry Level", "Mid Level", "Senior", "Executive"]},
+            {"name": "Salary Range", "key": "salary_range", "type": "text", "required": False, "icon": "💰", "placeholder": "e.g., $50,000 - $70,000"},
+            {"name": "Remote Work", "key": "remote", "type": "dropdown", "required": False, "icon": "🏠", "options": ["On-site", "Remote", "Hybrid"]},
+            {"name": "Industry", "key": "industry", "type": "text", "required": False, "icon": "🏢"},
+        ]
+    }
+}
+
 @api_router.get("/attributes")
 async def list_all_attributes(
+    include_inherited: bool = True,
     admin: dict = Depends(require_permission(Permission.VIEW_ATTRIBUTES))
 ):
-    """Get all attributes from all categories"""
+    """Get all attributes from all categories with inheritance support"""
     categories = await db.admin_categories.find(
         {}, {"_id": 0, "id": 1, "name": 1, "slug": 1, "parent_id": 1, "attributes": 1}
     ).to_list(500)
     
+    # Build category lookup for inheritance
+    category_map = {c["id"]: c for c in categories}
+    
+    def get_inherited_attributes(cat_id: str, visited: set = None) -> List[dict]:
+        """Recursively get inherited attributes from parent categories"""
+        if visited is None:
+            visited = set()
+        if cat_id in visited or cat_id not in category_map:
+            return []
+        visited.add(cat_id)
+        
+        cat = category_map[cat_id]
+        inherited = []
+        
+        if cat.get("parent_id") and cat["parent_id"] in category_map:
+            parent = category_map[cat["parent_id"]]
+            # Get parent's own attributes
+            for attr in parent.get("attributes", []):
+                inherited.append({
+                    **attr,
+                    "inherited_from": parent["id"],
+                    "inherited_from_name": parent["name"],
+                    "is_inherited": True
+                })
+            # Get parent's inherited attributes (recursive)
+            inherited.extend(get_inherited_attributes(cat["parent_id"], visited))
+        
+        return inherited
+    
     all_attributes = []
     for cat in categories:
+        # Own attributes
         for attr in cat.get("attributes", []):
             all_attributes.append({
                 **attr,
                 "category_id": cat["id"],
                 "category_name": cat["name"],
                 "category_slug": cat.get("slug", ""),
-                "parent_id": cat.get("parent_id")
+                "parent_id": cat.get("parent_id"),
+                "is_inherited": False
             })
+        
+        # Inherited attributes
+        if include_inherited:
+            inherited = get_inherited_attributes(cat["id"])
+            for attr in inherited:
+                all_attributes.append({
+                    **attr,
+                    "category_id": cat["id"],
+                    "category_name": cat["name"],
+                    "category_slug": cat.get("slug", ""),
+                    "parent_id": cat.get("parent_id")
+                })
     
     # Sort by category name, then order
     all_attributes.sort(key=lambda x: (x["category_name"], x.get("order", 0)))
@@ -1035,29 +1151,193 @@ async def list_all_attributes(
     return {
         "attributes": all_attributes,
         "total": len(all_attributes),
+        "own_count": len([a for a in all_attributes if not a.get("is_inherited")]),
+        "inherited_count": len([a for a in all_attributes if a.get("is_inherited")]),
         "categories_count": len([c for c in categories if c.get("attributes")])
     }
 
-@api_router.patch("/categories/{category_id}/attributes/{attribute_id}")
-async def update_category_attribute(
+# Attribute Templates Endpoints
+@api_router.get("/attribute-templates")
+async def list_attribute_templates(
+    admin: dict = Depends(require_permission(Permission.VIEW_ATTRIBUTES))
+):
+    """List available attribute templates"""
+    templates = []
+    for key, template in ATTRIBUTE_TEMPLATES.items():
+        templates.append({
+            "id": key,
+            "name": template["name"],
+            "description": template["description"],
+            "icon": template["icon"],
+            "attribute_count": len(template["attributes"]),
+            "attributes_preview": [a["name"] for a in template["attributes"][:5]]
+        })
+    return {"templates": templates}
+
+@api_router.get("/attribute-templates/{template_id}")
+async def get_attribute_template(
+    template_id: str,
+    admin: dict = Depends(require_permission(Permission.VIEW_ATTRIBUTES))
+):
+    """Get detailed attribute template"""
+    if template_id not in ATTRIBUTE_TEMPLATES:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    template = ATTRIBUTE_TEMPLATES[template_id]
+    return {
+        "id": template_id,
+        **template
+    }
+
+@api_router.post("/categories/{category_id}/apply-template")
+async def apply_attribute_template(
     request: Request,
     category_id: str,
-    attribute_id: str,
-    update_data: AttributeUpdate,
+    template_id: str = Body(..., embed=True),
+    merge: bool = Body(True, embed=True),
     admin: dict = Depends(require_permission(Permission.MANAGE_ATTRIBUTES))
 ):
-    """Update category attribute"""
+    """Apply an attribute template to a category"""
+    if template_id not in ATTRIBUTE_TEMPLATES:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
     category = await db.admin_categories.find_one({"id": category_id})
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
     
+    template = ATTRIBUTE_TEMPLATES[template_id]
+    existing_attrs = category.get("attributes", []) if merge else []
+    existing_keys = {a["key"] for a in existing_attrs}
+    
+    new_attrs = []
+    skipped = 0
+    for idx, attr in enumerate(template["attributes"]):
+        if attr["key"] in existing_keys:
+            skipped += 1
+            continue
+        
+        attr_id = f"attr_{uuid.uuid4().hex[:12]}"
+        new_attr = {
+            "id": attr_id,
+            **attr,
+            "order": len(existing_attrs) + len(new_attrs),
+            "searchable": True,
+            "filterable": True,
+            "show_in_list": True,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "created_by": admin["email"],
+            "from_template": template_id
+        }
+        new_attrs.append(new_attr)
+    
+    all_attrs = existing_attrs + new_attrs
+    
+    await db.admin_categories.update_one(
+        {"id": category_id},
+        {"$set": {"attributes": all_attrs}}
+    )
+    
+    await log_audit(
+        admin["id"], admin["email"], AuditAction.UPDATE, "category_attributes", 
+        category_id, {"template": template_id, "added": len(new_attrs), "skipped": skipped}, request
+    )
+    
+    return {
+        "message": f"Template applied successfully",
+        "added": len(new_attrs),
+        "skipped": skipped,
+        "total_attributes": len(all_attrs)
+    }
+
+# Bulk Attribute Operations
+class BulkAttributeAction(BaseModel):
+    attribute_ids: List[str]
+    category_id: str
+    action: str = Field(..., pattern="^(delete|update|copy)$")
+    update_data: Optional[Dict[str, Any]] = None
+    target_category_id: Optional[str] = None
+
+@api_router.post("/attributes/bulk")
+async def bulk_attribute_action(
+    request: Request,
+    action_data: BulkAttributeAction,
+    admin: dict = Depends(require_permission(Permission.MANAGE_ATTRIBUTES))
+):
+    """Perform bulk operations on attributes"""
+    category = await db.admin_categories.find_one({"id": action_data.category_id})
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
     attrs = category.get("attributes", [])
-    attr_index = next((i for i, a in enumerate(attrs) if a["id"] == attribute_id), None)
+    affected = 0
     
-    if attr_index is None:
-        raise HTTPException(status_code=404, detail="Attribute not found")
+    if action_data.action == "delete":
+        # Bulk delete
+        original_count = len(attrs)
+        attrs = [a for a in attrs if a["id"] not in action_data.attribute_ids]
+        affected = original_count - len(attrs)
+        
+        await db.admin_categories.update_one(
+            {"id": action_data.category_id},
+            {"$set": {"attributes": attrs}}
+        )
+        
+    elif action_data.action == "update":
+        # Bulk update
+        if not action_data.update_data:
+            raise HTTPException(status_code=400, detail="update_data required for update action")
+        
+        for attr in attrs:
+            if attr["id"] in action_data.attribute_ids:
+                for key, value in action_data.update_data.items():
+                    if key not in ["id", "key", "category_id"]:  # Protected fields
+                        attr[key] = value
+                affected += 1
+        
+        await db.admin_categories.update_one(
+            {"id": action_data.category_id},
+            {"$set": {"attributes": attrs}}
+        )
+        
+    elif action_data.action == "copy":
+        # Copy attributes to another category
+        if not action_data.target_category_id:
+            raise HTTPException(status_code=400, detail="target_category_id required for copy action")
+        
+        target_cat = await db.admin_categories.find_one({"id": action_data.target_category_id})
+        if not target_cat:
+            raise HTTPException(status_code=404, detail="Target category not found")
+        
+        target_attrs = target_cat.get("attributes", [])
+        existing_keys = {a["key"] for a in target_attrs}
+        
+        for attr in attrs:
+            if attr["id"] in action_data.attribute_ids and attr["key"] not in existing_keys:
+                new_attr = {
+                    **attr,
+                    "id": f"attr_{uuid.uuid4().hex[:12]}",
+                    "order": len(target_attrs),
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "created_by": admin["email"],
+                    "copied_from": action_data.category_id
+                }
+                target_attrs.append(new_attr)
+                affected += 1
+        
+        await db.admin_categories.update_one(
+            {"id": action_data.target_category_id},
+            {"$set": {"attributes": target_attrs}}
+        )
     
-    updates = {}
+    await log_audit(
+        admin["id"], admin["email"], AuditAction.UPDATE, "attributes_bulk",
+        action_data.category_id, {"action": action_data.action, "count": affected}, request
+    )
+    
+    return {
+        "message": f"Bulk {action_data.action} completed",
+        "affected": affected
+    }
     if update_data.name is not None:
         updates[f"attributes.{attr_index}.name"] = sanitize_input(update_data.name)
     if update_data.key is not None:
