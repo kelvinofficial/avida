@@ -299,6 +299,12 @@ export default function AttributesPage() {
         filterable: attr.filterable ?? true,
         show_in_list: attr.show_in_list ?? true,
       });
+      // Set icon preview if it's a data URL (uploaded image)
+      if (attr.icon && attr.icon.startsWith('data:')) {
+        setIconPreview(attr.icon);
+      } else {
+        setIconPreview(null);
+      }
     } else {
       setEditingAttr(null);
       setFormData({
@@ -322,6 +328,7 @@ export default function AttributesPage() {
         filterable: true,
         show_in_list: true,
       });
+      setIconPreview(null);
     }
     setDialogOpen(true);
   };
