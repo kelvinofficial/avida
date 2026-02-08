@@ -5613,10 +5613,16 @@ if ANALYTICS_ROUTES_AVAILABLE:
             raise HTTPException(status_code=401, detail="Not authenticated")
         return {"user_id": user.user_id, "email": user.email, "is_admin": True}
     
-    analytics_router, analytics_system = create_analytics_router(db, get_current_user_for_analytics, get_current_admin_for_analytics)
+    analytics_router, analytics_system = create_analytics_router(
+        db, 
+        get_current_user_for_analytics, 
+        get_current_admin_for_analytics,
+        create_notification_func=create_notification
+    )
     api_router.include_router(analytics_router)
     app.include_router(api_router)  # Re-include to pick up analytics routes
     logger.info("Analytics routes loaded successfully")
+    logger.info("Engagement notification background task started")
 
 app.add_middleware(
     CORSMiddleware,
