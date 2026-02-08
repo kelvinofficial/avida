@@ -403,6 +403,55 @@ const styles = StyleSheet.create({
     width: 1,
     backgroundColor: '#eee',
   },
+  paymentMethodSection: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  paymentMethodLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#666',
+    marginBottom: 8,
+  },
+  paymentMethodRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  paymentMethodCard: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 2,
+    borderColor: '#eee',
+    gap: 10,
+  },
+  paymentMethodSelected: {
+    borderColor: '#4CAF50',
+    backgroundColor: '#f8fff8',
+  },
+  paymentMethodDisabled: {
+    backgroundColor: '#f5f5f5',
+    opacity: 0.7,
+  },
+  paymentMethodName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
+    flex: 1,
+  },
+  paymentMethodNameSelected: {
+    color: '#4CAF50',
+    fontWeight: '600',
+  },
+  paymentMethodNameDisabled: {
+    color: '#999',
+  },
+  paymentMethodCheck: {
+    marginLeft: 'auto',
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
