@@ -251,6 +251,137 @@ class BoostSystem:
                 bp = BoostPricing(**pricing)
                 await self.db.boost_pricing.insert_one(bp.dict())
             logger.info("Initialized default boost pricing")
+        
+        # Default Payment Methods
+        default_payment_methods = [
+            {
+                "id": "stripe",
+                "name": "Credit/Debit Card",
+                "description": "Pay securely with Visa, Mastercard, Amex",
+                "icon": "card",
+                "is_enabled": True,
+                "requires_phone": False,
+                "currency": "USD",
+                "exchange_rate": 1.0,
+                "min_amount": 1.0,
+                "max_amount": 1000.0,
+                "priority": 1
+            },
+            {
+                "id": "paypal",
+                "name": "PayPal",
+                "description": "Pay with your PayPal account",
+                "icon": "logo-paypal",
+                "is_enabled": True,
+                "requires_phone": False,
+                "currency": "USD",
+                "exchange_rate": 1.0,
+                "min_amount": 1.0,
+                "max_amount": 1000.0,
+                "priority": 2
+            },
+            {
+                "id": "mpesa",
+                "name": "M-Pesa",
+                "description": "Pay with M-Pesa (Kenya)",
+                "icon": "phone-portrait",
+                "is_enabled": True,
+                "requires_phone": True,
+                "country": "KE",
+                "currency": "KES",
+                "exchange_rate": 130.0,
+                "min_amount": 1.0,
+                "max_amount": 500.0,
+                "priority": 3
+            },
+            {
+                "id": "mtn",
+                "name": "MTN Mobile Money",
+                "description": "Pay with MTN MoMo (Ghana, Uganda, Zambia)",
+                "icon": "phone-portrait",
+                "is_enabled": True,
+                "requires_phone": True,
+                "country": "GH",
+                "currency": "GHS",
+                "exchange_rate": 15.0,
+                "min_amount": 1.0,
+                "max_amount": 500.0,
+                "networks": ["MTN", "VODAFONE", "TIGO"],
+                "priority": 4
+            },
+            {
+                "id": "vodacom_tz",
+                "name": "Vodacom Tanzania",
+                "description": "Pay with M-Pesa Tanzania",
+                "icon": "phone-portrait",
+                "is_enabled": True,
+                "requires_phone": True,
+                "country": "TZ",
+                "currency": "TZS",
+                "exchange_rate": 2500.0,
+                "min_amount": 1.0,
+                "max_amount": 500.0,
+                "priority": 5
+            }
+        ]
+        
+        existing_methods = await self.db.payment_methods.count_documents({})
+        if existing_methods == 0:
+            for method in default_payment_methods:
+                method["created_at"] = datetime.now(timezone.utc).isoformat()
+                await self.db.payment_methods.insert_one(method)
+            logger.info("Initialized default payment methods")
+    
+    # =========================================================================
+    # PAYMENT METHODS MANAGEMENT
+    # =========================================================================
+    
+    async def get_payment_methods(self, enabled_only: bool = False) -> List[dict]:
+        """Get all payment methods"""
+        query = {"is_enabled": True} if enabled_only else {}
+        methods = await self.db.payment_methods.find(query, {"_id": 0}).sort("priority", 1).to_list(100)
+        
+        # If no methods in DB, return defaults
+        if not methods:
+            return [
+                {"id": "stripe", "name": "Credit/Debit Card", "description": "Pay securely with Visa, Mastercard, Amex", "icon": "card", "is_enabled": True, "requires_phone": False, "priority": 1},
+                {"id": "paypal", "name": "PayPal", "description": "Pay with your PayPal account", "icon": "logo-paypal", "is_enabled": True, "requires_phone": False, "priority": 2},
+                {"id": "mpesa", "name": "M-Pesa", "description": "Pay with M-Pesa (Kenya)", "icon": "phone-portrait", "is_enabled": True, "requires_phone": True, "country": "KE", "currency": "KES", "exchange_rate": 130.0, "priority": 3},
+                {"id": "mtn", "name": "MTN Mobile Money", "description": "Pay with MTN MoMo", "icon": "phone-portrait", "is_enabled": True, "requires_phone": True, "country": "GH", "currency": "GHS", "exchange_rate": 15.0, "networks": ["MTN", "VODAFONE", "TIGO"], "priority": 4},
+                {"id": "vodacom_tz", "name": "Vodacom Tanzania", "description": "Pay with M-Pesa Tanzania", "icon": "phone-portrait", "is_enabled": True, "requires_phone": True, "country": "TZ", "currency": "TZS", "exchange_rate": 2500.0, "priority": 5},
+            ]
+        return methods
+    
+    async def get_payment_method(self, method_id: str) -> Optional[dict]:
+        """Get single payment method by ID"""
+        return await self.db.payment_methods.find_one({"id": method_id}, {"_id": 0})
+    
+    async def update_payment_method(self, method_id: str, data: UpdatePaymentMethodRequest) -> dict:
+        """Update payment method configuration"""
+        updates = {k: v for k, v in data.dict().items() if v is not None}
+        if not updates:
+            raise HTTPException(status_code=400, detail="No updates provided")
+        updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+        
+        result = await self.db.payment_methods.update_one(
+            {"id": method_id},
+            {"$set": updates}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Payment method not found")
+        
+        return await self.get_payment_method(method_id)
+    
+    async def toggle_payment_method(self, method_id: str, enabled: bool) -> dict:
+        """Enable or disable a payment method"""
+        result = await self.db.payment_methods.update_one(
+            {"id": method_id},
+            {"$set": {"is_enabled": enabled, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Payment method not found")
+        
+        return await self.get_payment_method(method_id)
     
     # =========================================================================
     # CREDIT PACKAGES
