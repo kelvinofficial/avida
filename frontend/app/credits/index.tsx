@@ -108,7 +108,8 @@ export default function CreditsPage() {
     }
 
     // Validate phone for mobile money
-    if ((selectedProvider === 'mpesa' || selectedProvider === 'mtn') && !phoneNumber) {
+    const isMobileMoney = ['mpesa', 'mtn', 'vodacom_tz'].includes(selectedProvider);
+    if (isMobileMoney && !phoneNumber) {
       Alert.alert('Phone Required', 'Please enter your mobile money phone number');
       return;
     }
