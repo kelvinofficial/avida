@@ -126,8 +126,35 @@ class ApiClient {
     return data;
   }
 
-  async addAttribute(categoryId: string, attribute: Record<string, unknown>) {
-    const { data } = await this.client.post(`/categories/${categoryId}/attributes`, attribute);
+  async getAllAttributes() {
+    const { data } = await this.client.get('/attributes');
+    return data;
+  }
+
+  async addAttribute(categoryId: string, attribute: {
+    name: string;
+    key: string;
+    type: string;
+    required?: boolean;
+    options?: string[];
+    order?: number;
+    icon?: string;
+    placeholder?: string;
+    help_text?: string;
+    min_length?: number;
+    max_length?: number;
+    min_value?: number;
+    max_value?: number;
+    default_value?: string;
+    unit?: string;
+    searchable?: boolean;
+    filterable?: boolean;
+    show_in_list?: boolean;
+  }) {
+    const { data } = await this.client.post(`/categories/${categoryId}/attributes`, {
+      ...attribute,
+      category_id: categoryId
+    });
     return data;
   }
 
