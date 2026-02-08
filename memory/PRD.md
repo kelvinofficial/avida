@@ -113,6 +113,21 @@ Additionally, build an Admin Dashboard with:
 ## Changelog
 
 ### February 8, 2026
+**Custom Attributes Management Feature Complete**
+- Backend: Enhanced AttributeCreate/AttributeUpdate models with all new fields:
+  - Field types: text, number, textarea, dropdown, radio, checkbox, date, email, phone, url
+  - Field properties: icon, placeholder, help_text, default_value, unit
+  - Validation: min_length, max_length, min_value, max_value, required
+  - Display options: searchable, filterable, show_in_list
+- Backend: New GET /api/admin/attributes endpoint to list all attributes across categories
+- Frontend: New "Attributes" page in admin dashboard with:
+  - Table listing all attributes with icon, name, type, category, required, options count
+  - Filter by Category and Filter by Type dropdowns
+  - Create Attribute dialog with all field options
+  - Edit and Delete functionality
+  - Options management for dropdown/radio/checkbox types
+- Navigation: Added "Attributes" menu item with Tune icon
+
 **Admin Listing Edit Feature Complete**
 - Backend: Full listing update API (PUT /api/admin/listings/{id}) with support for all fields
 - Backend: Image upload endpoint (POST /api/admin/listings/{id}/images)
