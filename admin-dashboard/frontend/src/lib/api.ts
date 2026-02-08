@@ -188,6 +188,39 @@ class ApiClient {
     return data;
   }
 
+  async updateListing(id: string, updates: {
+    name?: string;
+    description?: string;
+    price?: number;
+    currency?: string;
+    category_id?: string;
+    location?: string;
+    condition?: string;
+    status?: string;
+    images?: string[];
+    attributes?: Record<string, unknown>;
+    contact_phone?: string;
+    contact_email?: string;
+    negotiable?: boolean;
+  }) {
+    const { data } = await this.client.put(`/listings/${id}`, updates);
+    return data;
+  }
+
+  async uploadListingImages(id: string, files: File[]) {
+    const formData = new FormData();
+    files.forEach(file => formData.append('files', file));
+    const { data } = await this.client.post(`/listings/${id}/images`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return data;
+  }
+
+  async deleteListingImage(id: string, imageIndex: number) {
+    const { data } = await this.client.delete(`/listings/${id}/images/${imageIndex}`);
+    return data;
+  }
+
   // Reports
   async getReports(params: { page?: number; limit?: number; status?: string }) {
     const { data } = await this.client.get('/reports', { params });
