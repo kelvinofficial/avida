@@ -33,6 +33,14 @@ except ImportError as e:
     PAYPAL_AVAILABLE = False
     logging.warning(f"PayPal SDK not available: {e}. PayPal payments disabled.")
 
+# Flutterwave Mobile Money integration
+try:
+    from python_flutterwave import payment as flutterwave_payment
+    FLUTTERWAVE_AVAILABLE = True
+except ImportError as e:
+    FLUTTERWAVE_AVAILABLE = False
+    logging.warning(f"Flutterwave SDK not available: {e}. Mobile Money payments disabled.")
+
 logger = logging.getLogger("boost_routes")
 
 
