@@ -233,6 +233,11 @@ export default function CategoriesPage() {
     order: 0,
   });
 
+  // Icon upload state
+  const [iconPreview, setIconPreview] = useState<string | null>(null);
+  const [uploadingIcon, setUploadingIcon] = useState(false);
+  const iconInputRef = useRef<HTMLInputElement>(null);
+
   // DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor),
