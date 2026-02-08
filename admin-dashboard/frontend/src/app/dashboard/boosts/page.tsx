@@ -452,6 +452,7 @@ export default function BoostsPage() {
         >
           <Tab icon={<LocalOffer />} iconPosition="start" label="Credit Packages" />
           <Tab icon={<TrendingUp />} iconPosition="start" label="Boost Pricing" />
+          <Tab icon={<Payment />} iconPosition="start" label="Payment Methods" />
           <Tab icon={<Person />} iconPosition="start" label="Seller Credits" />
         </Tabs>
 
