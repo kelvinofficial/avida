@@ -221,10 +221,11 @@ class TestCategoryIconUpload(TestIconUploadSetup):
 class TestAttributeIconUpload(TestIconUploadSetup):
     """Test attribute icon upload and delete"""
     
+    attr_category_id = TEST_ATTRIBUTE_CATEGORY_ID
+    attr_id = TEST_ATTRIBUTE_ID
+    
     def test_01_find_category_with_attributes(self, auth_headers):
         """Find a category that has attributes for testing"""
-        global TEST_ATTRIBUTE_CATEGORY_ID, TEST_ATTRIBUTE_ID
-        
         # First try the provided category
         response = requests.get(
             f"{BASE_URL}/categories/{TEST_ATTRIBUTE_CATEGORY_ID}",
@@ -235,8 +236,8 @@ class TestAttributeIconUpload(TestIconUploadSetup):
             data = response.json()
             attributes = data.get("attributes", [])
             if attributes:
-                TEST_ATTRIBUTE_ID = attributes[0]["id"]
-                print(f"Using existing category {TEST_ATTRIBUTE_CATEGORY_ID} with attribute {TEST_ATTRIBUTE_ID}")
+                TestAttributeIconUpload.attr_id = attributes[0]["id"]
+                print(f"Using existing category {TEST_ATTRIBUTE_CATEGORY_ID} with attribute {TestAttributeIconUpload.attr_id}")
                 return
         
         # If not found, search for any category with attributes
@@ -250,9 +251,9 @@ class TestAttributeIconUpload(TestIconUploadSetup):
         for cat in categories:
             attrs = cat.get("attributes", [])
             if attrs:
-                TEST_ATTRIBUTE_CATEGORY_ID = cat["id"]
-                TEST_ATTRIBUTE_ID = attrs[0]["id"]
-                print(f"Found category {cat['name']} ({TEST_ATTRIBUTE_CATEGORY_ID}) with attribute {attrs[0]['name']} ({TEST_ATTRIBUTE_ID})")
+                TestAttributeIconUpload.attr_category_id = cat["id"]
+                TestAttributeIconUpload.attr_id = attrs[0]["id"]
+                print(f"Found category {cat['name']} ({TestAttributeIconUpload.attr_category_id}) with attribute {attrs[0]['name']} ({TestAttributeIconUpload.attr_id})")
                 return
         
         pytest.skip("No category with attributes found for testing")
