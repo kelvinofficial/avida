@@ -218,6 +218,7 @@ const ListingItem = ({
   item,
   onPress,
   onEdit,
+  onPerformance,
   onBoost,
   onMarkSold,
   onDelete,
@@ -225,11 +226,12 @@ const ListingItem = ({
   item: any;
   onPress: () => void;
   onEdit: () => void;
+  onPerformance: () => void;
   onBoost: () => void;
   onMarkSold: () => void;
   onDelete: () => void;
 }) => (
-  <TouchableOpacity style={styles.listingItem} onPress={onPress}>
+  <TouchableOpacity style={styles.listingItem} onPress={onPress} data-testid={`listing-item-${item.id}`}>
     <Image
       source={{ uri: item.images?.[0] || 'https://via.placeholder.com/100' }}
       style={styles.listingImage}
@@ -264,20 +266,23 @@ const ListingItem = ({
       </View>
     </View>
     <View style={styles.actions}>
-      <TouchableOpacity style={styles.actionBtn} onPress={onEdit}>
+      <TouchableOpacity style={styles.actionBtn} onPress={onEdit} data-testid={`edit-btn-${item.id}`}>
         <Ionicons name="pencil-outline" size={18} color={COLORS.primary} />
       </TouchableOpacity>
       {item.status === 'active' && (
         <>
-          <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#E8F5E9' }]} onPress={onBoost}>
+          <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#E3F2FD' }]} onPress={onPerformance} data-testid={`performance-btn-${item.id}`}>
+            <Ionicons name="stats-chart-outline" size={18} color="#2196F3" />
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#E8F5E9' }]} onPress={onBoost} data-testid={`boost-btn-${item.id}`}>
             <Ionicons name="rocket-outline" size={18} color="#4CAF50" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn} onPress={onMarkSold}>
+          <TouchableOpacity style={styles.actionBtn} onPress={onMarkSold} data-testid={`mark-sold-btn-${item.id}`}>
             <Ionicons name="checkmark-circle-outline" size={18} color={COLORS.success} />
           </TouchableOpacity>
         </>
       )}
-      <TouchableOpacity style={styles.actionBtn} onPress={onDelete}>
+      <TouchableOpacity style={styles.actionBtn} onPress={onDelete} data-testid={`delete-btn-${item.id}`}>
         <Ionicons name="trash-outline" size={18} color={COLORS.error} />
       </TouchableOpacity>
     </View>
@@ -405,6 +410,10 @@ export default function MyListingsScreen() {
         },
       ]
     );
+  };
+
+  const handlePerformance = (item: any) => {
+    router.push(`/performance/${item.id}` as any);
   };
 
   // Show instant render without loading spinner
