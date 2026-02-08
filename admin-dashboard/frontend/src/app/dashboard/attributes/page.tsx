@@ -830,6 +830,7 @@ export default function AttributesPage() {
                       value={formData.icon}
                       label="Icon"
                       onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                      disabled={!!iconPreview}
                     >
                       <MenuItem value="">None</MenuItem>
                       {COMMON_ICONS.map(icon => (
@@ -843,8 +844,93 @@ export default function AttributesPage() {
                     onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                     sx={{ width: 100 }}
                     placeholder="🔧"
+                    disabled={!!iconPreview}
                   />
                 </Box>
+                
+                {/* Custom Icon Upload */}
+                <Box sx={{ gridColumn: 'span 2' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                    Or upload a custom icon image
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    {/* Icon Preview */}
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 1,
+                        border: '2px dashed',
+                        borderColor: iconPreview ? 'primary.main' : 'grey.300',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        bgcolor: iconPreview ? 'grey.50' : 'transparent',
+                        position: 'relative',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {uploadingIcon ? (
+                        <CircularProgress size={20} />
+                      ) : iconPreview ? (
+                        <>
+                          <img
+                            src={iconPreview}
+                            alt="Icon preview"
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                          />
+                          <IconButton
+                            size="small"
+                            onClick={handleRemoveAttrIcon}
+                            sx={{
+                              position: 'absolute',
+                              top: -6,
+                              right: -6,
+                              bgcolor: 'error.main',
+                              color: 'white',
+                              '&:hover': { bgcolor: 'error.dark' },
+                              width: 16,
+                              height: 16,
+                            }}
+                          >
+                            <Close sx={{ fontSize: 12 }} />
+                          </IconButton>
+                        </>
+                      ) : (
+                        <ImageIcon sx={{ color: 'grey.400', fontSize: 24 }} />
+                      )}
+                    </Box>
+                    
+                    {/* Upload Button */}
+                    <Box>
+                      <input
+                        ref={iconInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/svg+xml"
+                        onChange={handleAttrIconFileSelect}
+                        style={{ display: 'none' }}
+                        id="attr-icon-upload"
+                      />
+                      <label htmlFor="attr-icon-upload">
+                        <Button
+                          component="span"
+                          variant="outlined"
+                          size="small"
+                          startIcon={<CloudUpload />}
+                          disabled={uploadingIcon || !editingAttr}
+                          data-testid="upload-attr-icon-btn"
+                        >
+                          Upload
+                        </Button>
+                      </label>
+                      <Typography variant="caption" display="block" color="text.secondary" sx={{ mt: 0.5 }}>
+                        PNG, JPG, SVG (max 200KB)
+                        {!editingAttr && ' • Save first to upload'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+                
                 <TextField
                   label="Order"
                   type="number"
