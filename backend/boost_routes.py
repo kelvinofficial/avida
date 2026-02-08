@@ -35,7 +35,14 @@ except ImportError as e:
 
 # Flutterwave Mobile Money integration
 try:
-    from python_flutterwave import payment as flutterwave_payment
+    from python_flutterwave.charge.mobile import (
+        initiate_mpesa_charge,
+        initiate_ghana_mobile_charge,
+        initiate_uganda_mobile_charge,
+        initiate_zambia_mobile_charge,
+        initiate_rwanda_mobile_charge,
+        initiate_tanzania_mobile_charge
+    )
     FLUTTERWAVE_AVAILABLE = True
 except ImportError as e:
     FLUTTERWAVE_AVAILABLE = False
