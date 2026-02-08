@@ -1122,20 +1122,72 @@ class EngagementNotificationManager:
 # ROUTER FACTORY
 # =============================================================================
 
-def create_analytics_router(db, get_current_user, get_current_admin):
+def create_analytics_router(db, get_current_user, get_current_admin, create_notification_func=None):
     """Create analytics router with all endpoints"""
     
     router = APIRouter(prefix="/analytics", tags=["Analytics"])
     analytics = AnalyticsSystem(db)
+    engagement_notifier = EngagementNotificationManager(db, create_notification_func)
     
     # Initialize on startup
     @router.on_event("startup")
     async def startup():
         await analytics.initialize_default_settings()
+        await engagement_notifier.load_config()
+        await engagement_notifier.start_background_task()
+    
+    @router.on_event("shutdown")
+    async def shutdown():
+        await engagement_notifier.stop_background_task()
     
     # =========================================================================
     # ADMIN ENDPOINTS
     # =========================================================================
+    
+    @router.get("/admin/engagement-notification-config")
+    async def get_engagement_config(admin = Depends(get_current_admin)):
+        """Get engagement notification configuration"""
+        await engagement_notifier.load_config()
+        return engagement_notifier.config.model_dump()
+    
+    @router.put("/admin/engagement-notification-config")
+    async def update_engagement_config(
+        config: EngagementNotificationConfig,
+        admin = Depends(get_current_admin)
+    ):
+        """Update engagement notification configuration"""
+        await engagement_notifier.save_config(config)
+        return {"status": "updated", "config": config.model_dump()}
+    
+    @router.post("/admin/trigger-engagement-check")
+    async def trigger_engagement_check(admin = Depends(get_current_admin)):
+        """Manually trigger an engagement spike check"""
+        await engagement_notifier.check_engagement_spikes()
+        return {"status": "completed", "message": "Engagement spike check completed"}
+    
+    @router.get("/admin/engagement-notifications-history")
+    async def get_engagement_notifications_history(
+        page: int = Query(1, ge=1),
+        limit: int = Query(50, ge=1, le=100),
+        admin = Depends(get_current_admin)
+    ):
+        """Get history of sent engagement notifications"""
+        skip = (page - 1) * limit
+        
+        notifications = await db.engagement_notifications_sent.find(
+            {},
+            {"_id": 0}
+        ).sort("sent_at", -1).skip(skip).limit(limit).to_list(limit)
+        
+        total = await db.engagement_notifications_sent.count_documents({})
+        
+        return {
+            "notifications": notifications,
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "pages": (total + limit - 1) // limit
+        }
     
     @router.get("/admin/settings")
     async def admin_get_settings(admin: dict = Depends(get_current_admin)):
