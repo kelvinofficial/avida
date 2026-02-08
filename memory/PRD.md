@@ -113,6 +113,35 @@ Additionally, build an Admin Dashboard with:
 ## Changelog
 
 ### February 8, 2026
+**Attribute Inheritance, Templates & Bulk Operations Complete**
+
+**Attribute Templates (5 predefined)**:
+- Vehicle Attributes (8): Make, Model, Year, Mileage, Fuel Type, Transmission, Color, Engine Size
+- Property Attributes (8): Property Type, Bedrooms, Bathrooms, Area, Floor, Furnished, Parking, Amenities
+- Electronics Attributes (6): Brand, Model, Condition, Storage, Color, Warranty
+- Fashion Attributes (6): Size, Color, Brand, Material, Condition, Gender
+- Jobs & Services Attributes (5): Job Type, Experience Level, Salary Range, Remote Work, Industry
+
+**Attribute Inheritance**:
+- Child categories automatically inherit attributes from parent categories
+- Inherited attributes shown with "Inherited" badge and link icon
+- "Show Inherited" toggle to filter view
+- Inherited attributes are read-only (can't edit/delete from child category)
+
+**Bulk Operations**:
+- Checkbox selection for multiple attributes
+- "X selected" chip with clear button
+- Bulk Actions menu with:
+  - Copy to Category - copy selected attributes to another category
+  - Delete Selected - bulk delete attributes
+- Bulk operations require category filter for safety
+
+**Backend APIs**:
+- GET /api/admin/attribute-templates - List all templates
+- GET /api/admin/attribute-templates/{id} - Get template details
+- POST /api/admin/categories/{id}/apply-template - Apply template to category
+- POST /api/admin/attributes/bulk - Bulk operations (delete, update, copy)
+
 **Custom Attributes Management Feature Complete**
 - Backend: Enhanced AttributeCreate/AttributeUpdate models with all new fields:
   - Field types: text, number, textarea, dropdown, radio, checkbox, date, email, phone, url
