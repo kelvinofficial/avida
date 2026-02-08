@@ -595,6 +595,7 @@ export default function MyListingsScreen() {
                       item={item}
                       onPress={() => router.push(`/listing/${item.id}`)}
                       onEdit={() => router.push(`/post?edit=${item.id}`)}
+                      onPerformance={() => handlePerformance(item)}
                       onBoost={() => router.push(`/boost/${item.id}`)}
                       onMarkSold={() => handleMarkSold(item)}
                       onDelete={() => handleDelete(item)}
@@ -675,6 +676,7 @@ export default function MyListingsScreen() {
             item={item}
             onPress={() => router.push(`/listing/${item.id}`)}
             onEdit={() => router.push(`/post?edit=${item.id}`)}
+            onPerformance={() => handlePerformance(item)}
             onBoost={() => router.push(`/boost/${item.id}`)}
             onMarkSold={() => handleMarkSold(item)}
             onDelete={() => handleDelete(item)}
