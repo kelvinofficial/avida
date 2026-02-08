@@ -1922,6 +1922,87 @@ async def delete_category_attribute(
     await log_audit(admin["id"], admin["email"], AuditAction.DELETE, "attribute", attribute_id, {"category_id": category_id}, request)
     return {"message": "Attribute deleted successfully"}
 
+@api_router.post("/categories/{category_id}/attributes/{attribute_id}/icon")
+async def upload_attribute_icon(
+    category_id: str,
+    attribute_id: str,
+    file: UploadFile = File(...),
+    admin: dict = Depends(require_permission(Permission.MANAGE_ATTRIBUTES))
+):
+    """Upload custom icon for an attribute (SVG, PNG, JPG)"""
+    import base64
+    
+    category = await db.admin_categories.find_one({"id": category_id})
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    # Find attribute index
+    attr_index = None
+    for i, attr in enumerate(category.get("attributes", [])):
+        if attr["id"] == attribute_id:
+            attr_index = i
+            break
+    
+    if attr_index is None:
+        raise HTTPException(status_code=404, detail="Attribute not found")
+    
+    # Validate file type
+    allowed_types = ["image/svg+xml", "image/png", "image/jpeg", "image/jpg"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed: SVG, PNG, JPG")
+    
+    # Read and encode file
+    content = await file.read()
+    
+    # Limit file size (200KB for attributes)
+    if len(content) > 200 * 1024:
+        raise HTTPException(status_code=400, detail="File too large. Max size: 200KB")
+    
+    # Store as data URL
+    icon_data = f"data:{file.content_type};base64,{base64.b64encode(content).decode()}"
+    
+    await db.admin_categories.update_one(
+        {"id": category_id},
+        {"$set": {
+            f"attributes.{attr_index}.icon": icon_data,
+            f"attributes.{attr_index}.icon_type": "custom",
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"message": "Attribute icon uploaded successfully", "icon_type": file.content_type}
+
+@api_router.delete("/categories/{category_id}/attributes/{attribute_id}/icon")
+async def delete_attribute_icon(
+    category_id: str,
+    attribute_id: str,
+    admin: dict = Depends(require_permission(Permission.MANAGE_ATTRIBUTES))
+):
+    """Remove custom icon from attribute"""
+    category = await db.admin_categories.find_one({"id": category_id})
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    # Find attribute index
+    attr_index = None
+    for i, attr in enumerate(category.get("attributes", [])):
+        if attr["id"] == attribute_id:
+            attr_index = i
+            break
+    
+    if attr_index is None:
+        raise HTTPException(status_code=404, detail="Attribute not found")
+    
+    await db.admin_categories.update_one(
+        {"id": category_id},
+        {"$unset": {
+            f"attributes.{attr_index}.icon": "",
+            f"attributes.{attr_index}.icon_type": ""
+        }, "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Attribute icon removed"}
+
 # =============================================================================
 # USER MANAGEMENT ENDPOINTS
 # =============================================================================
