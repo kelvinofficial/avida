@@ -258,7 +258,7 @@ def create_boost_routes(db, get_current_user):
         
         # Check if Flutterwave is configured for Mobile Money
         flutterwave_key = os.environ.get('FW_SECRET_KEY')
-        mobile_money_available = FLUTTERWAVE_AVAILABLE and flutterwave_key
+        mobile_money_available = bool(FLUTTERWAVE_AVAILABLE and flutterwave_key)
         
         # M-Pesa (Kenya)
         providers.append({
