@@ -63,13 +63,20 @@ Build a comprehensive admin dashboard for a marketplace application with feature
   - Updates listing `is_boosted` flag and removes expired boost types
 - [x] **PayPal Integration** (Feb 8)
   - Backend PayPal SDK integrated (paypal-server-sdk v2.2.0)
-  - `/api/boost/payment-providers` endpoint to list available providers
-  - Purchase endpoint supports both `stripe` and `paypal` providers
-  - Shows PayPal as "Coming Soon" until env vars configured
+  - PayPal credentials configured and working
 - [x] **Boosted Listings Ranking Algorithm** (Feb 8)
   - Listings sorted by is_boosted (desc) > boost_priority (desc) > regular sort
   - Uses MongoDB aggregation pipeline for efficient sorting
   - Boosted listings always appear first in search results
+- [x] **Mobile Money Integration** (Feb 8)
+  - Flutterwave SDK (python-flutterwave v1.2.2) for M-Pesa and MTN MoMo
+  - M-Pesa (Kenya), MTN Mobile Money (Ghana, Uganda, Zambia)
+  - Phone number input UI for mobile money payments
+  - Shows "Coming soon" until FW_SECRET_KEY env var is configured
+- [x] **Enhanced Payment Method Selector UI** (Feb 8)
+  - 2x2 grid layout showing 4 payment options
+  - Credit/Debit Card, PayPal, M-Pesa, MTN Mobile Money
+  - Visual feedback for selected/disabled states
 
 ### Boost System Details
 
