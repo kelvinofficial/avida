@@ -928,26 +928,497 @@ async def reorder_categories(
     await log_audit(admin["id"], admin["email"], AuditAction.UPDATE, "categories", "bulk", {"reorder": len(orders)}, request)
     return {"message": f"Reordered {len(orders)} categories"}
 
+# Icon Upload for Categories
+@api_router.post("/categories/{category_id}/icon")
+async def upload_category_icon(
+    category_id: str,
+    file: UploadFile = File(...),
+    admin: dict = Depends(require_permission(Permission.MANAGE_CATEGORIES))
+):
+    """Upload custom icon for a category (SVG, PNG, JPG)"""
+    category = await db.admin_categories.find_one({"id": category_id})
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    # Validate file type
+    allowed_types = ["image/svg+xml", "image/png", "image/jpeg", "image/jpg"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed: SVG, PNG, JPG")
+    
+    # Read and encode file
+    import base64
+    content = await file.read()
+    
+    # Limit file size (500KB)
+    if len(content) > 500 * 1024:
+        raise HTTPException(status_code=400, detail="File too large. Max size: 500KB")
+    
+    # Store as data URL
+    icon_data = f"data:{file.content_type};base64,{base64.b64encode(content).decode()}"
+    
+    await db.admin_categories.update_one(
+        {"id": category_id},
+        {"$set": {"icon": icon_data, "icon_type": "custom", "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Icon uploaded successfully", "icon_type": file.content_type}
+
+@api_router.delete("/categories/{category_id}/icon")
+async def delete_category_icon(
+    category_id: str,
+    admin: dict = Depends(require_permission(Permission.MANAGE_CATEGORIES))
+):
+    """Remove custom icon from category"""
+    category = await db.admin_categories.find_one({"id": category_id})
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    await db.admin_categories.update_one(
+        {"id": category_id},
+        {"$unset": {"icon": "", "icon_type": ""}, "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Icon removed"}
+
 # =============================================================================
-# ATTRIBUTE MANAGEMENT ENDPOINTS
+# LOCATION/PLACE MANAGEMENT ENDPOINTS
 # =============================================================================
 
-@api_router.get("/categories/{category_id}/attributes")
-async def get_category_attributes(
-    category_id: str,
-    admin: dict = Depends(require_permission(Permission.VIEW_ATTRIBUTES))
+class LocationCreate(BaseModel):
+    name: str
+    slug: Optional[str] = None
+    type: str = "city"  # country, state, city, district, neighborhood
+    parent_id: Optional[str] = None
+    country_code: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    timezone: Optional[str] = None
+    is_active: bool = True
+    is_featured: bool = False
+
+class LocationUpdate(BaseModel):
+    name: Optional[str] = None
+    slug: Optional[str] = None
+    type: Optional[str] = None
+    parent_id: Optional[str] = None
+    country_code: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    timezone: Optional[str] = None
+    is_active: Optional[bool] = None
+    is_featured: Optional[bool] = None
+
+@api_router.get("/locations")
+async def list_locations(
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=200),
+    type: Optional[str] = None,
+    parent_id: Optional[str] = None,
+    search: Optional[str] = None,
+    is_active: Optional[bool] = None,
+    admin: dict = Depends(require_permission(Permission.VIEW_REPORTS))
 ):
-    """Get attributes for a category - supports id, slug, or name"""
-    # Try to find by id first
-    category = await db.admin_categories.find_one({"id": category_id}, {"_id": 0, "attributes": 1})
+    """List all locations with filtering"""
+    query = {}
+    if type:
+        query["type"] = type
+    if parent_id:
+        query["parent_id"] = parent_id
+    if search:
+        query["name"] = {"$regex": search, "$options": "i"}
+    if is_active is not None:
+        query["is_active"] = is_active
     
-    # If not found, try by slug
-    if not category:
-        category = await db.admin_categories.find_one({"slug": category_id}, {"_id": 0, "attributes": 1})
+    total = await db.locations.count_documents(query)
+    skip = (page - 1) * limit
     
-    # If still not found, try by name (case insensitive)
-    if not category:
-        category = await db.admin_categories.find_one(
+    locations = await db.locations.find(query, {"_id": 0}).sort([("type", 1), ("name", 1)]).skip(skip).limit(limit).to_list(limit)
+    
+    return {
+        "items": locations,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "pages": (total + limit - 1) // limit
+    }
+
+@api_router.post("/locations")
+async def create_location(
+    request: Request,
+    location: LocationCreate,
+    admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
+):
+    """Create a new location"""
+    loc_id = f"loc_{uuid.uuid4().hex[:12]}"
+    slug = location.slug or location.name.lower().replace(" ", "-").replace(",", "")
+    
+    # Check for duplicate slug
+    existing = await db.locations.find_one({"slug": slug})
+    if existing:
+        slug = f"{slug}-{uuid.uuid4().hex[:4]}"
+    
+    new_location = {
+        "id": loc_id,
+        "name": sanitize_input(location.name),
+        "slug": slug,
+        "type": location.type,
+        "parent_id": location.parent_id,
+        "country_code": location.country_code,
+        "latitude": location.latitude,
+        "longitude": location.longitude,
+        "timezone": location.timezone,
+        "is_active": location.is_active,
+        "is_featured": location.is_featured,
+        "listings_count": 0,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": admin["email"]
+    }
+    
+    await db.locations.insert_one(new_location)
+    await log_audit(admin["id"], admin["email"], AuditAction.CREATE, "location", loc_id, {"name": location.name}, request)
+    
+    new_location.pop("_id", None)
+    return new_location
+
+@api_router.put("/locations/{location_id}")
+async def update_location(
+    request: Request,
+    location_id: str,
+    location: LocationUpdate,
+    admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
+):
+    """Update a location"""
+    existing = await db.locations.find_one({"id": location_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Location not found")
+    
+    updates = {k: v for k, v in location.model_dump().items() if v is not None}
+    if "name" in updates:
+        updates["name"] = sanitize_input(updates["name"])
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.locations.update_one({"id": location_id}, {"$set": updates})
+    await log_audit(admin["id"], admin["email"], AuditAction.UPDATE, "location", location_id, updates, request)
+    
+    return await db.locations.find_one({"id": location_id}, {"_id": 0})
+
+@api_router.delete("/locations/{location_id}")
+async def delete_location(
+    request: Request,
+    location_id: str,
+    admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
+):
+    """Delete a location"""
+    result = await db.locations.delete_one({"id": location_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Location not found")
+    
+    await log_audit(admin["id"], admin["email"], AuditAction.DELETE, "location", location_id, {}, request)
+    return {"message": "Location deleted"}
+
+@api_router.post("/locations/bulk-import")
+async def bulk_import_locations(
+    file: UploadFile = File(...),
+    admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
+):
+    """Bulk import locations from CSV"""
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="File must be CSV")
+    
+    import csv
+    import io
+    
+    content = await file.read()
+    reader = csv.DictReader(io.StringIO(content.decode('utf-8')))
+    
+    created = 0
+    for row in reader:
+        if not row.get('name'):
+            continue
+        
+        loc_id = f"loc_{uuid.uuid4().hex[:12]}"
+        new_loc = {
+            "id": loc_id,
+            "name": row.get('name', ''),
+            "slug": row.get('slug', row.get('name', '').lower().replace(' ', '-')),
+            "type": row.get('type', 'city'),
+            "parent_id": row.get('parent_id'),
+            "country_code": row.get('country_code'),
+            "latitude": float(row['latitude']) if row.get('latitude') else None,
+            "longitude": float(row['longitude']) if row.get('longitude') else None,
+            "is_active": row.get('is_active', 'true').lower() == 'true',
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.locations.insert_one(new_loc)
+        created += 1
+    
+    return {"message": f"Imported {created} locations", "created": created}
+
+# =============================================================================
+# USER MANAGEMENT ENDPOINTS (EDIT USER DATA)
+# =============================================================================
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    location: Optional[str] = None
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
+    is_verified: Optional[bool] = None
+    is_active: Optional[bool] = None
+    role: Optional[str] = None
+
+@api_router.put("/users/{user_id}")
+async def update_user(
+    request: Request,
+    user_id: str,
+    user_data: UserUpdate,
+    admin: dict = Depends(require_permission(Permission.EDIT_USERS))
+):
+    """Update user data"""
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    updates = {k: v for k, v in user_data.model_dump().items() if v is not None}
+    if "name" in updates:
+        updates["name"] = sanitize_input(updates["name"])
+    if "bio" in updates:
+        updates["bio"] = sanitize_input(updates["bio"])
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+    updates["updated_by"] = admin["email"]
+    
+    await db.users.update_one({"id": user_id}, {"$set": updates})
+    await log_audit(admin["id"], admin["email"], AuditAction.UPDATE, "user", user_id, updates, request)
+    
+    updated_user = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0, "hashed_password": 0})
+    return updated_user
+
+@api_router.post("/users/{user_id}/avatar")
+async def upload_user_avatar(
+    user_id: str,
+    file: UploadFile = File(...),
+    admin: dict = Depends(require_permission(Permission.EDIT_USERS))
+):
+    """Upload user avatar"""
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    allowed_types = ["image/png", "image/jpeg", "image/jpg", "image/webp"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Invalid file type")
+    
+    import base64
+    content = await file.read()
+    if len(content) > 1024 * 1024:  # 1MB limit
+        raise HTTPException(status_code=400, detail="File too large. Max 1MB")
+    
+    avatar_data = f"data:{file.content_type};base64,{base64.b64encode(content).decode()}"
+    
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"avatar_url": avatar_data, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Avatar uploaded successfully"}
+
+# =============================================================================
+# AUTHENTICATION SETTINGS
+# =============================================================================
+
+@api_router.get("/settings/auth")
+async def get_auth_settings(
+    admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
+):
+    """Get authentication settings"""
+    settings = await db.app_settings.find_one({"type": "auth"}, {"_id": 0})
+    if not settings:
+        # Return defaults
+        settings = {
+            "type": "auth",
+            "allow_registration": True,
+            "require_email_verification": True,
+            "require_phone_verification": False,
+            "allow_social_login": True,
+            "social_providers": ["google", "facebook", "apple"],
+            "password_min_length": 8,
+            "password_require_uppercase": True,
+            "password_require_number": True,
+            "password_require_special": False,
+            "session_timeout_minutes": 1440,
+            "max_login_attempts": 5,
+            "lockout_duration_minutes": 30,
+            "two_factor_enabled": False,
+            "two_factor_methods": ["email", "sms"]
+        }
+    return settings
+
+@api_router.put("/settings/auth")
+async def update_auth_settings(
+    request: Request,
+    settings: Dict[str, Any] = Body(...),
+    admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
+):
+    """Update authentication settings"""
+    settings["type"] = "auth"
+    settings["updated_at"] = datetime.now(timezone.utc).isoformat()
+    settings["updated_by"] = admin["email"]
+    
+    await db.app_settings.update_one(
+        {"type": "auth"},
+        {"$set": settings},
+        upsert=True
+    )
+    
+    await log_audit(admin["id"], admin["email"], AuditAction.UPDATE, "settings", "auth", settings, request)
+    return await db.app_settings.find_one({"type": "auth"}, {"_id": 0})
+
+# =============================================================================
+# DEEPLINK MANAGEMENT
+# =============================================================================
+
+class DeeplinkCreate(BaseModel):
+    name: str
+    slug: str
+    target_type: str  # listing, category, user, page, external
+    target_id: Optional[str] = None
+    target_url: Optional[str] = None
+    fallback_url: Optional[str] = None
+    utm_source: Optional[str] = None
+    utm_medium: Optional[str] = None
+    utm_campaign: Optional[str] = None
+    is_active: bool = True
+    expires_at: Optional[str] = None
+
+class DeeplinkUpdate(BaseModel):
+    name: Optional[str] = None
+    target_type: Optional[str] = None
+    target_id: Optional[str] = None
+    target_url: Optional[str] = None
+    fallback_url: Optional[str] = None
+    utm_source: Optional[str] = None
+    utm_medium: Optional[str] = None
+    utm_campaign: Optional[str] = None
+    is_active: Optional[bool] = None
+    expires_at: Optional[str] = None
+
+@api_router.get("/deeplinks")
+async def list_deeplinks(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    target_type: Optional[str] = None,
+    is_active: Optional[bool] = None,
+    admin: dict = Depends(require_permission(Permission.VIEW_REPORTS))
+):
+    """List all deeplinks"""
+    query = {}
+    if target_type:
+        query["target_type"] = target_type
+    if is_active is not None:
+        query["is_active"] = is_active
+    
+    total = await db.deeplinks.count_documents(query)
+    skip = (page - 1) * limit
+    
+    deeplinks = await db.deeplinks.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    return {
+        "items": deeplinks,
+        "total": total,
+        "page": page,
+        "limit": limit
+    }
+
+@api_router.post("/deeplinks")
+async def create_deeplink(
+    request: Request,
+    deeplink: DeeplinkCreate,
+    admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
+):
+    """Create a new deeplink"""
+    # Check slug uniqueness
+    existing = await db.deeplinks.find_one({"slug": deeplink.slug})
+    if existing:
+        raise HTTPException(status_code=400, detail="Slug already exists")
+    
+    link_id = f"dl_{uuid.uuid4().hex[:12]}"
+    
+    new_deeplink = {
+        "id": link_id,
+        **deeplink.model_dump(),
+        "click_count": 0,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": admin["email"]
+    }
+    
+    await db.deeplinks.insert_one(new_deeplink)
+    await log_audit(admin["id"], admin["email"], AuditAction.CREATE, "deeplink", link_id, {"name": deeplink.name}, request)
+    
+    new_deeplink.pop("_id", None)
+    return new_deeplink
+
+@api_router.put("/deeplinks/{deeplink_id}")
+async def update_deeplink(
+    request: Request,
+    deeplink_id: str,
+    deeplink: DeeplinkUpdate,
+    admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
+):
+    """Update a deeplink"""
+    existing = await db.deeplinks.find_one({"id": deeplink_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Deeplink not found")
+    
+    updates = {k: v for k, v in deeplink.model_dump().items() if v is not None}
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.deeplinks.update_one({"id": deeplink_id}, {"$set": updates})
+    await log_audit(admin["id"], admin["email"], AuditAction.UPDATE, "deeplink", deeplink_id, updates, request)
+    
+    return await db.deeplinks.find_one({"id": deeplink_id}, {"_id": 0})
+
+@api_router.delete("/deeplinks/{deeplink_id}")
+async def delete_deeplink(
+    request: Request,
+    deeplink_id: str,
+    admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
+):
+    """Delete a deeplink"""
+    result = await db.deeplinks.delete_one({"id": deeplink_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Deeplink not found")
+    
+    await log_audit(admin["id"], admin["email"], AuditAction.DELETE, "deeplink", deeplink_id, {}, request)
+    return {"message": "Deeplink deleted"}
+
+@api_router.get("/deeplinks/{deeplink_id}/stats")
+async def get_deeplink_stats(
+    deeplink_id: str,
+    admin: dict = Depends(require_permission(Permission.VIEW_REPORTS))
+):
+    """Get deeplink click statistics"""
+    deeplink = await db.deeplinks.find_one({"id": deeplink_id}, {"_id": 0})
+    if not deeplink:
+        raise HTTPException(status_code=404, detail="Deeplink not found")
+    
+    # Get click stats from analytics (if available)
+    clicks_by_day = await db.deeplink_clicks.aggregate([
+        {"$match": {"deeplink_id": deeplink_id}},
+        {"$group": {
+            "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": {"$toDate": "$clicked_at"}}},
+            "count": {"$sum": 1}
+        }},
+        {"$sort": {"_id": -1}},
+        {"$limit": 30}
+    ]).to_list(30)
+    
+    return {
+        "deeplink": deeplink,
+        "total_clicks": deeplink.get("click_count", 0),
+        "clicks_by_day": clicks_by_day
+    }
             {"name": {"$regex": f"^{category_id}$", "$options": "i"}},
             {"_id": 0, "attributes": 1}
         )
