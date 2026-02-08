@@ -108,7 +108,7 @@ const FIELD_TYPES = [
   { value: 'textarea', label: 'Text Area', icon: <TextFields /> },
   { value: 'dropdown', label: 'Dropdown', icon: <ArrowDropDown /> },
   { value: 'radio', label: 'Radio Buttons', icon: <RadioButtonChecked /> },
-  { value: 'checkbox', label: 'Checkboxes', icon: <CheckBox /> },
+  { value: 'checkbox', label: 'Checkboxes', icon: <CheckBoxIcon /> },
   { value: 'date', label: 'Date', icon: <TextFields /> },
   { value: 'email', label: 'Email', icon: <TextFields /> },
   { value: 'phone', label: 'Phone', icon: <TextFields /> },
