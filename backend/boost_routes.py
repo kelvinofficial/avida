@@ -76,6 +76,7 @@ class PaymentProvider(str, Enum):
     PAYPAL = "paypal"
     MPESA = "mpesa"
     MTN = "mtn"
+    VODACOM_TZ = "vodacom_tz"  # Vodacom Tanzania (M-Pesa)
 
 
 class MobileMoneyNetwork(str, Enum):
