@@ -62,7 +62,7 @@ const menuItems = [
   { text: 'Reports', icon: <Report />, path: '/dashboard/reports' },
   { text: 'Tickets', icon: <SupportAgent />, path: '/dashboard/tickets' },
   { text: 'Analytics', icon: <Analytics />, path: '/dashboard/analytics' },
-  { text: 'Ads', icon: <Campaign />, path: '/dashboard/ads' },
+  { text: 'Banners', icon: <Campaign />, path: '/dashboard/banners' },
   { text: 'Notifications', icon: <NotificationsActive />, path: '/dashboard/notifications' },
   { text: 'Settings', icon: <Settings />, path: '/dashboard/settings' },
   { text: 'Audit Logs', icon: <History />, path: '/dashboard/audit-logs' },
