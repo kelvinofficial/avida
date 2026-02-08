@@ -1201,9 +1201,10 @@ class SellerBadge(BaseModel):
 class SellerBadgesManager:
     """Manages seller performance badges"""
     
-    def __init__(self, db):
+    def __init__(self, db, create_notification_func: Callable = None):
         self.db = db
         self.badge_definitions: Dict[str, BadgeDefinition] = {b.id: b for b in DEFAULT_BADGES}
+        self.create_notification = create_notification_func
         self._running = False
         self._task = None
     
