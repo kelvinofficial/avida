@@ -270,5 +270,74 @@ export const notificationsApi = {
   }
 };
 
+// Boost & Credits API
+export const boostApi = {
+  // Credit Packages
+  getPackages: async () => {
+    const response = await api.get('/boost/packages');
+    return response.data;
+  },
+  
+  // Boost Pricing
+  getPricing: async () => {
+    const response = await api.get('/boost/pricing');
+    return response.data;
+  },
+  
+  // Calculate Boost Cost
+  calculateCost: async (boostType: string, durationHours: number) => {
+    const response = await api.get('/boost/calculate', { params: { boost_type: boostType, duration_hours: durationHours } });
+    return response.data;
+  },
+  
+  // Seller Credits
+  getMyCredits: async () => {
+    const response = await api.get('/boost/credits/balance');
+    return response.data;
+  },
+  
+  getCreditHistory: async (limit: number = 50) => {
+    const response = await api.get('/boost/credits/history', { params: { limit } });
+    return response.data;
+  },
+  
+  // Purchase Credits (Stripe)
+  purchaseCredits: async (packageId: string, originUrl: string) => {
+    const response = await api.post('/boost/credits/purchase', { 
+      package_id: packageId, 
+      origin_url: originUrl,
+      provider: 'stripe'
+    });
+    return response.data;
+  },
+  
+  checkPaymentStatus: async (sessionId: string) => {
+    const response = await api.get(`/boost/credits/payment-status/${sessionId}`);
+    return response.data;
+  },
+  
+  // Boosts
+  createBoost: async (data: { 
+    listing_id: string; 
+    boost_type: string; 
+    duration_hours: number;
+    location_id?: string;
+    category_id?: string;
+  }) => {
+    const response = await api.post('/boost/create', data);
+    return response.data;
+  },
+  
+  getMyBoosts: async (activeOnly: boolean = false) => {
+    const response = await api.get('/boost/my-boosts', { params: { active_only: activeOnly } });
+    return response.data;
+  },
+  
+  getListingBoosts: async (listingId: string) => {
+    const response = await api.get(`/boost/listing/${listingId}`);
+    return response.data;
+  }
+};
+
 // Default export for convenience
 export default api;
