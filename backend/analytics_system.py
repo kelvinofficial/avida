@@ -1337,6 +1337,15 @@ class SellerBadgesManager:
         if active_listings_count >= 10:
             earned_badges.append(BadgeType.POWER_LISTER)
         
+        # Get previously earned badges to detect new ones
+        existing_badges_doc = await self.db.seller_badges.find_one({"seller_id": seller_id})
+        existing_badge_ids = set()
+        if existing_badges_doc and existing_badges_doc.get("badges"):
+            existing_badge_ids = {b["badge_id"] for b in existing_badges_doc["badges"]}
+        
+        # Detect newly earned badges
+        newly_earned = [b for b in earned_badges if b not in existing_badge_ids]
+        
         # Update seller badges in database
         badge_records = [
             {
@@ -1357,6 +1366,40 @@ class SellerBadgesManager:
             },
             upsert=True
         )
+        
+        # Send notifications for newly earned badges
+        if newly_earned and self.create_notification:
+            for badge_id in newly_earned:
+                badge_def = self.badge_definitions.get(badge_id)
+                if badge_def:
+                    # Get emoji for badge
+                    badge_emoji = {
+                        BadgeType.TOP_SELLER: "🌟",
+                        BadgeType.RISING_STAR: "🚀",
+                        BadgeType.QUICK_RESPONDER: "⚡",
+                        BadgeType.TRUSTED_SELLER: "🛡️",
+                        BadgeType.POWER_LISTER: "🔥",
+                    }.get(badge_id, "🏆")
+                    
+                    try:
+                        await self.create_notification(
+                            user_id=seller_id,
+                            notification_type="badge_earned",
+                            title=f"Congratulations! {badge_emoji}",
+                            body=f"You've earned the {badge_def.name} badge! {badge_def.description}",
+                            cta_label="View My Badges",
+                            cta_route="/profile",
+                            data_payload={
+                                "type": "badge_earned",
+                                "badge_id": badge_id,
+                                "badge_name": badge_def.name,
+                                "badge_icon": badge_def.icon,
+                                "badge_color": badge_def.color
+                            }
+                        )
+                        logger.info(f"Sent badge notification to {seller_id} for {badge_def.name}")
+                    except Exception as e:
+                        logger.error(f"Failed to send badge notification: {e}")
         
         return earned_badges
     
