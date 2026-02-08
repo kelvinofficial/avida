@@ -362,6 +362,136 @@ const activityStyles = StyleSheet.create({
   },
 });
 
+// ============ MY BADGES SECTION ============
+const MyBadgesSection = ({ userId }: { userId: string }) => {
+  const [badges, setBadges] = useState<Badge[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (userId) {
+      api.get(`/analytics/badges/seller/${userId}`)
+        .then(response => {
+          if (response.data && Array.isArray(response.data)) {
+            setBadges(response.data);
+          }
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    }
+  }, [userId]);
+
+  if (loading) {
+    return (
+      <View style={badgesStyles.container}>
+        <View style={badgesStyles.header}>
+          <Ionicons name="ribbon-outline" size={20} color={COLORS.text} />
+          <Text style={badgesStyles.title}>My Badges</Text>
+        </View>
+        <ActivityIndicator size="small" color={COLORS.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <View style={badgesStyles.container}>
+      <View style={badgesStyles.header}>
+        <Ionicons name="ribbon-outline" size={20} color={COLORS.text} />
+        <Text style={badgesStyles.title}>My Badges</Text>
+        {badges.length > 0 && (
+          <View style={badgesStyles.countBadge}>
+            <Text style={badgesStyles.countText}>{badges.length}</Text>
+          </View>
+        )}
+      </View>
+      
+      {badges.length === 0 ? (
+        <View style={badgesStyles.emptyState}>
+          <Text style={badgesStyles.emptyText}>Keep selling to earn badges!</Text>
+          <Text style={badgesStyles.emptySubtext}>Badges show buyers you're a trusted seller</Text>
+        </View>
+      ) : (
+        <View style={badgesStyles.badgesList}>
+          {badges.map((badge) => (
+            <View key={badge.badge_id} style={badgesStyles.badgeItem}>
+              <BadgeIcon badge={badge} size="medium" />
+              <View style={badgesStyles.badgeInfo}>
+                <Text style={badgesStyles.badgeName}>{badge.name}</Text>
+                <Text style={badgesStyles.badgeDesc} numberOfLines={1}>{badge.description}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+};
+
+const badgesStyles = StyleSheet.create({
+  container: {
+    backgroundColor: COLORS.surface,
+    marginHorizontal: HORIZONTAL_PADDING,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 8,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    flex: 1,
+  },
+  countBadge: {
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  countText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+  },
+  emptySubtext: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
+  badgesList: {
+    gap: 12,
+  },
+  badgeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  badgeInfo: {
+    flex: 1,
+  },
+  badgeName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  badgeDesc: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
+});
+
 // ============ TRUST SECTION ============
 const TrustSection = ({ profile, onVerifyPress }: { profile: UserProfile | null; onVerifyPress: (type: string) => void }) => {
   const trustItems = [
