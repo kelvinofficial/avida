@@ -1461,7 +1461,7 @@ def create_analytics_router(db, get_current_user, get_current_admin, create_noti
     router = APIRouter(prefix="/analytics", tags=["Analytics"])
     analytics = AnalyticsSystem(db)
     engagement_notifier = EngagementNotificationManager(db, create_notification_func)
-    badges_manager = SellerBadgesManager(db)
+    badges_manager = SellerBadgesManager(db, create_notification_func)
     
     # Initialize on startup
     @router.on_event("startup")
