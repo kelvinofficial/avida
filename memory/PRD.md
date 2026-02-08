@@ -89,9 +89,8 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 - `listing_boosts` - Active/expired boosts
 
 ### Pending Tasks (P1-P2)
-- [ ] PayPal integration for credit purchase
+- [ ] Configure PayPal credentials to enable PayPal payments (backend ready, needs PAYPAL_CLIENT_ID and PAYPAL_SECRET)
 - [ ] Mobile Money integration for credit purchase
-- [ ] Boosted listings ranking algorithm in search/category views
 
 ### Future/Backlog
 - CSV Import for Users
