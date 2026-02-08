@@ -211,7 +211,7 @@ export default function AnalyticsPage() {
 
   // Load seller analytics settings when tab changes
   useEffect(() => {
-    if (tabValue === 1) {
+    if (tabValue === 1 || tabValue === 2) {
       loadSellerAnalyticsSettings();
     }
   }, [tabValue]);
