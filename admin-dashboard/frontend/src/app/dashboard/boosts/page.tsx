@@ -604,8 +604,108 @@ export default function BoostsPage() {
           </Box>
         </TabPanel>
 
-        {/* Seller Credits Tab */}
+        {/* Payment Methods Tab */}
         <TabPanel value={tabValue} index={2}>
+          <Box sx={{ px: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Manage Payment Methods
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Enable or disable payment methods and configure their settings.
+            </Typography>
+            
+            <Grid container spacing={2}>
+              {paymentMethods.map((method) => (
+                <Grid item xs={12} md={6} key={method.id}>
+                  <Card 
+                    variant="outlined" 
+                    sx={{ 
+                      opacity: method.is_enabled ? 1 : 0.6,
+                      borderColor: method.is_enabled ? 'primary.main' : 'divider'
+                    }}
+                  >
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          {method.requires_phone ? (
+                            <PhoneAndroid color={method.is_enabled ? 'primary' : 'disabled'} />
+                          ) : method.id === 'paypal' ? (
+                            <Public color={method.is_enabled ? 'primary' : 'disabled'} />
+                          ) : (
+                            <CreditCard color={method.is_enabled ? 'primary' : 'disabled'} />
+                          )}
+                          <Box>
+                            <Typography variant="h6">{method.name}</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {method.description}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <Switch
+                          checked={method.is_enabled}
+                          onChange={async (e) => {
+                            try {
+                              await api.togglePaymentMethod(method.id, e.target.checked);
+                              loadPaymentMethods();
+                            } catch (err) {
+                              console.error('Failed to toggle payment method:', err);
+                            }
+                          }}
+                          color="primary"
+                          data-testid={`toggle-${method.id}`}
+                        />
+                      </Box>
+                      
+                      <Divider sx={{ my: 2 }} />
+                      
+                      <Grid container spacing={2}>
+                        {method.country && (
+                          <Grid item xs={6}>
+                            <Typography variant="caption" color="text.secondary">Country</Typography>
+                            <Typography variant="body2">{method.country}</Typography>
+                          </Grid>
+                        )}
+                        <Grid item xs={6}>
+                          <Typography variant="caption" color="text.secondary">Currency</Typography>
+                          <Typography variant="body2">{method.currency || 'USD'}</Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography variant="caption" color="text.secondary">Exchange Rate</Typography>
+                          <Typography variant="body2">1 USD = {method.exchange_rate} {method.currency || 'USD'}</Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography variant="caption" color="text.secondary">Limits</Typography>
+                          <Typography variant="body2">${method.min_amount} - ${method.max_amount}</Typography>
+                        </Grid>
+                        {method.networks && method.networks.length > 0 && (
+                          <Grid item xs={12}>
+                            <Typography variant="caption" color="text.secondary">Networks</Typography>
+                            <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+                              {method.networks.map((network) => (
+                                <Chip key={network} label={network} size="small" />
+                              ))}
+                            </Box>
+                          </Grid>
+                        )}
+                      </Grid>
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                        <Chip 
+                          label={method.is_enabled ? 'Active' : 'Disabled'} 
+                          color={method.is_enabled ? 'success' : 'default'}
+                          size="small"
+                        />
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        </TabPanel>
+
+        {/* Seller Credits Tab */}
+        <TabPanel value={tabValue} index={3}>
           <Box sx={{ px: 2 }}>
             <TableContainer>
               <Table>
