@@ -685,6 +685,27 @@ class ApiClient {
     return data;
   }
 
+  // Payment Methods Management
+  async getPaymentMethods() {
+    const { data } = await this.client.get('/boost/admin/payment-methods');
+    return data;
+  }
+
+  async getPaymentMethod(methodId: string) {
+    const { data } = await this.client.get(`/boost/admin/payment-methods/${methodId}`);
+    return data;
+  }
+
+  async updatePaymentMethod(methodId: string, updates: { name?: string; description?: string; is_enabled?: boolean; exchange_rate?: number; min_amount?: number; max_amount?: number; priority?: number }) {
+    const { data } = await this.client.put(`/boost/admin/payment-methods/${methodId}`, updates);
+    return data;
+  }
+
+  async togglePaymentMethod(methodId: string, enabled: boolean) {
+    const { data } = await this.client.put(`/boost/admin/payment-methods/${methodId}/toggle`, null, { params: { enabled } });
+    return data;
+  }
+
   // Seller Credit Operations
   async getMyCredits() {
     const { data } = await this.client.get('/boost/credits/balance');
