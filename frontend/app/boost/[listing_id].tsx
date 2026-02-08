@@ -367,6 +367,26 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 18,
+    color: '#333',
+    marginTop: 16,
+    marginBottom: 24,
+    fontWeight: '500',
+  },
+  backToListingsBtn: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  backToListingsBtnText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
   },
   header: {
     flexDirection: 'row',
