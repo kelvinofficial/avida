@@ -43,16 +43,25 @@ export default function CreditsPage() {
 
   const loadData = useCallback(async () => {
     try {
-      const [packagesData, creditsData, historyData] = await Promise.all([
-        boostApi.getPackages(),
-        boostApi.getMyCredits(),
-        boostApi.getCreditHistory(20)
-      ]);
+      // Always load packages (public endpoint)
+      const packagesData = await boostApi.getPackages();
       setPackages(packagesData);
-      setCredits(creditsData);
-      setHistory(historyData);
+      
+      // Try to load user-specific data (may fail if not authenticated)
+      try {
+        const [creditsData, historyData] = await Promise.all([
+          boostApi.getMyCredits(),
+          boostApi.getCreditHistory(20)
+        ]);
+        setCredits(creditsData);
+        setHistory(historyData);
+      } catch (authError) {
+        // User not authenticated - use defaults
+        setCredits({ balance: 0, total_purchased: 0, total_spent: 0 });
+        setHistory([]);
+      }
     } catch (error) {
-      console.error('Failed to load data:', error);
+      console.error('Failed to load packages:', error);
     } finally {
       setLoading(false);
     }
