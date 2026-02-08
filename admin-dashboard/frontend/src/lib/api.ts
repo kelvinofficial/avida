@@ -749,30 +749,40 @@ class ApiClient {
   }
 
   // =========================================================================
-  // SELLER ANALYTICS (Main App Backend)
+  // SELLER ANALYTICS (via Admin Backend Proxy)
   // =========================================================================
 
-  // These endpoints call the main app backend at /api/analytics
-  private mainAppClient = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_MAIN_API_URL || 'http://localhost:8001/api',
-    headers: { 'Content-Type': 'application/json' },
-  });
-
   async get(endpoint: string) {
-    this.mainAppClient.defaults.headers.common['Authorization'] = `Bearer ${this.accessToken}`;
-    const { data } = await this.mainAppClient.get(endpoint);
+    // Map main app endpoints to admin backend proxy endpoints
+    const proxyMap: Record<string, string> = {
+      '/analytics/admin/settings': '/seller-analytics/settings',
+      '/analytics/admin/engagement-notification-config': '/seller-analytics/engagement-config',
+      '/analytics/admin/platform-analytics': '/seller-analytics/platform-analytics',
+    };
+    
+    const proxyEndpoint = proxyMap[endpoint] || endpoint;
+    const { data } = await this.client.get(proxyEndpoint);
     return data;
   }
 
   async put(endpoint: string, body: Record<string, unknown>) {
-    this.mainAppClient.defaults.headers.common['Authorization'] = `Bearer ${this.accessToken}`;
-    const { data } = await this.mainAppClient.put(endpoint, body);
+    const proxyMap: Record<string, string> = {
+      '/analytics/admin/settings': '/seller-analytics/settings',
+      '/analytics/admin/engagement-notification-config': '/seller-analytics/engagement-config',
+    };
+    
+    const proxyEndpoint = proxyMap[endpoint] || endpoint;
+    const { data } = await this.client.put(proxyEndpoint, body);
     return data;
   }
 
   async post(endpoint: string, body?: Record<string, unknown>) {
-    this.mainAppClient.defaults.headers.common['Authorization'] = `Bearer ${this.accessToken}`;
-    const { data } = await this.mainAppClient.post(endpoint, body);
+    const proxyMap: Record<string, string> = {
+      '/analytics/admin/trigger-engagement-check': '/seller-analytics/trigger-engagement-check',
+    };
+    
+    const proxyEndpoint = proxyMap[endpoint] || endpoint;
+    const { data } = await this.client.post(proxyEndpoint, body);
     return data;
   }
 }
