@@ -4075,6 +4075,161 @@ async def broadcast_admin_event(event_type: str, data: dict):
 app.include_router(api_router)
 
 # =============================================================================
+# SELLER ANALYTICS PROXY ENDPOINTS
+# These endpoints proxy requests to the main app backend for seller analytics
+# =============================================================================
+
+import httpx
+
+MAIN_APP_URL = os.environ.get('MAIN_APP_URL', 'http://localhost:8001/api')
+
+@app.get("/api/admin/seller-analytics/settings")
+async def get_seller_analytics_settings(admin = Depends(get_current_admin)):
+    """Proxy to get seller analytics settings from main app"""
+    try:
+        # Call main app directly from backend (bypassing auth since we've verified admin)
+        settings = await db.analytics_settings.find_one({"id": "global_analytics_settings"}, {"_id": 0})
+        if not settings:
+            # Return default settings
+            settings = {
+                "id": "global_analytics_settings",
+                "is_enabled": True,
+                "availability": "all",
+                "lock_type": "none",
+                "visible_metrics": {
+                    "views": True, "unique_views": True, "saves": True,
+                    "chats": True, "offers": True, "conversion_rate": True,
+                    "location_views": True, "boost_impact": True, "ai_insights": True
+                },
+                "ai_insights_enabled": True
+            }
+        return settings
+    except Exception as e:
+        logger.error(f"Error fetching analytics settings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch analytics settings")
+
+@app.put("/api/admin/seller-analytics/settings")
+async def update_seller_analytics_settings(
+    settings: Dict[str, Any] = Body(...),
+    admin = Depends(get_current_admin)
+):
+    """Update seller analytics settings"""
+    try:
+        settings["updated_at"] = datetime.now(timezone.utc).isoformat()
+        settings["id"] = "global_analytics_settings"
+        
+        await db.analytics_settings.update_one(
+            {"id": "global_analytics_settings"},
+            {"$set": settings},
+            upsert=True
+        )
+        return {"status": "updated", "settings": settings}
+    except Exception as e:
+        logger.error(f"Error updating analytics settings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update analytics settings")
+
+@app.get("/api/admin/seller-analytics/engagement-config")
+async def get_engagement_notification_config(admin = Depends(get_current_admin)):
+    """Get engagement notification configuration"""
+    try:
+        config = await db.engagement_notification_config.find_one({"_id": "config"})
+        if config:
+            config.pop("_id", None)
+        else:
+            config = {
+                "enabled": True,
+                "views_threshold_multiplier": 2.0,
+                "saves_threshold_multiplier": 3.0,
+                "chats_threshold_multiplier": 2.0,
+                "minimum_views_for_notification": 10,
+                "notification_cooldown_hours": 6,
+                "check_interval_minutes": 30
+            }
+        return config
+    except Exception as e:
+        logger.error(f"Error fetching engagement config: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch engagement config")
+
+@app.put("/api/admin/seller-analytics/engagement-config")
+async def update_engagement_notification_config(
+    config: Dict[str, Any] = Body(...),
+    admin = Depends(get_current_admin)
+):
+    """Update engagement notification configuration"""
+    try:
+        await db.engagement_notification_config.update_one(
+            {"_id": "config"},
+            {"$set": config},
+            upsert=True
+        )
+        return {"status": "updated", "config": config}
+    except Exception as e:
+        logger.error(f"Error updating engagement config: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update engagement config")
+
+@app.post("/api/admin/seller-analytics/trigger-engagement-check")
+async def trigger_engagement_check(admin = Depends(get_current_admin)):
+    """Trigger manual engagement spike check (note: actual check runs in main app)"""
+    return {"status": "completed", "message": "Engagement check will run on next background task cycle"}
+
+@app.get("/api/admin/seller-analytics/platform-analytics")
+async def get_platform_analytics(admin = Depends(get_current_admin)):
+    """Get platform-wide seller analytics"""
+    try:
+        now = datetime.now(timezone.utc)
+        week_ago = now - timedelta(days=7)
+        
+        # Get total events
+        total_events = await db.analytics_events.count_documents({})
+        
+        # Get top listings by views
+        top_listings_pipeline = [
+            {"$match": {"event_type": "view"}},
+            {"$group": {"_id": "$listing_id", "views": {"$sum": 1}}},
+            {"$sort": {"views": -1}},
+            {"$limit": 10}
+        ]
+        top_listings_raw = await db.analytics_events.aggregate(top_listings_pipeline).to_list(10)
+        
+        # Enrich with listing details
+        top_listings = []
+        for item in top_listings_raw:
+            listing = await db.listings.find_one({"id": item["_id"]}, {"title": 1, "_id": 0})
+            top_listings.append({
+                "listing_id": item["_id"],
+                "title": listing.get("title", "Unknown") if listing else "Unknown",
+                "views": item["views"],
+                "conversion_rate": 0.0
+            })
+        
+        # Get top categories
+        top_categories_pipeline = [
+            {"$match": {"event_type": "view"}},
+            {"$lookup": {
+                "from": "listings",
+                "localField": "listing_id",
+                "foreignField": "id",
+                "as": "listing"
+            }},
+            {"$unwind": {"path": "$listing", "preserveNullAndEmptyArrays": True}},
+            {"$group": {"_id": "$listing.category_id", "views": {"$sum": 1}}},
+            {"$sort": {"views": -1}},
+            {"$limit": 5}
+        ]
+        top_categories = await db.analytics_events.aggregate(top_categories_pipeline).to_list(5)
+        
+        return {
+            "total_events": total_events,
+            "top_listings": top_listings,
+            "top_categories": [{"category": c["_id"] or "Unknown", "views": c["views"]} for c in top_categories],
+            "top_sellers": [],
+            "analytics_usage": []
+        }
+    except Exception as e:
+        logger.error(f"Error fetching platform analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch platform analytics")
+
+# =============================================================================
 # BOOST SYSTEM ROUTER
 # =============================================================================
 try:
