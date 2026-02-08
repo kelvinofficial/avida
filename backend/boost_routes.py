@@ -22,18 +22,16 @@ from emergentintegrations.payments.stripe.checkout import (
 
 # PayPal integration
 try:
-    from paypal_server_sdk.client import PaypalServersdkClient
-    from paypal_server_sdk.auth_credentials import ClientCredentialsAuthCredentials
-    from paypal_server_sdk.environment import Environment
-    from paypal_server_sdk.controllers.orders_controller import OrdersController
-    from paypal_server_sdk.models.order_request import OrderRequest
-    from paypal_server_sdk.models.checkout_payment_intent import CheckoutPaymentIntent
-    from paypal_server_sdk.models.purchase_unit_request import PurchaseUnitRequest
-    from paypal_server_sdk.models.amount_with_breakdown import AmountWithBreakdown
+    from paypalserversdk.http.auth.o_auth_2 import ClientCredentialsAuthCredentials
+    from paypalserversdk.paypalserversdk_client import PaypalserversdkClient
+    from paypalserversdk.models.order_request import OrderRequest
+    from paypalserversdk.models.checkout_payment_intent import CheckoutPaymentIntent
+    from paypalserversdk.models.purchase_unit_request import PurchaseUnitRequest
+    from paypalserversdk.models.amount_with_breakdown import AmountWithBreakdown
     PAYPAL_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     PAYPAL_AVAILABLE = False
-    logging.warning("PayPal SDK not available. PayPal payments disabled.")
+    logging.warning(f"PayPal SDK not available: {e}. PayPal payments disabled.")
 
 logger = logging.getLogger("boost_routes")
 
