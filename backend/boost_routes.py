@@ -101,6 +101,8 @@ class PurchaseCreditsRequest(BaseModel):
     package_id: str
     origin_url: str  # Frontend URL for redirect
     provider: PaymentProvider = PaymentProvider.STRIPE  # Default to Stripe
+    phone_number: Optional[str] = None  # Required for mobile money
+    mobile_network: Optional[str] = None  # For Ghana MTN: MTN, VODAFONE, TIGO
 
 
 class CreateBoostRequest(BaseModel):
