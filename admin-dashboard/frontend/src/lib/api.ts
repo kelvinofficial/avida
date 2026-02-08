@@ -503,6 +503,103 @@ class ApiClient {
     });
     return data;
   }
+
+  // Category Icon Upload
+  async uploadCategoryIcon(categoryId: string, file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await this.client.post(`/categories/${categoryId}/icon`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return data;
+  }
+
+  async deleteCategoryIcon(categoryId: string) {
+    const { data } = await this.client.delete(`/categories/${categoryId}/icon`);
+    return data;
+  }
+
+  // Location Management
+  async getLocations(params?: { page?: number; limit?: number; type?: string; parent_id?: string; search?: string; is_active?: boolean }) {
+    const { data } = await this.client.get('/locations', { params });
+    return data;
+  }
+
+  async createLocation(location: { name: string; type: string; parent_id?: string; country_code?: string; latitude?: number; longitude?: number; is_active?: boolean; is_featured?: boolean }) {
+    const { data } = await this.client.post('/locations', location);
+    return data;
+  }
+
+  async updateLocation(id: string, updates: Record<string, unknown>) {
+    const { data } = await this.client.put(`/locations/${id}`, updates);
+    return data;
+  }
+
+  async deleteLocation(id: string) {
+    const { data } = await this.client.delete(`/locations/${id}`);
+    return data;
+  }
+
+  async importLocationsCSV(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await this.client.post('/locations/bulk-import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return data;
+  }
+
+  // User Edit
+  async updateUser(userId: string, updates: { name?: string; email?: string; phone?: string; location?: string; bio?: string; is_verified?: boolean; is_active?: boolean; role?: string }) {
+    const { data } = await this.client.put(`/users/${userId}`, updates);
+    return data;
+  }
+
+  async uploadUserAvatar(userId: string, file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await this.client.post(`/users/${userId}/avatar`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return data;
+  }
+
+  // Auth Settings
+  async getAuthSettings() {
+    const { data } = await this.client.get('/settings/auth');
+    return data;
+  }
+
+  async updateAuthSettings(settings: Record<string, unknown>) {
+    const { data } = await this.client.put('/settings/auth', settings);
+    return data;
+  }
+
+  // Deeplinks
+  async getDeeplinks(params?: { page?: number; limit?: number; target_type?: string; is_active?: boolean }) {
+    const { data } = await this.client.get('/deeplinks', { params });
+    return data;
+  }
+
+  async createDeeplink(deeplink: { name: string; slug: string; target_type: string; target_id?: string; target_url?: string; fallback_url?: string; utm_source?: string; utm_medium?: string; utm_campaign?: string; is_active?: boolean }) {
+    const { data } = await this.client.post('/deeplinks', deeplink);
+    return data;
+  }
+
+  async updateDeeplink(id: string, updates: Record<string, unknown>) {
+    const { data } = await this.client.put(`/deeplinks/${id}`, updates);
+    return data;
+  }
+
+  async deleteDeeplink(id: string) {
+    const { data } = await this.client.delete(`/deeplinks/${id}`);
+    return data;
+  }
+
+  async getDeeplinkStats(id: string) {
+    const { data } = await this.client.get(`/deeplinks/${id}/stats`);
+    return data;
+  }
 }
 
 export const api = new ApiClient();
