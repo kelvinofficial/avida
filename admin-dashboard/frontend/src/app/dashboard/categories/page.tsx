@@ -329,6 +329,12 @@ export default function CategoriesPage() {
         is_visible: category.is_visible,
         order: category.order,
       });
+      // Set icon preview if category has a custom uploaded icon (data URL)
+      if (category.icon && category.icon.startsWith('data:')) {
+        setIconPreview(category.icon);
+      } else {
+        setIconPreview(null);
+      }
     } else {
       setEditCategory(null);
       setFormData({
@@ -341,6 +347,7 @@ export default function CategoriesPage() {
         is_visible: true,
         order: flatCategories.length,
       });
+      setIconPreview(null);
     }
     setError('');
     setDialogOpen(true);
