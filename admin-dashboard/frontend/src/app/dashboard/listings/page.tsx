@@ -46,6 +46,9 @@ import {
   Image as ImageIcon,
   Download,
   Upload,
+  Edit,
+  CloudUpload,
+  Close,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Listing, Category } from '@/types';
