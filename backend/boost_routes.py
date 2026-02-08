@@ -495,11 +495,8 @@ def create_boost_routes(db, get_current_user):
                 logger.error(f"PayPal error: {e}")
                 raise HTTPException(status_code=500, detail=f"PayPal payment failed: {str(e)}")
         
-        # Handle Mobile Money (M-Pesa, MTN)
-        if data.provider in [PaymentProvider.MPESA, PaymentProvider.MTN]:
-            if not FLUTTERWAVE_AVAILABLE:
-                raise HTTPException(status_code=400, detail="Mobile Money payments not available")
-            
+        # Handle Mobile Money (M-Pesa, MTN, Vodacom Tanzania)
+        if data.provider in [PaymentProvider.MPESA, PaymentProvider.MTN, PaymentProvider.VODACOM_TZ]:
             flutterwave_key = os.environ.get('FW_SECRET_KEY')
             if not flutterwave_key:
                 raise HTTPException(status_code=500, detail="Mobile Money not configured. Set FW_SECRET_KEY.")
@@ -507,34 +504,56 @@ def create_boost_routes(db, get_current_user):
             if not data.phone_number:
                 raise HTTPException(status_code=400, detail="Phone number is required for Mobile Money payments")
             
-            # Set the API key for Flutterwave
-            import python_flutterwave.charge.mobile as flw_mobile
-            flw_mobile.token = flutterwave_key
-            
             tx_ref = f"credits_{uuid.uuid4().hex[:12]}"
             user_email = user.get("email", "customer@example.com")
             
             try:
+                import requests
+                base_url = "https://api.flutterwave.com/v3/charges"
+                headers = {
+                    "Authorization": f"Bearer {flutterwave_key}",
+                    "Content-Type": "application/json"
+                }
+                
                 if data.provider == PaymentProvider.MPESA:
                     # M-Pesa (Kenya - KES)
-                    result = initiate_mpesa_charge(
-                        amount=int(package["price"] * 130),  # Approx USD to KES conversion
-                        email=user_email,
-                        tx_ref=tx_ref,
-                        phone_number=data.phone_number
-                    )
+                    payload = {
+                        "tx_ref": tx_ref,
+                        "amount": str(int(package["price"] * 130)),
+                        "email": user_email,
+                        "phone_number": data.phone_number,
+                        "currency": "KES"
+                    }
+                    response = requests.post(base_url, headers=headers, json=payload, params={"type": "mpesa"})
                     currency = "KES"
+                    
+                elif data.provider == PaymentProvider.VODACOM_TZ:
+                    # Vodacom Tanzania (M-Pesa Tanzania - TZS)
+                    payload = {
+                        "tx_ref": tx_ref,
+                        "amount": str(int(package["price"] * 2500)),
+                        "email": user_email,
+                        "phone_number": data.phone_number,
+                        "currency": "TZS"
+                    }
+                    response = requests.post(base_url, headers=headers, json=payload, params={"type": "mpesa"})
+                    currency = "TZS"
+                    
                 else:
                     # MTN Mobile Money (Ghana - GHS)
                     network = data.mobile_network or "MTN"
-                    result = initiate_ghana_mobile_charge(
-                        amount=int(package["price"] * 15),  # Approx USD to GHS conversion
-                        email=user_email,
-                        tx_ref=tx_ref,
-                        phone_number=data.phone_number,
-                        network=network
-                    )
+                    payload = {
+                        "tx_ref": tx_ref,
+                        "amount": str(int(package["price"] * 15)),
+                        "email": user_email,
+                        "phone_number": data.phone_number,
+                        "currency": "GHS",
+                        "network": network
+                    }
+                    response = requests.post(base_url, headers=headers, json=payload, params={"type": "mobile_money_ghana"})
                     currency = "GHS"
+                
+                result = response.json()
                 
                 # Create payment transaction record
                 payment = {
