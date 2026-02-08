@@ -36,6 +36,10 @@ interface PaymentProvider {
   description: string;
   icon: string;
   available: boolean;
+  requires_phone?: boolean;
+  country?: string;
+  currency?: string;
+  networks?: string[];
 }
 
 export default function CreditsPage() {
@@ -50,6 +54,8 @@ export default function CreditsPage() {
   const [showHistory, setShowHistory] = useState(false);
   const [providers, setProviders] = useState<PaymentProvider[]>([]);
   const [selectedProvider, setSelectedProvider] = useState<string>('stripe');
+  const [phoneNumber, setPhoneNumber] = useState<string>('');
+  const [mobileNetwork, setMobileNetwork] = useState<string>('MTN');
 
   const loadData = useCallback(async () => {
     try {
