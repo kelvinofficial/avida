@@ -1230,7 +1230,7 @@ async def get_listings(
         except Exception as e:
             logger.warning(f"Failed to parse filters: {e}")
     
-    # Sorting
+    # Sorting - boosted listings first, then by sort criteria
     sort_field = "created_at"
     sort_order = -1
     if sort == "price_asc":
@@ -1246,7 +1246,30 @@ async def get_listings(
     skip = (page - 1) * limit
     
     total = await db.listings.count_documents(query)
-    listings = await db.listings.find(query, {"_id": 0}).sort(sort_field, sort_order).skip(skip).limit(limit).to_list(limit)
+    
+    # Use aggregation to sort boosted listings first
+    # Priority: is_boosted (desc) > boost_priority (desc) > sort_field
+    pipeline = [
+        {"$match": query},
+        {"$addFields": {
+            "is_boosted_val": {"$cond": [{"$eq": ["$is_boosted", True]}, 1, 0]},
+            "boost_priority_val": {"$ifNull": ["$boost_priority", 0]}
+        }},
+        {"$sort": {
+            "is_boosted_val": -1,
+            "boost_priority_val": -1,
+            sort_field: sort_order
+        }},
+        {"$skip": skip},
+        {"$limit": limit},
+        {"$project": {
+            "_id": 0,
+            "is_boosted_val": 0,
+            "boost_priority_val": 0
+        }}
+    ]
+    
+    listings = await db.listings.aggregate(pipeline).to_list(limit)
     
     return {
         "listings": listings,
