@@ -168,7 +168,11 @@ export default function BoostListingPage() {
   if (!listing) {
     return (
       <View style={styles.errorContainer}>
-        <Text>Listing not found</Text>
+        <Ionicons name="alert-circle-outline" size={64} color="#333" />
+        <Text style={styles.errorText}>Listing not found</Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backToListingsBtn}>
+          <Text style={styles.backToListingsBtnText}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
