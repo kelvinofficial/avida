@@ -574,6 +574,10 @@ export default function UsersPage() {
         open={Boolean(anchorEl)}
         onClose={() => setAnchorEl(null)}
       >
+        <MenuItem onClick={() => selectedUser && openEditDialog(selectedUser)}>
+          <Edit sx={{ mr: 1 }} color="primary" />
+          Edit User
+        </MenuItem>
         {selectedUser?.status === 'banned' ? (
           <MenuItem
             onClick={() => {
