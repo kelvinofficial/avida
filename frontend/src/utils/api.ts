@@ -278,6 +278,12 @@ export const boostApi = {
     return response.data;
   },
   
+  // Payment Providers
+  getPaymentProviders: async () => {
+    const response = await api.get('/boost/payment-providers');
+    return response.data;
+  },
+  
   // Boost Pricing
   getPricing: async () => {
     const response = await api.get('/boost/pricing');
@@ -301,12 +307,12 @@ export const boostApi = {
     return response.data;
   },
   
-  // Purchase Credits (Stripe)
-  purchaseCredits: async (packageId: string, originUrl: string) => {
+  // Purchase Credits
+  purchaseCredits: async (packageId: string, originUrl: string, provider: string = 'stripe') => {
     const response = await api.post('/boost/credits/purchase', { 
       package_id: packageId, 
       origin_url: originUrl,
-      provider: 'stripe'
+      provider
     });
     return response.data;
   },
