@@ -1958,10 +1958,24 @@ async def track_ad_event(
 class NotificationCreate(BaseModel):
     title: str
     message: str
-    type: str = Field(..., pattern="^(broadcast|targeted|scheduled)$")
+    type: str = Field(..., pattern="^(broadcast|targeted|scheduled|recurring)$")
     target_type: str = Field(default="all", pattern="^(all|users|segments)$")
     target_ids: Optional[List[str]] = None
     scheduled_at: Optional[str] = None
+    # Recurring schedule fields
+    recurring_enabled: bool = False
+    recurring_frequency: Optional[str] = None  # daily, weekly, monthly
+    recurring_time: Optional[str] = None  # HH:MM format
+    recurring_day_of_week: Optional[int] = None  # 0-6 (Monday-Sunday)
+    recurring_day_of_month: Optional[int] = None  # 1-31
+    recurring_end_date: Optional[str] = None
+    # Targeting filters
+    target_filters: Optional[dict] = None  # location, activity_status, user_type, etc.
+    # A/B Testing
+    ab_test_enabled: bool = False
+    ab_variant_b_title: Optional[str] = None
+    ab_variant_b_message: Optional[str] = None
+    ab_split_percentage: int = 50  # Percentage for variant A
 
 class NotificationUpdate(BaseModel):
     title: Optional[str] = None
@@ -1970,6 +1984,36 @@ class NotificationUpdate(BaseModel):
     target_type: Optional[str] = None
     target_ids: Optional[List[str]] = None
     scheduled_at: Optional[str] = None
+    recurring_enabled: Optional[bool] = None
+    recurring_frequency: Optional[str] = None
+    recurring_time: Optional[str] = None
+    recurring_day_of_week: Optional[int] = None
+    recurring_day_of_month: Optional[int] = None
+    recurring_end_date: Optional[str] = None
+    target_filters: Optional[dict] = None
+    ab_test_enabled: Optional[bool] = None
+    ab_variant_b_title: Optional[str] = None
+    ab_variant_b_message: Optional[str] = None
+    ab_split_percentage: Optional[int] = None
+
+# Custom Template Models
+class CustomTemplateCreate(BaseModel):
+    name: str
+    category: str
+    title: str
+    message: str
+    icon: str = "📝"
+    recommended_type: str = "broadcast"
+    variables: Optional[List[str]] = None  # e.g., ["user_name", "listing_title"]
+
+class CustomTemplateUpdate(BaseModel):
+    name: Optional[str] = None
+    category: Optional[str] = None
+    title: Optional[str] = None
+    message: Optional[str] = None
+    icon: Optional[str] = None
+    recommended_type: Optional[str] = None
+    variables: Optional[List[str]] = None
 
 # Predefined notification templates
 NOTIFICATION_TEMPLATES = [
