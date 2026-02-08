@@ -275,16 +275,6 @@ def create_boost_routes(db, get_current_user):
             })
         
         return providers
-            "name": "Vodacom Tanzania",
-            "description": "Pay with M-Pesa Tanzania" if mobile_money_available else "Coming soon",
-            "icon": "phone-portrait",
-            "available": mobile_money_available,
-            "requires_phone": True,
-            "country": "TZ",
-            "currency": "TZS"
-        })
-        
-        return providers
     
     @router.get("/packages")
     async def get_credit_packages():
