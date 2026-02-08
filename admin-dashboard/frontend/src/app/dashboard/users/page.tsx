@@ -649,6 +649,95 @@ export default function UsersPage() {
         </DialogActions>
       </Dialog>
 
+      {/* Edit User Dialog */}
+      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Edit User</DialogTitle>
+        <DialogContent>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            <TextField
+              label="Name"
+              value={editForm.name}
+              onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Email"
+              value={editForm.email}
+              onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+              fullWidth
+              type="email"
+            />
+            <TextField
+              label="Phone"
+              value={editForm.phone}
+              onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Location"
+              value={editForm.location}
+              onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Bio"
+              value={editForm.bio}
+              onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+              fullWidth
+              multiline
+              rows={3}
+            />
+            <FormControl fullWidth>
+              <InputLabel>Role</InputLabel>
+              <Select
+                value={editForm.role}
+                label="Role"
+                onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+              >
+                <MenuItem value="user">User</MenuItem>
+                <MenuItem value="seller">Seller</MenuItem>
+                <MenuItem value="verified_seller">Verified Seller</MenuItem>
+                <MenuItem value="premium">Premium</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={editForm.is_verified}
+                  onChange={(e) => setEditForm({ ...editForm, is_verified: e.target.checked })}
+                />
+              }
+              label="Verified Account"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={editForm.is_active}
+                  onChange={(e) => setEditForm({ ...editForm, is_active: e.target.checked })}
+                />
+              }
+              label="Active Account"
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleUpdateUser}
+            variant="contained"
+            disabled={actionLoading}
+            data-testid="save-user-btn"
+          >
+            {actionLoading ? <CircularProgress size={20} /> : 'Save Changes'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Bulk Action Dialog */}
       <Dialog open={bulkDialogOpen} onClose={() => setBulkDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>
