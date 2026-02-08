@@ -1009,6 +1009,35 @@ async def add_category_attribute(
     await log_audit(admin["id"], admin["email"], AuditAction.CREATE, "attribute", attr_id, {"category_id": category_id, "name": attribute.name}, request)
     return new_attr
 
+@api_router.get("/attributes")
+async def list_all_attributes(
+    admin: dict = Depends(require_permission(Permission.VIEW_ATTRIBUTES))
+):
+    """Get all attributes from all categories"""
+    categories = await db.admin_categories.find(
+        {}, {"_id": 0, "id": 1, "name": 1, "slug": 1, "parent_id": 1, "attributes": 1}
+    ).to_list(500)
+    
+    all_attributes = []
+    for cat in categories:
+        for attr in cat.get("attributes", []):
+            all_attributes.append({
+                **attr,
+                "category_id": cat["id"],
+                "category_name": cat["name"],
+                "category_slug": cat.get("slug", ""),
+                "parent_id": cat.get("parent_id")
+            })
+    
+    # Sort by category name, then order
+    all_attributes.sort(key=lambda x: (x["category_name"], x.get("order", 0)))
+    
+    return {
+        "attributes": all_attributes,
+        "total": len(all_attributes),
+        "categories_count": len([c for c in categories if c.get("attributes")])
+    }
+
 @api_router.patch("/categories/{category_id}/attributes/{attribute_id}")
 async def update_category_attribute(
     request: Request,
