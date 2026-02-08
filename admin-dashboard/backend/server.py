@@ -1449,15 +1449,6 @@ async def get_deeplink_stats(
         "total_clicks": deeplink.get("click_count", 0),
         "clicks_by_day": clicks_by_day
     }
-            {"name": {"$regex": f"^{category_id}$", "$options": "i"}},
-            {"_id": 0, "attributes": 1}
-        )
-    
-    if not category:
-        # Return empty array instead of 404 for better UX
-        return []
-    
-    return category.get("attributes", [])
 
 @api_router.post("/categories/{category_id}/attributes")
 async def add_category_attribute(
