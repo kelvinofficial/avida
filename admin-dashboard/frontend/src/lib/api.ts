@@ -311,7 +311,25 @@ class ApiClient {
     return data;
   }
 
-  async createNotification(notification: { title: string; message: string; type: string; target_type?: string; target_ids?: string[]; scheduled_at?: string }) {
+  async createNotification(notification: {
+    title: string;
+    message: string;
+    type: string;
+    target_type?: string;
+    target_ids?: string[];
+    scheduled_at?: string;
+    recurring_enabled?: boolean;
+    recurring_frequency?: string;
+    recurring_time?: string;
+    recurring_day_of_week?: number;
+    recurring_day_of_month?: number;
+    recurring_end_date?: string;
+    target_filters?: Record<string, unknown>;
+    ab_test_enabled?: boolean;
+    ab_variant_b_title?: string;
+    ab_variant_b_message?: string;
+    ab_split_percentage?: number;
+  }) {
     const { data } = await this.client.post('/notifications', notification);
     return data;
   }
@@ -331,6 +349,47 @@ class ApiClient {
     return data;
   }
 
+  // Custom Templates
+  async getCustomTemplates(params?: { page?: number; limit?: number }) {
+    const { data } = await this.client.get('/custom-templates', { params });
+    return data;
+  }
+
+  async createCustomTemplate(template: {
+    name: string;
+    category: string;
+    title: string;
+    message: string;
+    icon?: string;
+    recommended_type?: string;
+    variables?: string[];
+  }) {
+    const { data } = await this.client.post('/custom-templates', template);
+    return data;
+  }
+
+  async updateCustomTemplate(id: string, updates: Record<string, unknown>) {
+    const { data } = await this.client.put(`/custom-templates/${id}`, updates);
+    return data;
+  }
+
+  async deleteCustomTemplate(id: string) {
+    const { data } = await this.client.delete(`/custom-templates/${id}`);
+    return data;
+  }
+
+  // Template Analytics
+  async getTemplateAnalytics() {
+    const { data } = await this.client.get('/template-analytics');
+    return data;
+  }
+
+  // User Segments
+  async getUserSegments() {
+    const { data } = await this.client.get('/user-segments');
+    return data;
+  }
+
   // CSV Import
   async importUsersCSV(file: File) {
     const formData = new FormData();
@@ -345,6 +404,15 @@ class ApiClient {
     const formData = new FormData();
     formData.append('file', file);
     const { data } = await this.client.post('/categories/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return data;
+  }
+
+  async importListingsCSV(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await this.client.post('/listings/import', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     return data;
