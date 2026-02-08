@@ -259,12 +259,25 @@ class AttributeCreate(BaseModel):
     category_id: str
     name: str
     key: str
-    type: str
+    type: str = Field(..., pattern="^(text|number|dropdown|radio|checkbox|textarea|date|email|phone|url)$")
     required: bool = False
-    options: Optional[List[str]] = None
+    options: Optional[List[str]] = None  # For dropdown, radio, checkbox
     validation: Optional[Dict[str, Any]] = None
     order: int = 0
     conditions: Optional[List[Dict[str, Any]]] = None
+    # New fields
+    icon: Optional[str] = None  # Icon name or emoji
+    placeholder: Optional[str] = None
+    help_text: Optional[str] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+    min_value: Optional[float] = None
+    max_value: Optional[float] = None
+    default_value: Optional[str] = None
+    unit: Optional[str] = None  # e.g., "km", "kg", "$"
+    searchable: bool = True
+    filterable: bool = True
+    show_in_list: bool = True
 
 class AttributeUpdate(BaseModel):
     name: Optional[str] = None
@@ -275,6 +288,18 @@ class AttributeUpdate(BaseModel):
     validation: Optional[Dict[str, Any]] = None
     order: Optional[int] = None
     conditions: Optional[List[Dict[str, Any]]] = None
+    icon: Optional[str] = None
+    placeholder: Optional[str] = None
+    help_text: Optional[str] = None
+    min_length: Optional[int] = None
+    max_length: Optional[int] = None
+    min_value: Optional[float] = None
+    max_value: Optional[float] = None
+    default_value: Optional[str] = None
+    unit: Optional[str] = None
+    searchable: Optional[bool] = None
+    filterable: Optional[bool] = None
+    show_in_list: Optional[bool] = None
 
 # Listing Models
 class ListingStatusUpdate(BaseModel):
