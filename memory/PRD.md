@@ -28,6 +28,7 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 ├── backend/
 │   ├── server.py         # Main FastAPI application (~4000 lines)
 │   ├── routes/           # Future refactored routers
+│   ├── REFACTORING.md    # Refactoring plan
 │   └── .env              # Environment configuration
 └── frontend/
     ├── src/
@@ -49,35 +50,41 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 
 ## Implementation Status
 
-### Completed Features
+### Completed Features ✅
 - [x] Notifications page with live API
 - [x] CSV Import for Categories and Listings
 - [x] Pre-defined Notification Templates
 - [x] Comprehensive Listing Edit (with dynamic attributes)
 - [x] Full Custom Attributes Management page
 - [x] Advanced attribute features (inheritance, templates, bulk)
-- [x] **Backend APIs for Locations, Deeplinks, Auth Settings** (Feb 8, 2026)
-- [x] **Settings page frontend** - Locations, Deeplinks, Auth tabs (Feb 8, 2026)
-- [x] **User Edit dialog** in Users page (Feb 8, 2026)
-- [x] **User update endpoint bug fix** - Changed id→user_id (Feb 8, 2026)
-- [x] **Routing issue resolved** - basePath configuration identified
+- [x] Backend APIs for Locations, Deeplinks, Auth Settings (Feb 8)
+- [x] Settings page frontend - Locations, Deeplinks, Auth tabs (Feb 8)
+- [x] User Edit dialog in Users page (Feb 8)
+- [x] **Icon Upload for Categories** - POST/DELETE /categories/{id}/icon (Feb 8)
+- [x] **Icon Upload for Attributes** - POST/DELETE /categories/{cat_id}/attributes/{attr_id}/icon (Feb 8)
+- [x] Settings navigation link in sidebar
 
-### Backend API Endpoints (Tested & Working)
+### Backend API Endpoints (All Tested & Working)
 | Endpoint | Status |
 |----------|--------|
 | POST /api/admin/auth/login | ✅ |
 | GET/POST/PUT/DELETE /api/admin/locations | ✅ |
 | GET/POST/PUT/DELETE /api/admin/deeplinks | ✅ |
 | GET/PUT /api/admin/settings/auth | ✅ |
-| PUT /api/admin/users/{user_id} | ✅ (fixed) |
+| PUT /api/admin/users/{user_id} | ✅ |
+| POST/DELETE /api/admin/categories/{id}/icon | ✅ NEW |
+| POST/DELETE /api/admin/categories/{cat_id}/attributes/{attr_id}/icon | ✅ NEW |
+
+### Icon Upload Specifications
+- **Category Icons**: PNG, JPG, SVG - Max 500KB - Stored as base64 data URL
+- **Attribute Icons**: PNG, JPG, SVG - Max 200KB - Stored as base64 data URL
 
 ### Pending Tasks
-- [ ] Backend refactoring (split server.py into smaller files)
-- [ ] Icon upload functionality for categories/attributes
-- [ ] Notification Scheduling UI
-- [ ] Custom Template Management UI
+- [ ] Frontend UI for Notification Scheduling
+- [ ] Custom Template Management UI  
 - [ ] Real-time Dashboard Updates (WebSocket)
-- [ ] Add Settings link to sidebar navigation
+- [ ] Execute backend refactoring (split server.py per REFACTORING.md)
+- [ ] Icon picker/uploader in Categories UI
 
 ### Future/Backlog
 - CSV Import for Users
@@ -88,14 +95,17 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 ---
 
 ## Test Results
-- **Backend Tests**: 31/31 passed (Feb 8, 2026)
-- **Test Report**: `/app/test_reports/iteration_3.json`
+- **Backend Tests**: 52/52 passed total
+  - Iteration 3: 31/31 (core features)
+  - Iteration 4: 21/21 (icon upload)
+- **Test Reports**: `/app/test_reports/iteration_*.json`
 
 ## Bugs Fixed
 1. User update endpoint used wrong field name `id` instead of `user_id`
 2. User response included password_hash - now excluded
 3. Backend server.py had duplicated code causing IndentationError
 4. bcrypt 4.1.3 incompatible with passlib - downgraded to 4.0.1
+5. Routing issue due to basePath configuration - identified and documented
 
 ---
 Last Updated: February 8, 2026
