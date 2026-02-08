@@ -126,8 +126,34 @@ class ApiClient {
     return data;
   }
 
-  async getAllAttributes() {
-    const { data } = await this.client.get('/attributes');
+  async getAllAttributes(includeInherited: boolean = true) {
+    const { data } = await this.client.get('/attributes', { params: { include_inherited: includeInherited } });
+    return data;
+  }
+
+  async getAttributeTemplates() {
+    const { data } = await this.client.get('/attribute-templates');
+    return data;
+  }
+
+  async getAttributeTemplate(templateId: string) {
+    const { data } = await this.client.get(`/attribute-templates/${templateId}`);
+    return data;
+  }
+
+  async applyAttributeTemplate(categoryId: string, templateId: string, merge: boolean = true) {
+    const { data } = await this.client.post(`/categories/${categoryId}/apply-template`, { template_id: templateId, merge });
+    return data;
+  }
+
+  async bulkAttributeAction(categoryId: string, attributeIds: string[], action: 'delete' | 'update' | 'copy', updateData?: Record<string, unknown>, targetCategoryId?: string) {
+    const { data } = await this.client.post('/attributes/bulk', {
+      category_id: categoryId,
+      attribute_ids: attributeIds,
+      action,
+      update_data: updateData,
+      target_category_id: targetCategoryId
+    });
     return data;
   }
 
