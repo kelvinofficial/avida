@@ -2406,7 +2406,7 @@ async def create_notification(
     request: Request,
     admin: dict = Depends(require_permission(Permission.MANAGE_SETTINGS))
 ):
-    """Create a new notification"""
+    """Create a new notification with recurring, targeting, and A/B testing support"""
     notif_id = f"notif_{uuid.uuid4().hex[:12]}"
     now = datetime.now(timezone.utc).isoformat()
     
@@ -2414,11 +2414,27 @@ async def create_notification(
     status = "draft"
     if notif_data.type == "scheduled" and notif_data.scheduled_at:
         status = "scheduled"
+    elif notif_data.type == "recurring" and notif_data.recurring_enabled:
+        status = "recurring_active"
     
-    # Get total recipients count
+    # Get total recipients count based on targeting
     total_recipients = await db.users.count_documents({})
     if notif_data.target_type == "users" and notif_data.target_ids:
         total_recipients = len(notif_data.target_ids)
+    elif notif_data.target_type == "segments" and notif_data.target_filters:
+        # Apply filters to get recipient count
+        filter_query = build_target_filter_query(notif_data.target_filters)
+        total_recipients = await db.users.count_documents(filter_query)
+    
+    # Calculate next run time for recurring notifications
+    next_run_at = None
+    if notif_data.recurring_enabled and notif_data.recurring_frequency:
+        next_run_at = calculate_next_run_time(
+            notif_data.recurring_frequency,
+            notif_data.recurring_time,
+            notif_data.recurring_day_of_week,
+            notif_data.recurring_day_of_month
+        )
     
     new_notification = {
         "id": notif_id,
@@ -2430,6 +2446,15 @@ async def create_notification(
         "created_by": admin["id"],
         "created_at": now,
         "updated_at": now,
+        "next_run_at": next_run_at,
+        "run_count": 0,
+        # A/B Testing fields
+        "ab_results": {
+            "variant_a_sent": 0,
+            "variant_a_read": 0,
+            "variant_b_sent": 0,
+            "variant_b_read": 0
+        } if notif_data.ab_test_enabled else None
     }
     
     await db.admin_notifications.insert_one(new_notification)
@@ -2437,6 +2462,73 @@ async def create_notification(
     
     new_notification.pop("_id", None)
     return new_notification
+
+def build_target_filter_query(filters: dict) -> dict:
+    """Build MongoDB query from target filters"""
+    query = {}
+    
+    if filters.get("segment_id"):
+        segment = filters["segment_id"]
+        if segment == "active":
+            thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+            query["last_login"] = {"$gte": thirty_days_ago}
+        elif segment == "inactive":
+            thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+            query["last_login"] = {"$lt": thirty_days_ago}
+        elif segment == "sellers":
+            query["listings_count"] = {"$gt": 0}
+        elif segment == "buyers":
+            query["listings_count"] = {"$eq": 0}
+        elif segment.startswith("location_"):
+            location = segment.replace("location_", "").replace("_", " ").title()
+            query["location"] = location
+    
+    if filters.get("locations"):
+        query["location"] = {"$in": filters["locations"]}
+    
+    if filters.get("min_listings"):
+        query["listings_count"] = {"$gte": filters["min_listings"]}
+    
+    if filters.get("registered_after"):
+        query["created_at"] = {"$gte": filters["registered_after"]}
+    
+    return query
+
+def calculate_next_run_time(frequency: str, time_str: str, day_of_week: int = None, day_of_month: int = None) -> str:
+    """Calculate the next run time for a recurring notification"""
+    now = datetime.now(timezone.utc)
+    
+    # Parse time (HH:MM)
+    if time_str:
+        hour, minute = map(int, time_str.split(":"))
+    else:
+        hour, minute = 9, 0  # Default to 9 AM
+    
+    if frequency == "daily":
+        next_run = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        if next_run <= now:
+            next_run += timedelta(days=1)
+    
+    elif frequency == "weekly":
+        days_ahead = day_of_week - now.weekday() if day_of_week is not None else 0
+        if days_ahead <= 0:
+            days_ahead += 7
+        next_run = now + timedelta(days=days_ahead)
+        next_run = next_run.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    
+    elif frequency == "monthly":
+        target_day = day_of_month if day_of_month else 1
+        next_run = now.replace(day=min(target_day, 28), hour=hour, minute=minute, second=0, microsecond=0)
+        if next_run <= now:
+            # Move to next month
+            if now.month == 12:
+                next_run = next_run.replace(year=now.year + 1, month=1)
+            else:
+                next_run = next_run.replace(month=now.month + 1)
+    else:
+        next_run = now + timedelta(days=1)
+    
+    return next_run.isoformat()
 
 @api_router.get("/notifications/{notif_id}")
 async def get_notification(
