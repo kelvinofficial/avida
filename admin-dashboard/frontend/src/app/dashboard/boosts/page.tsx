@@ -238,17 +238,26 @@ export default function BoostsPage() {
     }
   }, []);
 
+  const loadPaymentMethods = useCallback(async () => {
+    try {
+      const data = await api.getPaymentMethods();
+      setPaymentMethods(data);
+    } catch (err) {
+      console.error('Failed to load payment methods:', err);
+    }
+  }, []);
+
   useEffect(() => {
     const loadAll = async () => {
       setLoading(true);
-      await Promise.all([loadPackages(), loadPricing(), loadAnalytics()]);
+      await Promise.all([loadPackages(), loadPricing(), loadAnalytics(), loadPaymentMethods()]);
       setLoading(false);
     };
     loadAll();
-  }, [loadPackages, loadPricing, loadAnalytics]);
+  }, [loadPackages, loadPricing, loadAnalytics, loadPaymentMethods]);
 
   useEffect(() => {
-    if (tabValue === 2) {
+    if (tabValue === 3) {
       loadSellers();
     }
   }, [tabValue, loadSellers]);
