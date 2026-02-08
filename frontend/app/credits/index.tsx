@@ -107,11 +107,23 @@ export default function CreditsPage() {
       return;
     }
 
+    // Validate phone for mobile money
+    if ((selectedProvider === 'mpesa' || selectedProvider === 'mtn') && !phoneNumber) {
+      Alert.alert('Phone Required', 'Please enter your mobile money phone number');
+      return;
+    }
+
     setPurchasing(packageId);
     try {
       // Get the current URL for redirect
       const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://avida.app';
-      const result = await boostApi.purchaseCredits(packageId, originUrl, selectedProvider);
+      const result = await boostApi.purchaseCredits(
+        packageId, 
+        originUrl, 
+        selectedProvider,
+        phoneNumber || undefined,
+        selectedProvider === 'mtn' ? mobileNetwork : undefined
+      );
       
       if (result.checkout_url) {
         // Open checkout (Stripe or PayPal)
@@ -120,6 +132,9 @@ export default function CreditsPage() {
         } else {
           await Linking.openURL(result.checkout_url);
         }
+      } else if (result.message) {
+        // Mobile money - show message to user
+        Alert.alert('Payment Initiated', result.message);
       }
     } catch (error: any) {
       Alert.alert('Error', error.response?.data?.detail || 'Failed to start purchase');
