@@ -102,6 +102,16 @@ Build a comprehensive admin dashboard for a marketplace application with feature
     - Pending Approval tab for seller banner moderation
     - Create/Edit dialog with full targeting options
     - CSV export for analytics
+  - **Frontend Components** (`/app/frontend/src/components/BannerSlot.tsx`):
+    - `<BannerSlot>` - Generic banner component for any placement
+    - `<FeedBanner>` - Native-styled banner for listing feeds
+    - `<HeaderBanner>` - Header placement banner
+    - `<StickyBottomBanner>` - Mobile sticky bottom banner
+    - `injectBannersIntoFeed()` - Helper to inject banners into listing arrays
+    - Lazy loading, graceful fallback, impression/click tracking
+  - **Integration**:
+    - Home page: Banners injected after every 5 rows of listings
+    - Listing detail: Banner before "Similar Listings" section
 
 ### Analytics System Details
 
