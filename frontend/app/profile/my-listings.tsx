@@ -94,12 +94,14 @@ const DesktopListingCard = ({
   item,
   onPress,
   onEdit,
+  onBoost,
   onMarkSold,
   onDelete,
 }: {
   item: any;
   onPress: () => void;
   onEdit: () => void;
+  onBoost: () => void;
   onMarkSold: () => void;
   onDelete: () => void;
 }) => (
@@ -133,6 +135,12 @@ const DesktopListingCard = ({
             <Text style={desktopStyles.badgeText}>TOP</Text>
           </View>
         )}
+        {item.is_boosted && (
+          <View style={[desktopStyles.topBadge, { backgroundColor: '#4CAF50' }]}>
+            <Ionicons name="rocket" size={10} color="#fff" />
+            <Text style={desktopStyles.badgeText}>BOOSTED</Text>
+          </View>
+        )}
       </View>
       {/* Status Badge */}
       <View style={[desktopStyles.statusOverlay, { backgroundColor: getStatusColor(item.status) + 'E6' }]}>
@@ -153,9 +161,14 @@ const DesktopListingCard = ({
         <Ionicons name="pencil" size={16} color={COLORS.primary} />
       </TouchableOpacity>
       {item.status === 'active' && (
-        <TouchableOpacity style={desktopStyles.cardActionBtn} onPress={onMarkSold}>
-          <Ionicons name="checkmark-circle" size={16} color={COLORS.success} />
-        </TouchableOpacity>
+        <>
+          <TouchableOpacity style={[desktopStyles.cardActionBtn, { backgroundColor: '#E8F5E9' }]} onPress={onBoost}>
+            <Ionicons name="rocket" size={16} color="#4CAF50" />
+          </TouchableOpacity>
+          <TouchableOpacity style={desktopStyles.cardActionBtn} onPress={onMarkSold}>
+            <Ionicons name="checkmark-circle" size={16} color={COLORS.success} />
+          </TouchableOpacity>
+        </>
       )}
       <TouchableOpacity style={desktopStyles.cardActionBtn} onPress={onDelete}>
         <Ionicons name="trash" size={16} color={COLORS.error} />
