@@ -254,7 +254,7 @@ Additionally, build an Admin Dashboard with:
 - Added reverse proxy routes in main backend (`/app/backend/server.py`) for admin UI:
   - `/api/admin-ui/{path}` → Next.js admin frontend on port 3001
   - `/api/admin-ui` redirect to `/api/admin-ui/`
-- Admin Dashboard is now accessible at: `https://management-panel-dev.preview.emergentagent.com/api/admin-ui/`
+- Admin Dashboard is now accessible at: `https://admin-dash-preview-1.preview.emergentagent.com/api/admin-ui/`
 - Full authentication flow works: login → dashboard with real data
 - Dashboard shows: 34 users, 158 listings, analytics charts, navigation sidebar
 - Admin credentials: admin@marketplace.com / Admin@123456
