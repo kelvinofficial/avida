@@ -64,6 +64,19 @@ Build a comprehensive admin dashboard for a marketplace application with feature
   - Location-based view breakdown
   - Comparison vs seller average
   - Performance button on My Listings page (desktop + mobile)
+- [x] **Engagement Boost Notifications - Complete** (Feb 8)
+  - Background job checking for engagement spikes every 30 mins
+  - Both in-app and push notifications when sellers get significant engagement
+  - Configurable thresholds (views 2x, saves 3x, chats 2x average)
+  - Cooldown period between notifications
+  - Notifications navigate to Performance screen when tapped
+- [x] **Admin Dashboard Analytics UI - Complete** (Feb 8)
+  - 3-tab interface: Platform Analytics, Seller Analytics Settings, Engagement Notifications
+  - Platform metrics (Users, Listings, Views, Conversion Rate)
+  - User Growth chart with Line/Area/Bar toggle
+  - Seller Analytics global toggle and per-metric controls
+  - Engagement notification threshold sliders and timing settings
+  - Notification preview examples
 
 ### Analytics System Details
 
