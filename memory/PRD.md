@@ -117,14 +117,15 @@ Additionally, build an Admin Dashboard with:
 - Backend: Full listing update API (PUT /api/admin/listings/{id}) with support for all fields
 - Backend: Image upload endpoint (POST /api/admin/listings/{id}/images)
 - Backend: Image delete endpoint (DELETE /api/admin/listings/{id}/images/{index})
+- Backend: Enhanced category attributes endpoint to support id, slug, or name lookup
 - Frontend: Comprehensive Edit Listing dialog with:
-  - Image management (view, delete, upload new images)
+  - Image management (view, delete with X button, upload new images via Add Image)
   - Basic info editing (title, price, currency, description)
   - Category selection with dynamic attributes loading
   - Status management (active, pending, paused, rejected, deleted)
   - Condition selection (new, like new, good, fair, poor)
   - Location and contact info editing
-- Edit menu item added to listing row actions
+- Edit menu item added to listing row actions (Edit button with pencil icon)
 
 **Major Feature Update - Advanced Notifications & Admin Features**
 
