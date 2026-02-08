@@ -34,6 +34,8 @@ import {
   Divider,
   Paper,
   Autocomplete,
+  Checkbox,
+  Menu,
 } from '@mui/material';
 import {
   Add,
@@ -43,13 +45,18 @@ import {
   TextFields,
   Numbers,
   RadioButtonChecked,
-  CheckBox,
+  CheckBox as CheckBoxIcon,
   ArrowDropDown,
   Close,
   DragIndicator,
   FilterList,
   Search as SearchIcon,
   Visibility,
+  ContentCopy,
+  AutoAwesome,
+  Link as LinkIcon,
+  MoreVert,
+  PlaylistAdd,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { useLocale } from '@/components/LocaleProvider';
@@ -76,6 +83,17 @@ interface Attribute {
   show_in_list?: boolean;
   category_id: string;
   category_name: string;
+  is_inherited?: boolean;
+  inherited_from_name?: string;
+}
+
+interface AttributeTemplate {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  attribute_count: number;
+  attributes_preview: string[];
 }
 
 interface Category {
