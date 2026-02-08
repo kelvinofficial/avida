@@ -747,6 +747,34 @@ class ApiClient {
     const { data } = await this.client.get(`/boost/listing/${listingId}`);
     return data;
   }
+
+  // =========================================================================
+  // SELLER ANALYTICS (Main App Backend)
+  // =========================================================================
+
+  // These endpoints call the main app backend at /api/analytics
+  private mainAppClient = axios.create({
+    baseURL: process.env.NEXT_PUBLIC_MAIN_API_URL || 'http://localhost:8001/api',
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  async get(endpoint: string) {
+    this.mainAppClient.defaults.headers.common['Authorization'] = `Bearer ${this.accessToken}`;
+    const { data } = await this.mainAppClient.get(endpoint);
+    return data;
+  }
+
+  async put(endpoint: string, body: Record<string, unknown>) {
+    this.mainAppClient.defaults.headers.common['Authorization'] = `Bearer ${this.accessToken}`;
+    const { data } = await this.mainAppClient.put(endpoint, body);
+    return data;
+  }
+
+  async post(endpoint: string, body?: Record<string, unknown>) {
+    this.mainAppClient.defaults.headers.common['Authorization'] = `Bearer ${this.accessToken}`;
+    const { data } = await this.mainAppClient.post(endpoint, body);
+    return data;
+  }
 }
 
 export const api = new ApiClient();
