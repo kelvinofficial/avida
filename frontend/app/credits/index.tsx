@@ -246,14 +246,18 @@ export default function CreditsPage() {
           </View>
           
           {/* Phone Input for Mobile Money */}
-          {(selectedProvider === 'mpesa' || selectedProvider === 'mtn') && (
+          {['mpesa', 'mtn', 'vodacom_tz'].includes(selectedProvider) && (
             <View style={styles.phoneInputSection}>
               <Text style={styles.phoneInputLabel}>
-                {selectedProvider === 'mpesa' ? 'M-Pesa Phone Number (254...)' : 'Mobile Money Number'}
+                {selectedProvider === 'mpesa' ? 'M-Pesa Phone Number (254...)' : 
+                 selectedProvider === 'vodacom_tz' ? 'Vodacom Tanzania Number (255...)' :
+                 'Mobile Money Number'}
               </Text>
               <TextInput
                 style={styles.phoneInput}
-                placeholder={selectedProvider === 'mpesa' ? '254712345678' : 'Enter phone number'}
+                placeholder={selectedProvider === 'mpesa' ? '254712345678' : 
+                             selectedProvider === 'vodacom_tz' ? '255712345678' :
+                             'Enter phone number'}
                 value={phoneNumber}
                 onChangeText={setPhoneNumber}
                 keyboardType="phone-pad"
