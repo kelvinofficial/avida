@@ -376,6 +376,79 @@ export default function AttributesPage() {
     }
   };
 
+  // Attribute Icon upload handlers
+  const handleAttrIconFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+    if (!validTypes.includes(file.type)) {
+      setError('Invalid file type. Please upload PNG, JPG, or SVG.');
+      return;
+    }
+
+    // Validate file size (200KB max for attributes)
+    if (file.size > 200 * 1024) {
+      setError('File too large. Maximum size is 200KB.');
+      return;
+    }
+
+    // If editing existing attribute, upload immediately
+    if (editingAttr) {
+      setUploadingIcon(true);
+      try {
+        await api.uploadAttributeIcon(editingAttr.category_id, editingAttr.id, file);
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setIconPreview(e.target?.result as string);
+          setFormData(prev => ({ ...prev, icon: '' })); // Clear emoji icon
+        };
+        reader.readAsDataURL(file);
+        await loadData();
+        setSuccess('Icon uploaded successfully');
+      } catch (err) {
+        setError('Failed to upload icon');
+      } finally {
+        setUploadingIcon(false);
+      }
+    } else {
+      // For new attributes, just show preview (will need to save attribute first)
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setIconPreview(e.target?.result as string);
+        setFormData(prev => ({ ...prev, icon: '' }));
+      };
+      reader.readAsDataURL(file);
+      setError('Please save the attribute first, then edit it to upload an icon.');
+    }
+
+    // Reset file input
+    if (iconInputRef.current) {
+      iconInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveAttrIcon = async () => {
+    if (editingAttr) {
+      setUploadingIcon(true);
+      try {
+        await api.deleteAttributeIcon(editingAttr.category_id, editingAttr.id);
+        setIconPreview(null);
+        setFormData(prev => ({ ...prev, icon: '' }));
+        await loadData();
+        setSuccess('Icon removed successfully');
+      } catch (err) {
+        setError('Failed to remove icon');
+      } finally {
+        setUploadingIcon(false);
+      }
+    } else {
+      setIconPreview(null);
+    }
+  };
+
   const handleDelete = async () => {
     if (!attrToDelete) return;
     setActionLoading(true);
