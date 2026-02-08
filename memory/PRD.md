@@ -61,6 +61,15 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 - [x] **Background Job for Auto-expiring Boosts** (Feb 8)
   - Runs every 60 seconds to expire boosts
   - Updates listing `is_boosted` flag and removes expired boost types
+- [x] **PayPal Integration** (Feb 8)
+  - Backend PayPal SDK integrated (paypal-server-sdk v2.2.0)
+  - `/api/boost/payment-providers` endpoint to list available providers
+  - Purchase endpoint supports both `stripe` and `paypal` providers
+  - Shows PayPal as "Coming Soon" until env vars configured
+- [x] **Boosted Listings Ranking Algorithm** (Feb 8)
+  - Listings sorted by is_boosted (desc) > boost_priority (desc) > regular sort
+  - Uses MongoDB aggregation pipeline for efficient sorting
+  - Boosted listings always appear first in search results
 
 ### Boost System Details
 
