@@ -508,8 +508,56 @@ const styles = StyleSheet.create({
   paymentMethodNameDisabled: {
     color: '#999',
   },
-  paymentMethodCheck: {
-    marginLeft: 'auto',
+  phoneInputSection: {
+    marginTop: 16,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 16,
+  },
+  phoneInputLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#555',
+    marginBottom: 8,
+  },
+  phoneInput: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 16,
+  },
+  networkSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    gap: 8,
+  },
+  networkLabel: {
+    fontSize: 13,
+    color: '#666',
+  },
+  networkOption: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#fff',
+  },
+  networkOptionSelected: {
+    borderColor: '#4CAF50',
+    backgroundColor: '#e8f5e9',
+  },
+  networkOptionText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  networkOptionTextSelected: {
+    color: '#4CAF50',
+    fontWeight: '600',
   },
   sectionTitle: {
     fontSize: 18,
