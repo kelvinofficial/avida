@@ -105,10 +105,10 @@ export default function CreditsPage() {
     try {
       // Get the current URL for redirect
       const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://avida.app';
-      const result = await boostApi.purchaseCredits(packageId, originUrl);
+      const result = await boostApi.purchaseCredits(packageId, originUrl, selectedProvider);
       
       if (result.checkout_url) {
-        // Open Stripe checkout
+        // Open checkout (Stripe or PayPal)
         if (typeof window !== 'undefined') {
           window.location.href = result.checkout_url;
         } else {
