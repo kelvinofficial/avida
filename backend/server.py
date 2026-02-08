@@ -5632,6 +5632,27 @@ if ANALYTICS_ROUTES_AVAILABLE:
     logger.info("Analytics routes loaded successfully")
     logger.info("Engagement notification background task started")
 
+# Banner System Routes
+if BANNER_ROUTES_AVAILABLE:
+    # Create banner router with same auth dependencies
+    def get_current_user_for_banners(request: Request):
+        return get_current_user(request)
+    
+    async def get_current_admin_for_banners(request: Request):
+        user = await get_current_user(request)
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        return {"user_id": user.user_id, "email": user.email, "is_admin": True}
+    
+    banner_router, banner_service = create_banner_router(
+        db,
+        get_current_user_for_banners,
+        get_current_admin_for_banners
+    )
+    api_router.include_router(banner_router)
+    app.include_router(api_router)  # Re-include to pick up banner routes
+    logger.info("Banner routes loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
