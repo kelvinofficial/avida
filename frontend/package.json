@@ -49,9 +49,11 @@
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
+    "react-native-svg": "^15.15.2",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
     "socket.io-client": "^4.8.3",
+    "victory-native": "^41.20.2",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
