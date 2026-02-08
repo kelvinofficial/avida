@@ -52,6 +52,9 @@ import {
   PersonAdd,
   SelectAll,
   CloudUpload,
+  Edit,
+  VerifiedUser,
+  LocationOn,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { User, PaginatedResponse } from '@/types';
