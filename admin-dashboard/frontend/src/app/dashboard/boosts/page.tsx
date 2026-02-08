@@ -118,6 +118,22 @@ interface Analytics {
   };
 }
 
+interface PaymentMethod {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  is_enabled: boolean;
+  requires_phone: boolean;
+  country?: string;
+  currency?: string;
+  exchange_rate: number;
+  min_amount: number;
+  max_amount: number;
+  networks?: string[];
+  priority: number;
+}
+
 const BOOST_TYPE_ICONS: Record<string, React.ReactNode> = {
   featured: <Star />,
   homepage: <Home />,
