@@ -190,7 +190,7 @@ export default function CreditsPage() {
       {providers.length > 0 && (
         <View style={styles.paymentMethodSection}>
           <Text style={styles.paymentMethodLabel}>Payment Method</Text>
-          <View style={styles.paymentMethodRow}>
+          <View style={styles.paymentMethodGrid}>
             {providers.map((provider) => (
               <TouchableOpacity
                 key={provider.id}
@@ -207,19 +207,65 @@ export default function CreditsPage() {
                   size={24} 
                   color={selectedProvider === provider.id ? '#4CAF50' : provider.available ? '#666' : '#ccc'} 
                 />
-                <Text style={[
-                  styles.paymentMethodName,
-                  selectedProvider === provider.id && styles.paymentMethodNameSelected,
-                  !provider.available && styles.paymentMethodNameDisabled
-                ]}>
-                  {provider.name}
-                </Text>
+                <View style={styles.paymentMethodInfo}>
+                  <Text style={[
+                    styles.paymentMethodName,
+                    selectedProvider === provider.id && styles.paymentMethodNameSelected,
+                    !provider.available && styles.paymentMethodNameDisabled
+                  ]}>
+                    {provider.name}
+                  </Text>
+                  <Text style={[
+                    styles.paymentMethodDesc,
+                    !provider.available && styles.paymentMethodNameDisabled
+                  ]}>
+                    {provider.description}
+                  </Text>
+                </View>
                 {selectedProvider === provider.id && (
-                  <Ionicons name="checkmark-circle" size={18} color="#4CAF50" style={styles.paymentMethodCheck} />
+                  <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
                 )}
               </TouchableOpacity>
             ))}
           </View>
+          
+          {/* Phone Input for Mobile Money */}
+          {(selectedProvider === 'mpesa' || selectedProvider === 'mtn') && (
+            <View style={styles.phoneInputSection}>
+              <Text style={styles.phoneInputLabel}>
+                {selectedProvider === 'mpesa' ? 'M-Pesa Phone Number (254...)' : 'Mobile Money Number'}
+              </Text>
+              <TextInput
+                style={styles.phoneInput}
+                placeholder={selectedProvider === 'mpesa' ? '254712345678' : 'Enter phone number'}
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
+                keyboardType="phone-pad"
+              />
+              {selectedProvider === 'mtn' && (
+                <View style={styles.networkSelector}>
+                  <Text style={styles.networkLabel}>Network:</Text>
+                  {['MTN', 'VODAFONE', 'TIGO'].map((network) => (
+                    <TouchableOpacity
+                      key={network}
+                      style={[
+                        styles.networkOption,
+                        mobileNetwork === network && styles.networkOptionSelected
+                      ]}
+                      onPress={() => setMobileNetwork(network)}
+                    >
+                      <Text style={[
+                        styles.networkOptionText,
+                        mobileNetwork === network && styles.networkOptionTextSelected
+                      ]}>
+                        {network}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
         </View>
       )}
       
