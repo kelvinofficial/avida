@@ -77,6 +77,7 @@ class BoostStatus(str, Enum):
 class PurchaseCreditsRequest(BaseModel):
     package_id: str
     origin_url: str  # Frontend URL for redirect
+    provider: PaymentProvider = PaymentProvider.STRIPE  # Default to Stripe
 
 
 class CreateBoostRequest(BaseModel):
