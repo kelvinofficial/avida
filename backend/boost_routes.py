@@ -67,6 +67,16 @@ class PaymentStatus(str, Enum):
 class PaymentProvider(str, Enum):
     STRIPE = "stripe"
     PAYPAL = "paypal"
+    MPESA = "mpesa"
+    MTN = "mtn"
+
+
+class MobileMoneyNetwork(str, Enum):
+    MPESA = "mpesa"           # Kenya
+    MTN_GHANA = "mtn_ghana"   # Ghana
+    MTN_UGANDA = "mtn_uganda" # Uganda
+    MTN_ZAMBIA = "mtn_zambia" # Zambia
+    AIRTEL = "airtel"         # Multiple countries
 
 
 class BoostStatus(str, Enum):
