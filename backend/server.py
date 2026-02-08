@@ -5596,6 +5596,28 @@ if BOOST_ROUTES_AVAILABLE:
     app.include_router(api_router)  # Re-include to pick up boost routes
     logger.info("Boost routes loaded successfully")
 
+# Include Analytics Routes
+if ANALYTICS_ROUTES_AVAILABLE:
+    async def get_current_user_for_analytics(request: Request) -> dict:
+        """Wrapper for analytics routes authentication"""
+        user = await get_current_user(request)
+        if not user:
+            return None
+        return {"user_id": user.user_id, "email": user.email, "name": user.name, "is_verified": getattr(user, 'is_verified', False), "is_premium": getattr(user, 'is_premium', False)}
+    
+    async def get_current_admin_for_analytics(request: Request) -> dict:
+        """Wrapper for analytics admin authentication"""
+        # For now, use same auth as user - in production would have separate admin auth
+        user = await get_current_user(request)
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        return {"user_id": user.user_id, "email": user.email, "is_admin": True}
+    
+    analytics_router, analytics_system = create_analytics_router(db, get_current_user_for_analytics, get_current_admin_for_analytics)
+    api_router.include_router(analytics_router)
+    app.include_router(api_router)  # Re-include to pick up analytics routes
+    logger.info("Analytics routes loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
