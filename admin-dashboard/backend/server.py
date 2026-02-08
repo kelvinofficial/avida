@@ -1192,7 +1192,7 @@ async def update_user(
     await db.users.update_one({"user_id": user_id}, {"$set": updates})
     await log_audit(admin["id"], admin["email"], AuditAction.UPDATE, "user", user_id, updates, request)
     
-    updated_user = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password": 0, "hashed_password": 0})
+    updated_user = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password": 0, "hashed_password": 0, "password_hash": 0})
     return updated_user
 
 @api_router.post("/users/{user_id}/avatar")
