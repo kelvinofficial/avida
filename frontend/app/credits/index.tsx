@@ -30,6 +30,14 @@ interface CreditTransaction {
   created_at: string;
 }
 
+interface PaymentProvider {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  available: boolean;
+}
+
 export default function CreditsPage() {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -40,13 +48,25 @@ export default function CreditsPage() {
   const [history, setHistory] = useState<CreditTransaction[]>([]);
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [providers, setProviders] = useState<PaymentProvider[]>([]);
+  const [selectedProvider, setSelectedProvider] = useState<string>('stripe');
 
   const loadData = useCallback(async () => {
     try {
-      // Always load packages (public endpoint)
-      const packagesData = await boostApi.getPackages();
+      // Load packages and payment providers (public endpoints)
+      const [packagesData, providersData] = await Promise.all([
+        boostApi.getPackages(),
+        boostApi.getPaymentProviders()
+      ]);
       console.log('Loaded packages:', packagesData);
       setPackages(packagesData || []);
+      setProviders(providersData || []);
+      
+      // Set default provider to first available
+      const availableProvider = providersData?.find((p: PaymentProvider) => p.available);
+      if (availableProvider) {
+        setSelectedProvider(availableProvider.id);
+      }
       
       // Try to load user-specific data (may fail if not authenticated)
       try {
