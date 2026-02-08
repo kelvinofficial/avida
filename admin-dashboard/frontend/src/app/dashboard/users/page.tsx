@@ -261,6 +261,49 @@ export default function UsersPage() {
     return result;
   };
 
+  // Edit User Handler
+  const openEditDialog = (user: User) => {
+    setEditForm({
+      name: user.name || '',
+      email: user.email || '',
+      phone: user.phone || '',
+      location: user.location || '',
+      bio: user.bio || '',
+      is_verified: user.is_verified || false,
+      is_active: user.status !== 'banned',
+      role: user.role || 'user',
+    });
+    setSelectedUser(user);
+    setEditDialogOpen(true);
+    setAnchorEl(null);
+  };
+
+  const handleUpdateUser = async () => {
+    if (!selectedUser) return;
+    setActionLoading(true);
+    setError('');
+    try {
+      await api.updateUser(selectedUser.user_id, {
+        name: editForm.name || undefined,
+        email: editForm.email || undefined,
+        phone: editForm.phone || undefined,
+        location: editForm.location || undefined,
+        bio: editForm.bio || undefined,
+        is_verified: editForm.is_verified,
+        is_active: editForm.is_active,
+        role: editForm.role,
+      });
+      setEditDialogOpen(false);
+      await loadUsers();
+      setSnackbar({ open: true, message: 'User updated successfully', severity: 'success' });
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { detail?: string } } };
+      setError(error.response?.data?.detail || 'Failed to update user');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-US', {
       year: 'numeric',
