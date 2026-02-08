@@ -6,7 +6,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://seller-promo.preview.emergentagent.com/api/admin')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://listing-metrics.preview.emergentagent.com/api/admin')
 
 
 class TestPaymentMethodsAdmin:

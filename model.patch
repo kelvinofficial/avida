@@ -460,7 +460,7 @@ index 72ed893..e69de29 100644
 -------------+import json
 -------------+
 -------------+# Get backend URL
--------------+BASE_URL = "https://seller-promo.preview.emergentagent.com"
+-------------+BASE_URL = "https://listing-metrics.preview.emergentagent.com"
 -------------+API_URL = f"{BASE_URL}/api"
 -------------+TEST_SESSION_TOKEN = "test_session_123"
 -------------+
@@ -727,7 +727,7 @@ index 72ed893..e69de29 100644
 ------+                    return line.split('=', 1)[1].strip()
 ------+    except Exception as e:
 ------+        print(f'Error reading frontend .env: {e}')
-------+    return 'https://seller-promo.preview.emergentagent.com'
+------+    return 'https://listing-metrics.preview.emergentagent.com'
 ------+
 ------+BASE_URL = get_backend_url()
 ------+API_URL = f'{BASE_URL}/api'
