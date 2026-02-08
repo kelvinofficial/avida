@@ -1338,6 +1338,27 @@ async def bulk_attribute_action(
         "message": f"Bulk {action_data.action} completed",
         "affected": affected
     }
+
+@api_router.patch("/categories/{category_id}/attributes/{attribute_id}")
+async def update_category_attribute(
+    request: Request,
+    category_id: str,
+    attribute_id: str,
+    update_data: AttributeUpdate,
+    admin: dict = Depends(require_permission(Permission.MANAGE_ATTRIBUTES))
+):
+    """Update category attribute"""
+    category = await db.admin_categories.find_one({"id": category_id})
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    attrs = category.get("attributes", [])
+    attr_index = next((i for i, a in enumerate(attrs) if a["id"] == attribute_id), None)
+    
+    if attr_index is None:
+        raise HTTPException(status_code=404, detail="Attribute not found")
+    
+    updates = {}
     if update_data.name is not None:
         updates[f"attributes.{attr_index}.name"] = sanitize_input(update_data.name)
     if update_data.key is not None:
@@ -1354,9 +1375,33 @@ async def bulk_attribute_action(
         updates[f"attributes.{attr_index}.order"] = update_data.order
     if update_data.conditions is not None:
         updates[f"attributes.{attr_index}.conditions"] = update_data.conditions
+    if update_data.icon is not None:
+        updates[f"attributes.{attr_index}.icon"] = update_data.icon
+    if update_data.placeholder is not None:
+        updates[f"attributes.{attr_index}.placeholder"] = update_data.placeholder
+    if update_data.help_text is not None:
+        updates[f"attributes.{attr_index}.help_text"] = update_data.help_text
+    if update_data.min_length is not None:
+        updates[f"attributes.{attr_index}.min_length"] = update_data.min_length
+    if update_data.max_length is not None:
+        updates[f"attributes.{attr_index}.max_length"] = update_data.max_length
+    if update_data.min_value is not None:
+        updates[f"attributes.{attr_index}.min_value"] = update_data.min_value
+    if update_data.max_value is not None:
+        updates[f"attributes.{attr_index}.max_value"] = update_data.max_value
+    if update_data.default_value is not None:
+        updates[f"attributes.{attr_index}.default_value"] = update_data.default_value
+    if update_data.unit is not None:
+        updates[f"attributes.{attr_index}.unit"] = update_data.unit
+    if update_data.searchable is not None:
+        updates[f"attributes.{attr_index}.searchable"] = update_data.searchable
+    if update_data.filterable is not None:
+        updates[f"attributes.{attr_index}.filterable"] = update_data.filterable
+    if update_data.show_in_list is not None:
+        updates[f"attributes.{attr_index}.show_in_list"] = update_data.show_in_list
     
     if updates:
-        updates["updated_at"] = datetime.now(timezone.utc)
+        updates["updated_at"] = datetime.now(timezone.utc).isoformat()
         await db.admin_categories.update_one({"id": category_id}, {"$set": updates})
         await log_audit(admin["id"], admin["email"], AuditAction.UPDATE, "attribute", attribute_id, updates, request)
     
