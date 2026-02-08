@@ -1147,6 +1147,13 @@ export default function ListingDetailScreen() {
             </View>
           </View>
 
+          {/* Banner Before Similar Listings */}
+          <BannerSlot 
+            placement="detail_before_similar" 
+            category={listing?.category_id}
+            style={{ marginHorizontal: 16, marginBottom: 16 }}
+          />
+
           {/* Similar Listings - Full Width */}
           <View style={[desktopStyles.similarSection, { maxWidth: MAX_CONTENT_WIDTH }]}>
             <SimilarListings propertyId={id!} category="other" />
