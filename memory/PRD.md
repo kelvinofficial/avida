@@ -106,8 +106,7 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 - `PUT /api/analytics/admin/settings` - Admin update settings
 
 ### Pending Tasks (P1)
-- [ ] Admin Dashboard UI for Analytics Management (view platform metrics, toggle settings)
-- [ ] Location-based analytics with map visualization
+- [ ] Location-based analytics with map visualization (Mapbox) - Skipped by user
 
 ### Future/Backlog (P2)
 - CSV Import for Users
