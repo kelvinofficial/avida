@@ -251,11 +251,18 @@ export default function ListingsPage() {
           )}
           <Button
             variant="outlined"
+            startIcon={<Upload />}
+            onClick={() => setImportDialogOpen(true)}
+          >
+            {t('common.import')}
+          </Button>
+          <Button
+            variant="outlined"
             startIcon={<Download />}
             onClick={exportToCSV}
             disabled={listings.length === 0}
           >
-            Export CSV
+            {t('common.export')}
           </Button>
           <Button
             variant="outlined"
@@ -263,7 +270,7 @@ export default function ListingsPage() {
             onClick={loadListings}
             disabled={loading}
           >
-            Refresh
+            {t('common.refresh')}
           </Button>
         </Box>
       </Box>
