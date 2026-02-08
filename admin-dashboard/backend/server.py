@@ -2130,23 +2130,33 @@ NOTIFICATION_TEMPLATES = [
 @api_router.get("/notification-templates")
 async def list_notification_templates(
     category: Optional[str] = None,
+    include_custom: bool = True,
     admin: dict = Depends(require_permission(Permission.VIEW_REPORTS))
 ):
-    """List all notification templates"""
-    templates = NOTIFICATION_TEMPLATES
+    """List all notification templates (predefined + custom)"""
+    all_templates = list(NOTIFICATION_TEMPLATES)
+    
+    # Get custom templates from database
+    if include_custom:
+        custom_templates = await db.custom_notification_templates.find(
+            {"is_active": True}, {"_id": 0}
+        ).to_list(100)
+        all_templates.extend(custom_templates)
+    
+    # Filter by category if specified
     if category:
-        templates = [t for t in templates if t["category"] == category]
+        all_templates = [t for t in all_templates if t.get("category") == category]
     
     # Group by category
     categories = {}
-    for template in NOTIFICATION_TEMPLATES:
-        cat = template["category"]
+    for template in all_templates:
+        cat = template.get("category", "custom")
         if cat not in categories:
             categories[cat] = []
         categories[cat].append(template)
     
     return {
-        "templates": templates,
+        "templates": all_templates,
         "categories": list(categories.keys()),
         "by_category": categories
     }
@@ -2157,10 +2167,213 @@ async def get_notification_template(
     admin: dict = Depends(require_permission(Permission.VIEW_REPORTS))
 ):
     """Get a specific notification template"""
+    # Check predefined templates first
     template = next((t for t in NOTIFICATION_TEMPLATES if t["id"] == template_id), None)
-    if not template:
-        raise HTTPException(status_code=404, detail="Template not found")
-    return template
+    if template:
+        return template
+    
+    # Check custom templates
+    custom_template = await db.custom_notification_templates.find_one(
+        {"id": template_id}, {"_id": 0}
+    )
+    if custom_template:
+        return custom_template
+    
+    raise HTTPException(status_code=404, detail="Template not found")
+
+# Custom Template CRUD
+@api_router.get("/custom-templates")
+async def list_custom_templates(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    admin: dict = Depends(require_permission(Permission.VIEW_REPORTS))
+):
+    """List custom notification templates"""
+    total = await db.custom_notification_templates.count_documents({})
+    skip = (page - 1) * limit
+    
+    templates = await db.custom_notification_templates.find(
+        {}, {"_id": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    return {
+        "items": templates,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "pages": (total + limit - 1) // limit
+    }
+
+@api_router.post("/custom-templates")
+async def create_custom_template(
+    template: CustomTemplateCreate,
+    admin: dict = Depends(require_permission(Permission.MANAGE_USERS))
+):
+    """Create a custom notification template"""
+    template_id = f"custom_{uuid.uuid4().hex[:8]}"
+    
+    new_template = {
+        "id": template_id,
+        "name": template.name,
+        "category": template.category,
+        "title": template.title,
+        "message": template.message,
+        "icon": template.icon,
+        "recommended_type": template.recommended_type,
+        "variables": template.variables or [],
+        "is_custom": True,
+        "is_active": True,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": admin["email"],
+        "usage_count": 0
+    }
+    
+    await db.custom_notification_templates.insert_one(new_template)
+    
+    # Log audit
+    await log_audit(admin["email"], "create", "custom_template", template_id)
+    
+    return {k: v for k, v in new_template.items() if k != "_id"}
+
+@api_router.put("/custom-templates/{template_id}")
+async def update_custom_template(
+    template_id: str,
+    template: CustomTemplateUpdate,
+    admin: dict = Depends(require_permission(Permission.MANAGE_USERS))
+):
+    """Update a custom notification template"""
+    existing = await db.custom_notification_templates.find_one({"id": template_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Custom template not found")
+    
+    update_data = {k: v for k, v in template.dict().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    update_data["updated_by"] = admin["email"]
+    
+    await db.custom_notification_templates.update_one(
+        {"id": template_id},
+        {"$set": update_data}
+    )
+    
+    await log_audit(admin["email"], "update", "custom_template", template_id)
+    
+    updated = await db.custom_notification_templates.find_one({"id": template_id}, {"_id": 0})
+    return updated
+
+@api_router.delete("/custom-templates/{template_id}")
+async def delete_custom_template(
+    template_id: str,
+    admin: dict = Depends(require_permission(Permission.MANAGE_USERS))
+):
+    """Delete a custom notification template"""
+    result = await db.custom_notification_templates.delete_one({"id": template_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Custom template not found")
+    
+    await log_audit(admin["email"], "delete", "custom_template", template_id)
+    return {"message": "Template deleted"}
+
+# Template Analytics
+@api_router.get("/template-analytics")
+async def get_template_analytics(
+    admin: dict = Depends(require_permission(Permission.VIEW_REPORTS))
+):
+    """Get template usage analytics"""
+    # Get usage stats from notifications
+    pipeline = [
+        {"$match": {"template_id": {"$exists": True, "$ne": None}}},
+        {"$group": {
+            "_id": "$template_id",
+            "usage_count": {"$sum": 1},
+            "sent_count": {"$sum": {"$cond": [{"$eq": ["$status", "sent"]}, 1, 0]}},
+            "total_recipients": {"$sum": {"$ifNull": ["$total_recipients", 0]}},
+            "total_read": {"$sum": {"$ifNull": ["$read_count", 0]}}
+        }},
+        {"$sort": {"usage_count": -1}}
+    ]
+    
+    usage_stats = await db.admin_notifications.aggregate(pipeline).to_list(100)
+    
+    # Get custom template stats
+    custom_stats = await db.custom_notification_templates.find(
+        {}, {"_id": 0, "id": 1, "name": 1, "usage_count": 1}
+    ).sort("usage_count", -1).to_list(20)
+    
+    # Combine with predefined templates
+    all_stats = []
+    for stat in usage_stats:
+        template_id = stat["_id"]
+        # Find template name
+        template = next((t for t in NOTIFICATION_TEMPLATES if t["id"] == template_id), None)
+        if not template:
+            custom = await db.custom_notification_templates.find_one({"id": template_id})
+            template = custom
+        
+        if template:
+            all_stats.append({
+                "template_id": template_id,
+                "template_name": template.get("name", "Unknown"),
+                "category": template.get("category", "unknown"),
+                "usage_count": stat["usage_count"],
+                "sent_count": stat["sent_count"],
+                "total_recipients": stat["total_recipients"],
+                "total_read": stat["total_read"],
+                "read_rate": round(stat["total_read"] / stat["total_recipients"] * 100, 1) if stat["total_recipients"] > 0 else 0
+            })
+    
+    return {
+        "template_usage": all_stats,
+        "custom_templates": custom_stats,
+        "total_templates": len(NOTIFICATION_TEMPLATES) + len(custom_stats)
+    }
+
+# User Segments for Targeting
+@api_router.get("/user-segments")
+async def get_user_segments(
+    admin: dict = Depends(require_permission(Permission.VIEW_REPORTS))
+):
+    """Get available user segments for targeting"""
+    # Get user statistics for segments
+    total_users = await db.users.count_documents({})
+    
+    # Get users by activity
+    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    active_users = await db.users.count_documents({
+        "last_login": {"$gte": thirty_days_ago.isoformat()}
+    })
+    
+    # Get users by type (sellers vs buyers)
+    sellers = await db.users.count_documents({"listings_count": {"$gt": 0}})
+    
+    # Get users by location (top locations)
+    location_pipeline = [
+        {"$match": {"location": {"$exists": True, "$ne": None}}},
+        {"$group": {"_id": "$location", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ]
+    locations = await db.users.aggregate(location_pipeline).to_list(10)
+    
+    segments = [
+        {"id": "all", "name": "All Users", "count": total_users, "type": "static"},
+        {"id": "active", "name": "Active Users (30 days)", "count": active_users, "type": "dynamic"},
+        {"id": "inactive", "name": "Inactive Users", "count": total_users - active_users, "type": "dynamic"},
+        {"id": "sellers", "name": "Sellers (has listings)", "count": sellers, "type": "dynamic"},
+        {"id": "buyers", "name": "Buyers Only (no listings)", "count": total_users - sellers, "type": "dynamic"},
+        {"id": "new_users", "name": "New Users (last 7 days)", "count": 0, "type": "dynamic"},
+    ]
+    
+    # Add location-based segments
+    for loc in locations:
+        if loc["_id"]:
+            segments.append({
+                "id": f"location_{loc['_id'].lower().replace(' ', '_')}",
+                "name": f"Users in {loc['_id']}",
+                "count": loc["count"],
+                "type": "location"
+            })
+    
+    return {"segments": segments, "total_users": total_users}
 
 @api_router.get("/notifications")
 async def list_notifications(
