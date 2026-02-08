@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   View, 
   Text, 
@@ -7,15 +7,13 @@ import {
   ActivityIndicator, 
   TouchableOpacity,
   Dimensions,
-  RefreshControl
+  RefreshControl,
+  Platform
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
 import api from '../../src/utils/api';
-
-// Victory Native Charts
-import { VictoryLine, VictoryBar, VictoryChart, VictoryAxis, VictoryTheme, VictoryPie, VictoryLabel } from 'victory-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -54,6 +52,79 @@ interface ComparisonData {
   seller_average: { views: number; saves: number; chats: number; conversion_rate: number };
   comparison: { views_vs_avg: number; saves_vs_avg: number; chats_vs_avg: number };
 }
+
+// Simple animated bar chart component
+const SimpleBarChart = ({ data, labels }: { data: number[]; labels: string[] }) => {
+  const maxValue = Math.max(...data, 1);
+  
+  return (
+    <View style={chartStyles.container}>
+      <View style={chartStyles.barsWrapper}>
+        {data.map((value, index) => (
+          <View key={index} style={chartStyles.barColumn}>
+            <View style={chartStyles.barContainer}>
+              <View 
+                style={[
+                  chartStyles.bar, 
+                  { 
+                    height: `${Math.max((value / maxValue) * 100, 2)}%`,
+                  }
+                ]} 
+              />
+            </View>
+            <Text style={chartStyles.barLabel} numberOfLines={1}>{labels[index]}</Text>
+            <Text style={chartStyles.barValue}>{value}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+
+const chartStyles = StyleSheet.create({
+  container: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+  },
+  barsWrapper: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    height: 160,
+    paddingTop: 20,
+  },
+  barColumn: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 2,
+  },
+  barContainer: {
+    width: '80%',
+    maxWidth: 40,
+    height: 120,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  bar: {
+    width: '100%',
+    backgroundColor: '#4CAF50',
+    borderRadius: 4,
+    minHeight: 4,
+  },
+  barLabel: {
+    fontSize: 10,
+    color: '#888',
+    marginTop: 6,
+    textAlign: 'center',
+  },
+  barValue: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#333',
+    marginTop: 2,
+  },
+});
 
 export default function ListingPerformanceScreen() {
   const { listing_id } = useLocalSearchParams<{ listing_id: string }>();
@@ -137,9 +208,22 @@ export default function ListingPerformanceScreen() {
     }
   };
 
+  // Prepare chart data
+  const { dailyData, dailyLabels } = useMemo(() => {
+    if (!metrics?.daily_trend) return { dailyData: [], dailyLabels: [] };
+    const entries = Object.entries(metrics.daily_trend).slice(-7);
+    return {
+      dailyData: entries.map(([_, value]) => value),
+      dailyLabels: entries.map(([date]) => {
+        const d = new Date(date);
+        return d.toLocaleDateString('en-US', { weekday: 'short' });
+      }),
+    };
+  }, [metrics]);
+
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={styles.loadingContainer} data-testid="performance-loading">
         <ActivityIndicator size="large" color="#4CAF50" />
         <Text style={styles.loadingText}>Loading analytics...</Text>
       </View>
@@ -148,9 +232,9 @@ export default function ListingPerformanceScreen() {
 
   if (!hasAccess) {
     return (
-      <View style={styles.container}>
+      <View style={styles.container} data-testid="performance-no-access">
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton} data-testid="back-button">
             <Ionicons name="arrow-back" size={24} color="#333" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Performance</Text>
@@ -164,6 +248,7 @@ export default function ListingPerformanceScreen() {
           <TouchableOpacity 
             style={styles.upgradeButton}
             onPress={() => router.push('/credits')}
+            data-testid="upgrade-button"
           >
             <Text style={styles.upgradeButtonText}>Upgrade Now</Text>
           </TouchableOpacity>
@@ -174,7 +259,7 @@ export default function ListingPerformanceScreen() {
 
   if (error) {
     return (
-      <View style={styles.container}>
+      <View style={styles.container} data-testid="performance-error">
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#333" />
@@ -186,7 +271,7 @@ export default function ListingPerformanceScreen() {
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={64} color="#f44336" />
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={loadData}>
+          <TouchableOpacity style={styles.retryButton} onPress={loadData} data-testid="retry-button">
             <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
         </View>
@@ -194,25 +279,20 @@ export default function ListingPerformanceScreen() {
     );
   }
 
-  // Prepare chart data
-  const hourlyData = metrics?.hourly_trend?.map((value, index) => ({ x: index, y: value })) || [];
-  const dailyData = metrics?.daily_trend 
-    ? Object.entries(metrics.daily_trend).map(([date, value], index) => ({ x: index, y: value, label: date.slice(5) }))
-    : [];
-  
+  // Location data for display
   const locationData = metrics?.location_breakdown
-    ? Object.entries(metrics.location_breakdown).slice(0, 5).map(([location, count]) => ({ x: location, y: count }))
+    ? Object.entries(metrics.location_breakdown).slice(0, 5)
     : [];
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} data-testid="performance-screen">
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton} data-testid="back-button">
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Performance</Text>
-        <TouchableOpacity onPress={onRefresh}>
+        <TouchableOpacity onPress={onRefresh} data-testid="refresh-button">
           <Ionicons name="refresh" size={24} color="#333" />
         </TouchableOpacity>
       </View>
@@ -228,6 +308,7 @@ export default function ListingPerformanceScreen() {
               key={p}
               style={[styles.periodButton, period === p && styles.periodButtonActive]}
               onPress={() => setPeriod(p)}
+              data-testid={`period-${p}`}
             >
               <Text style={[styles.periodButtonText, period === p && styles.periodButtonTextActive]}>
                 {p === '24h' ? '24 Hours' : p === '7d' ? '7 Days' : '30 Days'}
@@ -237,25 +318,25 @@ export default function ListingPerformanceScreen() {
         </View>
 
         {/* Key Metrics */}
-        <View style={styles.metricsGrid}>
+        <View style={styles.metricsGrid} data-testid="metrics-grid">
           <View style={styles.metricCard}>
             <Ionicons name="eye" size={24} color="#4CAF50" />
-            <Text style={styles.metricValue}>{metrics?.total_views || 0}</Text>
+            <Text style={styles.metricValue} data-testid="total-views">{metrics?.total_views || 0}</Text>
             <Text style={styles.metricLabel}>Total Views</Text>
           </View>
           <View style={styles.metricCard}>
             <Ionicons name="people" size={24} color="#2196F3" />
-            <Text style={styles.metricValue}>{metrics?.unique_views || 0}</Text>
+            <Text style={styles.metricValue} data-testid="unique-views">{metrics?.unique_views || 0}</Text>
             <Text style={styles.metricLabel}>Unique Views</Text>
           </View>
           <View style={styles.metricCard}>
             <Ionicons name="heart" size={24} color="#E91E63" />
-            <Text style={styles.metricValue}>{metrics?.saves || 0}</Text>
+            <Text style={styles.metricValue} data-testid="saves">{metrics?.saves || 0}</Text>
             <Text style={styles.metricLabel}>Saves</Text>
           </View>
           <View style={styles.metricCard}>
             <Ionicons name="chatbubble" size={24} color="#9C27B0" />
-            <Text style={styles.metricValue}>{metrics?.chats_initiated || 0}</Text>
+            <Text style={styles.metricValue} data-testid="chats">{metrics?.chats_initiated || 0}</Text>
             <Text style={styles.metricLabel}>Chats</Text>
           </View>
         </View>
@@ -265,12 +346,12 @@ export default function ListingPerformanceScreen() {
           <Text style={styles.sectionTitle}>Conversion Rates</Text>
           <View style={styles.conversionRow}>
             <View style={styles.conversionItem}>
-              <Text style={styles.conversionValue}>{metrics?.view_to_chat_rate || 0}%</Text>
+              <Text style={styles.conversionValue} data-testid="view-to-chat-rate">{metrics?.view_to_chat_rate || 0}%</Text>
               <Text style={styles.conversionLabel}>View → Chat</Text>
             </View>
             <View style={styles.conversionDivider} />
             <View style={styles.conversionItem}>
-              <Text style={styles.conversionValue}>{metrics?.view_to_offer_rate || 0}%</Text>
+              <Text style={styles.conversionValue} data-testid="view-to-offer-rate">{metrics?.view_to_offer_rate || 0}%</Text>
               <Text style={styles.conversionLabel}>View → Offer</Text>
             </View>
           </View>
@@ -278,7 +359,7 @@ export default function ListingPerformanceScreen() {
 
         {/* Boost Impact */}
         {(metrics?.boost_views || 0) > 0 && (
-          <View style={styles.section}>
+          <View style={styles.section} data-testid="boost-impact-section">
             <Text style={styles.sectionTitle}>Boost Impact</Text>
             <View style={styles.boostCard}>
               <View style={styles.boostRow}>
@@ -298,7 +379,7 @@ export default function ListingPerformanceScreen() {
                 <Text style={[
                   styles.boostImpactValue,
                   { color: (metrics?.boost_impact_percent || 0) > 0 ? '#4CAF50' : '#f44336' }
-                ]}>
+                ]} data-testid="boost-impact-percent">
                   {metrics?.boost_impact_percent || 0}%
                 </Text>
               </View>
@@ -308,49 +389,22 @@ export default function ListingPerformanceScreen() {
 
         {/* Views Trend Chart */}
         {dailyData.length > 0 && (
-          <View style={styles.section}>
+          <View style={styles.section} data-testid="views-trend-section">
             <Text style={styles.sectionTitle}>Views Trend</Text>
-            <View style={styles.chartContainer}>
-              <VictoryChart
-                width={SCREEN_WIDTH - 40}
-                height={200}
-                theme={VictoryTheme.material}
-                domainPadding={20}
-              >
-                <VictoryAxis
-                  tickFormat={(t) => dailyData[t]?.label || ''}
-                  style={{
-                    tickLabels: { fontSize: 10, fill: '#666' }
-                  }}
-                />
-                <VictoryAxis
-                  dependentAxis
-                  style={{
-                    tickLabels: { fontSize: 10, fill: '#666' }
-                  }}
-                />
-                <VictoryBar
-                  data={dailyData}
-                  style={{
-                    data: { fill: '#4CAF50' }
-                  }}
-                  cornerRadius={{ top: 4 }}
-                />
-              </VictoryChart>
-            </View>
+            <SimpleBarChart data={dailyData} labels={dailyLabels} />
           </View>
         )}
 
         {/* Location Breakdown */}
         {locationData.length > 0 && (
-          <View style={styles.section}>
+          <View style={styles.section} data-testid="location-section">
             <Text style={styles.sectionTitle}>Views by Location</Text>
             <View style={styles.locationList}>
-              {locationData.map((item, index) => (
+              {locationData.map(([location, count], index) => (
                 <View key={index} style={styles.locationItem}>
                   <Ionicons name="location" size={16} color="#4CAF50" />
-                  <Text style={styles.locationName}>{item.x}</Text>
-                  <Text style={styles.locationCount}>{item.y} views</Text>
+                  <Text style={styles.locationName}>{location}</Text>
+                  <Text style={styles.locationCount}>{count} views</Text>
                 </View>
               ))}
             </View>
@@ -359,7 +413,7 @@ export default function ListingPerformanceScreen() {
 
         {/* Comparison */}
         {comparison && (
-          <View style={styles.section}>
+          <View style={styles.section} data-testid="comparison-section">
             <Text style={styles.sectionTitle}>vs Your Average</Text>
             <View style={styles.comparisonGrid}>
               <View style={styles.comparisonItem}>
@@ -395,15 +449,17 @@ export default function ListingPerformanceScreen() {
 
         {/* AI Insights */}
         {insights.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              <Ionicons name="bulb" size={18} color="#FF9800" /> Insights & Suggestions
-            </Text>
+          <View style={styles.section} data-testid="insights-section">
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="bulb" size={18} color="#FF9800" />
+              <Text style={[styles.sectionTitle, { marginLeft: 6, marginBottom: 0 }]}>Insights & Suggestions</Text>
+            </View>
             {insights.map((insight, index) => (
               <TouchableOpacity
                 key={index}
                 style={[styles.insightCard, { borderLeftColor: getInsightColor(insight.type) }]}
                 onPress={() => insight.action_route && router.push(insight.action_route as any)}
+                data-testid={`insight-${index}`}
               >
                 <View style={styles.insightHeader}>
                   <Ionicons name={getInsightIcon(insight.type) as any} size={20} color={getInsightColor(insight.type)} />
@@ -426,12 +482,13 @@ export default function ListingPerformanceScreen() {
         )}
 
         {/* Boost CTA */}
-        <View style={styles.boostCTA}>
+        <View style={styles.boostCTA} data-testid="boost-cta">
           <Text style={styles.boostCTATitle}>Want more views?</Text>
           <Text style={styles.boostCTAText}>Boost your listing to reach more buyers</Text>
           <TouchableOpacity 
             style={styles.boostCTAButton}
             onPress={() => router.push(`/boost/${listing_id}` as any)}
+            data-testid="boost-button"
           >
             <Ionicons name="rocket" size={20} color="#fff" />
             <Text style={styles.boostCTAButtonText}>Boost This Listing</Text>
@@ -469,7 +526,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
-    paddingTop: 50,
+    paddingTop: Platform.OS === 'web' ? 16 : 50,
   },
   backButton: {
     padding: 8,
@@ -543,6 +600,11 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 12,
   },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   conversionRow: {
     flexDirection: 'row',
     backgroundColor: '#fff',
@@ -608,12 +670,6 @@ const styles = StyleSheet.create({
   boostImpactValue: {
     fontSize: 18,
     fontWeight: '700',
-  },
-  chartContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 8,
-    alignItems: 'center',
   },
   locationList: {
     backgroundColor: '#fff',
