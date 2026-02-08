@@ -22,27 +22,6 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 - Frontend uses `basePath: "/api/admin-ui"` - all pages accessed via `/api/admin-ui/dashboard/*`
 - Backend API prefix: `/api/admin`
 
-### Code Structure
-```
-/app/admin-dashboard/
-├── backend/
-│   ├── server.py         # Main FastAPI application (~4000 lines)
-│   ├── routes/           # Future refactored routers
-│   ├── REFACTORING.md    # Refactoring plan
-│   └── .env              # Environment configuration
-└── frontend/
-    ├── src/
-    │   ├── app/          # Next.js App Router pages
-    │   │   └── dashboard/
-    │   │       ├── categories/page.tsx # Categories with icon uploader
-    │   │       ├── settings/page.tsx   # Locations, Deeplinks, Auth settings
-    │   │       └── users/page.tsx      # User management with Edit
-    │   ├── lib/api.ts    # API client
-    │   └── components/   # Reusable components
-    ├── next.config.ts    # basePath: "/api/admin-ui"
-    └── .env.local        # Frontend environment
-```
-
 ### Credentials
 - Admin: admin@example.com / admin123
 - Database: classifieds_db
@@ -58,17 +37,24 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 - [x] Comprehensive Listing Edit (with dynamic attributes)
 - [x] Full Custom Attributes Management page
 - [x] Advanced attribute features (inheritance, templates, bulk)
-- [x] Backend APIs for Locations, Deeplinks, Auth Settings (Feb 8)
-- [x] Settings page frontend - Locations, Deeplinks, Auth tabs (Feb 8)
-- [x] User Edit dialog in Users page (Feb 8)
-- [x] Icon Upload for Categories - Backend API (Feb 8)
-- [x] Icon Upload for Attributes - Backend API (Feb 8)
-- [x] **Visual Icon Uploader in Categories UI** (Feb 8)
-  - Icon preview box with live upload
-  - File type validation (PNG, JPG, SVG)
-  - Size limit (500KB)
-  - One-click delete
-  - Alternative text icon name input
+- [x] Backend APIs for Locations, Deeplinks, Auth Settings
+- [x] Settings page frontend - Locations, Deeplinks, Auth tabs
+- [x] User Edit dialog in Users page
+- [x] **Icon Upload for Categories** - Backend API + UI (Feb 8)
+- [x] **Icon Upload for Attributes** - Backend API + UI (Feb 8)
+
+### Icon Upload Feature Summary
+| Component | Max Size | File Types | Storage |
+|-----------|----------|------------|---------|
+| Categories | 500KB | PNG, JPG, SVG | Base64 data URL |
+| Attributes | 200KB | PNG, JPG, SVG | Base64 data URL |
+
+**UI Features:**
+- Icon preview box with border
+- Upload button with file dialog
+- Delete button (X icon)
+- Disabled state for emoji picker when custom icon uploaded
+- "Save first to upload" hint for new items
 
 ### Backend API Endpoints (All Tested & Working)
 | Endpoint | Status |
@@ -81,16 +67,11 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 | POST/DELETE /api/admin/categories/{id}/icon | ✅ |
 | POST/DELETE /api/admin/categories/{cat_id}/attributes/{attr_id}/icon | ✅ |
 
-### Icon Upload Specifications
-- **Category Icons**: PNG, JPG, SVG - Max 500KB - Stored as base64 data URL
-- **Attribute Icons**: PNG, JPG, SVG - Max 200KB - Stored as base64 data URL
-
 ### Pending Tasks
 - [ ] Frontend UI for Notification Scheduling
 - [ ] Custom Template Management UI  
 - [ ] Real-time Dashboard Updates (WebSocket)
-- [ ] Icon uploader for Attributes dialog
-- [ ] Execute backend refactoring (split server.py per REFACTORING.md)
+- [ ] Backend refactoring (split server.py per REFACTORING.md)
 
 ### Future/Backlog
 - CSV Import for Users
@@ -102,14 +83,13 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 
 ## Test Results
 - **Backend Tests**: 52/52 passed total
-  - Iteration 3: 31/31 (core features)
-  - Iteration 4: 21/21 (icon upload)
 - **Test Reports**: `/app/test_reports/iteration_*.json`
 
-## Screenshots
-- Dashboard with sidebar: Shows all navigation including Settings link
-- Settings page: Locations, Deeplinks, Auth tabs
-- Categories page: Icon uploader visible in Edit dialog
+## Files Modified (Feb 8, 2026)
+- `/app/admin-dashboard/backend/server.py` - Added attribute icon endpoints
+- `/app/admin-dashboard/frontend/src/app/dashboard/categories/page.tsx` - Added icon uploader UI
+- `/app/admin-dashboard/frontend/src/app/dashboard/attributes/page.tsx` - Added icon uploader UI
+- `/app/admin-dashboard/frontend/src/lib/api.ts` - Added uploadAttributeIcon, deleteAttributeIcon methods
 
 ---
 Last Updated: February 8, 2026
