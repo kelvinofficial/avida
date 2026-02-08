@@ -1276,6 +1276,36 @@ async def update_auth_settings(
     return await db.app_settings.find_one({"type": "auth"}, {"_id": 0})
 
 # =============================================================================
+# ATTRIBUTE MANAGEMENT ENDPOINTS
+# =============================================================================
+
+@api_router.get("/categories/{category_id}/attributes")
+async def get_category_attributes(
+    category_id: str,
+    admin: dict = Depends(require_permission(Permission.VIEW_ATTRIBUTES))
+):
+    """Get attributes for a category - supports id, slug, or name"""
+    # Try to find by id first
+    category = await db.admin_categories.find_one({"id": category_id}, {"_id": 0, "attributes": 1})
+    
+    # If not found, try by slug
+    if not category:
+        category = await db.admin_categories.find_one({"slug": category_id}, {"_id": 0, "attributes": 1})
+    
+    # If still not found, try by name (case insensitive)
+    if not category:
+        category = await db.admin_categories.find_one(
+            {"name": {"$regex": f"^{category_id}$", "$options": "i"}},
+            {"_id": 0, "attributes": 1}
+        )
+    
+    if not category:
+        # Return empty array instead of 404 for better UX
+        return []
+    
+    return category.get("attributes", [])
+
+# =============================================================================
 # DEEPLINK MANAGEMENT
 # =============================================================================
 
