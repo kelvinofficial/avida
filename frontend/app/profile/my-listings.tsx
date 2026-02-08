@@ -94,6 +94,7 @@ const DesktopListingCard = ({
   item,
   onPress,
   onEdit,
+  onPerformance,
   onBoost,
   onMarkSold,
   onDelete,
@@ -101,6 +102,7 @@ const DesktopListingCard = ({
   item: any;
   onPress: () => void;
   onEdit: () => void;
+  onPerformance: () => void;
   onBoost: () => void;
   onMarkSold: () => void;
   onDelete: () => void;
