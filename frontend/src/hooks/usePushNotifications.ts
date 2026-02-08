@@ -121,7 +121,12 @@ export function usePushNotifications() {
     if (!data) return;
 
     // Navigate based on notification type
-    if (data.listing_id) {
+    if (data.type?.startsWith('engagement_')) {
+      // Engagement notifications - go to performance screen
+      if (data.listing_id) {
+        router.push(`/performance/${data.listing_id}`);
+      }
+    } else if (data.listing_id) {
       router.push(`/listing/${data.listing_id}`);
     } else if (data.conversation_id) {
       router.push(`/chat/${data.conversation_id}`);
