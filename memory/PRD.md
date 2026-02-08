@@ -71,11 +71,11 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 - [x] **Mobile Money Integration** (Feb 8)
   - Flutterwave SDK (python-flutterwave v1.2.2) for M-Pesa and MTN MoMo
   - M-Pesa (Kenya), MTN Mobile Money (Ghana, Uganda, Zambia)
-  - Phone number input UI for mobile money payments
-  - Shows "Coming soon" until FW_SECRET_KEY env var is configured
+  - Phone number input UI + Network selector (MTN/VODAFONE/TIGO)
+  - Flutterwave credentials configured and ACTIVE ✅
 - [x] **Enhanced Payment Method Selector UI** (Feb 8)
-  - 2x2 grid layout showing 4 payment options
-  - Credit/Debit Card, PayPal, M-Pesa, MTN Mobile Money
+  - 2x2 grid layout showing 4 payment options (all active)
+  - Credit/Debit Card ✅, PayPal ✅, M-Pesa ✅, MTN Mobile Money ✅
   - Visual feedback for selected/disabled states
 
 ### Boost System Details
