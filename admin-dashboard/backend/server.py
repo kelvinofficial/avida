@@ -4277,6 +4277,261 @@ except ImportError as e:
     logger.warning(f"Boost system not loaded: {e}")
 
 # =============================================================================
+# BANNER MANAGEMENT PROXY ENDPOINTS
+# Proxy banner routes from main app backend
+# =============================================================================
+
+@app.get("/api/admin/banners/slots")
+async def get_banner_slots():
+    """Get all banner slots"""
+    slots = await db.banner_slots.find({}, {"_id": 0}).to_list(100)
+    return slots
+
+@app.get("/api/admin/banners/sizes")
+async def get_banner_sizes():
+    """Get all banner sizes"""
+    return {
+        "728x90": {"width": 728, "height": 90, "name": "Leaderboard"},
+        "300x250": {"width": 300, "height": 250, "name": "Medium Rectangle"},
+        "320x50": {"width": 320, "height": 50, "name": "Mobile Banner"},
+        "320x100": {"width": 320, "height": 100, "name": "Large Mobile Banner"},
+        "300x600": {"width": 300, "height": 600, "name": "Half Page"},
+        "970x250": {"width": 970, "height": 250, "name": "Billboard"},
+        "468x60": {"width": 468, "height": 60, "name": "Full Banner"},
+        "336x280": {"width": 336, "height": 280, "name": "Large Rectangle"},
+        "native": {"width": 0, "height": 0, "name": "Native (Auto)"},
+    }
+
+@app.get("/api/admin/banners/admin/list")
+async def admin_list_banners(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    placement: Optional[str] = Query(None),
+    is_active: Optional[bool] = Query(None),
+    admin = Depends(get_current_admin)
+):
+    """List all banners"""
+    query = {}
+    if placement:
+        query["placement"] = placement
+    if is_active is not None:
+        query["is_active"] = is_active
+    
+    skip = (page - 1) * limit
+    banners = await db.banners.find(query, {"_id": 0}).sort("priority", -1).skip(skip).limit(limit).to_list(limit)
+    total = await db.banners.count_documents(query)
+    
+    return {
+        "banners": banners,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "pages": (total + limit - 1) // limit
+    }
+
+@app.get("/api/admin/banners/admin/{banner_id}")
+async def admin_get_banner(
+    banner_id: str,
+    admin = Depends(get_current_admin)
+):
+    """Get a single banner"""
+    banner = await db.banners.find_one({"id": banner_id}, {"_id": 0})
+    if not banner:
+        raise HTTPException(status_code=404, detail="Banner not found")
+    return banner
+
+@app.post("/api/admin/banners/admin/create")
+async def admin_create_banner(
+    banner: Dict[str, Any] = Body(...),
+    admin = Depends(get_current_admin)
+):
+    """Create a new banner"""
+    import uuid
+    banner_id = f"banner_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc).isoformat()
+    
+    banner_doc = {
+        "id": banner_id,
+        **banner,
+        "created_by": admin.get("user_id", "admin"),
+        "created_at": now,
+        "updated_at": now,
+        "impressions": 0,
+        "clicks": 0,
+        "ctr": 0.0
+    }
+    
+    await db.banners.insert_one(banner_doc)
+    banner_doc.pop("_id", None)
+    
+    return banner_doc
+
+@app.put("/api/admin/banners/admin/{banner_id}")
+async def admin_update_banner(
+    banner_id: str,
+    update: Dict[str, Any] = Body(...),
+    admin = Depends(get_current_admin)
+):
+    """Update a banner"""
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.banners.update_one(
+        {"id": banner_id},
+        {"$set": update}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Banner not found")
+    
+    return await db.banners.find_one({"id": banner_id}, {"_id": 0})
+
+@app.delete("/api/admin/banners/admin/{banner_id}")
+async def admin_delete_banner(
+    banner_id: str,
+    admin = Depends(get_current_admin)
+):
+    """Delete a banner"""
+    result = await db.banners.delete_one({"id": banner_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Banner not found")
+    return {"deleted": True}
+
+@app.post("/api/admin/banners/admin/{banner_id}/toggle")
+async def admin_toggle_banner(
+    banner_id: str,
+    body: Dict[str, bool] = Body(...),
+    admin = Depends(get_current_admin)
+):
+    """Toggle banner active status"""
+    is_active = body.get("is_active", False)
+    await db.banners.update_one(
+        {"id": banner_id},
+        {"$set": {"is_active": is_active, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    return await db.banners.find_one({"id": banner_id}, {"_id": 0})
+
+@app.get("/api/admin/banners/admin/analytics/overview")
+async def admin_banner_analytics(
+    banner_id: Optional[str] = Query(None),
+    placement: Optional[str] = Query(None),
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    group_by: str = Query("day"),
+    admin = Depends(get_current_admin)
+):
+    """Get banner analytics"""
+    match_query = {}
+    if banner_id:
+        match_query["banner_id"] = banner_id
+    if start_date:
+        match_query["timestamp"] = {"$gte": start_date}
+    if end_date:
+        if "timestamp" in match_query:
+            match_query["timestamp"]["$lte"] = end_date
+        else:
+            match_query["timestamp"] = {"$lte": end_date}
+    
+    total_impressions = await db.banner_impressions.count_documents({**match_query, "type": "impression"})
+    total_clicks = await db.banner_impressions.count_documents({**match_query, "type": "click"})
+    ctr = (total_clicks / total_impressions * 100) if total_impressions > 0 else 0
+    
+    # Simple daily breakdown
+    pipeline = [
+        {"$match": match_query},
+        {"$group": {
+            "_id": {
+                "date": {"$dateToString": {"format": "%Y-%m-%d", "date": {"$dateFromString": {"dateString": "$timestamp"}}}},
+                "type": "$type"
+            },
+            "count": {"$sum": 1}
+        }},
+        {"$group": {
+            "_id": "$_id.date",
+            "stats": {"$push": {"type": "$_id.type", "count": "$count"}}
+        }},
+        {"$sort": {"_id": 1}},
+        {"$limit": 30}
+    ]
+    
+    try:
+        breakdown_raw = await db.banner_impressions.aggregate(pipeline).to_list(30)
+        breakdown = []
+        for item in breakdown_raw:
+            impressions = next((s["count"] for s in item["stats"] if s["type"] == "impression"), 0)
+            clicks = next((s["count"] for s in item["stats"] if s["type"] == "click"), 0)
+            item_ctr = (clicks / impressions * 100) if impressions > 0 else 0
+            breakdown.append({
+                "key": item["_id"] or "Unknown",
+                "impressions": impressions,
+                "clicks": clicks,
+                "ctr": round(item_ctr, 2)
+            })
+    except:
+        breakdown = []
+    
+    return {
+        "totals": {
+            "impressions": total_impressions,
+            "clicks": total_clicks,
+            "ctr": round(ctr, 2)
+        },
+        "breakdown": breakdown
+    }
+
+@app.get("/api/admin/banners/admin/seller-banners/pending")
+async def admin_get_pending_seller_banners(admin = Depends(get_current_admin)):
+    """Get pending seller banners"""
+    banners = await db.banners.find(
+        {"is_seller_banner": True, "approval_status": "pending"},
+        {"_id": 0}
+    ).sort("created_at", 1).to_list(100)
+    return banners
+
+@app.post("/api/admin/banners/admin/seller-banners/{banner_id}/approve")
+async def admin_approve_seller_banner(
+    banner_id: str,
+    body: Dict[str, bool] = Body(...),
+    admin = Depends(get_current_admin)
+):
+    """Approve or reject a seller banner"""
+    approved = body.get("approved", False)
+    status = "approved" if approved else "rejected"
+    
+    await db.banners.update_one(
+        {"id": banner_id, "is_seller_banner": True},
+        {
+            "$set": {
+                "approval_status": status,
+                "is_active": approved,
+                "approved_by": admin.get("user_id", "admin"),
+                "approved_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    return await db.banners.find_one({"id": banner_id}, {"_id": 0})
+
+@app.get("/api/admin/banners/admin/pricing")
+async def admin_get_banner_pricing(admin = Depends(get_current_admin)):
+    """Get banner pricing"""
+    pricing = await db.banner_pricing.find({"is_active": True}, {"_id": 0}).to_list(100)
+    return pricing
+
+@app.put("/api/admin/banners/admin/pricing/{pricing_id}")
+async def admin_update_banner_pricing(
+    pricing_id: str,
+    update: Dict[str, Any] = Body(...),
+    admin = Depends(get_current_admin)
+):
+    """Update banner pricing"""
+    await db.banner_pricing.update_one(
+        {"id": pricing_id},
+        {"$set": update}
+    )
+    return await db.banner_pricing.find_one({"id": pricing_id}, {"_id": 0})
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
