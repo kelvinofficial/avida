@@ -1177,7 +1177,7 @@ async def update_user(
     admin: dict = Depends(require_permission(Permission.EDIT_USERS))
 ):
     """Update user data"""
-    user = await db.users.find_one({"id": user_id})
+    user = await db.users.find_one({"user_id": user_id})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
@@ -1189,10 +1189,10 @@ async def update_user(
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
     updates["updated_by"] = admin["email"]
     
-    await db.users.update_one({"id": user_id}, {"$set": updates})
+    await db.users.update_one({"user_id": user_id}, {"$set": updates})
     await log_audit(admin["id"], admin["email"], AuditAction.UPDATE, "user", user_id, updates, request)
     
-    updated_user = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0, "hashed_password": 0})
+    updated_user = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password": 0, "hashed_password": 0})
     return updated_user
 
 @api_router.post("/users/{user_id}/avatar")
