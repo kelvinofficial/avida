@@ -228,7 +228,8 @@ def create_boost_routes(db, get_current_user):
                 "name": "Credit/Debit Card",
                 "description": "Pay securely with Visa, Mastercard, Amex",
                 "icon": "card",
-                "available": True
+                "available": True,
+                "requires_phone": False
             }
         ]
         
@@ -242,7 +243,8 @@ def create_boost_routes(db, get_current_user):
                 "name": "PayPal",
                 "description": "Pay with your PayPal account",
                 "icon": "logo-paypal",
-                "available": True
+                "available": True,
+                "requires_phone": False
             })
         else:
             providers.append({
@@ -250,8 +252,37 @@ def create_boost_routes(db, get_current_user):
                 "name": "PayPal",
                 "description": "Coming soon",
                 "icon": "logo-paypal",
-                "available": False
+                "available": False,
+                "requires_phone": False
             })
+        
+        # Check if Flutterwave is configured for Mobile Money
+        flutterwave_key = os.environ.get('FW_SECRET_KEY')
+        mobile_money_available = FLUTTERWAVE_AVAILABLE and flutterwave_key
+        
+        # M-Pesa (Kenya)
+        providers.append({
+            "id": "mpesa",
+            "name": "M-Pesa",
+            "description": "Pay with M-Pesa (Kenya)" if mobile_money_available else "Coming soon",
+            "icon": "phone-portrait",
+            "available": mobile_money_available,
+            "requires_phone": True,
+            "country": "KE",
+            "currency": "KES"
+        })
+        
+        # MTN Mobile Money (Ghana, Uganda, Zambia)
+        providers.append({
+            "id": "mtn",
+            "name": "MTN Mobile Money",
+            "description": "Pay with MTN MoMo (Ghana, Uganda, Zambia)" if mobile_money_available else "Coming soon",
+            "icon": "phone-portrait",
+            "available": mobile_money_available,
+            "requires_phone": True,
+            "networks": ["MTN", "VODAFONE", "TIGO"],
+            "countries": ["GH", "UG", "ZM"]
+        })
         
         return providers
     
