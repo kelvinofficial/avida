@@ -577,6 +577,21 @@ export default function ListingsPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* CSV Import Dialog */}
+      <CSVImportDialog
+        open={importDialogOpen}
+        onClose={() => setImportDialogOpen(false)}
+        onImport={async (file) => {
+          const result = await api.importListingsCSV(file);
+          await loadListings();
+          return result;
+        }}
+        title={t('listings.title') + ' - ' + t('common.import')}
+        description="Upload a CSV file to import listings. Required columns: name, price. Optional: description, category_id, location, status, condition, currency."
+        sampleHeaders={['name', 'price', 'description', 'category_id', 'location', 'status', 'condition', 'currency']}
+        entityName="listing"
+      />
     </Box>
   );
 }
