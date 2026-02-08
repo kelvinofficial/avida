@@ -900,6 +900,225 @@ Provide ONE specific insight to improve performance."""
 
 
 # =============================================================================
+# ENGAGEMENT NOTIFICATION SYSTEM
+# =============================================================================
+
+class EngagementNotificationConfig(BaseModel):
+    """Configuration for engagement notifications"""
+    enabled: bool = True
+    views_threshold_multiplier: float = 2.0  # Notify if views are 2x average
+    saves_threshold_multiplier: float = 3.0  # Notify if saves are 3x average
+    chats_threshold_multiplier: float = 2.0  # Notify if chats are 2x average
+    minimum_views_for_notification: int = 10  # Minimum views before notifications
+    notification_cooldown_hours: int = 6  # Hours between notifications per listing
+    check_interval_minutes: int = 30  # How often to check for engagement spikes
+
+
+class EngagementNotificationManager:
+    """Manages engagement boost notifications for sellers"""
+    
+    def __init__(self, db, create_notification_func: Callable = None):
+        self.db = db
+        self.create_notification = create_notification_func
+        self.config = EngagementNotificationConfig()
+        self._running = False
+        self._task = None
+    
+    async def load_config(self):
+        """Load notification config from database"""
+        config_doc = await self.db.engagement_notification_config.find_one({"_id": "config"})
+        if config_doc:
+            self.config = EngagementNotificationConfig(**{k: v for k, v in config_doc.items() if k != "_id"})
+    
+    async def save_config(self, config: EngagementNotificationConfig):
+        """Save notification config to database"""
+        self.config = config
+        await self.db.engagement_notification_config.update_one(
+            {"_id": "config"},
+            {"$set": config.model_dump()},
+            upsert=True
+        )
+    
+    async def check_engagement_spikes(self):
+        """Check all active listings for engagement spikes"""
+        if not self.config.enabled:
+            return
+        
+        now = datetime.now(timezone.utc)
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        week_ago = now - timedelta(days=7)
+        cooldown_cutoff = now - timedelta(hours=self.config.notification_cooldown_hours)
+        
+        # Get all active listings with their sellers
+        active_listings = await self.db.listings.find(
+            {"status": "active"},
+            {"id": 1, "title": 1, "user_id": 1, "_id": 0}
+        ).to_list(1000)
+        
+        for listing in active_listings:
+            listing_id = listing["id"]
+            seller_id = listing["user_id"]
+            
+            # Check if we've recently notified for this listing
+            recent_notification = await self.db.engagement_notifications_sent.find_one({
+                "listing_id": listing_id,
+                "sent_at": {"$gte": cooldown_cutoff.isoformat()}
+            })
+            
+            if recent_notification:
+                continue
+            
+            # Get today's metrics
+            today_events = await self.db.analytics_events.count_documents({
+                "listing_id": listing_id,
+                "event_type": "view",
+                "timestamp": {"$gte": today_start.isoformat()}
+            })
+            
+            today_saves = await self.db.analytics_events.count_documents({
+                "listing_id": listing_id,
+                "event_type": "save",
+                "timestamp": {"$gte": today_start.isoformat()}
+            })
+            
+            today_chats = await self.db.analytics_events.count_documents({
+                "listing_id": listing_id,
+                "event_type": "chat_initiated",
+                "timestamp": {"$gte": today_start.isoformat()}
+            })
+            
+            # Get average metrics (last 7 days, excluding today)
+            avg_pipeline = [
+                {"$match": {
+                    "listing_id": listing_id,
+                    "timestamp": {"$gte": week_ago.isoformat(), "$lt": today_start.isoformat()}
+                }},
+                {"$group": {
+                    "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": {"$dateFromString": {"dateString": "$timestamp"}}}},
+                    "views": {"$sum": {"$cond": [{"$eq": ["$event_type", "view"]}, 1, 0]}},
+                    "saves": {"$sum": {"$cond": [{"$eq": ["$event_type", "save"]}, 1, 0]}},
+                    "chats": {"$sum": {"$cond": [{"$eq": ["$event_type", "chat_initiated"]}, 1, 0]}}
+                }}
+            ]
+            daily_stats = await self.db.analytics_events.aggregate(avg_pipeline).to_list(7)
+            
+            if not daily_stats:
+                continue
+            
+            avg_views = sum(d["views"] for d in daily_stats) / len(daily_stats) if daily_stats else 0
+            avg_saves = sum(d["saves"] for d in daily_stats) / len(daily_stats) if daily_stats else 0
+            avg_chats = sum(d["chats"] for d in daily_stats) / len(daily_stats) if daily_stats else 0
+            
+            # Check for significant engagement spike
+            notification_data = None
+            
+            # Views spike
+            if today_events >= self.config.minimum_views_for_notification and avg_views > 0:
+                views_ratio = today_events / avg_views
+                if views_ratio >= self.config.views_threshold_multiplier:
+                    notification_data = {
+                        "type": "engagement_views_spike",
+                        "title": "Your listing is trending!",
+                        "body": f'"{listing["title"][:30]}..." got {today_events} views today - {views_ratio:.1f}x your average!',
+                        "metric": "views",
+                        "value": today_events,
+                        "ratio": views_ratio
+                    }
+            
+            # Saves spike (only if no views notification)
+            if not notification_data and today_saves >= 3 and avg_saves > 0:
+                saves_ratio = today_saves / avg_saves
+                if saves_ratio >= self.config.saves_threshold_multiplier:
+                    notification_data = {
+                        "type": "engagement_saves_spike",
+                        "title": "People are saving your listing!",
+                        "body": f'"{listing["title"][:30]}..." was saved {today_saves} times today - buyers are interested!',
+                        "metric": "saves",
+                        "value": today_saves,
+                        "ratio": saves_ratio
+                    }
+            
+            # Chats spike (only if no other notification)
+            if not notification_data and today_chats >= 2 and avg_chats > 0:
+                chats_ratio = today_chats / avg_chats
+                if chats_ratio >= self.config.chats_threshold_multiplier:
+                    notification_data = {
+                        "type": "engagement_chats_spike",
+                        "title": "Buyers want to chat!",
+                        "body": f'"{listing["title"][:30]}..." received {today_chats} chat requests today!',
+                        "metric": "chats",
+                        "value": today_chats,
+                        "ratio": chats_ratio
+                    }
+            
+            # Send notification if we have one
+            if notification_data and self.create_notification:
+                try:
+                    await self.create_notification(
+                        user_id=seller_id,
+                        notification_type=notification_data["type"],
+                        title=notification_data["title"],
+                        body=notification_data["body"],
+                        cta_label="View Performance",
+                        cta_route=f"/performance/{listing_id}",
+                        listing_id=listing_id,
+                        listing_title=listing["title"],
+                        data_payload={
+                            "listing_id": listing_id,
+                            "type": notification_data["type"],
+                            "metric": notification_data["metric"],
+                            "value": notification_data["value"]
+                        }
+                    )
+                    
+                    # Record that we sent a notification
+                    await self.db.engagement_notifications_sent.insert_one({
+                        "listing_id": listing_id,
+                        "seller_id": seller_id,
+                        "notification_type": notification_data["type"],
+                        "metric": notification_data["metric"],
+                        "value": notification_data["value"],
+                        "ratio": notification_data["ratio"],
+                        "sent_at": now.isoformat()
+                    })
+                    
+                    logger.info(f"Sent engagement notification for listing {listing_id}: {notification_data['type']}")
+                except Exception as e:
+                    logger.error(f"Failed to send engagement notification: {e}")
+    
+    async def start_background_task(self):
+        """Start the background task for checking engagement spikes"""
+        if self._running:
+            return
+        
+        self._running = True
+        self._task = asyncio.create_task(self._background_loop())
+        logger.info(f"Started engagement notification background task (checking every {self.config.check_interval_minutes} mins)")
+    
+    async def stop_background_task(self):
+        """Stop the background task"""
+        self._running = False
+        if self._task:
+            self._task.cancel()
+            try:
+                await self._task
+            except asyncio.CancelledError:
+                pass
+    
+    async def _background_loop(self):
+        """Background loop that periodically checks for engagement spikes"""
+        while self._running:
+            try:
+                await self.load_config()
+                if self.config.enabled:
+                    await self.check_engagement_spikes()
+            except Exception as e:
+                logger.error(f"Error in engagement notification loop: {e}")
+            
+            await asyncio.sleep(self.config.check_interval_minutes * 60)
+
+
+# =============================================================================
 # ROUTER FACTORY
 # =============================================================================
 
