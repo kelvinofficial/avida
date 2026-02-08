@@ -9,6 +9,7 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 - User data editing and authentication settings
 - Deeplink management
 - Icon uploads for categories/attributes
+- **Seller Boost & Promotion System** (NEW)
 
 ## Architecture
 
@@ -16,6 +17,7 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 - **Backend**: FastAPI, Python 3.11, Motor (MongoDB async driver), port 8002
 - **Frontend**: Next.js 16 with Turbopack, TypeScript, Material-UI, port 3001
 - **Database**: MongoDB (database: classifieds_db)
+- **Payments**: Stripe (integrated), PayPal (planned), Mobile Money (planned)
 - **Real-time**: WebSockets
 
 ### Important Configuration
@@ -40,38 +42,48 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 - [x] Backend APIs for Locations, Deeplinks, Auth Settings
 - [x] Settings page frontend - Locations, Deeplinks, Auth tabs
 - [x] User Edit dialog in Users page
-- [x] **Icon Upload for Categories** - Backend API + UI (Feb 8)
-- [x] **Icon Upload for Attributes** - Backend API + UI (Feb 8)
+- [x] Icon Upload for Categories - Backend API + UI
+- [x] Icon Upload for Attributes - Backend API + UI
+- [x] **Seller Boost & Promotion System - Admin Side** (Feb 8)
+  - Credit packages management (CRUD)
+  - Boost pricing configuration (5 types)
+  - Analytics dashboard
+  - Seller credits management with adjustment
 
-### Icon Upload Feature Summary
-| Component | Max Size | File Types | Storage |
-|-----------|----------|------------|---------|
-| Categories | 500KB | PNG, JPG, SVG | Base64 data URL |
-| Attributes | 200KB | PNG, JPG, SVG | Base64 data URL |
+### Boost System Details
 
-**UI Features:**
-- Icon preview box with border
-- Upload button with file dialog
-- Delete button (X icon)
-- Disabled state for emoji picker when custom icon uploaded
-- "Save first to upload" hint for new items
+**Credit Packages (Default):**
+| Package | Price | Credits | Bonus |
+|---------|-------|---------|-------|
+| Starter | $5 | 50 | 0 |
+| Popular | $10 | 100 | +20 |
+| Pro | $25 | 250 | +100 |
 
-### Backend API Endpoints (All Tested & Working)
-| Endpoint | Status |
-|----------|--------|
-| POST /api/admin/auth/login | ✅ |
-| GET/POST/PUT/DELETE /api/admin/locations | ✅ |
-| GET/POST/PUT/DELETE /api/admin/deeplinks | ✅ |
-| GET/PUT /api/admin/settings/auth | ✅ |
-| PUT /api/admin/users/{user_id} | ✅ |
-| POST/DELETE /api/admin/categories/{id}/icon | ✅ |
-| POST/DELETE /api/admin/categories/{cat_id}/attributes/{attr_id}/icon | ✅ |
+**Boost Types:**
+| Type | Per Hour | Per Day | Priority |
+|------|----------|---------|----------|
+| Homepage Spotlight | 3 cr | 25 cr | 6 |
+| Featured Placement | 1 cr | 10 cr | 5 |
+| Location Boost | 2 cr | 15 cr | 4 |
+| Category Boost | 2 cr | 12 cr | 4 |
+| Urgent Badge | 1 cr | 5 cr | 3 |
+
+**Backend Collections:**
+- `credit_packages` - Credit package definitions
+- `boost_pricing` - Boost type configurations
+- `seller_credits` - Seller credit balances
+- `credit_transactions` - Transaction history
+- `payment_transactions` - Payment records
+- `listing_boosts` - Active/expired boosts
 
 ### Pending Tasks
-- [ ] Frontend UI for Notification Scheduling
-- [ ] Custom Template Management UI  
-- [ ] Real-time Dashboard Updates (WebSocket)
-- [ ] Backend refactoring (split server.py per REFACTORING.md)
+- [ ] Seller credit purchase flow (Stripe checkout)
+- [ ] Seller boost creation UI
+- [ ] Boost status display on listings
+- [ ] PayPal integration
+- [ ] Mobile Money integration
+- [ ] Background job for auto-expiring boosts
+- [ ] Boosted listings ranking algorithm
 
 ### Future/Backlog
 - CSV Import for Users
@@ -81,15 +93,35 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 
 ---
 
-## Test Results
-- **Backend Tests**: 52/52 passed total
-- **Test Reports**: `/app/test_reports/iteration_*.json`
+## API Endpoints - Boost System
 
-## Files Modified (Feb 8, 2026)
-- `/app/admin-dashboard/backend/server.py` - Added attribute icon endpoints
-- `/app/admin-dashboard/frontend/src/app/dashboard/categories/page.tsx` - Added icon uploader UI
-- `/app/admin-dashboard/frontend/src/app/dashboard/attributes/page.tsx` - Added icon uploader UI
-- `/app/admin-dashboard/frontend/src/lib/api.ts` - Added uploadAttributeIcon, deleteAttributeIcon methods
+### Public
+- `GET /api/admin/boost/packages` - Get active packages
+- `GET /api/admin/boost/pricing` - Get enabled pricing
+- `GET /api/admin/boost/calculate` - Calculate boost cost
+
+### Seller (Auth Required)
+- `GET /api/admin/boost/credits/balance` - Get my credits
+- `GET /api/admin/boost/credits/history` - Get transaction history
+- `POST /api/admin/boost/credits/purchase` - Start Stripe checkout
+- `GET /api/admin/boost/credits/payment-status/{id}` - Check payment
+- `POST /api/admin/boost/create` - Create new boost
+- `GET /api/admin/boost/my-boosts` - Get my boosts
+
+### Admin
+- `GET/POST/PUT/DELETE /api/admin/boost/admin/packages` - Package CRUD
+- `GET/PUT /api/admin/boost/admin/pricing` - Pricing management
+- `PUT /api/admin/boost/admin/pricing/{type}/toggle` - Enable/disable
+- `GET /api/admin/boost/admin/analytics` - Analytics
+- `GET /api/admin/boost/admin/sellers` - Seller credits list
+- `POST /api/admin/boost/admin/credits/adjust` - Adjust credits
+- `POST /api/admin/boost/admin/expire-boosts` - Trigger expiration
+
+---
+
+## Test Results
+- Backend Tests: 52/52 passed (core features)
+- Boost System: Manually verified working
 
 ---
 Last Updated: February 8, 2026
