@@ -980,7 +980,22 @@ async def add_category_attribute(
         "options": attribute.options,
         "validation": attribute.validation,
         "order": attribute.order,
-        "conditions": attribute.conditions
+        "conditions": attribute.conditions,
+        # New fields
+        "icon": attribute.icon,
+        "placeholder": attribute.placeholder,
+        "help_text": attribute.help_text,
+        "min_length": attribute.min_length,
+        "max_length": attribute.max_length,
+        "min_value": attribute.min_value,
+        "max_value": attribute.max_value,
+        "default_value": attribute.default_value,
+        "unit": attribute.unit,
+        "searchable": attribute.searchable,
+        "filterable": attribute.filterable,
+        "show_in_list": attribute.show_in_list,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": admin["email"]
     }
     
     await db.admin_categories.update_one(
