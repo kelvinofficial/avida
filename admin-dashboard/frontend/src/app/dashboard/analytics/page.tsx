@@ -308,7 +308,7 @@ export default function AnalyticsPage() {
                       outerRadius={100}
                       paddingAngle={5}
                       dataKey="value"
-                      label={({ name, percent }: { name: string; percent?: number }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%`}
                     >
                       {statusData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
