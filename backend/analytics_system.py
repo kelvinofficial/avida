@@ -5,12 +5,13 @@ Comprehensive analytics for marketplace listings and sellers
 
 from fastapi import APIRouter, HTTPException, Request, Query, Depends
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Callable
 from datetime import datetime, timezone, timedelta
 from enum import Enum
 import uuid
 import os
 import logging
+import asyncio
 from collections import defaultdict
 
 # AI Integration for insights
