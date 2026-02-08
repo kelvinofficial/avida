@@ -1417,6 +1417,7 @@ def create_analytics_router(db, get_current_user, get_current_admin, create_noti
     router = APIRouter(prefix="/analytics", tags=["Analytics"])
     analytics = AnalyticsSystem(db)
     engagement_notifier = EngagementNotificationManager(db, create_notification_func)
+    badges_manager = SellerBadgesManager(db)
     
     # Initialize on startup
     @router.on_event("startup")
@@ -1424,10 +1425,46 @@ def create_analytics_router(db, get_current_user, get_current_admin, create_noti
         await analytics.initialize_default_settings()
         await engagement_notifier.load_config()
         await engagement_notifier.start_background_task()
+        await badges_manager.initialize_badges()
+        await badges_manager.start_background_task()
     
     @router.on_event("shutdown")
     async def shutdown():
         await engagement_notifier.stop_background_task()
+        await badges_manager.stop_background_task()
+    
+    # =========================================================================
+    # BADGES ENDPOINTS
+    # =========================================================================
+    
+    @router.get("/badges/definitions")
+    async def get_badge_definitions():
+        """Get all available badge definitions"""
+        return await badges_manager.get_badge_definitions()
+    
+    @router.get("/badges/seller/{seller_id}")
+    async def get_seller_badges(seller_id: str):
+        """Get badges for a specific seller"""
+        return await badges_manager.get_seller_badges(seller_id)
+    
+    @router.get("/badges/my-badges")
+    async def get_my_badges(user = Depends(get_current_user)):
+        """Get current user's badges"""
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        return await badges_manager.get_seller_badges(user.user_id)
+    
+    @router.post("/badges/evaluate/{seller_id}")
+    async def evaluate_seller_badges(seller_id: str, admin = Depends(get_current_admin)):
+        """Manually trigger badge evaluation for a seller (admin only)"""
+        earned = await badges_manager.evaluate_seller_badges(seller_id)
+        return {"seller_id": seller_id, "earned_badges": earned}
+    
+    @router.post("/badges/evaluate-all")
+    async def evaluate_all_badges(admin = Depends(get_current_admin)):
+        """Trigger badge evaluation for all sellers (admin only)"""
+        await badges_manager.evaluate_all_sellers()
+        return {"status": "completed", "message": "Badge evaluation triggered for all sellers"}
     
     # =========================================================================
     # ADMIN ENDPOINTS
