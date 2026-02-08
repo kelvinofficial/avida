@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Card,
@@ -28,6 +28,8 @@ import {
   ListItemIcon,
   Collapse,
   Divider,
+  Avatar,
+  Tooltip,
 } from '@mui/material';
 import {
   Add,
@@ -40,6 +42,9 @@ import {
   Save,
   Download,
   Upload,
+  Image as ImageIcon,
+  CloudUpload,
+  Close,
 } from '@mui/icons-material';
 import {
   DndContext,
