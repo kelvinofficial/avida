@@ -121,7 +121,10 @@ export function usePushNotifications() {
     if (!data) return;
 
     // Navigate based on notification type
-    if (data.type?.startsWith('engagement_')) {
+    if (data.type === 'badge_earned') {
+      // Badge notification - go to profile to see badges
+      router.push('/profile');
+    } else if (data.type?.startsWith('engagement_')) {
       // Engagement notifications - go to performance screen
       if (data.listing_id) {
         router.push(`/performance/${data.listing_id}`);
