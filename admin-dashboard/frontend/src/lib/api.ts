@@ -785,6 +785,103 @@ class ApiClient {
     const { data } = await this.client.post(proxyEndpoint, body);
     return data;
   }
+
+  // =========================================================================
+  // BANNER MANAGEMENT
+  // =========================================================================
+
+  async getBannerSlots() {
+    const { data } = await this.client.get('/banners/slots');
+    return data;
+  }
+
+  async getBannerSizes() {
+    const { data } = await this.client.get('/banners/sizes');
+    return data;
+  }
+
+  async getBanners(page: number = 1, limit: number = 20, placement?: string, isActive?: boolean) {
+    const params: Record<string, any> = { page, limit };
+    if (placement) params.placement = placement;
+    if (isActive !== undefined) params.is_active = isActive;
+    const { data } = await this.client.get('/banners/admin/list', { params });
+    return data;
+  }
+
+  async getBanner(bannerId: string) {
+    const { data } = await this.client.get(`/banners/admin/${bannerId}`);
+    return data;
+  }
+
+  async createBanner(bannerData: Record<string, any>) {
+    const { data } = await this.client.post('/banners/admin/create', bannerData);
+    return data;
+  }
+
+  async updateBanner(bannerId: string, bannerData: Record<string, any>) {
+    const { data } = await this.client.put(`/banners/admin/${bannerId}`, bannerData);
+    return data;
+  }
+
+  async deleteBanner(bannerId: string) {
+    const { data } = await this.client.delete(`/banners/admin/${bannerId}`);
+    return data;
+  }
+
+  async toggleBanner(bannerId: string, isActive: boolean) {
+    const { data } = await this.client.post(`/banners/admin/${bannerId}/toggle`, { is_active: isActive });
+    return data;
+  }
+
+  async getBannerAnalytics(bannerId?: string, startDate?: string, endDate?: string, groupBy: string = 'day') {
+    const params: Record<string, any> = { group_by: groupBy };
+    if (bannerId) params.banner_id = bannerId;
+    if (startDate) params.start_date = startDate;
+    if (endDate) params.end_date = endDate;
+    const { data } = await this.client.get('/banners/admin/analytics/overview', { params });
+    return data;
+  }
+
+  async exportBannerAnalytics(bannerId?: string, startDate?: string, endDate?: string) {
+    const params: Record<string, any> = {};
+    if (bannerId) params.banner_id = bannerId;
+    if (startDate) params.start_date = startDate;
+    if (endDate) params.end_date = endDate;
+    
+    const response = await this.client.get('/banners/admin/analytics/export', { 
+      params,
+      responseType: 'blob'
+    });
+    
+    // Download the file
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'banner_analytics.csv');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
+  async getPendingSellerBanners() {
+    const { data } = await this.client.get('/banners/admin/seller-banners/pending');
+    return data;
+  }
+
+  async approveSellerBanner(bannerId: string, approved: boolean) {
+    const { data } = await this.client.post(`/banners/admin/seller-banners/${bannerId}/approve`, { approved });
+    return data;
+  }
+
+  async getBannerPricing() {
+    const { data } = await this.client.get('/banners/admin/pricing');
+    return data;
+  }
+
+  async updateBannerPricing(pricingId: string, update: Record<string, any>) {
+    const { data } = await this.client.put(`/banners/admin/pricing/${pricingId}`, update);
+    return data;
+  }
 }
 
 export const api = new ApiClient();
