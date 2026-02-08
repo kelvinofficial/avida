@@ -378,6 +378,74 @@ export default function CategoriesPage() {
     }
   };
 
+  // Icon upload handlers
+  const handleIconFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+    if (!validTypes.includes(file.type)) {
+      setError('Invalid file type. Please upload PNG, JPG, or SVG.');
+      return;
+    }
+
+    // Validate file size (500KB max)
+    if (file.size > 500 * 1024) {
+      setError('File too large. Maximum size is 500KB.');
+      return;
+    }
+
+    // If editing existing category, upload immediately
+    if (editCategory) {
+      setUploadingIcon(true);
+      try {
+        await api.uploadCategoryIcon(editCategory.id, file);
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setIconPreview(e.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+        await loadCategories();
+      } catch (err) {
+        setError('Failed to upload icon');
+      } finally {
+        setUploadingIcon(false);
+      }
+    } else {
+      // For new categories, just show preview (icon will be set after creation)
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setIconPreview(e.target?.result as string);
+        setFormData(prev => ({ ...prev, icon: '' })); // Clear text icon
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Reset file input
+    if (iconInputRef.current) {
+      iconInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveIcon = async () => {
+    if (editCategory) {
+      setUploadingIcon(true);
+      try {
+        await api.deleteCategoryIcon(editCategory.id);
+        setIconPreview(null);
+        await loadCategories();
+      } catch (err) {
+        setError('Failed to remove icon');
+      } finally {
+        setUploadingIcon(false);
+      }
+    } else {
+      setIconPreview(null);
+    }
+  };
+
   const handleDelete = async () => {
     if (!deleteCategory) return;
 
