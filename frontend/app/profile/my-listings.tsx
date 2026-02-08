@@ -213,12 +213,14 @@ const ListingItem = ({
   item,
   onPress,
   onEdit,
+  onBoost,
   onMarkSold,
   onDelete,
 }: {
   item: any;
   onPress: () => void;
   onEdit: () => void;
+  onBoost: () => void;
   onMarkSold: () => void;
   onDelete: () => void;
 }) => (
@@ -236,6 +238,11 @@ const ListingItem = ({
             {item.status?.charAt(0).toUpperCase() + item.status?.slice(1)}
           </Text>
         </View>
+        {item.is_boosted && (
+          <View style={[styles.statusBadge, { backgroundColor: '#E8F5E9' }]}>
+            <Text style={[styles.statusText, { color: '#4CAF50' }]}>Boosted</Text>
+          </View>
+        )}
         <Text style={styles.listingDate}>
           {new Date(item.created_at).toLocaleDateString()}
         </Text>
@@ -256,9 +263,14 @@ const ListingItem = ({
         <Ionicons name="pencil-outline" size={18} color={COLORS.primary} />
       </TouchableOpacity>
       {item.status === 'active' && (
-        <TouchableOpacity style={styles.actionBtn} onPress={onMarkSold}>
-          <Ionicons name="checkmark-circle-outline" size={18} color={COLORS.success} />
-        </TouchableOpacity>
+        <>
+          <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#E8F5E9' }]} onPress={onBoost}>
+            <Ionicons name="rocket-outline" size={18} color="#4CAF50" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn} onPress={onMarkSold}>
+            <Ionicons name="checkmark-circle-outline" size={18} color={COLORS.success} />
+          </TouchableOpacity>
+        </>
       )}
       <TouchableOpacity style={styles.actionBtn} onPress={onDelete}>
         <Ionicons name="trash-outline" size={18} color={COLORS.error} />
