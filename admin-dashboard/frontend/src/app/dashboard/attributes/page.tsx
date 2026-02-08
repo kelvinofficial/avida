@@ -955,6 +955,118 @@ export default function AttributesPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Apply Template Dialog */}
+      <Dialog open={templateDialogOpen} onClose={() => setTemplateDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <AutoAwesome color="secondary" />
+            Apply Attribute Template
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+            <FormControl fullWidth required>
+              <InputLabel>Select Category</InputLabel>
+              <Select
+                value={templateCategory}
+                label="Select Category"
+                onChange={(e) => setTemplateCategory(e.target.value)}
+              >
+                {categories.map(cat => (
+                  <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth required>
+              <InputLabel>Select Template</InputLabel>
+              <Select
+                value={selectedTemplate}
+                label="Select Template"
+                onChange={(e) => setSelectedTemplate(e.target.value)}
+              >
+                {templates.map(template => (
+                  <MenuItem key={template.id} value={template.id}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography sx={{ fontSize: 18 }}>{template.icon}</Typography>
+                      <Box>
+                        <Typography>{template.name}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {template.attribute_count} attributes
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            {selectedTemplate && templates.find(t => t.id === selectedTemplate) && (
+              <Alert severity="info" sx={{ mt: 1 }}>
+                <Typography variant="body2">
+                  <strong>Attributes:</strong>{' '}
+                  {templates.find(t => t.id === selectedTemplate)?.attributes_preview.join(', ')}
+                  {(templates.find(t => t.id === selectedTemplate)?.attribute_count || 0) > 5 && '...'}
+                </Typography>
+              </Alert>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setTemplateDialogOpen(false)}>{t('common.cancel')}</Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleApplyTemplate}
+            disabled={actionLoading || !templateCategory || !selectedTemplate}
+            startIcon={actionLoading ? <CircularProgress size={16} /> : <PlaylistAdd />}
+          >
+            Apply Template
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Copy to Category Dialog */}
+      <Dialog open={copyDialogOpen} onClose={() => setCopyDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ContentCopy color="primary" />
+            Copy Attributes to Category
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+            <Alert severity="info">
+              You are about to copy {selectedAttrs.length} attribute(s) to another category.
+              Existing attributes with the same key will be skipped.
+            </Alert>
+            <FormControl fullWidth required>
+              <InputLabel>Target Category</InputLabel>
+              <Select
+                value={copyTargetCategory}
+                label="Target Category"
+                onChange={(e) => setCopyTargetCategory(e.target.value)}
+              >
+                {categories
+                  .filter(cat => cat.id !== categoryFilter)
+                  .map(cat => (
+                    <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCopyDialogOpen(false)}>{t('common.cancel')}</Button>
+          <Button
+            variant="contained"
+            onClick={handleBulkCopy}
+            disabled={actionLoading || !copyTargetCategory}
+            startIcon={actionLoading ? <CircularProgress size={16} /> : <ContentCopy />}
+          >
+            Copy Attributes
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
