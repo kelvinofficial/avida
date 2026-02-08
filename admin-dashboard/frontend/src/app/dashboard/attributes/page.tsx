@@ -380,6 +380,7 @@ export default function AttributesPage() {
   const filteredAttributes = attributes.filter(attr => {
     if (categoryFilter && attr.category_id !== categoryFilter) return false;
     if (typeFilter && attr.type !== typeFilter) return false;
+    if (!showInherited && attr.is_inherited) return false;
     return true;
   });
 
@@ -391,6 +392,9 @@ export default function AttributesPage() {
   const needsOptions = ['dropdown', 'radio', 'checkbox'].includes(formData.type);
   const needsLengthValidation = ['text', 'textarea'].includes(formData.type);
   const needsValueValidation = formData.type === 'number';
+  
+  const selectableAttrs = filteredAttributes.filter(a => !a.is_inherited);
+  const allSelected = selectableAttrs.length > 0 && selectedAttrs.length === selectableAttrs.length;
 
   return (
     <Box>
@@ -404,6 +408,14 @@ export default function AttributesPage() {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            startIcon={<AutoAwesome />}
+            onClick={() => setTemplateDialogOpen(true)}
+            color="secondary"
+          >
+            Use Template
+          </Button>
           <Button
             variant="outlined"
             startIcon={<Refresh />}
@@ -425,6 +437,33 @@ export default function AttributesPage() {
       {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
       {success && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>{success}</Alert>}
 
+      {/* Templates Preview */}
+      {templates.length > 0 && (
+        <Card sx={{ mb: 3, bgcolor: 'background.default' }}>
+          <CardContent sx={{ py: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+              <AutoAwesome color="secondary" />
+              <Typography variant="subtitle2">Quick Setup Templates</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              {templates.map(template => (
+                <Chip
+                  key={template.id}
+                  icon={<Typography sx={{ fontSize: 16, mr: -0.5 }}>{template.icon}</Typography>}
+                  label={`${template.name} (${template.attribute_count})`}
+                  onClick={() => {
+                    setSelectedTemplate(template.id);
+                    setTemplateDialogOpen(true);
+                  }}
+                  variant="outlined"
+                  sx={{ cursor: 'pointer' }}
+                />
+              ))}
+            </Box>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Filters */}
       <Card sx={{ mb: 3, p: 2 }}>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -434,7 +473,7 @@ export default function AttributesPage() {
             <Select
               value={categoryFilter}
               label="Filter by Category"
-              onChange={(e) => setCategoryFilter(e.target.value)}
+              onChange={(e) => { setCategoryFilter(e.target.value); setSelectedAttrs([]); }}
             >
               <MenuItem value="">All Categories</MenuItem>
               {categories.map(cat => (
@@ -455,11 +494,55 @@ export default function AttributesPage() {
               ))}
             </Select>
           </FormControl>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={showInherited}
+                onChange={(e) => setShowInherited(e.target.checked)}
+                size="small"
+              />
+            }
+            label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}><LinkIcon fontSize="small" /> Show Inherited</Box>}
+          />
           <Typography variant="body2" color="text.secondary">
-            Showing {filteredAttributes.length} of {attributes.length} attributes
+            Showing {filteredAttributes.length} attributes
           </Typography>
+          
+          {/* Bulk actions */}
+          {selectedAttrs.length > 0 && (
+            <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+              <Chip 
+                label={`${selectedAttrs.length} selected`} 
+                color="primary" 
+                size="small"
+                onDelete={() => setSelectedAttrs([])}
+              />
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<MoreVert />}
+                onClick={(e) => setBulkMenuAnchor(e.currentTarget)}
+              >
+                Bulk Actions
+              </Button>
+            </Box>
+          )}
         </Box>
       </Card>
+
+      {/* Bulk Actions Menu */}
+      <Menu
+        anchorEl={bulkMenuAnchor}
+        open={Boolean(bulkMenuAnchor)}
+        onClose={() => setBulkMenuAnchor(null)}
+      >
+        <MenuItem onClick={() => { setCopyDialogOpen(true); setBulkMenuAnchor(null); }}>
+          <ContentCopy fontSize="small" sx={{ mr: 1 }} /> Copy to Category
+        </MenuItem>
+        <MenuItem onClick={handleBulkDelete} sx={{ color: 'error.main' }}>
+          <Delete fontSize="small" sx={{ mr: 1 }} /> Delete Selected
+        </MenuItem>
+      </Menu>
 
       {/* Attributes Table */}
       <Card>
