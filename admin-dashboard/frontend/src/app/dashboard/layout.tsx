@@ -42,6 +42,7 @@ import {
   Campaign,
   NotificationsActive,
   Language,
+  Tune,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
@@ -53,6 +54,7 @@ const DRAWER_WIDTH = 260;
 const menuItems = [
   { text: 'Overview', icon: <Dashboard />, path: '/dashboard' },
   { text: 'Categories', icon: <Category />, path: '/dashboard/categories' },
+  { text: 'Attributes', icon: <Tune />, path: '/dashboard/attributes' },
   { text: 'Users', icon: <People />, path: '/dashboard/users' },
   { text: 'Listings', icon: <Inventory />, path: '/dashboard/listings' },
   { text: 'Reports', icon: <Report />, path: '/dashboard/reports' },
