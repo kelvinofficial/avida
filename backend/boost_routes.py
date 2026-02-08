@@ -293,7 +293,7 @@ def create_boost_routes(db, get_current_user):
         data: PurchaseCreditsRequest,
         user: dict = Depends(get_current_user)
     ):
-        """Purchase credits via Stripe"""
+        """Purchase credits via Stripe or PayPal"""
         seller_id = user["user_id"]
         
         # Get package
@@ -314,7 +314,81 @@ def create_boost_routes(db, get_current_user):
         if not package:
             raise HTTPException(status_code=404, detail="Package not found")
         
-        # Initialize Stripe
+        # Handle PayPal
+        if data.provider == PaymentProvider.PAYPAL:
+            if not PAYPAL_AVAILABLE:
+                raise HTTPException(status_code=400, detail="PayPal payments not available")
+            
+            paypal_client_id = os.environ.get('PAYPAL_CLIENT_ID')
+            paypal_secret = os.environ.get('PAYPAL_SECRET')
+            
+            if not paypal_client_id or not paypal_secret:
+                raise HTTPException(status_code=500, detail="PayPal not configured")
+            
+            try:
+                # Create PayPal client
+                client = PaypalServersdkClient(
+                    client_credentials_auth_credentials=ClientCredentialsAuthCredentials(
+                        o_auth_client_id=paypal_client_id,
+                        o_auth_client_secret=paypal_secret
+                    )
+                )
+                
+                # Create order
+                order_request = OrderRequest(
+                    intent=CheckoutPaymentIntent.CAPTURE,
+                    purchase_units=[
+                        PurchaseUnitRequest(
+                            reference_id=data.package_id,
+                            amount=AmountWithBreakdown(
+                                currency_code="USD",
+                                value=str(package["price"])
+                            ),
+                            description=f"{package['name']} - {package['credits']} credits"
+                        )
+                    ]
+                )
+                
+                orders_controller = client.orders
+                result = orders_controller.orders_create({"body": order_request})
+                
+                # Create payment transaction record
+                payment = {
+                    "id": f"ptx_{uuid.uuid4().hex[:12]}",
+                    "seller_id": seller_id,
+                    "package_id": data.package_id,
+                    "provider": "paypal",
+                    "session_id": result.body.id,
+                    "amount": package["price"],
+                    "currency": "USD",
+                    "credits_to_add": package["credits"],
+                    "bonus_credits": package.get("bonus_credits", 0),
+                    "status": PaymentStatus.PENDING.value,
+                    "metadata": {"paypal_order_id": result.body.id},
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "completed_at": None
+                }
+                await db.payment_transactions.insert_one(payment)
+                
+                # Find the approval link
+                approval_url = None
+                for link in result.body.links:
+                    if link.rel == "approve":
+                        approval_url = link.href
+                        break
+                
+                return {
+                    "checkout_url": approval_url,
+                    "order_id": result.body.id,
+                    "session_id": result.body.id,
+                    "provider": "paypal",
+                    "package": package
+                }
+            except Exception as e:
+                logger.error(f"PayPal error: {e}")
+                raise HTTPException(status_code=500, detail=f"PayPal payment failed: {str(e)}")
+        
+        # Handle Stripe (default)
         host_url = str(request.base_url).rstrip('/')
         webhook_url = f"{host_url}/api/webhook/stripe"
         stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
@@ -360,6 +434,7 @@ def create_boost_routes(db, get_current_user):
         return {
             "checkout_url": session.url,
             "session_id": session.session_id,
+            "provider": "stripe",
             "package": package
         }
     
