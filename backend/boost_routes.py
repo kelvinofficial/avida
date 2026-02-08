@@ -222,72 +222,59 @@ def create_boost_routes(db, get_current_user):
     
     @router.get("/payment-providers")
     async def get_payment_providers():
-        """Get available payment providers"""
-        providers = [
-            {
-                "id": "stripe",
-                "name": "Credit/Debit Card",
-                "description": "Pay securely with Visa, Mastercard, Amex",
-                "icon": "card",
-                "available": True,
-                "requires_phone": False
-            }
-        ]
+        """Get available payment providers - respects admin settings"""
+        # Fetch payment methods from database (configured by admin)
+        db_methods = await db.payment_methods.find({}, {"_id": 0}).sort("priority", 1).to_list(100)
         
-        # Check if PayPal is configured
+        # If no methods in DB, use defaults
+        if not db_methods:
+            db_methods = [
+                {"id": "stripe", "name": "Credit/Debit Card", "description": "Pay securely with Visa, Mastercard, Amex", "icon": "card", "is_enabled": True, "requires_phone": False, "currency": "USD"},
+                {"id": "paypal", "name": "PayPal", "description": "Pay with your PayPal account", "icon": "logo-paypal", "is_enabled": True, "requires_phone": False, "currency": "USD"},
+                {"id": "mpesa", "name": "M-Pesa", "description": "Pay with M-Pesa (Kenya)", "icon": "phone-portrait", "is_enabled": True, "requires_phone": True, "country": "KE", "currency": "KES"},
+                {"id": "mtn", "name": "MTN Mobile Money", "description": "Pay with MTN MoMo", "icon": "phone-portrait", "is_enabled": True, "requires_phone": True, "country": "GH", "currency": "GHS", "networks": ["MTN", "VODAFONE", "TIGO"]},
+                {"id": "vodacom_tz", "name": "Vodacom Tanzania", "description": "Pay with M-Pesa Tanzania", "icon": "phone-portrait", "is_enabled": True, "requires_phone": True, "country": "TZ", "currency": "TZS"},
+            ]
+        
+        # Check API keys availability
         paypal_client_id = os.environ.get('PAYPAL_CLIENT_ID')
         paypal_secret = os.environ.get('PAYPAL_SECRET')
+        paypal_configured = bool(PAYPAL_AVAILABLE and paypal_client_id and paypal_secret)
         
-        if PAYPAL_AVAILABLE and paypal_client_id and paypal_secret:
-            providers.append({
-                "id": "paypal",
-                "name": "PayPal",
-                "description": "Pay with your PayPal account",
-                "icon": "logo-paypal",
-                "available": True,
-                "requires_phone": False
-            })
-        else:
-            providers.append({
-                "id": "paypal",
-                "name": "PayPal",
-                "description": "Coming soon",
-                "icon": "logo-paypal",
-                "available": False,
-                "requires_phone": False
-            })
-        
-        # Check if Flutterwave is configured for Mobile Money
         flutterwave_key = os.environ.get('FW_SECRET_KEY')
-        mobile_money_available = bool(FLUTTERWAVE_AVAILABLE and flutterwave_key)
+        mobile_money_configured = bool(flutterwave_key)
         
-        # M-Pesa (Kenya)
-        providers.append({
-            "id": "mpesa",
-            "name": "M-Pesa",
-            "description": "Pay with M-Pesa (Kenya)" if mobile_money_available else "Coming soon",
-            "icon": "phone-portrait",
-            "available": mobile_money_available,
-            "requires_phone": True,
-            "country": "KE",
-            "currency": "KES"
-        })
+        providers = []
+        for method in db_methods:
+            # Check if method is enabled by admin
+            if not method.get("is_enabled", True):
+                continue  # Skip disabled methods
+            
+            # Check if API keys are configured
+            method_id = method.get("id")
+            available = True
+            description = method.get("description", "")
+            
+            if method_id == "paypal" and not paypal_configured:
+                available = False
+                description = "Coming soon"
+            elif method_id in ["mpesa", "mtn", "vodacom_tz"] and not mobile_money_configured:
+                available = False
+                description = "Coming soon"
+            
+            providers.append({
+                "id": method_id,
+                "name": method.get("name"),
+                "description": description,
+                "icon": method.get("icon", "card"),
+                "available": available,
+                "requires_phone": method.get("requires_phone", False),
+                "country": method.get("country"),
+                "currency": method.get("currency"),
+                "networks": method.get("networks", []),
+            })
         
-        # MTN Mobile Money (Ghana, Uganda, Zambia)
-        providers.append({
-            "id": "mtn",
-            "name": "MTN Mobile Money",
-            "description": "Pay with MTN MoMo (Ghana, Uganda, Zambia)" if mobile_money_available else "Coming soon",
-            "icon": "phone-portrait",
-            "available": mobile_money_available,
-            "requires_phone": True,
-            "networks": ["MTN", "VODAFONE", "TIGO"],
-            "countries": ["GH", "UG", "ZM"]
-        })
-        
-        # Vodacom Tanzania (M-Pesa Tanzania)
-        providers.append({
-            "id": "vodacom_tz",
+        return providers
             "name": "Vodacom Tanzania",
             "description": "Pay with M-Pesa Tanzania" if mobile_money_available else "Coming soon",
             "icon": "phone-portrait",
