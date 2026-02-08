@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Card,
@@ -36,6 +36,7 @@ import {
   Autocomplete,
   Checkbox,
   Menu,
+  Avatar,
 } from '@mui/material';
 import {
   Add,
@@ -57,6 +58,8 @@ import {
   Link as LinkIcon,
   MoreVert,
   PlaylistAdd,
+  CloudUpload,
+  Image as ImageIcon,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { useLocale } from '@/components/LocaleProvider';
