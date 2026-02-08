@@ -45,7 +45,8 @@ export default function CreditsPage() {
     try {
       // Always load packages (public endpoint)
       const packagesData = await boostApi.getPackages();
-      setPackages(packagesData);
+      console.log('Loaded packages:', packagesData);
+      setPackages(packagesData || []);
       
       // Try to load user-specific data (may fail if not authenticated)
       try {
@@ -57,11 +58,13 @@ export default function CreditsPage() {
         setHistory(historyData);
       } catch (authError) {
         // User not authenticated - use defaults
+        console.log('User not authenticated, using default credits');
         setCredits({ balance: 0, total_purchased: 0, total_spent: 0 });
         setHistory([]);
       }
     } catch (error) {
       console.error('Failed to load packages:', error);
+      setPackages([]);
     } finally {
       setLoading(false);
     }
