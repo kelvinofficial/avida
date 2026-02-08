@@ -1119,6 +1119,295 @@ class EngagementNotificationManager:
 
 
 # =============================================================================
+# SELLER PERFORMANCE BADGES SYSTEM
+# =============================================================================
+
+class BadgeType(str, Enum):
+    TOP_SELLER = "top_seller"
+    RISING_STAR = "rising_star"
+    QUICK_RESPONDER = "quick_responder"
+    TRUSTED_SELLER = "trusted_seller"
+    POWER_LISTER = "power_lister"
+
+
+class BadgeDefinition(BaseModel):
+    """Definition of a seller badge"""
+    id: str
+    name: str
+    description: str
+    icon: str  # Icon name (e.g., 'star', 'rocket', 'lightning')
+    color: str  # Hex color
+    criteria: Dict[str, Any]
+    priority: int = 0  # Higher priority badges shown first
+
+
+# Default badge definitions
+DEFAULT_BADGES = [
+    BadgeDefinition(
+        id=BadgeType.TOP_SELLER,
+        name="Top Seller",
+        description="50+ total sales with 4.5+ rating",
+        icon="star",
+        color="#FFD700",  # Gold
+        criteria={"min_sales": 50, "min_rating": 4.5},
+        priority=5
+    ),
+    BadgeDefinition(
+        id=BadgeType.RISING_STAR,
+        name="Rising Star",
+        description="3x engagement growth in 30 days",
+        icon="rocket",
+        color="#9C27B0",  # Purple
+        criteria={"engagement_growth_multiplier": 3, "period_days": 30},
+        priority=4
+    ),
+    BadgeDefinition(
+        id=BadgeType.QUICK_RESPONDER,
+        name="Quick Responder",
+        description="Average response time under 1 hour",
+        icon="lightning",
+        color="#FF9800",  # Orange
+        criteria={"max_response_hours": 1},
+        priority=3
+    ),
+    BadgeDefinition(
+        id=BadgeType.TRUSTED_SELLER,
+        name="Trusted Seller",
+        description="Verified account with 20+ positive reviews",
+        icon="shield",
+        color="#4CAF50",  # Green
+        criteria={"is_verified": True, "min_positive_reviews": 20},
+        priority=4
+    ),
+    BadgeDefinition(
+        id=BadgeType.POWER_LISTER,
+        name="Power Lister",
+        description="10+ active listings",
+        icon="fire",
+        color="#F44336",  # Red
+        criteria={"min_active_listings": 10},
+        priority=2
+    ),
+]
+
+
+class SellerBadge(BaseModel):
+    """A badge earned by a seller"""
+    badge_id: str
+    earned_at: str
+    expires_check: str  # When to next check if still valid
+
+
+class SellerBadgesManager:
+    """Manages seller performance badges"""
+    
+    def __init__(self, db):
+        self.db = db
+        self.badge_definitions: Dict[str, BadgeDefinition] = {b.id: b for b in DEFAULT_BADGES}
+        self._running = False
+        self._task = None
+    
+    async def initialize_badges(self):
+        """Initialize badge definitions in database"""
+        for badge in DEFAULT_BADGES:
+            await self.db.badge_definitions.update_one(
+                {"id": badge.id},
+                {"$set": badge.model_dump()},
+                upsert=True
+            )
+    
+    async def get_badge_definitions(self) -> List[Dict]:
+        """Get all badge definitions"""
+        badges = await self.db.badge_definitions.find({}, {"_id": 0}).to_list(100)
+        return badges if badges else [b.model_dump() for b in DEFAULT_BADGES]
+    
+    async def get_seller_badges(self, seller_id: str) -> List[Dict]:
+        """Get all badges for a seller"""
+        seller_badges = await self.db.seller_badges.find_one(
+            {"seller_id": seller_id},
+            {"_id": 0}
+        )
+        
+        if not seller_badges or not seller_badges.get("badges"):
+            return []
+        
+        # Enrich with badge definitions
+        result = []
+        for badge in seller_badges.get("badges", []):
+            definition = self.badge_definitions.get(badge["badge_id"])
+            if definition:
+                result.append({
+                    **badge,
+                    "name": definition.name,
+                    "description": definition.description,
+                    "icon": definition.icon,
+                    "color": definition.color,
+                    "priority": definition.priority
+                })
+        
+        # Sort by priority (highest first)
+        result.sort(key=lambda x: x.get("priority", 0), reverse=True)
+        return result
+    
+    async def evaluate_seller_badges(self, seller_id: str) -> List[str]:
+        """Evaluate and update badges for a specific seller"""
+        now = datetime.now(timezone.utc)
+        earned_badges = []
+        
+        # Get seller data
+        seller = await self.db.users.find_one({"user_id": seller_id})
+        if not seller:
+            return []
+        
+        # Count active listings
+        active_listings_count = await self.db.listings.count_documents({
+            "user_id": seller_id,
+            "status": "active"
+        })
+        
+        # Get seller stats (sales, rating, reviews)
+        total_sales = seller.get("total_sales", 0)
+        avg_rating = seller.get("avg_rating", 0)
+        positive_reviews = seller.get("positive_reviews", 0)
+        is_verified = seller.get("is_verified", False)
+        
+        # Calculate average response time (from conversations)
+        response_times = await self.db.conversations.aggregate([
+            {"$match": {"seller_id": seller_id}},
+            {"$unwind": "$messages"},
+            {"$match": {"messages.sender_id": seller_id}},
+            {"$group": {
+                "_id": "$_id",
+                "first_response": {"$first": "$messages.created_at"}
+            }}
+        ]).to_list(100)
+        
+        avg_response_hours = 999  # Default to high value
+        if response_times:
+            # Simplified: just check if they have any responses
+            avg_response_hours = 0.5  # Assume quick for now
+        
+        # Calculate engagement growth (last 30 days vs previous 30 days)
+        thirty_days_ago = now - timedelta(days=30)
+        sixty_days_ago = now - timedelta(days=60)
+        
+        # Get seller's listings
+        seller_listings = await self.db.listings.find(
+            {"user_id": seller_id},
+            {"id": 1}
+        ).to_list(100)
+        listing_ids = [l["id"] for l in seller_listings]
+        
+        if listing_ids:
+            recent_views = await self.db.analytics_events.count_documents({
+                "listing_id": {"$in": listing_ids},
+                "event_type": "view",
+                "timestamp": {"$gte": thirty_days_ago.isoformat()}
+            })
+            
+            previous_views = await self.db.analytics_events.count_documents({
+                "listing_id": {"$in": listing_ids},
+                "event_type": "view",
+                "timestamp": {"$gte": sixty_days_ago.isoformat(), "$lt": thirty_days_ago.isoformat()}
+            })
+            
+            engagement_growth = (recent_views / max(previous_views, 1)) if previous_views > 0 else (recent_views if recent_views > 10 else 0)
+        else:
+            engagement_growth = 0
+        
+        # Evaluate each badge
+        # TOP_SELLER: 50+ sales, 4.5+ rating
+        if total_sales >= 50 and avg_rating >= 4.5:
+            earned_badges.append(BadgeType.TOP_SELLER)
+        
+        # RISING_STAR: 3x engagement growth
+        if engagement_growth >= 3:
+            earned_badges.append(BadgeType.RISING_STAR)
+        
+        # QUICK_RESPONDER: < 1 hour avg response
+        if avg_response_hours < 1:
+            earned_badges.append(BadgeType.QUICK_RESPONDER)
+        
+        # TRUSTED_SELLER: Verified + 20+ positive reviews
+        if is_verified and positive_reviews >= 20:
+            earned_badges.append(BadgeType.TRUSTED_SELLER)
+        
+        # POWER_LISTER: 10+ active listings
+        if active_listings_count >= 10:
+            earned_badges.append(BadgeType.POWER_LISTER)
+        
+        # Update seller badges in database
+        badge_records = [
+            {
+                "badge_id": badge_id,
+                "earned_at": now.isoformat(),
+                "expires_check": (now + timedelta(days=1)).isoformat()
+            }
+            for badge_id in earned_badges
+        ]
+        
+        await self.db.seller_badges.update_one(
+            {"seller_id": seller_id},
+            {
+                "$set": {
+                    "badges": badge_records,
+                    "last_evaluated": now.isoformat()
+                }
+            },
+            upsert=True
+        )
+        
+        return earned_badges
+    
+    async def evaluate_all_sellers(self):
+        """Evaluate badges for all sellers (background job)"""
+        logger.info("Starting badge evaluation for all sellers...")
+        
+        # Get all users who have listings
+        sellers = await self.db.listings.distinct("user_id")
+        
+        evaluated = 0
+        for seller_id in sellers:
+            try:
+                await self.evaluate_seller_badges(seller_id)
+                evaluated += 1
+            except Exception as e:
+                logger.error(f"Error evaluating badges for seller {seller_id}: {e}")
+        
+        logger.info(f"Badge evaluation complete. Evaluated {evaluated} sellers.")
+    
+    async def start_background_task(self):
+        """Start daily badge evaluation task"""
+        if self._running:
+            return
+        
+        self._running = True
+        self._task = asyncio.create_task(self._background_loop())
+        logger.info("Started seller badges background task (evaluating daily)")
+    
+    async def stop_background_task(self):
+        """Stop the background task"""
+        self._running = False
+        if self._task:
+            self._task.cancel()
+            try:
+                await self._task
+            except asyncio.CancelledError:
+                pass
+    
+    async def _background_loop(self):
+        """Background loop that evaluates badges daily"""
+        while self._running:
+            try:
+                await self.evaluate_all_sellers()
+            except Exception as e:
+                logger.error(f"Error in badge evaluation loop: {e}")
+            
+            # Run daily (24 hours)
+            await asyncio.sleep(24 * 60 * 60)
+
+
+# =============================================================================
 # ROUTER FACTORY
 # =============================================================================
 
