@@ -5551,6 +5551,20 @@ async def admin_proxy(request: Request, path: str):
 # Include the router in the main app
 app.include_router(api_router)
 
+# Include boost routes if available
+if BOOST_ROUTES_AVAILABLE:
+    async def get_current_user_for_boost(request: Request) -> dict:
+        """Wrapper for boost routes authentication"""
+        user = await get_current_user(request)
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        return {"user_id": user.user_id, "email": user.email, "name": user.name}
+    
+    boost_router = create_boost_routes(db, get_current_user_for_boost)
+    api_router.include_router(boost_router)
+    app.include_router(api_router)  # Re-include to pick up boost routes
+    logger.info("Boost routes loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
