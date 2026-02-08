@@ -131,6 +131,36 @@ class ListingBoost(BaseModel):
     category_id: Optional[str] = None  # For category boost
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+
+class PaymentMethodConfig(BaseModel):
+    """Configuration for a payment method"""
+    id: str  # stripe, paypal, mpesa, mtn, vodacom_tz
+    name: str
+    description: str
+    icon: str = "card"
+    is_enabled: bool = True
+    requires_phone: bool = False
+    country: Optional[str] = None  # For region-specific methods
+    currency: Optional[str] = None
+    exchange_rate: float = 1.0  # USD to local currency
+    min_amount: float = 1.0  # Minimum purchase amount
+    max_amount: float = 1000.0  # Maximum purchase amount
+    networks: List[str] = []  # For MTN: MTN, VODAFONE, TIGO
+    priority: int = 0  # Display order
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: Optional[datetime] = None
+
+
+class UpdatePaymentMethodRequest(BaseModel):
+    """Request to update payment method configuration"""
+    name: Optional[str] = None
+    description: Optional[str] = None
+    is_enabled: Optional[bool] = None
+    exchange_rate: Optional[float] = None
+    min_amount: Optional[float] = None
+    max_amount: Optional[float] = None
+    priority: Optional[int] = None
+
 # =============================================================================
 # REQUEST/RESPONSE MODELS
 # =============================================================================
