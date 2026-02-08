@@ -83,6 +83,9 @@ Build a comprehensive admin dashboard for a marketplace application with feature
   - Badges expire if criteria no longer met (checked daily)
   - Displayed on: seller profile, listing detail page, seller card
   - Admin can trigger manual badge evaluation
+  - **Badge unlock notifications**: Push notification when seller earns new badge
+    - "Congratulations! 🚀 You've earned the Rising Star badge!"
+    - Tapping notification navigates to profile
 
 ### Analytics System Details
 
