@@ -23,7 +23,7 @@ class TestPhase4UserSegmentation:
     
     def test_get_predefined_segments(self):
         """GET /smart-notifications/admin/segments - Get all segments including 7 predefined"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/segments")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/segments")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
@@ -57,7 +57,7 @@ class TestPhase4UserSegmentation:
         }
         
         response = requests.post(
-            f"{BASE_URL}/smart-notifications/admin/segments",
+            f"{BASE_URL}/api/smart-notifications/admin/segments",
             json=segment_data
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
@@ -75,7 +75,7 @@ class TestPhase4UserSegmentation:
         
         # Cleanup
         segment_id = data["id"]
-        delete_resp = requests.delete(f"{BASE_URL}/smart-notifications/admin/segments/{segment_id}")
+        delete_resp = requests.delete(f"{BASE_URL}/api/smart-notifications/admin/segments/{segment_id}")
         assert delete_resp.status_code == 200
         
         print(f"PASS: Created custom segment with id={data['id']}, estimated_users={data['estimated_users']}")
@@ -90,7 +90,7 @@ class TestPhase4UserSegmentation:
             "rules": [{"field": "total_purchases", "operator": "greater_than", "value": 0}],
             "logic": "AND"
         }
-        create_resp = requests.post(f"{BASE_URL}/smart-notifications/admin/segments", json=create_data)
+        create_resp = requests.post(f"{BASE_URL}/api/smart-notifications/admin/segments", json=create_data)
         assert create_resp.status_code == 200
         segment_id = create_resp.json()["id"]
         
@@ -101,7 +101,7 @@ class TestPhase4UserSegmentation:
         }
         
         response = requests.put(
-            f"{BASE_URL}/smart-notifications/admin/segments/{segment_id}",
+            f"{BASE_URL}/api/smart-notifications/admin/segments/{segment_id}",
             json=update_data
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
@@ -112,7 +112,7 @@ class TestPhase4UserSegmentation:
         assert "updated_at" in data, "Response should have updated_at"
         
         # Cleanup
-        delete_resp = requests.delete(f"{BASE_URL}/smart-notifications/admin/segments/{segment_id}")
+        delete_resp = requests.delete(f"{BASE_URL}/api/smart-notifications/admin/segments/{segment_id}")
         assert delete_resp.status_code == 200
         
         print(f"PASS: Updated segment {segment_id}")
@@ -126,12 +126,12 @@ class TestPhase4UserSegmentation:
             "rules": [],
             "logic": "AND"
         }
-        create_resp = requests.post(f"{BASE_URL}/smart-notifications/admin/segments", json=create_data)
+        create_resp = requests.post(f"{BASE_URL}/api/smart-notifications/admin/segments", json=create_data)
         assert create_resp.status_code == 200
         segment_id = create_resp.json()["id"]
         
         # Delete it
-        response = requests.delete(f"{BASE_URL}/smart-notifications/admin/segments/{segment_id}")
+        response = requests.delete(f"{BASE_URL}/api/smart-notifications/admin/segments/{segment_id}")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
@@ -142,7 +142,7 @@ class TestPhase4UserSegmentation:
     def test_preview_predefined_segment(self):
         """GET /smart-notifications/admin/segments/{id}/preview - Preview users in predefined segment"""
         # Test with all_users (predefined)
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/segments/all_users/preview?limit=5")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/segments/all_users/preview?limit=5")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
@@ -162,12 +162,12 @@ class TestPhase4UserSegmentation:
             "rules": [{"field": "total_views", "operator": "greater_than", "value": 0}],
             "logic": "AND"
         }
-        create_resp = requests.post(f"{BASE_URL}/smart-notifications/admin/segments", json=create_data)
+        create_resp = requests.post(f"{BASE_URL}/api/smart-notifications/admin/segments", json=create_data)
         assert create_resp.status_code == 200
         segment_id = create_resp.json()["id"]
         
         # Preview it
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/segments/{segment_id}/preview?limit=10")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/segments/{segment_id}/preview?limit=10")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
@@ -176,20 +176,20 @@ class TestPhase4UserSegmentation:
         assert data["segment_id"] == segment_id
         
         # Cleanup
-        requests.delete(f"{BASE_URL}/smart-notifications/admin/segments/{segment_id}")
+        requests.delete(f"{BASE_URL}/api/smart-notifications/admin/segments/{segment_id}")
         
         print(f"PASS: Preview custom segment - total={data['total']}, returned={len(data['users'])} users")
     
     def test_preview_segment_not_found(self):
         """GET /smart-notifications/admin/segments/{id}/preview - 404 for nonexistent segment"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/segments/nonexistent_seg_123/preview")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/segments/nonexistent_seg_123/preview")
         assert response.status_code == 404, f"Expected 404, got {response.status_code}"
         
         print("PASS: Returns 404 for nonexistent segment preview")
     
     def test_recalculate_predefined_segment(self):
         """POST /smart-notifications/admin/segments/{id}/recalculate - Recalculate predefined segment"""
-        response = requests.post(f"{BASE_URL}/smart-notifications/admin/segments/active_buyers/recalculate")
+        response = requests.post(f"{BASE_URL}/api/smart-notifications/admin/segments/active_buyers/recalculate")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
@@ -208,12 +208,12 @@ class TestPhase4UserSegmentation:
             "rules": [{"field": "total_purchases", "operator": "equals", "value": 0}],
             "logic": "AND"
         }
-        create_resp = requests.post(f"{BASE_URL}/smart-notifications/admin/segments", json=create_data)
+        create_resp = requests.post(f"{BASE_URL}/api/smart-notifications/admin/segments", json=create_data)
         assert create_resp.status_code == 200
         segment_id = create_resp.json()["id"]
         
         # Recalculate it
-        response = requests.post(f"{BASE_URL}/smart-notifications/admin/segments/{segment_id}/recalculate")
+        response = requests.post(f"{BASE_URL}/api/smart-notifications/admin/segments/{segment_id}/recalculate")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
@@ -221,13 +221,13 @@ class TestPhase4UserSegmentation:
         assert "estimated_users" in data
         
         # Cleanup
-        requests.delete(f"{BASE_URL}/smart-notifications/admin/segments/{segment_id}")
+        requests.delete(f"{BASE_URL}/api/smart-notifications/admin/segments/{segment_id}")
         
         print(f"PASS: Recalculated custom segment - estimated_users={data['estimated_users']}")
     
     def test_recalculate_segment_not_found(self):
         """POST /smart-notifications/admin/segments/{id}/recalculate - 404 for nonexistent"""
-        response = requests.post(f"{BASE_URL}/smart-notifications/admin/segments/nonexistent_seg_456/recalculate")
+        response = requests.post(f"{BASE_URL}/api/smart-notifications/admin/segments/nonexistent_seg_456/recalculate")
         assert response.status_code == 404, f"Expected 404, got {response.status_code}"
         
         print("PASS: Returns 404 for nonexistent segment recalculate")
@@ -238,7 +238,7 @@ class TestPhase4AnalyticsTimeSeries:
     
     def test_get_timeseries_analytics_default(self):
         """GET /smart-notifications/admin/analytics/timeseries - Default 30 days"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/analytics/timeseries")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/analytics/timeseries")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
@@ -261,7 +261,7 @@ class TestPhase4AnalyticsTimeSeries:
     
     def test_get_timeseries_analytics_custom_days(self):
         """GET /smart-notifications/admin/analytics/timeseries?days=7 - Custom day range"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/analytics/timeseries?days=7")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/analytics/timeseries?days=7")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
@@ -273,7 +273,7 @@ class TestPhase4AnalyticsTimeSeries:
     def test_get_timeseries_with_trigger_filter(self):
         """GET /smart-notifications/admin/analytics/timeseries?trigger_type=X - Filter by trigger"""
         response = requests.get(
-            f"{BASE_URL}/smart-notifications/admin/analytics/timeseries?days=14&trigger_type=new_listing_in_category"
+            f"{BASE_URL}/api/smart-notifications/admin/analytics/timeseries?days=14&trigger_type=new_listing_in_category"
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
@@ -289,7 +289,7 @@ class TestPhase4AnalyticsByTrigger:
     
     def test_get_analytics_by_trigger_default(self):
         """GET /smart-notifications/admin/analytics/by-trigger - Default 30 days"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/analytics/by-trigger")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/analytics/by-trigger")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
@@ -309,7 +309,7 @@ class TestPhase4AnalyticsByTrigger:
     
     def test_get_analytics_by_trigger_custom_days(self):
         """GET /smart-notifications/admin/analytics/by-trigger?days=14 - Custom range"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/analytics/by-trigger?days=14")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/analytics/by-trigger?days=14")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
@@ -328,7 +328,7 @@ class TestPhase4AnalyticsByChannel:
     
     def test_get_analytics_by_channel_default(self):
         """GET /smart-notifications/admin/analytics/by-channel - Default 30 days"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/analytics/by-channel")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/analytics/by-channel")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
@@ -353,7 +353,7 @@ class TestPhase4AnalyticsByChannel:
     
     def test_get_analytics_by_channel_custom_days(self):
         """GET /smart-notifications/admin/analytics/by-channel?days=60 - Custom range"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/analytics/by-channel?days=60")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/analytics/by-channel?days=60")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
@@ -367,7 +367,7 @@ class TestPhase4SchedulerStatus:
     
     def test_get_scheduler_status(self):
         """GET /smart-notifications/admin/scheduler/status - Get scheduler status"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/scheduler/status")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/scheduler/status")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
@@ -399,7 +399,7 @@ class TestPhase4SchedulerStatus:
     
     def test_process_due_campaigns(self):
         """POST /smart-notifications/admin/scheduler/process-due - Process due campaigns"""
-        response = requests.post(f"{BASE_URL}/smart-notifications/admin/scheduler/process-due")
+        response = requests.post(f"{BASE_URL}/api/smart-notifications/admin/scheduler/process-due")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
@@ -423,7 +423,7 @@ class TestPhase4RegressionPhase1Phase2Phase3:
     
     def test_phase1_admin_config(self):
         """GET /smart-notifications/admin/config - Phase 1"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/config")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/config")
         assert response.status_code == 200, f"Phase 1 admin config failed: {response.status_code}"
         
         data = response.json()
@@ -434,7 +434,7 @@ class TestPhase4RegressionPhase1Phase2Phase3:
     
     def test_phase1_admin_triggers(self):
         """GET /smart-notifications/admin/triggers - Phase 1"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/triggers")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/triggers")
         assert response.status_code == 200, f"Phase 1 admin triggers failed: {response.status_code}"
         
         data = response.json()
@@ -444,7 +444,7 @@ class TestPhase4RegressionPhase1Phase2Phase3:
     
     def test_phase1_admin_analytics(self):
         """GET /smart-notifications/admin/analytics - Phase 1"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/analytics")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/analytics")
         assert response.status_code == 200, f"Phase 1 admin analytics failed: {response.status_code}"
         
         data = response.json()
@@ -454,7 +454,7 @@ class TestPhase4RegressionPhase1Phase2Phase3:
     
     def test_phase2_ab_tests(self):
         """GET /smart-notifications/admin/ab-tests - Phase 2"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/ab-tests")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/ab-tests")
         assert response.status_code == 200, f"Phase 2 ab-tests failed: {response.status_code}"
         
         data = response.json()
@@ -464,7 +464,7 @@ class TestPhase4RegressionPhase1Phase2Phase3:
     
     def test_phase2_conversions(self):
         """GET /smart-notifications/admin/conversions - Phase 2"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/conversions")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/conversions")
         assert response.status_code == 200, f"Phase 2 conversions failed: {response.status_code}"
         
         data = response.json()
@@ -474,7 +474,7 @@ class TestPhase4RegressionPhase1Phase2Phase3:
     
     def test_phase2_weekly_digest_config(self):
         """GET /smart-notifications/admin/weekly-digest/config - Phase 2"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/weekly-digest/config")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/weekly-digest/config")
         assert response.status_code == 200, f"Phase 2 weekly digest config failed: {response.status_code}"
         
         data = response.json()
@@ -484,7 +484,7 @@ class TestPhase4RegressionPhase1Phase2Phase3:
     
     def test_phase3_templates(self):
         """GET /smart-notifications/admin/templates - Phase 3"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/templates")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/templates")
         assert response.status_code == 200, f"Phase 3 templates failed: {response.status_code}"
         
         data = response.json()
@@ -494,7 +494,7 @@ class TestPhase4RegressionPhase1Phase2Phase3:
     
     def test_phase3_campaigns(self):
         """GET /smart-notifications/admin/campaigns - Phase 3"""
-        response = requests.get(f"{BASE_URL}/smart-notifications/admin/campaigns")
+        response = requests.get(f"{BASE_URL}/api/smart-notifications/admin/campaigns")
         assert response.status_code == 200, f"Phase 3 campaigns failed: {response.status_code}"
         
         data = response.json()
