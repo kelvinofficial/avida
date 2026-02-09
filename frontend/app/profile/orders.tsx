@@ -217,12 +217,20 @@ export default function SellerOrdersScreen() {
   
   return (
     <SafeAreaView style={styles.container}>
+      {/* Sandbox Banner */}
+      {isSandbox && (
+        <View style={styles.sandboxBanner}>
+          <Ionicons name="flask" size={16} color="#FFF" />
+          <Text style={styles.sandboxText}>SANDBOX MODE - Viewing test orders</Text>
+        </View>
+      )}
+      
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Online Orders</Text>
+        <Text style={styles.headerTitle}>{isSandbox ? '🧪 Sandbox Orders' : 'Online Orders'}</Text>
         <View style={{ width: 40 }} />
       </View>
       
