@@ -2168,4 +2168,119 @@ def create_smart_notification_router(db, get_current_user, require_auth):
             raise HTTPException(status_code=404, detail="Could not generate digest for user")
         return digest
     
+    # =========================================================================
+    # PHASE 3: EMAIL TEMPLATES
+    # =========================================================================
+    
+    @router.get("/admin/templates")
+    async def get_templates():
+        """Get all email templates"""
+        templates = await db.email_templates.find({}, {"_id": 0}).to_list(100)
+        return templates
+    
+    @router.post("/admin/templates")
+    async def create_template(template_data: Dict[str, Any] = Body(...)):
+        """Create a new email template"""
+        template = {
+            "id": f"tpl_{uuid.uuid4().hex[:12]}",
+            **template_data,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.email_templates.insert_one(template)
+        return {k: v for k, v in template.items() if k != "_id"}
+    
+    @router.put("/admin/templates/{template_id}")
+    async def update_template(template_id: str, updates: Dict[str, Any] = Body(...)):
+        """Update an email template"""
+        updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+        await db.email_templates.update_one({"id": template_id}, {"$set": updates})
+        return await db.email_templates.find_one({"id": template_id}, {"_id": 0})
+    
+    @router.delete("/admin/templates/{template_id}")
+    async def delete_template(template_id: str):
+        """Delete an email template"""
+        result = await db.email_templates.delete_one({"id": template_id})
+        return {"success": result.deleted_count > 0}
+    
+    # =========================================================================
+    # PHASE 3: SCHEDULED CAMPAIGNS
+    # =========================================================================
+    
+    @router.get("/admin/campaigns")
+    async def get_campaigns():
+        """Get all scheduled campaigns"""
+        campaigns = await db.scheduled_campaigns.find({}, {"_id": 0}).sort("scheduled_at", -1).to_list(100)
+        return campaigns
+    
+    @router.post("/admin/campaigns")
+    async def create_campaign(campaign_data: Dict[str, Any] = Body(...)):
+        """Create a new scheduled campaign"""
+        campaign = {
+            "id": f"camp_{uuid.uuid4().hex[:12]}",
+            **campaign_data,
+            "status": "scheduled",
+            "sent_count": 0,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.scheduled_campaigns.insert_one(campaign)
+        return {k: v for k, v in campaign.items() if k != "_id"}
+    
+    @router.put("/admin/campaigns/{campaign_id}")
+    async def update_campaign(campaign_id: str, updates: Dict[str, Any] = Body(...)):
+        """Update a scheduled campaign"""
+        # Only allow updates for scheduled campaigns
+        campaign = await db.scheduled_campaigns.find_one({"id": campaign_id})
+        if not campaign:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        if campaign.get("status") != "scheduled":
+            raise HTTPException(status_code=400, detail="Can only update scheduled campaigns")
+        
+        updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+        await db.scheduled_campaigns.update_one({"id": campaign_id}, {"$set": updates})
+        return await db.scheduled_campaigns.find_one({"id": campaign_id}, {"_id": 0})
+    
+    @router.post("/admin/campaigns/{campaign_id}/cancel")
+    async def cancel_campaign(campaign_id: str):
+        """Cancel a scheduled campaign"""
+        campaign = await db.scheduled_campaigns.find_one({"id": campaign_id})
+        if not campaign:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        if campaign.get("status") != "scheduled":
+            raise HTTPException(status_code=400, detail="Can only cancel scheduled campaigns")
+        
+        await db.scheduled_campaigns.update_one(
+            {"id": campaign_id},
+            {"$set": {"status": "cancelled", "cancelled_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        return {"success": True}
+    
+    @router.post("/admin/campaigns/{campaign_id}/send")
+    async def send_campaign_now(campaign_id: str):
+        """Immediately send a scheduled campaign"""
+        campaign = await db.scheduled_campaigns.find_one({"id": campaign_id})
+        if not campaign:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        if campaign.get("status") != "scheduled":
+            raise HTTPException(status_code=400, detail="Can only send scheduled campaigns")
+        
+        # Queue notifications for all target users
+        sent_count = await service._send_campaign(campaign)
+        
+        await db.scheduled_campaigns.update_one(
+            {"id": campaign_id},
+            {"$set": {
+                "status": "sent",
+                "sent_at": datetime.now(timezone.utc).isoformat(),
+                "sent_count": sent_count
+            }}
+        )
+        return {"success": True, "sent_count": sent_count}
+    
+    @router.delete("/admin/campaigns/{campaign_id}")
+    async def delete_campaign(campaign_id: str):
+        """Delete a campaign"""
+        result = await db.scheduled_campaigns.delete_one({"id": campaign_id})
+        return {"success": result.deleted_count > 0}
+    
     return router, service
