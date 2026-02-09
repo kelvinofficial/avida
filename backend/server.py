@@ -4673,6 +4673,30 @@ else:
         """No-op when cohort analytics not available"""
         pass
 
+# QA & Reliability System
+if QA_RELIABILITY_AVAILABLE:
+    qa_router, qa_service = create_qa_reliability_router(db)
+    api_router.include_router(qa_router)
+    app.include_router(api_router)  # Re-include to pick up QA routes
+    # Initialize QA system
+    asyncio.create_task(qa_service.initialize())
+    logger.info("QA & Reliability System loaded successfully")
+    
+    # Background task for periodic health checks
+    async def periodic_health_checker():
+        """Background task that runs health checks every 5 minutes"""
+        await asyncio.sleep(30)  # Initial delay
+        while True:
+            try:
+                await qa_service.check_all_services()
+                await qa_service.calculate_reliability_metrics(1)  # Last hour
+            except Exception as e:
+                logger.error(f"Periodic health check failed: {e}")
+            await asyncio.sleep(5 * 60)  # Check every 5 minutes
+    
+    asyncio.create_task(periodic_health_checker())
+    logger.info("Started periodic health checker background task")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
