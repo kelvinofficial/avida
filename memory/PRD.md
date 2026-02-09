@@ -457,3 +457,79 @@ Last Updated: February 9, 2026
 
 **Reference**: See `/app/REFACTORING.md` for detailed documentation.
 
+
+---
+
+## Chat Moderation System (Feb 9, 2026)
+
+### Full Message & Chat Moderation System - COMPLETE
+
+**Features Implemented:**
+
+1. **AI-Powered Moderation** (GPT-4o via Emergent LLM Key)
+   - Automatic detection of scam phrases, fraud attempts
+   - Profanity and harassment detection
+   - Contact information bypass detection
+   - Suspicious patterns (copy-paste spam)
+
+2. **Rule-Based Detection**
+   - Phone numbers and emails (regex patterns)
+   - Scam keywords (western union, moneygram, gift cards, etc.)
+   - Off-platform payment requests
+   - Configurable keyword blacklist
+
+3. **Manual Moderation Actions**
+   - Delete/hide messages
+   - Freeze/unfreeze conversations
+   - Mute users (temporary)
+   - Ban users (permanent)
+   - Warn users
+   - Lock escrow transactions
+   - Add moderator notes (internal)
+
+4. **User Reporting System**
+   - Report message or conversation
+   - 7 report reasons (scam, abuse, fake listing, off-platform payment, harassment, spam, other)
+   - Report status tracking
+
+5. **Admin Dashboard UI** (`/dashboard/moderation`)
+   - Stats overview (pending flags, reports, muted/banned users)
+   - Conversations tab with filters
+   - Flagged content tab
+   - User reports tab
+   - Settings/configuration tab
+   - Polling for real-time updates (15 seconds)
+
+6. **Automation & Rules**
+   - Auto-warning threshold (3 violations)
+   - Auto-mute duration (24 hours)
+   - Auto-ban threshold (5 violations)
+   - Block contact before order completion
+
+7. **Audit & Logging**
+   - All moderation actions logged
+   - Who acted, what action, timestamp
+   - Immutable audit trail
+
+8. **User Notifications**
+   - Notifies users when muted/banned
+   - Warning notifications
+   - Conversation frozen notifications
+
+**Backend API Endpoints:**
+- `/api/moderation/stats` - Moderation statistics
+- `/api/moderation/config` - Configuration management
+- `/api/moderation/conversations` - Conversation monitoring
+- `/api/moderation/flags` - AI/rule flagged content
+- `/api/moderation/reports` - User reports
+- `/api/moderation/actions` - Perform moderation actions
+- `/api/moderation/notes` - Moderator internal notes
+- `/api/report/message` - User submit report
+- `/api/report/reasons` - Report reason options
+
+**Testing:** 30/30 tests passed
+
+**Files:**
+- `backend/chat_moderation.py` - Core moderation service
+- `admin-dashboard/frontend/src/app/dashboard/moderation/page.tsx` - Admin UI
+
