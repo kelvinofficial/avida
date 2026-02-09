@@ -119,6 +119,76 @@ export default function DashboardLayout({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [langAnchorEl, setLangAnchorEl] = useState<null | HTMLElement>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Notification state
+  const [notificationAnchor, setNotificationAnchor] = useState<null | HTMLElement>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+  
+  const API_BASE = process.env.NEXT_PUBLIC_MAIN_API_URL || '';
+
+  // Fetch notifications
+  const fetchNotifications = useCallback(async () => {
+    try {
+      // Get dashboard data which includes recent activity and pending items
+      const [dashboardRes, tasksRes, approvalsRes] = await Promise.all([
+        fetch(`${API_BASE}/team/dashboard`),
+        fetch(`${API_BASE}/team/tasks?status=open&limit=5`),
+        fetch(`${API_BASE}/team/approvals?status=pending&limit=5`)
+      ]);
+      
+      const combinedNotifications: any[] = [];
+      
+      if (tasksRes.ok) {
+        const tasks = await tasksRes.json();
+        tasks.forEach((task: any) => {
+          combinedNotifications.push({
+            id: `task_${task.id}`,
+            type: 'task',
+            title: task.title,
+            description: `${task.type} - ${task.priority.toUpperCase()} priority`,
+            priority: task.priority,
+            status: task.status,
+            time: task.created_at,
+            link: '/dashboard/team-management',
+            sla_breached: task.sla_breached
+          });
+        });
+      }
+      
+      if (approvalsRes.ok) {
+        const approvals = await approvalsRes.json();
+        approvals.forEach((approval: any) => {
+          combinedNotifications.push({
+            id: `approval_${approval.id}`,
+            type: 'approval',
+            title: approval.title,
+            description: `Requested by ${approval.requester_name}`,
+            priority: approval.priority,
+            status: approval.status,
+            time: approval.created_at,
+            link: '/dashboard/team-management'
+          });
+        });
+      }
+      
+      // Sort by time
+      combinedNotifications.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+      
+      setNotifications(combinedNotifications.slice(0, 10));
+      setUnreadCount(combinedNotifications.length);
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    }
+  }, [API_BASE]);
+  
+  // Fetch notifications on mount and every 30 seconds
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
 
   useEffect(() => {
     const loadAdmin = async () => {
