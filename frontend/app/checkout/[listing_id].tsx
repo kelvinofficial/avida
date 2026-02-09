@@ -107,15 +107,30 @@ export default function CheckoutScreen() {
   
   const fetchListing = async () => {
     try {
-      const response = await api.get(`/listings/${listing_id}`);
-      setListing(response.data);
+      // Check if sandbox mode is active
+      const sandboxActive = await sandboxUtils.isActive();
+      setIsSandbox(sandboxActive);
       
-      // Check if seller can sell online
-      const sellerCheck = await api.get(`/escrow/seller/${response.data.user_id}/can-sell-online`);
-      if (!sellerCheck.data.can_sell_online) {
-        Alert.alert('Not Available', sellerCheck.data.reason || 'This seller cannot accept online payments.');
-        router.back();
-        return;
+      let listingData;
+      
+      if (sandboxActive) {
+        // Use sandbox proxy API
+        listingData = await sandboxAwareListingsApi.getOne(listing_id!);
+        setListing(listingData);
+        // In sandbox mode, always allow checkout
+      } else {
+        // Normal production flow
+        const response = await api.get(`/listings/${listing_id}`);
+        listingData = response.data;
+        setListing(listingData);
+        
+        // Check if seller can sell online
+        const sellerCheck = await api.get(`/escrow/seller/${listingData.user_id}/can-sell-online`);
+        if (!sellerCheck.data.can_sell_online) {
+          Alert.alert('Not Available', sellerCheck.data.reason || 'This seller cannot accept online payments.');
+          router.back();
+          return;
+        }
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to load listing');
