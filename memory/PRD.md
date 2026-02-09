@@ -427,3 +427,33 @@ Last Updated: February 9, 2026
 - Profile/Activity endpoints
 - Settings endpoints
 
+
+---
+
+## Backend Refactoring Phase 2 (Feb 9, 2026)
+
+### server.py Modularization - Phase 2 COMPLETE
+
+**Completed Extractions**:
+1. **`routes/categories.py`** - Category/subcategory endpoints, validation helpers
+2. **`routes/favorites.py`** - Favorites CRUD (add, remove, list)
+3. **`routes/conversations.py`** - Conversations and messaging
+
+**Results**:
+- **After Phase 2**: ~4556 lines
+- **Total Reduction**: ~1369 lines (23% from original ~5925)
+- All 38 tests passed (Phase 2)
+- All 6 modular route modules verified working
+
+**Route Modules Summary**:
+| Module | Endpoints | Status |
+|--------|-----------|--------|
+| auth.py | 5 endpoints | ✅ |
+| users.py | 6 endpoints | ✅ |
+| listings.py | 7 endpoints | ✅ |
+| categories.py | 4 endpoints | ✅ |
+| favorites.py | 3 endpoints | ✅ |
+| conversations.py | 5 endpoints | ✅ |
+
+**Reference**: See `/app/REFACTORING.md` for detailed documentation.
+
