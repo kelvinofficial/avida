@@ -1127,8 +1127,8 @@ export default function CohortAnalyticsPage() {
         </Card>
       )}
 
-      {/* Tab 5: Weekly Reports */}
-      {activeTab === 5 && (
+      {/* Tab 6: Weekly Reports */}
+      {activeTab === 6 && (
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <Card>
