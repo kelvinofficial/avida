@@ -171,7 +171,7 @@ export default function AIPersonalizationPage() {
 
   const fetchConfig = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/smart-notifications/admin/ai-personalization/config`);
+      const response = await fetch(`${API_BASE}/smart-notifications/admin/ai-personalization/config`);
       const data = await response.json();
       setConfig(data);
     } catch (error) {
