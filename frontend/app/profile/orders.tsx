@@ -14,7 +14,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import api from '../../src/utils/api';
+import { sandboxUtils } from '../../src/utils/sandboxAwareApi';
 import { useAuthStore } from '../../src/store/authStore';
+import { useSandbox } from '../../src/utils/sandboxContext';
 
 const COLORS = {
   primary: '#2E7D32',
