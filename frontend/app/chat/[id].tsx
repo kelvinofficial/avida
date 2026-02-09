@@ -1767,10 +1767,11 @@ export default function ChatScreen() {
           isSeller={isSeller}
           onAcceptOffer={handleAcceptOffer}
           onRejectOffer={handleRejectOffer}
+          onLongPress={handleLongPressMessage}
         />
       );
     },
-    [user, conversation, getMessagesWithSeparators, isSeller]
+    [user, conversation, getMessagesWithSeparators, isSeller, handleLongPressMessage]
   );
 
   if (loading || !isReady) {
