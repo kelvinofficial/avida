@@ -1298,6 +1298,126 @@ export default function PostListingScreen() {
             keyboardType="numeric"
           />
         </View>
+        
+        {/* Get Price Suggestion Button */}
+        <TouchableOpacity
+          style={priceStyles.getSuggestionButton}
+          onPress={getPriceSuggestion}
+          disabled={priceSuggestionLoading}
+        >
+          {priceSuggestionLoading ? (
+            <ActivityIndicator size="small" color={COLORS.primary} />
+          ) : (
+            <>
+              <Ionicons name="sparkles" size={16} color={COLORS.primary} />
+              <Text style={priceStyles.getSuggestionText}>Get AI Price Suggestion</Text>
+            </>
+          )}
+        </TouchableOpacity>
+
+        {/* Price Suggestion Error */}
+        {priceSuggestionError && (
+          <View style={priceStyles.errorContainer}>
+            <Ionicons name="alert-circle" size={16} color={COLORS.warning} />
+            <Text style={priceStyles.errorText}>{priceSuggestionError}</Text>
+          </View>
+        )}
+
+        {/* Price Suggestion Result */}
+        {priceSuggestion && priceSuggestion.price_suggestion && (
+          <View style={priceStyles.suggestionContainer}>
+            <View style={priceStyles.suggestionHeader}>
+              <Ionicons name="sparkles" size={18} color={COLORS.primary} />
+              <Text style={priceStyles.suggestionTitle}>AI Price Suggestion</Text>
+              <TouchableOpacity onPress={dismissPriceSuggestion}>
+                <Ionicons name="close" size={20} color={COLORS.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Price Range */}
+            <View style={priceStyles.priceRange}>
+              <Text style={priceStyles.priceRangeLabel}>Suggested Range:</Text>
+              <Text style={priceStyles.priceRangeValue}>
+                €{priceSuggestion.price_suggestion.min_price} - €{priceSuggestion.price_suggestion.max_price}
+              </Text>
+            </View>
+
+            {/* Recommended Price */}
+            {priceSuggestion.price_suggestion.recommended_price && (
+              <View style={priceStyles.recommendedPrice}>
+                <Text style={priceStyles.recommendedLabel}>Recommended:</Text>
+                <Text style={priceStyles.recommendedValue}>
+                  €{priceSuggestion.price_suggestion.recommended_price}
+                </Text>
+                <TouchableOpacity
+                  style={priceStyles.useButton}
+                  onPress={() => applyPriceSuggestion(priceSuggestion.price_suggestion.recommended_price)}
+                >
+                  <Text style={priceStyles.useButtonText}>Use This Price</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Reasoning */}
+            {priceSuggestion.price_suggestion.reasoning && (
+              <Text style={priceStyles.reasoning}>
+                {priceSuggestion.price_suggestion.reasoning}
+              </Text>
+            )}
+
+            {/* Tip */}
+            {priceSuggestion.price_suggestion.tip && (
+              <View style={priceStyles.tipContainer}>
+                <Ionicons name="bulb" size={14} color="#F57C00" />
+                <Text style={priceStyles.tipText}>{priceSuggestion.price_suggestion.tip}</Text>
+              </View>
+            )}
+
+            {/* Market Data */}
+            {priceSuggestion.similar_listings_count > 0 && (
+              <Text style={priceStyles.marketData}>
+                Based on {priceSuggestion.similar_listings_count} similar listings
+              </Text>
+            )}
+
+            {/* Quick Apply Buttons */}
+            <View style={priceStyles.quickButtons}>
+              {priceSuggestion.price_suggestion.min_price && (
+                <TouchableOpacity
+                  style={priceStyles.quickButton}
+                  onPress={() => applyPriceSuggestion(priceSuggestion.price_suggestion.min_price)}
+                >
+                  <Text style={priceStyles.quickButtonText}>€{priceSuggestion.price_suggestion.min_price}</Text>
+                  <Text style={priceStyles.quickButtonLabel}>Quick Sale</Text>
+                </TouchableOpacity>
+              )}
+              {priceSuggestion.price_suggestion.recommended_price && (
+                <TouchableOpacity
+                  style={[priceStyles.quickButton, priceStyles.quickButtonHighlight]}
+                  onPress={() => applyPriceSuggestion(priceSuggestion.price_suggestion.recommended_price)}
+                >
+                  <Text style={[priceStyles.quickButtonText, priceStyles.quickButtonTextHighlight]}>
+                    €{priceSuggestion.price_suggestion.recommended_price}
+                  </Text>
+                  <Text style={[priceStyles.quickButtonLabel, priceStyles.quickButtonLabelHighlight]}>Best Value</Text>
+                </TouchableOpacity>
+              )}
+              {priceSuggestion.price_suggestion.max_price && (
+                <TouchableOpacity
+                  style={priceStyles.quickButton}
+                  onPress={() => applyPriceSuggestion(priceSuggestion.price_suggestion.max_price)}
+                >
+                  <Text style={priceStyles.quickButtonText}>€{priceSuggestion.price_suggestion.max_price}</Text>
+                  <Text style={priceStyles.quickButtonLabel}>Premium</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <Text style={priceStyles.disclaimer}>
+              AI suggestions are estimates. Final price is your decision.
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* Location */}
