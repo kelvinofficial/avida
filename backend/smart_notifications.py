@@ -8,6 +8,7 @@ Features:
 - Multi-channel delivery (Email via SendGrid, Push via Firebase/Expo)
 - Smart throttling, deduplication, quiet hours
 - Admin controls and user preferences
+- Phase 4: FCM integration, user segmentation, campaign scheduling, analytics
 """
 
 import os
@@ -17,7 +18,7 @@ import asyncio
 from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any, List, Literal
 from enum import Enum
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field
 import hashlib
 import json
 
@@ -42,6 +43,180 @@ if SENDGRID_API_KEY:
         logger.warning("SendGrid SDK not installed. Run: pip install sendgrid")
     except Exception as e:
         logger.error(f"Failed to initialize SendGrid: {e}")
+
+
+# =============================================================================
+# FIREBASE CLOUD MESSAGING (FCM) INTEGRATION - PHASE 4
+# =============================================================================
+
+FCM_ENABLED = False
+fcm_messaging = None
+
+# Check for Firebase credentials
+FIREBASE_CREDENTIALS_PATH = os.environ.get("FIREBASE_CREDENTIALS_PATH", "")
+FIREBASE_CREDENTIALS_JSON = os.environ.get("FIREBASE_CREDENTIALS_JSON", "")
+
+if FIREBASE_CREDENTIALS_PATH or FIREBASE_CREDENTIALS_JSON:
+    try:
+        import firebase_admin
+        from firebase_admin import credentials, messaging
+        
+        # Initialize Firebase Admin SDK
+        if not firebase_admin._apps:
+            if FIREBASE_CREDENTIALS_JSON:
+                # Use JSON string from environment
+                cred_dict = json.loads(FIREBASE_CREDENTIALS_JSON)
+                cred = credentials.Certificate(cred_dict)
+            elif FIREBASE_CREDENTIALS_PATH and os.path.exists(FIREBASE_CREDENTIALS_PATH):
+                # Use file path
+                cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
+            else:
+                raise ValueError("No valid Firebase credentials found")
+            
+            firebase_admin.initialize_app(cred)
+            fcm_messaging = messaging
+            FCM_ENABLED = True
+            logger.info("Firebase Admin SDK initialized for FCM")
+    except ImportError:
+        logger.warning("Firebase Admin SDK not installed. Run: pip install firebase-admin")
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid Firebase credentials JSON: {e}")
+    except Exception as e:
+        logger.error(f"Failed to initialize Firebase Admin SDK: {e}")
+else:
+    logger.info("Firebase credentials not configured - using Expo Push instead")
+
+
+# =============================================================================
+# USER SEGMENTATION RULES - PHASE 4
+# =============================================================================
+
+class SegmentOperator(str, Enum):
+    EQUALS = "equals"
+    NOT_EQUALS = "not_equals"
+    GREATER_THAN = "greater_than"
+    LESS_THAN = "less_than"
+    CONTAINS = "contains"
+    IN_LIST = "in_list"
+    BETWEEN = "between"
+    EXISTS = "exists"
+    NOT_EXISTS = "not_exists"
+
+
+class SegmentRule(BaseModel):
+    """A single segmentation rule"""
+    field: str  # e.g., "total_purchases", "category_interests.electronics", "last_activity"
+    operator: str  # SegmentOperator
+    value: Any  # The value to compare against
+    
+    def to_mongo_query(self) -> Dict:
+        """Convert rule to MongoDB query"""
+        if self.operator == SegmentOperator.EQUALS:
+            return {self.field: self.value}
+        elif self.operator == SegmentOperator.NOT_EQUALS:
+            return {self.field: {"$ne": self.value}}
+        elif self.operator == SegmentOperator.GREATER_THAN:
+            return {self.field: {"$gt": self.value}}
+        elif self.operator == SegmentOperator.LESS_THAN:
+            return {self.field: {"$lt": self.value}}
+        elif self.operator == SegmentOperator.CONTAINS:
+            return {self.field: {"$regex": self.value, "$options": "i"}}
+        elif self.operator == SegmentOperator.IN_LIST:
+            return {self.field: {"$in": self.value if isinstance(self.value, list) else [self.value]}}
+        elif self.operator == SegmentOperator.BETWEEN:
+            if isinstance(self.value, list) and len(self.value) == 2:
+                return {self.field: {"$gte": self.value[0], "$lte": self.value[1]}}
+            return {}
+        elif self.operator == SegmentOperator.EXISTS:
+            return {self.field: {"$exists": True}}
+        elif self.operator == SegmentOperator.NOT_EXISTS:
+            return {self.field: {"$exists": False}}
+        return {}
+
+
+class UserSegment(BaseModel):
+    """User segment definition for targeting"""
+    id: str = Field(default_factory=lambda: f"seg_{uuid.uuid4().hex[:12]}")
+    name: str
+    description: str = ""
+    
+    # Rules with AND/OR logic
+    rules: List[SegmentRule] = []
+    logic: str = "AND"  # AND or OR
+    
+    # Cached count
+    estimated_users: int = 0
+    last_calculated: Optional[str] = None
+    
+    # Status
+    is_active: bool = True
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    
+    def to_mongo_query(self) -> Dict:
+        """Convert segment rules to MongoDB query"""
+        if not self.rules:
+            return {}
+        
+        rule_queries = [rule.to_mongo_query() for rule in self.rules if rule.to_mongo_query()]
+        
+        if not rule_queries:
+            return {}
+        
+        if self.logic == "OR":
+            return {"$or": rule_queries}
+        else:  # AND
+            return {"$and": rule_queries}
+
+
+# Predefined segments
+PREDEFINED_SEGMENTS = {
+    "all_users": {
+        "name": "All Users",
+        "description": "All registered users",
+        "rules": [],
+        "logic": "AND"
+    },
+    "active_buyers": {
+        "name": "Active Buyers",
+        "description": "Users who have made at least one purchase",
+        "rules": [{"field": "total_purchases", "operator": "greater_than", "value": 0}],
+        "logic": "AND"
+    },
+    "active_sellers": {
+        "name": "Active Sellers", 
+        "description": "Users who have at least one listing",
+        "rules": [{"field": "listings_count", "operator": "greater_than", "value": 0}],
+        "logic": "AND"
+    },
+    "inactive_users": {
+        "name": "Inactive Users",
+        "description": "Users who haven't been active in 30+ days",
+        "rules": [{"field": "last_activity", "operator": "less_than", "value": (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()}],
+        "logic": "AND"
+    },
+    "high_value_users": {
+        "name": "High Value Users",
+        "description": "Users with 5+ purchases",
+        "rules": [{"field": "total_purchases", "operator": "greater_than", "value": 4}],
+        "logic": "AND"
+    },
+    "new_users": {
+        "name": "New Users",
+        "description": "Users who registered in the last 7 days",
+        "rules": [{"field": "created_at", "operator": "greater_than", "value": (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()}],
+        "logic": "AND"
+    },
+    "engaged_browsers": {
+        "name": "Engaged Browsers",
+        "description": "Users who have viewed 10+ listings but haven't purchased",
+        "rules": [
+            {"field": "total_views", "operator": "greater_than", "value": 9},
+            {"field": "total_purchases", "operator": "equals", "value": 0}
+        ],
+        "logic": "AND"
+    }
+}
 
 
 # =============================================================================
