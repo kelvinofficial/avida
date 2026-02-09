@@ -4633,6 +4633,27 @@ if COHORT_ANALYTICS_AVAILABLE:
             )
         except Exception as e:
             logger.warning(f"Failed to track cohort event: {e}")
+    
+    # Background scheduled task for alert checking
+    async def scheduled_alert_checker():
+        """Background task that runs alert checks every 15 minutes"""
+        await asyncio.sleep(60)  # Initial delay to let the app start
+        while True:
+            try:
+                result = await cohort_analytics_service.run_scheduled_alert_check()
+                triggered = len(result.get("triggered_alerts", []))
+                if triggered > 0:
+                    logger.info(f"Scheduled alert check: {triggered} alerts triggered")
+            except Exception as e:
+                logger.error(f"Scheduled alert check failed: {e}")
+            
+            # Wait 15 minutes before next check
+            await asyncio.sleep(15 * 60)
+    
+    # Start the background task
+    asyncio.create_task(scheduled_alert_checker())
+    logger.info("Started scheduled alert checker background task")
+    
 else:
     async def track_cohort_event(user_id: str, event_type: str, properties: dict = None, session_id: str = None):
         """No-op when cohort analytics not available"""
