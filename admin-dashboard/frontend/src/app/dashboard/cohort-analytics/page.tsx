@@ -178,6 +178,16 @@ export default function CohortAnalyticsPage() {
   const [reportRecipients, setReportRecipients] = useState('');
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
 
+  // Cohort Comparison states
+  const [availableSegments, setAvailableSegments] = useState<any>(null);
+  const [selectedSegments, setSelectedSegments] = useState<any[]>([
+    { dimension: 'user_type', value: 'seller', label: 'Sellers' },
+    { dimension: 'user_type', value: 'buyer', label: 'Buyers' },
+  ]);
+  const [comparisonResult, setComparisonResult] = useState<any>(null);
+  const [comparingCohorts, setComparingCohorts] = useState(false);
+  const [comparisonTimePeriod, setComparisonTimePeriod] = useState(90);
+
   // Fetch dashboard data
   const fetchDashboard = useCallback(async () => {
     setLoading(true);
