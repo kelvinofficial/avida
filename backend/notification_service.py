@@ -1323,4 +1323,67 @@ def create_notification_router(db, get_current_user, get_current_admin):
         
         return {"success": True, "preferences": preferences}
     
+    # =========================================================================
+    # QUEUE MANAGEMENT (Admin) - Placeholder until queue is injected
+    # =========================================================================
+    
+    @router.get("/queue/stats")
+    async def get_queue_stats():
+        """Get notification queue statistics"""
+        # Stats from notification_logs grouped by status
+        pipeline = [
+            {"$group": {"_id": "$status", "count": {"$sum": 1}}}
+        ]
+        results = await db.notification_logs.aggregate(pipeline).to_list(10)
+        stats = {}
+        for result in results:
+            stats[result["_id"]] = result["count"]
+        
+        # Also get pending queue count
+        pending_count = await db.notification_queue.count_documents({"status": {"$in": ["pending", "retry_scheduled"]}}) if "notification_queue" in await db.list_collection_names() else 0
+        stats["pending_in_queue"] = pending_count
+        stats["total"] = sum(stats.values())
+        
+        return stats
+    
+    @router.get("/queue/failed")
+    async def get_failed_messages(page: int = Query(1), limit: int = Query(50)):
+        """Get failed messages from queue"""
+        query = {"status": {"$in": ["failed", "max_retries_exceeded"]}}
+        skip = (page - 1) * limit
+        
+        messages = await db.notification_queue.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit) if "notification_queue" in await db.list_collection_names() else []
+        total = await db.notification_queue.count_documents(query) if "notification_queue" in await db.list_collection_names() else 0
+        
+        return {
+            "messages": messages,
+            "total": total,
+            "page": page,
+            "pages": (total + limit - 1) // limit if total > 0 else 1
+        }
+    
+    @router.post("/queue/{queue_id}/retry")
+    async def retry_queued_message(queue_id: str):
+        """Retry a failed queued message"""
+        from datetime import datetime, timezone
+        
+        message = await db.notification_queue.find_one({"id": queue_id})
+        if not message:
+            raise HTTPException(status_code=404, detail="Message not found")
+        
+        now = datetime.now(timezone.utc)
+        
+        # Reset for retry
+        await db.notification_queue.update_one(
+            {"id": queue_id},
+            {"$set": {
+                "status": "pending",
+                "retry_count": 0,
+                "next_retry_at": now.isoformat(),
+                "updated_at": now.isoformat()
+            }}
+        )
+        
+        return {"success": True, "message": "Message queued for retry"}
+    
     return router, notification_service, transport_service
