@@ -3792,7 +3792,7 @@ async def change_password(request: Request):
         "security_alert",
         "Password Changed",
         "Your password was successfully changed. If you didn't make this change, please contact support immediately.",
-        {"action": "password_change"}
+        meta={"action": "password_change"}
     )
     
     return {"message": "Password changed successfully"}
