@@ -523,29 +523,47 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       )}
       {!isMine && !showAvatar && <View style={bubbleStyles.avatarSpacer} />}
 
-      <View style={[
-        bubbleStyles.bubble,
-        isMine ? bubbleStyles.bubbleMine : bubbleStyles.bubbleTheirs,
-        isMine ? bubbleStyles.bubbleTailMine : bubbleStyles.bubbleTailTheirs,
-        (isImageMessage || isVideoMessage) && bubbleStyles.mediaBubble,
-        isOfferMessage && bubbleStyles.offerBubble,
-      ]}>
-        {renderContent()}
-        <View style={bubbleStyles.footer}>
-          <Text style={[bubbleStyles.time, isMine && bubbleStyles.timeMine]}>
-            {formatTime(message.created_at)}
-          </Text>
-          {isMine && (
-            <View style={bubbleStyles.readStatus}>
-              <Ionicons
-                name={message.read ? 'checkmark-done' : 'checkmark'}
-                size={14}
-                color={message.read ? '#4FC3F7' : 'rgba(0,0,0,0.3)'}
-              />
-            </View>
-          )}
+      <Pressable
+        onLongPress={() => {
+          if (!isMine && onLongPress) {
+            onLongPress(message);
+          }
+        }}
+        delayLongPress={500}
+      >
+        <View style={[
+          bubbleStyles.bubble,
+          isMine ? bubbleStyles.bubbleMine : bubbleStyles.bubbleTheirs,
+          isMine ? bubbleStyles.bubbleTailMine : bubbleStyles.bubbleTailTheirs,
+          (isImageMessage || isVideoMessage) && bubbleStyles.mediaBubble,
+          isOfferMessage && bubbleStyles.offerBubble,
+        ]}>
+          {renderContent()}
+          <View style={bubbleStyles.footer}>
+            <Text style={[bubbleStyles.time, isMine && bubbleStyles.timeMine]}>
+              {formatTime(message.created_at)}
+            </Text>
+            {isMine && (
+              <View style={bubbleStyles.readStatus}>
+                <Ionicons
+                  name={message.read ? 'checkmark-done' : 'checkmark'}
+                  size={14}
+                  color={message.read ? '#4FC3F7' : 'rgba(0,0,0,0.3)'}
+                />
+              </View>
+            )}
+            {/* Report indicator for other user's messages */}
+            {!isMine && (
+              <TouchableOpacity 
+                onPress={() => onLongPress && onLongPress(message)}
+                style={bubbleStyles.reportHint}
+              >
+                <Ionicons name="ellipsis-vertical" size={14} color="rgba(0,0,0,0.3)" />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
-      </View>
+      </Pressable>
     </View>
   );
 };
