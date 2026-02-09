@@ -530,8 +530,9 @@ class ConfigManagerService:
             default_flags.append(flag)
         
         if default_flags:
-            await self.feature_flags.insert_many(default_flags)
+            await self.feature_flags.insert_many([d.copy() for d in default_flags])
         
+        # Return without _id
         return default_flags
     
     async def get_feature_flag(
