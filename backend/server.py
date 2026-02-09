@@ -4535,6 +4535,13 @@ if PLATFORM_CONFIG_AVAILABLE:
     app.include_router(api_router)  # Re-include to pick up platform config routes
     logger.info("Platform Configuration & Brand Manager loaded successfully")
 
+# API Integrations Manager
+if API_INTEGRATIONS_AVAILABLE:
+    integrations_router, integrations_service = create_integrations_router(db)
+    api_router.include_router(integrations_router)
+    app.include_router(api_router)  # Re-include to pick up integrations routes
+    logger.info("API Integrations Manager loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
