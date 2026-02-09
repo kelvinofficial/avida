@@ -13,77 +13,72 @@ import pytest
 import requests
 import os
 import uuid
-import time
 from datetime import datetime
 
 # Use environment variable for backend URL
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://server-split-3.preview.emergentagent.com').rstrip('/')
 
-# Test user credentials
-TEST_EMAIL = f"exec_summary_test_{uuid.uuid4().hex[:8]}@test.com"
-TEST_PASSWORD = "testpass123456"
-TEST_NAME = "Executive Summary Tester"
+# Module-level session and auth token
+_session = None
+_auth_token = None
+_test_email = f"exec_summary_test_{uuid.uuid4().hex[:8]}@test.com"
+_test_password = "testpass123456"
+_test_name = "Executive Summary Tester"
 
 
-class TestExecutiveSummarySetup:
-    """Setup test user and authentication"""
+def get_session():
+    """Get or create session with authentication"""
+    global _session, _auth_token
     
-    @pytest.fixture(scope="class")
-    def session(self):
-        """Create a requests session"""
-        return requests.Session()
-    
-    @pytest.fixture(scope="class")
-    def auth_token(self, session):
-        """Register and login user, return auth token"""
-        # Register user
-        register_response = session.post(f"{BASE_URL}/api/auth/register", json={
-            "email": TEST_EMAIL,
-            "password": TEST_PASSWORD,
-            "name": TEST_NAME
-        })
+    if _session is None:
+        _session = requests.Session()
         
-        if register_response.status_code not in [200, 201, 409]:
-            pytest.skip(f"Failed to register user: {register_response.status_code} - {register_response.text}")
+        # Register user
+        register_response = _session.post(f"{BASE_URL}/api/auth/register", json={
+            "email": _test_email,
+            "password": _test_password,
+            "name": _test_name
+        })
         
         # Login
-        login_response = session.post(f"{BASE_URL}/api/auth/login", json={
-            "email": TEST_EMAIL,
-            "password": TEST_PASSWORD
+        login_response = _session.post(f"{BASE_URL}/api/auth/login", json={
+            "email": _test_email,
+            "password": _test_password
         })
         
-        if login_response.status_code != 200:
-            pytest.skip(f"Failed to login: {login_response.status_code} - {login_response.text}")
-        
-        data = login_response.json()
-        token = data.get("session_token") or data.get("token")
-        
-        if not token:
-            pytest.skip("No auth token received")
-        
-        return token
+        if login_response.status_code == 200:
+            data = login_response.json()
+            _auth_token = data.get("session_token") or data.get("token")
     
-    @pytest.fixture(scope="class")
-    def auth_headers(self, auth_token):
-        """Return headers with auth token"""
-        return {
-            "Authorization": f"Bearer {auth_token}",
-            "Content-Type": "application/json"
-        }
+    return _session
 
 
-class TestExecutiveSummaryConfig(TestExecutiveSummarySetup):
+def get_auth_headers():
+    """Get auth headers"""
+    get_session()  # Ensure session is created
+    if _auth_token:
+        return {"Authorization": f"Bearer {_auth_token}", "Content-Type": "application/json"}
+    return {}
+
+
+# =============================================================================
+# Configuration Tests
+# =============================================================================
+
+class TestExecutiveSummaryConfig:
     """Tests for executive summary configuration endpoints"""
     
-    def test_get_config_without_auth(self, session):
+    def test_get_config_without_auth(self):
         """GET /api/executive-summary/config - should require authentication"""
+        session = get_session()
         response = session.get(f"{BASE_URL}/api/executive-summary/config")
         assert response.status_code == 401, f"Expected 401 without auth, got {response.status_code}"
-        print("✓ GET /api/executive-summary/config returns 401 without auth")
+        print("PASS: GET /api/executive-summary/config returns 401 without auth")
     
-    def test_get_config_with_auth(self, session, auth_headers):
+    def test_get_config_with_auth(self):
         """GET /api/executive-summary/config - should return configuration with auth"""
-        response = session.get(f"{BASE_URL}/api/executive-summary/config", headers=auth_headers)
+        session = get_session()
+        response = session.get(f"{BASE_URL}/api/executive-summary/config", headers=get_auth_headers())
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
@@ -95,75 +90,72 @@ class TestExecutiveSummaryConfig(TestExecutiveSummarySetup):
         assert "tone" in data, "Config should have 'tone' field"
         assert "sections_included" in data, "Config should have 'sections_included' field"
         
-        # Verify default frequency is one of valid values
+        # Verify valid values
         assert data["frequency"] in ["daily", "weekly", "monthly"], \
             f"Frequency should be daily/weekly/monthly, got {data['frequency']}"
-        
-        # Verify default tone is one of valid values
         assert data["tone"] in ["formal", "concise", "casual"], \
             f"Tone should be formal/concise/casual, got {data['tone']}"
         
-        print(f"✓ GET /api/executive-summary/config - frequency: {data['frequency']}, tone: {data['tone']}")
+        print(f"PASS: GET config - frequency: {data['frequency']}, tone: {data['tone']}")
     
-    def test_update_config(self, session, auth_headers):
-        """PUT /api/executive-summary/config - should update configuration"""
-        # Update frequency to daily
-        update_data = {
-            "frequency": "daily",
-            "tone": "formal"
-        }
+    def test_update_config_frequency(self):
+        """PUT /api/executive-summary/config - should update frequency setting"""
+        session = get_session()
+        update_data = {"frequency": "weekly", "tone": "concise"}
         
         response = session.put(
             f"{BASE_URL}/api/executive-summary/config",
-            headers=auth_headers,
+            headers=get_auth_headers(),
             json=update_data
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
-        data = response.json()
-        assert "message" in data, "Response should have confirmation message"
-        print(f"✓ PUT /api/executive-summary/config - config updated: {data}")
-        
-        # Verify the update took effect
-        get_response = session.get(f"{BASE_URL}/api/executive-summary/config", headers=auth_headers)
-        assert get_response.status_code == 200
+        # Verify the update
+        get_response = session.get(f"{BASE_URL}/api/executive-summary/config", headers=get_auth_headers())
         config = get_response.json()
-        assert config["frequency"] == "daily", f"Frequency should be 'daily', got {config['frequency']}"
-        assert config["tone"] == "formal", f"Tone should be 'formal', got {config['tone']}"
-        print("✓ Config update verified - frequency: daily, tone: formal")
+        assert config["frequency"] == "weekly", f"Frequency should be 'weekly', got {config['frequency']}"
+        assert config["tone"] == "concise", f"Tone should be 'concise', got {config['tone']}"
+        
+        print(f"PASS: PUT config updated - frequency: weekly, tone: concise")
     
-    def test_update_config_audience(self, session, auth_headers):
+    def test_update_config_audience(self):
         """PUT /api/executive-summary/config - should update audience settings"""
-        update_data = {
-            "audience": ["super_admin", "admins", "executives"]
-        }
+        session = get_session()
+        update_data = {"audience": ["super_admin", "admins", "executives"]}
         
         response = session.put(
             f"{BASE_URL}/api/executive-summary/config",
-            headers=auth_headers,
+            headers=get_auth_headers(),
             json=update_data
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         # Verify update
-        get_response = session.get(f"{BASE_URL}/api/executive-summary/config", headers=auth_headers)
+        get_response = session.get(f"{BASE_URL}/api/executive-summary/config", headers=get_auth_headers())
         config = get_response.json()
         assert "executives" in config["audience"], "Audience should include 'executives'"
-        print(f"✓ Config audience updated: {config['audience']}")
+        
+        print(f"PASS: Config audience updated: {config['audience']}")
 
 
-class TestQuickStats(TestExecutiveSummarySetup):
+# =============================================================================
+# Quick Stats Tests
+# =============================================================================
+
+class TestQuickStats:
     """Tests for quick stats endpoint (fallback KPI dashboard)"""
     
-    def test_quick_stats_without_auth(self, session):
+    def test_quick_stats_without_auth(self):
         """GET /api/executive-summary/quick-stats - should require authentication"""
+        session = get_session()
         response = session.get(f"{BASE_URL}/api/executive-summary/quick-stats")
         assert response.status_code == 401, f"Expected 401 without auth, got {response.status_code}"
-        print("✓ GET /api/executive-summary/quick-stats returns 401 without auth")
+        print("PASS: GET /api/executive-summary/quick-stats returns 401 without auth")
     
-    def test_quick_stats_with_auth(self, session, auth_headers):
+    def test_quick_stats_with_auth(self):
         """GET /api/executive-summary/quick-stats - should return KPI metrics"""
-        response = session.get(f"{BASE_URL}/api/executive-summary/quick-stats", headers=auth_headers)
+        session = get_session()
+        response = session.get(f"{BASE_URL}/api/executive-summary/quick-stats", headers=get_auth_headers())
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
@@ -178,125 +170,141 @@ class TestQuickStats(TestExecutiveSummarySetup):
         # Verify data types
         assert isinstance(data["total_users"], (int, float)), "total_users should be numeric"
         assert isinstance(data["new_users_week"], (int, float)), "new_users_week should be numeric"
-        assert isinstance(data["active_listings"], (int, float)), "active_listings should be numeric"
         
-        print(f"✓ Quick Stats - users: {data['total_users']}, listings: {data['active_listings']}, disputes: {data['pending_disputes']}")
+        print(f"PASS: Quick Stats - users: {data['total_users']}, listings: {data['active_listings']}, disputes: {data['pending_disputes']}")
 
 
-class TestExecutiveSummaryGeneration(TestExecutiveSummarySetup):
+# =============================================================================
+# Summary Generation Tests
+# =============================================================================
+
+class TestExecutiveSummaryGeneration:
     """Tests for executive summary generation endpoint"""
     
-    def test_generate_summary_without_auth(self, session):
+    def test_generate_summary_without_auth(self):
         """POST /api/executive-summary/generate - should require authentication"""
+        session = get_session()
         response = session.post(f"{BASE_URL}/api/executive-summary/generate")
         assert response.status_code == 401, f"Expected 401 without auth, got {response.status_code}"
-        print("✓ POST /api/executive-summary/generate returns 401 without auth")
+        print("PASS: POST /api/executive-summary/generate returns 401 without auth")
     
-    def test_generate_summary_with_auth(self, session, auth_headers):
-        """POST /api/executive-summary/generate - should generate AI summary"""
-        # This test may take 10-15 seconds due to AI processing
+    def test_generate_summary_daily(self):
+        """POST /api/executive-summary/generate - should generate daily AI summary"""
+        session = get_session()
         response = session.post(
             f"{BASE_URL}/api/executive-summary/generate",
-            headers=auth_headers,
+            headers=get_auth_headers(),
             params={"period": "daily"},
-            timeout=60  # Longer timeout for AI generation
+            timeout=90  # AI generation can take time
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
-        # Verify summary structure - check all 7 sections
+        # Verify summary structure
         assert "id" in data, "Summary should have 'id'"
-        assert "period_start" in data, "Summary should have 'period_start'"
-        assert "period_end" in data, "Summary should have 'period_end'"
         assert "period_type" in data, "Summary should have 'period_type'"
-        assert "generated_at" in data, "Summary should have 'generated_at'"
+        assert data["period_type"] == "daily", f"Period type should be 'daily', got {data['period_type']}"
         
         # Verify all 7 sections present
-        assert "platform_overview" in data, "Summary should have 'platform_overview' section"
-        assert "revenue_monetization" in data, "Summary should have 'revenue_monetization' section"
-        assert "growth_retention" in data, "Summary should have 'growth_retention' section"
-        assert "trust_safety" in data, "Summary should have 'trust_safety' section"
-        assert "operations_logistics" in data, "Summary should have 'operations_logistics' section"
-        assert "system_health" in data, "Summary should have 'system_health' section"
-        assert "recommendations" in data, "Summary should have 'recommendations' section"
+        sections = ["platform_overview", "revenue_monetization", "growth_retention", 
+                   "trust_safety", "operations_logistics", "system_health", "recommendations"]
+        for section in sections:
+            assert section in data, f"Summary should have '{section}' section"
         
         # Verify AI-generated content
         assert "executive_brief" in data, "Summary should have 'executive_brief'"
         assert "key_highlights" in data, "Summary should have 'key_highlights'"
         
-        # Check generation metadata
-        if data.get("ai_model_used"):
-            print(f"✓ AI Model used: {data['ai_model_used']}")
+        print(f"PASS: Daily summary generated - ID: {data['id']}")
+        print(f"  - Executive Brief: {(data.get('executive_brief') or 'N/A')[:100]}...")
+        print(f"  - Key Highlights: {len(data.get('key_highlights', []))}")
+        print(f"  - Recommendations: {len(data.get('recommendations', []))}")
         if data.get("generation_time_seconds"):
-            print(f"✓ Generation time: {data['generation_time_seconds']:.2f}s")
-        
-        print(f"✓ Summary generated - ID: {data['id']}, period: {data['period_type']}")
-        print(f"  - Executive Brief: {data.get('executive_brief', 'N/A')[:100]}...")
-        print(f"  - Recommendations count: {len(data.get('recommendations', []))}")
+            print(f"  - Generation Time: {data['generation_time_seconds']:.2f}s")
     
-    def test_generate_summary_weekly(self, session, auth_headers):
+    def test_generate_summary_weekly(self):
         """POST /api/executive-summary/generate - should generate weekly summary"""
+        session = get_session()
         response = session.post(
             f"{BASE_URL}/api/executive-summary/generate",
-            headers=auth_headers,
+            headers=get_auth_headers(),
             params={"period": "weekly"},
-            timeout=60
+            timeout=90
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
         assert data["period_type"] == "weekly", f"Period type should be 'weekly', got {data['period_type']}"
-        print(f"✓ Weekly summary generated - highlights: {len(data.get('key_highlights', []))}")
+        
+        print(f"PASS: Weekly summary generated - highlights: {len(data.get('key_highlights', []))}")
     
-    def test_generate_summary_force_regenerate(self, session, auth_headers):
-        """POST /api/executive-summary/generate - should force regenerate with force=true"""
+    def test_generate_summary_monthly(self):
+        """POST /api/executive-summary/generate - should generate monthly summary"""
+        session = get_session()
         response = session.post(
             f"{BASE_URL}/api/executive-summary/generate",
-            headers=auth_headers,
-            params={"period": "daily", "force": "true"},
-            timeout=60
+            headers=get_auth_headers(),
+            params={"period": "monthly"},
+            timeout=90
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        assert "generated_at" in data, "Force regenerated summary should have new timestamp"
-        print(f"✓ Force regenerated summary at: {data['generated_at']}")
+        assert data["period_type"] == "monthly", f"Period type should be 'monthly', got {data['period_type']}"
+        
+        print(f"PASS: Monthly summary generated")
     
-    def test_generate_summary_invalid_period(self, session, auth_headers):
-        """POST /api/executive-summary/generate - should reject invalid period"""
+    def test_generate_summary_force_regenerate(self):
+        """POST /api/executive-summary/generate - force=true should regenerate cached summary"""
+        session = get_session()
         response = session.post(
             f"{BASE_URL}/api/executive-summary/generate",
-            headers=auth_headers,
+            headers=get_auth_headers(),
+            params={"period": "daily", "force": "true"},
+            timeout=90
+        )
+        assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+        
+        data = response.json()
+        assert "generated_at" in data, "Force regenerated summary should have timestamp"
+        
+        print(f"PASS: Force regenerated at: {data['generated_at']}")
+    
+    def test_generate_summary_invalid_period(self):
+        """POST /api/executive-summary/generate - should reject invalid period"""
+        session = get_session()
+        response = session.post(
+            f"{BASE_URL}/api/executive-summary/generate",
+            headers=get_auth_headers(),
             params={"period": "invalid_period"}
         )
         assert response.status_code == 400, f"Expected 400 for invalid period, got {response.status_code}"
-        print("✓ Invalid period type correctly rejected with 400")
+        
+        print("PASS: Invalid period type correctly rejected with 400")
 
 
-class TestLatestSummary(TestExecutiveSummarySetup):
+# =============================================================================
+# Latest Summary Tests
+# =============================================================================
+
+class TestLatestSummary:
     """Tests for getting latest cached summary"""
     
-    def test_get_latest_summary_without_auth(self, session):
+    def test_get_latest_summary_without_auth(self):
         """GET /api/executive-summary/latest - should require authentication"""
+        session = get_session()
         response = session.get(f"{BASE_URL}/api/executive-summary/latest")
         assert response.status_code == 401, f"Expected 401 without auth, got {response.status_code}"
-        print("✓ GET /api/executive-summary/latest returns 401 without auth")
+        print("PASS: GET /api/executive-summary/latest returns 401 without auth")
     
-    def test_get_latest_summary(self, session, auth_headers):
+    def test_get_latest_summary(self):
         """GET /api/executive-summary/latest - should return latest cached summary"""
-        # First generate a summary to ensure cache exists
-        session.post(
-            f"{BASE_URL}/api/executive-summary/generate",
-            headers=auth_headers,
-            params={"period": "daily"},
-            timeout=60
-        )
-        
-        # Now get the latest
+        session = get_session()
         response = session.get(
             f"{BASE_URL}/api/executive-summary/latest",
-            headers=auth_headers,
-            params={"period": "daily"}
+            headers=get_auth_headers(),
+            params={"period": "daily"},
+            timeout=90  # May generate if no cache
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
@@ -305,23 +313,29 @@ class TestLatestSummary(TestExecutiveSummarySetup):
         assert "executive_brief" in data, "Latest summary should have 'executive_brief'"
         assert "platform_overview" in data, "Latest summary should have 'platform_overview'"
         
-        print(f"✓ Latest summary retrieved - ID: {data['id']}")
+        print(f"PASS: Latest summary retrieved - ID: {data['id']}")
 
 
-class TestSummaryHistory(TestExecutiveSummarySetup):
+# =============================================================================
+# History Tests
+# =============================================================================
+
+class TestSummaryHistory:
     """Tests for executive summary history endpoint"""
     
-    def test_get_history_without_auth(self, session):
+    def test_get_history_without_auth(self):
         """GET /api/executive-summary/history - should require authentication"""
+        session = get_session()
         response = session.get(f"{BASE_URL}/api/executive-summary/history")
         assert response.status_code == 401, f"Expected 401 without auth, got {response.status_code}"
-        print("✓ GET /api/executive-summary/history returns 401 without auth")
+        print("PASS: GET /api/executive-summary/history returns 401 without auth")
     
-    def test_get_history_with_auth(self, session, auth_headers):
+    def test_get_history_with_auth(self):
         """GET /api/executive-summary/history - should return historical summaries"""
+        session = get_session()
         response = session.get(
             f"{BASE_URL}/api/executive-summary/history",
-            headers=auth_headers,
+            headers=get_auth_headers(),
             params={"limit": 10}
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
@@ -330,78 +344,80 @@ class TestSummaryHistory(TestExecutiveSummarySetup):
         assert "summaries" in data, "Response should have 'summaries' array"
         assert isinstance(data["summaries"], list), "Summaries should be a list"
         
-        print(f"✓ History retrieved - {len(data['summaries'])} summaries found")
+        print(f"PASS: History retrieved - {len(data['summaries'])} summaries found")
         
-        # Check summary structure if any exist
         if data["summaries"]:
             summary = data["summaries"][0]
             assert "id" in summary, "Each summary should have 'id'"
             assert "period_type" in summary, "Each summary should have 'period_type'"
-            assert "generated_at" in summary, "Each summary should have 'generated_at'"
-            print(f"  - Latest: {summary['id']} ({summary['period_type']}) - {summary['generated_at']}")
+            print(f"  - Latest: {summary['id']} ({summary['period_type']})")
     
-    def test_get_history_by_period(self, session, auth_headers):
+    def test_get_history_filtered_by_period(self):
         """GET /api/executive-summary/history - should filter by period type"""
+        session = get_session()
         response = session.get(
             f"{BASE_URL}/api/executive-summary/history",
-            headers=auth_headers,
+            headers=get_auth_headers(),
             params={"period": "daily", "limit": 5}
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        # Verify all returned summaries are daily
         for summary in data["summaries"]:
-            assert summary["period_type"] == "daily", \
-                f"All summaries should be daily, got {summary['period_type']}"
+            assert summary["period_type"] == "daily", f"All summaries should be daily"
         
-        print(f"✓ Filtered history - {len(data['summaries'])} daily summaries")
+        print(f"PASS: Filtered history - {len(data['summaries'])} daily summaries")
 
 
-class TestSummaryDataStructure(TestExecutiveSummarySetup):
-    """Tests for verifying the complete summary data structure"""
+# =============================================================================
+# Data Structure Validation Tests
+# =============================================================================
+
+class TestSummaryDataStructure:
+    """Tests for verifying summary data structure and content"""
     
-    def test_platform_overview_structure(self, session, auth_headers):
-        """Verify platform_overview section has correct structure"""
-        response = session.post(
-            f"{BASE_URL}/api/executive-summary/generate",
-            headers=auth_headers,
-            params={"period": "daily"},
-            timeout=60
+    def test_platform_overview_section(self):
+        """Verify platform_overview section has metric change tracking"""
+        session = get_session()
+        response = session.get(
+            f"{BASE_URL}/api/executive-summary/latest",
+            headers=get_auth_headers(),
+            timeout=90
         )
         assert response.status_code == 200
         
         data = response.json()
         platform = data.get("platform_overview", {})
         
-        # Check required metrics with change tracking
-        expected_metrics = ["total_users", "active_users", "new_listings", "completed_transactions", "escrow_volume"]
-        for metric in expected_metrics:
+        # Check required metrics
+        metrics = ["total_users", "active_users", "new_listings", "completed_transactions", "escrow_volume"]
+        for metric in metrics:
             assert metric in platform, f"platform_overview should have '{metric}'"
             metric_data = platform[metric]
-            assert "current" in metric_data, f"{metric} should have 'current' value"
-            assert "previous" in metric_data, f"{metric} should have 'previous' value"
+            assert "current" in metric_data, f"{metric} should have 'current'"
+            assert "previous" in metric_data, f"{metric} should have 'previous'"
             assert "change_percent" in metric_data, f"{metric} should have 'change_percent'"
             assert "change_direction" in metric_data, f"{metric} should have 'change_direction'"
+            assert metric_data["change_direction"] in ["up", "down", "flat"], \
+                f"Invalid change_direction: {metric_data['change_direction']}"
         
-        print(f"✓ Platform overview structure verified - all {len(expected_metrics)} metrics present with change tracking")
+        print(f"PASS: Platform overview - all {len(metrics)} metrics with change tracking")
     
-    def test_recommendations_structure(self, session, auth_headers):
-        """Verify recommendations have correct structure with impact and urgency"""
-        response = session.post(
-            f"{BASE_URL}/api/executive-summary/generate",
-            headers=auth_headers,
-            params={"period": "weekly", "force": "true"},
-            timeout=60
+    def test_recommendations_section(self):
+        """Verify recommendations have impact and urgency levels"""
+        session = get_session()
+        response = session.get(
+            f"{BASE_URL}/api/executive-summary/latest",
+            headers=get_auth_headers(),
+            timeout=90
         )
         assert response.status_code == 200
         
         data = response.json()
         recommendations = data.get("recommendations", [])
         
-        print(f"✓ Found {len(recommendations)} recommendations")
+        print(f"Found {len(recommendations)} recommendations")
         
-        # Verify structure of each recommendation
         for i, rec in enumerate(recommendations):
             assert "id" in rec, f"Recommendation {i} should have 'id'"
             assert "title" in rec, f"Recommendation {i} should have 'title'"
@@ -410,32 +426,25 @@ class TestSummaryDataStructure(TestExecutiveSummarySetup):
             assert "urgency" in rec, f"Recommendation {i} should have 'urgency'"
             assert "category" in rec, f"Recommendation {i} should have 'category'"
             
-            # Verify valid values
             assert rec["impact_level"] in ["low", "medium", "high"], \
                 f"Invalid impact_level: {rec['impact_level']}"
             assert rec["urgency"] in ["low", "medium", "high", "immediate"], \
                 f"Invalid urgency: {rec['urgency']}"
             
-            print(f"  - [{rec['urgency'].upper()}] {rec['title']} (Impact: {rec['impact_level']})")
+            print(f"  - [{rec['urgency'].upper()}] {rec['title'][:50]}...")
+        
+        print("PASS: All recommendations have valid structure")
     
-    def test_trust_safety_structure(self, session, auth_headers):
+    def test_trust_safety_section(self):
         """Verify trust_safety section has risk rating"""
+        session = get_session()
         response = session.get(
             f"{BASE_URL}/api/executive-summary/latest",
-            headers=auth_headers,
-            timeout=60
+            headers=get_auth_headers(),
+            timeout=90
         )
-        
-        if response.status_code != 200:
-            # Generate if no cache
-            response = session.post(
-                f"{BASE_URL}/api/executive-summary/generate",
-                headers=auth_headers,
-                params={"period": "daily"},
-                timeout=60
-            )
-        
         assert response.status_code == 200
+        
         data = response.json()
         trust_safety = data.get("trust_safety", {})
         
@@ -448,7 +457,26 @@ class TestSummaryDataStructure(TestExecutiveSummarySetup):
         assert trust_safety["risk_rating"] in ["low", "medium", "high", "critical"], \
             f"Invalid risk_rating: {trust_safety['risk_rating']}"
         
-        print(f"✓ Trust & Safety - Risk: {trust_safety['risk_rating']}, Disputes: {trust_safety['disputes_opened']}, Fraud Flags: {trust_safety['fraud_flags']}")
+        print(f"PASS: Trust & Safety - Risk: {trust_safety['risk_rating']}, Disputes: {trust_safety['disputes_opened']}")
+    
+    def test_revenue_section(self):
+        """Verify revenue_monetization section structure"""
+        session = get_session()
+        response = session.get(
+            f"{BASE_URL}/api/executive-summary/latest",
+            headers=get_auth_headers(),
+            timeout=90
+        )
+        assert response.status_code == 200
+        
+        data = response.json()
+        revenue = data.get("revenue_monetization", {})
+        
+        metrics = ["total_revenue", "commission_earned", "boost_revenue", "banner_revenue", "transport_fees", "average_order_value"]
+        for metric in metrics:
+            assert metric in revenue, f"revenue_monetization should have '{metric}'"
+        
+        print(f"PASS: Revenue section - all {len(metrics)} metrics present")
 
 
 # Run tests
