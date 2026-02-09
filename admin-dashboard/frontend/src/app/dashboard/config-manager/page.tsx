@@ -673,6 +673,16 @@ export default function ConfigManagerPage() {
             } 
             data-testid="tab-scheduled" 
           />
+          <Tab 
+            icon={<AutoAwesome />} 
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                Templates
+                <Chip label={deploymentTemplates.length} size="small" color="secondary" />
+              </Box>
+            } 
+            data-testid="tab-templates" 
+          />
           <Tab icon={<History />} label="Audit Logs" data-testid="tab-audit" />
         </Tabs>
       </Paper>
