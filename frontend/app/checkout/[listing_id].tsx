@@ -145,14 +145,37 @@ export default function CheckoutScreen() {
     
     setCalculatingPrice(true);
     try {
-      const response = await api.post('/escrow/calculate-order-price', {
-        listing_id: listing.id,
-        quantity: 1,
-        delivery_method: deliveryMethod,
-        delivery_address: deliveryMethod === 'door_delivery' ? deliveryAddress : null,
-        buyer_country: deliveryAddress.country || 'US',
-      });
-      setPriceBreakdown(response.data);
+      if (isSandbox) {
+        // In sandbox mode, calculate price locally (mock calculation)
+        const subtotal = listing.price || 100000;
+        const vat = Math.round(subtotal * 0.18);
+        const transportCost = deliveryMethod === 'door_delivery' ? 15000 : 0;
+        const total = subtotal + vat + transportCost;
+        const commission = Math.round(subtotal * 0.05);
+        
+        setPriceBreakdown({
+          item_price: subtotal,
+          item_quantity: 1,
+          subtotal: subtotal,
+          transport_cost: transportCost,
+          estimated_delivery_days: 3,
+          vat_amount: vat,
+          vat_percentage: 18,
+          total_amount: total,
+          seller_receives: subtotal - commission,
+          currency: listing.currency || 'TZS',
+        });
+      } else {
+        // Normal production flow
+        const response = await api.post('/escrow/calculate-order-price', {
+          listing_id: listing.id,
+          quantity: 1,
+          delivery_method: deliveryMethod,
+          delivery_address: deliveryMethod === 'door_delivery' ? deliveryAddress : null,
+          buyer_country: deliveryAddress.country || 'US',
+        });
+        setPriceBreakdown(response.data);
+      }
     } catch (error: any) {
       console.error('Price calculation error:', error);
     } finally {
