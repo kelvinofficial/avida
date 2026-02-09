@@ -4532,11 +4532,11 @@ async def admin_update_banner_pricing(
     return await db.banner_pricing.find_one({"id": pricing_id}, {"_id": 0})
 
 # =============================================================================
-# ESCROW SYSTEM PROXY ENDPOINTS
-# Direct database access for escrow management
+# ESCROW SYSTEM ADMIN ENDPOINTS
+# These endpoints provide direct database access for escrow management
 # =============================================================================
 
-@app.get("/api/escrow/admin/verified-sellers")
+@api_router.get("/escrow/verified-sellers")
 async def get_verified_sellers(admin = Depends(get_current_admin)):
     """Get all verified sellers"""
     sellers = await db.verified_sellers.find({}, {"_id": 0}).to_list(200)
@@ -4550,7 +4550,7 @@ async def get_verified_sellers(admin = Depends(get_current_admin)):
     
     return sellers
 
-@app.post("/api/escrow/admin/verify-seller/{seller_id}")
+@api_router.post("/escrow/verify-seller/{seller_id}")
 async def verify_seller(
     seller_id: str,
     data: Dict[str, Any] = Body(...),
@@ -4589,7 +4589,7 @@ async def verify_seller(
     
     return {"status": "success", "seller_id": seller_id, "is_verified": is_verified}
 
-@app.get("/api/escrow/admin/orders")
+@api_router.get("/escrow/orders")
 async def get_all_orders(
     page: int = Query(1, ge=1),
     limit: int = Query(100, ge=1, le=500),
@@ -4617,13 +4617,13 @@ async def get_all_orders(
     
     return {"orders": orders, "total": total, "page": page, "limit": limit}
 
-@app.get("/api/escrow/admin/disputes")
+@api_router.get("/escrow/disputes")
 async def get_all_disputes(admin = Depends(get_current_admin)):
     """Get all disputes"""
     disputes = await db.disputes.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
     return disputes
 
-@app.post("/api/escrow/admin/disputes/{dispute_id}/resolve")
+@api_router.post("/escrow/disputes/{dispute_id}/resolve")
 async def resolve_dispute(
     dispute_id: str,
     data: Dict[str, Any] = Body(...),
@@ -4662,7 +4662,7 @@ async def resolve_dispute(
     
     return {"status": "success", "dispute_id": dispute_id, "resolution": resolution}
 
-@app.post("/api/escrow/admin/orders/{order_id}/release-escrow")
+@api_router.post("/escrow/orders/{order_id}/release-escrow")
 async def manual_release_escrow(
     order_id: str,
     admin = Depends(get_current_admin)
@@ -4684,12 +4684,11 @@ async def manual_release_escrow(
     
     return {"status": "success", "order_id": order_id, "message": "Escrow released"}
 
-@app.get("/api/escrow/vat-configs")
-async def get_vat_configs():
-    """Get VAT configurations - public endpoint"""
+@api_router.get("/escrow/config/vat")
+async def get_vat_configs_admin():
+    """Get VAT configurations"""
     configs = await db.vat_configs.find({}, {"_id": 0}).to_list(50)
     if not configs:
-        # Return defaults
         configs = [
             {"country_code": "US", "country_name": "United States", "vat_percentage": 0, "is_active": True},
             {"country_code": "GB", "country_name": "United Kingdom", "vat_percentage": 20, "is_active": True},
@@ -4703,17 +4702,17 @@ async def get_vat_configs():
         ]
     return configs
 
-@app.get("/api/escrow/commission-configs")
-async def get_commission_configs():
-    """Get commission configurations - public endpoint"""
+@api_router.get("/escrow/config/commission")
+async def get_commission_configs_admin():
+    """Get commission configurations"""
     configs = await db.commission_configs.find({}, {"_id": 0}).to_list(10)
     if not configs:
         configs = [{"id": "default", "percentage": 5, "min_amount": 0, "is_active": True}]
     return configs
 
-@app.get("/api/escrow/transport-pricing")
-async def get_transport_pricing():
-    """Get transport pricing - public endpoint"""
+@api_router.get("/escrow/config/transport")
+async def get_transport_pricing_admin():
+    """Get transport pricing"""
     pricing = await db.transport_pricing.find({}, {"_id": 0}).to_list(20)
     if not pricing:
         pricing = [
