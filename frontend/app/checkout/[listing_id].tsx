@@ -329,12 +329,20 @@ export default function CheckoutScreen() {
   
   return (
     <SafeAreaView style={styles.container}>
+      {/* Sandbox Mode Indicator */}
+      {isSandbox && (
+        <View style={styles.sandboxBanner}>
+          <Ionicons name="flask" size={16} color="#FFF" />
+          <Text style={styles.sandboxText}>SANDBOX MODE - No real payments will be processed</Text>
+        </View>
+      )}
+      
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Checkout</Text>
+        <Text style={styles.headerTitle}>{isSandbox ? '🧪 Sandbox Checkout' : 'Checkout'}</Text>
         <View style={{ width: 40 }} />
       </View>
       
