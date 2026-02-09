@@ -1370,6 +1370,11 @@ def create_escrow_router(db, get_current_user, get_current_admin):
         """Get VAT configurations"""
         return await service.get_vat_configs()
     
+    @router.get("/commission-configs")
+    async def get_commission_configs():
+        """Get commission configurations (public - commission hidden from buyer view)"""
+        return await service.get_commission_configs()
+    
     # =========================================================================
     # BUYER ENDPOINTS
     # =========================================================================
