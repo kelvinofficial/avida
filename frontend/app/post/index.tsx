@@ -2875,6 +2875,175 @@ const aiStyles = StyleSheet.create({
   },
 });
 
+// Price Suggestion Styles
+const priceStyles = StyleSheet.create({
+  getSuggestionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    marginTop: 12,
+    backgroundColor: COLORS.primaryLight,
+    borderRadius: 10,
+  },
+  getSuggestionText: {
+    color: COLORS.primary,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    padding: 10,
+    marginTop: 10,
+    backgroundColor: '#FFF3E0',
+    borderRadius: 8,
+  },
+  errorText: {
+    flex: 1,
+    color: COLORS.warning,
+    fontSize: 12,
+  },
+  suggestionContainer: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 16,
+    borderWidth: 2,
+    borderColor: COLORS.primaryLight,
+  },
+  suggestionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  suggestionTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginLeft: 8,
+  },
+  priceRange: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  priceRangeLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  priceRangeValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  recommendedPrice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    marginTop: 8,
+    backgroundColor: COLORS.primaryLight,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+  },
+  recommendedLabel: {
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: '500',
+  },
+  recommendedValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  useButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: COLORS.primary,
+    borderRadius: 6,
+  },
+  useButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  reasoning: {
+    fontSize: 13,
+    color: COLORS.text,
+    lineHeight: 18,
+    marginTop: 12,
+  },
+  tipContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    marginTop: 12,
+    padding: 10,
+    backgroundColor: '#FFF8E1',
+    borderRadius: 8,
+  },
+  tipText: {
+    flex: 1,
+    fontSize: 12,
+    color: '#E65100',
+    lineHeight: 16,
+  },
+  marketData: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    marginTop: 12,
+    textAlign: 'center',
+  },
+  quickButtons: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 16,
+  },
+  quickButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    backgroundColor: COLORS.background,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  quickButtonHighlight: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  quickButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  quickButtonTextHighlight: {
+    color: '#fff',
+  },
+  quickButtonLabel: {
+    fontSize: 10,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  quickButtonLabelHighlight: {
+    color: 'rgba(255,255,255,0.8)',
+  },
+  disclaimer: {
+    fontSize: 10,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginTop: 12,
+  },
+});
+
 // Desktop-specific styles
 const desktopStyles = StyleSheet.create({
   container: {
