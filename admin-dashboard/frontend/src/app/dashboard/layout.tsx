@@ -67,6 +67,7 @@ const menuItems = [
   { text: 'Analytics', icon: <Analytics />, path: '/dashboard/analytics' },
   { text: 'Banners', icon: <Campaign />, path: '/dashboard/banners' },
   { text: 'Notifications', icon: <NotificationsActive />, path: '/dashboard/notifications' },
+  { text: 'SMS/WhatsApp', icon: <Sms />, path: '/dashboard/sms-notifications' },
   { text: 'Settings', icon: <Settings />, path: '/dashboard/settings' },
   { text: 'Audit Logs', icon: <History />, path: '/dashboard/audit-logs' },
 ];
