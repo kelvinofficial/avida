@@ -1,5 +1,42 @@
 # Changelog
 
+## [2026-02-09] - QA Dashboard Comprehensive Enhancements
+
+### Added - Session Replay System
+- Track and replay critical user flows (checkout, listing_create, escrow_release, payment, registration)
+- Session event recording with timestamps
+- Session summary dashboard showing success rates per flow type
+
+### Added - Data Integrity Checks
+- 8 automated integrity checks: orders/escrow consistency, user roles, listings categories, escrow/payments, orphaned notifications, duplicate records, referential integrity, stale sessions
+- Daily scheduled job at 3 AM UTC
+- Auto-fix capability for certain issues (stale sessions, orphaned notifications)
+
+### Added - Advanced Monitoring Alerts
+- Real-time metrics: error_rate_hourly, avg_api_latency_ms, payment_success_rate, pending_escrows, notification_queue_size, signup_rate_hourly, active_alerts
+- Configurable threshold alerts (metric, condition, value, severity)
+- Metrics stored every 5 minutes for historical tracking
+- Threshold checks every 5 minutes with automatic alerting
+
+### Added - Enhanced Admin Dashboard
+- 4 new tabs: Flow Tests, Session Replay, Data Integrity, Monitoring
+- Total 11 tabs in QA & Reliability page
+- Run buttons for flow tests and integrity checks
+- Add/delete threshold configuration UI
+- Fail-safe status display
+- Retry queue controls
+
+### Files Changed
+- `/app/backend/qa_reliability_system.py` - Added ~1200 lines for session replay, data integrity, monitoring
+- `/app/backend/server.py` - Added scheduled tasks for daily integrity checks and metrics storage
+- `/app/admin-dashboard/frontend/src/app/dashboard/qa-reliability/page.tsx` - Added 4 new tabs and 2 dialogs
+
+### Testing
+- 78/78 total tests passed
+- Test files: `test_qa_comprehensive.py`, `test_qa_new_features.py`, `test_qa_error_logging.py`
+
+---
+
 ## [2026-02-09] - QA System Enhancements
 
 ### Added - Critical User Flow Testing
