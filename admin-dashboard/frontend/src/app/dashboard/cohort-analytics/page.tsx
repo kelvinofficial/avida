@@ -491,7 +491,8 @@ export default function CohortAnalyticsPage() {
         <Tab label="Conversion Funnel" data-testid="tab-funnel" />
         <Tab label="Revenue & LTV" data-testid="tab-revenue" />
         <Tab label="AI Insights" data-testid="tab-insights" />
-        <Tab label="Alerts" data-testid="tab-alerts" />
+        <Tab label="Alerts & Automation" data-testid="tab-alerts" />
+        <Tab label="Weekly Reports" data-testid="tab-reports" />
       </Tabs>
 
       {/* Tab 0: Retention Heatmap */}
