@@ -1047,8 +1047,192 @@ export default function ConfigManagerPage() {
         </Card>
       )}
 
-      {/* Tab 5: Audit Logs */}
+      {/* Tab 5: Scheduled Deployments */}
       {tabValue === 5 && (
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box>
+                <Typography variant="h6">Scheduled Deployments</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Schedule config changes for specific times with automatic rollback
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <IconButton onClick={fetchScheduledDeployments}>
+                  <Refresh />
+                </IconButton>
+                <Button variant="contained" startIcon={<Add />} onClick={() => setCreateDeploymentOpen(true)}>
+                  Schedule Deployment
+                </Button>
+              </Box>
+            </Box>
+
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Type</TableCell>
+                    <TableCell>Scheduled At</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Auto-Rollback</TableCell>
+                    <TableCell>Duration</TableCell>
+                    <TableCell>Created By</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {scheduledDeployments.map((deployment) => (
+                    <TableRow key={deployment.id} hover>
+                      <TableCell>
+                        <Box>
+                          <Typography variant="body2" fontWeight={500}>{deployment.name}</Typography>
+                          {deployment.description && (
+                            <Typography variant="caption" color="text.secondary">{deployment.description}</Typography>
+                          )}
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip label={deployment.config_type.replace('_', ' ')} size="small" variant="outlined" />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">{formatDate(deployment.scheduled_at)}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={deployment.status.toUpperCase()}
+                          size="small"
+                          color={DEPLOYMENT_STATUS_COLORS[deployment.status] || 'default'}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          icon={deployment.enable_auto_rollback ? <Check /> : <Close />}
+                          label={deployment.enable_auto_rollback ? 'Enabled' : 'Disabled'}
+                          size="small"
+                          color={deployment.enable_auto_rollback ? 'success' : 'default'}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">
+                          {deployment.duration_hours ? `${deployment.duration_hours}h` : 'Permanent'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">{deployment.created_by}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', gap: 0.5 }}>
+                          {deployment.status === 'pending' && (
+                            <>
+                              <Tooltip title="Execute Now">
+                                <IconButton
+                                  size="small"
+                                  color="success"
+                                  onClick={async () => {
+                                    if (confirm('Execute this deployment now?')) {
+                                      setProcessing(true);
+                                      try {
+                                        await fetch(`${API_BASE}/config-manager/scheduled-deployments/${deployment.id}/execute`, {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ executed_by: 'admin' }),
+                                        });
+                                        setSnackbar({ open: true, message: 'Deployment executed', severity: 'success' });
+                                        fetchScheduledDeployments();
+                                        fetchFeatureFlags();
+                                      } catch {
+                                        setSnackbar({ open: true, message: 'Failed to execute', severity: 'error' });
+                                      }
+                                      setProcessing(false);
+                                    }
+                                  }}
+                                >
+                                  <PlayArrow />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Cancel">
+                                <IconButton
+                                  size="small"
+                                  color="error"
+                                  onClick={async () => {
+                                    if (confirm('Cancel this deployment?')) {
+                                      setProcessing(true);
+                                      try {
+                                        await fetch(`${API_BASE}/config-manager/scheduled-deployments/${deployment.id}/cancel`, {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ cancelled_by: 'admin' }),
+                                        });
+                                        setSnackbar({ open: true, message: 'Deployment cancelled', severity: 'success' });
+                                        fetchScheduledDeployments();
+                                      } catch {
+                                        setSnackbar({ open: true, message: 'Failed to cancel', severity: 'error' });
+                                      }
+                                      setProcessing(false);
+                                    }
+                                  }}
+                                >
+                                  <Cancel />
+                                </IconButton>
+                              </Tooltip>
+                            </>
+                          )}
+                          {deployment.status === 'active' && (
+                            <Tooltip title="Rollback">
+                              <IconButton
+                                size="small"
+                                color="warning"
+                                onClick={async () => {
+                                  const reason = prompt('Rollback reason:');
+                                  if (reason) {
+                                    setProcessing(true);
+                                    try {
+                                      await fetch(`${API_BASE}/config-manager/scheduled-deployments/${deployment.id}/rollback`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ reason, rolled_back_by: 'admin' }),
+                                      });
+                                      setSnackbar({ open: true, message: 'Deployment rolled back', severity: 'success' });
+                                      fetchScheduledDeployments();
+                                      fetchFeatureFlags();
+                                    } catch {
+                                      setSnackbar({ open: true, message: 'Failed to rollback', severity: 'error' });
+                                    }
+                                    setProcessing(false);
+                                  }
+                                }}
+                              >
+                                <Restore />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                          <Tooltip title="View Details">
+                            <IconButton size="small">
+                              <Visibility />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {scheduledDeployments.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={8} align="center">
+                        <Typography color="text.secondary">No scheduled deployments</Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tab 6: Audit Logs */}
+      {tabValue === 6 && (
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
