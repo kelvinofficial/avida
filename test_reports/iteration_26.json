@@ -1,12 +1,18 @@
 {
-  "summary": "Smart Notification System Phase 1 testing complete. All 24 backend tests passed. Admin dashboard and mobile frontend UI verified.",
+  "summary": "Smart Notification System Phase 1 testing complete. All 24 backend tests passed. Fixed Admin Dashboard API URL bug (double /api prefix). All UI tabs now working: System Settings, Triggers, Analytics.",
   "backend_issues": {
     "critical": [],
     "minor": []
   },
   "frontend_issues": {
     "ui_bugs": [],
-    "integration_issues": [],
+    "integration_issues": [
+      {
+        "flow": "Admin Dashboard - Smart Notifications",
+        "issue": "FIXED - API calls were using wrong URL prefix (double /api)",
+        "resolution": "Changed API_BASE from NEXT_PUBLIC_API_URL to NEXT_PUBLIC_MAIN_API_URL, removed duplicate /api prefix from endpoint paths"
+      }
+    ],
     "design_issues": []
   },
   "test_report_links": [
