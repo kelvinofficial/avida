@@ -172,7 +172,7 @@ export default function SmartNotificationsPage() {
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/smart-notifications/admin/config`, {
+      const res = await fetch(`${API_BASE}/smart-notifications/admin/config`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
