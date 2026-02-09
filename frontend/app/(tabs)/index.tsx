@@ -307,6 +307,7 @@ const cardStyles = StyleSheet.create({
 export default function HomeScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
+  const { isSandboxMode } = useSandbox();
   const { width: windowWidth } = useWindowDimensions();
   const [listings, setListings] = useState<Listing[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
