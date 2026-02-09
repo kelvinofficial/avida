@@ -477,11 +477,35 @@ class ChatModerationManager:
         
         # Create flag if violation detected
         if combined_result["is_violation"]:
+            # Normalize reason tags to valid enum values
+            valid_reason_tags = []
+            for tag in combined_result["reason_tags"]:
+                try:
+                    valid_reason_tags.append(ModerationReasonTag(tag))
+                except ValueError:
+                    # Map AI-generated tags to our enum
+                    tag_mapping = {
+                        "contact_information_bypass": "contact_bypass",
+                        "off_platform_payment_attempt": "off_platform_payment",
+                        "off-platform_payment": "off_platform_payment",
+                        "scam_attempt": "scam",
+                        "fraud_attempt": "fraud",
+                        "abusive_language": "abuse",
+                        "offensive_language": "profanity",
+                        "suspicious_activity": "suspicious_pattern",
+                    }
+                    mapped_tag = tag_mapping.get(tag, "other")
+                    try:
+                        valid_reason_tags.append(ModerationReasonTag(mapped_tag))
+                    except ValueError:
+                        valid_reason_tags.append(ModerationReasonTag.OTHER)
+                        logger.warning(f"Unknown moderation tag '{tag}' mapped to 'other'")
+            
             flag = ModerationFlag(
                 conversation_id=conversation_id,
                 message_id=message_id,
                 risk_level=RiskLevel(combined_result["risk_level"]),
-                reason_tags=[ModerationReasonTag(t) for t in combined_result["reason_tags"]],
+                reason_tags=valid_reason_tags,
                 ai_confidence=combined_result.get("ai_confidence"),
                 detected_patterns=combined_result["detected_patterns"]
             )
