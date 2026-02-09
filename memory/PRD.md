@@ -827,6 +827,59 @@ Test files:
 
 ---
 
+### Admin Sandbox / Preview Mode - Complete (Feb 9, 2026)
+
+**Overview:**
+A fully isolated environment for admins to safely test all platform features without affecting live users or real money.
+
+**Key Features:**
+1. **Isolated Data** - Separate sandbox_* collections (users, orders, escrow, messages, etc.)
+2. **Per-Admin Access** - Configurable allowed_admin_ids
+3. **Auto Seed Data** - Generates 5 buyers, 5 sellers, 10 listings, 5 orders on first session
+4. **Role-Based Testing** - Enter sandbox as Buyer, Seller, Transport Partner, or Admin
+5. **Mock Services** - Payment processing, notifications (no real gateways/SMS)
+6. **Simulation Tools** - Time fast-forward, delivery/payment failures, transport delays, error injection
+7. **Visual Indicators** - Clear "SANDBOX MODE" banner on all pages
+8. **Audit Trail** - Complete logging of sandbox actions
+
+**Sandbox Collections:**
+- `sandbox_users` - Test users with roles
+- `sandbox_sellers` - Seller profiles
+- `sandbox_listings` - Test listings with [SANDBOX] prefix
+- `sandbox_orders` - Orders at various stages
+- `sandbox_escrow` - Escrow records
+- `sandbox_transport` - Transport records with OTP
+- `sandbox_payments` - Mock payment transactions
+- `sandbox_notifications` - In-app only notifications
+- `sandbox_disputes` - Test disputes
+- `sandbox_audit` - Action audit trail
+
+**Session Management:**
+- `POST /api/sandbox/session/start` - Start session with role
+- `POST /api/sandbox/session/{id}/switch-role` - Switch roles
+- `POST /api/sandbox/session/{id}/end` - End session
+- `GET /api/sandbox/session/active/{admin_id}` - Get active session
+
+**Simulation Tools:**
+- `POST /api/sandbox/simulate/fast-forward` - Fast-forward time (escrow expiry testing)
+- `POST /api/sandbox/simulate/delivery-failure` - Simulate failed delivery
+- `POST /api/sandbox/simulate/payment-failure` - Simulate payment failure
+- `POST /api/sandbox/simulate/transport-delay` - Simulate transport delays
+- `POST /api/sandbox/simulate/inject-error` - Inject test errors for QA
+
+**Admin Dashboard Page:**
+- 7 tabs: Controls, Orders, Escrow, Users, Listings, Simulations, Audit Log
+- Session controls with role switching
+- Data management (generate seed data, reset)
+- Mock payment processing UI
+- Simulation tools with parameter dialogs
+
+**Testing:** 25/25 tests passed
+
+Test file: `/app/backend/tests/test_sandbox_system.py`
+
+---
+
 ### Pending Tasks (P1)
 - [ ] Location-based analytics with map visualization (Mapbox) - Skipped by user
 
