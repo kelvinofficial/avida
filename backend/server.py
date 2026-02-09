@@ -96,6 +96,14 @@ except ImportError as e:
     NOTIFICATION_SERVICE_AVAILABLE = False
     logging.warning(f"Notification service not available: {e}")
 
+# Notification Queue and Escrow Integration
+try:
+    from notification_queue import NotificationQueue, EscrowNotificationIntegration
+    NOTIFICATION_QUEUE_AVAILABLE = True
+except ImportError as e:
+    NOTIFICATION_QUEUE_AVAILABLE = False
+    logging.warning(f"Notification queue not available: {e}")
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
