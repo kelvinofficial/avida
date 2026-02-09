@@ -1513,13 +1513,83 @@ Compliance endpoints are currently open (no auth required) for admin access. In 
 - Country table with payment methods
 - API Keys table with masked values
 - Pending approvals with approve/reject
+- **NEW**: Scheduled Deployments tab with execute/cancel/rollback actions
 
 ### Files Added:
-- `/app/backend/config_manager.py` - Backend service (~1700 lines)
-- `/app/admin-dashboard/frontend/src/app/dashboard/config-manager/page.tsx` - Admin UI (~900 lines)
+- `/app/backend/config_manager.py` - Backend service (~2400 lines)
+- `/app/admin-dashboard/frontend/src/app/dashboard/config-manager/page.tsx` - Admin UI (~1200 lines)
 - `/app/backend/tests/test_config_manager.py` - Test file
 
 ### Testing: 96% backend (25/26), 100% frontend
+
+---
+
+## Scheduled Config Deployments - Complete (Feb 9, 2026)
+
+**Status:** COMPLETE - Schedule feature flag and config changes for specific times
+
+### Features Implemented:
+
+**1. Scheduled Deployment Creation**
+- Schedule feature flag changes (e.g., Black Friday promotions)
+- Schedule global setting changes
+- Schedule country config changes
+- Set deployment time (ISO datetime)
+- Optional duration (auto-complete after N hours)
+
+**2. Automatic Rollback**
+- Enable/disable auto-rollback per deployment
+- Rollback on error rate threshold (default: 5%)
+- Rollback on metric drop threshold (default: 20%)
+- Configurable metric to monitor (checkout_conversion, api_success_rate)
+- Monitoring period (5-240 minutes)
+
+**3. Deployment Lifecycle**
+- Status: pending → active → completed/rolled_back/cancelled
+- Manual execution (Execute Now)
+- Manual rollback with reason
+- Cancel pending deployments
+- Save original values for rollback
+
+**4. Metric Recording**
+- Record deployment metrics for monitoring
+- Automatic rollback check based on thresholds
+- Time-series metric storage
+
+### API Endpoints:
+- `GET /api/config-manager/scheduled-deployments` - List deployments
+- `GET /api/config-manager/scheduled-deployments/upcoming` - Upcoming deployments
+- `POST /api/config-manager/scheduled-deployments` - Create deployment
+- `POST /api/config-manager/scheduled-deployments/{id}/execute` - Execute now
+- `POST /api/config-manager/scheduled-deployments/{id}/rollback` - Rollback
+- `POST /api/config-manager/scheduled-deployments/{id}/complete` - Mark complete
+- `POST /api/config-manager/scheduled-deployments/{id}/cancel` - Cancel
+- `POST /api/config-manager/scheduled-deployments/{id}/metrics` - Record metric
+- `GET /api/config-manager/scheduled-deployments/{id}/check-metrics` - Check rollback need
+
+### Admin UI:
+- Scheduled tab with pending count badge
+- Table with name, type, scheduled time, status, auto-rollback, duration
+- Execute Now, Cancel, Rollback action buttons
+- Schedule Deployment dialog (to be added)
+
+---
+
+## African Expansion Countries - Complete (Feb 9, 2026)
+
+**Status:** COMPLETE - Added 5 new African countries
+
+### New Countries:
+| Country | Code | Currency | VAT | Mobile Money Providers |
+|---------|------|----------|-----|----------------------|
+| Ghana | GH | GHS | 15% | MTN, Vodafone, AirtelTigo |
+| Tanzania | TZ | TZS | 18% | M-Pesa, TigoPesa, Airtel |
+| Uganda | UG | UGX | 18% | MTN, Airtel |
+| Zambia | ZM | ZMW | 16% | MTN, Airtel, Zamtel |
+| Zimbabwe | ZW | ZWL | 15% | EcoCash, OneMoney, TeleCash |
+
+### Total Countries: 10
+US, GB, KE, NG, ZA, **GH**, **TZ**, **UG**, **ZM**, **ZW**
 
 ---
 
@@ -1535,4 +1605,5 @@ Compliance endpoints are currently open (no auth required) for admin access. In 
 - Data Privacy: Automated weekly/monthly compliance reports emailed to DPO
 - Config Manager: WebSocket for real-time config updates across instances
 - Config Manager: Config diff viewer for version comparison
+- Config Manager: Background scheduler for automatic deployment execution
 
