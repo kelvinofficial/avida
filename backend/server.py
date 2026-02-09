@@ -4428,6 +4428,17 @@ if AI_ANALYZER_AVAILABLE:
     app.include_router(api_router)  # Re-include to pick up AI routes
     logger.info("AI Listing Analyzer loaded successfully")
 
+# Include Chat Moderation System
+moderation_manager = None
+if CHAT_MODERATION_AVAILABLE:
+    moderation_manager = ChatModerationManager(db)
+    moderation_router = create_moderation_router(db, require_admin, moderation_manager)
+    user_report_router = create_user_report_router(db, require_auth)
+    api_router.include_router(moderation_router)
+    api_router.include_router(user_report_router)
+    app.include_router(api_router)  # Re-include to pick up moderation routes
+    logger.info("Chat Moderation System loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
