@@ -262,7 +262,7 @@ export default function CohortAnalyticsPage() {
   const checkAlerts = async () => {
     setCheckingAlerts(true);
     try {
-      const res = await fetch(`${API_BASE}/cohort-analytics/alerts/check`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/cohort-analytics/alerts/check-and-notify`, { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
         setTriggeredAlerts(data.triggered_alerts || []);
