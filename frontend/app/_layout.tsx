@@ -6,16 +6,34 @@ import * as Linking from 'expo-linking';
 import { useAuthStore, saveUserData } from '../src/store/authStore';
 import { authApi } from '../src/utils/api';
 import { theme } from '../src/utils/theme';
+import { useNotificationDeepLinking, registerForPushNotifications } from '../src/utils/notifications';
 
 export default function RootLayout() {
-  const { loadStoredAuth, setUser, setToken } = useAuthStore();
+  const { loadStoredAuth, setUser, setToken, isAuthenticated, user } = useAuthStore();
   const [processingAuth, setProcessingAuth] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  // Initialize notification deep linking
+  useNotificationDeepLinking();
 
   useEffect(() => {
     setMounted(true);
     loadStoredAuth();
   }, []);
+
+  // Register for push notifications when user is authenticated
+  useEffect(() => {
+    if (mounted && isAuthenticated && user?.user_id) {
+      // Register for push notifications
+      registerForPushNotifications(user.user_id).then((token) => {
+        if (token) {
+          console.log('Push notifications registered');
+        }
+      }).catch((err) => {
+        console.log('Push notification registration error:', err);
+      });
+    }
+  }, [mounted, isAuthenticated, user?.user_id]);
 
   // Handle deep link auth callback
   useEffect(() => {
