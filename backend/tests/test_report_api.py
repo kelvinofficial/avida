@@ -45,6 +45,7 @@ def setup_module(module):
         "token": reporter_data.get("session_token"),
         "email": reporter_email
     }
+    print(f"Reporter user_id: {_test_data['reporter']['user_id']}")
     
     # Create listing owner (other user)
     other_email = f"test_other_{uuid.uuid4().hex[:8]}@test.com"
