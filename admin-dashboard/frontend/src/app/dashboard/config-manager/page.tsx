@@ -1916,6 +1916,170 @@ export default function ConfigManagerPage() {
         </DialogActions>
       </Dialog>
 
+      {/* Use Template Dialog */}
+      <Dialog 
+        open={useTemplateOpen} 
+        onClose={() => {
+          setUseTemplateOpen(false);
+          setSelectedTemplate(null);
+        }} 
+        maxWidth="sm" 
+        fullWidth
+        data-testid="use-template-dialog"
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <AutoAwesome color="primary" />
+            Use Template: {selectedTemplate?.name}
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          {selectedTemplate && (
+            <Box sx={{ pt: 1 }}>
+              <Alert severity="info" sx={{ mb: 3 }}>
+                This will create a scheduled deployment using the "{selectedTemplate.name}" template configuration.
+              </Alert>
+              
+              <Typography variant="subtitle2" gutterBottom>Template Configuration</Typography>
+              <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: 'grey.50' }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="text.secondary">Config Type</Typography>
+                    <Typography variant="body2">{selectedTemplate.config_type.replace(/_/g, ' ')}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="text.secondary">Default Duration</Typography>
+                    <Typography variant="body2">
+                      {selectedTemplate.default_duration_hours ? `${selectedTemplate.default_duration_hours} hours` : 'Permanent'}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="caption" color="text.secondary">Changes</Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                      {Object.entries(selectedTemplate.config_changes).map(([key, value]) => (
+                        <Chip
+                          key={key}
+                          label={`${key.replace(/_/g, ' ')}: ${value ? 'ON' : 'OFF'}`}
+                          size="small"
+                          color={value ? 'success' : 'default'}
+                          variant="outlined"
+                        />
+                      ))}
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Paper>
+              
+              <Typography variant="subtitle2" gutterBottom>Deployment Details</Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Deployment Name (optional)"
+                    placeholder={`${selectedTemplate.name} - ${new Date().toLocaleDateString()}`}
+                    helperText="Leave blank to use default name"
+                    data-testid="template-deployment-name"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Scheduled Date & Time"
+                    type="datetime-local"
+                    required
+                    InputLabelProps={{ shrink: true }}
+                    inputProps={{ min: new Date().toISOString().slice(0, 16) }}
+                    data-testid="template-scheduled-at"
+                    id="template-scheduled-at"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Environment</InputLabel>
+                    <Select
+                      label="Environment"
+                      defaultValue={environment}
+                      data-testid="template-environment"
+                      id="template-environment"
+                    >
+                      {ENVIRONMENTS.map((env) => (
+                        <MenuItem key={env} value={env}>
+                          {env.charAt(0).toUpperCase() + env.slice(1)}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
+              
+              {selectedTemplate.enable_auto_rollback && (
+                <Alert severity="success" sx={{ mt: 2 }} icon={<Undo />}>
+                  Auto-rollback is enabled for this template (Error rate: {selectedTemplate.rollback_on_error_rate}%, Metric drop: {selectedTemplate.rollback_on_metric_drop}%)
+                </Alert>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setUseTemplateOpen(false);
+            setSelectedTemplate(null);
+          }}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={processing ? <CircularProgress size={16} /> : <PlayArrow />}
+            disabled={processing}
+            data-testid="confirm-use-template"
+            onClick={async () => {
+              if (!selectedTemplate) return;
+              
+              setProcessing(true);
+              try {
+                const nameInput = document.getElementById('template-deployment-name') as HTMLInputElement;
+                const scheduledAtInput = document.getElementById('template-scheduled-at') as HTMLInputElement;
+                const envSelect = document.getElementById('template-environment') as HTMLSelectElement;
+                
+                const scheduledAt = scheduledAtInput?.value;
+                if (!scheduledAt) {
+                  setSnackbar({ open: true, message: 'Please select a scheduled date and time', severity: 'error' });
+                  setProcessing(false);
+                  return;
+                }
+                
+                const response = await fetch(`${API_BASE}/config-manager/templates/${selectedTemplate.id}/use`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    environment: envSelect?.value || environment,
+                    scheduled_at: new Date(scheduledAt).toISOString(),
+                    created_by: 'admin_user',
+                    name_override: nameInput?.value || null,
+                  }),
+                });
+                
+                if (response.ok) {
+                  setSnackbar({ open: true, message: 'Deployment scheduled successfully from template!', severity: 'success' });
+                  setUseTemplateOpen(false);
+                  setSelectedTemplate(null);
+                  fetchScheduledDeployments();
+                  fetchDeploymentTemplates();
+                } else {
+                  const error = await response.json();
+                  setSnackbar({ open: true, message: error.detail || 'Failed to schedule deployment', severity: 'error' });
+                }
+              } catch (error) {
+                setSnackbar({ open: true, message: 'Failed to schedule deployment', severity: 'error' });
+              }
+              setProcessing(false);
+            }}
+          >
+            Schedule Deployment
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
