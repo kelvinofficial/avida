@@ -197,6 +197,14 @@ except ImportError as e:
     QA_RELIABILITY_AVAILABLE = False
     logging.warning(f"QA & Reliability System not available: {e}")
 
+# Admin Sandbox System
+try:
+    from sandbox_system import create_sandbox_router, SandboxService
+    SANDBOX_AVAILABLE = True
+except ImportError as e:
+    SANDBOX_AVAILABLE = False
+    logging.warning(f"Sandbox System not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
