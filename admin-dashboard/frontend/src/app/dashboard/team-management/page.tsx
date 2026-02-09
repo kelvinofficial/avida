@@ -998,8 +998,255 @@ export default function TeamManagementPage() {
         </Card>
       )}
 
-      {/* Tab 5: Settings */}
-      {tabValue === 5 && settings && (
+      {/* Tab 5: Shifts & Availability */}
+      {tabValue === 5 && (
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Box>
+                <Typography variant="h6">Shifts & Availability</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Manage team member schedules and on-call rotations
+                </Typography>
+              </Box>
+              <Button variant="contained" startIcon={<Add />}>Add Shift</Button>
+            </Box>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                    <PhoneCallback sx={{ mr: 1, verticalAlign: 'middle' }} />
+                    Currently On-Call
+                  </Typography>
+                  <List dense>
+                    {teamMembers.filter(m => m.status === 'active').slice(0, 3).map((member) => (
+                      <ListItem key={member.id}>
+                        <ListItemAvatar>
+                          <Avatar sx={{ bgcolor: 'success.main', width: 32, height: 32 }}>
+                            {member.name.charAt(0)}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText 
+                          primary={member.name} 
+                          secondary={member.role?.name || member.role_id} 
+                        />
+                        <Chip label="On Call" size="small" color="success" />
+                      </ListItem>
+                    ))}
+                    {teamMembers.length === 0 && (
+                      <ListItem>
+                        <ListItemText primary="No team members on call" secondary="Configure shifts to set up on-call rotation" />
+                      </ListItem>
+                    )}
+                  </List>
+                </Paper>
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                    <AccessTime sx={{ mr: 1, verticalAlign: 'middle' }} />
+                    Today's Schedule
+                  </Typography>
+                  <Box sx={{ textAlign: 'center', py: 4 }}>
+                    <Schedule sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
+                    <Typography color="text.secondary">
+                      Shift calendar coming soon
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Configure working hours and shift rotations
+                    </Typography>
+                  </Box>
+                </Paper>
+              </Grid>
+              
+              <Grid item xs={12}>
+                <Alert severity="info">
+                  <Typography variant="body2">
+                    <strong>Auto-routing:</strong> Tasks will be automatically assigned to available team members based on their shift schedule and on-call status.
+                  </Typography>
+                </Alert>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tab 6: Sandbox / Training Mode */}
+      {tabValue === 6 && (
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Box>
+                <Typography variant="h6">Sandbox / Training Mode</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Practice environment for new team members
+                </Typography>
+              </Box>
+              <Chip label="Training Environment" color="warning" />
+            </Box>
+
+            <Alert severity="warning" sx={{ mb: 3 }}>
+              <Typography variant="body2">
+                <strong>Sandbox Mode:</strong> Actions in this environment do not affect real users or transactions. Use this to train new team members.
+              </Typography>
+            </Alert>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                    <School sx={{ mr: 1, verticalAlign: 'middle' }} />
+                    Training Tasks
+                  </Typography>
+                  <List dense>
+                    {['Handle refund request', 'Review seller verification', 'Moderate chat report', 'Resolve dispute', 'Process payout'].map((task, idx) => (
+                      <ListItem key={idx} sx={{ bgcolor: 'warning.50', mb: 1, borderRadius: 1 }}>
+                        <ListItemText 
+                          primary={`Training Task #${idx + 1}: ${task}`} 
+                          secondary="Mock scenario for practice"
+                        />
+                        <Button size="small" variant="outlined">Practice</Button>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Paper>
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                    Training Progress
+                  </Typography>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Team members in training:
+                    </Typography>
+                    {teamMembers.filter(m => m.sandbox_only).length > 0 ? (
+                      teamMembers.filter(m => m.sandbox_only).map((member) => (
+                        <Box key={member.id} sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1 }}>
+                          <Avatar sx={{ width: 32, height: 32 }}>{member.name.charAt(0)}</Avatar>
+                          <Box sx={{ flexGrow: 1 }}>
+                            <Typography variant="body2">{member.name}</Typography>
+                            <LinearProgress variant="determinate" value={60} sx={{ mt: 0.5 }} />
+                          </Box>
+                          <Chip label="In Progress" size="small" color="warning" />
+                        </Box>
+                      ))
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        No team members currently in training mode
+                      </Typography>
+                    )}
+                  </Box>
+                  <Button variant="outlined" fullWidth startIcon={<Add />}>
+                    Add Member to Training
+                  </Button>
+                </Paper>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tab 7: Security (2FA) */}
+      {tabValue === 7 && (
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Box>
+                <Typography variant="h6">Security Settings</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Two-factor authentication and access control
+                </Typography>
+              </Box>
+            </Box>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                    <VpnKey sx={{ mr: 1, verticalAlign: 'middle' }} />
+                    Two-Factor Authentication
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Enable 2FA for enhanced account security
+                  </Typography>
+                  
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Member</TableCell>
+                          <TableCell>2FA Status</TableCell>
+                          <TableCell>Action</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {teamMembers.slice(0, 5).map((member) => (
+                          <TableRow key={member.id}>
+                            <TableCell>{member.name}</TableCell>
+                            <TableCell>
+                              <Chip 
+                                label="Not Enabled" 
+                                size="small" 
+                                color="default"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Button size="small" startIcon={<QrCode2 />}>
+                                Setup
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Paper>
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                    Security Overview
+                  </Typography>
+                  <List dense>
+                    <ListItem>
+                      <ListItemText primary="2FA Enabled Members" secondary="0 out of 2 members" />
+                      <Chip label="0%" size="small" color="error" />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText primary="Recent Login Failures" secondary="Last 24 hours" />
+                      <Chip label="0" size="small" color="success" />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText primary="Active Sessions" secondary="Currently logged in" />
+                      <Chip label="1" size="small" color="info" />
+                    </ListItem>
+                  </List>
+                  <Divider sx={{ my: 2 }} />
+                  <Button variant="outlined" color="error" fullWidth>
+                    Emergency Lockdown Mode
+                  </Button>
+                </Paper>
+              </Grid>
+              
+              <Grid item xs={12}>
+                <Alert severity="info">
+                  <Typography variant="body2">
+                    <strong>Recommendation:</strong> Enable 2FA for all admin and finance roles to protect sensitive operations.
+                  </Typography>
+                </Alert>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tab 8: Settings */}
+      {tabValue === 8 && settings && (
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>Team Settings</Typography>
