@@ -248,6 +248,7 @@ export default function ConfigManagerPage() {
   const [healthCheck, setHealthCheck] = useState<HealthCheck | null>(null);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [scheduledDeployments, setScheduledDeployments] = useState<ScheduledDeployment[]>([]);
+  const [deploymentTemplates, setDeploymentTemplates] = useState<DeploymentTemplate[]>([]);
 
   // Dialog states
   const [editGlobalOpen, setEditGlobalOpen] = useState(false);
