@@ -331,6 +331,46 @@ Comprehensive analytics system for measuring user behavior, engagement, and long
 
 ### Testing: 29/29 backend tests passed
 
+### Enhanced Features Added (Feb 9, 2026):
+
+**1. Automated Weekly Health Reports**
+- Generates comprehensive cohort health reports
+- Includes metrics summary, retention highlights, funnel analysis
+- AI-powered recommendations
+- Email delivery via SendGrid
+- Report scheduling configuration (daily/weekly/monthly)
+- Report history tracking
+
+**2. Event Tracking Integration**
+- Signup events tracked in `/routes/auth.py`
+- Login events tracked in `/routes/auth.py`
+- Listing created events tracked in `/routes/listings.py`
+- Purchase events (checkout_completed, escrow_released) tracked in `/escrow_system.py`
+
+**3. User Type Drill-down**
+- Seller cohort (users with listings only)
+- Buyer cohort (users with purchases only)
+- Hybrid cohort (users with both)
+- Pagination support
+
+**4. Alert Automation & Push Notifications**
+- Check alerts endpoint creates notifications
+- Notifications stored in `cohort_notifications` collection
+- Push notification queue for admin users
+- Read/unread notification management
+
+### New API Endpoints:
+- `GET /api/cohort-analytics/reports/weekly` - Generate weekly report
+- `POST /api/cohort-analytics/reports/weekly/send` - Email report
+- `GET /api/cohort-analytics/reports/schedule` - Get schedule config
+- `POST /api/cohort-analytics/reports/schedule` - Configure schedule
+- `GET /api/cohort-analytics/reports/history` - Previous reports
+- `POST /api/cohort-analytics/alerts/check-and-notify` - Check & notify
+- `GET /api/cohort-analytics/notifications` - Get notifications
+- `POST /api/cohort-analytics/notifications/{id}/read` - Mark read
+
+### Testing: 53/53 backend tests passed (29 original + 24 new)
+
 ---
 
 ### Pending Tasks (P1)
