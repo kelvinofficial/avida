@@ -1998,18 +1998,29 @@ class ComplianceService:
 # API ROUTER
 # =========================================================================
 
-def create_compliance_router(db):
-    """Create compliance router"""
+def create_compliance_router(db, require_admin_auth=None):
+    """Create compliance router with optional admin authentication"""
     router = APIRouter(prefix="/compliance", tags=["Data Privacy & Compliance"])
     service = ComplianceService(db)
+    
+    # Helper to verify admin role
+    async def verify_compliance_access(admin: dict):
+        """Verify user has compliance access (super_admin, compliance_officer, or admin)"""
+        role = admin.get("role", "admin")
+        if role not in ["super_admin", "compliance_officer", "admin"]:
+            raise HTTPException(status_code=403, detail="Insufficient permissions for compliance operations")
+        return admin
     
     # -------------------------------------------------------------------------
     # DASHBOARD
     # -------------------------------------------------------------------------
     
     @router.get("/dashboard")
-    async def get_dashboard():
+    async def get_dashboard(request: Request = None):
         """Get compliance dashboard summary"""
+        if require_admin_auth:
+            admin = await require_admin_auth(request)
+            await verify_compliance_access(admin)
         return await service.get_compliance_dashboard()
     
     # -------------------------------------------------------------------------
