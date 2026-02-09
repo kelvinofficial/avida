@@ -2143,7 +2143,7 @@ class TeamWorkflowService:
         sendgrid_key = os.environ.get("SENDGRID_API_KEY")
         if not sendgrid_key:
             logger.warning("SendGrid API key not configured")
-            return {"success": False, "error": "SendGrid not configured"}
+            return {"success": False, "error": "SendGrid not configured", "requires_setup": True}
         
         from_email = os.environ.get("SENDGRID_FROM_EMAIL", "noreply@marketplace.com")
         
@@ -2186,8 +2186,19 @@ class TeamWorkflowService:
                 logger.error(f"SendGrid error: {response.status_code} - {response.body}")
                 return {"success": False, "error": f"SendGrid error: {response.status_code}"}
         except Exception as e:
-            logger.error(f"Failed to send email: {e}")
-            return {"success": False, "error": str(e)}
+            error_msg = str(e)
+            logger.error(f"SendGrid error: {error_msg}")
+            
+            # Check for sender verification error
+            if "Sender Identity" in error_msg or "from address" in error_msg.lower():
+                return {
+                    "success": False, 
+                    "error": "Sender email not verified",
+                    "requires_setup": True,
+                    "setup_instructions": f"Verify '{from_email}' in SendGrid Dashboard -> Settings -> Sender Authentication, or use a verified sender email."
+                }
+            
+            return {"success": False, "error": error_msg}
     
     async def send_task_assignment_email(self, task: Dict, assignee: Dict):
         """Send email when task is assigned"""
