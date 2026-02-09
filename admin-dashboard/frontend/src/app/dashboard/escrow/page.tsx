@@ -166,15 +166,16 @@ export default function EscrowPage() {
         api.get('/escrow/config/transport'),
       ]);
       
-      setVerifiedSellers(sellersRes.data || []);
-      setOrders(ordersRes.data?.orders || []);
-      setDisputes(disputesRes.data || []);
-      setVatConfigs(vatRes.data || []);
-      setCommissionConfig(commissionRes.data?.[0] || { percentage: 5, min_amount: 0 });
-      setTransportPricing(transportRes.data || []);
+      // api.get() returns data directly (not response.data)
+      setVerifiedSellers(sellersRes || []);
+      setOrders(ordersRes?.orders || []);
+      setDisputes(disputesRes || []);
+      setVatConfigs(vatRes || []);
+      setCommissionConfig(commissionRes?.[0] || { percentage: 5, min_amount: 0 });
+      setTransportPricing(transportRes || []);
       
       // Calculate stats
-      const orderList = ordersRes.data?.orders || [];
+      const orderList = ordersRes?.orders || [];
       setStats({
         totalOrders: orderList.length,
         pendingPayment: orderList.filter((o: Order) => o.status === 'pending_payment').length,
@@ -184,7 +185,7 @@ export default function EscrowPage() {
         totalEscrowAmount: orderList
           .filter((o: Order) => ['paid', 'shipped'].includes(o.status))
           .reduce((sum: number, o: Order) => sum + o.total_amount, 0),
-        verifiedSellers: (sellersRes.data || []).filter((s: VerifiedSeller) => s.is_verified).length,
+        verifiedSellers: (sellersRes || []).filter((s: VerifiedSeller) => s.is_verified).length,
       });
     } catch (error) {
       console.error('Failed to fetch data:', error);
