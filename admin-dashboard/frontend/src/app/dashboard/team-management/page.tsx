@@ -1245,8 +1245,13 @@ export default function TeamManagementPage() {
         </Card>
       )}
 
-      {/* Tab 8: Settings */}
-      {tabValue === 8 && settings && (
+      {/* Tab 8: Email Templates */}
+      {tabValue === 8 && (
+        <EmailTemplatesTab />
+      )}
+
+      {/* Tab 9: Settings */}
+      {tabValue === 9 && settings && (
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>Team Settings</Typography>
