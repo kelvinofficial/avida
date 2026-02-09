@@ -1913,6 +1913,193 @@ class ConfigManagerService:
         return await self.scheduled_deployments.find(
             query, {"_id": 0}
         ).sort("scheduled_at", 1).to_list(length=50)
+    
+    async def get_due_deployments(self) -> List[Dict]:
+        """Get deployments that are due for execution (scheduled_at <= now)"""
+        now = datetime.now(timezone.utc).isoformat()
+        
+        query = {
+            "status": "pending",
+            "scheduled_at": {"$lte": now}
+        }
+        
+        return await self.scheduled_deployments.find(
+            query, {"_id": 0}
+        ).sort("scheduled_at", 1).to_list(length=100)
+    
+    async def get_expired_deployments(self) -> List[Dict]:
+        """Get active deployments that have exceeded their duration"""
+        now = datetime.now(timezone.utc)
+        
+        # Find active deployments with duration set
+        query = {
+            "status": "active",
+            "duration_hours": {"$ne": None, "$gt": 0}
+        }
+        
+        deployments = await self.scheduled_deployments.find(
+            query, {"_id": 0}
+        ).to_list(length=100)
+        
+        expired = []
+        for dep in deployments:
+            if dep.get("deployed_at") and dep.get("duration_hours"):
+                deployed_at = datetime.fromisoformat(dep["deployed_at"].replace("Z", "+00:00"))
+                expiry_time = deployed_at + timedelta(hours=dep["duration_hours"])
+                if now >= expiry_time:
+                    expired.append(dep)
+        
+        return expired
+    
+    async def process_scheduled_deployments(self) -> Dict:
+        """
+        Process all scheduled deployments:
+        1. Execute due deployments
+        2. Check and auto-rollback based on metrics
+        3. Complete expired time-limited deployments
+        """
+        results = {
+            "executed": [],
+            "rolled_back": [],
+            "completed": [],
+            "errors": []
+        }
+        
+        # 1. Execute due deployments
+        due_deployments = await self.get_due_deployments()
+        for deployment in due_deployments:
+            try:
+                await self.execute_scheduled_deployment(deployment["id"], "scheduler")
+                results["executed"].append({
+                    "id": deployment["id"],
+                    "name": deployment["name"]
+                })
+                logger.info(f"Scheduler: Executed deployment '{deployment['name']}'")
+            except Exception as e:
+                results["errors"].append({
+                    "id": deployment["id"],
+                    "name": deployment["name"],
+                    "error": str(e)
+                })
+                logger.error(f"Scheduler: Failed to execute deployment '{deployment['name']}': {e}")
+        
+        # 2. Check active deployments for metric-based rollback
+        active_deployments = await self.scheduled_deployments.find(
+            {"status": "active", "enable_auto_rollback": True},
+            {"_id": 0}
+        ).to_list(length=100)
+        
+        for deployment in active_deployments:
+            try:
+                check_result = await self.check_deployment_metrics(deployment["id"])
+                if check_result.get("should_rollback"):
+                    await self.rollback_scheduled_deployment(
+                        deployment["id"],
+                        check_result["reason"],
+                        "scheduler"
+                    )
+                    results["rolled_back"].append({
+                        "id": deployment["id"],
+                        "name": deployment["name"],
+                        "reason": check_result["reason"]
+                    })
+                    logger.warning(f"Scheduler: Auto-rolled back deployment '{deployment['name']}': {check_result['reason']}")
+            except Exception as e:
+                results["errors"].append({
+                    "id": deployment["id"],
+                    "name": deployment["name"],
+                    "error": f"Metric check failed: {str(e)}"
+                })
+        
+        # 3. Complete expired time-limited deployments
+        expired_deployments = await self.get_expired_deployments()
+        for deployment in expired_deployments:
+            try:
+                await self.complete_scheduled_deployment(deployment["id"], "scheduler")
+                results["completed"].append({
+                    "id": deployment["id"],
+                    "name": deployment["name"]
+                })
+                logger.info(f"Scheduler: Completed time-limited deployment '{deployment['name']}'")
+            except Exception as e:
+                results["errors"].append({
+                    "id": deployment["id"],
+                    "name": deployment["name"],
+                    "error": f"Completion failed: {str(e)}"
+                })
+        
+        return results
+    
+    async def get_scheduler_status(self) -> Dict:
+        """Get the current scheduler status"""
+        global _scheduler_running
+        
+        due_count = len(await self.get_due_deployments())
+        active_count = await self.scheduled_deployments.count_documents({"status": "active"})
+        pending_count = await self.scheduled_deployments.count_documents({"status": "pending"})
+        
+        return {
+            "running": _scheduler_running,
+            "due_deployments": due_count,
+            "active_deployments": active_count,
+            "pending_deployments": pending_count,
+            "last_check": datetime.now(timezone.utc).isoformat()
+        }
+
+
+# =========================================================================
+# BACKGROUND SCHEDULER
+# =========================================================================
+
+async def deployment_scheduler_loop(service: ConfigManagerService, interval_seconds: int = 60):
+    """Background task that processes scheduled deployments"""
+    global _scheduler_running
+    _scheduler_running = True
+    logger.info(f"Config deployment scheduler started (interval: {interval_seconds}s)")
+    
+    while _scheduler_running:
+        try:
+            results = await service.process_scheduled_deployments()
+            
+            # Log summary if any actions were taken
+            total_actions = len(results["executed"]) + len(results["rolled_back"]) + len(results["completed"])
+            if total_actions > 0:
+                logger.info(f"Scheduler cycle: {len(results['executed'])} executed, "
+                           f"{len(results['rolled_back'])} rolled back, "
+                           f"{len(results['completed'])} completed, "
+                           f"{len(results['errors'])} errors")
+                           
+        except Exception as e:
+            logger.error(f"Scheduler error: {e}")
+        
+        await asyncio.sleep(interval_seconds)
+    
+    logger.info("Config deployment scheduler stopped")
+
+
+def start_deployment_scheduler(service: ConfigManagerService, interval_seconds: int = 60):
+    """Start the background deployment scheduler"""
+    global _scheduler_task, _scheduler_running
+    
+    if _scheduler_task is not None and not _scheduler_task.done():
+        logger.warning("Deployment scheduler already running")
+        return
+    
+    _scheduler_running = True
+    _scheduler_task = asyncio.create_task(deployment_scheduler_loop(service, interval_seconds))
+    logger.info("Started deployment scheduler background task")
+
+
+def stop_deployment_scheduler():
+    """Stop the background deployment scheduler"""
+    global _scheduler_task, _scheduler_running
+    _scheduler_running = False
+    
+    if _scheduler_task:
+        _scheduler_task.cancel()
+        _scheduler_task = None
+    
+    logger.info("Stopped deployment scheduler background task")
 
 
 # =========================================================================
