@@ -173,13 +173,14 @@ export default function EscrowPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      // Use the admin backend's escrow endpoints (prefixed with /api/admin)
       const [sellersRes, ordersRes, disputesRes, vatRes, commissionRes, transportRes] = await Promise.all([
-        escrowApi.get('/escrow/admin/verified-sellers'),
-        escrowApi.get('/escrow/admin/orders?limit=100'),
-        escrowApi.get('/escrow/admin/disputes'),
-        escrowApi.get('/escrow/vat-configs'),
-        escrowApi.get('/escrow/commission-configs'),
-        escrowApi.get('/escrow/transport-pricing'),
+        api.get('/escrow/verified-sellers'),
+        api.get('/escrow/orders?limit=100'),
+        api.get('/escrow/disputes'),
+        api.get('/escrow/config/vat'),
+        api.get('/escrow/config/commission'),
+        api.get('/escrow/config/transport'),
       ]);
       
       setVerifiedSellers(sellersRes.data || []);
