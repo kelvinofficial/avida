@@ -1177,7 +1177,14 @@ SENDGRID_FROM_NAME=Marketplace
 
 ### Files Added:
 - `/app/backend/platform_config.py` - Backend service (~1000 lines)
-- `/app/admin-dashboard/frontend/src/app/dashboard/platform-config/page.tsx` - Admin UI
+- `/app/admin-dashboard/frontend/src/app/dashboard/platform-config/page.tsx` - Admin UI with Live Preview Panel
+
+### Admin UI Features:
+- **Live Preview Panel** (Feb 9, 2026): Real-time preview showing:
+  - Mobile App splash screen
+  - Website header (Light & Dark mode)
+  - Email template with header, body, CTA, and footer
+  - Browser tab with favicon
 
 ### Testing: 30/30 tests passed
 
