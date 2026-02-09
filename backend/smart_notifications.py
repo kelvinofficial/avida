@@ -1331,18 +1331,83 @@ class SmartNotificationService:
             return current_time >= start or current_time <= end
     
     async def _send_push_notification(self, user_id: str, notification: Dict) -> bool:
-        """Send push notification via Expo"""
+        """Send push notification via FCM (preferred) or Expo (fallback)"""
         try:
-            if not self._expo_push_client:
-                logger.warning("Expo Push client not available")
-                return False
-            
             # Get user's push token
             user_settings = await self.db.user_settings.find_one({"user_id": user_id})
             push_token = user_settings.get("push_token") if user_settings else None
+            fcm_token = user_settings.get("fcm_token") if user_settings else None
             
-            if not push_token:
+            if not push_token and not fcm_token:
                 logger.info(f"No push token for user {user_id}")
+                return False
+            
+            # Try FCM first if available and we have an FCM token
+            if FCM_ENABLED and fcm_messaging and fcm_token:
+                return await self._send_fcm_notification(fcm_token, notification)
+            
+            # Fallback to Expo Push
+            if push_token and self._expo_push_client:
+                return await self._send_expo_notification(push_token, notification)
+            
+            logger.warning(f"No push method available for user {user_id}")
+            return False
+            
+        except Exception as e:
+            logger.error(f"Error sending push notification: {e}")
+            return False
+    
+    async def _send_fcm_notification(self, fcm_token: str, notification: Dict) -> bool:
+        """Send push notification via Firebase Cloud Messaging"""
+        try:
+            if not FCM_ENABLED or not fcm_messaging:
+                return False
+            
+            # Build FCM message
+            message = fcm_messaging.Message(
+                notification=fcm_messaging.Notification(
+                    title=notification.get("title", ""),
+                    body=notification.get("body", ""),
+                    image=notification.get("image_url"),
+                ),
+                data={
+                    "deep_link": notification.get("deep_link", ""),
+                    "notification_id": notification.get("id", ""),
+                    "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                },
+                token=fcm_token,
+                android=fcm_messaging.AndroidConfig(
+                    priority="high",
+                    notification=fcm_messaging.AndroidNotification(
+                        icon="ic_notification",
+                        color="#2E7D32",
+                        sound="default",
+                        channel_id="default",
+                    ),
+                ),
+                apns=fcm_messaging.APNSConfig(
+                    payload=fcm_messaging.APNSPayload(
+                        aps=fcm_messaging.Aps(
+                            sound="default",
+                            badge=1,
+                        ),
+                    ),
+                ),
+            )
+            
+            # Send message
+            response = fcm_messaging.send(message)
+            logger.info(f"FCM message sent: {response}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"FCM send error: {e}")
+            return False
+    
+    async def _send_expo_notification(self, push_token: str, notification: Dict) -> bool:
+        """Send push notification via Expo Push"""
+        try:
+            if not self._expo_push_client:
                 return False
             
             from exponent_server_sdk import PushMessage
@@ -1363,8 +1428,36 @@ class SmartNotificationService:
             return response.status == "ok"
             
         except Exception as e:
-            logger.error(f"Error sending push notification: {e}")
+            logger.error(f"Expo push error: {e}")
             return False
+    
+    async def send_fcm_multicast(self, tokens: List[str], notification: Dict) -> Dict:
+        """Send FCM notification to multiple devices at once"""
+        if not FCM_ENABLED or not fcm_messaging:
+            return {"success": 0, "failure": len(tokens), "error": "FCM not enabled"}
+        
+        try:
+            message = fcm_messaging.MulticastMessage(
+                notification=fcm_messaging.Notification(
+                    title=notification.get("title", ""),
+                    body=notification.get("body", ""),
+                ),
+                data={
+                    "deep_link": notification.get("deep_link", ""),
+                    "notification_id": notification.get("id", ""),
+                },
+                tokens=tokens,
+            )
+            
+            response = fcm_messaging.send_multicast(message)
+            return {
+                "success": response.success_count,
+                "failure": response.failure_count,
+            }
+            
+        except Exception as e:
+            logger.error(f"FCM multicast error: {e}")
+            return {"success": 0, "failure": len(tokens), "error": str(e)}
     
     async def _send_email_notification(self, user_id: str, notification: Dict) -> bool:
         """Send email notification via SendGrid"""
