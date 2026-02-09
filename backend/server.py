@@ -3267,7 +3267,10 @@ async def follow_user(user_id: str, request: Request):
         "follow",
         "New Follower",
         f"{current_user.name or 'Someone'} started following you",
-        {"follower_id": current_user.user_id}
+        actor_id=current_user.user_id,
+        actor_name=current_user.name,
+        actor_picture=current_user.picture,
+        meta={"follower_id": current_user.user_id}
     )
     
     return {"message": "Now following user", "is_following": True}
