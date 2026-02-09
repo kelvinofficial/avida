@@ -1,5 +1,29 @@
 # Changelog
 
+## [2026-02-09] - Orders & Messages Pages Sandbox Integration
+
+### Updated - Orders Page (`/app/frontend/app/profile/orders.tsx`)
+- Added sandbox mode detection with `sandboxUtils.isActive()`
+- Fetches orders via `/api/sandbox/proxy/orders/{user_id}` when sandbox active
+- Adds mock listing and buyer data for sandbox orders
+- Shows orange "SANDBOX MODE - Viewing test orders" banner
+- Title changes to "🧪 Sandbox Orders" in sandbox mode
+- Calculates stats from sandbox orders
+
+### Updated - Messages Page (`/app/frontend/app/(tabs)/messages.tsx`)
+- Added sandbox mode detection
+- Fetches conversations via `/api/sandbox/proxy/conversations/{user_id}` when sandbox active
+- Transforms sandbox conversations with mock user data
+- Shows orange "SANDBOX MODE - Test conversations" banner
+- Title changes to "🧪 Sandbox Messages" in sandbox mode
+- Skips user online status fetch in sandbox mode
+
+### Files Updated
+- `/app/frontend/app/profile/orders.tsx` - Sandbox-aware orders display
+- `/app/frontend/app/(tabs)/messages.tsx` - Sandbox-aware conversations
+
+---
+
 ## [2026-02-09] - Checkout Flow Sandbox Integration
 
 ### Updated - Checkout Page (`/app/frontend/app/checkout/[listing_id].tsx`)
