@@ -530,20 +530,24 @@ class SmartNotificationService:
             profile = await self.db.user_interest_profiles.find_one({"user_id": user_id})
             if not profile:
                 profile = UserInterestProfile(user_id=user_id).model_dump()
+                await self.db.user_interest_profiles.insert_one(profile)
+                profile = await self.db.user_interest_profiles.find_one({"user_id": user_id})
             
             now = datetime.now(timezone.utc).isoformat()
-            updates = {"updated_at": now, "last_activity": now}
+            set_updates = {"updated_at": now, "last_activity": now}
+            inc_updates = {}
+            add_to_set_updates = {}
             
             # Update based on event type
             if event.event_type == BehaviorEventType.VIEW_LISTING:
-                updates["$inc"] = {"total_views": 1}
+                inc_updates["total_views"] = 1
                 
                 # Update category interest
                 category_id = event.metadata.get("category_id")
                 if category_id:
                     current_score = profile.get("category_interests", {}).get(category_id, 0)
                     new_score = min(100, current_score + 1)  # Increment by 1, max 100
-                    updates[f"category_interests.{category_id}"] = new_score
+                    set_updates[f"category_interests.{category_id}"] = new_score
                 
                 # Update price preferences
                 price = event.metadata.get("price")
@@ -551,7 +555,7 @@ class SmartNotificationService:
                     price_prefs = profile.get("price_preferences", {}).get(category_id, {"min": price, "max": price, "avg": price, "count": 0})
                     count = price_prefs.get("count", 0) + 1
                     new_avg = ((price_prefs.get("avg", price) * (count - 1)) + price) / count
-                    updates[f"price_preferences.{category_id}"] = {
+                    set_updates[f"price_preferences.{category_id}"] = {
                         "min": min(price_prefs.get("min", price), price),
                         "max": max(price_prefs.get("max", price), price),
                         "avg": new_avg,
@@ -559,15 +563,61 @@ class SmartNotificationService:
                     }
             
             elif event.event_type == BehaviorEventType.SAVE_LISTING:
-                updates["$inc"] = {"total_saves": 1}
+                inc_updates["total_saves"] = 1
                 
                 category_id = event.metadata.get("category_id")
                 if category_id:
                     # Higher weight for saves
                     current_score = profile.get("category_interests", {}).get(category_id, 0)
                     new_score = min(100, current_score + 5)
-                    updates[f"category_interests.{category_id}"] = new_score
+                    set_updates[f"category_interests.{category_id}"] = new_score
                     
+                    # Track saved categories for price drop alerts
+                    add_to_set_updates["saved_categories"] = category_id
+            
+            elif event.event_type == BehaviorEventType.SEARCH_QUERY:
+                query = event.metadata.get("query", "")
+                if query:
+                    # Add to recent searches (keep last 20)
+                    recent = profile.get("recent_searches", [])
+                    if query not in recent:
+                        recent = [query] + recent[:19]
+                        set_updates["recent_searches"] = recent
+            
+            elif event.event_type == BehaviorEventType.PURCHASE:
+                inc_updates["total_purchases"] = 1
+                
+                category_id = event.metadata.get("category_id")
+                if category_id:
+                    # Highest weight for purchases
+                    current_score = profile.get("category_interests", {}).get(category_id, 0)
+                    new_score = min(100, current_score + 20)
+                    set_updates[f"category_interests.{category_id}"] = new_score
+            
+            elif event.event_type == BehaviorEventType.VIEW_CATEGORY:
+                category_id = event.entity_id
+                if category_id:
+                    current_score = profile.get("category_interests", {}).get(category_id, 0)
+                    new_score = min(100, current_score + 2)
+                    set_updates[f"category_interests.{category_id}"] = new_score
+            
+            # Build update operation
+            update_op = {}
+            if set_updates:
+                update_op["$set"] = set_updates
+            if inc_updates:
+                update_op["$inc"] = inc_updates
+            if add_to_set_updates:
+                update_op["$addToSet"] = add_to_set_updates
+            
+            if update_op:
+                await self.db.user_interest_profiles.update_one(
+                    {"user_id": user_id},
+                    update_op
+                )
+            
+        except Exception as e:
+            logger.error(f"Error updating interest profile: {e}")
                     # Track saved categories for price drop alerts
                     saved_cats = profile.get("saved_categories", [])
                     if category_id not in saved_cats:
