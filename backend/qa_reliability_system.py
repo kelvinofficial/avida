@@ -1388,7 +1388,9 @@ class QAReliabilityService:
             "results": results
         }
         
-        await self.db.qa_flow_tests.insert_one(test_run)
+        # Store in database (creates _id)
+        test_run_copy = {k: v for k, v in test_run.items()}
+        await self.db.qa_flow_tests.insert_one(test_run_copy)
         
         # Create alert if tests failed
         if failed > 0:
