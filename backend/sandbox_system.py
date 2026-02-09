@@ -11,6 +11,7 @@ Features:
 - Mock payment/SMS/notification services
 - Time simulation and failure injection
 - Visual indicators and audit logging
+- Data filtering: When sandbox mode is active, API calls return sandbox data
 """
 
 import uuid
@@ -21,11 +22,34 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, List, Any
 from enum import Enum
 from pydantic import BaseModel, Field
+from contextvars import ContextVar
 
 from fastapi import APIRouter, HTTPException, Depends, Body, Query, Request
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 logger = logging.getLogger(__name__)
+
+# Context variable to track sandbox mode per request
+sandbox_mode_var: ContextVar[bool] = ContextVar('sandbox_mode', default=False)
+sandbox_session_var: ContextVar[Optional[Dict]] = ContextVar('sandbox_session', default=None)
+
+# Collection mapping from production to sandbox
+COLLECTION_MAP = {
+    'users': 'sandbox_users',
+    'sellers': 'sandbox_sellers',
+    'listings': 'sandbox_listings',
+    'orders': 'sandbox_orders',
+    'escrow': 'sandbox_escrow',
+    'messages': 'sandbox_messages',
+    'conversations': 'sandbox_messages',
+    'transport': 'sandbox_transport',
+    'transport_jobs': 'sandbox_transport',
+    'payments': 'sandbox_payments',
+    'payment_transactions': 'sandbox_payments',
+    'notifications': 'sandbox_notifications',
+    'disputes': 'sandbox_disputes',
+    'banners': 'sandbox_banners',
+}
 
 
 # =============================================================================
