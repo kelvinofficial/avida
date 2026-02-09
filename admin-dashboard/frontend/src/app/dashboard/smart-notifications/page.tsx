@@ -218,6 +218,9 @@ const TRIGGER_TYPE_LABELS: Record<string, { label: string; icon: JSX.Element; co
   promotional: { label: 'Promotional', icon: <Campaign />, color: '#FF9800' },
 };
 
+// Helper to build API URL (API_BASE already contains /api)
+const apiUrl = (path: string) => `${API_BASE}${path}`;
+
 const SAMPLE_VARIABLES = {
   user_name: 'John',
   listing_title: 'iPhone 15 Pro Max 256GB',
