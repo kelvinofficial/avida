@@ -1035,8 +1035,8 @@ export default function CohortAnalyticsPage() {
         </Card>
       )}
 
-      {/* Tab 4: Alerts & Automation */}
-      {activeTab === 4 && (
+      {/* Tab 5: Alerts & Automation */}
+      {activeTab === 5 && (
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
