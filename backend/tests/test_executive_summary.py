@@ -19,29 +19,29 @@ from datetime import datetime
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://server-split-3.preview.emergentagent.com').rstrip('/')
 
 # Module-level session and auth token
-_session = None
+_auth_session = None
 _auth_token = None
 _test_email = f"exec_summary_test_{uuid.uuid4().hex[:8]}@test.com"
 _test_password = "testpass123456"
 _test_name = "Executive Summary Tester"
 
 
-def get_session():
-    """Get or create session with authentication"""
-    global _session, _auth_token
+def get_auth_session():
+    """Get or create authenticated session"""
+    global _auth_session, _auth_token
     
-    if _session is None:
-        _session = requests.Session()
+    if _auth_session is None:
+        _auth_session = requests.Session()
         
         # Register user
-        register_response = _session.post(f"{BASE_URL}/api/auth/register", json={
+        _auth_session.post(f"{BASE_URL}/api/auth/register", json={
             "email": _test_email,
             "password": _test_password,
             "name": _test_name
         })
         
         # Login
-        login_response = _session.post(f"{BASE_URL}/api/auth/login", json={
+        login_response = _auth_session.post(f"{BASE_URL}/api/auth/login", json={
             "email": _test_email,
             "password": _test_password
         })
@@ -50,15 +50,63 @@ def get_session():
             data = login_response.json()
             _auth_token = data.get("session_token") or data.get("token")
     
-    return _session
+    return _auth_session
 
 
 def get_auth_headers():
     """Get auth headers"""
-    get_session()  # Ensure session is created
+    get_auth_session()  # Ensure session is created
     if _auth_token:
         return {"Authorization": f"Bearer {_auth_token}", "Content-Type": "application/json"}
     return {}
+
+
+def get_unauthenticated_session():
+    """Get a fresh session without authentication"""
+    return requests.Session()
+
+
+# =============================================================================
+# Authentication Tests
+# =============================================================================
+
+class TestAuthenticationRequired:
+    """Tests to verify all endpoints require authentication"""
+    
+    def test_config_requires_auth(self):
+        """GET /api/executive-summary/config - should require authentication"""
+        session = get_unauthenticated_session()
+        response = session.get(f"{BASE_URL}/api/executive-summary/config")
+        assert response.status_code == 401, f"Expected 401 without auth, got {response.status_code}"
+        print("PASS: GET /api/executive-summary/config returns 401 without auth")
+    
+    def test_quick_stats_requires_auth(self):
+        """GET /api/executive-summary/quick-stats - should require authentication"""
+        session = get_unauthenticated_session()
+        response = session.get(f"{BASE_URL}/api/executive-summary/quick-stats")
+        assert response.status_code == 401, f"Expected 401 without auth, got {response.status_code}"
+        print("PASS: GET /api/executive-summary/quick-stats returns 401 without auth")
+    
+    def test_generate_requires_auth(self):
+        """POST /api/executive-summary/generate - should require authentication"""
+        session = get_unauthenticated_session()
+        response = session.post(f"{BASE_URL}/api/executive-summary/generate")
+        assert response.status_code == 401, f"Expected 401 without auth, got {response.status_code}"
+        print("PASS: POST /api/executive-summary/generate returns 401 without auth")
+    
+    def test_latest_requires_auth(self):
+        """GET /api/executive-summary/latest - should require authentication"""
+        session = get_unauthenticated_session()
+        response = session.get(f"{BASE_URL}/api/executive-summary/latest")
+        assert response.status_code == 401, f"Expected 401 without auth, got {response.status_code}"
+        print("PASS: GET /api/executive-summary/latest returns 401 without auth")
+    
+    def test_history_requires_auth(self):
+        """GET /api/executive-summary/history - should require authentication"""
+        session = get_unauthenticated_session()
+        response = session.get(f"{BASE_URL}/api/executive-summary/history")
+        assert response.status_code == 401, f"Expected 401 without auth, got {response.status_code}"
+        print("PASS: GET /api/executive-summary/history returns 401 without auth")
 
 
 # =============================================================================
@@ -68,16 +116,9 @@ def get_auth_headers():
 class TestExecutiveSummaryConfig:
     """Tests for executive summary configuration endpoints"""
     
-    def test_get_config_without_auth(self):
-        """GET /api/executive-summary/config - should require authentication"""
-        session = get_session()
-        response = session.get(f"{BASE_URL}/api/executive-summary/config")
-        assert response.status_code == 401, f"Expected 401 without auth, got {response.status_code}"
-        print("PASS: GET /api/executive-summary/config returns 401 without auth")
-    
     def test_get_config_with_auth(self):
         """GET /api/executive-summary/config - should return configuration with auth"""
-        session = get_session()
+        session = get_auth_session()
         response = session.get(f"{BASE_URL}/api/executive-summary/config", headers=get_auth_headers())
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
@@ -100,7 +141,7 @@ class TestExecutiveSummaryConfig:
     
     def test_update_config_frequency(self):
         """PUT /api/executive-summary/config - should update frequency setting"""
-        session = get_session()
+        session = get_auth_session()
         update_data = {"frequency": "weekly", "tone": "concise"}
         
         response = session.put(
@@ -120,7 +161,7 @@ class TestExecutiveSummaryConfig:
     
     def test_update_config_audience(self):
         """PUT /api/executive-summary/config - should update audience settings"""
-        session = get_session()
+        session = get_auth_session()
         update_data = {"audience": ["super_admin", "admins", "executives"]}
         
         response = session.put(
@@ -145,16 +186,9 @@ class TestExecutiveSummaryConfig:
 class TestQuickStats:
     """Tests for quick stats endpoint (fallback KPI dashboard)"""
     
-    def test_quick_stats_without_auth(self):
-        """GET /api/executive-summary/quick-stats - should require authentication"""
-        session = get_session()
-        response = session.get(f"{BASE_URL}/api/executive-summary/quick-stats")
-        assert response.status_code == 401, f"Expected 401 without auth, got {response.status_code}"
-        print("PASS: GET /api/executive-summary/quick-stats returns 401 without auth")
-    
     def test_quick_stats_with_auth(self):
         """GET /api/executive-summary/quick-stats - should return KPI metrics"""
-        session = get_session()
+        session = get_auth_session()
         response = session.get(f"{BASE_URL}/api/executive-summary/quick-stats", headers=get_auth_headers())
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
@@ -181,16 +215,9 @@ class TestQuickStats:
 class TestExecutiveSummaryGeneration:
     """Tests for executive summary generation endpoint"""
     
-    def test_generate_summary_without_auth(self):
-        """POST /api/executive-summary/generate - should require authentication"""
-        session = get_session()
-        response = session.post(f"{BASE_URL}/api/executive-summary/generate")
-        assert response.status_code == 401, f"Expected 401 without auth, got {response.status_code}"
-        print("PASS: POST /api/executive-summary/generate returns 401 without auth")
-    
     def test_generate_summary_daily(self):
         """POST /api/executive-summary/generate - should generate daily AI summary"""
-        session = get_session()
+        session = get_auth_session()
         response = session.post(
             f"{BASE_URL}/api/executive-summary/generate",
             headers=get_auth_headers(),
@@ -224,7 +251,7 @@ class TestExecutiveSummaryGeneration:
     
     def test_generate_summary_weekly(self):
         """POST /api/executive-summary/generate - should generate weekly summary"""
-        session = get_session()
+        session = get_auth_session()
         response = session.post(
             f"{BASE_URL}/api/executive-summary/generate",
             headers=get_auth_headers(),
@@ -240,7 +267,7 @@ class TestExecutiveSummaryGeneration:
     
     def test_generate_summary_monthly(self):
         """POST /api/executive-summary/generate - should generate monthly summary"""
-        session = get_session()
+        session = get_auth_session()
         response = session.post(
             f"{BASE_URL}/api/executive-summary/generate",
             headers=get_auth_headers(),
@@ -256,7 +283,7 @@ class TestExecutiveSummaryGeneration:
     
     def test_generate_summary_force_regenerate(self):
         """POST /api/executive-summary/generate - force=true should regenerate cached summary"""
-        session = get_session()
+        session = get_auth_session()
         response = session.post(
             f"{BASE_URL}/api/executive-summary/generate",
             headers=get_auth_headers(),
@@ -272,7 +299,7 @@ class TestExecutiveSummaryGeneration:
     
     def test_generate_summary_invalid_period(self):
         """POST /api/executive-summary/generate - should reject invalid period"""
-        session = get_session()
+        session = get_auth_session()
         response = session.post(
             f"{BASE_URL}/api/executive-summary/generate",
             headers=get_auth_headers(),
@@ -290,16 +317,9 @@ class TestExecutiveSummaryGeneration:
 class TestLatestSummary:
     """Tests for getting latest cached summary"""
     
-    def test_get_latest_summary_without_auth(self):
-        """GET /api/executive-summary/latest - should require authentication"""
-        session = get_session()
-        response = session.get(f"{BASE_URL}/api/executive-summary/latest")
-        assert response.status_code == 401, f"Expected 401 without auth, got {response.status_code}"
-        print("PASS: GET /api/executive-summary/latest returns 401 without auth")
-    
     def test_get_latest_summary(self):
         """GET /api/executive-summary/latest - should return latest cached summary"""
-        session = get_session()
+        session = get_auth_session()
         response = session.get(
             f"{BASE_URL}/api/executive-summary/latest",
             headers=get_auth_headers(),
@@ -323,16 +343,9 @@ class TestLatestSummary:
 class TestSummaryHistory:
     """Tests for executive summary history endpoint"""
     
-    def test_get_history_without_auth(self):
-        """GET /api/executive-summary/history - should require authentication"""
-        session = get_session()
-        response = session.get(f"{BASE_URL}/api/executive-summary/history")
-        assert response.status_code == 401, f"Expected 401 without auth, got {response.status_code}"
-        print("PASS: GET /api/executive-summary/history returns 401 without auth")
-    
     def test_get_history_with_auth(self):
         """GET /api/executive-summary/history - should return historical summaries"""
-        session = get_session()
+        session = get_auth_session()
         response = session.get(
             f"{BASE_URL}/api/executive-summary/history",
             headers=get_auth_headers(),
@@ -354,7 +367,7 @@ class TestSummaryHistory:
     
     def test_get_history_filtered_by_period(self):
         """GET /api/executive-summary/history - should filter by period type"""
-        session = get_session()
+        session = get_auth_session()
         response = session.get(
             f"{BASE_URL}/api/executive-summary/history",
             headers=get_auth_headers(),
@@ -378,7 +391,7 @@ class TestSummaryDataStructure:
     
     def test_platform_overview_section(self):
         """Verify platform_overview section has metric change tracking"""
-        session = get_session()
+        session = get_auth_session()
         response = session.get(
             f"{BASE_URL}/api/executive-summary/latest",
             headers=get_auth_headers(),
@@ -405,7 +418,7 @@ class TestSummaryDataStructure:
     
     def test_recommendations_section(self):
         """Verify recommendations have impact and urgency levels"""
-        session = get_session()
+        session = get_auth_session()
         response = session.get(
             f"{BASE_URL}/api/executive-summary/latest",
             headers=get_auth_headers(),
@@ -437,7 +450,7 @@ class TestSummaryDataStructure:
     
     def test_trust_safety_section(self):
         """Verify trust_safety section has risk rating"""
-        session = get_session()
+        session = get_auth_session()
         response = session.get(
             f"{BASE_URL}/api/executive-summary/latest",
             headers=get_auth_headers(),
@@ -461,7 +474,7 @@ class TestSummaryDataStructure:
     
     def test_revenue_section(self):
         """Verify revenue_monetization section structure"""
-        session = get_session()
+        session = get_auth_session()
         response = session.get(
             f"{BASE_URL}/api/executive-summary/latest",
             headers=get_auth_headers(),
@@ -477,6 +490,34 @@ class TestSummaryDataStructure:
             assert metric in revenue, f"revenue_monetization should have '{metric}'"
         
         print(f"PASS: Revenue section - all {len(metrics)} metrics present")
+    
+    def test_summary_includes_all_7_sections(self):
+        """Verify summary includes all 7 required sections"""
+        session = get_auth_session()
+        response = session.get(
+            f"{BASE_URL}/api/executive-summary/latest",
+            headers=get_auth_headers(),
+            timeout=90
+        )
+        assert response.status_code == 200
+        
+        data = response.json()
+        
+        # All 7 sections that should be present
+        required_sections = [
+            "platform_overview",
+            "revenue_monetization", 
+            "growth_retention",
+            "trust_safety",
+            "operations_logistics",
+            "system_health",
+            "recommendations"
+        ]
+        
+        missing_sections = [s for s in required_sections if s not in data or data[s] is None]
+        assert len(missing_sections) == 0, f"Missing sections: {missing_sections}"
+        
+        print(f"PASS: All 7 sections present: {required_sections}")
 
 
 # Run tests
