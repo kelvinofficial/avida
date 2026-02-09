@@ -616,6 +616,7 @@ export default function ListingDetailScreen() {
   const [offerConversationId, setOfferConversationId] = useState<string | null>(null);
   const [submittingOffer, setSubmittingOffer] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [canBuyOnline, setCanBuyOnline] = useState(false);
 
   const fetchListing = useCallback(async () => {
     try {
