@@ -140,6 +140,32 @@ Build a comprehensive admin dashboard for a marketplace application with feature
     - `POST /api/notifications/delivery/verify-otp` - OTP verification
     - `GET/PUT /api/notifications/preferences` - User preferences
   - **Providers**: Sandbox mode for Twilio and Africa's Talking
+- [x] **Notification System Extensions - Complete** (Feb 9)
+  - **Async Message Queue** (`/app/backend/notification_queue.py`):
+    - AsyncIO-based background processor (runs every 15 seconds)
+    - Priority-based message processing (1=highest, 10=lowest)
+    - Exponential backoff retry logic (30s, 60s, 120s)
+    - Max 3 retries before marking as failed
+    - Queue statistics and failed message tracking
+  - **Escrow Flow Integration** (`EscrowNotificationIntegration`):
+    - Auto-triggers notifications on: order_created, payment_successful, order_shipped
+    - Delivery events: out_for_delivery (with OTP), delivered, delivery_confirmed
+    - Escrow events: escrow_released, dispute_opened, dispute_resolved
+    - Transport partner assignment notifications
+    - Respects user notification preferences for channel selection
+  - **User Notification Preferences UI** (`/app/frontend/app/notification-preferences.tsx`):
+    - Channel toggles: SMS, WhatsApp, Email
+    - Preferred channel selection for time-sensitive notifications
+    - Event type preferences: Order, Delivery, Payment, Promotions
+    - Linked from profile page under "SMS & WhatsApp" menu item
+  - **WhatsApp Interactive Buttons**:
+    - Support for tracking links in messages
+    - Button URLs appended to message body (sandbox mode)
+    - Ready for Twilio Content API in production
+  - **Queue API Endpoints**:
+    - `GET /api/notifications/queue/stats` - Queue statistics
+    - `GET /api/notifications/queue/failed` - Failed messages list
+    - `POST /api/notifications/queue/{id}/retry` - Retry failed message
 
 ### Analytics System Details
 
