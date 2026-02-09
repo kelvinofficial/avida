@@ -261,6 +261,8 @@ export default function ConfigManagerPage() {
   const [simulateOpen, setSimulateOpen] = useState(false);
   const [simulateResult, setSimulateResult] = useState<any>(null);
   const [createDeploymentOpen, setCreateDeploymentOpen] = useState(false);
+  const [useTemplateOpen, setUseTemplateOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<DeploymentTemplate | null>(null);
 
   // Temp edit states
   const [editedGlobal, setEditedGlobal] = useState<GlobalSettings | null>(null);
