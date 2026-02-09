@@ -4022,7 +4022,7 @@ async def create_support_ticket(request: Request):
         "system",
         "Support Ticket Created",
         f"Your support ticket \"{subject}\" has been received. We'll respond within 24-48 hours.",
-        {"ticket_id": ticket["id"]}
+        meta={"ticket_id": ticket["id"]}
     )
     
     return {"message": "Ticket created", "ticket_id": ticket["id"]}
