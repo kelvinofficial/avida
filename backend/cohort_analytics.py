@@ -1742,7 +1742,7 @@ def create_cohort_analytics_router(db: AsyncIOMotorDatabase):
     # ALERT AUTOMATION & NOTIFICATIONS
     # -------------------------------------------------------------------------
     
-    @router.post("/alerts/check")
+    @router.post("/alerts/check-and-notify")
     async def check_alerts_and_notify():
         """Manually check all alerts and trigger notifications for breached thresholds"""
         return await service.check_alerts_and_notify()
