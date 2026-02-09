@@ -417,6 +417,129 @@ Compare retention and engagement metrics between different user segments side-by
 
 ---
 
+## QA, Debugging & Reliability System - Complete (Feb 9, 2026)
+
+### Overview
+Comprehensive system for monitoring system health, debugging issues, and ensuring reliability across app, web, admin dashboard, and APIs.
+
+### Features Implemented:
+
+**1. System Health Monitoring**
+- Real-time health status for 6 services: database, API, payments, escrow, notifications, external_apis
+- Service latency tracking
+- Automatic status classification: healthy, degraded, down
+
+**2. Reliability KPIs**
+- Uptime tracking (target: 99.9%)
+- API latency monitoring (target: <2000ms)
+- Checkout success rate (target: >95%)
+- Background periodic health checks every 5 minutes
+
+**3. Error Logging**
+- Centralized error logging with severity levels (info, warning, critical)
+- User-facing reference IDs for support (ERR-XXXXXXXX)
+- Filters: date, severity, category, feature, user, country
+- Sensitive data masking
+
+**4. Automated QA Checks**
+- API endpoint checks
+- Critical flow checks (listing_creation, checkout, escrow, notifications)
+- Permission checks
+- Feature toggle checks
+- Data integrity checks
+- Run on demand or triggered by feature flag changes
+
+**5. Session Tracing (Lightweight In-house)**
+- Trace critical flows: checkout, publish_listing, escrow
+- Step-by-step recording with timestamps and duration
+- Error capture for failed flows
+- Session replay in admin dashboard
+
+**6. Alerts & Notifications**
+- Alert types: system_down, high_error_rate, slow_response, payment_failure, escrow_stuck
+- Severity levels: info, warning, critical
+- Acknowledge and resolve workflow
+- Dashboard notifications
+
+**7. Feature Flags**
+- 10 toggleable features: payments, escrow, notifications, transport, ai_services, ads, chat, offers, boost, sandbox_mode
+- Instant on/off without redeploy
+- QA checks run on flag changes
+- Audit logging
+
+**8. Fail-safe Mechanisms**
+- Idempotency key tracking (prevents double operations)
+- Dead letter queue for failed jobs
+- Exponential backoff retries
+
+**9. Audit Logging**
+- Immutable audit trail
+- Tracks: admin actions, system overrides, feature flag changes
+
+### API Endpoints:
+
+**Health & Status:**
+- `GET /api/qa/health` - Overall system health
+- `GET /api/qa/health/services` - Individual service health
+
+**Error Logs:**
+- `GET /api/qa/errors` - Get error logs with filters
+- `GET /api/qa/errors/reference/{id}` - Get error by reference ID
+- `POST /api/qa/errors/log` - Log an error
+- `POST /api/qa/errors/{id}/resolve` - Resolve error
+
+**Session Traces:**
+- `GET /api/qa/traces` - Get session traces
+- `GET /api/qa/traces/{id}` - Get trace for replay
+- `POST /api/qa/traces/start` - Start new trace
+- `POST /api/qa/traces/{id}/step` - Add trace step
+- `POST /api/qa/traces/{id}/complete` - Complete trace
+
+**Alerts:**
+- `GET /api/qa/alerts` - Get alerts
+- `POST /api/qa/alerts/{id}/acknowledge` - Acknowledge alert
+- `POST /api/qa/alerts/{id}/resolve` - Resolve alert
+
+**QA Checks:**
+- `POST /api/qa/checks/run` - Run all QA checks
+- `GET /api/qa/checks/history` - Get check history
+
+**Metrics:**
+- `GET /api/qa/metrics` - Get reliability metrics
+- `GET /api/qa/metrics/history` - Get metrics history
+- `GET /api/qa/metrics/kpis` - Get KPIs vs targets
+
+**Feature Flags:**
+- `GET /api/qa/features` - Get all flags
+- `PUT /api/qa/features/{key}` - Update flag
+- `GET /api/qa/features/{key}/status` - Check feature status
+
+**Dead Letter Queue:**
+- `GET /api/qa/dlq` - Get failed jobs
+- `POST /api/qa/dlq/{id}/retry` - Retry failed job
+
+**Audit:**
+- `GET /api/qa/audit` - Get audit logs
+
+### Files:
+- `/app/backend/qa_reliability_system.py` - Backend service (~1200 lines)
+- `/app/admin-dashboard/frontend/src/app/dashboard/qa-reliability/page.tsx` - Admin UI
+
+### Admin Dashboard UI Features:
+- System status banner with overall health
+- KPI cards: Uptime, Latency, Checkout Success (vs targets)
+- 7 tabs: System Health, Error Logs, Alerts, QA Checks, Session Traces, Feature Flags, Audit Log
+- Run QA Checks button
+- Feature flag toggles
+- Error detail dialog
+- Trace replay dialog
+
+### Background Tasks:
+- Periodic health checker (every 5 minutes)
+- Scheduled alert checker (every 15 minutes - from cohort analytics)
+
+---
+
 ### Pending Tasks (P1)
 - [ ] Location-based analytics with map visualization (Mapbox) - Skipped by user
 
