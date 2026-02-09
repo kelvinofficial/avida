@@ -2447,7 +2447,7 @@ def create_qa_reliability_router(db: AsyncIOMotorDatabase):
         return await service.unsubscribe_admin_from_alerts(admin_id)
 
     @router.post("/realtime/test-alert")
-    async def send_test_alert(admin_id: str = Body(...)):
+    async def send_test_alert(admin_id: str = Body(..., embed=True)):
         """Send a test real-time alert to verify WebSocket connection"""
         return await service.send_test_realtime_alert(admin_id)
 
