@@ -1064,15 +1064,450 @@ class CohortAnalyticsService:
             "generated_at": datetime.now(timezone.utc).isoformat()
         }
 
-
-# ============================================================================
-# ROUTER FACTORY
-# ============================================================================
-
-def create_cohort_analytics_router(db: AsyncIOMotorDatabase):
-    """Create the Cohort Analytics router"""
-    router = APIRouter(prefix="/cohort-analytics", tags=["Cohort & Retention Analytics"])
-    service = CohortAnalyticsService(db)
+    # -------------------------------------------------------------------------
+    # WEEKLY HEALTH REPORT
+    # -------------------------------------------------------------------------
+    
+    async def generate_weekly_health_report(self) -> Dict:
+        """Generate a comprehensive weekly cohort health report"""
+        now = datetime.now(timezone.utc)
+        
+        # Get all metrics
+        engagement = await self.get_engagement_metrics()
+        heatmap = await self.get_retention_heatmap()
+        funnel = await self.get_conversion_funnel(days=7)
+        revenue = await self.get_revenue_metrics(months_back=3)
+        insights = await self.generate_ai_insights()
+        
+        # Identify key trends
+        retention_data = heatmap.get("data", [])
+        d7_retention_values = [r.get("D7", 0) for r in retention_data if r.get("D7")]
+        avg_d7_retention = sum(d7_retention_values) / len(d7_retention_values) if d7_retention_values else 0
+        
+        # Get previous week's data for comparison
+        week_ago = now - timedelta(days=7)
+        
+        report = {
+            "report_id": str(uuid.uuid4()),
+            "report_type": "weekly",
+            "period_start": (now - timedelta(days=7)).isoformat(),
+            "period_end": now.isoformat(),
+            "generated_at": now.isoformat(),
+            
+            # Key Metrics Summary
+            "metrics_summary": {
+                "total_users": engagement["total_users"],
+                "new_users_this_week": engagement.get("new_listings_30d", 0) // 4,  # Approximate weekly
+                "mau": engagement["mau"],
+                "wau": engagement["wau"],
+                "dau": engagement["dau"],
+                "dau_mau_ratio": engagement["dau_mau_ratio"],
+            },
+            
+            # Retention Highlights
+            "retention_highlights": {
+                "avg_d7_retention": round(avg_d7_retention, 1),
+                "retention_trend": "improving" if avg_d7_retention > 25 else "needs_attention",
+                "best_performing_cohort": retention_data[0]["period"] if retention_data else "N/A",
+                "cohorts_analyzed": len(retention_data),
+            },
+            
+            # Conversion Funnel
+            "funnel_summary": {
+                "overall_conversion": funnel["overall_conversion"],
+                "stages": len(funnel["funnel"]),
+                "biggest_dropoff": max(funnel["funnel"], key=lambda x: x.get("drop_off", 0))["stage"] if funnel["funnel"] else "N/A"
+            },
+            
+            # Revenue Summary
+            "revenue_summary": {
+                "total_revenue": revenue["total_revenue"],
+                "avg_ltv": round(revenue["avg_ltv"], 2),
+            },
+            
+            # AI Insights
+            "ai_insights": insights.get("insights", [])[:5],
+            
+            # Critical Alerts
+            "critical_alerts": [i for i in insights.get("insights", []) if i.get("severity") == "critical"],
+            
+            # Recommendations
+            "recommendations": await self._generate_weekly_recommendations(engagement, avg_d7_retention, funnel)
+        }
+        
+        # Store the report
+        await self.db.cohort_reports.insert_one({
+            **report,
+            "_id": report["report_id"]
+        })
+        
+        return report
+    
+    async def _generate_weekly_recommendations(self, engagement: Dict, avg_retention: float, funnel: Dict) -> List[str]:
+        """Generate actionable recommendations based on data"""
+        recommendations = []
+        
+        # Retention-based recommendations
+        if avg_retention < 20:
+            recommendations.append("URGENT: D7 retention is below 20%. Consider implementing onboarding improvements and day-1 engagement campaigns.")
+        elif avg_retention < 35:
+            recommendations.append("D7 retention has room for improvement. Focus on early user activation and value delivery.")
+        
+        # DAU/MAU ratio
+        if engagement["dau_mau_ratio"] < 10:
+            recommendations.append("DAU/MAU ratio indicates low engagement. Consider push notification campaigns or content updates to drive daily visits.")
+        
+        # Funnel optimization
+        if funnel["overall_conversion"] < 5:
+            recommendations.append("Conversion rate needs attention. Review the signup-to-first-action flow for friction points.")
+        
+        # Growth recommendations
+        if engagement["mau"] > 0 and engagement["wau"] / max(engagement["mau"], 1) < 0.3:
+            recommendations.append("Weekly retention is low. Consider weekly engagement loops like new listings digest or trending items notifications.")
+        
+        if not recommendations:
+            recommendations.append("Metrics are healthy. Focus on scaling acquisition while maintaining current retention rates.")
+        
+        return recommendations
+    
+    async def send_weekly_report_email(self, recipients: List[str]) -> Dict:
+        """Send the weekly health report via email"""
+        report = await self.generate_weekly_health_report()
+        
+        # Build email HTML
+        html_content = f"""
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; }}
+                .section {{ margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; }}
+                .metric {{ display: inline-block; margin: 10px 20px 10px 0; }}
+                .metric-value {{ font-size: 24px; font-weight: bold; color: #2196f3; }}
+                .metric-label {{ font-size: 12px; color: #666; }}
+                .alert {{ background: #ffebee; border-left: 4px solid #f44336; padding: 10px; margin: 10px 0; }}
+                .recommendation {{ background: #e3f2fd; border-left: 4px solid #2196f3; padding: 10px; margin: 10px 0; }}
+                .insight {{ padding: 10px; border-bottom: 1px solid #eee; }}
+                .critical {{ color: #f44336; }}
+                .warning {{ color: #ff9800; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>Weekly Cohort Health Report</h1>
+                <p>Period: {report['period_start'][:10]} to {report['period_end'][:10]}</p>
+            </div>
+            
+            <div class="section">
+                <h2>Key Metrics</h2>
+                <div class="metric">
+                    <div class="metric-value">{report['metrics_summary']['total_users']:,}</div>
+                    <div class="metric-label">Total Users</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">{report['metrics_summary']['mau']:,}</div>
+                    <div class="metric-label">Monthly Active</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">{report['metrics_summary']['wau']:,}</div>
+                    <div class="metric-label">Weekly Active</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">{report['metrics_summary']['dau_mau_ratio']}%</div>
+                    <div class="metric-label">DAU/MAU Ratio</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Retention Highlights</h2>
+                <p><strong>Average D7 Retention:</strong> {report['retention_highlights']['avg_d7_retention']}%</p>
+                <p><strong>Trend:</strong> {report['retention_highlights']['retention_trend'].replace('_', ' ').title()}</p>
+                <p><strong>Cohorts Analyzed:</strong> {report['retention_highlights']['cohorts_analyzed']}</p>
+            </div>
+            
+            <div class="section">
+                <h2>Conversion Funnel</h2>
+                <p><strong>Overall Conversion:</strong> {report['funnel_summary']['overall_conversion']}%</p>
+                <p><strong>Biggest Drop-off:</strong> {report['funnel_summary']['biggest_dropoff']}</p>
+            </div>
+            
+            <div class="section">
+                <h2>AI Insights</h2>
+                {''.join([f'<div class="insight"><span class="{i.get("severity", "info")}">[{i.get("severity", "info").upper()}]</span> {i.get("title", "")}: {i.get("description", "")}</div>' for i in report['ai_insights']])}
+            </div>
+            
+            <div class="section">
+                <h2>Recommendations</h2>
+                {''.join([f'<div class="recommendation">{r}</div>' for r in report['recommendations']])}
+            </div>
+            
+            {f'<div class="section"><h2>Critical Alerts ({len(report["critical_alerts"])})</h2>' + ''.join([f'<div class="alert">{a.get("title", "")}: {a.get("description", "")}</div>' for a in report["critical_alerts"]]) + '</div>' if report['critical_alerts'] else ''}
+            
+            <p style="color: #999; font-size: 12px; margin-top: 30px;">
+                This report was automatically generated by your Cohort Analytics System.
+            </p>
+        </body>
+        </html>
+        """
+        
+        # Try to send via SendGrid
+        send_results = []
+        sendgrid_key = os.environ.get("SENDGRID_API_KEY")
+        
+        if sendgrid_key:
+            try:
+                import sendgrid
+                from sendgrid.helpers.mail import Mail, Email, To, Content
+                
+                sg = sendgrid.SendGridAPIClient(api_key=sendgrid_key)
+                
+                for recipient in recipients:
+                    message = Mail(
+                        from_email=Email("noreply@marketplace.com", "Cohort Analytics"),
+                        to_emails=To(recipient),
+                        subject=f"Weekly Cohort Health Report - {report['period_end'][:10]}",
+                        html_content=Content("text/html", html_content)
+                    )
+                    
+                    try:
+                        response = sg.send(message)
+                        send_results.append({
+                            "recipient": recipient,
+                            "status": "sent",
+                            "status_code": response.status_code
+                        })
+                    except Exception as e:
+                        send_results.append({
+                            "recipient": recipient,
+                            "status": "failed",
+                            "error": str(e)
+                        })
+            except ImportError:
+                send_results.append({"error": "SendGrid not installed"})
+        else:
+            send_results.append({"error": "SENDGRID_API_KEY not configured"})
+        
+        return {
+            "report_id": report["report_id"],
+            "recipients": recipients,
+            "send_results": send_results,
+            "report": report
+        }
+    
+    async def get_report_history(self, limit: int = 10) -> List[Dict]:
+        """Get previous weekly reports"""
+        reports = await self.db.cohort_reports.find(
+            {},
+            {"_id": 0}
+        ).sort("generated_at", -1).limit(limit).to_list(length=limit)
+        return reports
+    
+    # -------------------------------------------------------------------------
+    # ALERT AUTOMATION & PUSH NOTIFICATIONS
+    # -------------------------------------------------------------------------
+    
+    async def check_alerts_and_notify(self) -> Dict:
+        """Check all enabled alerts and trigger notifications for breached thresholds"""
+        alerts = await self.get_all_alerts()
+        engagement = await self.get_engagement_metrics()
+        heatmap = await self.get_retention_heatmap()
+        
+        triggered_alerts = []
+        notifications_sent = []
+        
+        retention_data = heatmap.get("data", [])
+        d7_retention_values = [r.get("D7", 0) for r in retention_data if r.get("D7")]
+        avg_d7_retention = sum(d7_retention_values) / len(d7_retention_values) if d7_retention_values else 0
+        
+        for alert in alerts:
+            if not alert.get("is_enabled", True):
+                continue
+            
+            alert_triggered = False
+            alert_value = 0
+            
+            if alert["alert_type"] == "retention_drop":
+                # Check if D7 retention dropped below threshold
+                alert_value = avg_d7_retention
+                if avg_d7_retention < alert["threshold"]:
+                    alert_triggered = True
+                    
+            elif alert["alert_type"] == "high_churn":
+                # Churn = 100 - D7 retention
+                churn_rate = 100 - avg_d7_retention
+                alert_value = churn_rate
+                if churn_rate > alert["threshold"]:
+                    alert_triggered = True
+                    
+            elif alert["alert_type"] == "engagement_spike":
+                # Check if DAU/MAU ratio exceeds threshold (positive)
+                alert_value = engagement["dau_mau_ratio"]
+                if engagement["dau_mau_ratio"] > alert["threshold"]:
+                    alert_triggered = True
+                    
+            elif alert["alert_type"] == "high_value_cohort":
+                # Check if any cohort has retention above threshold
+                for cohort in retention_data:
+                    if cohort.get("D7", 0) > alert["threshold"]:
+                        alert_triggered = True
+                        alert_value = cohort.get("D7", 0)
+                        break
+            
+            if alert_triggered:
+                triggered_alerts.append({
+                    "alert_id": alert["id"],
+                    "alert_name": alert["name"],
+                    "alert_type": alert["alert_type"],
+                    "threshold": alert["threshold"],
+                    "current_value": round(alert_value, 1),
+                    "triggered_at": datetime.now(timezone.utc).isoformat()
+                })
+                
+                # Update alert with last triggered timestamp
+                await self.alerts.update_one(
+                    {"id": alert["id"]},
+                    {"$set": {"last_triggered": datetime.now(timezone.utc).isoformat()}}
+                )
+                
+                # Create notification
+                notification = await self._create_alert_notification(alert, alert_value)
+                notifications_sent.append(notification)
+        
+        return {
+            "checked_alerts": len(alerts),
+            "triggered_alerts": triggered_alerts,
+            "notifications_sent": notifications_sent,
+            "checked_at": datetime.now(timezone.utc).isoformat()
+        }
+    
+    async def _create_alert_notification(self, alert: Dict, current_value: float) -> Dict:
+        """Create a notification for a triggered alert"""
+        notification_id = str(uuid.uuid4())
+        
+        # Determine severity based on how far threshold was breached
+        if alert["alert_type"] in ["retention_drop", "high_churn"]:
+            breach_severity = "critical" if current_value < alert["threshold"] * 0.5 else "warning"
+        else:
+            breach_severity = "info"
+        
+        notification = {
+            "id": notification_id,
+            "type": "cohort_alert",
+            "alert_id": alert["id"],
+            "alert_name": alert["name"],
+            "title": f"Alert Triggered: {alert['name']}",
+            "message": f"{alert['alert_type'].replace('_', ' ').title()} alert triggered. Current value: {current_value:.1f}%, Threshold: {alert['threshold']}%",
+            "severity": breach_severity,
+            "read": False,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "data": {
+                "alert_type": alert["alert_type"],
+                "threshold": alert["threshold"],
+                "current_value": current_value
+            }
+        }
+        
+        # Store in notifications collection (used by the notification bell)
+        await self.db.cohort_notifications.insert_one({**notification, "_id": notification_id})
+        
+        # Also try to send push notification if configured
+        await self._send_push_notification(notification)
+        
+        return notification
+    
+    async def _send_push_notification(self, notification: Dict) -> bool:
+        """Send push notification via available channels"""
+        # Check for admin push tokens
+        admin_users = await self.users.find(
+            {"role": {"$in": ["admin", "super_admin"]}},
+            {"push_token": 1, "email": 1}
+        ).to_list(length=100)
+        
+        push_results = []
+        
+        for admin in admin_users:
+            push_token = admin.get("push_token")
+            if push_token:
+                # Store push notification for delivery
+                await self.db.push_queue.insert_one({
+                    "_id": str(uuid.uuid4()),
+                    "token": push_token,
+                    "title": notification["title"],
+                    "body": notification["message"],
+                    "data": notification["data"],
+                    "status": "pending",
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                })
+                push_results.append({"email": admin.get("email"), "status": "queued"})
+        
+        return len(push_results) > 0
+    
+    async def get_cohort_notifications(self, unread_only: bool = False, limit: int = 50) -> List[Dict]:
+        """Get cohort-related notifications"""
+        query = {}
+        if unread_only:
+            query["read"] = False
+        
+        notifications = await self.db.cohort_notifications.find(
+            query,
+            {"_id": 0}
+        ).sort("created_at", -1).limit(limit).to_list(length=limit)
+        
+        return notifications
+    
+    async def mark_notification_read(self, notification_id: str) -> bool:
+        """Mark a notification as read"""
+        result = await self.db.cohort_notifications.update_one(
+            {"id": notification_id},
+            {"$set": {"read": True}}
+        )
+        return result.modified_count > 0
+    
+    # -------------------------------------------------------------------------
+    # REPORT SCHEDULING
+    # -------------------------------------------------------------------------
+    
+    async def configure_report_schedule(
+        self,
+        enabled: bool,
+        frequency: str,  # daily, weekly, monthly
+        recipients: List[str],
+        day_of_week: int = 1  # 0=Monday, 6=Sunday
+    ) -> Dict:
+        """Configure automated report scheduling"""
+        schedule_config = {
+            "id": "report_schedule",
+            "enabled": enabled,
+            "frequency": frequency,
+            "recipients": recipients,
+            "day_of_week": day_of_week,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await self.db.cohort_settings.update_one(
+            {"id": "report_schedule"},
+            {"$set": schedule_config},
+            upsert=True
+        )
+        
+        return schedule_config
+    
+    async def get_report_schedule(self) -> Dict:
+        """Get current report schedule configuration"""
+        schedule = await self.db.cohort_settings.find_one(
+            {"id": "report_schedule"},
+            {"_id": 0}
+        )
+        
+        if not schedule:
+            return {
+                "enabled": False,
+                "frequency": "weekly",
+                "recipients": [],
+                "day_of_week": 1
+            }
+        
+        return schedule
     
     # Initialize on startup
     @router.on_event("startup")
