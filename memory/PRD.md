@@ -955,6 +955,16 @@ When sandbox mode is active, the following pages now show sandbox data:
   - Local price calculation (no real escrow API calls)
   - Orange "SANDBOX MODE" banner on checkout page
   - Success alert with sandbox indicator
+- **Orders Page** (`/app/frontend/app/profile/orders.tsx`) - Shows sandbox orders with:
+  - Fetches orders via `/api/sandbox/proxy/orders/{user_id}`
+  - Mock listing and buyer data for sandbox orders
+  - Orange "SANDBOX MODE - Viewing test orders" banner
+  - Title shows "🧪 Sandbox Orders"
+- **Messages Page** (`/app/frontend/app/(tabs)/messages.tsx`) - Shows sandbox conversations with:
+  - Fetches conversations via `/api/sandbox/proxy/conversations/{user_id}`
+  - Mock user data for sandbox conversations
+  - Orange "SANDBOX MODE - Test conversations" banner
+  - Title shows "🧪 Sandbox Messages"
 
 ---
 
