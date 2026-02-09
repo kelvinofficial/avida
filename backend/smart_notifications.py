@@ -1475,6 +1475,9 @@ class SmartNotificationService:
         self._task = None
         self._expo_push_client = None
         
+        # Initialize AI Personalization Service - Phase 6
+        self.ai_personalization = AIPersonalizationService(db)
+        
         # Initialize Expo Push
         try:
             from exponent_server_sdk import PushClient
