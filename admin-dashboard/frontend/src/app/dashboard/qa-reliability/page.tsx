@@ -1293,8 +1293,8 @@ export default function QAReliabilityPage() {
         </Card>
       )}
 
-      {/* Tab 5: Feature Flags */}
-      {activeTab === 5 && (
+      {/* Tab 9: Feature Flags (moved from 5) */}
+      {activeTab === 9 && (
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>Feature Flags</Typography>
@@ -1341,8 +1341,8 @@ export default function QAReliabilityPage() {
         </Card>
       )}
 
-      {/* Tab 6: Audit Log */}
-      {activeTab === 6 && (
+      {/* Tab 10: Audit Log (moved from 6) */}
+      {activeTab === 10 && (
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>Audit Log</Typography>
