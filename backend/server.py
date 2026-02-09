@@ -5646,6 +5646,26 @@ async def admin_proxy(request: Request, path: str):
 # Include the router in the main app
 app.include_router(api_router)
 
+# Include Modular Routes (Auth, Users, Listings)
+if MODULAR_ROUTES_AVAILABLE:
+    # Create auth router
+    auth_router = create_auth_router(db, get_current_user, get_session_token, check_rate_limit)
+    api_router.include_router(auth_router)
+    
+    # Create users router - needs online_users set for status tracking
+    users_router = create_users_router(db, get_current_user, require_auth, set(online_users.keys()))
+    api_router.include_router(users_router)
+    
+    # Create listings router
+    listings_router = create_listings_router(
+        db, get_current_user, require_auth, check_rate_limit,
+        validate_category_and_subcategory, LEGACY_CATEGORY_MAP
+    )
+    api_router.include_router(listings_router)
+    
+    app.include_router(api_router)  # Re-include to pick up modular routes
+    logger.info("Modular routes (Auth, Users, Listings) loaded successfully")
+
 # Include boost routes if available
 if BOOST_ROUTES_AVAILABLE:
     async def get_current_user_for_boost(request: Request) -> dict:
