@@ -1831,4 +1831,72 @@ def create_sandbox_router(db: AsyncIOMotorDatabase):
         """Get sandbox audit logs"""
         return await service.get_audit_logs(admin_id, action, page, limit)
 
+    # -------------------------------------------------------------------------
+    # DATA PROXY - Main app endpoints for sandbox data
+    # -------------------------------------------------------------------------
+
+    @router.get("/proxy/verify/{session_id}")
+    async def verify_session(session_id: str):
+        """Verify a sandbox session is active"""
+        session = await service.verify_sandbox_session(session_id)
+        if not session:
+            return {"valid": False, "session": None}
+        return {"valid": True, "session": session}
+
+    @router.get("/proxy/listings")
+    async def proxy_get_listings(
+        category: Optional[str] = None,
+        search: Optional[str] = None,
+        limit: int = Query(20, ge=1, le=100),
+        skip: int = Query(0, ge=0)
+    ):
+        """Get listings from sandbox collections"""
+        return await service.get_proxy_listings(category, search, limit, skip)
+
+    @router.get("/proxy/listings/{listing_id}")
+    async def proxy_get_listing_detail(listing_id: str):
+        """Get single listing detail from sandbox"""
+        listing = await service.get_proxy_listing_detail(listing_id)
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        return listing
+
+    @router.get("/proxy/orders/{user_id}")
+    async def proxy_get_orders(user_id: str):
+        """Get orders for a sandbox user"""
+        return await service.get_proxy_user_orders(user_id)
+
+    @router.get("/proxy/conversations/{user_id}")
+    async def proxy_get_conversations(user_id: str):
+        """Get conversations for a sandbox user"""
+        return await service.get_proxy_conversations(user_id)
+
+    @router.get("/proxy/notifications/{user_id}")
+    async def proxy_get_notifications(user_id: str):
+        """Get notifications for a sandbox user"""
+        return await service.get_proxy_notifications(user_id)
+
+    @router.get("/proxy/categories")
+    async def proxy_get_categories():
+        """Get categories (from production, tagged for sandbox)"""
+        return await service.get_proxy_categories()
+
+    @router.post("/proxy/order")
+    async def proxy_create_order(
+        session_id: str = Body(...),
+        listing_id: str = Body(...),
+        shipping_address: Dict = Body(...)
+    ):
+        """Create an order through sandbox proxy"""
+        return await service.create_proxy_order(session_id, listing_id, shipping_address)
+
+    @router.post("/proxy/message")
+    async def proxy_send_message(
+        session_id: str = Body(...),
+        recipient_id: str = Body(...),
+        message: str = Body(...)
+    ):
+        """Send a message through sandbox proxy"""
+        return await service.send_proxy_message(session_id, recipient_id, message)
+
     return router, service
