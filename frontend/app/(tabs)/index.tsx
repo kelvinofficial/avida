@@ -443,20 +443,42 @@ export default function HomeScreen() {
     try {
       if (refresh) { setPage(1); setHasMore(true); }
       const locationFilter = currentCity !== 'All Locations' ? currentCity : undefined;
-      const [listingsRes, categoriesRes] = await Promise.all([
-        listingsApi.getAll({ 
-          category: selectedCategory || undefined, 
-          location: locationFilter,
-          page: refresh ? 1 : page, 
-          limit: 20 
-        }),
-        categoriesApi.getAll(),
-      ]);
-      if (refresh) { setListings(listingsRes.listings); }
-      else { setListings((prev) => [...prev, ...listingsRes.listings]); }
+      
+      // Check if sandbox mode is active and use sandbox-aware API
+      const sandboxActive = await sandboxUtils.isActive();
+      
+      let listingsRes;
+      let categoriesRes;
+      
+      if (sandboxActive) {
+        // Use sandbox proxy APIs
+        [listingsRes, categoriesRes] = await Promise.all([
+          sandboxAwareListingsApi.getAll({ 
+            category: selectedCategory || undefined, 
+            location: locationFilter,
+            page: refresh ? 1 : page, 
+            limit: 20 
+          }),
+          sandboxAwareCategoriesApi.getAll(),
+        ]);
+      } else {
+        // Use normal production APIs
+        [listingsRes, categoriesRes] = await Promise.all([
+          listingsApi.getAll({ 
+            category: selectedCategory || undefined, 
+            location: locationFilter,
+            page: refresh ? 1 : page, 
+            limit: 20 
+          }),
+          categoriesApi.getAll(),
+        ]);
+      }
+      
+      if (refresh) { setListings(listingsRes.listings || listingsRes); }
+      else { setListings((prev) => [...prev, ...(listingsRes.listings || listingsRes)]); }
       setHasMore(listingsRes.page < listingsRes.pages);
       setCategories(categoriesRes);
-      if (isAuthenticated) {
+      if (isAuthenticated && !sandboxActive) {
         try { const favs = await favoritesApi.getAll(); setFavorites(new Set(favs.map((f: Listing) => f.id))); } catch (e) {}
         // Also refresh notification count on data refresh
         fetchNotificationCount();
