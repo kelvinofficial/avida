@@ -3054,4 +3054,133 @@ def create_qa_reliability_router(db: AsyncIOMotorDatabase):
         """Send a test real-time alert to verify WebSocket connection"""
         return await service.send_test_realtime_alert(admin_id)
 
+    # -------------------------------------------------------------------------
+    # SESSION REPLAY
+    # -------------------------------------------------------------------------
+
+    @router.post("/sessions/start")
+    async def start_session_recording(
+        user_id: str = Body(...),
+        session_type: str = Body("checkout")
+    ):
+        """Start recording a user session"""
+        return await service.start_session_recording(user_id, session_type)
+
+    @router.post("/sessions/{session_id}/event")
+    async def record_session_event(
+        session_id: str,
+        event_type: str = Body(...),
+        event_data: Dict = Body(...),
+        timestamp: Optional[str] = Body(None)
+    ):
+        """Record an event in a session"""
+        return await service.record_session_event(session_id, event_type, event_data, timestamp)
+
+    @router.post("/sessions/{session_id}/end")
+    async def end_session_recording(
+        session_id: str,
+        status: str = Body("completed", embed=True)
+    ):
+        """End a session recording"""
+        return await service.end_session_recording(session_id, status)
+
+    @router.get("/sessions")
+    async def get_session_replays(
+        page: int = Query(1, ge=1),
+        limit: int = Query(20, ge=1, le=50),
+        session_type: Optional[str] = None,
+        user_id: Optional[str] = None,
+        status: Optional[str] = None
+    ):
+        """Get session replays with filtering"""
+        return await service.get_session_replays(page, limit, session_type, user_id, status)
+
+    @router.get("/sessions/summary")
+    async def get_critical_flow_recordings():
+        """Get summary of critical flow recordings"""
+        return await service.get_critical_flow_recordings()
+
+    @router.get("/sessions/{session_id}")
+    async def get_session_replay(session_id: str):
+        """Get a specific session replay with all events"""
+        session = await service.get_session_replay(session_id)
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        return session
+
+    # -------------------------------------------------------------------------
+    # DATA INTEGRITY CHECKS
+    # -------------------------------------------------------------------------
+
+    @router.post("/integrity/run")
+    async def run_data_integrity_checks():
+        """Run comprehensive data integrity checks"""
+        return await service.run_data_integrity_checks()
+
+    @router.get("/integrity/history")
+    async def get_integrity_check_history(
+        page: int = Query(1, ge=1),
+        limit: int = Query(20, ge=1, le=50)
+    ):
+        """Get data integrity check history"""
+        return await service.get_integrity_check_history(page, limit)
+
+    @router.post("/integrity/fix/{check_type}")
+    async def auto_fix_integrity_issues(
+        check_type: str,
+        admin_id: str = Body(..., embed=True)
+    ):
+        """Automatically fix certain data integrity issues"""
+        return await service.auto_fix_integrity_issues(check_type, admin_id)
+
+    # -------------------------------------------------------------------------
+    # ADVANCED MONITORING ALERTS
+    # -------------------------------------------------------------------------
+
+    @router.get("/monitoring/metrics")
+    async def get_current_metrics():
+        """Get current system metrics"""
+        return await service.get_current_metrics()
+
+    @router.get("/monitoring/metrics/history/{metric_name}")
+    async def get_metrics_history(
+        metric_name: str,
+        hours: int = Query(24, ge=1, le=168)
+    ):
+        """Get historical values for a metric"""
+        return await service.get_metrics_history(metric_name, hours)
+
+    @router.post("/monitoring/metrics/store")
+    async def store_current_metrics():
+        """Store current metrics for historical tracking"""
+        return await service.store_current_metrics()
+
+    @router.get("/monitoring/thresholds")
+    async def get_monitoring_thresholds():
+        """Get all monitoring thresholds"""
+        return await service.get_monitoring_thresholds()
+
+    @router.post("/monitoring/thresholds")
+    async def configure_monitoring_threshold(
+        metric_name: str = Body(...),
+        threshold_type: str = Body(...),
+        threshold_value: float = Body(...),
+        alert_severity: str = Body("warning"),
+        admin_id: str = Body(...)
+    ):
+        """Configure a monitoring threshold alert"""
+        return await service.configure_monitoring_threshold(
+            metric_name, threshold_type, threshold_value, alert_severity, admin_id
+        )
+
+    @router.delete("/monitoring/thresholds/{metric_name}")
+    async def delete_monitoring_threshold(metric_name: str):
+        """Delete a monitoring threshold"""
+        return await service.delete_monitoring_threshold(metric_name)
+
+    @router.post("/monitoring/thresholds/check")
+    async def check_monitoring_thresholds():
+        """Check all monitoring thresholds and create alerts if breached"""
+        return await service.check_monitoring_thresholds()
+
     return router, service
