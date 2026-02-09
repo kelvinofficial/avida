@@ -488,6 +488,7 @@ export default function CohortAnalyticsPage() {
         sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
       >
         <Tab label="Retention Heatmap" data-testid="tab-heatmap" />
+        <Tab label="Cohort Comparison" data-testid="tab-comparison" />
         <Tab label="Conversion Funnel" data-testid="tab-funnel" />
         <Tab label="Revenue & LTV" data-testid="tab-revenue" />
         <Tab label="AI Insights" data-testid="tab-insights" />
