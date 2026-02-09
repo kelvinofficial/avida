@@ -84,9 +84,9 @@
   },
   "test_execution_details": {
     "total_tests": 30,
-    "passed": 28,
+    "passed": 30,
     "failed": 0,
-    "skipped": 2,
-    "duration": "2.90 seconds"
+    "skipped": 0,
+    "duration": "3.19 seconds"
   }
 }
