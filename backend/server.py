@@ -784,6 +784,111 @@ async def stop_typing(sid, data):
     if conversation_id:
         await sio.emit("user_stop_typing", {"user_id": user_id}, room=conversation_id, skip_sid=sid)
 
+# ==================== QA REAL-TIME ALERTS ====================
+
+# Track admin WebSocket connections for QA alerts
+admin_alert_sockets: Dict[str, str] = {}  # admin_id -> socket_id
+admin_socket_ids: Dict[str, str] = {}  # socket_id -> admin_id
+
+@sio.event
+async def admin_subscribe_alerts(sid, data):
+    """Subscribe admin to real-time QA alerts"""
+    admin_id = data.get("admin_id")
+    alert_types = data.get("alert_types", ["critical", "warning", "system_down"])
+    
+    if admin_id:
+        admin_alert_sockets[admin_id] = sid
+        admin_socket_ids[sid] = admin_id
+        
+        # Join QA alerts room
+        await sio.enter_room(sid, "qa_alerts")
+        
+        # Store subscription in database
+        await db.qa_realtime_subscriptions.update_one(
+            {"admin_id": admin_id},
+            {"$set": {
+                "admin_id": admin_id,
+                "alert_types": alert_types,
+                "socket_id": sid,
+                "subscribed_at": datetime.now(timezone.utc).isoformat(),
+                "active": True
+            }},
+            upsert=True
+        )
+        
+        # Send confirmation
+        await sio.emit("alert_subscription_confirmed", {
+            "admin_id": admin_id,
+            "alert_types": alert_types,
+            "message": "Successfully subscribed to real-time alerts"
+        }, room=sid)
+        
+        logger.info(f"Admin {admin_id} subscribed to QA alerts")
+
+@sio.event
+async def admin_unsubscribe_alerts(sid, data):
+    """Unsubscribe admin from real-time QA alerts"""
+    admin_id = data.get("admin_id") or admin_socket_ids.get(sid)
+    
+    if admin_id:
+        if admin_id in admin_alert_sockets:
+            del admin_alert_sockets[admin_id]
+        if sid in admin_socket_ids:
+            del admin_socket_ids[sid]
+        
+        await sio.leave_room(sid, "qa_alerts")
+        
+        # Update subscription in database
+        await db.qa_realtime_subscriptions.update_one(
+            {"admin_id": admin_id},
+            {"$set": {"active": False, "unsubscribed_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        logger.info(f"Admin {admin_id} unsubscribed from QA alerts")
+
+@sio.event
+async def get_pending_qa_alerts(sid, data):
+    """Get any pending QA alerts for an admin (polling fallback)"""
+    admin_id = data.get("admin_id") or admin_socket_ids.get(sid)
+    
+    if admin_id:
+        # Get pending alerts
+        alerts = await db.qa_realtime_alerts.find({
+            "target_admins": admin_id,
+            "pending": True,
+            "delivered_to": {"$ne": admin_id}
+        }, {"_id": 0}).sort("created_at", -1).limit(20).to_list(length=20)
+        
+        # Mark as delivered
+        for alert in alerts:
+            await db.qa_realtime_alerts.update_one(
+                {"id": alert["id"]},
+                {"$addToSet": {"delivered_to": admin_id}}
+            )
+        
+        # Emit to client
+        if alerts:
+            await sio.emit("qa_alerts_batch", {"alerts": [a["alert_data"] for a in alerts]}, room=sid)
+
+async def broadcast_qa_alert(alert_data: Dict, target_admin_ids: List[str] = None):
+    """
+    Broadcast a QA alert to all subscribed admins or specific admins.
+    Called from QA service when critical events occur.
+    """
+    if target_admin_ids:
+        # Send to specific admins
+        for admin_id in target_admin_ids:
+            if admin_id in admin_alert_sockets:
+                await sio.emit("qa_alert", alert_data, room=admin_alert_sockets[admin_id])
+    else:
+        # Broadcast to all subscribed admins
+        await sio.emit("qa_alert", alert_data, room="qa_alerts")
+    
+    logger.info(f"Broadcast QA alert: {alert_data.get('title', 'No title')}")
+
+# Make broadcast function available globally for QA service
+app.state.broadcast_qa_alert = broadcast_qa_alert
+
 # ==================== AUTO/MOTORS ENDPOINTS ====================
 
 # Auto brands with listing counts
