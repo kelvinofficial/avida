@@ -3213,6 +3213,101 @@ def create_team_workflow_router(db: AsyncIOMotorDatabase):
         return await service.send_email_notification(to_email, subject, content)
     
     # -------------------------------------------------------------------------
+    # EMAIL TEMPLATES
+    # -------------------------------------------------------------------------
+    
+    @router.get("/email/templates")
+    async def get_email_templates(category: Optional[str] = None):
+        """Get all email templates"""
+        return await service.get_email_templates(category)
+    
+    @router.get("/email/templates/{template_id}")
+    async def get_email_template(template_id: str):
+        """Get a specific email template"""
+        template = await service.get_email_template(template_id)
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+        return template
+    
+    @router.post("/email/templates")
+    async def create_email_template(
+        name: str = Body(...),
+        slug: str = Body(...),
+        subject: str = Body(...),
+        body_html: str = Body(...),
+        category: str = Body("general"),
+        available_variables: List[str] = Body([]),
+        created_by: str = Body(...),
+        body_text: Optional[str] = Body(None)
+    ):
+        """Create a new email template"""
+        return await service.create_email_template(
+            name=name,
+            slug=slug,
+            subject=subject,
+            body_html=body_html,
+            category=category,
+            available_variables=available_variables,
+            created_by=created_by,
+            body_text=body_text
+        )
+    
+    @router.put("/email/templates/{template_id}")
+    async def update_email_template(
+        template_id: str,
+        updates: Dict[str, Any] = Body(...),
+        updated_by: str = Body(...)
+    ):
+        """Update an email template"""
+        result = await service.update_email_template(template_id, updates, updated_by)
+        if not result:
+            raise HTTPException(status_code=404, detail="Template not found")
+        return result
+    
+    @router.delete("/email/templates/{template_id}")
+    async def delete_email_template(template_id: str):
+        """Delete an email template"""
+        result = await service.delete_email_template(template_id)
+        if not result:
+            raise HTTPException(status_code=404, detail="Template not found")
+        return {"status": "deleted"}
+    
+    @router.post("/email/templates/{template_id}/preview")
+    async def preview_email_template(
+        template_id: str,
+        sample_variables: Dict[str, Any] = Body({})
+    ):
+        """Preview an email template with sample data"""
+        return await service.preview_email_template(template_id, sample_variables)
+    
+    @router.post("/email/send-templated")
+    async def send_templated_email(
+        template_slug: str = Body(...),
+        to_email: EmailStr = Body(...),
+        variables: Dict[str, Any] = Body({})
+    ):
+        """Send an email using a template"""
+        return await service.send_templated_email(template_slug, to_email, variables)
+    
+    # -------------------------------------------------------------------------
+    # SENDER VERIFICATION
+    # -------------------------------------------------------------------------
+    
+    @router.get("/email/senders")
+    async def get_verified_senders():
+        """Get list of verified senders from SendGrid"""
+        return await service.get_verified_senders()
+    
+    @router.post("/email/senders/verify")
+    async def initiate_sender_verification(
+        email: EmailStr = Body(...),
+        name: str = Body(...),
+        reply_to: Optional[str] = Body(None)
+    ):
+        """Initiate SendGrid sender verification"""
+        return await service.initiate_sender_verification(email, name, reply_to)
+    
+    # -------------------------------------------------------------------------
     # SYSTEM INITIALIZATION
     # -------------------------------------------------------------------------
     
