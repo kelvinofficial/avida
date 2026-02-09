@@ -645,6 +645,10 @@ const bubbleStyles = StyleSheet.create({
   readStatus: {
     marginLeft: 2,
   },
+  reportHint: {
+    marginLeft: 4,
+    padding: 2,
+  },
   // Voice message styles
   voiceContent: {
     flexDirection: 'row',
