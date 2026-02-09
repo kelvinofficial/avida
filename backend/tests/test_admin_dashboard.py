@@ -8,7 +8,7 @@ import requests
 import os
 
 # Use the public URL for testing
-BASE_URL = "https://compliance-hub-323.preview.emergentagent.com"
+BASE_URL = "https://scheduled-config.preview.emergentagent.com"
 
 # Test credentials
 ADMIN_EMAIL = "admin@marketplace.com"

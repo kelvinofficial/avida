@@ -16,7 +16,7 @@ import uuid
 from datetime import datetime
 
 # Use environment variable for backend URL
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://compliance-hub-323.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://scheduled-config.preview.emergentagent.com').rstrip('/')
 
 # Module-level session and auth token
 _auth_session = None

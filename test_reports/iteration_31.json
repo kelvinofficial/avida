@@ -29,7 +29,7 @@
     "backend": "100% (27/27 Phase 6 tests passed)"
   },
   "test_credentials": {
-    "api_base": "https://compliance-hub-323.preview.emergentagent.com"
+    "api_base": "https://scheduled-config.preview.emergentagent.com"
   },
   "seed_data_creation": "Test personalizations created during pytest execution were logged in personalization_logs collection.",
   "retest_needed": false,

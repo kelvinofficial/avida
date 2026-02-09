@@ -170,7 +170,7 @@ export default function CheckoutScreen() {
       });
       
       const order = orderResponse.data.order;
-      const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://compliance-hub-323.preview.emergentagent.com';
+      const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://scheduled-config.preview.emergentagent.com';
       
       // Create payment
       let paymentResponse;
