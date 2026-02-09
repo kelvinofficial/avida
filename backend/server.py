@@ -4619,6 +4619,24 @@ if COHORT_ANALYTICS_AVAILABLE:
     # Initialize default cohort definitions
     asyncio.create_task(cohort_analytics_service.initialize_default_cohorts())
     logger.info("Cohort & Retention Analytics loaded successfully")
+    
+    # Global event tracking helper
+    async def track_cohort_event(user_id: str, event_type: str, properties: dict = None, session_id: str = None):
+        """Helper function to track events for cohort analytics"""
+        try:
+            from cohort_analytics import EventType
+            await cohort_analytics_service.track_event(
+                user_id=user_id,
+                event_type=EventType(event_type),
+                properties=properties or {},
+                session_id=session_id
+            )
+        except Exception as e:
+            logger.warning(f"Failed to track cohort event: {e}")
+else:
+    async def track_cohort_event(user_id: str, event_type: str, properties: dict = None, session_id: str = None):
+        """No-op when cohort analytics not available"""
+        pass
 
 app.add_middleware(
     CORSMiddleware,
