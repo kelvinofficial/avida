@@ -173,6 +173,16 @@ def create_listings_router(
         
         await db.listings.insert_one(new_listing)
         created_listing = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+        
+        # Trigger smart notifications for users interested in this category
+        try:
+            from smart_notifications import SmartNotificationService
+            smart_service = SmartNotificationService(db)
+            import asyncio
+            asyncio.create_task(smart_service.check_new_listing_triggers(created_listing))
+        except Exception as e:
+            logger.debug(f"Smart notification trigger failed: {e}")
+        
         return created_listing
     
     @router.get("")
