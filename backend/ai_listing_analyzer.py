@@ -1081,6 +1081,27 @@ def create_ai_analyzer_router(db, get_current_user):
         await analyzer.update_usage_result(analysis_id, accepted, edited, rejected)
         return {"success": True}
     
+    @router.post("/price-suggestion")
+    async def get_price_suggestion(
+        category: Optional[str] = Body(None),
+        subcategory: Optional[str] = Body(None),
+        brand: Optional[str] = Body(None),
+        model: Optional[str] = Body(None),
+        condition: Optional[str] = Body(None),
+        detected_features: Optional[List[str]] = Body(None),
+        user_id: Optional[str] = Body(None)
+    ):
+        """Get AI-powered price suggestion based on product details and market data"""
+        return await analyzer.get_price_suggestion(
+            category=category,
+            subcategory=subcategory,
+            brand=brand,
+            model=model,
+            condition=condition,
+            detected_features=detected_features,
+            user_id=user_id
+        )
+    
     # =========================================================================
     # ADMIN ENDPOINTS
     # =========================================================================
