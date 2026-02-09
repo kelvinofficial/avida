@@ -2348,6 +2348,28 @@ const desktopStyles = StyleSheet.create({
     marginTop: 20,
     gap: 12,
   },
+  buyNowBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#1565C0',
+    paddingVertical: 16,
+    borderRadius: 10,
+    position: 'relative',
+  },
+  buyNowText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  escrowBadge: {
+    position: 'absolute',
+    right: 12,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 10,
+    padding: 4,
+  },
   primaryActionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
