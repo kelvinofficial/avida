@@ -200,6 +200,278 @@ const STATUS_COLORS: Record<string, 'default' | 'primary' | 'warning' | 'success
   rejected: 'error',
 };
 
+// Email Templates Tab Component
+const EmailTemplatesTab = () => {
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState('');
+  const [editedTemplate, setEditedTemplate] = useState({ subject: '', body_html: '' });
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' as 'success' | 'error' | 'info' });
+  const [senderVerifyOpen, setSenderVerifyOpen] = useState(false);
+  const [senderEmail, setSenderEmail] = useState('');
+  const [senderName, setSenderName] = useState('');
+
+  const API_BASE = process.env.NEXT_PUBLIC_MAIN_API_URL || '';
+
+  const fetchTemplates = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE}/team/email/templates`);
+      if (response.ok) {
+        setTemplates(await response.json());
+      }
+    } catch (error) {
+      console.error('Failed to fetch templates:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [API_BASE]);
+
+  useEffect(() => {
+    fetchTemplates();
+  }, [fetchTemplates]);
+
+  const handleEditTemplate = (template: any) => {
+    setSelectedTemplate(template);
+    setEditedTemplate({ subject: template.subject, body_html: template.body_html });
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveTemplate = async () => {
+    if (!selectedTemplate) return;
+    try {
+      const response = await fetch(`${API_BASE}/team/email/templates/${selectedTemplate.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates: editedTemplate, updated_by: 'admin' }),
+      });
+      if (response.ok) {
+        setSnackbar({ open: true, message: 'Template saved successfully', severity: 'success' });
+        setEditDialogOpen(false);
+        fetchTemplates();
+      } else {
+        setSnackbar({ open: true, message: 'Failed to save template', severity: 'error' });
+      }
+    } catch (error) {
+      setSnackbar({ open: true, message: 'Failed to save template', severity: 'error' });
+    }
+  };
+
+  const handlePreviewTemplate = async (template: any) => {
+    try {
+      const sampleVars: Record<string, string> = {};
+      template.available_variables?.forEach((v: string) => {
+        sampleVars[v] = `[${v}]`;
+      });
+      
+      const response = await fetch(`${API_BASE}/team/email/templates/${template.id}/preview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sample_variables: sampleVars }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setPreviewHtml(data.body_html);
+        setPreviewDialogOpen(true);
+      }
+    } catch (error) {
+      console.error('Failed to preview template:', error);
+    }
+  };
+
+  const handleVerifySender = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/team/email/senders/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: senderEmail, name: senderName }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setSnackbar({ open: true, message: data.message, severity: 'success' });
+        setSenderVerifyOpen(false);
+      } else {
+        setSnackbar({ open: true, message: data.error || 'Failed to initiate verification', severity: 'error' });
+      }
+    } catch (error) {
+      setSnackbar({ open: true, message: 'Failed to verify sender', severity: 'error' });
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'task': return 'info';
+      case 'approval': return 'warning';
+      case 'alert': return 'error';
+      case 'summary': return 'success';
+      default: return 'default';
+    }
+  };
+
+  if (loading) {
+    return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>;
+  }
+
+  return (
+    <Card>
+      <CardContent>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Box>
+            <Typography variant="h6">Email Templates</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Customize notification email templates
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button variant="outlined" startIcon={<Refresh />} onClick={fetchTemplates}>
+              Refresh
+            </Button>
+            <Button variant="contained" color="warning" onClick={() => setSenderVerifyOpen(true)}>
+              Verify Sender Email
+            </Button>
+          </Box>
+        </Box>
+
+        <Alert severity="info" sx={{ mb: 3 }}>
+          <Typography variant="body2">
+            <strong>Template Variables:</strong> Use <code>{'{{variable_name}}'}</code> syntax in your templates. 
+            Variables are automatically replaced when emails are sent.
+          </Typography>
+        </Alert>
+
+        <Grid container spacing={2}>
+          {templates.map((template) => (
+            <Grid item xs={12} md={6} key={template.id}>
+              <Card variant="outlined" sx={{ height: '100%' }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight="bold">{template.name}</Typography>
+                      <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+                        <Chip label={template.category} size="small" color={getCategoryColor(template.category) as any} />
+                        {template.is_system && <Chip label="System" size="small" variant="outlined" />}
+                        <Chip label={template.is_active ? 'Active' : 'Inactive'} size="small" color={template.is_active ? 'success' : 'default'} />
+                      </Box>
+                    </Box>
+                    <Avatar sx={{ bgcolor: getCategoryColor(template.category) === 'info' ? 'info.main' : getCategoryColor(template.category) === 'warning' ? 'warning.main' : getCategoryColor(template.category) === 'error' ? 'error.main' : 'success.main' }}>
+                      <Email />
+                    </Avatar>
+                  </Box>
+                  
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    <strong>Subject:</strong> {template.subject}
+                  </Typography>
+                  
+                  <Typography variant="caption" color="text.secondary">
+                    <strong>Variables:</strong> {template.available_variables?.join(', ') || 'None'}
+                  </Typography>
+                  
+                  <Divider sx={{ my: 2 }} />
+                  
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button size="small" variant="outlined" onClick={() => handlePreviewTemplate(template)}>
+                      Preview
+                    </Button>
+                    <Button size="small" variant="contained" onClick={() => handleEditTemplate(template)}>
+                      Edit
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* Edit Template Dialog */}
+        <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="md" fullWidth>
+          <DialogTitle>Edit Template: {selectedTemplate?.name}</DialogTitle>
+          <DialogContent>
+            <Box sx={{ pt: 2 }}>
+              <TextField
+                fullWidth
+                label="Subject Line"
+                value={editedTemplate.subject}
+                onChange={(e) => setEditedTemplate({ ...editedTemplate, subject: e.target.value })}
+                sx={{ mb: 2 }}
+                helperText="Use {{variable}} syntax for dynamic content"
+              />
+              <Typography variant="subtitle2" gutterBottom>Email Body (HTML)</Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={15}
+                value={editedTemplate.body_html}
+                onChange={(e) => setEditedTemplate({ ...editedTemplate, body_html: e.target.value })}
+                sx={{ fontFamily: 'monospace', fontSize: 12 }}
+              />
+              {selectedTemplate?.available_variables && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    Available variables: {selectedTemplate.available_variables.map((v: string) => `{{${v}}}`).join(', ')}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+            <Button variant="contained" onClick={handleSaveTemplate}>Save Changes</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Preview Dialog */}
+        <Dialog open={previewDialogOpen} onClose={() => setPreviewDialogOpen(false)} maxWidth="md" fullWidth>
+          <DialogTitle>Email Preview</DialogTitle>
+          <DialogContent>
+            <Paper variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>
+              <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
+            </Paper>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setPreviewDialogOpen(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Verify Sender Dialog */}
+        <Dialog open={senderVerifyOpen} onClose={() => setSenderVerifyOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>Verify Sender Email</DialogTitle>
+          <DialogContent>
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              SendGrid requires sender email verification. A verification email will be sent to the address you provide.
+            </Alert>
+            <TextField
+              fullWidth
+              label="Sender Email"
+              type="email"
+              value={senderEmail}
+              onChange={(e) => setSenderEmail(e.target.value)}
+              sx={{ mb: 2 }}
+              placeholder="noreply@yourdomain.com"
+            />
+            <TextField
+              fullWidth
+              label="Sender Name"
+              value={senderName}
+              onChange={(e) => setSenderName(e.target.value)}
+              placeholder="Admin Dashboard"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setSenderVerifyOpen(false)}>Cancel</Button>
+            <Button variant="contained" onClick={handleVerifySender}>Send Verification Email</Button>
+          </DialogActions>
+        </Dialog>
+
+        <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+          <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+        </Snackbar>
+      </CardContent>
+    </Card>
+  );
+};
+
 export default function TeamManagementPage() {
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(true);
