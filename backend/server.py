@@ -4112,7 +4112,7 @@ async def submit_id_verification(request: Request):
         "system",
         "ID Verification Submitted",
         "Your ID verification has been submitted and is under review. This typically takes 1-3 business days.",
-        {"verification_id": verification["id"]}
+        meta={"verification_id": verification["id"]}
     )
     
     return {"message": "Verification submitted", "verification_id": verification["id"]}
