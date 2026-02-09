@@ -2490,4 +2490,22 @@ def create_config_manager_router(db):
         """Check if deployment metrics indicate need for rollback"""
         return await service.check_deployment_metrics(deployment_id)
     
+    # -------------------------------------------------------------------------
+    # SCHEDULER STATUS
+    # -------------------------------------------------------------------------
+    
+    @router.get("/scheduler/status")
+    async def get_scheduler_status():
+        """Get the deployment scheduler status"""
+        return await service.get_scheduler_status()
+    
+    @router.post("/scheduler/run-now")
+    async def run_scheduler_now():
+        """Manually trigger scheduler to process deployments"""
+        results = await service.process_scheduled_deployments()
+        return {
+            "status": "completed",
+            "results": results
+        }
+    
     return router, service
