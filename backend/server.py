@@ -4815,7 +4815,7 @@ async def admin_proxy(request: Request, path: str):
 # Include the router in the main app
 app.include_router(api_router)
 
-# Include Modular Routes (Auth, Users, Listings)
+# Include Modular Routes (Auth, Users, Listings, Categories, Favorites, Conversations)
 if MODULAR_ROUTES_AVAILABLE:
     # Create auth router
     auth_router = create_auth_router(db, get_current_user, get_session_token, check_rate_limit)
@@ -4832,8 +4832,22 @@ if MODULAR_ROUTES_AVAILABLE:
     )
     api_router.include_router(listings_router)
     
+    # Create categories router
+    categories_router = create_categories_router(db)
+    api_router.include_router(categories_router)
+    
+    # Create favorites router
+    favorites_router = create_favorites_router(db, require_auth)
+    api_router.include_router(favorites_router)
+    
+    # Create conversations router
+    conversations_router = create_conversations_router(
+        db, require_auth, check_rate_limit, sio, create_notification
+    )
+    api_router.include_router(conversations_router)
+    
     app.include_router(api_router)  # Re-include to pick up modular routes
-    logger.info("Modular routes (Auth, Users, Listings) loaded successfully")
+    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations) loaded successfully")
 
 # Include boost routes if available
 if BOOST_ROUTES_AVAILABLE:
