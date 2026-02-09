@@ -177,6 +177,28 @@ export const conversationsApi = {
   }
 };
 
+// Report API - User reporting system
+export const reportApi = {
+  getReasons: async () => {
+    const response = await api.get('/report/reasons');
+    return response.data;
+  },
+  reportMessage: async (
+    conversationId: string,
+    reason: string,
+    messageId?: string,
+    description?: string
+  ) => {
+    const response = await api.post('/report/message', {
+      conversation_id: conversationId,
+      message_id: messageId,
+      reason,
+      description
+    });
+    return response.data;
+  }
+};
+
 // Users API
 export const usersApi = {
   getOne: async (id: string) => {
