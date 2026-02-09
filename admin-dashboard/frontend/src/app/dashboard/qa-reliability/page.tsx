@@ -113,6 +113,19 @@ export default function QAReliabilityPage() {
   const [featureFlags, setFeatureFlags] = useState<any[]>([]);
   const [traces, setTraces] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  
+  // New data states for enhanced features
+  const [flowTests, setFlowTests] = useState<any>(null);
+  const [flowTestHistory, setFlowTestHistory] = useState<any[]>([]);
+  const [sessionReplays, setSessionReplays] = useState<any[]>([]);
+  const [sessionReplaySummary, setSessionReplaySummary] = useState<any>(null);
+  const [integrityResults, setIntegrityResults] = useState<any>(null);
+  const [integrityHistory, setIntegrityHistory] = useState<any[]>([]);
+  const [currentMetrics, setCurrentMetrics] = useState<any>(null);
+  const [monitoringThresholds, setMonitoringThresholds] = useState<any[]>([]);
+  const [failsafeStatus, setFailsafeStatus] = useState<any>(null);
+  const [retryConfig, setRetryConfig] = useState<any>(null);
+  const [realtimeSubscriptions, setRealtimeSubscriptions] = useState<any[]>([]);
 
   // Filters
   const [errorSearch, setErrorSearch] = useState('');
@@ -123,9 +136,15 @@ export default function QAReliabilityPage() {
   const [selectedTrace, setSelectedTrace] = useState<any>(null);
   const [errorDetailDialogOpen, setErrorDetailDialogOpen] = useState(false);
   const [selectedError, setSelectedError] = useState<any>(null);
+  const [sessionDetailDialogOpen, setSessionDetailDialogOpen] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<any>(null);
+  const [thresholdDialogOpen, setThresholdDialogOpen] = useState(false);
+  const [newThreshold, setNewThreshold] = useState({ metric_name: '', threshold_type: 'above', threshold_value: 0, alert_severity: 'warning' });
 
   // Running states
   const [runningQaChecks, setRunningQaChecks] = useState(false);
+  const [runningFlowTests, setRunningFlowTests] = useState(false);
+  const [runningIntegrityCheck, setRunningIntegrityCheck] = useState(false);
 
   // Fetch all data
   const fetchData = useCallback(async () => {
