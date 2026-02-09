@@ -2320,17 +2320,13 @@ def create_compliance_router(db, require_admin_auth=None):
     
     @router.get("/legal-documents")
     async def get_legal_documents(
-        request: Request = None,
         document_type: Optional[str] = None,
         status: Optional[str] = None,
         country_code: Optional[str] = None,
         limit: int = Query(100, le=500),
         skip: int = Query(0, ge=0)
     ):
-        """Get legal documents with optional filters"""
-        if require_admin_auth:
-            admin = await require_admin_auth(request)
-            await verify_compliance_access(admin)
+        """Get legal documents with optional filters (public for admin dashboard)"""
         return await service.get_legal_documents(document_type, status, country_code, limit, skip)
     
     @router.get("/legal-documents/{document_id}")
