@@ -170,7 +170,7 @@ export default function CheckoutScreen() {
       });
       
       const order = orderResponse.data.order;
-      const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://escrow-notify.preview.emergentagent.com';
+      const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://server-split-3.preview.emergentagent.com';
       
       // Create payment
       let paymentResponse;
