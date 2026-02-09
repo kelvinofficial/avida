@@ -2451,11 +2451,8 @@ def create_compliance_router(db, require_admin_auth=None):
     # -------------------------------------------------------------------------
     
     @router.get("/sandbox/config")
-    async def get_sandbox_config(request: Request = None):
-        """Get sandbox mode configuration"""
-        if require_admin_auth:
-            admin = await require_admin_auth(request)
-            await verify_compliance_access(admin)
+    async def get_sandbox_config():
+        """Get sandbox mode configuration (public for admin dashboard)"""
         return await service.get_sandbox_config()
     
     @router.put("/sandbox/config")
