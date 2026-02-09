@@ -963,8 +963,8 @@ export default function CohortAnalyticsPage() {
         </Grid>
       )}
 
-      {/* Tab 3: AI Insights */}
-      {activeTab === 3 && (
+      {/* Tab 4: AI Insights */}
+      {activeTab === 4 && (
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
