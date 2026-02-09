@@ -4532,6 +4532,197 @@ async def admin_update_banner_pricing(
     return await db.banner_pricing.find_one({"id": pricing_id}, {"_id": 0})
 
 # =============================================================================
+# ESCROW SYSTEM PROXY ENDPOINTS
+# Direct database access for escrow management
+# =============================================================================
+
+@app.get("/api/escrow/admin/verified-sellers")
+async def get_verified_sellers(admin = Depends(get_current_admin)):
+    """Get all verified sellers"""
+    sellers = await db.verified_sellers.find({}, {"_id": 0}).to_list(200)
+    
+    # Enrich with user info
+    for seller in sellers:
+        user = await db.users.find_one({"user_id": seller.get("seller_id")}, {"_id": 0, "name": 1, "email": 1})
+        if user:
+            seller["seller_name"] = user.get("name")
+            seller["seller_email"] = user.get("email")
+    
+    return sellers
+
+@app.post("/api/escrow/admin/verify-seller/{seller_id}")
+async def verify_seller(
+    seller_id: str,
+    data: Dict[str, Any] = Body(...),
+    admin = Depends(get_current_admin)
+):
+    """Verify or unverify a seller"""
+    is_verified = data.get("is_verified", True)
+    online_selling_enabled = data.get("online_selling_enabled", True)
+    
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Update user
+    await db.users.update_one(
+        {"user_id": seller_id},
+        {"$set": {
+            "is_premium_verified": is_verified,
+            "online_selling_enabled": online_selling_enabled,
+            "can_sell_online": is_verified and online_selling_enabled,
+            "premium_verified_at": now if is_verified else None
+        }}
+    )
+    
+    # Update verified_sellers collection
+    await db.verified_sellers.update_one(
+        {"seller_id": seller_id},
+        {"$set": {
+            "seller_id": seller_id,
+            "is_verified": is_verified,
+            "verified_at": now if is_verified else None,
+            "verified_by": admin.get("admin_id") or "admin",
+            "status": "active" if is_verified else "revoked",
+            "updated_at": now
+        }},
+        upsert=True
+    )
+    
+    return {"status": "success", "seller_id": seller_id, "is_verified": is_verified}
+
+@app.get("/api/escrow/admin/orders")
+async def get_all_orders(
+    page: int = Query(1, ge=1),
+    limit: int = Query(100, ge=1, le=500),
+    status: Optional[str] = Query(None),
+    admin = Depends(get_current_admin)
+):
+    """Get all orders"""
+    query = {}
+    if status:
+        query["status"] = status
+    
+    skip = (page - 1) * limit
+    orders = await db.orders.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    total = await db.orders.count_documents(query)
+    
+    # Enrich with user and listing info
+    for order in orders:
+        buyer = await db.users.find_one({"user_id": order.get("buyer_id")}, {"_id": 0, "name": 1})
+        seller = await db.users.find_one({"user_id": order.get("seller_id")}, {"_id": 0, "name": 1})
+        listing = await db.listings.find_one({"id": order.get("listing_id")}, {"_id": 0, "title": 1, "price": 1})
+        
+        order["buyer"] = buyer or {}
+        order["seller"] = seller or {}
+        order["item"] = {"title": listing.get("title") if listing else "Unknown", "price": listing.get("price", 0) if listing else 0}
+    
+    return {"orders": orders, "total": total, "page": page, "limit": limit}
+
+@app.get("/api/escrow/admin/disputes")
+async def get_all_disputes(admin = Depends(get_current_admin)):
+    """Get all disputes"""
+    disputes = await db.disputes.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return disputes
+
+@app.post("/api/escrow/admin/disputes/{dispute_id}/resolve")
+async def resolve_dispute(
+    dispute_id: str,
+    data: Dict[str, Any] = Body(...),
+    admin = Depends(get_current_admin)
+):
+    """Resolve a dispute"""
+    resolution = data.get("resolution")  # buyer, seller, or split
+    resolution_notes = data.get("resolution_notes", "")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Update dispute
+    await db.disputes.update_one(
+        {"id": dispute_id},
+        {"$set": {
+            "status": "resolved",
+            "resolution": resolution,
+            "resolution_notes": resolution_notes,
+            "resolved_at": now,
+            "resolved_by": admin.get("admin_id") or "admin"
+        }}
+    )
+    
+    # Get dispute to find order
+    dispute = await db.disputes.find_one({"id": dispute_id})
+    if dispute:
+        order_id = dispute.get("order_id")
+        
+        # Update order status based on resolution
+        if resolution == "buyer":
+            await db.orders.update_one({"id": order_id}, {"$set": {"status": "refunded"}})
+            await db.escrow.update_one({"order_id": order_id}, {"$set": {"status": "refunded"}})
+        elif resolution == "seller":
+            await db.orders.update_one({"id": order_id}, {"$set": {"status": "completed"}})
+            await db.escrow.update_one({"order_id": order_id}, {"$set": {"status": "released"}})
+    
+    return {"status": "success", "dispute_id": dispute_id, "resolution": resolution}
+
+@app.post("/api/escrow/admin/orders/{order_id}/release-escrow")
+async def manual_release_escrow(
+    order_id: str,
+    admin = Depends(get_current_admin)
+):
+    """Manually release escrow for an order"""
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Update order status
+    await db.orders.update_one(
+        {"id": order_id},
+        {"$set": {"status": "completed", "completed_at": now}}
+    )
+    
+    # Update escrow status
+    await db.escrow.update_one(
+        {"order_id": order_id},
+        {"$set": {"status": "released", "released_at": now, "released_by": "admin_manual"}}
+    )
+    
+    return {"status": "success", "order_id": order_id, "message": "Escrow released"}
+
+@app.get("/api/escrow/vat-configs")
+async def get_vat_configs():
+    """Get VAT configurations - public endpoint"""
+    configs = await db.vat_configs.find({}, {"_id": 0}).to_list(50)
+    if not configs:
+        # Return defaults
+        configs = [
+            {"country_code": "US", "country_name": "United States", "vat_percentage": 0, "is_active": True},
+            {"country_code": "GB", "country_name": "United Kingdom", "vat_percentage": 20, "is_active": True},
+            {"country_code": "DE", "country_name": "Germany", "vat_percentage": 19, "is_active": True},
+            {"country_code": "FR", "country_name": "France", "vat_percentage": 20, "is_active": True},
+            {"country_code": "KE", "country_name": "Kenya", "vat_percentage": 16, "is_active": True},
+            {"country_code": "NG", "country_name": "Nigeria", "vat_percentage": 7.5, "is_active": True},
+            {"country_code": "ZA", "country_name": "South Africa", "vat_percentage": 15, "is_active": True},
+            {"country_code": "UG", "country_name": "Uganda", "vat_percentage": 18, "is_active": True},
+            {"country_code": "TZ", "country_name": "Tanzania", "vat_percentage": 18, "is_active": True},
+        ]
+    return configs
+
+@app.get("/api/escrow/commission-configs")
+async def get_commission_configs():
+    """Get commission configurations - public endpoint"""
+    configs = await db.commission_configs.find({}, {"_id": 0}).to_list(10)
+    if not configs:
+        configs = [{"id": "default", "percentage": 5, "min_amount": 0, "is_active": True}]
+    return configs
+
+@app.get("/api/escrow/transport-pricing")
+async def get_transport_pricing():
+    """Get transport pricing - public endpoint"""
+    pricing = await db.transport_pricing.find({}, {"_id": 0}).to_list(20)
+    if not pricing:
+        pricing = [
+            {"id": "standard", "base_price": 5.0, "estimated_days_base": 3, "name": "Standard Delivery", "price_per_kg": 0.5, "price_per_km": 0.15},
+            {"id": "express", "base_price": 15.0, "estimated_days_base": 1, "name": "Express Delivery", "price_per_kg": 1.0, "price_per_km": 0.30},
+        ]
+    return pricing
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
