@@ -63,7 +63,7 @@ import { api } from '@/lib/api';
 
 // Direct API client for escrow endpoints (which are on the main backend, not admin backend)
 const escrowApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_MAIN_API_URL || '/api',
+  baseURL: typeof window !== 'undefined' ? window.location.origin : '',
   headers: { 'Content-Type': 'application/json' },
 });
 
