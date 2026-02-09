@@ -246,6 +246,93 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 - `GET /api/analytics/admin/settings` - Admin get settings
 - `PUT /api/analytics/admin/settings` - Admin update settings
 
+---
+
+## Cohort & Retention Analytics System - Complete (Feb 9, 2026)
+
+**Status:** COMPLETE - Backend APIs and Admin Dashboard UI implemented
+
+### Overview
+Comprehensive analytics system for measuring user behavior, engagement, and long-term platform health through cohort analysis.
+
+### Features Implemented:
+
+**1. Cohort Grouping**
+- Signup Date cohorts (monthly/weekly/daily granularity)
+- User Type cohorts (seller/buyer/hybrid)
+- Country cohorts
+- First Action cohorts (first listing, first purchase)
+
+**2. Retention Metrics**
+- D1, D3, D7, W2, W4, M2, M3, M6 retention tracking
+- Color-coded heatmap visualization (green 70%+, red <15%)
+- Cohort drill-down to view individual users
+
+**3. Engagement Metrics**
+- DAU (Daily Active Users)
+- WAU (Weekly Active Users)
+- MAU (Monthly Active Users)
+- DAU/MAU stickiness ratio
+
+**4. Conversion Funnel**
+- Signup → View Listing → Start Chat → Complete Purchase
+- Drop-off rates between stages
+- Visual bar chart representation
+
+**5. Revenue & LTV**
+- Revenue per cohort
+- Average LTV calculation
+- Cohort-level ARPU
+
+**6. AI-Powered Insights (GPT-5.2)**
+- Retention drop-off detection
+- High-value cohort identification
+- User nudge suggestions
+- Automated recommendations
+
+**7. Alerts System**
+- Retention drop alerts
+- High churn alerts
+- Engagement spike alerts
+- Configurable thresholds
+
+**8. Event Tracking**
+- Login events
+- Listing created/viewed
+- Chat started
+- Checkout completed
+- Escrow released/Boost used
+
+### API Endpoints:
+- `GET /api/cohort-analytics/engagement` - DAU/WAU/MAU metrics
+- `GET /api/cohort-analytics/retention/heatmap` - Retention heatmap with filters
+- `GET /api/cohort-analytics/funnel` - Conversion funnel stages
+- `GET /api/cohort-analytics/revenue` - Revenue/LTV by cohort
+- `GET /api/cohort-analytics/insights` - Stored AI insights
+- `POST /api/cohort-analytics/insights/generate` - Generate new AI insights
+- `GET /api/cohort-analytics/definitions` - Cohort definitions
+- `GET/POST /api/cohort-analytics/alerts` - Alert management
+- `POST /api/cohort-analytics/events/track` - Track user events
+- `GET /api/cohort-analytics/cohort/{key}/users` - Cohort drill-down
+- `GET /api/cohort-analytics/dashboard` - Complete dashboard summary
+
+### Files:
+- `/app/backend/cohort_analytics.py` - Backend service (~1200 lines)
+- `/app/admin-dashboard/frontend/src/app/dashboard/cohort-analytics/page.tsx` - Admin UI
+
+### Admin Dashboard UI Features:
+- 4 metric cards: Total Users, MAU, DAU/MAU Ratio, Transactions
+- 5 tabs: Retention Heatmap, Conversion Funnel, Revenue & LTV, AI Insights, Alerts
+- Filters: Dimension (signup_date/user_type/country), Granularity, Time Range
+- Interactive heatmap with color coding
+- Cohort drill-down dialog
+- AI insights generation button
+- Alert creation dialog
+
+### Testing: 29/29 backend tests passed
+
+---
+
 ### Pending Tasks (P1)
 - [ ] Location-based analytics with map visualization (Mapbox) - Skipped by user
 
