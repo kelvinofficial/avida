@@ -4467,6 +4467,25 @@ if CHAT_MODERATION_AVAILABLE:
     app.include_router(api_router)  # Re-include to pick up moderation routes
     logger.info("Chat Moderation System loaded successfully")
 
+# Include Executive Summary System
+if EXECUTIVE_SUMMARY_AVAILABLE:
+    async def require_admin_for_exec_summary(request: Request) -> dict:
+        """Admin authentication wrapper for executive summary"""
+        user = await get_current_user(request)
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        return {
+            "admin_id": user.user_id,
+            "email": user.email,
+            "name": user.name,
+            "is_admin": True
+        }
+    
+    exec_summary_router = create_executive_summary_router(db, require_admin_for_exec_summary)
+    api_router.include_router(exec_summary_router)
+    app.include_router(api_router)  # Re-include to pick up executive summary routes
+    logger.info("Executive Summary System loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
