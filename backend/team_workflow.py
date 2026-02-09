@@ -651,7 +651,7 @@ class TeamWorkflowService:
     ) -> Dict:
         """Create a new team member"""
         # Verify role exists
-        role = await self.roles.find_one({"id": role_id})
+        role = await self.roles.find_one({"id": role_id}, {"_id": 0})
         if not role:
             raise HTTPException(status_code=400, detail="Invalid role_id")
         
