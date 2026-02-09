@@ -81,8 +81,8 @@ class TestReportAPI:
         
         data = login_resp.json()
         return {
-            "user_id": data.get("user_id"),
-            "token": data.get("token"),
+            "user_id": data.get("user", {}).get("user_id"),
+            "token": data.get("session_token"),
             "email": self.test_email_other
         }
     
