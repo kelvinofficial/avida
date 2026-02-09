@@ -239,10 +239,23 @@ export default function ConfigManagerPage() {
   const [showKeyValue, setShowKeyValue] = useState(false);
   const [simulateOpen, setSimulateOpen] = useState(false);
   const [simulateResult, setSimulateResult] = useState<any>(null);
+  const [createDeploymentOpen, setCreateDeploymentOpen] = useState(false);
 
   // Temp edit states
   const [editedGlobal, setEditedGlobal] = useState<GlobalSettings | null>(null);
   const [newKeyData, setNewKeyData] = useState({ service_name: '', key_type: '', key_value: '' });
+  const [newDeployment, setNewDeployment] = useState({
+    name: '',
+    description: '',
+    config_type: 'feature_flag',
+    scheduled_at: '',
+    duration_hours: 0,
+    enable_auto_rollback: true,
+    rollback_on_error_rate: 5.0,
+    rollback_on_metric_drop: 20.0,
+    metric_to_monitor: 'checkout_conversion',
+    config_changes: {} as Record<string, any>,
+  });
 
   // Fetch functions
   const fetchGlobalSettings = useCallback(async () => {
