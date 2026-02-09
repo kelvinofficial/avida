@@ -267,6 +267,50 @@ class PrivacyPolicy(BaseModel):
     created_at: str
     created_by: str
 
+class LegalDocument(BaseModel):
+    """Legal document model for Legal Text Management"""
+    id: str
+    document_type: str  # privacy_policy, terms_of_service, cookie_policy, dpa, acceptable_use
+    version: str
+    title: str
+    content: str  # HTML content
+    summary: Optional[str] = None  # Plain text summary
+    country_code: Optional[str] = None  # Null = global
+    language: str = "en"
+    status: str = "draft"  # draft, published, archived
+    effective_date: Optional[str] = None
+    requires_acceptance: bool = True
+    force_reaccept: bool = False  # Force all users to re-accept
+    changelog: Optional[str] = None  # What changed from previous version
+    previous_version_id: Optional[str] = None
+    created_at: str
+    created_by: str
+    published_at: Optional[str] = None
+    published_by: Optional[str] = None
+
+class UserAcceptance(BaseModel):
+    """User acceptance record for legal documents"""
+    id: str
+    user_id: str
+    document_id: str
+    document_type: str
+    document_version: str
+    accepted_at: str
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    country_code: Optional[str] = None
+
+class SandboxConfig(BaseModel):
+    """Sandbox mode configuration"""
+    enabled: bool = False
+    fake_users_count: int = 100
+    fake_dsar_count: int = 25
+    fake_incidents_count: int = 5
+    include_pii_samples: bool = False
+    reset_on_disable: bool = True
+    created_at: Optional[str] = None
+    enabled_by: Optional[str] = None
+
 class ComplianceAuditLog(BaseModel):
     """Immutable compliance audit log"""
     id: str
