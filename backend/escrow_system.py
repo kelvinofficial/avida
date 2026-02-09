@@ -1477,6 +1477,40 @@ def create_escrow_router(db, get_current_user, get_current_admin):
             order_id, user.user_id, reason, description, evidence_urls
         )
     
+    @router.get("/buyer/orders")
+    async def get_buyer_orders(
+        status: Optional[str] = Query(None),
+        page: int = Query(1),
+        limit: int = Query(20),
+        user = Depends(get_current_user)
+    ):
+        """Get buyer's orders - alias for /orders/my-orders?role=buyer"""
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        
+        return await service.get_orders(user.user_id, "buyer", status, page, limit)
+    
+    @router.post("/orders/{order_id}/confirm")
+    async def confirm_delivery_alias(
+        order_id: str,
+        user = Depends(get_current_user)
+    ):
+        """Buyer confirms delivery - alias for confirm-delivery"""
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        
+        order = await service.get_order(order_id)
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
+        
+        if order["buyer_id"] != user.user_id:
+            raise HTTPException(status_code=403, detail="Only buyer can confirm delivery")
+        
+        if order["status"] not in [OrderStatus.DELIVERED, OrderStatus.SHIPPED, OrderStatus.IN_TRANSIT]:
+            raise HTTPException(status_code=400, detail="Order must be delivered before confirmation")
+        
+        return await service.update_order_status(order_id, OrderStatus.CONFIRMED, user.user_id)
+    
     # =========================================================================
     # SELLER ENDPOINTS
     # =========================================================================
