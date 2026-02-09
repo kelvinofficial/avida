@@ -972,10 +972,51 @@ When sandbox mode is active, the following pages now show sandbox data:
 - [ ] Location-based analytics with map visualization (Mapbox) - Skipped by user
 
 ### Future/Backlog (P2)
-- CSV Import for Users
 - Notification Template Analytics
 - Full A/B Testing Logic and UI
 - Backend Refactoring (server.py is 5600+ lines - should be split)
+
+---
+
+## CSV Import for Users - Complete (Feb 10, 2026)
+
+### Overview
+Admin feature to bulk import users from CSV files with secure password generation and full validation.
+
+### Features Implemented:
+1. **CSV File Upload** - Direct upload through admin dashboard
+2. **Auto-Generated Passwords** - 12-character secure random passwords with uppercase, lowercase, digits, special chars
+3. **Full Pre-Validation** - Validates ALL rows BEFORE any user creation; aborts entire import if any error
+4. **Async Background Processing** - Large imports processed in background without blocking UI
+5. **Password Report Download** - CSV file with generated passwords available for 24 hours
+6. **In-App Notifications** - Admin notified on completion (success or failure)
+
+### CSV Format:
+- **Required columns:** `email`, `first_name`, `last_name`
+- **Optional columns:** `role` (user/seller/admin, default: user)
+- **Max rows:** 1000 per import
+
+### API Endpoints:
+- `GET /api/csv-import/template` - Download CSV template
+- `GET /api/csv-import/fields` - Get field information
+- `POST /api/csv-import/upload` - Upload CSV, get validation_id
+- `POST /api/csv-import/validate/{validation_id}` - Validate all rows
+- `POST /api/csv-import/import/{validation_id}` - Start background import
+- `GET /api/csv-import/job/{job_id}` - Check job status
+- `GET /api/csv-import/password-report/{report_id}/download` - Download passwords CSV
+- `GET /api/csv-import/history` - Import job history
+
+### Validation Rules:
+- Email: Required, valid format, unique in CSV and database
+- First/Last name: Required, non-empty
+- Role: Must be user/seller/admin if provided
+
+### Files:
+- `/app/backend/csv_import_system.py` - Backend service (~500 lines)
+- `/app/admin-dashboard/frontend/src/components/UserCSVImportDialog.tsx` - Frontend dialog component
+
+### Testing: 23/23 tests passed (100%)
+Test file: `/app/backend/tests/test_csv_import_system.py`
 
 ---
 
