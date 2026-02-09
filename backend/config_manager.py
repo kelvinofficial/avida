@@ -1510,6 +1510,404 @@ class ConfigManagerService:
         
         return export_data
 
+    # -------------------------------------------------------------------------
+    # SCHEDULED DEPLOYMENTS
+    # -------------------------------------------------------------------------
+    
+    async def get_scheduled_deployments(
+        self,
+        environment: Optional[Environment] = None,
+        status: Optional[str] = None,
+        limit: int = 50
+    ) -> List[Dict]:
+        """Get scheduled deployments"""
+        query = {}
+        if environment:
+            query["environment"] = environment.value
+        if status:
+            query["status"] = status
+        
+        return await self.scheduled_deployments.find(
+            query, {"_id": 0}
+        ).sort("scheduled_at", 1).limit(limit).to_list(length=limit)
+    
+    async def get_scheduled_deployment(self, deployment_id: str) -> Optional[Dict]:
+        """Get a single scheduled deployment"""
+        return await self.scheduled_deployments.find_one(
+            {"id": deployment_id}, {"_id": 0}
+        )
+    
+    async def create_scheduled_deployment(
+        self,
+        name: str,
+        environment: Environment,
+        config_type: str,  # feature_flag, global_setting, country_config
+        config_changes: Dict[str, Any],
+        scheduled_at: str,
+        created_by: str,
+        description: Optional[str] = None,
+        duration_hours: Optional[int] = None,
+        enable_auto_rollback: bool = True,
+        rollback_on_error_rate: float = 5.0,
+        rollback_on_metric_drop: float = 20.0,
+        metric_to_monitor: Optional[str] = None,
+        monitoring_period_minutes: int = 30
+    ) -> Dict:
+        """Create a scheduled config deployment"""
+        now = datetime.now(timezone.utc).isoformat()
+        
+        deployment = {
+            "id": str(uuid.uuid4()),
+            "name": name,
+            "description": description,
+            "environment": environment.value,
+            "config_type": config_type,
+            "config_changes": config_changes,
+            "scheduled_at": scheduled_at,
+            "duration_hours": duration_hours,
+            "status": "pending",
+            "enable_auto_rollback": enable_auto_rollback,
+            "rollback_on_error_rate": rollback_on_error_rate,
+            "rollback_on_metric_drop": rollback_on_metric_drop,
+            "metric_to_monitor": metric_to_monitor,
+            "monitoring_period_minutes": monitoring_period_minutes,
+            "original_values": None,
+            "deployed_at": None,
+            "rolled_back_at": None,
+            "rollback_reason": None,
+            "completed_at": None,
+            "created_by": created_by,
+            "created_at": now,
+            "updated_at": now
+        }
+        
+        await self.scheduled_deployments.insert_one(deployment.copy())
+        
+        await self._log_audit(
+            action="create_scheduled_deployment",
+            category=ConfigCategory.GLOBAL,
+            config_key=name,
+            old_value=None,
+            new_value={"scheduled_at": scheduled_at, "config_changes": config_changes},
+            performed_by=created_by,
+            environment=environment
+        )
+        
+        return deployment
+    
+    async def execute_scheduled_deployment(
+        self,
+        deployment_id: str,
+        executed_by: str = "scheduler"
+    ) -> Dict:
+        """Execute a scheduled deployment"""
+        deployment = await self.get_scheduled_deployment(deployment_id)
+        if not deployment:
+            raise HTTPException(status_code=404, detail="Deployment not found")
+        
+        if deployment["status"] != "pending":
+            raise HTTPException(status_code=400, detail=f"Deployment status is {deployment['status']}, not pending")
+        
+        now = datetime.now(timezone.utc).isoformat()
+        environment = Environment(deployment["environment"])
+        config_type = deployment["config_type"]
+        config_changes = deployment["config_changes"]
+        
+        # Save original values before deployment
+        original_values = {}
+        
+        try:
+            if config_type == "feature_flag":
+                # Toggle feature flags
+                for feature_id, enabled in config_changes.items():
+                    current_flag = await self.get_feature_flag(environment, feature_id)
+                    if current_flag:
+                        original_values[feature_id] = current_flag.get("enabled", False)
+                    await self.set_feature_flag(
+                        environment, feature_id, enabled,
+                        updated_by=executed_by
+                    )
+            
+            elif config_type == "global_setting":
+                # Update global settings
+                current = await self.get_global_settings(environment)
+                for key in config_changes.keys():
+                    original_values[key] = current.get(key)
+                await self.update_global_settings(
+                    environment, config_changes, executed_by,
+                    change_notes=f"Scheduled deployment: {deployment['name']}",
+                    skip_approval=True
+                )
+            
+            elif config_type == "country_config":
+                # Update country configs
+                for country_code, updates in config_changes.items():
+                    current = await self.get_country_config(environment, country_code)
+                    if current:
+                        original_values[country_code] = current
+                    await self.upsert_country_config(
+                        environment, country_code, updates, executed_by
+                    )
+            
+            # Update deployment status
+            await self.scheduled_deployments.update_one(
+                {"id": deployment_id},
+                {"$set": {
+                    "status": "active",
+                    "original_values": original_values,
+                    "deployed_at": now,
+                    "updated_at": now
+                }}
+            )
+            
+            await self._log_audit(
+                action="execute_scheduled_deployment",
+                category=ConfigCategory.GLOBAL,
+                config_key=deployment["name"],
+                old_value=original_values,
+                new_value=config_changes,
+                performed_by=executed_by,
+                environment=environment
+            )
+            
+            return {
+                "status": "active",
+                "deployed_at": now,
+                "original_values": original_values
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to execute scheduled deployment: {e}")
+            await self.scheduled_deployments.update_one(
+                {"id": deployment_id},
+                {"$set": {"status": "failed", "rollback_reason": str(e), "updated_at": now}}
+            )
+            raise HTTPException(status_code=500, detail=f"Deployment failed: {str(e)}")
+    
+    async def rollback_scheduled_deployment(
+        self,
+        deployment_id: str,
+        reason: str,
+        rolled_back_by: str = "system"
+    ) -> Dict:
+        """Rollback a scheduled deployment to original values"""
+        deployment = await self.get_scheduled_deployment(deployment_id)
+        if not deployment:
+            raise HTTPException(status_code=404, detail="Deployment not found")
+        
+        if deployment["status"] != "active":
+            raise HTTPException(status_code=400, detail=f"Can only rollback active deployments")
+        
+        if not deployment.get("original_values"):
+            raise HTTPException(status_code=400, detail="No original values saved for rollback")
+        
+        now = datetime.now(timezone.utc).isoformat()
+        environment = Environment(deployment["environment"])
+        config_type = deployment["config_type"]
+        original_values = deployment["original_values"]
+        
+        try:
+            if config_type == "feature_flag":
+                for feature_id, enabled in original_values.items():
+                    await self.set_feature_flag(
+                        environment, feature_id, enabled,
+                        updated_by=rolled_back_by
+                    )
+            
+            elif config_type == "global_setting":
+                await self.update_global_settings(
+                    environment, original_values, rolled_back_by,
+                    change_notes=f"Rollback of: {deployment['name']}. Reason: {reason}",
+                    skip_approval=True
+                )
+            
+            elif config_type == "country_config":
+                for country_code, config in original_values.items():
+                    await self.upsert_country_config(
+                        environment, country_code, config, rolled_back_by
+                    )
+            
+            await self.scheduled_deployments.update_one(
+                {"id": deployment_id},
+                {"$set": {
+                    "status": "rolled_back",
+                    "rolled_back_at": now,
+                    "rollback_reason": reason,
+                    "updated_at": now
+                }}
+            )
+            
+            await self._log_audit(
+                action="rollback_scheduled_deployment",
+                category=ConfigCategory.GLOBAL,
+                config_key=deployment["name"],
+                old_value=deployment["config_changes"],
+                new_value=original_values,
+                performed_by=rolled_back_by,
+                environment=environment
+            )
+            
+            return {
+                "status": "rolled_back",
+                "rolled_back_at": now,
+                "reason": reason
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to rollback deployment: {e}")
+            raise HTTPException(status_code=500, detail=f"Rollback failed: {str(e)}")
+    
+    async def complete_scheduled_deployment(
+        self,
+        deployment_id: str,
+        completed_by: str = "scheduler"
+    ) -> Dict:
+        """Mark a deployment as completed (for time-limited deployments)"""
+        deployment = await self.get_scheduled_deployment(deployment_id)
+        if not deployment:
+            raise HTTPException(status_code=404, detail="Deployment not found")
+        
+        now = datetime.now(timezone.utc).isoformat()
+        
+        await self.scheduled_deployments.update_one(
+            {"id": deployment_id},
+            {"$set": {
+                "status": "completed",
+                "completed_at": now,
+                "updated_at": now
+            }}
+        )
+        
+        return {"status": "completed", "completed_at": now}
+    
+    async def cancel_scheduled_deployment(
+        self,
+        deployment_id: str,
+        cancelled_by: str
+    ) -> Dict:
+        """Cancel a pending scheduled deployment"""
+        deployment = await self.get_scheduled_deployment(deployment_id)
+        if not deployment:
+            raise HTTPException(status_code=404, detail="Deployment not found")
+        
+        if deployment["status"] != "pending":
+            raise HTTPException(status_code=400, detail="Can only cancel pending deployments")
+        
+        now = datetime.now(timezone.utc).isoformat()
+        
+        await self.scheduled_deployments.update_one(
+            {"id": deployment_id},
+            {"$set": {
+                "status": "cancelled",
+                "updated_at": now
+            }}
+        )
+        
+        await self._log_audit(
+            action="cancel_scheduled_deployment",
+            category=ConfigCategory.GLOBAL,
+            config_key=deployment["name"],
+            old_value={"status": "pending"},
+            new_value={"status": "cancelled"},
+            performed_by=cancelled_by,
+            environment=Environment(deployment["environment"])
+        )
+        
+        return {"status": "cancelled"}
+    
+    async def record_deployment_metric(
+        self,
+        deployment_id: str,
+        metric_name: str,
+        metric_value: float,
+        timestamp: Optional[str] = None
+    ):
+        """Record a metric for deployment monitoring"""
+        now = timestamp or datetime.now(timezone.utc).isoformat()
+        
+        metric = {
+            "id": str(uuid.uuid4()),
+            "deployment_id": deployment_id,
+            "metric_name": metric_name,
+            "metric_value": metric_value,
+            "timestamp": now
+        }
+        
+        await self.deployment_metrics.insert_one(metric)
+    
+    async def check_deployment_metrics(
+        self,
+        deployment_id: str
+    ) -> Dict:
+        """Check if deployment metrics indicate need for rollback"""
+        deployment = await self.get_scheduled_deployment(deployment_id)
+        if not deployment or deployment["status"] != "active":
+            return {"should_rollback": False, "reason": None}
+        
+        if not deployment.get("enable_auto_rollback"):
+            return {"should_rollback": False, "reason": "auto_rollback_disabled"}
+        
+        metric_to_monitor = deployment.get("metric_to_monitor")
+        if not metric_to_monitor:
+            return {"should_rollback": False, "reason": "no_metric_configured"}
+        
+        # Get baseline (metrics before deployment) and current metrics
+        deployed_at = deployment.get("deployed_at")
+        if not deployed_at:
+            return {"should_rollback": False, "reason": "no_deployment_time"}
+        
+        # Get recent metrics
+        recent_metrics = await self.deployment_metrics.find({
+            "deployment_id": deployment_id,
+            "metric_name": metric_to_monitor
+        }, {"_id": 0}).sort("timestamp", -1).limit(10).to_list(length=10)
+        
+        if len(recent_metrics) < 2:
+            return {"should_rollback": False, "reason": "insufficient_data"}
+        
+        # Calculate average
+        avg_value = sum(m["metric_value"] for m in recent_metrics) / len(recent_metrics)
+        
+        # Check against thresholds
+        if metric_to_monitor == "error_rate":
+            if avg_value > deployment.get("rollback_on_error_rate", 5.0):
+                return {
+                    "should_rollback": True,
+                    "reason": f"error_rate ({avg_value:.2f}%) exceeded threshold ({deployment['rollback_on_error_rate']}%)"
+                }
+        
+        # For other metrics, check if drop exceeds threshold
+        first_metric = recent_metrics[-1]["metric_value"]
+        if first_metric > 0:
+            drop_percentage = ((first_metric - avg_value) / first_metric) * 100
+            if drop_percentage > deployment.get("rollback_on_metric_drop", 20.0):
+                return {
+                    "should_rollback": True,
+                    "reason": f"{metric_to_monitor} dropped {drop_percentage:.1f}% (threshold: {deployment['rollback_on_metric_drop']}%)"
+                }
+        
+        return {"should_rollback": False, "reason": None}
+    
+    async def get_upcoming_deployments(
+        self,
+        environment: Optional[Environment] = None,
+        hours_ahead: int = 24
+    ) -> List[Dict]:
+        """Get deployments scheduled within the next N hours"""
+        now = datetime.now(timezone.utc)
+        cutoff = (now + timedelta(hours=hours_ahead)).isoformat()
+        
+        query = {
+            "status": "pending",
+            "scheduled_at": {"$lte": cutoff, "$gte": now.isoformat()}
+        }
+        if environment:
+            query["environment"] = environment.value
+        
+        return await self.scheduled_deployments.find(
+            query, {"_id": 0}
+        ).sort("scheduled_at", 1).to_list(length=50)
+
 
 # =========================================================================
 # API ROUTER
