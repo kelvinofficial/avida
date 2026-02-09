@@ -4246,6 +4246,12 @@ async def admin_proxy(request: Request, path: str):
 app.include_router(api_router)
 
 # Include Modular Routes (Auth, Users, Listings, Categories, Favorites, Conversations)
+# Create moderation manager first (needed by conversations router)
+_moderation_manager_for_conversations = None
+if CHAT_MODERATION_AVAILABLE:
+    _moderation_manager_for_conversations = ChatModerationManager(db)
+    logger.info("Chat Moderation Manager initialized for conversations")
+
 if MODULAR_ROUTES_AVAILABLE:
     # Create auth router
     auth_router = create_auth_router(db, get_current_user, get_session_token, check_rate_limit)
@@ -4270,9 +4276,10 @@ if MODULAR_ROUTES_AVAILABLE:
     favorites_router = create_favorites_router(db, require_auth)
     api_router.include_router(favorites_router)
     
-    # Create conversations router
+    # Create conversations router with moderation integration
     conversations_router = create_conversations_router(
-        db, require_auth, check_rate_limit, sio, create_notification
+        db, require_auth, check_rate_limit, sio, create_notification,
+        moderation_manager=_moderation_manager_for_conversations
     )
     api_router.include_router(conversations_router)
     
