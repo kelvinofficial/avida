@@ -4611,6 +4611,15 @@ if TEAM_WORKFLOW_AVAILABLE:
     asyncio.create_task(team_workflow_service.initialize_system())
     logger.info("Team & Workflow Management loaded successfully")
 
+# Cohort & Retention Analytics
+if COHORT_ANALYTICS_AVAILABLE:
+    cohort_analytics_router, cohort_analytics_service = create_cohort_analytics_router(db)
+    api_router.include_router(cohort_analytics_router)
+    app.include_router(api_router)  # Re-include to pick up cohort analytics routes
+    # Initialize default cohort definitions
+    asyncio.create_task(cohort_analytics_service.initialize_default_cohorts())
+    logger.info("Cohort & Retention Analytics loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
