@@ -4844,6 +4844,14 @@ if QA_RELIABILITY_AVAILABLE:
     asyncio.create_task(metrics_storage_task())
     logger.info("Started metrics storage background task")
 
+# Admin Sandbox System
+if SANDBOX_AVAILABLE:
+    sandbox_router, sandbox_service = create_sandbox_router(db)
+    api_router.include_router(sandbox_router)
+    app.include_router(api_router)  # Re-include to pick up sandbox routes
+    asyncio.create_task(sandbox_service.initialize())
+    logger.info("Admin Sandbox System loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
