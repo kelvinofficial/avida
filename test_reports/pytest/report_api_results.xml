@@ -1,26 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="0.160" timestamp="2026-02-09T07:18:06.038238+00:00" hostname="agent-env-0964fa29-7eff-462e-aaa0-b4cb88a504a1"><testcase classname="" name="backend.tests.test_report_api" time="0.000"><error message="collection failure">/root/.venv/lib/python3.11/site-packages/_pytest/python.py:507: in importtestmodule
-    mod = import_path(
-/root/.venv/lib/python3.11/site-packages/_pytest/pathlib.py:587: in import_path
-    importlib.import_module(module_name)
-/usr/local/lib/python3.11/importlib/__init__.py:126: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-&lt;frozen importlib._bootstrap&gt;:1204: in _gcd_import
-    ???
-&lt;frozen importlib._bootstrap&gt;:1176: in _find_and_load
-    ???
-&lt;frozen importlib._bootstrap&gt;:1147: in _find_and_load_unlocked
-    ???
-&lt;frozen importlib._bootstrap&gt;:690: in _load_unlocked
-    ???
-/root/.venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:188: in exec_module
-    source_stat, co = _rewrite_test(fn, self.config)
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/root/.venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:357: in _rewrite_test
-    tree = ast.parse(source, filename=strfn)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/usr/local/lib/python3.11/ast.py:50: in parse
-    return compile(source, filename, mode, flags,
-E     File "/app/backend/tests/test_report_api.py", line 288
-E       third_listing_data = {
-E   IndentationError: unexpected indent</error></testcase></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="5" failures="0" skipped="0" tests="13" time="0.320" timestamp="2026-02-09T07:18:25.319939+00:00" hostname="agent-env-0964fa29-7eff-462e-aaa0-b4cb88a504a1"><testcase classname="backend.tests.test_report_api.TestReportAPI" name="test_get_report_reasons_returns_200" time="0.072" /><testcase classname="backend.tests.test_report_api.TestReportAPI" name="test_get_report_reasons_returns_7_reasons" time="0.010" /><testcase classname="backend.tests.test_report_api.TestReportAPI" name="test_get_report_reasons_has_correct_ids" time="0.010" /><testcase classname="backend.tests.test_report_api.TestReportAPI" name="test_get_report_reasons_has_labels" time="0.011" /><testcase classname="backend.tests.test_report_api.TestReportAPI" name="test_report_message_requires_auth" time="0.010" /><testcase classname="backend.tests.test_report_api.TestReportAPI" name="test_report_message_success_with_reason_only" time="0.051"><error message="failed on setup with &quot;Failed: Failed to create listing: 400 - {&quot;detail&quot;:&quot;Subcategory is required&quot;}&quot;">backend/tests/test_report_api.py:112: in test_listing
+    pytest.fail(f"Failed to create listing: {response.status_code} - {response.text}")
+E   Failed: Failed to create listing: 400 - {"detail":"Subcategory is required"}</error></testcase><testcase classname="backend.tests.test_report_api.TestReportAPI" name="test_report_message_success_with_description" time="0.000"><error message="failed on setup with &quot;Failed: Failed to create listing: 400 - {&quot;detail&quot;:&quot;Subcategory is required&quot;}&quot;">backend/tests/test_report_api.py:112: in test_listing
+    pytest.fail(f"Failed to create listing: {response.status_code} - {response.text}")
+E   Failed: Failed to create listing: 400 - {"detail":"Subcategory is required"}</error></testcase><testcase classname="backend.tests.test_report_api.TestReportAPI" name="test_report_message_all_reasons" time="0.000"><error message="failed on setup with &quot;Failed: Failed to create listing: 400 - {&quot;detail&quot;:&quot;Subcategory is required&quot;}&quot;">backend/tests/test_report_api.py:112: in test_listing
+    pytest.fail(f"Failed to create listing: {response.status_code} - {response.text}")
+E   Failed: Failed to create listing: 400 - {"detail":"Subcategory is required"}</error></testcase><testcase classname="backend.tests.test_report_api.TestReportAPI" name="test_report_message_invalid_conversation" time="0.013" /><testcase classname="backend.tests.test_report_api.TestReportAPI" name="test_report_message_not_participant" time="0.000"><error message="failed on setup with &quot;Failed: Failed to create listing: 400 - {&quot;detail&quot;:&quot;Subcategory is required&quot;}&quot;">backend/tests/test_report_api.py:112: in test_listing
+    pytest.fail(f"Failed to create listing: {response.status_code} - {response.text}")
+E   Failed: Failed to create listing: 400 - {"detail":"Subcategory is required"}</error></testcase><testcase classname="backend.tests.test_report_api.TestReportAPI" name="test_report_creates_database_entry" time="0.000"><error message="failed on setup with &quot;Failed: Failed to create listing: 400 - {&quot;detail&quot;:&quot;Subcategory is required&quot;}&quot;">backend/tests/test_report_api.py:112: in test_listing
+    pytest.fail(f"Failed to create listing: {response.status_code} - {response.text}")
+E   Failed: Failed to create listing: 400 - {"detail":"Subcategory is required"}</error></testcase><testcase classname="backend.tests.test_report_api.TestReportAPIEdgeCases" name="test_report_reasons_endpoint_is_public" time="0.036" /><testcase classname="backend.tests.test_report_api.TestReportAPIEdgeCases" name="test_report_reasons_response_format" time="0.009" /></testsuite></testsuites>
