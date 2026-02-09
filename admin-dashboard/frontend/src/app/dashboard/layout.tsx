@@ -44,6 +44,7 @@ import {
   Language,
   Tune,
   RocketLaunch,
+  AccountBalance,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
@@ -59,6 +60,7 @@ const menuItems = [
   { text: 'Users', icon: <People />, path: '/dashboard/users' },
   { text: 'Listings', icon: <Inventory />, path: '/dashboard/listings' },
   { text: 'Boosts', icon: <RocketLaunch />, path: '/dashboard/boosts' },
+  { text: 'Escrow', icon: <AccountBalance />, path: '/dashboard/escrow' },
   { text: 'Reports', icon: <Report />, path: '/dashboard/reports' },
   { text: 'Tickets', icon: <SupportAgent />, path: '/dashboard/tickets' },
   { text: 'Analytics', icon: <Analytics />, path: '/dashboard/analytics' },
