@@ -5719,6 +5719,14 @@ if PAYMENT_ROUTES_AVAILABLE:
     app.include_router(api_router)  # Re-include to pick up payment routes
     logger.info("Payment Processing routes loaded successfully")
 
+# SMS Notification Service Routes
+if SMS_SERVICE_AVAILABLE:
+    sms_service = SMSService(db)
+    sms_router = create_sms_router(db, sms_service)
+    api_router.include_router(sms_router)
+    app.include_router(api_router)  # Re-include to pick up SMS routes
+    logger.info("SMS Notification service loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
