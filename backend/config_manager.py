@@ -2192,4 +2192,106 @@ def create_config_manager_router(db):
             environment, category, performed_by, start_date, end_date, limit, skip
         )
     
+    # -------------------------------------------------------------------------
+    # SCHEDULED DEPLOYMENTS
+    # -------------------------------------------------------------------------
+    
+    @router.get("/scheduled-deployments")
+    async def get_scheduled_deployments(
+        environment: Optional[Environment] = None,
+        status: Optional[str] = None,
+        limit: int = Query(50, ge=1, le=200)
+    ):
+        """Get scheduled deployments"""
+        return await service.get_scheduled_deployments(environment, status, limit)
+    
+    @router.get("/scheduled-deployments/upcoming")
+    async def get_upcoming_deployments(
+        environment: Optional[Environment] = None,
+        hours_ahead: int = Query(24, ge=1, le=168)
+    ):
+        """Get deployments scheduled within the next N hours"""
+        return await service.get_upcoming_deployments(environment, hours_ahead)
+    
+    @router.get("/scheduled-deployments/{deployment_id}")
+    async def get_scheduled_deployment(deployment_id: str):
+        """Get a single scheduled deployment"""
+        deployment = await service.get_scheduled_deployment(deployment_id)
+        if not deployment:
+            raise HTTPException(status_code=404, detail="Deployment not found")
+        return deployment
+    
+    @router.post("/scheduled-deployments")
+    async def create_scheduled_deployment(
+        name: str = Body(...),
+        environment: Environment = Body(...),
+        config_type: str = Body(...),  # feature_flag, global_setting, country_config
+        config_changes: Dict[str, Any] = Body(...),
+        scheduled_at: str = Body(...),  # ISO datetime
+        created_by: str = Body("admin"),
+        description: Optional[str] = Body(None),
+        duration_hours: Optional[int] = Body(None),
+        enable_auto_rollback: bool = Body(True),
+        rollback_on_error_rate: float = Body(5.0),
+        rollback_on_metric_drop: float = Body(20.0),
+        metric_to_monitor: Optional[str] = Body(None),
+        monitoring_period_minutes: int = Body(30)
+    ):
+        """Create a scheduled config deployment"""
+        return await service.create_scheduled_deployment(
+            name, environment, config_type, config_changes, scheduled_at,
+            created_by, description, duration_hours, enable_auto_rollback,
+            rollback_on_error_rate, rollback_on_metric_drop, metric_to_monitor,
+            monitoring_period_minutes
+        )
+    
+    @router.post("/scheduled-deployments/{deployment_id}/execute")
+    async def execute_scheduled_deployment(
+        deployment_id: str,
+        executed_by: str = Body("admin", embed=True)
+    ):
+        """Execute a scheduled deployment immediately"""
+        return await service.execute_scheduled_deployment(deployment_id, executed_by)
+    
+    @router.post("/scheduled-deployments/{deployment_id}/rollback")
+    async def rollback_scheduled_deployment(
+        deployment_id: str,
+        reason: str = Body(...),
+        rolled_back_by: str = Body("admin")
+    ):
+        """Rollback a deployment to original values"""
+        return await service.rollback_scheduled_deployment(deployment_id, reason, rolled_back_by)
+    
+    @router.post("/scheduled-deployments/{deployment_id}/complete")
+    async def complete_scheduled_deployment(
+        deployment_id: str,
+        completed_by: str = Body("admin", embed=True)
+    ):
+        """Mark a deployment as completed"""
+        return await service.complete_scheduled_deployment(deployment_id, completed_by)
+    
+    @router.post("/scheduled-deployments/{deployment_id}/cancel")
+    async def cancel_scheduled_deployment(
+        deployment_id: str,
+        cancelled_by: str = Body("admin", embed=True)
+    ):
+        """Cancel a pending scheduled deployment"""
+        return await service.cancel_scheduled_deployment(deployment_id, cancelled_by)
+    
+    @router.post("/scheduled-deployments/{deployment_id}/metrics")
+    async def record_deployment_metric(
+        deployment_id: str,
+        metric_name: str = Body(...),
+        metric_value: float = Body(...),
+        timestamp: Optional[str] = Body(None)
+    ):
+        """Record a metric for deployment monitoring"""
+        await service.record_deployment_metric(deployment_id, metric_name, metric_value, timestamp)
+        return {"recorded": True}
+    
+    @router.get("/scheduled-deployments/{deployment_id}/check-metrics")
+    async def check_deployment_metrics(deployment_id: str):
+        """Check if deployment metrics indicate need for rollback"""
+        return await service.check_deployment_metrics(deployment_id)
+    
     return router, service
