@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Box,
   Card,
@@ -59,6 +60,23 @@ import {
   Visibility,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
+
+// Direct API client for escrow endpoints (which are on the main backend, not admin backend)
+const escrowApi = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_MAIN_API_URL || '/api',
+  headers: { 'Content-Type': 'application/json' },
+});
+
+// Add auth token from localStorage
+escrowApi.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('admin_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
 
 interface VerifiedSeller {
   seller_id: string;
