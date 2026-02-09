@@ -125,6 +125,14 @@ except ImportError as e:
     CHAT_MODERATION_AVAILABLE = False
     logging.warning(f"Chat Moderation not available: {e}")
 
+# Executive Summary System
+try:
+    from executive_summary import create_executive_summary_router
+    EXECUTIVE_SUMMARY_AVAILABLE = True
+except ImportError as e:
+    EXECUTIVE_SUMMARY_AVAILABLE = False
+    logging.warning(f"Executive Summary not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
