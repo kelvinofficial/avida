@@ -1065,6 +1065,341 @@ class CohortAnalyticsService:
         }
 
     # -------------------------------------------------------------------------
+    # COHORT COMPARISON
+    # -------------------------------------------------------------------------
+    
+    async def compare_cohorts(
+        self,
+        segments: List[Dict[str, str]],  # List of {"dimension": "user_type", "value": "seller"}
+        metrics: List[str] = None,
+        time_period_days: int = 90
+    ) -> Dict:
+        """Compare retention and engagement metrics between different cohorts side-by-side"""
+        if metrics is None:
+            metrics = ["retention_d7", "retention_d30", "ltv", "engagement_score", "conversion_rate"]
+        
+        comparison_results = []
+        now = datetime.now(timezone.utc)
+        period_start = now - timedelta(days=time_period_days)
+        
+        for segment in segments:
+            dimension = segment.get("dimension", "user_type")
+            value = segment.get("value", "all")
+            label = segment.get("label", f"{dimension}:{value}")
+            
+            # Get users in this segment
+            segment_users = await self._get_segment_users(dimension, value, period_start)
+            user_ids = [u.get("user_id") or u.get("id") for u in segment_users]
+            
+            if not user_ids:
+                comparison_results.append({
+                    "segment": label,
+                    "dimension": dimension,
+                    "value": value,
+                    "user_count": 0,
+                    "metrics": {m: 0 for m in metrics}
+                })
+                continue
+            
+            # Calculate metrics for this segment
+            segment_metrics = {}
+            
+            # D7 Retention
+            if "retention_d7" in metrics:
+                retained = await self._calculate_segment_retention(user_ids, days=7)
+                segment_metrics["retention_d7"] = round(retained, 1)
+            
+            # D30 Retention
+            if "retention_d30" in metrics:
+                retained = await self._calculate_segment_retention(user_ids, days=30)
+                segment_metrics["retention_d30"] = round(retained, 1)
+            
+            # LTV (Lifetime Value)
+            if "ltv" in metrics:
+                ltv = await self._calculate_segment_ltv(user_ids)
+                segment_metrics["ltv"] = round(ltv, 2)
+            
+            # Engagement Score (avg sessions per user)
+            if "engagement_score" in metrics:
+                score = await self._calculate_engagement_score(user_ids)
+                segment_metrics["engagement_score"] = round(score, 2)
+            
+            # Conversion Rate (users who made a purchase)
+            if "conversion_rate" in metrics:
+                rate = await self._calculate_conversion_rate(user_ids)
+                segment_metrics["conversion_rate"] = round(rate, 1)
+            
+            # Average time to first action
+            if "time_to_first_action" in metrics:
+                avg_time = await self._calculate_time_to_first_action(user_ids)
+                segment_metrics["time_to_first_action"] = round(avg_time, 1)
+            
+            comparison_results.append({
+                "segment": label,
+                "dimension": dimension,
+                "value": value,
+                "user_count": len(user_ids),
+                "metrics": segment_metrics
+            })
+        
+        # Calculate which segment performs best for each metric
+        winners = {}
+        for metric in metrics:
+            best_segment = None
+            best_value = -float('inf')
+            for result in comparison_results:
+                if result["metrics"].get(metric, 0) > best_value:
+                    best_value = result["metrics"].get(metric, 0)
+                    best_segment = result["segment"]
+            winners[metric] = {"segment": best_segment, "value": best_value}
+        
+        return {
+            "comparison": comparison_results,
+            "winners": winners,
+            "metrics_compared": metrics,
+            "time_period_days": time_period_days,
+            "generated_at": now.isoformat()
+        }
+    
+    async def _get_segment_users(self, dimension: str, value: str, since: datetime) -> List[Dict]:
+        """Get users belonging to a specific segment"""
+        query = {"created_at": {"$gte": since.isoformat()}} if dimension != "all" else {}
+        
+        if dimension == "user_type":
+            if value == "seller":
+                seller_ids = await self.listings.distinct("seller_id")
+                buyer_ids = await self.transactions.distinct("buyer_id") if await self.transactions.count_documents({}) > 0 else []
+                user_ids = [s for s in seller_ids if s not in buyer_ids]
+                return await self.users.find(
+                    {"$or": [{"user_id": {"$in": user_ids}}, {"id": {"$in": user_ids}}]},
+                    {"_id": 0}
+                ).to_list(length=10000)
+            elif value == "buyer":
+                buyer_ids = await self.transactions.distinct("buyer_id") if await self.transactions.count_documents({}) > 0 else []
+                seller_ids = await self.listings.distinct("seller_id")
+                user_ids = [b for b in buyer_ids if b not in seller_ids]
+                return await self.users.find(
+                    {"$or": [{"user_id": {"$in": user_ids}}, {"id": {"$in": user_ids}}]},
+                    {"_id": 0}
+                ).to_list(length=10000)
+            elif value == "hybrid":
+                seller_ids = set(await self.listings.distinct("seller_id"))
+                buyer_ids = set(await self.transactions.distinct("buyer_id")) if await self.transactions.count_documents({}) > 0 else set()
+                user_ids = list(seller_ids & buyer_ids)
+                return await self.users.find(
+                    {"$or": [{"user_id": {"$in": user_ids}}, {"id": {"$in": user_ids}}]},
+                    {"_id": 0}
+                ).to_list(length=10000)
+        
+        elif dimension == "acquisition_source":
+            query["acquisition_source"] = value
+            return await self.users.find(query, {"_id": 0}).to_list(length=10000)
+        
+        elif dimension == "country":
+            query["country"] = value
+            return await self.users.find(query, {"_id": 0}).to_list(length=10000)
+        
+        elif dimension == "platform":
+            # Mobile vs Web users based on last login
+            query["last_platform"] = value
+            return await self.users.find(query, {"_id": 0}).to_list(length=10000)
+        
+        elif dimension == "all":
+            return await self.users.find({}, {"_id": 0}).to_list(length=10000)
+        
+        return []
+    
+    async def _calculate_segment_retention(self, user_ids: List[str], days: int) -> float:
+        """Calculate retention rate for a segment"""
+        if not user_ids:
+            return 0.0
+        
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        
+        # Count users with activity after cutoff
+        retained = await self.events.count_documents({
+            "user_id": {"$in": user_ids},
+            "timestamp": {"$gte": cutoff.isoformat()}
+        })
+        
+        # Get unique retained users
+        retained_users = await self.events.distinct("user_id", {
+            "user_id": {"$in": user_ids},
+            "timestamp": {"$gte": cutoff.isoformat()}
+        })
+        
+        return (len(retained_users) / len(user_ids)) * 100 if user_ids else 0
+    
+    async def _calculate_segment_ltv(self, user_ids: List[str]) -> float:
+        """Calculate average LTV for a segment"""
+        if not user_ids:
+            return 0.0
+        
+        pipeline = [
+            {"$match": {"seller_id": {"$in": user_ids}, "status": "released"}},
+            {"$group": {"_id": "$seller_id", "total": {"$sum": "$seller_amount"}}}
+        ]
+        
+        results = await self.db.escrow.aggregate(pipeline).to_list(length=10000)
+        if not results:
+            return 0.0
+        
+        total_ltv = sum(r["total"] for r in results)
+        return total_ltv / len(user_ids)
+    
+    async def _calculate_engagement_score(self, user_ids: List[str]) -> float:
+        """Calculate engagement score (avg events per user in last 30 days)"""
+        if not user_ids:
+            return 0.0
+        
+        cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+        
+        event_count = await self.events.count_documents({
+            "user_id": {"$in": user_ids},
+            "timestamp": {"$gte": cutoff.isoformat()}
+        })
+        
+        return event_count / len(user_ids) if user_ids else 0
+    
+    async def _calculate_conversion_rate(self, user_ids: List[str]) -> float:
+        """Calculate conversion rate (% users who made a purchase)"""
+        if not user_ids:
+            return 0.0
+        
+        # Get buyers from transactions
+        buyers = await self.transactions.distinct("buyer_id", {"buyer_id": {"$in": user_ids}})
+        
+        return (len(buyers) / len(user_ids)) * 100 if user_ids else 0
+    
+    async def _calculate_time_to_first_action(self, user_ids: List[str]) -> float:
+        """Calculate average days to first meaningful action"""
+        if not user_ids:
+            return 0.0
+        
+        # Get user signup dates
+        users = await self.users.find(
+            {"$or": [{"user_id": {"$in": user_ids}}, {"id": {"$in": user_ids}}]},
+            {"_id": 0, "user_id": 1, "id": 1, "created_at": 1}
+        ).to_list(length=10000)
+        
+        total_days = 0
+        count = 0
+        
+        for user in users:
+            uid = user.get("user_id") or user.get("id")
+            signup_date = user.get("created_at")
+            
+            if not signup_date:
+                continue
+            
+            # Find first event after signup
+            first_event = await self.events.find_one(
+                {"user_id": uid, "event_type": {"$in": ["listing_created", "checkout_completed", "chat_started"]}},
+                sort=[("timestamp", 1)]
+            )
+            
+            if first_event:
+                try:
+                    signup_dt = datetime.fromisoformat(signup_date.replace("Z", "+00:00")) if isinstance(signup_date, str) else signup_date
+                    event_dt = datetime.fromisoformat(first_event["timestamp"].replace("Z", "+00:00"))
+                    days_diff = (event_dt - signup_dt).days
+                    total_days += max(0, days_diff)
+                    count += 1
+                except:
+                    pass
+        
+        return total_days / count if count > 0 else 0
+    
+    async def get_available_segments(self) -> Dict:
+        """Get all available segments for comparison"""
+        segments = {
+            "user_type": ["seller", "buyer", "hybrid"],
+            "acquisition_source": [],
+            "country": [],
+            "platform": ["mobile", "web"]
+        }
+        
+        # Get distinct acquisition sources
+        sources = await self.users.distinct("acquisition_source")
+        segments["acquisition_source"] = [s for s in sources if s]
+        
+        # Get distinct countries
+        countries = await self.users.distinct("country")
+        segments["country"] = [c for c in countries if c]
+        
+        return {
+            "available_segments": segments,
+            "available_metrics": [
+                {"key": "retention_d7", "label": "D7 Retention %", "description": "Users active 7 days after signup"},
+                {"key": "retention_d30", "label": "D30 Retention %", "description": "Users active 30 days after signup"},
+                {"key": "ltv", "label": "Lifetime Value", "description": "Average revenue per user"},
+                {"key": "engagement_score", "label": "Engagement Score", "description": "Average events per user (30 days)"},
+                {"key": "conversion_rate", "label": "Conversion Rate %", "description": "Users who made a purchase"},
+                {"key": "time_to_first_action", "label": "Time to First Action", "description": "Days until first meaningful action"}
+            ]
+        }
+    
+    # -------------------------------------------------------------------------
+    # SCHEDULED TASKS
+    # -------------------------------------------------------------------------
+    
+    async def run_scheduled_alert_check(self) -> Dict:
+        """Run scheduled alert check - called by background task"""
+        result = await self.check_alerts_and_notify()
+        
+        # Log the run
+        await self.db.scheduled_task_logs.insert_one({
+            "task": "alert_check",
+            "run_at": datetime.now(timezone.utc).isoformat(),
+            "result": {
+                "checked": result.get("checked_alerts", 0),
+                "triggered": len(result.get("triggered_alerts", [])),
+                "notifications": len(result.get("notifications_sent", []))
+            }
+        })
+        
+        return result
+    
+    async def run_scheduled_weekly_report(self) -> Dict:
+        """Run scheduled weekly report - called by background task"""
+        schedule = await self.get_report_schedule()
+        
+        if not schedule.get("enabled"):
+            return {"status": "skipped", "reason": "Report scheduling is disabled"}
+        
+        recipients = schedule.get("recipients", [])
+        if not recipients:
+            return {"status": "skipped", "reason": "No recipients configured"}
+        
+        result = await self.send_weekly_report_email(recipients)
+        
+        # Log the run
+        await self.db.scheduled_task_logs.insert_one({
+            "task": "weekly_report",
+            "run_at": datetime.now(timezone.utc).isoformat(),
+            "result": {
+                "report_id": result.get("report_id"),
+                "recipients": len(recipients),
+                "send_results": result.get("send_results", [])
+            }
+        })
+        
+        return result
+    
+    async def get_scheduled_task_logs(self, task: str = None, limit: int = 20) -> List[Dict]:
+        """Get logs of scheduled task runs"""
+        query = {}
+        if task:
+            query["task"] = task
+        
+        logs = await self.db.scheduled_task_logs.find(
+            query,
+            {"_id": 0}
+        ).sort("run_at", -1).limit(limit).to_list(length=limit)
+        
+        return logs
+
+    # -------------------------------------------------------------------------
     # WEEKLY HEALTH REPORT
     # -------------------------------------------------------------------------
     
