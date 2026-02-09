@@ -112,6 +112,19 @@ except ImportError as e:
     AI_ANALYZER_AVAILABLE = False
     logging.warning(f"AI Listing Analyzer not available: {e}")
 
+# Chat Moderation System
+try:
+    from chat_moderation import (
+        create_moderation_router, 
+        create_user_report_router,
+        ChatModerationManager,
+        ModerationConfig
+    )
+    CHAT_MODERATION_AVAILABLE = True
+except ImportError as e:
+    CHAT_MODERATION_AVAILABLE = False
+    logging.warning(f"Chat Moderation not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
@@ -129,9 +142,6 @@ try:
 except ImportError as e:
     MODULAR_ROUTES_AVAILABLE = False
     logging.warning(f"Modular routes not available: {e}")
-
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
