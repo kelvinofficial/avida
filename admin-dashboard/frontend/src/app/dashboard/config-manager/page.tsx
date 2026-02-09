@@ -44,6 +44,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   InputAdornment,
+  Avatar,
 } from '@mui/material';
 import {
   Settings,
