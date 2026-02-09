@@ -1400,6 +1400,491 @@ class SmartNotificationService:
             "totals": totals,
             "daily": analytics
         }
+    
+    # =========================================================================
+    # PHASE 2: CONVERSION TRACKING
+    # =========================================================================
+    
+    async def track_notification_open(self, notification_id: str, user_id: str) -> Dict:
+        """Track when a notification is opened"""
+        try:
+            now = datetime.now(timezone.utc).isoformat()
+            await self.db.smart_notifications.update_one(
+                {"id": notification_id, "user_id": user_id},
+                {"$set": {"opened_at": now}}
+            )
+            await self._update_analytics({"id": notification_id, "trigger_type": "general"}, "opened")
+            return {"success": True, "tracked": "open"}
+        except Exception as e:
+            logger.error(f"Error tracking notification open: {e}")
+            return {"success": False, "error": str(e)}
+    
+    async def track_notification_click(self, notification_id: str, user_id: str) -> Dict:
+        """Track when a notification is clicked/tapped"""
+        try:
+            now = datetime.now(timezone.utc).isoformat()
+            await self.db.smart_notifications.update_one(
+                {"id": notification_id, "user_id": user_id},
+                {"$set": {"clicked_at": now}}
+            )
+            await self._update_analytics({"id": notification_id, "trigger_type": "general"}, "clicked")
+            return {"success": True, "tracked": "click"}
+        except Exception as e:
+            logger.error(f"Error tracking notification click: {e}")
+            return {"success": False, "error": str(e)}
+    
+    async def track_conversion(
+        self,
+        notification_id: str,
+        user_id: str,
+        conversion_type: str,
+        conversion_value: Optional[float] = None,
+        entity_id: Optional[str] = None
+    ) -> Dict:
+        """Track conversion from a notification (purchase, message, save, etc.)"""
+        try:
+            # Get the notification
+            notification = await self.db.smart_notifications.find_one(
+                {"id": notification_id, "user_id": user_id}
+            )
+            if not notification:
+                return {"success": False, "error": "Notification not found"}
+            
+            # Calculate time to convert
+            sent_at = notification.get("sent_at")
+            if sent_at:
+                sent_time = datetime.fromisoformat(sent_at.replace("Z", "+00:00"))
+                time_to_convert = int((datetime.now(timezone.utc) - sent_time).total_seconds())
+            else:
+                time_to_convert = 0
+            
+            # Create conversion record
+            conversion = NotificationConversion(
+                notification_id=notification_id,
+                user_id=user_id,
+                conversion_type=conversion_type,
+                conversion_value=conversion_value,
+                entity_id=entity_id,
+                time_to_convert_seconds=time_to_convert
+            )
+            await self.db.notification_conversions.insert_one(conversion.model_dump())
+            
+            # Update notification record
+            now = datetime.now(timezone.utc).isoformat()
+            await self.db.smart_notifications.update_one(
+                {"id": notification_id},
+                {"$set": {
+                    "converted_at": now,
+                    "conversion_type": conversion_type,
+                    "conversion_value": conversion_value
+                }}
+            )
+            
+            # Update A/B test if applicable
+            ab_test_id = notification.get("ab_test_id")
+            ab_variant = notification.get("ab_variant")
+            if ab_test_id and ab_variant:
+                await self.db.ab_tests.update_one(
+                    {"id": ab_test_id},
+                    {"$inc": {f"{ab_variant}_converted": 1}}
+                )
+            
+            logger.info(f"Conversion tracked: {conversion_type} for notification {notification_id}")
+            return {"success": True, "conversion_id": conversion.id}
+            
+        except Exception as e:
+            logger.error(f"Error tracking conversion: {e}")
+            return {"success": False, "error": str(e)}
+    
+    async def get_conversion_analytics(
+        self,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        trigger_type: Optional[str] = None
+    ) -> Dict:
+        """Get conversion analytics for notifications"""
+        try:
+            query = {}
+            if start_date:
+                query["created_at"] = {"$gte": start_date}
+            if end_date:
+                if "created_at" in query:
+                    query["created_at"]["$lte"] = end_date
+                else:
+                    query["created_at"] = {"$lte": end_date}
+            
+            conversions = await self.db.notification_conversions.find(query, {"_id": 0}).to_list(1000)
+            
+            # Aggregate by type
+            by_type = {}
+            total_value = 0
+            for conv in conversions:
+                ctype = conv.get("conversion_type", "unknown")
+                if ctype not in by_type:
+                    by_type[ctype] = {"count": 0, "value": 0}
+                by_type[ctype]["count"] += 1
+                by_type[ctype]["value"] += conv.get("conversion_value", 0) or 0
+                total_value += conv.get("conversion_value", 0) or 0
+            
+            # Calculate average time to convert
+            avg_time = sum(c.get("time_to_convert_seconds", 0) for c in conversions) / len(conversions) if conversions else 0
+            
+            return {
+                "total_conversions": len(conversions),
+                "total_value": total_value,
+                "by_type": by_type,
+                "avg_time_to_convert_seconds": round(avg_time, 1),
+                "conversions": conversions[:100]  # Return last 100
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting conversion analytics: {e}")
+            return {"error": str(e)}
+    
+    # =========================================================================
+    # PHASE 2: A/B TESTING
+    # =========================================================================
+    
+    async def create_ab_test(self, test_data: Dict) -> Dict:
+        """Create a new A/B test"""
+        test = ABTest(**test_data)
+        test.start_date = datetime.now(timezone.utc).isoformat()
+        await self.db.ab_tests.insert_one(test.model_dump())
+        return test.model_dump()
+    
+    async def get_ab_tests(self, active_only: bool = False) -> List[Dict]:
+        """Get all A/B tests"""
+        query = {}
+        if active_only:
+            query["is_active"] = True
+        tests = await self.db.ab_tests.find(query, {"_id": 0}).to_list(100)
+        return tests
+    
+    async def get_ab_test(self, test_id: str) -> Optional[Dict]:
+        """Get a specific A/B test"""
+        return await self.db.ab_tests.find_one({"id": test_id}, {"_id": 0})
+    
+    async def update_ab_test(self, test_id: str, updates: Dict) -> Optional[Dict]:
+        """Update an A/B test"""
+        updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+        await self.db.ab_tests.update_one({"id": test_id}, {"$set": updates})
+        return await self.get_ab_test(test_id)
+    
+    async def end_ab_test(self, test_id: str) -> Optional[Dict]:
+        """End an A/B test and determine winner"""
+        test = await self.get_ab_test(test_id)
+        if not test:
+            return None
+        
+        # Calculate winner based on conversion rate
+        def calc_rate(sent, converted):
+            return (converted / sent * 100) if sent > 0 else 0
+        
+        control_rate = calc_rate(test.get("control_sent", 0), test.get("control_converted", 0))
+        variant_a_rate = calc_rate(test.get("variant_a_sent", 0), test.get("variant_a_converted", 0))
+        variant_b_rate = calc_rate(test.get("variant_b_sent", 0), test.get("variant_b_converted", 0))
+        
+        rates = {"control": control_rate, "variant_a": variant_a_rate, "variant_b": variant_b_rate}
+        winner = max(rates, key=rates.get)
+        
+        return await self.update_ab_test(test_id, {
+            "is_active": False,
+            "end_date": datetime.now(timezone.utc).isoformat(),
+            "winner": winner
+        })
+    
+    def _select_ab_variant(self, test: Dict, user_id: str) -> str:
+        """Select A/B test variant for a user (deterministic based on user_id)"""
+        import random
+        # Use user_id as seed for consistent assignment
+        random.seed(hash(user_id + test.get("id", "")))
+        roll = random.randint(1, 100)
+        
+        control_pct = test.get("control_percentage", 34)
+        variant_a_pct = test.get("variant_a_percentage", 33)
+        
+        if roll <= control_pct:
+            return "control"
+        elif roll <= control_pct + variant_a_pct:
+            return "variant_a"
+        else:
+            return "variant_b"
+    
+    # =========================================================================
+    # PHASE 2: SIMILAR LISTING ALERTS
+    # =========================================================================
+    
+    async def check_similar_listing_triggers(self, listing: Dict):
+        """
+        Check if a new listing should trigger similar listing alerts.
+        Looks for users who searched for similar items or viewed similar listings.
+        """
+        try:
+            category_id = listing.get("category_id")
+            title = listing.get("title", "").lower()
+            price = listing.get("price", 0)
+            
+            if not category_id or not title:
+                return
+            
+            # Extract keywords from title
+            keywords = [w for w in title.split() if len(w) > 3][:5]
+            
+            # Find users with matching recent searches
+            search_regex = "|".join(keywords) if keywords else title
+            
+            matching_profiles = await self.db.user_interest_profiles.find({
+                "$or": [
+                    {"recent_searches": {"$regex": search_regex, "$options": "i"}},
+                    {f"category_interests.{category_id}": {"$gte": 30}}
+                ]
+            }, {"user_id": 1}).to_list(500)
+            
+            if not matching_profiles:
+                return
+            
+            user_ids = [p["user_id"] for p in matching_profiles]
+            # Exclude listing owner
+            user_ids = [uid for uid in user_ids if uid != listing.get("user_id")]
+            
+            trigger = {
+                "id": "similar_listing_alert",
+                "trigger_type": TriggerType.SIMILAR_LISTING_ALERT,
+                "title_template": "Found something you might like!",
+                "body_template": "{{listing_title}} - {{currency}}{{price}}",
+                "channels": ["push", "in_app"],
+                "priority": 4,
+                "min_interval_minutes": 120,
+                "max_per_day": 5
+            }
+            
+            for user_id in user_ids[:50]:  # Limit to 50 users
+                await self._queue_notification(
+                    user_id=user_id,
+                    trigger=trigger,
+                    variables={
+                        "listing_title": listing.get("title", ""),
+                        "price": price,
+                        "currency": "€",
+                        "listing_image": listing.get("images", [None])[0]
+                    },
+                    deep_link=f"/listing/{listing.get('id')}",
+                    metadata={"listing_id": listing.get("id"), "trigger": "similar_listing"}
+                )
+            
+            logger.info(f"Queued similar listing alerts for {len(user_ids)} users")
+            
+        except Exception as e:
+            logger.error(f"Error checking similar listing triggers: {e}")
+    
+    # =========================================================================
+    # PHASE 2: SELLER REPLY NOTIFICATIONS
+    # =========================================================================
+    
+    async def trigger_seller_reply_notification(
+        self,
+        buyer_id: str,
+        seller_id: str,
+        conversation_id: str,
+        listing_id: Optional[str] = None,
+        message_preview: str = ""
+    ):
+        """Trigger notification when a seller replies to a buyer's inquiry"""
+        try:
+            # Get seller info
+            seller = await self.db.users.find_one({"user_id": seller_id}, {"_id": 0, "name": 1})
+            seller_name = seller.get("name", "Seller") if seller else "Seller"
+            
+            # Get listing info
+            listing_title = ""
+            if listing_id:
+                listing = await self.db.listings.find_one({"id": listing_id}, {"_id": 0, "title": 1, "images": 1})
+                listing_title = listing.get("title", "") if listing else ""
+                listing_image = listing.get("images", [None])[0] if listing else None
+            else:
+                listing_image = None
+            
+            trigger = {
+                "id": "seller_reply_notification",
+                "trigger_type": TriggerType.SELLER_REPLY,
+                "title_template": "{{seller_name}} replied!",
+                "body_template": "{{message_preview}}",
+                "channels": ["push", "email", "in_app"],
+                "priority": 1,
+                "min_interval_minutes": 0,
+                "max_per_day": 50
+            }
+            
+            await self._queue_notification(
+                user_id=buyer_id,
+                trigger=trigger,
+                variables={
+                    "seller_name": seller_name,
+                    "message_preview": message_preview[:100] if message_preview else "Check out their response",
+                    "listing_title": listing_title,
+                    "listing_image": listing_image
+                },
+                deep_link=f"/chat/{conversation_id}",
+                metadata={
+                    "conversation_id": conversation_id,
+                    "seller_id": seller_id,
+                    "listing_id": listing_id,
+                    "trigger": "seller_reply"
+                }
+            )
+            
+            logger.info(f"Triggered seller reply notification to buyer {buyer_id}")
+            
+        except Exception as e:
+            logger.error(f"Error triggering seller reply notification: {e}")
+    
+    # =========================================================================
+    # PHASE 2: WEEKLY DIGEST
+    # =========================================================================
+    
+    async def get_weekly_digest_config(self) -> Dict:
+        """Get weekly digest configuration"""
+        config = await self.db.weekly_digest_config.find_one({"id": "weekly_digest_config"})
+        if not config:
+            config = WeeklyDigestConfig().model_dump()
+            await self.db.weekly_digest_config.insert_one(config)
+        return {k: v for k, v in config.items() if k != "_id"}
+    
+    async def update_weekly_digest_config(self, updates: Dict) -> Dict:
+        """Update weekly digest configuration"""
+        updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+        await self.db.weekly_digest_config.update_one(
+            {"id": "weekly_digest_config"},
+            {"$set": updates},
+            upsert=True
+        )
+        return await self.get_weekly_digest_config()
+    
+    async def generate_weekly_digest(self, user_id: str) -> Optional[Dict]:
+        """Generate weekly digest for a single user"""
+        try:
+            config = await self.get_weekly_digest_config()
+            if not config.get("enabled", True):
+                return None
+            
+            # Get user's interest profile
+            profile = await self.get_interest_profile(user_id)
+            if not profile:
+                return None
+            
+            # Get user info
+            user = await self.db.users.find_one({"user_id": user_id}, {"_id": 0, "name": 1, "email": 1})
+            if not user:
+                return None
+            
+            # Get top interested categories
+            category_interests = profile.get("category_interests", {})
+            top_categories = sorted(category_interests.items(), key=lambda x: x[1], reverse=True)[:5]
+            category_ids = [c[0] for c in top_categories]
+            
+            # Get new listings in interested categories from last 7 days
+            week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+            new_listings = await self.db.listings.find({
+                "category_id": {"$in": category_ids} if category_ids else {"$exists": True},
+                "status": "active",
+                "created_at": {"$gte": week_ago}
+            }, {"_id": 0, "id": 1, "title": 1, "price": 1, "images": 1, "category_id": 1}).sort(
+                "created_at", -1
+            ).limit(config.get("max_new_listings", 10)).to_list(10)
+            
+            # Get price drops on saved items
+            favorites = await self.db.favorites.find({"user_id": user_id}).to_list(100)
+            favorite_listing_ids = [f["listing_id"] for f in favorites]
+            
+            price_drops = []
+            if favorite_listing_ids:
+                # Check for recent price drops (simplified - in production, track price history)
+                # For now, just include saved items with recent updates
+                saved_listings = await self.db.listings.find({
+                    "id": {"$in": favorite_listing_ids},
+                    "updated_at": {"$gte": week_ago}
+                }, {"_id": 0, "id": 1, "title": 1, "price": 1, "images": 1}).limit(
+                    config.get("max_price_drops", 5)
+                ).to_list(5)
+                price_drops = saved_listings
+            
+            # Generate digest content
+            digest_content = {
+                "user_name": user.get("name", "there"),
+                "new_listings_count": len(new_listings),
+                "price_drops_count": len(price_drops),
+                "top_listings": new_listings[:5],
+                "price_drop_listings": price_drops,
+                "week_start": week_ago,
+                "generated_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+            return digest_content
+            
+        except Exception as e:
+            logger.error(f"Error generating weekly digest for user {user_id}: {e}")
+            return None
+    
+    async def send_weekly_digests(self):
+        """Send weekly digest emails to all eligible users"""
+        try:
+            config = await self.get_weekly_digest_config()
+            if not config.get("enabled", True):
+                logger.info("Weekly digest is disabled")
+                return {"sent": 0, "skipped": 0}
+            
+            # Get all users with email enabled and weekly digest enabled
+            consents = await self.db.user_notification_consent.find({
+                "email_enabled": True,
+                "trigger_preferences.weekly_digest": {"$ne": False}
+            }).to_list(10000)
+            
+            sent_count = 0
+            skipped_count = 0
+            
+            for consent in consents:
+                user_id = consent.get("user_id")
+                if not user_id:
+                    continue
+                
+                # Generate digest
+                digest = await self.generate_weekly_digest(user_id)
+                if not digest or (digest.get("new_listings_count", 0) == 0 and digest.get("price_drops_count", 0) == 0):
+                    skipped_count += 1
+                    continue
+                
+                # Queue email notification
+                trigger = {
+                    "id": "weekly_digest",
+                    "trigger_type": TriggerType.WEEKLY_DIGEST,
+                    "title_template": "Your Weekly Marketplace Digest",
+                    "body_template": "{{new_listings_count}} new listings, {{price_drops_count}} price drops",
+                    "channels": ["email"],
+                    "priority": 8,
+                    "min_interval_minutes": 0,
+                    "max_per_day": 1
+                }
+                
+                await self._queue_notification(
+                    user_id=user_id,
+                    trigger=trigger,
+                    variables=digest,
+                    deep_link="/",
+                    metadata={"trigger": "weekly_digest", "digest_data": digest}
+                )
+                sent_count += 1
+            
+            # Update last run time
+            await self.update_weekly_digest_config({
+                "last_run": datetime.now(timezone.utc).isoformat()
+            })
+            
+            logger.info(f"Weekly digest: queued {sent_count}, skipped {skipped_count}")
+            return {"sent": sent_count, "skipped": skipped_count}
+            
+        except Exception as e:
+            logger.error(f"Error sending weekly digests: {e}")
+            return {"error": str(e)}
 
 
 # =============================================================================
