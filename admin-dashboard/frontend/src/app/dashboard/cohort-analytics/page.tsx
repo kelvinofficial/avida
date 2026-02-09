@@ -61,6 +61,8 @@ import {
   Email,
   Schedule,
   PlayArrow,
+  Compare,
+  EmojiEvents,
 } from '@mui/icons-material';
 import {
   AreaChart,
