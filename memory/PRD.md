@@ -569,3 +569,41 @@ Last Updated: February 9, 2026
 
 **Testing:** 13/13 tests passed
 
+
+---
+
+## User-Facing Report Message UI (Feb 9, 2026)
+
+### Report Message Feature in Mobile Chat - COMPLETE
+
+**Frontend Components (React Native):**
+1. **ReportModal** - Bottom sheet modal with:
+   - 7 report reasons (scam, abuse, fake listing, off-platform payment, harassment, spam, other)
+   - Message preview showing reported message
+   - Optional description field (500 char max)
+   - Submit button with loading state
+   - Disclaimer about false reports
+
+2. **Long-Press Interaction** - Message bubbles support:
+   - Long press (500ms) to show options (iOS: ActionSheet, Android: Alert)
+   - Only shows for other user's messages (can't report own)
+   - Three-dot menu icon hint on messages
+
+**API Integration:**
+- `reportApi.getReasons()` - Fetches available report reasons
+- `reportApi.reportMessage(conversationId, reason, messageId, description)` - Submits report
+
+**Backend Endpoints:**
+- `GET /api/report/reasons` - Public, returns 7 reasons
+- `POST /api/report/message` - Auth required, validates participant
+
+**Database:**
+- Reports stored in `user_reports` collection
+- Fields: reporter_id, reported_user_id, conversation_id, message_id, reason, description, status
+
+**Testing:** 12/12 tests passed
+
+**Files Modified:**
+- `frontend/src/utils/api.ts` - Added reportApi
+- `frontend/app/chat/[id].tsx` - Added ReportModal, handleLongPressMessage, handleSubmitReport
+
