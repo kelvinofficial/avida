@@ -764,6 +764,21 @@ const styles = StyleSheet.create({
   loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { marginTop: 12, color: COLORS.textSecondary, fontSize: 16 },
   
+  sandboxBanner: {
+    backgroundColor: '#FF9800',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  sandboxText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  
   header: {
     flexDirection: 'row',
     alignItems: 'center',
