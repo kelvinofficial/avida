@@ -233,8 +233,9 @@ class SmartNotification(BaseModel):
     title: str
     body: str
     
-    # Deep link data
+    # Deep link data - Enhanced for Phase 2
     deep_link: Optional[str] = None  # e.g., "/listing/abc123"
+    deep_link_params: Dict[str, Any] = {}  # Additional params for deep link
     action_url: Optional[str] = None  # Web URL
     image_url: Optional[str] = None
     
@@ -254,6 +255,15 @@ class SmartNotification(BaseModel):
     opened_at: Optional[str] = None
     clicked_at: Optional[str] = None
     
+    # Conversion tracking - Phase 2
+    converted_at: Optional[str] = None
+    conversion_type: Optional[str] = None  # purchase, message, save, etc.
+    conversion_value: Optional[float] = None  # monetary value if applicable
+    
+    # A/B Testing - Phase 2
+    ab_test_id: Optional[str] = None
+    ab_variant: Optional[str] = None  # control, variant_a, variant_b
+    
     # Error tracking
     error_message: Optional[str] = None
     retry_count: int = 0
@@ -264,6 +274,91 @@ class SmartNotification(BaseModel):
     # Metadata
     metadata: Dict[str, Any] = {}
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class NotificationConversion(BaseModel):
+    """Tracks conversions from notifications - Phase 2"""
+    id: str = Field(default_factory=lambda: f"conv_{uuid.uuid4().hex[:12]}")
+    notification_id: str
+    user_id: str
+    
+    # Conversion details
+    conversion_type: str  # purchase, message_sent, listing_saved, profile_view
+    conversion_value: Optional[float] = None
+    entity_id: Optional[str] = None  # listing_id, conversation_id, etc.
+    
+    # Attribution
+    time_to_convert_seconds: int = 0  # Time from notification sent to conversion
+    attribution_window_hours: int = 24  # Attribution window used
+    
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class ABTest(BaseModel):
+    """A/B Test configuration - Phase 2"""
+    id: str = Field(default_factory=lambda: f"abtest_{uuid.uuid4().hex[:12]}")
+    name: str
+    description: str = ""
+    trigger_type: str
+    
+    # Variants
+    control_title: str
+    control_body: str
+    variant_a_title: str
+    variant_a_body: str
+    variant_b_title: Optional[str] = None
+    variant_b_body: Optional[str] = None
+    
+    # Traffic split (percentages)
+    control_percentage: int = 34
+    variant_a_percentage: int = 33
+    variant_b_percentage: int = 33
+    
+    # Results tracking
+    control_sent: int = 0
+    control_opened: int = 0
+    control_clicked: int = 0
+    control_converted: int = 0
+    variant_a_sent: int = 0
+    variant_a_opened: int = 0
+    variant_a_clicked: int = 0
+    variant_a_converted: int = 0
+    variant_b_sent: int = 0
+    variant_b_opened: int = 0
+    variant_b_clicked: int = 0
+    variant_b_converted: int = 0
+    
+    # Status
+    is_active: bool = True
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    winner: Optional[str] = None  # control, variant_a, variant_b
+    
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class WeeklyDigestConfig(BaseModel):
+    """Configuration for weekly digest emails - Phase 2"""
+    id: str = "weekly_digest_config"
+    
+    # Schedule
+    enabled: bool = True
+    send_day: str = "monday"  # monday, tuesday, etc.
+    send_hour: int = 9  # 0-23 UTC
+    
+    # Content settings
+    max_new_listings: int = 10
+    max_price_drops: int = 5
+    include_recommendations: bool = True
+    include_stats: bool = True
+    
+    # Targeting
+    min_interest_score: int = 20
+    min_days_since_last_visit: int = 0
+    
+    last_run: Optional[str] = None
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
 class NotificationAnalytics(BaseModel):
