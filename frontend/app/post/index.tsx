@@ -433,12 +433,154 @@ export default function PostListingScreen() {
     });
 
     if (!result.canceled && result.assets[0].base64) {
-      setImages([...images, `data:image/jpeg;base64,${result.assets[0].base64}`]);
+      const newImages = [...images, `data:image/jpeg;base64,${result.assets[0].base64}`];
+      setImages(newImages);
+      
+      // Trigger AI analysis when first image is added or when we have at least one image
+      if (newImages.length === 1) {
+        triggerAiAnalysis(newImages);
+      }
     }
   };
 
   const removeImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index));
+    // Reset AI state if no images left
+    if (images.length <= 1) {
+      setAiResult(null);
+      setShowAiSuggestions(false);
+      setAiSuggestionsApplied(false);
+    }
+  };
+
+  // ============ AI ANALYZER ============
+  const triggerAiAnalysis = async (imagesToAnalyze: string[]) => {
+    if (!user?.user_id || imagesToAnalyze.length === 0) return;
+    
+    setAiAnalyzing(true);
+    setAiError(null);
+    setShowAiSuggestions(false);
+    
+    try {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/ai-analyzer/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          images: imagesToAnalyze.map(img => img.replace(/^data:image\/\w+;base64,/, '')),
+          category_hint: selectedCategoryId || null,
+          user_id: user.user_id,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.result) {
+        setAiResult(data.result);
+        setShowAiSuggestions(true);
+      } else {
+        setAiError(data.error || 'AI analysis failed');
+      }
+    } catch (error) {
+      console.error('AI analysis error:', error);
+      setAiError('Failed to analyze photos. You can continue manually.');
+    } finally {
+      setAiAnalyzing(false);
+    }
+  };
+
+  const applyAiSuggestions = () => {
+    if (!aiResult) return;
+    
+    // Apply title
+    if (aiResult.suggested_title) {
+      setTitle(aiResult.suggested_title);
+    }
+    
+    // Apply description
+    if (aiResult.suggested_description) {
+      setDescription(aiResult.suggested_description);
+    }
+    
+    // Apply condition
+    if (aiResult.detected_condition) {
+      const conditionMap: Record<string, string> = {
+        'new': 'New',
+        'like_new': 'Like New',
+        'good': 'Good',
+        'fair': 'Fair',
+        'poor': 'For Parts'
+      };
+      setCondition(conditionMap[aiResult.detected_condition] || aiResult.detected_condition);
+    }
+    
+    // Apply attributes
+    if (aiResult.suggested_attributes) {
+      setAttributes(prev => ({
+        ...prev,
+        ...aiResult.suggested_attributes
+      }));
+    }
+    
+    setAiSuggestionsApplied(true);
+    setShowAiSuggestions(false);
+    
+    // Send feedback
+    submitAiFeedback(aiResult.id, true, false, false);
+    
+    Alert.alert('AI Suggestions Applied', 'Review and edit the suggested fields as needed.');
+  };
+
+  const applyPartialAiSuggestions = (field: string) => {
+    if (!aiResult) return;
+    
+    switch (field) {
+      case 'title':
+        if (aiResult.suggested_title) setTitle(aiResult.suggested_title);
+        break;
+      case 'description':
+        if (aiResult.suggested_description) setDescription(aiResult.suggested_description);
+        break;
+      case 'condition':
+        if (aiResult.detected_condition) {
+          const conditionMap: Record<string, string> = {
+            'new': 'New', 'like_new': 'Like New', 'good': 'Good', 'fair': 'Fair', 'poor': 'For Parts'
+          };
+          setCondition(conditionMap[aiResult.detected_condition] || aiResult.detected_condition);
+        }
+        break;
+      case 'attributes':
+        if (aiResult.suggested_attributes) {
+          setAttributes(prev => ({ ...prev, ...aiResult.suggested_attributes }));
+        }
+        break;
+    }
+    
+    submitAiFeedback(aiResult.id, false, true, false);
+  };
+
+  const dismissAiSuggestions = () => {
+    setShowAiSuggestions(false);
+    if (aiResult) {
+      submitAiFeedback(aiResult.id, false, false, true);
+    }
+  };
+
+  const submitAiFeedback = async (analysisId: string, accepted: boolean, edited: boolean, rejected: boolean) => {
+    try {
+      await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/ai-analyzer/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ analysis_id: analysisId, accepted, edited, rejected }),
+      });
+    } catch (error) {
+      console.error('Failed to submit AI feedback:', error);
+    }
+  };
+
+  const regenerateAiAnalysis = () => {
+    if (images.length > 0) {
+      triggerAiAnalysis(images);
+    }
   };
 
   // ============ VALIDATION ============
