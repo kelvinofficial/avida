@@ -73,6 +73,10 @@ import {
   GppGood,
   GppBad,
   AssignmentTurnedIn,
+  Description,
+  Science,
+  Edit,
+  Publish,
 } from '@mui/icons-material';
 
 const API_BASE = process.env.NEXT_PUBLIC_MAIN_API_URL || '';
