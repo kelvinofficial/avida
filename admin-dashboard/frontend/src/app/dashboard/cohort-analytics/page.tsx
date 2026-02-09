@@ -808,21 +808,50 @@ export default function CohortAnalyticsPage() {
         </Card>
       )}
 
-      {/* Tab 4: Alerts */}
+      {/* Tab 4: Alerts & Automation */}
       {activeTab === 4 && (
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6">Retention Alerts</Typography>
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={() => setAlertDialogOpen(true)}
-                data-testid="create-alert-btn"
-              >
-                Create Alert
-              </Button>
+              <Typography variant="h6">Retention Alerts & Automation</Typography>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  variant="outlined"
+                  startIcon={checkingAlerts ? <CircularProgress size={20} /> : <PlayArrow />}
+                  onClick={checkAlerts}
+                  disabled={checkingAlerts}
+                  data-testid="check-alerts-btn"
+                >
+                  Check Alerts Now
+                </Button>
+                <Button
+                  variant="contained"
+                  startIcon={<Add />}
+                  onClick={() => setAlertDialogOpen(true)}
+                  data-testid="create-alert-btn"
+                >
+                  Create Alert
+                </Button>
+              </Box>
             </Box>
+            
+            {/* Triggered Alerts Section */}
+            {triggeredAlerts.length > 0 && (
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                <strong>{triggeredAlerts.length} alert(s) triggered!</strong>
+                <List dense>
+                  {triggeredAlerts.map((ta, idx) => (
+                    <ListItem key={idx}>
+                      <ListItemText 
+                        primary={ta.alert_name}
+                        secondary={`Current value: ${ta.current_value}%, Threshold: ${ta.threshold}%`}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Alert>
+            )}
+            
             <TableContainer component={Paper} variant="outlined">
               <Table data-testid="alerts-table">
                 <TableHead>
@@ -869,6 +898,105 @@ export default function CohortAnalyticsPage() {
             </TableContainer>
           </CardContent>
         </Card>
+      )}
+
+      {/* Tab 5: Weekly Reports */}
+      {activeTab === 5 && (
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>Generate Weekly Report</Typography>
+                <Typography color="text.secondary" sx={{ mb: 2 }}>
+                  Create a comprehensive cohort health report with AI insights and recommendations.
+                </Typography>
+                <Button
+                  variant="contained"
+                  startIcon={generatingReport ? <CircularProgress size={20} color="inherit" /> : <Schedule />}
+                  onClick={generateWeeklyReport}
+                  disabled={generatingReport}
+                  fullWidth
+                  sx={{ mb: 2 }}
+                  data-testid="generate-report-btn"
+                >
+                  Generate Report
+                </Button>
+                
+                <Divider sx={{ my: 2 }} />
+                
+                <Typography variant="subtitle2" gutterBottom>Send Report via Email</Typography>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Recipients (comma-separated)"
+                  placeholder="admin@example.com, manager@example.com"
+                  value={reportRecipients}
+                  onChange={(e) => setReportRecipients(e.target.value)}
+                  sx={{ mb: 1 }}
+                  data-testid="report-recipients-input"
+                />
+                <Button
+                  variant="outlined"
+                  startIcon={sendingReport ? <CircularProgress size={20} /> : <Email />}
+                  onClick={sendWeeklyReport}
+                  disabled={sendingReport || !reportRecipients.trim()}
+                  fullWidth
+                  data-testid="send-report-btn"
+                >
+                  Send Report
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+          
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>Latest Report Summary</Typography>
+                {weeklyReport ? (
+                  <Box>
+                    <Grid container spacing={2}>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">Total Users</Typography>
+                        <Typography variant="h6">{weeklyReport.metrics_summary?.total_users?.toLocaleString()}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">MAU</Typography>
+                        <Typography variant="h6">{weeklyReport.metrics_summary?.mau?.toLocaleString()}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">Avg D7 Retention</Typography>
+                        <Typography variant="h6">{weeklyReport.retention_highlights?.avg_d7_retention}%</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">Conversion Rate</Typography>
+                        <Typography variant="h6">{weeklyReport.funnel_summary?.overall_conversion}%</Typography>
+                      </Grid>
+                    </Grid>
+                    
+                    {weeklyReport.recommendations?.length > 0 && (
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="subtitle2" gutterBottom>Recommendations</Typography>
+                        {weeklyReport.recommendations.map((rec: string, idx: number) => (
+                          <Alert key={idx} severity="info" sx={{ mb: 1 }}>
+                            {rec}
+                          </Alert>
+                        ))}
+                      </Box>
+                    )}
+                  </Box>
+                ) : (
+                  <Box sx={{ textAlign: 'center', py: 4 }}>
+                    <Schedule sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
+                    <Typography color="text.secondary">
+                      No report generated yet. Click "Generate Report" to create one.
+                    </Typography>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
       )}
 
       {/* Drilldown Dialog */}
