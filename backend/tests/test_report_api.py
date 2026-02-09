@@ -21,19 +21,16 @@ def setup_module(module):
     """Setup test users, listing, and conversation once for all tests"""
     global _test_data
     
-    session = requests.Session()
-    session.headers.update({"Content-Type": "application/json"})
-    
-    # Create reporter user
+    # Create reporter user - use separate session
     reporter_email = f"test_reporter_{uuid.uuid4().hex[:8]}@test.com"
-    reg_resp = session.post(f"{BASE_URL}/api/auth/register", json={
+    reg_resp = requests.post(f"{BASE_URL}/api/auth/register", json={
         "email": reporter_email,
         "password": "test123456",
         "name": "Test Reporter"
     })
     assert reg_resp.status_code in [200, 201, 400], f"Failed to register reporter: {reg_resp.text}"
     
-    login_resp = session.post(f"{BASE_URL}/api/auth/login", json={
+    login_resp = requests.post(f"{BASE_URL}/api/auth/login", json={
         "email": reporter_email,
         "password": "test123456"
     })
@@ -47,16 +44,16 @@ def setup_module(module):
     }
     print(f"Reporter user_id: {_test_data['reporter']['user_id']}")
     
-    # Create listing owner (other user)
+    # Create listing owner (other user) - use separate session
     other_email = f"test_other_{uuid.uuid4().hex[:8]}@test.com"
-    reg_resp = session.post(f"{BASE_URL}/api/auth/register", json={
+    reg_resp = requests.post(f"{BASE_URL}/api/auth/register", json={
         "email": other_email,
         "password": "test123456",
         "name": "Other User"
     })
     assert reg_resp.status_code in [200, 201, 400], f"Failed to register other: {reg_resp.text}"
     
-    login_resp = session.post(f"{BASE_URL}/api/auth/login", json={
+    login_resp = requests.post(f"{BASE_URL}/api/auth/login", json={
         "email": other_email,
         "password": "test123456"
     })
@@ -68,8 +65,9 @@ def setup_module(module):
         "token": other_data.get("session_token"),
         "email": other_email
     }
+    print(f"Other user_id: {_test_data['other']['user_id']}")
     
-    # Create listing using OTHER's token
+    # Create listing using OTHER's token - use a fresh request, not session
     print(f"\nCreating listing with OTHER's token: {_test_data['other']['token'][:20]}...")
     listing_data = {
         "title": f"Test Listing for Report API {uuid.uuid4().hex[:8]}",
@@ -82,29 +80,40 @@ def setup_module(module):
         "images": []
     }
     
-    list_resp = session.post(
+    list_resp = requests.post(
         f"{BASE_URL}/api/listings",
         json=listing_data,
-        headers={"Authorization": f"Bearer {_test_data['other']['token']}"}
+        headers={
+            "Authorization": f"Bearer {_test_data['other']['token']}",
+            "Content-Type": "application/json"
+        }
     )
     print(f"Listing creation: {list_resp.status_code}")
     assert list_resp.status_code in [200, 201], f"Failed to create listing: {list_resp.text}"
     _test_data['listing'] = list_resp.json()
     print(f"Listing owner: {_test_data['listing'].get('user_id')}")
-    print(f"Other user_id: {_test_data['other']['user_id']}")
     
-    # Create conversation - REPORTER starts chat on OTHER's listing
+    # Verify the listing owner is the other user
+    assert _test_data['listing'].get('user_id') == _test_data['other']['user_id'], \
+        f"Listing owner mismatch: {_test_data['listing'].get('user_id')} != {_test_data['other']['user_id']}"
+    
+    # Create conversation - REPORTER starts chat on OTHER's listing - use fresh request
     print(f"\nCreating conversation with REPORTER's token: {_test_data['reporter']['token'][:20]}...")
-    conv_resp = session.post(
+    conv_resp = requests.post(
         f"{BASE_URL}/api/conversations?listing_id={_test_data['listing']['id']}",
-        headers={"Authorization": f"Bearer {_test_data['reporter']['token']}"}
+        headers={
+            "Authorization": f"Bearer {_test_data['reporter']['token']}",
+            "Content-Type": "application/json"
+        }
     )
-    print(f"Conversation creation: {conv_resp.status_code} - {conv_resp.text[:200] if conv_resp.status_code != 200 else 'OK'}")
+    print(f"Conversation creation: {conv_resp.status_code}")
+    if conv_resp.status_code != 200:
+        print(f"Response: {conv_resp.text}")
+    
     assert conv_resp.status_code in [200, 201], f"Failed to create conversation: {conv_resp.text}"
     _test_data['conversation'] = conv_resp.json()
     
     print(f"Setup complete: reporter={_test_data['reporter']['user_id']}, other={_test_data['other']['user_id']}")
-    print(f"Listing owner: {_test_data['listing'].get('user_id')}")
     print(f"Conversation: {_test_data['conversation']['id']}")
 
 
