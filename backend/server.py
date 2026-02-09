@@ -64,6 +64,14 @@ except ImportError as e:
     BANNER_ROUTES_AVAILABLE = False
     logging.warning(f"Banner routes not available: {e}")
 
+# Escrow & Online Selling System
+try:
+    from escrow_system import create_escrow_router
+    ESCROW_ROUTES_AVAILABLE = True
+except ImportError as e:
+    ESCROW_ROUTES_AVAILABLE = False
+    logging.warning(f"Escrow routes not available: {e}")
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
