@@ -1327,6 +1327,29 @@ SENDGRID_FROM_NAME=Marketplace
 - Risk alerts for overdue requests and critical incidents
 - Upcoming deadlines view
 
+**10. Legal Text Management** (NEW - Feb 9, 2026)
+- Document types: Privacy Policy, Terms of Service, Cookie Policy, DPA, Acceptable Use Policy
+- Version control with automatic version incrementing
+- Draft → Published → Archived workflow
+- Country-specific document variants (with global fallback)
+- Force re-acceptance option for published documents
+- User acceptance tracking with IP address and timestamp
+- Changelog support for version differences
+
+**11. Sandbox Mode** (NEW - Feb 9, 2026)
+- Generate fake DSAR requests with randomized statuses and deadlines
+- Create test incidents with various severity levels
+- Configurable: fake users count, DSARs count, incidents count
+- PII sample toggle for realistic testing
+- Auto-cleanup on disable with reset_on_disable option
+- Clear sandbox data markers (is_sandbox: true)
+
+**12. Role-Based Access Control** (NEW - Feb 9, 2026)
+- Protected write operations (create, update, delete, publish)
+- Read operations public for admin dashboard access
+- Compliance roles: super_admin, compliance_officer, admin
+- Audit logging for all write operations
+
 ### API Endpoints:
 - `GET /api/compliance/dashboard` - DSAR summary, incidents, risk indicators
 - `GET /api/compliance/dsar` - List DSAR requests with filters
@@ -1343,9 +1366,17 @@ SENDGRID_FROM_NAME=Marketplace
 - `GET/POST /api/compliance/consent/{user_id}` - Manage user consents
 - `POST /api/compliance/export/{user_id}` - Export user data
 - `POST /api/compliance/delete/{user_id}` - Delete/anonymize user data
+- **NEW** `GET /api/compliance/legal-documents` - List legal documents
+- **NEW** `POST /api/compliance/legal-documents` - Create legal document
+- **NEW** `PUT /api/compliance/legal-documents/{id}` - Update draft document
+- **NEW** `POST /api/compliance/legal-documents/{id}/publish` - Publish document
+- **NEW** `GET /api/compliance/legal-documents/check-acceptance/{user_id}` - Check user acceptance status
+- **NEW** `POST /api/compliance/legal-documents/accept` - Record user acceptance
+- **NEW** `GET /api/compliance/sandbox/config` - Get sandbox configuration
+- **NEW** `PUT /api/compliance/sandbox/config` - Update sandbox mode (enable/disable)
 
 ### Admin Dashboard UI:
-- 6 tabs: DSAR Requests, Consent Management, Data Retention, Incidents, Third Parties, Audit Logs
+- 8 tabs: DSAR Requests, Consent Management, Data Retention, Incidents, Third Parties, Audit Logs, **Legal Docs**, **Sandbox**
 - Risk indicator alerts at top of page
 - Dashboard stats cards (Pending, In Progress, Completed, Overdue, Open Incidents, 3rd Parties)
 - DSAR table with filters (Status, Type) and quick actions
