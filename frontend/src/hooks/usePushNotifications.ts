@@ -37,6 +37,12 @@ export function usePushNotifications() {
 
   // Register for push notifications
   const registerForPushNotifications = useCallback(async () => {
+    // Push notifications not supported on web
+    if (Platform.OS === 'web') {
+      console.log('Push notifications not supported on web');
+      return null;
+    }
+    
     if (!Device.isDevice) {
       setState(prev => ({ ...prev, error: 'Push notifications require a physical device' }));
       return null;
