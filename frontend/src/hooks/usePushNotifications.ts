@@ -203,16 +203,28 @@ export function usePushNotifications() {
 
   // Get badge count
   const getBadgeCount = async () => {
+    // Badge count not supported on web
+    if (Platform.OS === 'web') {
+      return 0;
+    }
     return await Notifications.getBadgeCountAsync();
   };
 
   // Set badge count
   const setBadgeCount = async (count: number) => {
+    // Badge count not supported on web
+    if (Platform.OS === 'web') {
+      return;
+    }
     await Notifications.setBadgeCountAsync(count);
   };
 
   // Clear all notifications
   const clearAllNotifications = async () => {
+    // Not supported on web
+    if (Platform.OS === 'web') {
+      return;
+    }
     await Notifications.dismissAllNotificationsAsync();
     await setBadgeCount(0);
   };
