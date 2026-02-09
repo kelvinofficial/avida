@@ -453,6 +453,27 @@ def create_listings_router(
         # Increment views
         await db.listings.update_one({"id": listing_id}, {"$inc": {"views": 1}})
         
+        # Track behavior for smart notifications (if user is authenticated)
+        user = await get_current_user(request)
+        if user:
+            try:
+                # Import smart notification service for behavior tracking
+                from smart_notifications import SmartNotificationService
+                smart_service = SmartNotificationService(db)
+                await smart_service.track_behavior(
+                    user_id=user.user_id,
+                    event_type="view_listing",
+                    entity_id=listing_id,
+                    entity_type="listing",
+                    metadata={
+                        "category_id": listing.get("category_id"),
+                        "price": listing.get("price"),
+                        "title": listing.get("title"),
+                    }
+                )
+            except Exception as e:
+                logger.debug(f"Behavior tracking failed: {e}")
+        
         # Get seller data
         embedded_seller = listing.get("seller")
         
