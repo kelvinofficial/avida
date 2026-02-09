@@ -88,6 +88,14 @@ except ImportError as e:
     SMS_SERVICE_AVAILABLE = False
     logging.warning(f"SMS service not available: {e}")
 
+# Multi-Channel Notification Service
+try:
+    from notification_service import create_notification_router, NotificationService, TransportPartnerService
+    NOTIFICATION_SERVICE_AVAILABLE = True
+except ImportError as e:
+    NOTIFICATION_SERVICE_AVAILABLE = False
+    logging.warning(f"Notification service not available: {e}")
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
