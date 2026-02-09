@@ -58,10 +58,12 @@ class TestDirectAIAnalyzerEndpoints:
         assert get_response.status_code == 200
         original_settings = get_response.json()
         
-        # Update settings
+        # Update settings - endpoint expects 'updates' and 'admin_id' as separate body fields
         update_payload = {
-            "enabled": True,
-            "max_uses_per_day_free": 5,
+            "updates": {
+                "enabled": True,
+                "max_uses_per_day_free": 5
+            },
             "admin_id": "test_admin"
         }
         
@@ -80,7 +82,9 @@ class TestDirectAIAnalyzerEndpoints:
         
         # Restore original value
         restore_payload = {
-            "max_uses_per_day_free": original_settings.get("max_uses_per_day_free", 3),
+            "updates": {
+                "max_uses_per_day_free": original_settings.get("max_uses_per_day_free", 3)
+            },
             "admin_id": "test_admin"
         }
         requests.put(f"{BASE_URL}/api/ai-analyzer/admin/settings", json=restore_payload)
