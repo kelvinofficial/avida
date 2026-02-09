@@ -377,6 +377,18 @@ export default function ConfigManagerPage() {
     }
   }, [environment]);
 
+  const fetchDeploymentTemplates = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE}/config-manager/templates`);
+      if (response.ok) {
+        const data = await response.json();
+        setDeploymentTemplates(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch deployment templates:', error);
+    }
+  }, []);
+
   // Initial load and environment change
   useEffect(() => {
     const loadData = async () => {
@@ -390,11 +402,12 @@ export default function ConfigManagerPage() {
         fetchHealthCheck(),
         fetchAuditLogs(),
         fetchScheduledDeployments(),
+        fetchDeploymentTemplates(),
       ]);
       setLoading(false);
     };
     loadData();
-  }, [fetchGlobalSettings, fetchFeatureFlags, fetchCountryConfigs, fetchApiKeys, fetchPendingApprovals, fetchHealthCheck, fetchAuditLogs, fetchScheduledDeployments]);
+  }, [fetchGlobalSettings, fetchFeatureFlags, fetchCountryConfigs, fetchApiKeys, fetchPendingApprovals, fetchHealthCheck, fetchAuditLogs, fetchScheduledDeployments, fetchDeploymentTemplates]);
 
   // Save global settings
   const handleSaveGlobal = async () => {
