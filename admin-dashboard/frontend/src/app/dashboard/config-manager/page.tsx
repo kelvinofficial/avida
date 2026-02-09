@@ -170,6 +170,30 @@ interface HealthCheck {
   last_check: string;
 }
 
+interface ScheduledDeployment {
+  id: string;
+  name: string;
+  description?: string;
+  environment: string;
+  config_type: string;
+  config_changes: Record<string, any>;
+  scheduled_at: string;
+  duration_hours?: number;
+  status: string;
+  enable_auto_rollback: boolean;
+  rollback_on_error_rate: number;
+  rollback_on_metric_drop: number;
+  metric_to_monitor?: string;
+  monitoring_period_minutes: number;
+  original_values?: Record<string, any>;
+  deployed_at?: string;
+  rolled_back_at?: string;
+  rollback_reason?: string;
+  completed_at?: string;
+  created_by: string;
+  created_at: string;
+}
+
 const ENVIRONMENTS: Environment[] = ['production', 'staging', 'sandbox', 'development'];
 
 const ENV_COLORS: Record<Environment, 'error' | 'warning' | 'info' | 'success'> = {
@@ -177,6 +201,15 @@ const ENV_COLORS: Record<Environment, 'error' | 'warning' | 'info' | 'success'> 
   staging: 'warning',
   sandbox: 'info',
   development: 'success',
+};
+
+const DEPLOYMENT_STATUS_COLORS: Record<string, 'success' | 'error' | 'warning' | 'info' | 'default'> = {
+  pending: 'warning',
+  active: 'success',
+  completed: 'success',
+  rolled_back: 'error',
+  cancelled: 'default',
+  failed: 'error',
 };
 
 export default function ConfigManagerPage() {
@@ -194,6 +227,7 @@ export default function ConfigManagerPage() {
   const [pendingApprovals, setPendingApprovals] = useState<ConfigApproval[]>([]);
   const [healthCheck, setHealthCheck] = useState<HealthCheck | null>(null);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [scheduledDeployments, setScheduledDeployments] = useState<ScheduledDeployment[]>([]);
 
   // Dialog states
   const [editGlobalOpen, setEditGlobalOpen] = useState(false);
