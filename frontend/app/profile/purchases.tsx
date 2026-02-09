@@ -8,6 +8,7 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,19 +24,81 @@ const COLORS = {
   text: '#212121',
   textSecondary: '#757575',
   border: '#E0E0E0',
-  success: '#388E3C',
-  warning: '#F57C00',
-  info: '#1976D2',
+  success: '#16A34A',
+  warning: '#F59E0B',
+  info: '#1565C0',
+  error: '#DC2626',
 };
+
+interface Order {
+  id: string;
+  listing_id: string;
+  status: string;
+  total_amount: number;
+  transport_cost: number;
+  vat_amount: number;
+  currency: string;
+  delivery_method: string;
+  delivery_address?: any;
+  created_at: string;
+  shipped_at?: string;
+  delivered_at?: string;
+  item?: {
+    title: string;
+    price: number;
+    image_url?: string;
+  };
+  seller?: {
+    name: string;
+  };
+  escrow_status?: string;
+}
 
 const getStatusConfig = (status: string) => {
   switch (status) {
-    case 'pending': return { color: COLORS.warning, icon: 'time-outline', label: 'Pending' };
-    case 'paid': return { color: COLORS.info, icon: 'card-outline', label: 'Paid' };
-    case 'delivered': return { color: COLORS.success, icon: 'checkmark-circle-outline', label: 'Delivered' };
-    case 'cancelled': return { color: COLORS.textSecondary, icon: 'close-circle-outline', label: 'Cancelled' };
-    default: return { color: COLORS.textSecondary, icon: 'help-outline', label: status };
+    case 'pending_payment':
+      return { color: COLORS.textSecondary, icon: 'time-outline', label: 'Awaiting Payment', bg: '#F3F4F6' };
+    case 'paid':
+      return { color: COLORS.info, icon: 'shield-checkmark', label: 'In Escrow', bg: '#DBEAFE' };
+    case 'shipped':
+      return { color: COLORS.warning, icon: 'airplane', label: 'Shipped', bg: '#FEF3C7' };
+    case 'delivered':
+      return { color: COLORS.primary, icon: 'checkmark-done', label: 'Delivered', bg: COLORS.primaryLight };
+    case 'completed':
+      return { color: COLORS.success, icon: 'checkmark-circle', label: 'Completed', bg: '#DCFCE7' };
+    case 'disputed':
+      return { color: COLORS.error, icon: 'warning', label: 'Disputed', bg: '#FEE2E2' };
+    case 'refunded':
+      return { color: COLORS.textSecondary, icon: 'return-down-back', label: 'Refunded', bg: '#F3F4F6' };
+    case 'cancelled':
+      return { color: COLORS.textSecondary, icon: 'close-circle', label: 'Cancelled', bg: '#F3F4F6' };
+    default:
+      return { color: COLORS.textSecondary, icon: 'help-outline', label: status, bg: '#F3F4F6' };
   }
+};
+
+const getEscrowInfo = (status: string) => {
+  switch (status) {
+    case 'paid':
+      return { message: 'Payment held securely in escrow', showAction: false };
+    case 'shipped':
+      return { message: 'Confirm when you receive your item', showAction: true, action: 'confirm' };
+    case 'delivered':
+      return { message: 'Waiting for your confirmation', showAction: true, action: 'confirm' };
+    default:
+      return null;
+  }
+};
+
+const formatPrice = (price: number, currency: string = 'EUR') => {
+  const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', TZS: 'TSh' };
+  return `${symbols[currency] || currency} ${price?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || '0.00'}`;
+};
+
+const getImageUri = (img: string | undefined) => {
+  if (!img) return 'https://via.placeholder.com/80';
+  if (img.startsWith('data:') || img.startsWith('http')) return img;
+  return `data:image/jpeg;base64,${img}`;
 };
 
 // Skeleton Loader
@@ -50,32 +113,106 @@ const SkeletonItem = () => (
   </View>
 );
 
-// Purchase Item
-const PurchaseItem = ({ item, onPress }: { item: any; onPress: () => void }) => {
-  const listing = item.listing || {};
-  const statusConfig = getStatusConfig(item.status || 'pending');
+// Order Item Component
+const OrderItem = ({ 
+  order, 
+  onPress, 
+  onConfirmDelivery,
+  onOpenDispute,
+  processing 
+}: { 
+  order: Order; 
+  onPress: () => void;
+  onConfirmDelivery: (orderId: string) => void;
+  onOpenDispute: (orderId: string) => void;
+  processing: string | null;
+}) => {
+  const statusConfig = getStatusConfig(order.status);
+  const escrowInfo = getEscrowInfo(order.status);
   
   return (
-    <TouchableOpacity style={styles.purchaseItem} onPress={onPress}>
-      <Image
-        source={{ uri: listing.images?.[0] || 'https://via.placeholder.com/80' }}
-        style={styles.itemImage}
-      />
-      <View style={styles.itemContent}>
-        <Text style={styles.itemTitle} numberOfLines={2}>{listing.title || 'Item'}</Text>
-        <Text style={styles.itemPrice}>€{listing.price?.toLocaleString()}</Text>
-        <View style={styles.statusRow}>
-          <Ionicons name={statusConfig.icon as any} size={14} color={statusConfig.color} />
-          <Text style={[styles.statusText, { color: statusConfig.color }]}>
-            {statusConfig.label}
+    <View style={styles.orderCard}>
+      <TouchableOpacity style={styles.orderContent} onPress={onPress}>
+        <Image
+          source={{ uri: getImageUri(order.item?.image_url) }}
+          style={styles.orderImage}
+        />
+        <View style={styles.orderDetails}>
+          <Text style={styles.orderTitle} numberOfLines={2}>{order.item?.title || 'Item'}</Text>
+          <Text style={styles.orderPrice}>{formatPrice(order.total_amount, order.currency)}</Text>
+          
+          <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
+            <Ionicons name={statusConfig.icon as any} size={14} color={statusConfig.color} />
+            <Text style={[styles.statusText, { color: statusConfig.color }]}>
+              {statusConfig.label}
+            </Text>
+          </View>
+          
+          <View style={styles.orderMeta}>
+            <Ionicons 
+              name={order.delivery_method === 'pickup' ? 'location-outline' : 'car-outline'} 
+              size={12} 
+              color={COLORS.textSecondary} 
+            />
+            <Text style={styles.orderMetaText}>
+              {order.delivery_method === 'pickup' ? 'Pickup' : 'Delivery'}
+            </Text>
+            <Text style={styles.orderMetaText}>•</Text>
+            <Text style={styles.orderMetaText}>
+              {new Date(order.created_at).toLocaleDateString()}
+            </Text>
+          </View>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+      </TouchableOpacity>
+      
+      {/* Escrow Info Banner */}
+      {escrowInfo && (
+        <View style={styles.escrowBanner}>
+          <View style={styles.escrowInfo}>
+            <Ionicons name="shield-checkmark-outline" size={16} color={COLORS.info} />
+            <Text style={styles.escrowText}>{escrowInfo.message}</Text>
+          </View>
+        </View>
+      )}
+      
+      {/* Action Buttons */}
+      {(order.status === 'shipped' || order.status === 'delivered') && (
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            style={styles.confirmBtn}
+            onPress={() => onConfirmDelivery(order.id)}
+            disabled={processing === order.id}
+          >
+            {processing === order.id ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <>
+                <Ionicons name="checkmark-circle" size={18} color="#fff" />
+                <Text style={styles.confirmBtnText}>Confirm Received</Text>
+              </>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.disputeBtn}
+            onPress={() => onOpenDispute(order.id)}
+          >
+            <Ionicons name="alert-circle-outline" size={18} color={COLORS.error} />
+            <Text style={styles.disputeBtnText}>Report Issue</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      
+      {/* Shipped Tracking Info */}
+      {order.status === 'shipped' && order.shipped_at && (
+        <View style={styles.trackingInfo}>
+          <Ionicons name="time-outline" size={14} color={COLORS.warning} />
+          <Text style={styles.trackingText}>
+            Shipped {new Date(order.shipped_at).toLocaleDateString()}
           </Text>
         </View>
-        <Text style={styles.itemDate}>
-          Purchased {new Date(item.created_at).toLocaleDateString()}
-        </Text>
-      </View>
-      <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
-    </TouchableOpacity>
+      )}
+    </View>
   );
 };
 
@@ -86,37 +223,25 @@ const EmptyState = () => (
       <Ionicons name="bag-outline" size={48} color={COLORS.textSecondary} />
     </View>
     <Text style={styles.emptyTitle}>No purchases yet</Text>
-    <Text style={styles.emptySubtitle}>Items you buy will appear here</Text>
+    <Text style={styles.emptySubtitle}>Items you buy with escrow protection will appear here</Text>
   </View>
 );
 
 export default function PurchasesScreen() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
-  const [purchases, setPurchases] = useState<any[]>([]);
+  const { isAuthenticated, user } = useAuthStore();
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [processing, setProcessing] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'completed'>('all');
 
-  const fetchPurchases = useCallback(async (pageNum: number = 1, refresh: boolean = false) => {
+  const fetchOrders = useCallback(async (refresh: boolean = false) => {
     try {
-      const response = await api.get('/profile/activity/purchases', {
-        params: { page: pageNum, limit: 20 },
-      });
-      
-      const newPurchases = response.data.purchases || [];
-      
-      if (refresh || pageNum === 1) {
-        setPurchases(newPurchases);
-      } else {
-        setPurchases(prev => [...prev, ...newPurchases]);
-      }
-      
-      setHasMore(newPurchases.length === 20);
-      setPage(pageNum);
+      const response = await api.get('/escrow/buyer/orders');
+      setOrders(response.data.orders || []);
     } catch (error) {
-      console.error('Error fetching purchases:', error);
+      console.error('Error fetching orders:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -125,22 +250,82 @@ export default function PurchasesScreen() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchPurchases(1, true);
+      fetchOrders(true);
     } else {
       setLoading(false);
     }
-  }, [isAuthenticated, fetchPurchases]);
+  }, [isAuthenticated, fetchOrders]);
 
   const handleRefresh = () => {
     setRefreshing(true);
-    fetchPurchases(1, true);
+    fetchOrders(true);
   };
 
-  const handleLoadMore = () => {
-    if (!loading && hasMore) {
-      fetchPurchases(page + 1);
+  const handleConfirmDelivery = async (orderId: string) => {
+    Alert.alert(
+      'Confirm Delivery',
+      'Are you sure you received this item? This will release the payment to the seller.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Confirm',
+          onPress: async () => {
+            setProcessing(orderId);
+            try {
+              await api.post(`/escrow/orders/${orderId}/confirm`);
+              Alert.alert('Success', 'Delivery confirmed. Payment has been released to the seller.');
+              fetchOrders(true);
+            } catch (error: any) {
+              Alert.alert('Error', error.response?.data?.detail || 'Failed to confirm delivery');
+            } finally {
+              setProcessing(null);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleOpenDispute = (orderId: string) => {
+    Alert.alert(
+      'Report an Issue',
+      'What issue do you want to report?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Item Not Received',
+          onPress: () => submitDispute(orderId, 'not_received', 'I have not received this item'),
+        },
+        {
+          text: 'Item Not as Described',
+          onPress: () => submitDispute(orderId, 'not_as_described', 'The item is different from the listing'),
+        },
+      ]
+    );
+  };
+
+  const submitDispute = async (orderId: string, reason: string, description: string) => {
+    setProcessing(orderId);
+    try {
+      await api.post(`/escrow/orders/${orderId}/dispute`, {
+        reason,
+        description,
+      });
+      Alert.alert('Dispute Opened', 'Our team will review your case and get back to you.');
+      fetchOrders(true);
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to open dispute');
+    } finally {
+      setProcessing(null);
     }
   };
+
+  const filteredOrders = orders.filter((order) => {
+    if (activeTab === 'all') return true;
+    if (activeTab === 'active') return ['paid', 'shipped', 'delivered'].includes(order.status);
+    if (activeTab === 'completed') return ['completed', 'refunded'].includes(order.status);
+    return true;
+  });
 
   if (!isAuthenticated) {
     return (
@@ -149,7 +334,7 @@ export default function PurchasesScreen() {
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color={COLORS.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Purchases</Text>
+          <Text style={styles.headerTitle}>My Purchases</Text>
           <View style={{ width: 24 }} />
         </View>
         <View style={styles.centerContent}>
@@ -169,8 +354,38 @@ export default function PurchasesScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Purchases</Text>
+        <Text style={styles.headerTitle}>My Purchases</Text>
         <View style={{ width: 24 }} />
+      </View>
+
+      {/* Tabs */}
+      <View style={styles.tabsContainer}>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'all' && styles.tabActive]}
+          onPress={() => setActiveTab('all')}
+        >
+          <Text style={[styles.tabText, activeTab === 'all' && styles.tabTextActive]}>All</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'active' && styles.tabActive]}
+          onPress={() => setActiveTab('active')}
+        >
+          <Text style={[styles.tabText, activeTab === 'active' && styles.tabTextActive]}>Active</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'completed' && styles.tabActive]}
+          onPress={() => setActiveTab('completed')}
+        >
+          <Text style={[styles.tabText, activeTab === 'completed' && styles.tabTextActive]}>Completed</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Escrow Protection Banner */}
+      <View style={styles.protectionBanner}>
+        <Ionicons name="shield-checkmark" size={20} color={COLORS.primary} />
+        <Text style={styles.protectionText}>
+          All purchases are protected by escrow. Funds released only after you confirm delivery.
+        </Text>
       </View>
 
       {loading && !refreshing ? (
@@ -178,34 +393,29 @@ export default function PurchasesScreen() {
           data={[1, 2, 3, 4, 5]}
           keyExtractor={(item) => item.toString()}
           renderItem={() => <SkeletonItem />}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={styles.listContent}
         />
       ) : (
         <FlatList
-          data={purchases}
-          keyExtractor={(item, index) => item.conversation_id || index.toString()}
+          data={filteredOrders}
+          keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <PurchaseItem
-              item={item}
-              onPress={() => router.push(`/chat/${item.conversation_id}`)}
+            <OrderItem
+              order={item}
+              onPress={() => router.push(`/listing/${item.listing_id}`)}
+              onConfirmDelivery={handleConfirmDelivery}
+              onOpenDispute={handleOpenDispute}
+              processing={processing}
             />
           )}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={<EmptyState />}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
               colors={[COLORS.primary]}
-              tintColor={COLORS.primary}
             />
-          }
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          ListEmptyComponent={<EmptyState />}
-          ListFooterComponent={
-            hasMore && purchases.length > 0 ? (
-              <ActivityIndicator style={{ padding: 20 }} color={COLORS.primary} />
-            ) : null
           }
         />
       )}
@@ -214,89 +424,256 @@ export default function PurchasesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    padding: 16,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
-  centerContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 16,
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
   },
-  loginMessage: { fontSize: 15, color: COLORS.textSecondary },
-  signInBtn: {
+  tabsContainer: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    gap: 8,
+  },
+  tab: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: COLORS.background,
+  },
+  tabActive: {
     backgroundColor: COLORS.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 10,
   },
-  signInBtnText: { fontSize: 15, fontWeight: '600', color: '#fff' },
-  list: { padding: 16 },
-  purchaseItem: {
+  tabText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+  },
+  tabTextActive: {
+    color: '#fff',
+  },
+  protectionBanner: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  protectionText: {
+    flex: 1,
+    fontSize: 12,
+    color: COLORS.primary,
+  },
+  listContent: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  orderCard: {
     backgroundColor: COLORS.surface,
     borderRadius: 12,
-    padding: 12,
     marginBottom: 12,
-    gap: 12,
+    overflow: 'hidden',
   },
-  itemImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 8,
-    backgroundColor: COLORS.border,
-  },
-  itemContent: { flex: 1, gap: 2 },
-  itemTitle: { fontSize: 15, fontWeight: '600', color: COLORS.text },
-  itemPrice: { fontSize: 16, fontWeight: '700', color: COLORS.primary },
-  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  statusText: { fontSize: 12, fontWeight: '600' },
-  itemDate: { fontSize: 12, color: COLORS.textSecondary },
-  skeletonItem: {
+  orderContent: {
     flexDirection: 'row',
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
     padding: 12,
-    marginBottom: 12,
-    gap: 12,
+    alignItems: 'center',
   },
-  skeletonImage: {
+  orderImage: {
     width: 70,
     height: 70,
     borderRadius: 8,
-    backgroundColor: COLORS.border,
+    backgroundColor: COLORS.background,
   },
-  skeletonContent: { flex: 1, gap: 8 },
-  skeletonLine: {
-    height: 14,
-    backgroundColor: COLORS.border,
-    borderRadius: 4,
+  orderDetails: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  orderTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  orderPrice: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginBottom: 6,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+    marginBottom: 6,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  orderMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  orderMetaText: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+  },
+  escrowBanner: {
+    backgroundColor: '#F0F9FF',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#E0F2FE',
+  },
+  escrowInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  escrowText: {
+    fontSize: 12,
+    color: COLORS.info,
+    flex: 1,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    padding: 12,
+    paddingTop: 0,
+    gap: 8,
+  },
+  confirmBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.primary,
+    paddingVertical: 10,
+    borderRadius: 8,
+    gap: 6,
+  },
+  confirmBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  disputeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FEE2E2',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    gap: 4,
+  },
+  disputeBtnText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: COLORS.error,
+  },
+  trackingInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 6,
+  },
+  trackingText: {
+    fontSize: 12,
+    color: '#92400E',
   },
   emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 60,
   },
   emptyIcon: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: COLORS.surface,
-    justifyContent: 'center',
+    backgroundColor: COLORS.background,
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 16,
   },
-  emptyTitle: { fontSize: 18, fontWeight: '600', color: COLORS.text, marginBottom: 8 },
-  emptySubtitle: { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center' },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    maxWidth: 280,
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loginMessage: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    marginTop: 16,
+    marginBottom: 24,
+  },
+  signInBtn: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  signInBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  skeletonItem: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.surface,
+    padding: 12,
+    marginBottom: 12,
+    borderRadius: 12,
+  },
+  skeletonImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 8,
+    backgroundColor: COLORS.background,
+  },
+  skeletonContent: {
+    flex: 1,
+    marginLeft: 12,
+    gap: 8,
+  },
+  skeletonLine: {
+    height: 14,
+    backgroundColor: COLORS.background,
+    borderRadius: 4,
+  },
 });
