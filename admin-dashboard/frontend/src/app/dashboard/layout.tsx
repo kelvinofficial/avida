@@ -54,6 +54,7 @@ import {
   Palette,
   Security,
   SettingsApplications,
+  Groups,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
@@ -76,6 +77,7 @@ const menuItems = [
   { text: 'Analytics', icon: <Analytics />, path: '/dashboard/analytics' },
   { text: 'Banners', icon: <Campaign />, path: '/dashboard/banners' },
   { text: 'Moderation', icon: <Shield />, path: '/dashboard/moderation' },
+  { text: 'Team Management', icon: <Groups />, path: '/dashboard/team-management' },
   { text: 'Data Privacy', icon: <Security />, path: '/dashboard/compliance' },
   { text: 'Config Manager', icon: <SettingsApplications />, path: '/dashboard/config-manager' },
   { text: 'Notifications', icon: <NotificationsActive />, path: '/dashboard/notifications' },
