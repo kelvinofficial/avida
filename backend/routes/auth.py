@@ -217,6 +217,26 @@ def create_auth_router(db, get_current_user, get_session_token, check_rate_limit
         
         # Return user without password hash
         user_doc = {k: v for k, v in user.items() if k not in ["_id", "password_hash"]}
+        
+        # Track cohort event for user login
+        try:
+            import httpx
+            async with httpx.AsyncClient() as client:
+                await client.post(
+                    "http://localhost:8001/api/cohort-analytics/events/track",
+                    json={
+                        "user_id": user["user_id"],
+                        "event_type": "login",
+                        "properties": {
+                            "auth_provider": "email"
+                        },
+                        "session_id": session_token
+                    },
+                    timeout=2.0
+                )
+        except Exception as e:
+            logger.debug(f"Cohort event tracking failed: {e}")
+        
         return {"user": user_doc, "session_token": session_token, "message": "Login successful"}
     
     @router.post("/session")
