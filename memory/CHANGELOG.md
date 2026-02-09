@@ -1,5 +1,32 @@
 # Changelog
 
+## [2026-02-09] - Main App Pages Updated for Sandbox Mode
+
+### Updated - Home Page (`/app/frontend/app/(tabs)/index.tsx`)
+- Now uses `sandboxAwareListingsApi` when sandbox mode is active
+- Fetches listings from sandbox_listings collection
+- Uses `sandboxAwareCategoriesApi` for categories
+- Added `useSandbox` hook for sandbox context
+
+### Updated - Search Page (`/app/frontend/app/(tabs)/search.tsx`)
+- Search results now come from sandbox_listings when in sandbox mode
+- Uses `sandboxUtils.isActive()` check before API calls
+
+### Updated - Listing Detail (`/app/frontend/app/listing/[id].tsx`)
+- Uses `sandboxAwareListingsApi.getOne()` for sandbox listings
+- Enables "Buy Online" for all sandbox listings (for testing)
+- Skips activity tracking in sandbox mode
+
+### How It Works
+1. Admin enters sandbox from Admin Dashboard
+2. Opens main app (or clicks "Preview App")
+3. SandboxContext detects active session from AsyncStorage
+4. All API calls route through sandbox proxy endpoints
+5. Home, Search, Listing pages show sandbox_* collection data
+6. Orange "SANDBOX MODE" banner visible at all times
+
+---
+
 ## [2026-02-09] - Sandbox Data Filtering
 
 ### Added - Sandbox Proxy Endpoints
