@@ -165,6 +165,17 @@ export default function CohortAnalyticsPage() {
     threshold: 50,
   });
 
+  // Weekly Reports states
+  const [weeklyReport, setWeeklyReport] = useState<any>(null);
+  const [reportHistory, setReportHistory] = useState<any[]>([]);
+  const [reportSchedule, setReportSchedule] = useState<any>(null);
+  const [sendingReport, setSendingReport] = useState(false);
+  const [generatingReport, setGeneratingReport] = useState(false);
+  const [checkingAlerts, setCheckingAlerts] = useState(false);
+  const [triggeredAlerts, setTriggeredAlerts] = useState<any[]>([]);
+  const [reportRecipients, setReportRecipients] = useState('');
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+
   // Fetch dashboard data
   const fetchDashboard = useCallback(async () => {
     setLoading(true);
