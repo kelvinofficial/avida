@@ -2137,7 +2137,8 @@ class TeamWorkflowService:
     ) -> Dict:
         """Send email notification via SendGrid"""
         import os
-        import httpx
+        from sendgrid import SendGridAPIClient
+        from sendgrid.helpers.mail import Mail, Email, To, Content
         
         sendgrid_key = os.environ.get("SENDGRID_API_KEY")
         if not sendgrid_key:
@@ -2168,31 +2169,22 @@ class TeamWorkflowService:
         """
         
         try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    "https://api.sendgrid.com/v3/mail/send",
-                    headers={
-                        "Authorization": f"Bearer {sendgrid_key}",
-                        "Content-Type": "application/json"
-                    },
-                    json={
-                        "personalizations": [{"to": [{"email": to_email}]}],
-                        "from": {"email": from_email, "name": "Admin Dashboard"},
-                        "subject": subject,
-                        "content": [
-                            {"type": "text/plain", "value": content},
-                            {"type": "text/html", "value": html_content}
-                        ]
-                    },
-                    timeout=30.0
-                )
-                
-                if response.status_code in [200, 202]:
-                    logger.info(f"Email sent to {to_email}: {subject}")
-                    return {"success": True, "message": "Email sent successfully"}
-                else:
-                    logger.error(f"SendGrid error: {response.status_code} - {response.text}")
-                    return {"success": False, "error": f"SendGrid error: {response.status_code}"}
+            message = Mail(
+                from_email=Email(from_email, "Admin Dashboard"),
+                to_emails=To(to_email),
+                subject=subject,
+                html_content=Content("text/html", html_content)
+            )
+            
+            sg = SendGridAPIClient(sendgrid_key)
+            response = sg.send(message)
+            
+            if response.status_code in [200, 202]:
+                logger.info(f"Email sent to {to_email}: {subject}")
+                return {"success": True, "message": "Email sent successfully", "status_code": response.status_code}
+            else:
+                logger.error(f"SendGrid error: {response.status_code} - {response.body}")
+                return {"success": False, "error": f"SendGrid error: {response.status_code}"}
         except Exception as e:
             logger.error(f"Failed to send email: {e}")
             return {"success": False, "error": str(e)}
