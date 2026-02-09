@@ -1676,6 +1676,79 @@ def create_moderation_router(db, require_admin_auth, moderation_manager: ChatMod
             "actions_24h": recent_actions
         }
     
+    # =========================================================================
+    # MODERATOR MANAGEMENT
+    # =========================================================================
+    
+    @router.get("/moderators")
+    async def get_moderators(request: Request):
+        """Get list of all moderators"""
+        admin = await require_admin_auth(request)
+        
+        moderators = await db.users.find(
+            {"$or": [
+                {"is_moderator": True},
+                {"is_admin": True},
+                {"role": {"$in": ["moderator", "admin", "super_admin"]}}
+            ]},
+            {"_id": 0, "password_hash": 0}
+        ).to_list(100)
+        
+        return {"moderators": moderators}
+    
+    @router.post("/moderators/{user_id}")
+    async def add_moderator(user_id: str, request: Request):
+        """Add a user as moderator"""
+        admin = await require_admin_auth(request)
+        
+        # Check if user exists
+        user = await db.users.find_one({"user_id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Update user to be moderator
+        await db.users.update_one(
+            {"user_id": user_id},
+            {"$set": {"is_moderator": True, "role": "moderator"}}
+        )
+        
+        # Log action
+        await db.moderation_actions.insert_one({
+            "id": str(uuid.uuid4()),
+            "action_type": "add_moderator",
+            "target_type": "user",
+            "target_id": user_id,
+            "admin_id": admin["admin_id"],
+            "admin_name": admin.get("name", admin["email"]),
+            "created_at": datetime.now(timezone.utc)
+        })
+        
+        return {"message": f"User {user_id} is now a moderator"}
+    
+    @router.delete("/moderators/{user_id}")
+    async def remove_moderator(user_id: str, request: Request):
+        """Remove moderator role from user"""
+        admin = await require_admin_auth(request)
+        
+        # Update user
+        await db.users.update_one(
+            {"user_id": user_id},
+            {"$set": {"is_moderator": False}, "$unset": {"role": ""}}
+        )
+        
+        # Log action
+        await db.moderation_actions.insert_one({
+            "id": str(uuid.uuid4()),
+            "action_type": "remove_moderator",
+            "target_type": "user",
+            "target_id": user_id,
+            "admin_id": admin["admin_id"],
+            "admin_name": admin.get("name", admin["email"]),
+            "created_at": datetime.now(timezone.utc)
+        })
+        
+        return {"message": f"User {user_id} is no longer a moderator"}
+    
     return router
 
 
