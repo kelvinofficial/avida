@@ -181,6 +181,36 @@ export default function QAReliabilityPage() {
         const data = await auditRes.json();
         setAuditLogs(data.logs || []);
       }
+      
+      // Fetch new enhanced features data
+      const [flowHistoryRes, sessionSummaryRes, integrityHistoryRes, currentMetricsRes, thresholdsRes, failsafeRes, retryRes, realtimeRes] = await Promise.all([
+        fetch(`${API_BASE}/qa/flow-tests/history?limit=10`),
+        fetch(`${API_BASE}/qa/sessions/summary`),
+        fetch(`${API_BASE}/qa/integrity/history?limit=10`),
+        fetch(`${API_BASE}/qa/monitoring/metrics`),
+        fetch(`${API_BASE}/qa/monitoring/thresholds`),
+        fetch(`${API_BASE}/qa/failsafe/status`),
+        fetch(`${API_BASE}/qa/retry/config`),
+        fetch(`${API_BASE}/qa/realtime/subscriptions`),
+      ]);
+      
+      if (flowHistoryRes.ok) {
+        const data = await flowHistoryRes.json();
+        setFlowTestHistory(data.tests || []);
+      }
+      if (sessionSummaryRes.ok) setSessionReplaySummary(await sessionSummaryRes.json());
+      if (integrityHistoryRes.ok) {
+        const data = await integrityHistoryRes.json();
+        setIntegrityHistory(data.checks || []);
+      }
+      if (currentMetricsRes.ok) setCurrentMetrics(await currentMetricsRes.json());
+      if (thresholdsRes.ok) setMonitoringThresholds(await thresholdsRes.json());
+      if (failsafeRes.ok) setFailsafeStatus(await failsafeRes.json());
+      if (retryRes.ok) setRetryConfig(await retryRes.json());
+      if (realtimeRes.ok) {
+        const data = await realtimeRes.json();
+        setRealtimeSubscriptions(data.subscriptions || []);
+      }
     } catch (err) {
       setError('Failed to fetch QA data');
     } finally {
@@ -208,6 +238,92 @@ export default function QAReliabilityPage() {
       console.error('Failed to run QA checks:', err);
     } finally {
       setRunningQaChecks(false);
+    }
+  };
+
+  // Run Flow Tests
+  const runFlowTests = async () => {
+    setRunningFlowTests(true);
+    try {
+      const res = await fetch(`${API_BASE}/qa/flow-tests/run`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setFlowTests(data);
+        fetchData(); // Refresh history
+      }
+    } catch (err) {
+      console.error('Failed to run flow tests:', err);
+    } finally {
+      setRunningFlowTests(false);
+    }
+  };
+
+  // Run Data Integrity Check
+  const runIntegrityCheck = async () => {
+    setRunningIntegrityCheck(true);
+    try {
+      const res = await fetch(`${API_BASE}/qa/integrity/run`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setIntegrityResults(data);
+        fetchData(); // Refresh history
+      }
+    } catch (err) {
+      console.error('Failed to run integrity check:', err);
+    } finally {
+      setRunningIntegrityCheck(false);
+    }
+  };
+
+  // Add monitoring threshold
+  const addMonitoringThreshold = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/qa/monitoring/thresholds`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...newThreshold, admin_id: 'admin' }),
+      });
+      if (res.ok) {
+        setThresholdDialogOpen(false);
+        setNewThreshold({ metric_name: '', threshold_type: 'above', threshold_value: 0, alert_severity: 'warning' });
+        fetchData();
+      }
+    } catch (err) {
+      console.error('Failed to add threshold:', err);
+    }
+  };
+
+  // Delete monitoring threshold
+  const deleteMonitoringThreshold = async (metricName: string) => {
+    try {
+      await fetch(`${API_BASE}/qa/monitoring/thresholds/${metricName}`, { method: 'DELETE' });
+      fetchData();
+    } catch (err) {
+      console.error('Failed to delete threshold:', err);
+    }
+  };
+
+  // Trigger retry
+  const triggerRetry = async (jobType: string) => {
+    try {
+      await fetch(`${API_BASE}/qa/retry/trigger/${jobType}`, { method: 'POST' });
+      fetchData();
+    } catch (err) {
+      console.error('Failed to trigger retry:', err);
+    }
+  };
+
+  // View session replay
+  const viewSessionReplay = async (sessionId: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/qa/sessions/${sessionId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSelectedSession(data);
+        setSessionDetailDialogOpen(true);
+      }
+    } catch (err) {
+      console.error('Failed to fetch session:', err);
     }
   };
 
