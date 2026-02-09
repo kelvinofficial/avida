@@ -5735,6 +5735,13 @@ if SMS_SERVICE_AVAILABLE:
     app.include_router(api_router)  # Re-include to pick up SMS routes
     logger.info("SMS Notification service loaded successfully")
 
+# Multi-Channel Notification Service Routes
+if NOTIFICATION_SERVICE_AVAILABLE:
+    notification_router, notification_service, transport_partner_service = create_notification_router(db, get_current_user, require_auth)
+    api_router.include_router(notification_router)
+    app.include_router(api_router)  # Re-include to pick up notification routes
+    logger.info("Multi-Channel Notification service loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
