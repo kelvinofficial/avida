@@ -53,6 +53,24 @@ def create_favorites_router(db, require_auth):
         # Update favorites count
         await db.listings.update_one({"id": listing_id}, {"$inc": {"favorites_count": 1}})
         
+        # Track behavior for smart notifications
+        try:
+            from smart_notifications import SmartNotificationService
+            smart_service = SmartNotificationService(db)
+            await smart_service.track_behavior(
+                user_id=user.user_id,
+                event_type="save_listing",
+                entity_id=listing_id,
+                entity_type="listing",
+                metadata={
+                    "category_id": listing.get("category_id"),
+                    "price": listing.get("price"),
+                    "title": listing.get("title"),
+                }
+            )
+        except Exception as e:
+            logger.debug(f"Behavior tracking failed: {e}")
+        
         return {"message": "Added to favorites"}
     
     @router.delete("/{listing_id}")
