@@ -125,6 +125,6 @@ export default function RootLayout() {
         <Stack.Screen name="auto/index" options={{ presentation: 'card' }} />
         <Stack.Screen name="auto/[id]" options={{ presentation: 'card' }} />
       </Stack>
-    </>
+    </ErrorBoundary>
   );
 }
