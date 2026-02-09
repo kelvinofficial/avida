@@ -6,7 +6,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://cohort-qa-system.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://user-csv-import.preview.emergentagent.com')
 
 # Test credentials
 TEST_EMAIL = "seller@test.com"
