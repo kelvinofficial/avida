@@ -371,6 +371,50 @@ Comprehensive analytics system for measuring user behavior, engagement, and long
 
 ### Testing: 53/53 backend tests passed (29 original + 24 new)
 
+### Cohort Comparison Feature Added (Feb 9, 2026):
+
+**Overview:**
+Compare retention and engagement metrics between different user segments side-by-side.
+
+**Segments Available:**
+- User Type: seller, buyer, hybrid
+- Platform: mobile, web
+- Country: dynamic from user data
+- Acquisition Source: dynamic from user data
+
+**Metrics Compared:**
+- D7 Retention %
+- D30 Retention %
+- Lifetime Value (LTV)
+- Engagement Score (avg events/user)
+- Conversion Rate %
+- Time to First Action
+
+**Features:**
+- Side-by-side comparison table with color-coded retention
+- Winners calculation for each metric
+- Visual bar chart comparison
+- Configurable time period (30/60/90/180 days)
+
+**New API Endpoints:**
+- `GET /api/cohort-analytics/segments/available` - Available segments & metrics
+- `POST /api/cohort-analytics/compare` - Compare cohort segments
+
+### Scheduled Background Tasks Added (Feb 9, 2026):
+
+**Alert Checking Task:**
+- Runs every 15 minutes automatically
+- Initial 60-second delay on startup
+- Creates notifications for breached thresholds
+- Logs all runs to `scheduled_task_logs` collection
+
+**Manual Triggers:**
+- `POST /api/cohort-analytics/scheduled/alert-check` - Manual alert check
+- `POST /api/cohort-analytics/scheduled/weekly-report` - Manual report generation
+- `GET /api/cohort-analytics/scheduled/logs` - View task history
+
+### Testing: 70/70 backend tests passed (53 previous + 17 new)
+
 ---
 
 ### Pending Tasks (P1)
