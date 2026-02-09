@@ -68,7 +68,8 @@ def setup_module(module):
         "email": other_email
     }
     
-    # Create listing by OTHER user
+    # Create listing using OTHER's token
+    print(f"\nCreating listing with OTHER's token: {_test_data['other']['token'][:20]}...")
     listing_data = {
         "title": f"Test Listing for Report API {uuid.uuid4().hex[:8]}",
         "description": "Test listing for report functionality",
@@ -85,14 +86,19 @@ def setup_module(module):
         json=listing_data,
         headers={"Authorization": f"Bearer {_test_data['other']['token']}"}
     )
+    print(f"Listing creation: {list_resp.status_code}")
     assert list_resp.status_code in [200, 201], f"Failed to create listing: {list_resp.text}"
     _test_data['listing'] = list_resp.json()
+    print(f"Listing owner: {_test_data['listing'].get('user_id')}")
+    print(f"Other user_id: {_test_data['other']['user_id']}")
     
     # Create conversation - REPORTER starts chat on OTHER's listing
+    print(f"\nCreating conversation with REPORTER's token: {_test_data['reporter']['token'][:20]}...")
     conv_resp = session.post(
         f"{BASE_URL}/api/conversations?listing_id={_test_data['listing']['id']}",
         headers={"Authorization": f"Bearer {_test_data['reporter']['token']}"}
     )
+    print(f"Conversation creation: {conv_resp.status_code} - {conv_resp.text[:200] if conv_resp.status_code != 200 else 'OK'}")
     assert conv_resp.status_code in [200, 201], f"Failed to create conversation: {conv_resp.text}"
     _test_data['conversation'] = conv_resp.json()
     
