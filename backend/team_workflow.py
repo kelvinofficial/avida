@@ -484,6 +484,8 @@ class TeamWorkflowService:
         self.audit_log = db.team_audit_log
         self.shifts = db.team_shifts
         self.notifications = db.team_notifications
+        self.email_templates = db.team_email_templates
+        self.sender_verifications = db.team_sender_verifications
 
     # -------------------------------------------------------------------------
     # INITIALIZATION
