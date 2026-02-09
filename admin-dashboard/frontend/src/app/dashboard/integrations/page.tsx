@@ -137,13 +137,13 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
 };
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  messaging: <MessageSquare />,
+  messaging: <Message />,
   email: <Mail />,
   payments: <CreditCard />,
   analytics: <BarChart />,
-  ai_services: <Cpu />,
-  push_notifications: <Bell />,
-  other: <Truck />,
+  ai_services: <Memory />,
+  push_notifications: <Notifications />,
+  other: <LocalShipping />,
 };
 
 const CATEGORY_NAMES: Record<string, string> = {
