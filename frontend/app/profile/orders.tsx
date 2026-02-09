@@ -57,11 +57,13 @@ interface Order {
 export default function SellerOrdersScreen() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
+  const { isSandboxMode, sandboxSession } = useSandbox();
   
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [processingOrder, setProcessingOrder] = useState<string | null>(null);
+  const [isSandbox, setIsSandbox] = useState(false);
   const [stats, setStats] = useState({
     pending: 0,
     shipped: 0,
@@ -71,28 +73,65 @@ export default function SellerOrdersScreen() {
   });
   
   useEffect(() => {
-    if (!isAuthenticated) {
+    // In sandbox mode, don't require auth
+    checkAndFetch();
+  }, [isAuthenticated, isSandboxMode]);
+  
+  const checkAndFetch = async () => {
+    const sandboxActive = await sandboxUtils.isActive();
+    setIsSandbox(sandboxActive);
+    
+    if (!sandboxActive && !isAuthenticated) {
       router.replace('/login?redirect=/profile/orders');
       return;
     }
     fetchOrders();
-  }, [isAuthenticated]);
+  };
   
   const fetchOrders = async () => {
     try {
-      const response = await api.get('/escrow/seller/orders');
-      setOrders(response.data.orders || []);
+      const sandboxActive = await sandboxUtils.isActive();
+      
+      let ordersData: Order[] = [];
+      
+      if (sandboxActive) {
+        // Fetch sandbox orders
+        const session = await sandboxUtils.getSession();
+        const userId = session?.sandbox_user_id;
+        
+        if (userId) {
+          const response = await api.get(`/sandbox/proxy/orders/${userId}`);
+          ordersData = response.data || [];
+          
+          // Add mock listing and buyer data for sandbox orders
+          ordersData = ordersData.map((order: Order) => ({
+            ...order,
+            listing: order.listing || {
+              title: `[SANDBOX] Order Item`,
+              images: ['https://picsum.photos/seed/' + order.id + '/200/200']
+            },
+            buyer: order.buyer || { name: 'Sandbox Buyer' },
+            sandbox_mode: true
+          }));
+        }
+      } else {
+        // Normal production flow
+        const response = await api.get('/escrow/seller/orders');
+        ordersData = response.data.orders || [];
+      }
+      
+      setOrders(ordersData);
       
       // Calculate stats
-      const pending = response.data.orders?.filter((o: Order) => o.status === 'paid').length || 0;
-      const shipped = response.data.orders?.filter((o: Order) => o.status === 'shipped').length || 0;
-      const completed = response.data.orders?.filter((o: Order) => o.status === 'completed').length || 0;
-      const totalEarnings = response.data.orders
-        ?.filter((o: Order) => o.status === 'completed')
-        .reduce((sum: number, o: Order) => sum + (o.total_amount - o.commission_amount), 0) || 0;
-      const inEscrow = response.data.orders
-        ?.filter((o: Order) => ['paid', 'shipped'].includes(o.status))
-        .reduce((sum: number, o: Order) => sum + o.total_amount, 0) || 0;
+      const pending = ordersData.filter((o: Order) => o.status === 'paid' || o.status === 'pending').length;
+      const shipped = ordersData.filter((o: Order) => o.status === 'shipped' || o.status === 'in_transit').length;
+      const completed = ordersData.filter((o: Order) => o.status === 'completed').length;
+      const totalEarnings = ordersData
+        .filter((o: Order) => o.status === 'completed')
+        .reduce((sum: number, o: Order) => sum + ((o.total_amount || o.total || 0) - (o.commission_amount || o.commission || 0)), 0);
+      const inEscrow = ordersData
+        .filter((o: Order) => ['paid', 'shipped', 'funded'].includes(o.status))
+        .reduce((sum: number, o: Order) => sum + (o.total_amount || o.total || 0), 0);
       
       setStats({
         pending,
