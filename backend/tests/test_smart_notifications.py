@@ -18,7 +18,7 @@ import uuid
 import time
 
 # Base URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://user-notify-1.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://smart-notify-ai.preview.emergentagent.com').rstrip('/')
 
 
 class TestSmartNotificationAdminEndpoints:

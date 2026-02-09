@@ -170,7 +170,7 @@ export default function CheckoutScreen() {
       });
       
       const order = orderResponse.data.order;
-      const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://user-notify-1.preview.emergentagent.com';
+      const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://smart-notify-ai.preview.emergentagent.com';
       
       // Create payment
       let paymentResponse;
