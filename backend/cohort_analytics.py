@@ -1314,7 +1314,7 @@ class CohortAnalyticsService:
     
     async def check_alerts_and_notify(self) -> Dict:
         """Check all enabled alerts and trigger notifications for breached thresholds"""
-        alerts = await self.get_all_alerts()
+        alerts = await self.get_alerts()
         engagement = await self.get_engagement_metrics()
         heatmap = await self.get_retention_heatmap()
         
