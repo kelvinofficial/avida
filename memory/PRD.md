@@ -166,6 +166,34 @@ Build a comprehensive admin dashboard for a marketplace application with feature
     - `GET /api/notifications/queue/stats` - Queue statistics
     - `GET /api/notifications/queue/failed` - Failed messages list
     - `POST /api/notifications/queue/{id}/retry` - Retry failed message
+- [x] **AI Listing Photo Analyzer - Complete** (Feb 9)
+  - **Backend AI Service** (`/app/backend/ai_listing_analyzer.py`):
+    - Hybrid AI: OpenAI GPT-4o (vision) + Claude Sonnet 4.5 (text generation)
+    - Image analysis: Detects category, brand, model, color, condition, features
+    - Text generation: SEO-friendly titles, bullet-point descriptions, attributes
+    - Image hash caching (24-hour expiry) to reduce API costs
+    - User access control with daily limits (Free: 3, Verified: 10, Premium: 50)
+    - Safety filters: profanity filter, policy compliance, blocked terms
+    - Fallback content generation if AI fails
+  - **Admin Dashboard** (`/app/admin-dashboard/frontend/src/app/dashboard/ai-analyzer/page.tsx`):
+    - Settings tab: Global toggle, usage limits (sliders), access control
+    - Analytics tab: Total calls, acceptance/edit/rejection rates, daily chart
+    - System Prompts tab: Editable vision and text generation prompts
+    - Cache management: Clear cache button with count display
+  - **Frontend Integration** (`/app/frontend/app/post/index.tsx`):
+    - Auto-triggers AI analysis when first image uploaded
+    - "Analyzing photos..." loading state
+    - AI Suggestions panel with detected info and suggested content
+    - Accept All, Use Individual Fields, Regenerate, Dismiss options
+    - User feedback tracking (accepted/edited/rejected)
+    - Disclaimer: "AI suggestions may not be 100% accurate"
+  - **API Endpoints**:
+    - `POST /api/ai-analyzer/analyze` - Analyze images and get suggestions
+    - `GET /api/ai-analyzer/check-access/{user_id}` - Check user limits
+    - `POST /api/ai-analyzer/feedback` - Submit user action feedback
+    - `GET/PUT /api/ai-analyzer/admin/settings` - Admin settings
+    - `GET /api/ai-analyzer/admin/analytics` - Usage analytics
+    - `POST /api/ai-analyzer/admin/clear-cache` - Clear AI cache
 
 ### Analytics System Details
 
