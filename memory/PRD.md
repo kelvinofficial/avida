@@ -1115,6 +1115,74 @@ SENDGRID_FROM_NAME=Marketplace
 
 ---
 
+## Platform Configuration & Brand Manager - Complete (Feb 9, 2026)
+
+**Status:** COMPLETE - Centralized platform configuration system implemented and tested
+
+### Features Implemented:
+
+**1. Currency Management**
+- Add/enable/disable currencies
+- Set default platform currency
+- Per-country currency support (ISO country codes)
+- Configure: symbol, decimal precision, rounding rules
+- FX rate management (manual entry)
+- Lock currencies for escrow transactions
+
+**2. Branding & Logos**
+- Upload/manage 7 logo types: Primary, Dark, Light, App Icon, Favicon, Email, Splash
+- Versioned uploads with rollback support
+- Preview on App/Web/Emails
+- Local file storage at `/app/backend/uploads/branding/`
+
+**3. Static & Legal Pages**
+- Create/manage: Privacy Policy, Terms & Conditions, Cookie Policy, About Us, Help/FAQ
+- Rich HTML content (WYSIWYG-ready)
+- Draft/Published states with version history
+- Force re-acceptance when legal pages change
+- Country-specific versions support
+
+**4. External Links & Social Media**
+- Social media links: Facebook, Instagram, X (Twitter), TikTok, LinkedIn, YouTube
+- Placement controls: Footer, Profile, Header, Share Dialogs
+- Icon style: Mono or Brand Color
+- Global enable/disable
+
+**5. App Store Links**
+- Google Play Store, Apple App Store, Huawei AppGallery
+- Country-specific links
+- Show/hide badges
+- Deep-link support
+
+**6. Multi-Environment Support**
+- Production and Staging environments
+- Configs isolated per environment
+- Environment selector in Admin UI
+
+**7. Permissions & Safety**
+- All changes logged with Who/What/When
+- Config versioning with rollback
+- Fail-safe: App loads last known good config
+- Cached configs with hot reload
+
+### API Endpoints:
+- `GET/PUT /api/platform/config/{environment}` - Config management
+- `GET/POST/PUT /api/platform/currencies/{environment}` - Currency CRUD
+- `POST /api/platform/branding/{environment}/upload` - Logo uploads
+- `GET/POST/PUT/DELETE /api/platform/legal-pages/{environment}` - Legal pages
+- `PUT /api/platform/social-links/{environment}` - Social links
+- `PUT /api/platform/app-store-links/{environment}` - App store links
+- `GET /api/platform/audit-logs/{environment}` - Audit logs
+- `GET /api/platform/public/config` - Public API for app/web
+
+### Files Added:
+- `/app/backend/platform_config.py` - Backend service (~1000 lines)
+- `/app/admin-dashboard/frontend/src/app/dashboard/platform-config/page.tsx` - Admin UI
+
+### Testing: 30/30 tests passed
+
+---
+
 ## Upcoming: Smart Notification System - Future Enhancements
 
 **Backlog:**
