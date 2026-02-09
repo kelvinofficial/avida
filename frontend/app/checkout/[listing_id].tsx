@@ -201,48 +201,91 @@ export default function CheckoutScreen() {
     
     setProcessing(true);
     try {
-      // Create order
-      const orderResponse = await api.post('/escrow/orders/create', {
-        listing_id: listing.id,
-        quantity: 1,
-        delivery_method: deliveryMethod,
-        delivery_address: deliveryMethod === 'door_delivery' ? deliveryAddress : null,
-        payment_method: paymentMethod,
-        notes: '',
-      });
-      
-      const order = orderResponse.data.order;
-      const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://cohort-qa-system.preview.emergentagent.com';
-      
-      // Create payment
-      let paymentResponse;
-      if (paymentMethod === 'mobile_money') {
-        paymentResponse = await api.post('/payments/mobile-money', {
-          order_id: order.id,
-          phone_number: mobilePhone,
-          origin_url: originUrl,
+      if (isSandbox) {
+        // SANDBOX MODE: Use sandbox proxy API for order creation
+        const session = await sandboxUtils.getSession();
+        
+        // Create sandbox order through proxy
+        const orderResponse = await api.post('/sandbox/proxy/order', {
+          session_id: session?.id,
+          listing_id: listing.id,
+          shipping_address: deliveryMethod === 'door_delivery' ? deliveryAddress : {
+            full_name: 'Sandbox Buyer',
+            phone: '+255700000000',
+            address: 'Pickup Point'
+          }
         });
         
-        Alert.alert(
-          'Payment Initiated',
-          'Please check your phone to authorize the M-Pesa payment.',
-          [{ text: 'OK', onPress: () => router.push(`/checkout/pending?order_id=${order.id}&tx_ref=${paymentResponse.data.tx_ref}`) }]
-        );
+        const order = orderResponse.data.order;
+        
+        // Process mock payment through sandbox
+        const paymentResponse = await api.post('/sandbox/payment/process', {
+          order_id: order.id,
+          amount: priceBreakdown.total_amount,
+          method: paymentMethod,
+          simulate_failure: false
+        });
+        
+        if (paymentResponse.data.success) {
+          // Sandbox payment successful - show success page
+          Alert.alert(
+            'Sandbox Order Complete',
+            `Order ${order.id} created successfully!\n\nThis is a sandbox transaction - no real payment was processed.`,
+            [{ 
+              text: 'View Order', 
+              onPress: () => router.push(`/checkout/success?order_id=${order.id}&sandbox=true`) 
+            }]
+          );
+        } else {
+          Alert.alert(
+            'Sandbox Payment Simulated Failure',
+            'This is a test - the payment was intentionally failed for testing purposes.',
+            [{ text: 'OK' }]
+          );
+        }
       } else {
-        paymentResponse = await api.post('/payments/create', {
-          order_id: order.id,
-          provider: paymentMethod,
-          origin_url: originUrl,
+        // PRODUCTION MODE: Normal order creation flow
+        const orderResponse = await api.post('/escrow/orders/create', {
+          listing_id: listing.id,
+          quantity: 1,
+          delivery_method: deliveryMethod,
+          delivery_address: deliveryMethod === 'door_delivery' ? deliveryAddress : null,
+          payment_method: paymentMethod,
+          notes: '',
         });
         
-        // Redirect to payment provider
-        if (paymentResponse.data.checkout_url) {
-          if (typeof window !== 'undefined') {
-            window.location.href = paymentResponse.data.checkout_url;
+        const order = orderResponse.data.order;
+        const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://cohort-qa-system.preview.emergentagent.com';
+        
+        // Create payment
+        let paymentResponse;
+        if (paymentMethod === 'mobile_money') {
+          paymentResponse = await api.post('/payments/mobile-money', {
+            order_id: order.id,
+            phone_number: mobilePhone,
+            origin_url: originUrl,
+          });
+          
+          Alert.alert(
+            'Payment Initiated',
+            'Please check your phone to authorize the M-Pesa payment.',
+            [{ text: 'OK', onPress: () => router.push(`/checkout/pending?order_id=${order.id}&tx_ref=${paymentResponse.data.tx_ref}`) }]
+          );
+        } else {
+          paymentResponse = await api.post('/payments/create', {
+            order_id: order.id,
+            provider: paymentMethod,
+            origin_url: originUrl,
+          });
+          
+          // Redirect to payment provider
+          if (paymentResponse.data.checkout_url) {
+            if (typeof window !== 'undefined') {
+              window.location.href = paymentResponse.data.checkout_url;
+            }
           }
         }
       }
-      
     } catch (error: any) {
       console.error('Order creation error:', error);
       Alert.alert('Error', error.response?.data?.detail || 'Failed to create order. Please try again.');
