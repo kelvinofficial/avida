@@ -8,9 +8,10 @@ Centralized configuration service for managing platform behavior across:
 - Config versioning & rollback
 - 2-admin approval workflow for critical configs
 - Preview/simulation mode
+- Scheduled deployments with background scheduler
 """
 
-from fastapi import APIRouter, HTTPException, Body, Query, Request
+from fastapi import APIRouter, HTTPException, Body, Query, Request, BackgroundTasks
 from pydantic import BaseModel, Field
 from typing import Dict, List, Any, Optional, Literal
 from datetime import datetime, timezone, timedelta
@@ -19,9 +20,14 @@ import uuid
 import json
 import hashlib
 import logging
+import asyncio
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 logger = logging.getLogger(__name__)
+
+# Global scheduler state
+_scheduler_task: Optional[asyncio.Task] = None
+_scheduler_running = False
 
 # =========================================================================
 # ENUMS
