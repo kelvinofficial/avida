@@ -2419,7 +2419,7 @@ def create_qa_reliability_router(db: AsyncIOMotorDatabase):
     @router.post("/retry/trigger/{job_type}")
     async def trigger_retry_job(
         job_type: str,
-        job_id: Optional[str] = Body(None)
+        job_id: Optional[str] = Body(None, embed=True)
     ):
         """Manually trigger retry for a specific job type or ID"""
         return await service.trigger_retry_job(job_type, job_id)
@@ -2442,7 +2442,7 @@ def create_qa_reliability_router(db: AsyncIOMotorDatabase):
         return await service.subscribe_admin_to_alerts(admin_id, alert_types)
 
     @router.post("/realtime/unsubscribe")
-    async def unsubscribe_admin_alerts(admin_id: str = Body(...)):
+    async def unsubscribe_admin_alerts(admin_id: str = Body(..., embed=True)):
         """Unsubscribe admin from real-time alerts"""
         return await service.unsubscribe_admin_from_alerts(admin_id)
 
