@@ -228,41 +228,7 @@ class Listing(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-class ListingCreate(BaseModel):
-    title: str
-    description: str
-    price: float
-    currency: str = "EUR"
-    negotiable: bool = True
-    category_id: str
-    subcategory: Optional[str] = None
-    condition: Optional[str] = None
-    images: List[str] = []
-    location: str
-    attributes: Dict[str, Any] = {}
-    # Seller preferences
-    accepts_offers: bool = True
-    accepts_exchanges: bool = False
-    contact_methods: List[str] = ["chat"]  # chat, whatsapp, call
-    whatsapp_number: Optional[str] = None
-    phone_number: Optional[str] = None
-
-class ListingUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    price: Optional[float] = None
-    negotiable: Optional[bool] = None
-    condition: Optional[str] = None
-    images: Optional[List[str]] = None
-    location: Optional[str] = None
-    attributes: Optional[Dict[str, Any]] = None
-    status: Optional[str] = None
-    # Seller preferences
-    accepts_offers: Optional[bool] = None
-    accepts_exchanges: Optional[bool] = None
-    contact_methods: Optional[List[str]] = None
-    whatsapp_number: Optional[str] = None
-    phone_number: Optional[str] = None
+# ListingCreate and ListingUpdate models moved to routes/listings.py
 
 # Conversation and Message Models
 class Message(BaseModel):
