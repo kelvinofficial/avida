@@ -627,7 +627,7 @@ class EscrowService:
                 "title": listing.get("title", ""),
                 "price": listing.get("price", 0),
                 "quantity": quantity,
-                "image_url": listing.get("images", [None])[0],
+                "image_url": listing.get("images", [None])[0] if listing.get("images") else None,
                 "category_id": listing.get("category_id"),
                 "weight_kg": listing.get("weight_kg", 1.0)
             },
