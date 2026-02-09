@@ -3876,4 +3876,97 @@ def create_smart_notification_router(db, get_current_user, require_auth):
         )
         return {"message": "Daily stats reset", "reset_at": datetime.now(timezone.utc).isoformat()}
     
+    # =========================================================================
+    # PHASE 6: AI PERSONALIZATION ENDPOINTS
+    # =========================================================================
+    
+    @router.get("/admin/ai-personalization/config")
+    async def get_ai_personalization_config():
+        """Get AI personalization configuration"""
+        config = await service.ai_personalization.get_config()
+        config["ai_available"] = AI_PERSONALIZATION_ENABLED
+        return config
+    
+    @router.put("/admin/ai-personalization/config")
+    async def update_ai_personalization_config(updates: Dict[str, Any] = Body(...)):
+        """Update AI personalization configuration"""
+        return await service.ai_personalization.update_config(updates)
+    
+    @router.get("/admin/ai-personalization/analytics")
+    async def get_ai_personalization_analytics(days: int = Query(30)):
+        """Get AI personalization analytics"""
+        return await service.ai_personalization.get_analytics(days)
+    
+    @router.post("/admin/ai-personalization/test")
+    async def test_ai_personalization(
+        user_id: str = Body(...),
+        trigger_type: str = Body(...),
+        context: Dict[str, Any] = Body({}),
+        style: Optional[str] = Body(None)
+    ):
+        """Test AI personalization for a user without sending notification"""
+        if not AI_PERSONALIZATION_ENABLED:
+            raise HTTPException(status_code=503, detail="AI personalization not available")
+        
+        # Generate sample base content
+        base_content = {
+            "title": "New item in {{category}}",
+            "body": "{{listing_title}} is now available for {{currency}}{{price}}"
+        }
+        
+        # Render with context
+        for key, value in context.items():
+            if value:
+                base_content["title"] = base_content["title"].replace(f"{{{{{key}}}}}", str(value))
+                base_content["body"] = base_content["body"].replace(f"{{{{{key}}}}}", str(value))
+        
+        result = await service.ai_personalization.personalize_notification(
+            user_id=user_id,
+            trigger_type=trigger_type,
+            base_content=base_content,
+            context=context,
+            style=style
+        )
+        
+        return {
+            "original": base_content,
+            "personalized": result,
+            "user_id": user_id,
+            "trigger_type": trigger_type
+        }
+    
+    @router.post("/admin/ai-personalization/generate-variants")
+    async def generate_notification_variants(
+        trigger_type: str = Body(...),
+        context: Dict[str, Any] = Body({}),
+        styles: Optional[List[str]] = Body(None),
+        count: int = Body(3)
+    ):
+        """Generate multiple notification variants for A/B testing"""
+        if not AI_PERSONALIZATION_ENABLED:
+            raise HTTPException(status_code=503, detail="AI personalization not available")
+        
+        variants = await service.ai_personalization.generate_variants(
+            trigger_type=trigger_type,
+            context=context,
+            styles=styles,
+            count=min(count, 5)  # Max 5 variants
+        )
+        
+        return {
+            "trigger_type": trigger_type,
+            "variants": variants,
+            "count": len(variants)
+        }
+    
+    @router.get("/admin/ai-personalization/styles")
+    async def get_personalization_styles():
+        """Get available personalization styles"""
+        return {
+            "styles": [
+                {"id": style.value, "name": style.name.replace("_", " ").title()}
+                for style in PersonalizationStyle
+            ]
+        }
+    
     return router, service
