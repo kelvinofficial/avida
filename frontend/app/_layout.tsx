@@ -107,7 +107,7 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <ErrorBoundary componentName="RootLayout">
       <StatusBar style="dark" />
       <Stack
         screenOptions={{

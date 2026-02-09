@@ -21,13 +21,28 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle auth errors
+// Handle auth errors and log API errors to QA system
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    // Handle 401 auth errors
     if (error.response?.status === 401) {
       useAuthStore.getState().logout();
     }
+    
+    // Log API errors to QA system (only for actual errors, not 401s which are handled separately)
+    if (error.response?.status !== 401 && error.config?.url) {
+      // Dynamic import to avoid circular dependency
+      try {
+        const { logApiError } = await import('./errorLogger');
+        const userId = useAuthStore.getState().user?.user_id;
+        logApiError(error.config.url, error, { userId });
+      } catch (logErr) {
+        // Silently fail if error logging fails
+        console.error('Failed to log API error:', logErr);
+      }
+    }
+    
     return Promise.reject(error);
   }
 );
