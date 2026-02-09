@@ -435,7 +435,7 @@ export default function TeamManagementPage() {
       const response = await fetch(`${API_BASE}/team/tasks/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, updated_by: 'admin' }),
+        body: JSON.stringify({ updates: { status }, updated_by: 'admin' }),
       });
       
       if (response.ok) {
