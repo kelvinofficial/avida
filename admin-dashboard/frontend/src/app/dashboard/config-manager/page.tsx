@@ -342,6 +342,18 @@ export default function ConfigManagerPage() {
     }
   }, [environment]);
 
+  const fetchScheduledDeployments = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE}/config-manager/scheduled-deployments?environment=${environment}`);
+      if (response.ok) {
+        const data = await response.json();
+        setScheduledDeployments(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch scheduled deployments:', error);
+    }
+  }, [environment]);
+
   // Initial load and environment change
   useEffect(() => {
     const loadData = async () => {
@@ -354,11 +366,12 @@ export default function ConfigManagerPage() {
         fetchPendingApprovals(),
         fetchHealthCheck(),
         fetchAuditLogs(),
+        fetchScheduledDeployments(),
       ]);
       setLoading(false);
     };
     loadData();
-  }, [fetchGlobalSettings, fetchFeatureFlags, fetchCountryConfigs, fetchApiKeys, fetchPendingApprovals, fetchHealthCheck, fetchAuditLogs]);
+  }, [fetchGlobalSettings, fetchFeatureFlags, fetchCountryConfigs, fetchApiKeys, fetchPendingApprovals, fetchHealthCheck, fetchAuditLogs, fetchScheduledDeployments]);
 
   // Save global settings
   const handleSaveGlobal = async () => {
