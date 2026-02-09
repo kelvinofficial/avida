@@ -2140,6 +2140,18 @@ export default function ChatScreen() {
           </View>
         )}
       </KeyboardAvoidingView>
+
+      {/* Report Modal */}
+      <ReportModal
+        visible={reportModalVisible}
+        onClose={() => {
+          setReportModalVisible(false);
+          setReportingMessage(null);
+        }}
+        onSubmit={handleSubmitReport}
+        messageContent={reportingMessage?.content}
+        loading={reportLoading}
+      />
     </SafeAreaView>
   );
 }
