@@ -2529,6 +2529,182 @@ const styles = StyleSheet.create({
   },
 });
 
+// AI Analyzer Styles
+const aiStyles = StyleSheet.create({
+  analyzingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    backgroundColor: COLORS.primaryLight,
+    borderRadius: 12,
+    marginTop: 16,
+    gap: 10,
+  },
+  analyzingText: {
+    color: COLORS.primary,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#FFF3E0',
+    borderRadius: 12,
+    marginTop: 16,
+    gap: 8,
+  },
+  errorText: {
+    flex: 1,
+    color: COLORS.warning,
+    fontSize: 13,
+  },
+  retryButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: COLORS.warning,
+    borderRadius: 6,
+  },
+  retryText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  suggestionsContainer: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 16,
+    borderWidth: 2,
+    borderColor: COLORS.primaryLight,
+  },
+  suggestionsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  suggestionsHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  suggestionsTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  disclaimer: {
+    fontSize: 12,
+    color: COLORS.warning,
+    backgroundColor: '#FFF8E1',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  detectedItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  detectedLabel: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    width: 80,
+  },
+  detectedValue: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.text,
+  },
+  suggestionField: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: COLORS.background,
+    borderRadius: 10,
+  },
+  suggestionLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.primary,
+    marginBottom: 6,
+  },
+  suggestionValue: {
+    fontSize: 14,
+    color: COLORS.text,
+    lineHeight: 20,
+    marginBottom: 10,
+  },
+  applyButton: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    backgroundColor: COLORS.primaryLight,
+    borderRadius: 6,
+  },
+  applyButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 20,
+  },
+  acceptAllButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+  },
+  acceptAllText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  regenerateButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    backgroundColor: COLORS.background,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  regenerateText: {
+    color: COLORS.primary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  viewSuggestionsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    marginTop: 12,
+    backgroundColor: COLORS.primaryLight,
+    borderRadius: 10,
+  },
+  viewSuggestionsText: {
+    color: COLORS.primary,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+});
+
 // Desktop-specific styles
 const desktopStyles = StyleSheet.create({
   container: {
