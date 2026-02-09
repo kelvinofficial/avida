@@ -633,6 +633,201 @@ class ChatModerationManager:
         ).to_list(1000)
         return [m["id"] for m in messages]
     
+    async def _notify_moderators_high_risk_message(
+        self,
+        flag_id: str,
+        conversation_id: str,
+        message_id: str,
+        risk_level: str,
+        reason_tags: List[str],
+        sender_id: str
+    ):
+        """Notify all moderators about high-risk flagged message"""
+        try:
+            # Get all users with moderator role
+            moderators = await self.db.users.find(
+                {"$or": [
+                    {"is_moderator": True},
+                    {"is_admin": True},
+                    {"role": {"$in": ["moderator", "admin", "super_admin"]}}
+                ]},
+                {"_id": 0, "user_id": 1, "name": 1, "push_token": 1}
+            ).to_list(100)
+            
+            if not moderators:
+                logger.info("No moderators found to notify")
+                return
+            
+            # Get sender info
+            sender = await self.db.users.find_one(
+                {"user_id": sender_id},
+                {"_id": 0, "name": 1, "email": 1}
+            )
+            sender_name = sender.get("name", "Unknown User") if sender else "Unknown User"
+            
+            # Get message content preview
+            message = await self.db.messages.find_one(
+                {"id": message_id},
+                {"_id": 0, "content": 1}
+            )
+            content_preview = (message.get("content", "")[:50] + "...") if message else "Message content unavailable"
+            
+            # Format reason tags for display
+            reason_display = ", ".join(reason_tags[:3])
+            if len(reason_tags) > 3:
+                reason_display += f" +{len(reason_tags) - 3} more"
+            
+            # Determine urgency
+            urgency = "URGENT: " if risk_level == "critical" else ""
+            risk_emoji = "🔴" if risk_level == "critical" else "🟠"
+            
+            notification_title = f"{risk_emoji} {urgency}High-Risk Message Detected"
+            notification_body = f"User: {sender_name}\nRisk: {risk_level.upper()}\nReasons: {reason_display}\n\"{content_preview}\""
+            
+            # Create notifications for all moderators
+            notification_time = datetime.now(timezone.utc)
+            for mod in moderators:
+                notification = {
+                    "id": str(uuid.uuid4()),
+                    "user_id": mod["user_id"],
+                    "type": "moderation_alert",
+                    "title": notification_title,
+                    "body": notification_body,
+                    "cta_label": "REVIEW",
+                    "cta_route": f"/dashboard/moderation?conversation={conversation_id}",
+                    "read": False,
+                    "created_at": notification_time,
+                    "meta": {
+                        "flag_id": flag_id,
+                        "conversation_id": conversation_id,
+                        "message_id": message_id,
+                        "risk_level": risk_level,
+                        "reason_tags": reason_tags,
+                        "sender_id": sender_id,
+                        "priority": "high" if risk_level == "critical" else "medium"
+                    }
+                }
+                
+                await self.db.notifications.insert_one(notification)
+                
+                # Send push notification if moderator has push token
+                if mod.get("push_token") and self._send_push_func:
+                    try:
+                        await self._send_push_func(
+                            mod["push_token"],
+                            notification_title,
+                            notification_body,
+                            {
+                                "type": "moderation_alert",
+                                "conversation_id": conversation_id,
+                                "flag_id": flag_id
+                            }
+                        )
+                    except Exception as push_error:
+                        logger.warning(f"Failed to send push to moderator {mod['user_id']}: {push_error}")
+            
+            logger.info(f"Notified {len(moderators)} moderators about high-risk message {message_id}")
+            
+        except Exception as e:
+            logger.error(f"Failed to notify moderators: {e}")
+    
+    async def _notify_moderators_new_report(
+        self,
+        report_id: str,
+        conversation_id: str,
+        reporter_id: str,
+        reported_user_id: str,
+        reason: str,
+        description: Optional[str] = None
+    ):
+        """Notify moderators about new user report"""
+        try:
+            # Get all moderators
+            moderators = await self.db.users.find(
+                {"$or": [
+                    {"is_moderator": True},
+                    {"is_admin": True},
+                    {"role": {"$in": ["moderator", "admin", "super_admin"]}}
+                ]},
+                {"_id": 0, "user_id": 1, "name": 1, "push_token": 1}
+            ).to_list(100)
+            
+            if not moderators:
+                return
+            
+            # Get reporter and reported user info
+            reporter = await self.db.users.find_one(
+                {"user_id": reporter_id},
+                {"_id": 0, "name": 1}
+            )
+            reported = await self.db.users.find_one(
+                {"user_id": reported_user_id},
+                {"_id": 0, "name": 1}
+            )
+            
+            reporter_name = reporter.get("name", "A user") if reporter else "A user"
+            reported_name = reported.get("name", "another user") if reported else "another user"
+            
+            # Map reason to readable text
+            reason_labels = {
+                "scam": "Scam/Fraud",
+                "abuse": "Abuse",
+                "fake_listing": "Fake Listing",
+                "off_platform_payment": "Off-Platform Payment",
+                "harassment": "Harassment",
+                "spam": "Spam",
+                "other": "Other"
+            }
+            reason_label = reason_labels.get(reason, reason)
+            
+            notification_title = "📢 New User Report Submitted"
+            notification_body = f"{reporter_name} reported {reported_name}\nReason: {reason_label}"
+            if description:
+                notification_body += f"\nDetails: {description[:100]}..."
+            
+            notification_time = datetime.now(timezone.utc)
+            for mod in moderators:
+                notification = {
+                    "id": str(uuid.uuid4()),
+                    "user_id": mod["user_id"],
+                    "type": "moderation_report",
+                    "title": notification_title,
+                    "body": notification_body,
+                    "cta_label": "REVIEW",
+                    "cta_route": f"/dashboard/moderation?tab=reports",
+                    "read": False,
+                    "created_at": notification_time,
+                    "meta": {
+                        "report_id": report_id,
+                        "conversation_id": conversation_id,
+                        "reporter_id": reporter_id,
+                        "reported_user_id": reported_user_id,
+                        "reason": reason
+                    }
+                }
+                
+                await self.db.notifications.insert_one(notification)
+                
+                # Send push notification
+                if mod.get("push_token") and self._send_push_func:
+                    try:
+                        await self._send_push_func(
+                            mod["push_token"],
+                            notification_title,
+                            notification_body,
+                            {
+                                "type": "moderation_report",
+                                "report_id": report_id
+                            }
+                        )
+                    except Exception as push_error:
+                        logger.warning(f"Failed to send push to moderator {mod['user_id']}: {push_error}")
+            
+            logger.info(f"Notified {len(moderators)} moderators about new report {report_id}")
+            
+        except Exception as e:
+            logger.error(f"Failed to notify moderators about report: {e}")
+
     async def _send_user_warning(self, user_id: str, reason_tags: List[str]):
         """Send warning notification to user"""
         await self.db.notifications.insert_one({
