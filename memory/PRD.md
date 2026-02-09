@@ -797,13 +797,73 @@ SENDGRID_FROM_NAME=Marketplace
 
 ---
 
-## Upcoming: Smart Notification System - Phase 2
+## Smart Notification System - Phase 2 Complete (Feb 9, 2026)
+
+**Status:** COMPLETE - All Phase 2 features implemented and tested
+
+### New Features in Phase 2:
+
+**1. Push Notification Deep Linking**
+- Users tap notifications to navigate directly to listings, conversations, or profiles
+- Implemented in `/app/frontend/src/utils/notifications.ts`
+- Hook: `useNotificationDeepLinking()` - handles notification tap events
+- Supports paths: `/listing/{id}`, `/chat/{id}`, `/user/{id}`, `/profile/{id}`
+- Automatic navigation based on trigger type (explore, favorites, inbox)
+
+**2. Conversion Tracking**
+- Track notification opens, clicks, and conversions
+- Attribution window: 24 hours
+- Track conversion types: purchase, message_sent, listing_saved, profile_view
+- Time-to-convert metrics
+- API Endpoints:
+  - `POST /api/smart-notifications/track/open/{notification_id}`
+  - `POST /api/smart-notifications/track/click/{notification_id}`
+  - `POST /api/smart-notifications/track/conversion/{notification_id}`
+  - `GET /api/smart-notifications/admin/conversions`
+
+**3. A/B Testing System**
+- Create tests with control + 2 variants
+- Configurable traffic split percentages
+- Track sent/opened/clicked/converted per variant
+- Automatic winner determination based on conversion rate
+- API Endpoints:
+  - `GET /api/smart-notifications/admin/ab-tests`
+  - `POST /api/smart-notifications/admin/ab-tests`
+  - `GET /api/smart-notifications/admin/ab-tests/{id}`
+  - `PUT /api/smart-notifications/admin/ab-tests/{id}`
+  - `POST /api/smart-notifications/admin/ab-tests/{id}/end`
+
+**4. Additional Triggers**
+- **Similar Listing Alerts**: Matches users based on recent searches and category interests
+- **Seller Reply Notifications**: High-priority alerts when seller responds to buyer inquiry
+  - Channels: push, email, in_app
+  - Deep links to conversation
+
+**5. Weekly Digest System**
+- Configurable schedule (day of week, hour)
+- Generates personalized digest based on user interests
+- Includes: new listings in categories, price drops on saved items
+- API Endpoints:
+  - `GET /api/smart-notifications/admin/weekly-digest/config`
+  - `PUT /api/smart-notifications/admin/weekly-digest/config`
+  - `POST /api/smart-notifications/admin/weekly-digest/send`
+  - `GET /api/smart-notifications/admin/weekly-digest/preview/{user_id}`
+
+### Files Added/Updated in Phase 2:
+- `backend/smart_notifications.py` - Updated with Phase 2 features (2000+ lines)
+- `frontend/src/utils/notifications.ts` - NEW: Deep linking and push utilities
+- `frontend/app/_layout.tsx` - Updated with notification handling
+
+### Testing: 55/55 tests passed (24 Phase 1 + 31 Phase 2)
+
+---
+
+## Upcoming: Smart Notification System - Phase 3
 
 **Not Started:**
-- Firebase Cloud Messaging integration for mobile push
-- Advanced trigger logic (similar listing alerts, seller reply alerts)
-- A/B testing for notification content
-- Conversion tracking (notification -> purchase)
-- Weekly digest email generation
-- Admin email template editor
+- Firebase Cloud Messaging full backend integration (FCM Admin SDK)
+- Admin email template editor with live preview
+- Scheduled notification campaigns
+- User segmentation rules
+- Multi-language notification templates
 
