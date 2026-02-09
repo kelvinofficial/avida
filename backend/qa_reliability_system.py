@@ -66,7 +66,9 @@ class AlertType(str, Enum):
     ESCROW_STUCK = "escrow_stuck"
     NOTIFICATION_FAILURE = "notification_failure"
     DATA_INTEGRITY = "data_integrity"
+    DATA_INTEGRITY_ISSUE = "data_integrity_issue"
     QA_CHECK_FAILED = "qa_check_failed"
+    THRESHOLD_BREACHED = "threshold_breached"
 
 
 class ErrorLog(BaseModel):
