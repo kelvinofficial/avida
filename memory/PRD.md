@@ -538,6 +538,40 @@ Comprehensive system for monitoring system health, debugging issues, and ensurin
 - Periodic health checker (every 5 minutes)
 - Scheduled alert checker (every 15 minutes - from cohort analytics)
 
+### Frontend Error Logging Integration - Complete (Feb 9, 2026)
+
+**Overview:**
+Centralized frontend error capture and logging to the QA backend system.
+
+**Components:**
+- `/app/frontend/src/utils/errorLogger.ts` - Error logging utility
+  - `logError()` - Generic error logging
+  - `logApiError()` - API error logging with status code
+  - `logUIError()` - UI/component error logging
+  - `logPaymentError()` - Payment-related errors
+  - `logAuthError()` - Authentication errors
+  - `setupGlobalErrorHandler()` - Catches unhandled errors
+  - `createUserFriendlyError()` - Creates messages with reference ID
+  - Session ID tracking for user journey correlation
+
+- `/app/frontend/src/components/ErrorBoundary.tsx` - React error boundary
+  - Catches component render errors
+  - Displays user-friendly fallback UI
+  - Shows error reference ID for support
+  - "Try Again" button to recover
+
+- `/app/frontend/src/utils/api.ts` - Axios interceptor integration
+  - Logs all non-401 API errors to QA system
+  - Extracts endpoint, status code, error message
+  - Associates errors with user ID when authenticated
+
+- `/app/frontend/app/_layout.tsx` - Global integration
+  - ErrorBoundary wraps root layout
+  - Global error handler initialized on app start
+
+**Testing:** 20/20 backend tests passed
+- Test file: `/app/backend/tests/test_qa_error_logging.py`
+
 ---
 
 ### Pending Tasks (P1)
