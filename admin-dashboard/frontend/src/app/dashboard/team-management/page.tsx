@@ -1301,8 +1301,8 @@ export default function TeamManagementPage() {
         </Card>
       )}
 
-      {/* Tab 9: Audit Log */}
-      {tabValue === 9 && (
+      {/* Tab 10: Audit Log */}
+      {tabValue === 10 && (
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
