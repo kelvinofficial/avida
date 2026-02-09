@@ -2311,6 +2311,348 @@ class TeamWorkflowService:
                     template_type="sla_breach"
                 )
 
+    # -------------------------------------------------------------------------
+    # EMAIL TEMPLATES MANAGEMENT
+    # -------------------------------------------------------------------------
+    
+    def _get_default_email_templates(self) -> List[Dict]:
+        """Get default email templates"""
+        return [
+            {
+                "name": "Task Assignment",
+                "slug": "task_assignment",
+                "subject": "[Task Assigned] {{task_title}}",
+                "body_html": """
+                <h2>New Task Assigned</h2>
+                <p>Hello {{recipient_name}},</p>
+                <p>You have been assigned a new task:</p>
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Task:</strong></td><td>{{task_title}}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Type:</strong></td><td>{{task_type}}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Priority:</strong></td><td style="color: {{priority_color}};">{{priority}}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>SLA Deadline:</strong></td><td>{{sla_deadline}}</td></tr>
+                </table>
+                <p><a href="{{task_link}}" style="background: #1B5E20; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Task</a></p>
+                """,
+                "available_variables": ["recipient_name", "task_title", "task_type", "priority", "priority_color", "sla_deadline", "task_link"],
+                "category": "task",
+                "is_system": True
+            },
+            {
+                "name": "Approval Request",
+                "slug": "approval_request",
+                "subject": "[Approval Required] {{approval_title}}",
+                "body_html": """
+                <h2>Approval Required</h2>
+                <p>Hello {{recipient_name}},</p>
+                <p>A new approval request requires your attention:</p>
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Request:</strong></td><td>{{approval_title}}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Type:</strong></td><td>{{approval_type}}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Requester:</strong></td><td>{{requester_name}}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Priority:</strong></td><td>{{priority}}</td></tr>
+                </table>
+                <p><a href="{{approval_link}}" style="background: #1B5E20; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Review Request</a></p>
+                """,
+                "available_variables": ["recipient_name", "approval_title", "approval_type", "requester_name", "priority", "approval_link"],
+                "category": "approval",
+                "is_system": True
+            },
+            {
+                "name": "SLA Breach Alert",
+                "slug": "sla_breach",
+                "subject": "[SLA BREACH] {{task_title}}",
+                "body_html": """
+                <h2 style="color: #d32f2f;">SLA Breach Alert</h2>
+                <p>Hello {{recipient_name}},</p>
+                <p style="color: #d32f2f;"><strong>The following task has breached its SLA deadline:</strong></p>
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Task:</strong></td><td>{{task_title}}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Priority:</strong></td><td style="color: red;">{{priority}}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>SLA Deadline:</strong></td><td style="color: red;">{{sla_deadline}}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Assigned To:</strong></td><td>{{assigned_to}}</td></tr>
+                </table>
+                <p><strong>Immediate action required.</strong></p>
+                <p><a href="{{task_link}}" style="background: #d32f2f; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Task</a></p>
+                """,
+                "available_variables": ["recipient_name", "task_title", "priority", "sla_deadline", "assigned_to", "task_link"],
+                "category": "alert",
+                "is_system": True
+            },
+            {
+                "name": "Daily Summary",
+                "slug": "daily_summary",
+                "subject": "[Daily Summary] {{date}} - {{open_tasks}} Open Tasks",
+                "body_html": """
+                <h2>Daily Team Summary</h2>
+                <p>Hello {{recipient_name}},</p>
+                <p>Here's your daily summary for {{date}}:</p>
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Open Tasks:</strong></td><td>{{open_tasks}}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Resolved Today:</strong></td><td>{{resolved_today}}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Pending Approvals:</strong></td><td>{{pending_approvals}}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>SLA Breaches:</strong></td><td style="color: {{breach_color}};">{{sla_breaches}}</td></tr>
+                </table>
+                <p><a href="{{dashboard_link}}" style="background: #1B5E20; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Dashboard</a></p>
+                """,
+                "available_variables": ["recipient_name", "date", "open_tasks", "resolved_today", "pending_approvals", "sla_breaches", "breach_color", "dashboard_link"],
+                "category": "summary",
+                "is_system": True
+            },
+            {
+                "name": "Welcome New Team Member",
+                "slug": "welcome_member",
+                "subject": "Welcome to the Team, {{member_name}}!",
+                "body_html": """
+                <h2>Welcome to the Team!</h2>
+                <p>Hello {{member_name}},</p>
+                <p>Welcome to the Admin Dashboard team! Your account has been set up with the following details:</p>
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Email:</strong></td><td>{{email}}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Role:</strong></td><td>{{role}}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Department:</strong></td><td>{{department}}</td></tr>
+                </table>
+                <p>Please set up your password and enable 2FA for security.</p>
+                <p><a href="{{login_link}}" style="background: #1B5E20; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Get Started</a></p>
+                """,
+                "available_variables": ["member_name", "email", "role", "department", "login_link"],
+                "category": "general",
+                "is_system": True
+            }
+        ]
+    
+    async def get_email_templates(self, category: Optional[str] = None) -> List[Dict]:
+        """Get all email templates"""
+        query = {}
+        if category:
+            query["category"] = category
+        
+        templates = await self.email_templates.find(query, {"_id": 0}).sort("name", 1).to_list(length=100)
+        
+        if not templates:
+            # Initialize with default templates
+            now = datetime.now(timezone.utc).isoformat()
+            defaults = self._get_default_email_templates()
+            for template in defaults:
+                template["id"] = str(uuid.uuid4())
+                template["is_active"] = True
+                template["created_at"] = now
+                template["updated_at"] = now
+                template["created_by"] = "system"
+            
+            if defaults:
+                await self.email_templates.insert_many([t.copy() for t in defaults])
+            templates = defaults
+        
+        return templates
+    
+    async def get_email_template(self, template_id: str) -> Optional[Dict]:
+        """Get a specific email template by ID"""
+        return await self.email_templates.find_one({"id": template_id}, {"_id": 0})
+    
+    async def get_email_template_by_slug(self, slug: str) -> Optional[Dict]:
+        """Get a specific email template by slug"""
+        return await self.email_templates.find_one({"slug": slug}, {"_id": 0})
+    
+    async def create_email_template(
+        self,
+        name: str,
+        slug: str,
+        subject: str,
+        body_html: str,
+        category: str,
+        available_variables: List[str],
+        created_by: str,
+        body_text: Optional[str] = None
+    ) -> Dict:
+        """Create a new email template"""
+        # Check for duplicate slug
+        existing = await self.email_templates.find_one({"slug": slug})
+        if existing:
+            raise HTTPException(status_code=400, detail=f"Template with slug '{slug}' already exists")
+        
+        now = datetime.now(timezone.utc).isoformat()
+        template = {
+            "id": str(uuid.uuid4()),
+            "name": name,
+            "slug": slug,
+            "subject": subject,
+            "body_html": body_html,
+            "body_text": body_text,
+            "available_variables": available_variables,
+            "is_active": True,
+            "is_system": False,
+            "category": category,
+            "created_at": now,
+            "updated_at": now,
+            "created_by": created_by
+        }
+        
+        await self.email_templates.insert_one(template.copy())
+        return template
+    
+    async def update_email_template(
+        self,
+        template_id: str,
+        updates: Dict[str, Any],
+        updated_by: str
+    ) -> Optional[Dict]:
+        """Update an email template"""
+        template = await self.get_email_template(template_id)
+        if not template:
+            return None
+        
+        # Remove protected fields
+        updates.pop("id", None)
+        updates.pop("slug", None)  # Slug cannot be changed
+        updates.pop("is_system", None)
+        updates.pop("created_at", None)
+        updates.pop("created_by", None)
+        
+        updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+        updates["updated_by"] = updated_by
+        
+        await self.email_templates.update_one({"id": template_id}, {"$set": updates})
+        return await self.get_email_template(template_id)
+    
+    async def delete_email_template(self, template_id: str) -> bool:
+        """Delete an email template (system templates cannot be deleted)"""
+        template = await self.get_email_template(template_id)
+        if not template:
+            return False
+        
+        if template.get("is_system"):
+            raise HTTPException(status_code=403, detail="System templates cannot be deleted")
+        
+        result = await self.email_templates.delete_one({"id": template_id})
+        return result.deleted_count > 0
+    
+    async def send_templated_email(
+        self,
+        template_slug: str,
+        to_email: str,
+        variables: Dict[str, Any]
+    ) -> Dict:
+        """Send an email using a template"""
+        template = await self.get_email_template_by_slug(template_slug)
+        if not template:
+            return {"success": False, "error": f"Template '{template_slug}' not found"}
+        
+        if not template.get("is_active"):
+            return {"success": False, "error": "Template is not active"}
+        
+        # Replace variables in subject and body
+        subject = template["subject"]
+        body_html = template["body_html"]
+        
+        for var, value in variables.items():
+            subject = subject.replace(f"{{{{{var}}}}}", str(value))
+            body_html = body_html.replace(f"{{{{{var}}}}}", str(value))
+        
+        return await self.send_email_notification(to_email, subject, body_html, template_slug)
+    
+    async def preview_email_template(
+        self,
+        template_id: str,
+        sample_variables: Dict[str, Any]
+    ) -> Dict:
+        """Preview an email template with sample data"""
+        template = await self.get_email_template(template_id)
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        subject = template["subject"]
+        body_html = template["body_html"]
+        
+        for var, value in sample_variables.items():
+            subject = subject.replace(f"{{{{{var}}}}}", str(value))
+            body_html = body_html.replace(f"{{{{{var}}}}}", str(value))
+        
+        return {
+            "subject": subject,
+            "body_html": body_html,
+            "template_name": template["name"]
+        }
+
+    # -------------------------------------------------------------------------
+    # SENDGRID SENDER VERIFICATION
+    # -------------------------------------------------------------------------
+    
+    async def initiate_sender_verification(self, email: str, name: str, reply_to: Optional[str] = None) -> Dict:
+        """Initiate SendGrid sender verification"""
+        import os
+        from sendgrid import SendGridAPIClient
+        
+        sendgrid_key = os.environ.get("SENDGRID_API_KEY")
+        if not sendgrid_key:
+            return {"success": False, "error": "SendGrid API key not configured"}
+        
+        try:
+            sg = SendGridAPIClient(sendgrid_key)
+            
+            data = {
+                "nickname": name,
+                "from_email": email,
+                "from_name": name,
+                "reply_to": reply_to or email,
+                "address": "123 Main St",
+                "city": "San Francisco",
+                "country": "US"
+            }
+            
+            response = sg.client.verified_senders.post(request_body=data)
+            
+            if response.status_code in [200, 201]:
+                # Store verification request
+                verification = {
+                    "id": str(uuid.uuid4()),
+                    "email": email,
+                    "name": name,
+                    "status": "pending",
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await self.sender_verifications.insert_one(verification.copy())
+                
+                return {
+                    "success": True,
+                    "message": f"Verification email sent to {email}. Please check your inbox and click the verification link.",
+                    "email": email
+                }
+            else:
+                return {"success": False, "error": f"SendGrid error: {response.status_code}"}
+                
+        except Exception as e:
+            error_msg = str(e)
+            if "already exists" in error_msg.lower():
+                return {"success": False, "error": "This sender email is already registered or pending verification"}
+            return {"success": False, "error": error_msg}
+    
+    async def get_verified_senders(self) -> Dict:
+        """Get list of verified senders from SendGrid"""
+        import os
+        from sendgrid import SendGridAPIClient
+        
+        sendgrid_key = os.environ.get("SENDGRID_API_KEY")
+        if not sendgrid_key:
+            return {"success": False, "error": "SendGrid API key not configured", "senders": []}
+        
+        try:
+            sg = SendGridAPIClient(sendgrid_key)
+            response = sg.client.verified_senders.get()
+            
+            if response.status_code == 200:
+                import json
+                data = json.loads(response.body)
+                return {
+                    "success": True,
+                    "senders": data.get("results", [])
+                }
+            else:
+                return {"success": False, "error": f"SendGrid error: {response.status_code}", "senders": []}
+                
+        except Exception as e:
+            return {"success": False, "error": str(e), "senders": []}
+
 
 # ============================================================================
 # ROUTER FACTORY
