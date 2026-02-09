@@ -1,5 +1,33 @@
 # Changelog
 
+## [2026-02-09] - Sandbox Data Filtering
+
+### Added - Sandbox Proxy Endpoints
+- `GET /api/sandbox/proxy/listings` - Get sandbox listings with search/filter
+- `GET /api/sandbox/proxy/listings/{id}` - Get sandbox listing detail with seller
+- `GET /api/sandbox/proxy/orders/{user_id}` - Get sandbox user's orders
+- `GET /api/sandbox/proxy/conversations/{user_id}` - Get sandbox conversations
+- `GET /api/sandbox/proxy/notifications/{user_id}` - Get sandbox notifications
+- `GET /api/sandbox/proxy/categories` - Get categories tagged for sandbox
+- `POST /api/sandbox/proxy/order` - Create sandbox order with escrow
+- `POST /api/sandbox/proxy/message` - Send sandbox message
+
+### Added - Sandbox-Aware Frontend API
+- `sandboxAwareListingsApi` - Auto-routes to sandbox when active
+- `sandboxAwareOrdersApi` - Auto-routes to sandbox when active
+- `sandboxAwareConversationsApi` - Auto-routes to sandbox when active
+- `sandboxAwareNotificationsApi` - Auto-routes to sandbox when active
+- `sandboxAwareCategoriesApi` - Auto-routes to sandbox when active
+- `sandboxUtils` - Helper functions (isActive, getSession, tagAsSandbox)
+
+### Files Created
+- `/app/frontend/src/utils/sandboxAwareApi.ts` - Sandbox-aware API wrapper
+
+### Files Updated
+- `/app/backend/sandbox_system.py` - Added proxy service methods and endpoints
+
+---
+
 ## [2026-02-09] - Main App Sandbox Indicator
 
 ### Added - Frontend Sandbox Banner
