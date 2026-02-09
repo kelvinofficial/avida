@@ -165,6 +165,14 @@ except ImportError as e:
     COMPLIANCE_CENTER_AVAILABLE = False
     logging.warning(f"Compliance Center not available: {e}")
 
+# Config & Environment Manager
+try:
+    from config_manager import create_config_manager_router, ConfigManagerService
+    CONFIG_MANAGER_AVAILABLE = True
+except ImportError as e:
+    CONFIG_MANAGER_AVAILABLE = False
+    logging.warning(f"Config Manager not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
