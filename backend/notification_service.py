@@ -509,17 +509,30 @@ class NotificationService:
             logger.error(f"Africa's Talking SMS error: {e}")
             return {"success": False, "error": str(e), "provider": ProviderType.AFRICASTALKING}
     
-    async def _send_whatsapp_twilio(self, phone: str, message: str) -> Dict[str, Any]:
-        """Send WhatsApp message via Twilio"""
+    async def _send_whatsapp_twilio(self, phone: str, message: str, interactive_buttons: Optional[List[Dict]] = None) -> Dict[str, Any]:
+        """Send WhatsApp message via Twilio with optional interactive buttons"""
         if not self.twilio_client:
             return {"success": False, "error": "Twilio not configured"}
         
         try:
-            msg = self.twilio_client.messages.create(
-                body=message,
-                from_=f"whatsapp:{self.twilio_whatsapp}",
-                to=f"whatsapp:{phone}"
-            )
+            # Build message parameters
+            params = {
+                "from_": f"whatsapp:{self.twilio_whatsapp}",
+                "to": f"whatsapp:{phone}"
+            }
+            
+            if interactive_buttons:
+                # Use content template with buttons (Twilio Content API)
+                # For sandbox, we use simple body with button URLs in text
+                button_text = "\n\n"
+                for btn in interactive_buttons:
+                    if btn.get("url"):
+                        button_text += f"🔗 {btn.get('title', 'Click')}: {btn['url']}\n"
+                params["body"] = message + button_text
+            else:
+                params["body"] = message
+            
+            msg = self.twilio_client.messages.create(**params)
             return {
                 "success": True,
                 "provider": ProviderType.TWILIO,
@@ -529,6 +542,40 @@ class NotificationService:
         except Exception as e:
             logger.error(f"Twilio WhatsApp error: {e}")
             return {"success": False, "error": str(e), "provider": ProviderType.TWILIO}
+    
+    async def send_whatsapp_with_buttons(
+        self,
+        phone: str,
+        message: str,
+        buttons: List[Dict[str, str]],
+        order_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Send WhatsApp message with interactive buttons
+        
+        buttons format: [{"title": "Track Order", "url": "https://..."}, ...]
+        """
+        normalized_phone = self._normalize_phone(phone)
+        
+        result = await self._send_whatsapp_twilio(normalized_phone, message, buttons)
+        
+        # Log the notification
+        log_entry = NotificationLog(
+            order_id=order_id,
+            event="whatsapp_interactive",
+            channel=NotificationChannel.WHATSAPP,
+            recipient_type="buyer",
+            recipient_phone=normalized_phone,
+            message=message,
+            status=NotificationStatus.SENT if result["success"] else NotificationStatus.FAILED,
+            provider=result.get("provider"),
+            provider_message_id=result.get("message_id"),
+            error=result.get("error"),
+            sent_at=datetime.now(timezone.utc).isoformat() if result["success"] else None
+        )
+        await self.db.notification_logs.insert_one(log_entry.model_dump())
+        
+        return result
     
     async def send_notification(
         self,
