@@ -73,6 +73,14 @@ import {
   Schedule,
   Cancel,
   Restore,
+  AutoAwesome,
+  LocalOffer,
+  Celebration,
+  Build,
+  NewReleases,
+  FlashOn,
+  Storefront,
+  Rocket,
 } from '@mui/icons-material';
 
 const API_BASE = process.env.NEXT_PUBLIC_MAIN_API_URL || '';
