@@ -2826,4 +2826,95 @@ def create_config_manager_router(db):
             "results": results
         }
     
+    # -------------------------------------------------------------------------
+    # DEPLOYMENT TEMPLATES
+    # -------------------------------------------------------------------------
+    
+    @router.get("/templates")
+    async def get_deployment_templates(category: Optional[str] = None):
+        """Get all deployment templates"""
+        return await service.get_deployment_templates(category)
+    
+    @router.get("/templates/{template_id}")
+    async def get_deployment_template(template_id: str):
+        """Get a specific template"""
+        template = await service.get_deployment_template(template_id)
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+        return template
+    
+    @router.post("/templates")
+    async def create_deployment_template(
+        name: str = Body(...),
+        description: str = Body(...),
+        config_type: str = Body(...),
+        config_changes: Dict[str, Any] = Body(...),
+        created_by: str = Body(...),
+        icon: str = Body(default="rocket"),
+        category: str = Body(default="general"),
+        default_duration_hours: Optional[int] = Body(default=None),
+        enable_auto_rollback: bool = Body(default=True),
+        rollback_on_error_rate: float = Body(default=5.0),
+        rollback_on_metric_drop: float = Body(default=20.0),
+        metric_to_monitor: str = Body(default="checkout_conversion")
+    ):
+        """Create a new deployment template"""
+        return await service.create_deployment_template(
+            name=name,
+            description=description,
+            config_type=config_type,
+            config_changes=config_changes,
+            created_by=created_by,
+            icon=icon,
+            category=category,
+            default_duration_hours=default_duration_hours,
+            enable_auto_rollback=enable_auto_rollback,
+            rollback_on_error_rate=rollback_on_error_rate,
+            rollback_on_metric_drop=rollback_on_metric_drop,
+            metric_to_monitor=metric_to_monitor
+        )
+    
+    @router.put("/templates/{template_id}")
+    async def update_deployment_template(
+        template_id: str,
+        updates: Dict[str, Any] = Body(...),
+        updated_by: str = Body(...)
+    ):
+        """Update an existing template (system templates cannot be modified)"""
+        result = await service.update_deployment_template(template_id, updates, updated_by)
+        if not result:
+            raise HTTPException(status_code=404, detail="Template not found")
+        return result
+    
+    @router.delete("/templates/{template_id}")
+    async def delete_deployment_template(template_id: str):
+        """Delete a template (system templates cannot be deleted)"""
+        result = await service.delete_deployment_template(template_id)
+        if not result:
+            raise HTTPException(status_code=404, detail="Template not found")
+        return {"status": "deleted"}
+    
+    @router.post("/templates/{template_id}/use")
+    async def create_deployment_from_template(
+        template_id: str,
+        environment: Environment = Body(...),
+        scheduled_at: str = Body(...),
+        created_by: str = Body(...),
+        name_override: Optional[str] = Body(default=None),
+        description_override: Optional[str] = Body(default=None),
+        duration_override: Optional[int] = Body(default=None),
+        config_changes_override: Optional[Dict[str, Any]] = Body(default=None)
+    ):
+        """Create a scheduled deployment from a template"""
+        return await service.create_deployment_from_template(
+            template_id=template_id,
+            environment=environment,
+            scheduled_at=scheduled_at,
+            created_by=created_by,
+            name_override=name_override,
+            description_override=description_override,
+            duration_override=duration_override,
+            config_changes_override=config_changes_override
+        )
+    
     return router, service
