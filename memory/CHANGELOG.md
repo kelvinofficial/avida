@@ -1,5 +1,41 @@
 # Changelog
 
+## [2026-02-09] - Admin Sandbox / Preview Mode
+
+### Added - Sandbox System
+- Fully isolated sandbox environment for admin testing
+- Separate MongoDB collections (sandbox_users, sandbox_orders, etc.)
+- Per-admin configurable access via allowed_admin_ids
+- Auto-generated seed data: 5 buyers, 5 sellers, 10 listings, 5 orders
+- Session-based testing with role switching (buyer/seller/transport/admin)
+- Mock payment processing (card, paypal, mobile_money) - no real gateways
+- Mock notifications (in-app only, no SMS/WhatsApp)
+- Simulation tools: time fast-forward, delivery/payment failures, transport delays, error injection
+- Complete audit trail of all sandbox actions
+
+### Added - Admin Dashboard Sandbox Page
+- 7 tabs: Controls, Orders, Escrow, Users, Listings, Simulations, Audit Log
+- Visual "SANDBOX MODE ACTIVE" banner when session is active
+- Role switching controls
+- Data management (generate seed, reset data)
+- Mock payment dialog with success/failure options
+- Simulation parameter dialogs
+
+### Files Created
+- `/app/backend/sandbox_system.py` - Complete sandbox service (~1500 lines)
+- `/app/admin-dashboard/frontend/src/app/dashboard/sandbox/page.tsx` - Admin UI (~800 lines)
+- `/app/backend/tests/test_sandbox_system.py` - Test suite
+
+### Files Updated
+- `/app/backend/server.py` - Registered sandbox router
+- `/app/admin-dashboard/frontend/src/app/dashboard/layout.tsx` - Added sidebar menu item
+
+### Testing
+- 25/25 backend tests passed
+- Test file: `/app/backend/tests/test_sandbox_system.py`
+
+---
+
 ## [2026-02-09] - QA Dashboard Comprehensive Enhancements
 
 ### Added - Session Replay System
