@@ -30,7 +30,7 @@
     "backend": "100% (32/32 Phase 5 tests passed, 110/110 Phase 1-4 regression tests passed)"
   },
   "test_credentials": {
-    "api_base": "https://scheduled-config.preview.emergentagent.com"
+    "api_base": "https://engagement-metrics-3.preview.emergentagent.com"
   },
   "seed_data_creation": "Test custom templates created during pytest execution with TEST_ prefix were cleaned up after tests.",
   "retest_needed": false,
