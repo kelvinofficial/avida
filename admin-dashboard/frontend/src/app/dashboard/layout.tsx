@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   Box,
@@ -22,6 +22,9 @@ import {
   useMediaQuery,
   useTheme,
   Tooltip,
+  Badge,
+  Popover,
+  CircularProgress,
 } from '@mui/material';
 import {
   Dashboard,
@@ -55,6 +58,12 @@ import {
   Security,
   SettingsApplications,
   Groups,
+  NotificationsNone,
+  Assignment,
+  CheckCircle,
+  Warning,
+  AccessTime,
+  MarkEmailRead,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
