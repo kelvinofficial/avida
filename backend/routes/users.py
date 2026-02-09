@@ -66,7 +66,11 @@ def create_users_router(db, get_current_user, require_auth, online_users: Set[st
         if update_data:
             await db.users.update_one({"user_id": user.user_id}, {"$set": update_data})
         
-        updated_user = await db.users.find_one({"user_id": user.user_id}, {"_id": 0})
+        # Exclude sensitive fields from response
+        updated_user = await db.users.find_one(
+            {"user_id": user.user_id}, 
+            {"_id": 0, "password_hash": 0}
+        )
         return updated_user
     
     @router.get("/{user_id}")
