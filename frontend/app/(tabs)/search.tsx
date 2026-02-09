@@ -97,16 +97,31 @@ export default function SearchScreen() {
     setLoading(true);
     setHasSearched(true);
     try {
-      const result = await listingsApi.getAll({
-        search: query || undefined,
-        category: selectedCategory || undefined,
-        min_price: minPrice ? parseFloat(minPrice) : undefined,
-        max_price: maxPrice ? parseFloat(maxPrice) : undefined,
-        condition: condition || undefined,
-        location: location || undefined,
-        sort: sortBy,
-        limit: 50,
-      });
+      // Check if sandbox mode is active and use sandbox-aware API
+      const sandboxActive = await sandboxUtils.isActive();
+      
+      let result;
+      if (sandboxActive) {
+        result = await sandboxAwareListingsApi.getAll({
+          search: query || undefined,
+          category: selectedCategory || undefined,
+          limit: 50,
+        });
+        // Normalize response structure
+        result = { listings: result.listings || result };
+      } else {
+        result = await listingsApi.getAll({
+          search: query || undefined,
+          category: selectedCategory || undefined,
+          min_price: minPrice ? parseFloat(minPrice) : undefined,
+          max_price: maxPrice ? parseFloat(maxPrice) : undefined,
+          condition: condition || undefined,
+          location: location || undefined,
+          sort: sortBy,
+          limit: 50,
+        });
+      }
+      
       setListings(result.listings);
     } catch (error) {
       console.error('Search error:', error);
