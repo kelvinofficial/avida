@@ -938,6 +938,14 @@ export default function MessagesScreen() {
   if (isLargeScreen) {
     return (
       <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
+        {/* Sandbox Banner */}
+        {isSandbox && (
+          <View style={styles.sandboxBanner}>
+            <Ionicons name="flask" size={16} color="#FFF" />
+            <Text style={styles.sandboxText}>SANDBOX MODE - Test conversations</Text>
+          </View>
+        )}
+        
         {/* Global Header */}
         {renderGlobalHeader()}
         
@@ -947,7 +955,7 @@ export default function MessagesScreen() {
             <View style={desktopStyles.sidebarContainer}>
               {/* Sidebar Header - NOT sticky */}
               <View style={desktopStyles.sidebarHeader}>
-                <Text style={desktopStyles.sidebarTitle}>Messages</Text>
+                <Text style={desktopStyles.sidebarTitle}>{isSandbox ? '🧪 Sandbox Messages' : 'Messages'}</Text>
                 <TouchableOpacity style={desktopStyles.composeBtn}>
                   <Ionicons name="create-outline" size={20} color={COLORS.primary} />
                 </TouchableOpacity>
