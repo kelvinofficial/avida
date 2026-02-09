@@ -242,7 +242,7 @@ class TestE2EListingCreationFlow:
             "price": recommended_price,
             "currency": "EUR",
             "negotiable": True,
-            "category_id": "electronics",
+            "category_id": "phones_tablets",  # mobile_phones subcategory is under phones_tablets
             "subcategory": "mobile_phones",
             "condition": ai_suggestions.get("detected_condition", "Good"),
             "images": [f"data:image/png;base64,{SAMPLE_PRODUCT_IMAGE}"],
@@ -470,7 +470,7 @@ class TestListingsEndpoints:
             "title": "TEST_E2E Basic Listing",
             "description": "Minimal required fields",
             "price": 50.00,
-            "category_id": "electronics",
+            "category_id": "phones_tablets",  # mobile_phones is under phones_tablets
             "subcategory": "mobile_phones",
             "location": "Munich, Germany"
         }
