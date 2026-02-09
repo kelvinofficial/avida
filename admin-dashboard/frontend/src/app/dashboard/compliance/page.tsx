@@ -720,6 +720,8 @@ export default function CompliancePage() {
           <Tab icon={<NotificationImportant />} label="Incidents" data-testid="tab-incidents" />
           <Tab icon={<Business />} label="Third Parties" data-testid="tab-third-parties" />
           <Tab icon={<History />} label="Audit Logs" data-testid="tab-audit" />
+          <Tab icon={<Description />} label="Legal Docs" data-testid="tab-legal" />
+          <Tab icon={<Science />} label="Sandbox" data-testid="tab-sandbox" />
         </Tabs>
       </Paper>
 
