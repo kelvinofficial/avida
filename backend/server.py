@@ -4860,6 +4860,13 @@ if SANDBOX_AVAILABLE:
     asyncio.create_task(sandbox_service.initialize())
     logger.info("Admin Sandbox System loaded successfully")
 
+# CSV Import System for Users
+if CSV_IMPORT_AVAILABLE:
+    csv_import_router, csv_import_service = create_csv_import_router(db)
+    api_router.include_router(csv_import_router)
+    app.include_router(api_router)  # Re-include to pick up CSV import routes
+    logger.info("CSV Import System loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
