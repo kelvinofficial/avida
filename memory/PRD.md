@@ -533,3 +533,39 @@ Last Updated: February 9, 2026
 - `backend/chat_moderation.py` - Core moderation service
 - `admin-dashboard/frontend/src/app/dashboard/moderation/page.tsx` - Admin UI
 
+
+---
+
+## Real-Time Moderation Integration (Feb 9, 2026)
+
+### send_message Endpoint Moderation Pipeline - COMPLETE
+
+**Integration Flow:**
+1. **User Status Check** (sync) - Block muted/banned users (403)
+2. **Conversation Check** (sync) - Block frozen conversations (403)
+3. **Listing Check** (sync) - Block chat-disabled listings (403)
+4. **Rule-Based Detection** (sync) - Check phone numbers, scam keywords
+   - Critical risk → Block message immediately
+   - High risk → Allow with warning
+5. **Send Message** - Insert into database with `moderation_status: pending`
+6. **AI Moderation** (async) - GPT-4o analysis in background
+   - Updates message status to `clean` or `flagged`
+   - Creates entries in `moderation_flags` collection
+   - Triggers auto-moderation (warnings, mute, ban)
+
+**Detection Patterns:**
+- Phone numbers: `555-123-4567`, 10+ digit numbers
+- Email addresses: `*@*.*` pattern
+- Scam keywords: western union, moneygram, gift card, wire transfer
+- Off-platform payment: "pay outside", "send to my account"
+
+**Risk Levels:**
+- `low` - Minor patterns, no action
+- `medium` - Potential violation, warning shown
+- `high` - Confirmed violation, flagged for review  
+- `critical` - Severe violation, message blocked immediately
+
+**Bug Fixed:** Timezone comparison for muted_until datetime (naive vs aware)
+
+**Testing:** 13/13 tests passed
+
