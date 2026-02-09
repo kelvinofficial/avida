@@ -103,12 +103,12 @@ class TestHelperFunctions:
 
     @staticmethod
     def create_conversation(token, listing_id, message="Hello, I'm interested"):
-        """Create a conversation for a listing"""
+        """Create a conversation for a listing (listing_id is query param)"""
         headers = {"Authorization": f"Bearer {token}"}
-        response = requests.post(f"{BASE_URL}/api/conversations", json={
-            "listing_id": listing_id,
-            "message": message
-        }, headers=headers)
+        response = requests.post(
+            f"{BASE_URL}/api/conversations?listing_id={listing_id}",
+            headers=headers
+        )
         
         if response.status_code == 200:
             return response.json()
