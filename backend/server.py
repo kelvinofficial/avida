@@ -104,6 +104,14 @@ except ImportError as e:
     NOTIFICATION_QUEUE_AVAILABLE = False
     logging.warning(f"Notification queue not available: {e}")
 
+# AI Listing Analyzer
+try:
+    from ai_listing_analyzer import create_ai_analyzer_router, AIListingAnalyzer
+    AI_ANALYZER_AVAILABLE = True
+except ImportError as e:
+    AI_ANALYZER_AVAILABLE = False
+    logging.warning(f"AI Listing Analyzer not available: {e}")
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
