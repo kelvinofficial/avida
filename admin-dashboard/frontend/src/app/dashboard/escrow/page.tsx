@@ -213,7 +213,7 @@ export default function EscrowPage() {
   const handleVerifySeller = async () => {
     try {
       const { sellerId, action } = verifyDialog;
-      await api.post(`/escrow/admin/verify-seller/${sellerId}`, {
+      await escrowApi.post(`/escrow/admin/verify-seller/${sellerId}`, {
         is_verified: action === 'verify',
         online_selling_enabled: action === 'verify',
       });
@@ -234,7 +234,7 @@ export default function EscrowPage() {
     if (!disputeDialog.dispute) return;
     
     try {
-      await api.post(`/escrow/admin/disputes/${disputeDialog.dispute.id}/resolve`, {
+      await escrowApi.post(`/escrow/admin/disputes/${disputeDialog.dispute.id}/resolve`, {
         resolution,
         resolution_notes: `Resolved in favor of ${resolution}`,
       });
@@ -249,7 +249,7 @@ export default function EscrowPage() {
   
   const handleReleaseEscrow = async () => {
     try {
-      await api.post(`/escrow/admin/orders/${releaseDialog.orderId}/release-escrow`);
+      await escrowApi.post(`/escrow/admin/orders/${releaseDialog.orderId}/release-escrow`);
       setSnackbar({ open: true, message: 'Escrow released successfully', severity: 'success' });
       setReleaseDialog({ open: false, orderId: '' });
       fetchData();
