@@ -174,6 +174,26 @@ def create_listings_router(
         await db.listings.insert_one(new_listing)
         created_listing = await db.listings.find_one({"id": listing_id}, {"_id": 0})
         
+        # Track cohort event for listing creation
+        try:
+            import httpx
+            async with httpx.AsyncClient() as client:
+                await client.post(
+                    "http://localhost:8001/api/cohort-analytics/events/track",
+                    json={
+                        "user_id": user.user_id,
+                        "event_type": "listing_created",
+                        "properties": {
+                            "listing_id": listing_id,
+                            "category_id": category_id,
+                            "price": listing.price
+                        }
+                    },
+                    timeout=2.0
+                )
+        except Exception as e:
+            logger.debug(f"Cohort event tracking failed: {e}")
+        
         # Trigger smart notifications for users interested in this category
         try:
             from smart_notifications import SmartNotificationService
