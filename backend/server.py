@@ -205,6 +205,14 @@ except ImportError as e:
     SANDBOX_AVAILABLE = False
     logging.warning(f"Sandbox System not available: {e}")
 
+# CSV Import System for Users
+try:
+    from csv_import_system import create_csv_import_router, CSVImportService
+    CSV_IMPORT_AVAILABLE = True
+except ImportError as e:
+    CSV_IMPORT_AVAILABLE = False
+    logging.warning(f"CSV Import System not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
