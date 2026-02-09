@@ -370,15 +370,26 @@ export default function SandboxPage() {
                 User: {activeSession.sandbox_user_id}
               </Typography>
             </Box>
-            <Button 
-              variant="contained" 
-              color="error" 
-              startIcon={<Stop />}
-              onClick={endSession}
-              disabled={actionLoading}
-            >
-              Exit Sandbox
-            </Button>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button 
+                variant="outlined"
+                color="inherit"
+                startIcon={<Visibility />}
+                onClick={() => window.open('/', '_blank')}
+                sx={{ color: '#000', borderColor: 'rgba(0,0,0,0.3)' }}
+              >
+                Preview App
+              </Button>
+              <Button 
+                variant="contained" 
+                color="error" 
+                startIcon={<Stop />}
+                onClick={endSession}
+                disabled={actionLoading}
+              >
+                Exit Sandbox
+              </Button>
+            </Box>
           </Box>
         </Alert>
       )}
