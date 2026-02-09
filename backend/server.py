@@ -3402,7 +3402,10 @@ async def create_review(user_id: str, request: Request):
         "review",
         "New Review",
         f"{current_user.name or 'Someone'} left you a {rating}-star review",
-        {"review_id": review["id"], "reviewer_id": current_user.user_id}
+        actor_id=current_user.user_id,
+        actor_name=current_user.name,
+        actor_picture=current_user.picture,
+        meta={"review_id": review["id"], "reviewer_id": current_user.user_id}
     )
     
     return {"message": "Review submitted", "review": review}
