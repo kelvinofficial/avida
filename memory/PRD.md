@@ -1571,7 +1571,21 @@ Compliance endpoints are currently open (no auth required) for admin access. In 
 - Scheduled tab with pending count badge
 - Table with name, type, scheduled time, status, auto-rollback, duration
 - Execute Now, Cancel, Rollback action buttons
-- Schedule Deployment dialog (to be added)
+- **Schedule Deployment Dialog** - COMPLETE (Feb 9, 2026):
+  - Deployment Name and Description fields
+  - Config Type selector (Feature Flags, Global Settings, Country Config)
+  - Scheduled Date & Time picker
+  - Duration in hours (0 = permanent)
+  - Feature Flag toggles for bulk selection
+  - Auto-Rollback settings (Enable/Disable, Error Rate Threshold, Metric Drop Threshold)
+  - Metric to Monitor dropdown (Checkout Conversion, API Success Rate, Error Rate, Page Load Time)
+
+### Background Scheduler:
+- APScheduler-based background task processor
+- Checks for due deployments every 60 seconds
+- Automatic execution of pending deployments
+- Status endpoint: GET /api/config-manager/scheduler/status
+- Returns: running state, due/active/pending deployment counts
 
 ---
 
