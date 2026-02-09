@@ -4594,6 +4594,15 @@ if CONFIG_MANAGER_AVAILABLE:
     app.include_router(api_router)  # Re-include to pick up config manager routes
     logger.info("Config & Environment Manager loaded successfully")
 
+# Team & Workflow Management
+if TEAM_WORKFLOW_AVAILABLE:
+    team_workflow_router, team_workflow_service = create_team_workflow_router(db)
+    api_router.include_router(team_workflow_router)
+    app.include_router(api_router)  # Re-include to pick up team workflow routes
+    # Initialize default roles and settings
+    asyncio.create_task(team_workflow_service.initialize_system())
+    logger.info("Team & Workflow Management loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
