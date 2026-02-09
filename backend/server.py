@@ -112,6 +112,14 @@ except ImportError as e:
     AI_ANALYZER_AVAILABLE = False
     logging.warning(f"AI Listing Analyzer not available: {e}")
 
+# Modular Routes (Refactored from server.py)
+try:
+    from routes import create_auth_router, create_users_router, create_listings_router
+    MODULAR_ROUTES_AVAILABLE = True
+except ImportError as e:
+    MODULAR_ROUTES_AVAILABLE = False
+    logging.warning(f"Modular routes not available: {e}")
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
