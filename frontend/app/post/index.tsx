@@ -330,6 +330,13 @@ export default function PostListingScreen() {
   // Step 2: Images
   const [images, setImages] = useState<string[]>([]);
   
+  // AI Analyzer State
+  const [aiAnalyzing, setAiAnalyzing] = useState(false);
+  const [aiResult, setAiResult] = useState<any>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiSuggestionsApplied, setAiSuggestionsApplied] = useState(false);
+  const [showAiSuggestions, setShowAiSuggestions] = useState(false);
+  
   // Step 3: Base Details
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
