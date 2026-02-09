@@ -58,6 +58,9 @@ import {
   NotificationsActive,
   Settings,
   Add,
+  Email,
+  Schedule,
+  PlayArrow,
 } from '@mui/icons-material';
 import {
   AreaChart,
