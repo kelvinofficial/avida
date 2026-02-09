@@ -2608,4 +2608,299 @@ def create_smart_notification_router(db, get_current_user, require_auth):
         result = await db.scheduled_campaigns.delete_one({"id": campaign_id})
         return {"success": result.deleted_count > 0}
     
+    # =========================================================================
+    # PHASE 4: USER SEGMENTATION
+    # =========================================================================
+    
+    @router.get("/admin/segments")
+    async def get_segments():
+        """Get all user segments (predefined + custom)"""
+        custom_segments = await db.user_segments.find({}, {"_id": 0}).to_list(100)
+        
+        # Combine predefined and custom
+        predefined = [
+            {"id": key, "is_predefined": True, **val}
+            for key, val in PREDEFINED_SEGMENTS.items()
+        ]
+        
+        return predefined + custom_segments
+    
+    @router.post("/admin/segments")
+    async def create_segment(segment_data: Dict[str, Any] = Body(...)):
+        """Create a custom user segment"""
+        # Validate rules
+        rules = []
+        for rule_data in segment_data.get("rules", []):
+            rule = SegmentRule(**rule_data)
+            rules.append(rule.model_dump())
+        
+        segment = {
+            "id": f"seg_{uuid.uuid4().hex[:12]}",
+            "name": segment_data.get("name", ""),
+            "description": segment_data.get("description", ""),
+            "rules": rules,
+            "logic": segment_data.get("logic", "AND"),
+            "estimated_users": 0,
+            "is_active": True,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        
+        # Calculate estimated users
+        segment_obj = UserSegment(**{k: v for k, v in segment.items() if k not in ["rules"]})
+        segment_obj.rules = [SegmentRule(**r) for r in rules]
+        query = segment_obj.to_mongo_query()
+        
+        if query:
+            count = await db.users.count_documents(query)
+        else:
+            count = await db.users.count_documents({})
+        
+        segment["estimated_users"] = count
+        segment["last_calculated"] = datetime.now(timezone.utc).isoformat()
+        
+        await db.user_segments.insert_one(segment)
+        return {k: v for k, v in segment.items() if k != "_id"}
+    
+    @router.put("/admin/segments/{segment_id}")
+    async def update_segment(segment_id: str, updates: Dict[str, Any] = Body(...)):
+        """Update a custom segment"""
+        updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+        await db.user_segments.update_one({"id": segment_id}, {"$set": updates})
+        return await db.user_segments.find_one({"id": segment_id}, {"_id": 0})
+    
+    @router.delete("/admin/segments/{segment_id}")
+    async def delete_segment(segment_id: str):
+        """Delete a custom segment"""
+        result = await db.user_segments.delete_one({"id": segment_id})
+        return {"success": result.deleted_count > 0}
+    
+    @router.get("/admin/segments/{segment_id}/preview")
+    async def preview_segment(segment_id: str, limit: int = Query(10)):
+        """Preview users in a segment"""
+        # Check predefined first
+        if segment_id in PREDEFINED_SEGMENTS:
+            segment_data = PREDEFINED_SEGMENTS[segment_id]
+            rules = [SegmentRule(**r) for r in segment_data.get("rules", [])]
+        else:
+            segment = await db.user_segments.find_one({"id": segment_id})
+            if not segment:
+                raise HTTPException(status_code=404, detail="Segment not found")
+            rules = [SegmentRule(**r) for r in segment.get("rules", [])]
+            segment_data = segment
+        
+        # Build query
+        segment_obj = UserSegment(
+            name=segment_data.get("name", ""),
+            rules=rules,
+            logic=segment_data.get("logic", "AND")
+        )
+        query = segment_obj.to_mongo_query()
+        
+        # Get users
+        users = await db.users.find(query or {}, {"_id": 0, "user_id": 1, "name": 1, "email": 1}).limit(limit).to_list(limit)
+        total = await db.users.count_documents(query or {})
+        
+        return {
+            "users": users,
+            "total": total,
+            "segment_id": segment_id
+        }
+    
+    @router.post("/admin/segments/{segment_id}/recalculate")
+    async def recalculate_segment(segment_id: str):
+        """Recalculate segment user count"""
+        if segment_id in PREDEFINED_SEGMENTS:
+            segment_data = PREDEFINED_SEGMENTS[segment_id]
+            rules = [SegmentRule(**r) for r in segment_data.get("rules", [])]
+        else:
+            segment = await db.user_segments.find_one({"id": segment_id})
+            if not segment:
+                raise HTTPException(status_code=404, detail="Segment not found")
+            rules = [SegmentRule(**r) for r in segment.get("rules", [])]
+            segment_data = segment
+        
+        segment_obj = UserSegment(
+            name=segment_data.get("name", ""),
+            rules=rules,
+            logic=segment_data.get("logic", "AND")
+        )
+        query = segment_obj.to_mongo_query()
+        count = await db.users.count_documents(query or {})
+        
+        if segment_id not in PREDEFINED_SEGMENTS:
+            await db.user_segments.update_one(
+                {"id": segment_id},
+                {"$set": {
+                    "estimated_users": count,
+                    "last_calculated": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+        
+        return {"segment_id": segment_id, "estimated_users": count}
+    
+    # =========================================================================
+    # PHASE 4: ANALYTICS WITH TIME SERIES DATA
+    # =========================================================================
+    
+    @router.get("/admin/analytics/timeseries")
+    async def get_analytics_timeseries(
+        days: int = Query(30, ge=1, le=90),
+        trigger_type: Optional[str] = Query(None)
+    ):
+        """Get time series analytics for charts"""
+        end_date = datetime.now(timezone.utc)
+        start_date = end_date - timedelta(days=days)
+        
+        query = {"date": {"$gte": start_date.strftime("%Y-%m-%d")}}
+        if trigger_type:
+            query["trigger_type"] = trigger_type
+        
+        analytics = await db.notification_analytics.find(query, {"_id": 0}).sort("date", 1).to_list(1000)
+        
+        # Group by date
+        daily_data = {}
+        for record in analytics:
+            date = record.get("date")
+            if date not in daily_data:
+                daily_data[date] = {"date": date, "sent": 0, "delivered": 0, "opened": 0, "clicked": 0, "failed": 0}
+            
+            daily_data[date]["sent"] += record.get("sent", 0)
+            daily_data[date]["delivered"] += record.get("delivered", 0)
+            daily_data[date]["opened"] += record.get("opened", 0)
+            daily_data[date]["clicked"] += record.get("clicked", 0)
+            daily_data[date]["failed"] += record.get("failed", 0)
+        
+        # Fill in missing dates
+        timeseries = []
+        current = start_date
+        while current <= end_date:
+            date_str = current.strftime("%Y-%m-%d")
+            if date_str in daily_data:
+                timeseries.append(daily_data[date_str])
+            else:
+                timeseries.append({"date": date_str, "sent": 0, "delivered": 0, "opened": 0, "clicked": 0, "failed": 0})
+            current += timedelta(days=1)
+        
+        return timeseries
+    
+    @router.get("/admin/analytics/by-trigger")
+    async def get_analytics_by_trigger(days: int = Query(30)):
+        """Get analytics grouped by trigger type"""
+        start_date = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d")
+        
+        analytics = await db.notification_analytics.find(
+            {"date": {"$gte": start_date}}, {"_id": 0}
+        ).to_list(1000)
+        
+        by_trigger = {}
+        for record in analytics:
+            trigger = record.get("trigger_type", "unknown")
+            if trigger not in by_trigger:
+                by_trigger[trigger] = {"trigger_type": trigger, "sent": 0, "delivered": 0, "opened": 0, "clicked": 0}
+            
+            by_trigger[trigger]["sent"] += record.get("sent", 0)
+            by_trigger[trigger]["delivered"] += record.get("delivered", 0)
+            by_trigger[trigger]["opened"] += record.get("opened", 0)
+            by_trigger[trigger]["clicked"] += record.get("clicked", 0)
+        
+        # Calculate rates
+        result = []
+        for data in by_trigger.values():
+            if data["sent"] > 0:
+                data["open_rate"] = round((data["opened"] / data["sent"]) * 100, 1)
+                data["click_rate"] = round((data["clicked"] / data["sent"]) * 100, 1)
+            else:
+                data["open_rate"] = 0
+                data["click_rate"] = 0
+            result.append(data)
+        
+        return sorted(result, key=lambda x: x["sent"], reverse=True)
+    
+    @router.get("/admin/analytics/by-channel")
+    async def get_analytics_by_channel(days: int = Query(30)):
+        """Get analytics grouped by channel"""
+        start_date = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d")
+        
+        analytics = await db.notification_analytics.find(
+            {"date": {"$gte": start_date}}, {"_id": 0}
+        ).to_list(1000)
+        
+        by_channel = {}
+        for record in analytics:
+            channel = record.get("channel", "unknown")
+            if channel not in by_channel:
+                by_channel[channel] = {"channel": channel, "sent": 0, "delivered": 0, "opened": 0, "clicked": 0}
+            
+            by_channel[channel]["sent"] += record.get("sent", 0)
+            by_channel[channel]["delivered"] += record.get("delivered", 0)
+            by_channel[channel]["opened"] += record.get("opened", 0)
+            by_channel[channel]["clicked"] += record.get("clicked", 0)
+        
+        result = []
+        for data in by_channel.values():
+            if data["sent"] > 0:
+                data["delivery_rate"] = round((data["delivered"] / data["sent"]) * 100, 1)
+                data["open_rate"] = round((data["opened"] / data["sent"]) * 100, 1)
+            else:
+                data["delivery_rate"] = 0
+                data["open_rate"] = 0
+            result.append(data)
+        
+        return result
+    
+    # =========================================================================
+    # PHASE 4: CAMPAIGN SCHEDULER STATUS
+    # =========================================================================
+    
+    @router.get("/admin/scheduler/status")
+    async def get_scheduler_status():
+        """Get campaign scheduler status"""
+        # Get scheduled campaigns due to be sent
+        now = datetime.now(timezone.utc).isoformat()
+        due_campaigns = await db.scheduled_campaigns.count_documents({
+            "status": "scheduled",
+            "scheduled_at": {"$lte": now}
+        })
+        
+        scheduled_campaigns = await db.scheduled_campaigns.count_documents({"status": "scheduled"})
+        sent_today = await db.scheduled_campaigns.count_documents({
+            "status": "sent",
+            "sent_at": {"$gte": datetime.now(timezone.utc).replace(hour=0, minute=0, second=0).isoformat()}
+        })
+        
+        return {
+            "scheduler_running": service.is_running,
+            "due_campaigns": due_campaigns,
+            "scheduled_campaigns": scheduled_campaigns,
+            "sent_today": sent_today,
+            "fcm_enabled": FCM_ENABLED,
+            "sendgrid_enabled": sendgrid_client is not None,
+            "last_check": datetime.now(timezone.utc).isoformat()
+        }
+    
+    @router.post("/admin/scheduler/process-due")
+    async def process_due_campaigns():
+        """Process all due campaigns"""
+        now = datetime.now(timezone.utc).isoformat()
+        due_campaigns = await db.scheduled_campaigns.find({
+            "status": "scheduled",
+            "scheduled_at": {"$lte": now}
+        }).to_list(100)
+        
+        results = []
+        for campaign in due_campaigns:
+            sent_count = await service._send_campaign(campaign)
+            await db.scheduled_campaigns.update_one(
+                {"id": campaign["id"]},
+                {"$set": {
+                    "status": "sent",
+                    "sent_at": now,
+                    "sent_count": sent_count
+                }}
+            )
+            results.append({"campaign_id": campaign["id"], "sent_count": sent_count})
+        
+        return {"processed": len(results), "campaigns": results}
+    
     return router, service
