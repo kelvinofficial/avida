@@ -354,6 +354,46 @@ export default function CohortAnalyticsPage() {
     }
   };
 
+  // Fetch available segments for comparison
+  const fetchAvailableSegments = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/cohort-analytics/segments/available`);
+      if (res.ok) {
+        setAvailableSegments(await res.json());
+      }
+    } catch (err) {
+      console.error('Failed to fetch segments:', err);
+    }
+  };
+
+  // Run cohort comparison
+  const runComparison = async () => {
+    setComparingCohorts(true);
+    try {
+      const res = await fetch(`${API_BASE}/cohort-analytics/compare`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          segments: selectedSegments,
+          metrics: ['retention_d7', 'retention_d30', 'ltv', 'engagement_score', 'conversion_rate'],
+          time_period_days: comparisonTimePeriod,
+        }),
+      });
+      if (res.ok) {
+        setComparisonResult(await res.json());
+      }
+    } catch (err) {
+      console.error('Failed to compare cohorts:', err);
+    } finally {
+      setComparingCohorts(false);
+    }
+  };
+
+  // Load available segments on mount
+  useEffect(() => {
+    fetchAvailableSegments();
+  }, []);
+
   // Drill down into cohort
   const drilldownCohort = async (cohortKey: string) => {
     setSelectedCohort(cohortKey);
