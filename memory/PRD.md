@@ -938,6 +938,18 @@ When sandbox mode is active, API calls automatically return sandbox data instead
 **Files Created:**
 - `/app/frontend/src/utils/sandboxAwareApi.ts` - Sandbox-aware API wrapper
 
+**Files Updated:**
+- `/app/backend/sandbox_system.py` - Added proxy service methods and endpoints
+- `/app/frontend/app/(tabs)/index.tsx` - Uses sandbox-aware API for home page listings
+- `/app/frontend/app/(tabs)/search.tsx` - Uses sandbox-aware API for search results
+- `/app/frontend/app/listing/[id].tsx` - Uses sandbox-aware API for listing detail
+
+### Pages Updated for Sandbox Mode
+When sandbox mode is active, the following pages now show sandbox data:
+- **Home Page** (`/app/frontend/app/(tabs)/index.tsx`) - Shows sandbox_listings
+- **Search Page** (`/app/frontend/app/(tabs)/search.tsx`) - Searches sandbox_listings
+- **Listing Detail** (`/app/frontend/app/listing/[id].tsx`) - Shows sandbox listing with seller info
+
 ---
 
 ### Pending Tasks (P1)
