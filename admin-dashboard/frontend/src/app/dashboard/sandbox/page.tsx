@@ -67,7 +67,7 @@ import {
   Science,
 } from '@mui/icons-material';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_BASE = process.env.NEXT_PUBLIC_MAIN_API_URL || '';
 
 export default function SandboxPage() {
   const [activeTab, setActiveTab] = useState(0);
