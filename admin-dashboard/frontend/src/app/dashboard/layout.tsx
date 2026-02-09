@@ -77,6 +77,7 @@ const DRAWER_WIDTH = 260;
 const menuItems = [
   { text: 'Overview', icon: <Dashboard />, path: '/dashboard' },
   { text: 'Executive Summary', icon: <Summarize />, path: '/dashboard/executive-summary' },
+  { text: 'QA & Reliability', icon: <BugReport />, path: '/dashboard/qa-reliability' },
   { text: 'Cohort Analytics', icon: <GroupWork />, path: '/dashboard/cohort-analytics' },
   { text: 'Categories', icon: <Category />, path: '/dashboard/categories' },
   { text: 'Attributes', icon: <Tune />, path: '/dashboard/attributes' },
