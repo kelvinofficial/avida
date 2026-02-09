@@ -4727,13 +4727,13 @@ async def admin_update_banner_pricing(
 # These endpoints proxy requests to the main backend's notification service
 # =============================================================================
 
-@app.get("/api/notifications/admin/templates")
+@app.get("/api/admin/notifications/admin/templates")
 async def proxy_get_notification_templates(admin = Depends(get_current_admin)):
     """Get all notification templates from main backend"""
     templates = await db.notification_templates.find({}, {"_id": 0}).to_list(100)
     return templates
 
-@app.post("/api/notifications/admin/templates")
+@app.post("/api/admin/notifications/admin/templates")
 async def proxy_create_notification_template(
     template_data: Dict[str, Any] = Body(...),
     admin = Depends(get_current_admin)
@@ -4751,7 +4751,7 @@ async def proxy_create_notification_template(
     template.pop("_id", None)
     return template
 
-@app.put("/api/notifications/admin/templates/{template_id}")
+@app.put("/api/admin/notifications/admin/templates/{template_id}")
 async def proxy_update_notification_template(
     template_id: str,
     update_data: Dict[str, Any] = Body(...),
