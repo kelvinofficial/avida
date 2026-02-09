@@ -664,6 +664,317 @@ Generate a JSON response with title, description, and attributes."""
         )
     
     # =========================================================================
+    # PRICE SUGGESTION
+    # =========================================================================
+    
+    async def get_price_suggestion(
+        self,
+        category: Optional[str] = None,
+        subcategory: Optional[str] = None,
+        brand: Optional[str] = None,
+        model: Optional[str] = None,
+        condition: Optional[str] = None,
+        detected_features: Optional[List[str]] = None,
+        user_id: Optional[str] = None
+    ) -> Dict:
+        """
+        Get AI-powered price suggestion based on product details and market data
+        """
+        settings = await self.get_settings()
+        
+        if not settings.get("enable_price_suggestions", False):
+            return {"success": False, "error": "Price suggestions are disabled by admin"}
+        
+        try:
+            # Step 1: Find similar listings from database
+            similar_listings = await self._find_similar_listings(
+                category=category,
+                subcategory=subcategory,
+                brand=brand,
+                model=model,
+                condition=condition
+            )
+            
+            # Step 2: Calculate market statistics
+            market_stats = self._calculate_market_stats(similar_listings)
+            
+            # Step 3: Use AI to suggest optimal price range
+            ai_suggestion = await self._generate_price_suggestion(
+                category=category,
+                subcategory=subcategory,
+                brand=brand,
+                model=model,
+                condition=condition,
+                features=detected_features,
+                market_stats=market_stats,
+                settings=settings
+            )
+            
+            return {
+                "success": True,
+                "price_suggestion": ai_suggestion,
+                "market_data": market_stats,
+                "similar_listings_count": len(similar_listings)
+            }
+            
+        except Exception as e:
+            logger.error(f"Price suggestion error: {e}")
+            return {"success": False, "error": str(e)}
+    
+    async def _find_similar_listings(
+        self,
+        category: Optional[str] = None,
+        subcategory: Optional[str] = None,
+        brand: Optional[str] = None,
+        model: Optional[str] = None,
+        condition: Optional[str] = None,
+        limit: int = 50
+    ) -> List[Dict]:
+        """Find similar listings from database for price comparison"""
+        query = {"status": {"$in": ["active", "sold"]}}
+        
+        # Build query based on available information
+        if category:
+            query["$or"] = [
+                {"category": {"$regex": category, "$options": "i"}},
+                {"category_name": {"$regex": category, "$options": "i"}}
+            ]
+        
+        if brand:
+            # Search in attributes or title
+            brand_query = {"$or": [
+                {"title": {"$regex": brand, "$options": "i"}},
+                {"attributes.brand": {"$regex": brand, "$options": "i"}},
+                {"attributes.Brand": {"$regex": brand, "$options": "i"}}
+            ]}
+            if "$or" in query:
+                query["$and"] = [{"$or": query.pop("$or")}, brand_query]
+            else:
+                query.update(brand_query)
+        
+        if model:
+            model_query = {"$or": [
+                {"title": {"$regex": model, "$options": "i"}},
+                {"attributes.model": {"$regex": model, "$options": "i"}},
+                {"attributes.Model": {"$regex": model, "$options": "i"}}
+            ]}
+            if "$and" in query:
+                query["$and"].append(model_query)
+            else:
+                query["$and"] = [model_query]
+        
+        # Fetch listings with price
+        listings = await self.db.listings.find(
+            query,
+            {
+                "_id": 0,
+                "listing_id": 1,
+                "title": 1,
+                "price": 1,
+                "currency": 1,
+                "condition": 1,
+                "status": 1,
+                "created_at": 1,
+                "sold_at": 1
+            }
+        ).sort("created_at", -1).limit(limit).to_list(limit)
+        
+        return listings
+    
+    def _calculate_market_stats(self, listings: List[Dict]) -> Dict:
+        """Calculate market statistics from similar listings"""
+        if not listings:
+            return {
+                "count": 0,
+                "min_price": None,
+                "max_price": None,
+                "avg_price": None,
+                "median_price": None,
+                "sold_count": 0,
+                "active_count": 0
+            }
+        
+        prices = [l.get("price", 0) for l in listings if l.get("price") and l.get("price") > 0]
+        sold_listings = [l for l in listings if l.get("status") == "sold"]
+        active_listings = [l for l in listings if l.get("status") == "active"]
+        
+        if not prices:
+            return {
+                "count": len(listings),
+                "min_price": None,
+                "max_price": None,
+                "avg_price": None,
+                "median_price": None,
+                "sold_count": len(sold_listings),
+                "active_count": len(active_listings)
+            }
+        
+        sorted_prices = sorted(prices)
+        median_idx = len(sorted_prices) // 2
+        median = sorted_prices[median_idx] if len(sorted_prices) % 2 == 1 else \
+                 (sorted_prices[median_idx - 1] + sorted_prices[median_idx]) / 2
+        
+        return {
+            "count": len(listings),
+            "min_price": min(prices),
+            "max_price": max(prices),
+            "avg_price": round(sum(prices) / len(prices), 2),
+            "median_price": round(median, 2),
+            "sold_count": len(sold_listings),
+            "active_count": len(active_listings),
+            "price_distribution": {
+                "low": sorted_prices[0] if sorted_prices else None,
+                "q1": sorted_prices[len(sorted_prices) // 4] if len(sorted_prices) > 3 else None,
+                "q3": sorted_prices[3 * len(sorted_prices) // 4] if len(sorted_prices) > 3 else None,
+                "high": sorted_prices[-1] if sorted_prices else None
+            }
+        }
+    
+    async def _generate_price_suggestion(
+        self,
+        category: Optional[str],
+        subcategory: Optional[str],
+        brand: Optional[str],
+        model: Optional[str],
+        condition: Optional[str],
+        features: Optional[List[str]],
+        market_stats: Dict,
+        settings: Dict
+    ) -> Dict:
+        """Use AI to generate optimal price suggestion"""
+        try:
+            from emergentintegrations.llm.chat import LlmChat, UserMessage
+            
+            # Build context about the item
+            item_description = []
+            if brand:
+                item_description.append(f"Brand: {brand}")
+            if model:
+                item_description.append(f"Model: {model}")
+            if category:
+                item_description.append(f"Category: {category}")
+            if subcategory:
+                item_description.append(f"Subcategory: {subcategory}")
+            if condition:
+                item_description.append(f"Condition: {condition}")
+            if features:
+                item_description.append(f"Features: {', '.join(features[:5])}")
+            
+            # Build market context
+            market_context = []
+            if market_stats.get("count", 0) > 0:
+                market_context.append(f"Found {market_stats['count']} similar listings")
+                if market_stats.get("avg_price"):
+                    market_context.append(f"Average price: €{market_stats['avg_price']}")
+                if market_stats.get("min_price") and market_stats.get("max_price"):
+                    market_context.append(f"Price range: €{market_stats['min_price']} - €{market_stats['max_price']}")
+                if market_stats.get("median_price"):
+                    market_context.append(f"Median price: €{market_stats['median_price']}")
+                if market_stats.get("sold_count", 0) > 0:
+                    market_context.append(f"{market_stats['sold_count']} items sold recently")
+            
+            # Create AI prompt
+            prompt = f"""Based on the following product information and market data, suggest an optimal price range.
+
+Product Information:
+{chr(10).join(item_description) if item_description else "Limited information available"}
+
+Market Data:
+{chr(10).join(market_context) if market_context else "No similar listings found in database"}
+
+Please provide:
+1. A suggested price range (min and max)
+2. A recommended listing price (sweet spot)
+3. Brief reasoning (1-2 sentences)
+4. Pricing strategy tip
+
+Consider:
+- Condition affects price significantly (new items command premium)
+- Brand recognition impacts value
+- Market supply/demand from similar listings
+- If no market data, use general knowledge
+
+Respond in JSON format:
+{{
+    "min_price": 100,
+    "max_price": 150,
+    "recommended_price": 125,
+    "currency": "EUR",
+    "confidence": "medium",
+    "reasoning": "Based on similar listings and condition...",
+    "tip": "Consider pricing slightly below average to sell faster"
+}}"""
+
+            # Use Claude for price analysis
+            chat = LlmChat(
+                api_key=self.api_key,
+                session_id=f"price_{uuid.uuid4().hex[:8]}",
+                system_message="You are an expert marketplace pricing analyst. Suggest fair, competitive prices based on product details and market data. Be conservative with estimates when data is limited."
+            ).with_model("anthropic", "claude-sonnet-4-5-20250929")
+            
+            response = await chat.send_message(UserMessage(text=prompt))
+            
+            # Parse JSON response
+            json_match = re.search(r'\{[\s\S]*\}', response)
+            if json_match:
+                suggestion = json.loads(json_match.group())
+                return {
+                    "min_price": suggestion.get("min_price"),
+                    "max_price": suggestion.get("max_price"),
+                    "recommended_price": suggestion.get("recommended_price"),
+                    "currency": suggestion.get("currency", "EUR"),
+                    "confidence": suggestion.get("confidence", "low"),
+                    "reasoning": suggestion.get("reasoning", ""),
+                    "tip": suggestion.get("tip", ""),
+                    "based_on_listings": market_stats.get("count", 0)
+                }
+            else:
+                # Fallback to market stats only
+                return self._fallback_price_suggestion(market_stats, condition)
+                
+        except Exception as e:
+            logger.error(f"AI price suggestion error: {e}")
+            return self._fallback_price_suggestion(market_stats, condition)
+    
+    def _fallback_price_suggestion(self, market_stats: Dict, condition: Optional[str] = None) -> Dict:
+        """Generate fallback price suggestion when AI fails"""
+        if not market_stats.get("avg_price"):
+            return {
+                "min_price": None,
+                "max_price": None,
+                "recommended_price": None,
+                "currency": "EUR",
+                "confidence": "none",
+                "reasoning": "Not enough market data to suggest a price",
+                "tip": "Research similar items on other marketplaces for pricing guidance",
+                "based_on_listings": 0
+            }
+        
+        avg = market_stats["avg_price"]
+        
+        # Adjust based on condition
+        condition_multiplier = {
+            "new": 1.2,
+            "like_new": 1.1,
+            "good": 1.0,
+            "fair": 0.85,
+            "poor": 0.6
+        }.get(condition, 1.0) if condition else 1.0
+        
+        adjusted_avg = avg * condition_multiplier
+        
+        return {
+            "min_price": round(adjusted_avg * 0.85, 2),
+            "max_price": round(adjusted_avg * 1.15, 2),
+            "recommended_price": round(adjusted_avg, 2),
+            "currency": "EUR",
+            "confidence": "low",
+            "reasoning": f"Based on {market_stats.get('count', 0)} similar listings with average price €{avg}",
+            "tip": "Price competitively to attract more buyers",
+            "based_on_listings": market_stats.get("count", 0)
+        }
+    
+    # =========================================================================
     # ANALYTICS
     # =========================================================================
     
