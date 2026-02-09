@@ -261,6 +261,10 @@ export async function trackNotificationConversion(
  * Get the notification that opened the app (for cold start analytics)
  */
 export async function getInitialNotification(): Promise<NotificationData | null> {
+  // This API is only available on native platforms
+  if (Platform.OS === 'web') {
+    return null;
+  }
   try {
     const response = await Notifications.getLastNotificationResponseAsync();
     if (response) {
@@ -282,6 +286,11 @@ export async function scheduleLocalNotification(
   data?: NotificationData,
   triggerSeconds?: number
 ): Promise<string> {
+  // Local notifications not supported on web
+  if (Platform.OS === 'web') {
+    console.log('Local notifications not supported on web');
+    return '';
+  }
   const id = await Notifications.scheduleNotificationAsync({
     content: {
       title,
@@ -300,6 +309,10 @@ export async function scheduleLocalNotification(
  * Cancel all scheduled notifications
  */
 export async function cancelAllScheduledNotifications(): Promise<void> {
+  // Not supported on web
+  if (Platform.OS === 'web') {
+    return;
+  }
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
 
@@ -307,6 +320,10 @@ export async function cancelAllScheduledNotifications(): Promise<void> {
  * Get badge count
  */
 export async function getBadgeCount(): Promise<number> {
+  // Badge count not supported on web
+  if (Platform.OS === 'web') {
+    return 0;
+  }
   return await Notifications.getBadgeCountAsync();
 }
 
@@ -314,5 +331,9 @@ export async function getBadgeCount(): Promise<number> {
  * Set badge count
  */
 export async function setBadgeCount(count: number): Promise<boolean> {
+  // Badge count not supported on web
+  if (Platform.OS === 'web') {
+    return true;
+  }
   return await Notifications.setBadgeCountAsync(count);
 }
