@@ -4723,6 +4723,202 @@ async def admin_update_banner_pricing(
     return await db.banner_pricing.find_one({"id": pricing_id}, {"_id": 0})
 
 # =============================================================================
+# NOTIFICATION SYSTEM PROXY ENDPOINTS
+# These endpoints proxy requests to the main backend's notification service
+# =============================================================================
+
+@app.get("/api/notifications/admin/templates")
+async def proxy_get_notification_templates(admin = Depends(get_current_admin)):
+    """Get all notification templates from main backend"""
+    templates = await db.notification_templates.find({}, {"_id": 0}).to_list(100)
+    return templates
+
+@app.post("/api/notifications/admin/templates")
+async def proxy_create_notification_template(
+    template_data: Dict[str, Any] = Body(...),
+    admin = Depends(get_current_admin)
+):
+    """Create a new notification template"""
+    template_id = f"tmpl_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc).isoformat()
+    template = {
+        "id": template_id,
+        **template_data,
+        "created_at": now,
+        "updated_at": now
+    }
+    await db.notification_templates.insert_one(template)
+    template.pop("_id", None)
+    return template
+
+@app.put("/api/notifications/admin/templates/{template_id}")
+async def proxy_update_notification_template(
+    template_id: str,
+    update_data: Dict[str, Any] = Body(...),
+    admin = Depends(get_current_admin)
+):
+    """Update a notification template"""
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.notification_templates.update_one(
+        {"id": template_id},
+        {"$set": update_data}
+    )
+    return await db.notification_templates.find_one({"id": template_id}, {"_id": 0})
+
+@app.get("/api/notifications/admin/logs")
+async def proxy_get_notification_logs(
+    order_id: Optional[str] = None,
+    event: Optional[str] = None,
+    status: Optional[str] = None,
+    page: int = 1,
+    limit: int = 50,
+    admin = Depends(get_current_admin)
+):
+    """Get notification logs"""
+    query = {}
+    if order_id:
+        query["order_id"] = order_id
+    if event:
+        query["event"] = event
+    if status:
+        query["status"] = status
+    
+    skip = (page - 1) * limit
+    logs = await db.notification_logs.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    total = await db.notification_logs.count_documents(query)
+    
+    return {
+        "logs": logs,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit if total > 0 else 1
+    }
+
+@app.post("/api/notifications/admin/logs/{notification_id}/resend")
+async def proxy_resend_notification(
+    notification_id: str,
+    admin = Depends(get_current_admin)
+):
+    """Resend a failed notification"""
+    notification = await db.notification_logs.find_one({"id": notification_id})
+    if not notification:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    
+    # Update retry count
+    await db.notification_logs.update_one(
+        {"id": notification_id},
+        {"$inc": {"retry_count": 1}}
+    )
+    
+    return {"success": True, "message": "Notification queued for resend"}
+
+@app.get("/api/notifications/admin/transport-partners")
+async def proxy_get_transport_partners(
+    status: Optional[str] = None,
+    is_active: Optional[bool] = None,
+    page: int = 1,
+    limit: int = 20,
+    admin = Depends(get_current_admin)
+):
+    """Get all transport partners"""
+    query = {}
+    if status:
+        query["status"] = status
+    if is_active is not None:
+        query["is_active"] = is_active
+    
+    skip = (page - 1) * limit
+    partners = await db.transport_partners.find(query, {"_id": 0}).skip(skip).limit(limit).to_list(limit)
+    total = await db.transport_partners.count_documents(query)
+    
+    return {
+        "partners": partners,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit if total > 0 else 1
+    }
+
+@app.post("/api/notifications/admin/transport-partners")
+async def proxy_create_transport_partner(
+    partner_data: Dict[str, Any] = Body(...),
+    admin = Depends(get_current_admin)
+):
+    """Create a new transport partner"""
+    partner_id = f"tp_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc).isoformat()
+    partner = {
+        "id": partner_id,
+        "status": "available",
+        "rating": 0.0,
+        "total_deliveries": 0,
+        "is_active": True,
+        "notification_preferences": {"sms": True, "whatsapp": True},
+        **partner_data,
+        "created_at": now,
+        "updated_at": now
+    }
+    await db.transport_partners.insert_one(partner)
+    partner.pop("_id", None)
+    return partner
+
+@app.get("/api/notifications/admin/transport-partners/{partner_id}")
+async def proxy_get_transport_partner(
+    partner_id: str,
+    admin = Depends(get_current_admin)
+):
+    """Get transport partner by ID"""
+    partner = await db.transport_partners.find_one({"id": partner_id}, {"_id": 0})
+    if not partner:
+        raise HTTPException(status_code=404, detail="Partner not found")
+    return partner
+
+@app.put("/api/notifications/admin/transport-partners/{partner_id}")
+async def proxy_update_transport_partner(
+    partner_id: str,
+    update_data: Dict[str, Any] = Body(...),
+    admin = Depends(get_current_admin)
+):
+    """Update transport partner"""
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.transport_partners.update_one(
+        {"id": partner_id},
+        {"$set": update_data}
+    )
+    return await db.transport_partners.find_one({"id": partner_id}, {"_id": 0})
+
+@app.post("/api/notifications/admin/transport-partners/{partner_id}/assign/{order_id}")
+async def proxy_assign_partner_to_order(
+    partner_id: str,
+    order_id: str,
+    admin = Depends(get_current_admin)
+):
+    """Assign transport partner to order"""
+    partner = await db.transport_partners.find_one({"id": partner_id})
+    if not partner:
+        raise HTTPException(status_code=404, detail="Partner not found")
+    
+    if partner["status"] != "available":
+        raise HTTPException(status_code=400, detail="Partner is not available")
+    
+    # Update partner status
+    await db.transport_partners.update_one(
+        {"id": partner_id},
+        {"$set": {"status": "busy", "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    # Create assignment record
+    assignment = {
+        "id": f"assign_{uuid.uuid4().hex[:12]}",
+        "partner_id": partner_id,
+        "order_id": order_id,
+        "status": "assigned",
+        "assigned_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.delivery_assignments.insert_one(assignment)
+    
+    return {"success": True, "assignment": assignment}
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
