@@ -9,6 +9,7 @@ Features:
 - Smart throttling, deduplication, quiet hours
 - Admin controls and user preferences
 - Phase 4: FCM integration, user segmentation, campaign scheduling, analytics
+- Phase 5: Multi-language templates (i18n), campaign automation, visual segment builder
 """
 
 import os
@@ -23,6 +24,30 @@ import hashlib
 import json
 
 logger = logging.getLogger(__name__)
+
+# =============================================================================
+# SUPPORTED LANGUAGES - PHASE 5
+# =============================================================================
+
+SUPPORTED_LANGUAGES = {
+    "en": {"name": "English", "native": "English", "flag": "🇬🇧"},
+    "es": {"name": "Spanish", "native": "Español", "flag": "🇪🇸"},
+    "fr": {"name": "French", "native": "Français", "flag": "🇫🇷"},
+    "de": {"name": "German", "native": "Deutsch", "flag": "🇩🇪"},
+    "it": {"name": "Italian", "native": "Italiano", "flag": "🇮🇹"},
+    "pt": {"name": "Portuguese", "native": "Português", "flag": "🇵🇹"},
+    "nl": {"name": "Dutch", "native": "Nederlands", "flag": "🇳🇱"},
+    "pl": {"name": "Polish", "native": "Polski", "flag": "🇵🇱"},
+    "ru": {"name": "Russian", "native": "Русский", "flag": "🇷🇺"},
+    "zh": {"name": "Chinese", "native": "中文", "flag": "🇨🇳"},
+    "ja": {"name": "Japanese", "native": "日本語", "flag": "🇯🇵"},
+    "ko": {"name": "Korean", "native": "한국어", "flag": "🇰🇷"},
+    "ar": {"name": "Arabic", "native": "العربية", "flag": "🇸🇦"},
+    "hi": {"name": "Hindi", "native": "हिन्दी", "flag": "🇮🇳"},
+    "tr": {"name": "Turkish", "native": "Türkçe", "flag": "🇹🇷"},
+}
+
+DEFAULT_LANGUAGE = "en"
 
 # =============================================================================
 # SENDGRID EMAIL INTEGRATION
