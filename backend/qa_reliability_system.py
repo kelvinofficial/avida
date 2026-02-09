@@ -829,9 +829,10 @@ class QAReliabilityService:
         # Data integrity checks
         results.extend(await self._run_data_integrity_checks())
         
-        # Store results
+        # Store results (without _id)
         for result in results:
-            await self.qa_checks.insert_one(result)
+            result_copy = {k: v for k, v in result.items() if k != "_id"}
+            await self.qa_checks.insert_one(result_copy)
         
         passed = len([r for r in results if r["passed"]])
         failed = len(results) - passed
