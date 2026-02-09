@@ -967,8 +967,49 @@ class CohortAnalyticsService:
             except:
                 return {"users": [], "total": 0}
         elif dimension == "user_type":
-            # This would require more complex query
-            return {"users": [], "total": 0, "message": "User type drill-down not yet implemented"}
+            # Get users by type (seller, buyer, hybrid)
+            user_type = period  # seller, buyer, or hybrid
+            
+            # Get all sellers (users with listings)
+            sellers = set(await self.listings.distinct("seller_id"))
+            
+            # Get all buyers (users with transactions)
+            buyers = set()
+            if await self.transactions.count_documents({}) > 0:
+                buyers = set(await self.transactions.distinct("buyer_id"))
+            
+            # Determine user IDs based on type
+            if user_type == "seller":
+                # Users with listings but no purchases
+                user_ids = [s for s in sellers if s not in buyers]
+            elif user_type == "buyer":
+                # Users with purchases but no listings
+                user_ids = [b for b in buyers if b not in sellers]
+            elif user_type == "hybrid":
+                # Users with both listings and purchases
+                user_ids = [u for u in sellers if u in buyers]
+            else:
+                return {"users": [], "total": 0}
+            
+            total = len(user_ids)
+            
+            # Get user details with pagination
+            if user_ids:
+                paginated_ids = user_ids[skip:skip + limit]
+                users = await self.users.find(
+                    {"$or": [{"id": {"$in": paginated_ids}}, {"user_id": {"$in": paginated_ids}}]},
+                    {"_id": 0, "password": 0}
+                ).to_list(length=limit)
+            else:
+                users = []
+            
+            return {
+                "cohort_key": cohort_key,
+                "users": users,
+                "total": total,
+                "limit": limit,
+                "skip": skip
+            }
         elif dimension == "country":
             query = {"country": period}
         else:
