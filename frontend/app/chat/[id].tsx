@@ -1192,6 +1192,11 @@ export default function ChatScreen() {
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
 
+  // Report modal states
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportingMessage, setReportingMessage] = useState<Message | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+
   const flatListRef = useRef<FlatList>(null);
   const socketRef = useRef<Socket | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
