@@ -31,7 +31,7 @@
     "frontend": "N/A (backend-only testing requested)"
   },
   "test_credentials": {
-    "api_base": "https://engagement-metrics-3.preview.emergentagent.com",
+    "api_base": "https://cohort-qa-system.preview.emergentagent.com",
     "test_pattern": "test_*@test.com / test123456"
   },
   "seed_data_creation": "Multiple test users, listings, favorites, and conversations created during test execution",
