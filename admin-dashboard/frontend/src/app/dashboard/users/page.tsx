@@ -59,7 +59,9 @@ import {
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { User, PaginatedResponse } from '@/types';
-import CSVImportDialog from '@/components/CSVImportDialog';
+import UserCSVImportDialog from '@/components/UserCSVImportDialog';
+
+const ADMIN_ID = 'admin_default'; // In production, get from auth context
 
 export default function UsersPage() {
   const [loading, setLoading] = useState(true);
