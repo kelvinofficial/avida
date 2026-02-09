@@ -287,6 +287,7 @@ interface MessageBubbleProps {
   isSeller?: boolean;
   onAcceptOffer?: (messageId: string, amount: string) => void;
   onRejectOffer?: (messageId: string) => void;
+  onLongPress?: (message: Message) => void;
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({ 
@@ -296,7 +297,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   otherUser,
   isSeller,
   onAcceptOffer,
-  onRejectOffer
+  onRejectOffer,
+  onLongPress
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const soundRef = useRef<Audio.Sound | null>(null);
