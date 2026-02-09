@@ -229,8 +229,32 @@ def create_conversations_router(db, require_auth, check_rate_limit, sio, create_
     
     @router.post("/{conversation_id}/messages")
     async def send_message(conversation_id: str, message: MessageCreate, request: Request):
-        """Send a message in a conversation"""
+        """Send a message in a conversation with real-time moderation"""
         user = await require_auth(request)
+        
+        # Check if user is muted or banned from chat
+        user_doc = await db.users.find_one({"user_id": user.user_id}, {"_id": 0})
+        if user_doc:
+            chat_status = user_doc.get("chat_status", "active")
+            if chat_status == "banned":
+                raise HTTPException(
+                    status_code=403, 
+                    detail="Your chat access has been suspended. Contact support for assistance."
+                )
+            if chat_status == "muted":
+                muted_until = user_doc.get("chat_muted_until")
+                if muted_until and muted_until > datetime.now(timezone.utc):
+                    remaining = (muted_until - datetime.now(timezone.utc)).total_seconds() / 3600
+                    raise HTTPException(
+                        status_code=403, 
+                        detail=f"You are temporarily muted. Chat access will be restored in {remaining:.1f} hours."
+                    )
+                else:
+                    # Mute expired, restore access
+                    await db.users.update_one(
+                        {"user_id": user.user_id},
+                        {"$set": {"chat_status": "active"}, "$unset": {"chat_muted_until": "", "chat_mute_reason": ""}}
+                    )
         
         # Rate limiting
         if not check_rate_limit(user.user_id, "message"):
@@ -239,6 +263,13 @@ def create_conversations_router(db, require_auth, check_rate_limit, sio, create_
         conversation = await db.conversations.find_one({"id": conversation_id}, {"_id": 0})
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
+        
+        # Check if conversation is frozen
+        if conversation.get("moderation_status") == "frozen":
+            raise HTTPException(
+                status_code=403, 
+                detail="This conversation is currently under review and messages cannot be sent."
+            )
         
         # Check access
         if user.user_id not in [conversation["buyer_id"], conversation["seller_id"]]:
@@ -250,6 +281,38 @@ def create_conversations_router(db, require_auth, check_rate_limit, sio, create_
         if other_user and user.user_id in other_user.get("blocked_users", []):
             raise HTTPException(status_code=403, detail="You have been blocked by this user")
         
+        # Check if listing has chat disabled
+        if conversation.get("listing_id") and conversation["listing_id"] != "direct":
+            listing = await db.listings.find_one({"id": conversation["listing_id"]}, {"_id": 0, "chat_disabled": 1})
+            if listing and listing.get("chat_disabled"):
+                raise HTTPException(
+                    status_code=403,
+                    detail="Chat has been disabled for this listing."
+                )
+        
+        # Pre-moderation check (synchronous rule-based, quick)
+        message_blocked = False
+        moderation_warning = None
+        
+        if moderation_manager and message.message_type == "text":
+            # Run quick rule-based check before sending
+            rule_result = moderation_manager.rule_service.analyze_message(
+                message.content,
+                {"has_escrow_order": bool(await db.escrow_transactions.find_one({"conversation_id": conversation_id}))}
+            )
+            
+            # Block critical risk messages immediately
+            if rule_result.get("is_violation") and rule_result.get("risk_level") == "critical":
+                message_blocked = True
+                raise HTTPException(
+                    status_code=400,
+                    detail="Your message could not be sent as it may violate our community guidelines. Please review and try again."
+                )
+            
+            # Add warning for high-risk messages but allow sending
+            if rule_result.get("is_violation") and rule_result.get("risk_level") == "high":
+                moderation_warning = "Your message has been flagged for review."
+        
         # Create message
         new_message = {
             "id": str(uuid.uuid4()),
@@ -260,7 +323,8 @@ def create_conversations_router(db, require_auth, check_rate_limit, sio, create_
             "media_url": message.media_url,
             "media_duration": message.media_duration,
             "read": False,
-            "created_at": datetime.now(timezone.utc)
+            "created_at": datetime.now(timezone.utc),
+            "moderation_status": "pending" if moderation_manager else None
         }
         
         await db.messages.insert_one(new_message)
@@ -268,6 +332,8 @@ def create_conversations_router(db, require_auth, check_rate_limit, sio, create_
         # Prepare message for response (remove MongoDB _id)
         response_message = {k: v for k, v in new_message.items() if k != '_id'}
         response_message['created_at'] = response_message['created_at'].isoformat()
+        if moderation_warning:
+            response_message['moderation_warning'] = moderation_warning
         
         # Update conversation
         last_msg_preview = message.content[:100] if message.message_type == "text" else f"[{message.message_type.title()}]"
