@@ -114,7 +114,17 @@ except ImportError as e:
 
 # Modular Routes (Refactored from server.py)
 try:
-    from routes import create_auth_router, create_users_router, create_listings_router
+    from routes import (
+        create_auth_router, 
+        create_users_router, 
+        create_listings_router,
+        create_categories_router,
+        create_favorites_router,
+        create_conversations_router,
+        DEFAULT_CATEGORIES,
+        LEGACY_CATEGORY_MAP,
+        validate_category_and_subcategory
+    )
     MODULAR_ROUTES_AVAILABLE = True
 except ImportError as e:
     MODULAR_ROUTES_AVAILABLE = False
