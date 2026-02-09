@@ -1488,6 +1488,236 @@ export default function ConfigManagerPage() {
         </DialogActions>
       </Dialog>
 
+      {/* Create Scheduled Deployment Dialog */}
+      <Dialog open={createDeploymentOpen} onClose={() => setCreateDeploymentOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Schedule Deployment</DialogTitle>
+        <DialogContent>
+          <Alert severity="info" sx={{ mb: 2, mt: 1 }}>
+            Schedule config changes to deploy automatically at a specific time. Optionally enable auto-rollback if metrics drop.
+          </Alert>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={8}>
+              <TextField
+                fullWidth
+                label="Deployment Name"
+                value={newDeployment.name}
+                onChange={(e) => setNewDeployment({ ...newDeployment, name: e.target.value })}
+                placeholder="e.g., Black Friday Promotion"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth>
+                <InputLabel>Config Type</InputLabel>
+                <Select
+                  value={newDeployment.config_type}
+                  label="Config Type"
+                  onChange={(e) => setNewDeployment({ ...newDeployment, config_type: e.target.value })}
+                >
+                  <MenuItem value="feature_flag">Feature Flags</MenuItem>
+                  <MenuItem value="global_setting">Global Settings</MenuItem>
+                  <MenuItem value="country_config">Country Config</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={2}
+                label="Description (optional)"
+                value={newDeployment.description}
+                onChange={(e) => setNewDeployment({ ...newDeployment, description: e.target.value })}
+                placeholder="Describe what this deployment will do..."
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Scheduled Date & Time"
+                type="datetime-local"
+                value={newDeployment.scheduled_at}
+                onChange={(e) => setNewDeployment({ ...newDeployment, scheduled_at: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Duration (hours, 0 = permanent)"
+                value={newDeployment.duration_hours}
+                onChange={(e) => setNewDeployment({ ...newDeployment, duration_hours: parseInt(e.target.value) || 0 })}
+                helperText="Auto-complete after this many hours"
+              />
+            </Grid>
+            
+            <Grid item xs={12}>
+              <Divider sx={{ my: 1 }} />
+              <Typography variant="subtitle2" color="primary" gutterBottom>
+                Feature Flag Changes
+              </Typography>
+              <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
+                Select which feature flags to enable/disable when this deployment runs
+              </Typography>
+            </Grid>
+            
+            {newDeployment.config_type === 'feature_flag' && (
+              <Grid item xs={12}>
+                <Grid container spacing={1}>
+                  {featureFlags.slice(0, 12).map((flag) => (
+                    <Grid item xs={6} sm={4} md={3} key={flag.feature_id}>
+                      <Paper variant="outlined" sx={{ p: 1 }}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              size="small"
+                              checked={newDeployment.config_changes[flag.feature_id] ?? flag.enabled}
+                              onChange={(e) => setNewDeployment({
+                                ...newDeployment,
+                                config_changes: {
+                                  ...newDeployment.config_changes,
+                                  [flag.feature_id]: e.target.checked
+                                }
+                              })}
+                            />
+                          }
+                          label={
+                            <Typography variant="caption">
+                              {flag.feature_id.replace(/_/g, ' ').slice(0, 15)}
+                            </Typography>
+                          }
+                        />
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Grid>
+            )}
+            
+            <Grid item xs={12}>
+              <Divider sx={{ my: 1 }} />
+              <Typography variant="subtitle2" color="warning.main" gutterBottom>
+                Auto-Rollback Settings
+              </Typography>
+            </Grid>
+            
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={newDeployment.enable_auto_rollback}
+                    onChange={(e) => setNewDeployment({ ...newDeployment, enable_auto_rollback: e.target.checked })}
+                  />
+                }
+                label="Enable Auto-Rollback on Metric Drop"
+              />
+            </Grid>
+            
+            {newDeployment.enable_auto_rollback && (
+              <>
+                <Grid item xs={12} sm={4}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Metric to Monitor</InputLabel>
+                    <Select
+                      value={newDeployment.metric_to_monitor}
+                      label="Metric to Monitor"
+                      onChange={(e) => setNewDeployment({ ...newDeployment, metric_to_monitor: e.target.value })}
+                    >
+                      <MenuItem value="checkout_conversion">Checkout Conversion</MenuItem>
+                      <MenuItem value="api_success_rate">API Success Rate</MenuItem>
+                      <MenuItem value="error_rate">Error Rate</MenuItem>
+                      <MenuItem value="page_load_time">Page Load Time</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type="number"
+                    label="Error Rate Threshold (%)"
+                    value={newDeployment.rollback_on_error_rate}
+                    onChange={(e) => setNewDeployment({ ...newDeployment, rollback_on_error_rate: parseFloat(e.target.value) || 5 })}
+                    InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type="number"
+                    label="Metric Drop Threshold (%)"
+                    value={newDeployment.rollback_on_metric_drop}
+                    onChange={(e) => setNewDeployment({ ...newDeployment, rollback_on_metric_drop: parseFloat(e.target.value) || 20 })}
+                    InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
+                  />
+                </Grid>
+              </>
+            )}
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateDeploymentOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            disabled={processing || !newDeployment.name || !newDeployment.scheduled_at}
+            onClick={async () => {
+              setProcessing(true);
+              try {
+                // Convert local datetime to ISO
+                const scheduledAt = new Date(newDeployment.scheduled_at).toISOString();
+                
+                const response = await fetch(`${API_BASE}/config-manager/scheduled-deployments`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    name: newDeployment.name,
+                    description: newDeployment.description || null,
+                    environment: environment,
+                    config_type: newDeployment.config_type,
+                    config_changes: newDeployment.config_changes,
+                    scheduled_at: scheduledAt,
+                    duration_hours: newDeployment.duration_hours || null,
+                    enable_auto_rollback: newDeployment.enable_auto_rollback,
+                    rollback_on_error_rate: newDeployment.rollback_on_error_rate,
+                    rollback_on_metric_drop: newDeployment.rollback_on_metric_drop,
+                    metric_to_monitor: newDeployment.metric_to_monitor,
+                    created_by: 'admin',
+                  }),
+                });
+                
+                if (response.ok) {
+                  setSnackbar({ open: true, message: 'Deployment scheduled successfully', severity: 'success' });
+                  fetchScheduledDeployments();
+                  setCreateDeploymentOpen(false);
+                  // Reset form
+                  setNewDeployment({
+                    name: '',
+                    description: '',
+                    config_type: 'feature_flag',
+                    scheduled_at: '',
+                    duration_hours: 0,
+                    enable_auto_rollback: true,
+                    rollback_on_error_rate: 5.0,
+                    rollback_on_metric_drop: 20.0,
+                    metric_to_monitor: 'checkout_conversion',
+                    config_changes: {},
+                  });
+                } else {
+                  const error = await response.json();
+                  setSnackbar({ open: true, message: error.detail || 'Failed to schedule', severity: 'error' });
+                }
+              } catch (error) {
+                setSnackbar({ open: true, message: 'Failed to schedule deployment', severity: 'error' });
+              }
+              setProcessing(false);
+            }}
+          >
+            {processing ? <CircularProgress size={20} /> : 'Schedule Deployment'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
