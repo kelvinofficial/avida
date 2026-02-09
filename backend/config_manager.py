@@ -2074,6 +2074,296 @@ class ConfigManagerService:
             "last_check": datetime.now(timezone.utc).isoformat()
         }
 
+    # -------------------------------------------------------------------------
+    # DEPLOYMENT TEMPLATES
+    # -------------------------------------------------------------------------
+    
+    def _get_default_templates(self) -> List[Dict]:
+        """Get default system templates"""
+        return [
+            {
+                "name": "Black Friday Sale",
+                "description": "Enable promotional features and boost credits for Black Friday shopping event",
+                "icon": "local_offer",
+                "category": "promotion",
+                "config_type": "feature_flag",
+                "config_changes": {
+                    "boosts_credits": True,
+                    "price_negotiation": True,
+                    "banners_ads": True,
+                    "push_notifications": True
+                },
+                "default_duration_hours": 72,
+                "enable_auto_rollback": True,
+                "rollback_on_error_rate": 5.0,
+                "rollback_on_metric_drop": 15.0,
+                "metric_to_monitor": "checkout_conversion",
+                "is_system": True
+            },
+            {
+                "name": "Holiday Season",
+                "description": "Extended holiday shopping season with enhanced features and extended escrow periods",
+                "icon": "celebration",
+                "category": "seasonal",
+                "config_type": "feature_flag",
+                "config_changes": {
+                    "boosts_credits": True,
+                    "price_negotiation": True,
+                    "multi_currency": True,
+                    "favorites_watchlist": True,
+                    "push_notifications": True,
+                    "email_notifications": True
+                },
+                "default_duration_hours": 168,
+                "enable_auto_rollback": True,
+                "rollback_on_error_rate": 5.0,
+                "rollback_on_metric_drop": 20.0,
+                "metric_to_monitor": "checkout_conversion",
+                "is_system": True
+            },
+            {
+                "name": "Maintenance Mode",
+                "description": "Disable checkout and escrow for scheduled maintenance window",
+                "icon": "build",
+                "category": "maintenance",
+                "config_type": "feature_flag",
+                "config_changes": {
+                    "online_checkout": False,
+                    "escrow_system": False,
+                    "verified_sellers": False
+                },
+                "default_duration_hours": 4,
+                "enable_auto_rollback": False,
+                "rollback_on_error_rate": 10.0,
+                "rollback_on_metric_drop": 50.0,
+                "metric_to_monitor": "api_success_rate",
+                "is_system": True
+            },
+            {
+                "name": "New Feature Rollout",
+                "description": "Gradual rollout of new features with careful monitoring",
+                "icon": "new_releases",
+                "category": "feature",
+                "config_type": "feature_flag",
+                "config_changes": {
+                    "ai_descriptions": True,
+                    "image_ai_moderation": True
+                },
+                "default_duration_hours": None,
+                "enable_auto_rollback": True,
+                "rollback_on_error_rate": 3.0,
+                "rollback_on_metric_drop": 10.0,
+                "metric_to_monitor": "api_success_rate",
+                "is_system": True
+            },
+            {
+                "name": "Flash Sale Event",
+                "description": "Short-term flash sale with boosted visibility and notifications",
+                "icon": "flash_on",
+                "category": "promotion",
+                "config_type": "feature_flag",
+                "config_changes": {
+                    "boosts_credits": True,
+                    "push_notifications": True,
+                    "banners_ads": True
+                },
+                "default_duration_hours": 24,
+                "enable_auto_rollback": True,
+                "rollback_on_error_rate": 5.0,
+                "rollback_on_metric_drop": 20.0,
+                "metric_to_monitor": "checkout_conversion",
+                "is_system": True
+            },
+            {
+                "name": "Seller Onboarding Campaign",
+                "description": "Enhanced seller features for recruitment campaigns",
+                "icon": "storefront",
+                "category": "promotion",
+                "config_type": "feature_flag",
+                "config_changes": {
+                    "verified_sellers": True,
+                    "seller_analytics": True,
+                    "ai_descriptions": True,
+                    "boosts_credits": True
+                },
+                "default_duration_hours": None,
+                "enable_auto_rollback": True,
+                "rollback_on_error_rate": 5.0,
+                "rollback_on_metric_drop": 15.0,
+                "metric_to_monitor": "api_success_rate",
+                "is_system": True
+            }
+        ]
+    
+    async def get_deployment_templates(self, category: Optional[str] = None) -> List[Dict]:
+        """Get all deployment templates, initializing defaults if needed"""
+        query = {}
+        if category:
+            query["category"] = category
+        
+        templates = await self.deployment_templates.find(
+            query, {"_id": 0}
+        ).sort("usage_count", -1).to_list(length=100)
+        
+        if not templates:
+            # Initialize with default templates
+            now = datetime.now(timezone.utc).isoformat()
+            defaults = self._get_default_templates()
+            for template in defaults:
+                template["id"] = str(uuid.uuid4())
+                template["usage_count"] = 0
+                template["last_used_at"] = None
+                template["created_by"] = "system"
+                template["created_at"] = now
+                template["updated_at"] = now
+            
+            if defaults:
+                await self.deployment_templates.insert_many([t.copy() for t in defaults])
+            templates = defaults
+        
+        return templates
+    
+    async def get_deployment_template(self, template_id: str) -> Optional[Dict]:
+        """Get a specific template by ID"""
+        return await self.deployment_templates.find_one(
+            {"id": template_id}, {"_id": 0}
+        )
+    
+    async def create_deployment_template(
+        self,
+        name: str,
+        description: str,
+        config_type: str,
+        config_changes: Dict[str, Any],
+        created_by: str,
+        icon: str = "rocket",
+        category: str = "general",
+        default_duration_hours: Optional[int] = None,
+        enable_auto_rollback: bool = True,
+        rollback_on_error_rate: float = 5.0,
+        rollback_on_metric_drop: float = 20.0,
+        metric_to_monitor: str = "checkout_conversion"
+    ) -> Dict:
+        """Create a new deployment template"""
+        now = datetime.now(timezone.utc).isoformat()
+        
+        template = {
+            "id": str(uuid.uuid4()),
+            "name": name,
+            "description": description,
+            "icon": icon,
+            "category": category,
+            "config_type": config_type,
+            "config_changes": config_changes,
+            "default_duration_hours": default_duration_hours,
+            "enable_auto_rollback": enable_auto_rollback,
+            "rollback_on_error_rate": rollback_on_error_rate,
+            "rollback_on_metric_drop": rollback_on_metric_drop,
+            "metric_to_monitor": metric_to_monitor,
+            "is_system": False,
+            "usage_count": 0,
+            "last_used_at": None,
+            "created_by": created_by,
+            "created_at": now,
+            "updated_at": now
+        }
+        
+        await self.deployment_templates.insert_one(template.copy())
+        return template
+    
+    async def update_deployment_template(
+        self,
+        template_id: str,
+        updates: Dict[str, Any],
+        updated_by: str
+    ) -> Optional[Dict]:
+        """Update an existing template (system templates cannot be modified)"""
+        template = await self.get_deployment_template(template_id)
+        if not template:
+            return None
+        
+        if template.get("is_system"):
+            raise HTTPException(status_code=403, detail="System templates cannot be modified")
+        
+        now = datetime.now(timezone.utc).isoformat()
+        updates["updated_at"] = now
+        updates["updated_by"] = updated_by
+        
+        # Remove fields that shouldn't be updated
+        updates.pop("id", None)
+        updates.pop("is_system", None)
+        updates.pop("created_at", None)
+        updates.pop("created_by", None)
+        updates.pop("usage_count", None)
+        
+        await self.deployment_templates.update_one(
+            {"id": template_id},
+            {"$set": updates}
+        )
+        
+        return await self.get_deployment_template(template_id)
+    
+    async def delete_deployment_template(self, template_id: str) -> bool:
+        """Delete a template (system templates cannot be deleted)"""
+        template = await self.get_deployment_template(template_id)
+        if not template:
+            return False
+        
+        if template.get("is_system"):
+            raise HTTPException(status_code=403, detail="System templates cannot be deleted")
+        
+        result = await self.deployment_templates.delete_one({"id": template_id})
+        return result.deleted_count > 0
+    
+    async def create_deployment_from_template(
+        self,
+        template_id: str,
+        environment: Environment,
+        scheduled_at: str,
+        created_by: str,
+        name_override: Optional[str] = None,
+        description_override: Optional[str] = None,
+        duration_override: Optional[int] = None,
+        config_changes_override: Optional[Dict[str, Any]] = None
+    ) -> Dict:
+        """Create a scheduled deployment from a template"""
+        template = await self.get_deployment_template(template_id)
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        # Use template values with optional overrides
+        deployment_name = name_override or f"{template['name']} - {datetime.now(timezone.utc).strftime('%Y-%m-%d')}"
+        deployment_desc = description_override or template.get("description", "")
+        duration_hours = duration_override if duration_override is not None else template.get("default_duration_hours")
+        config_changes = config_changes_override or template["config_changes"]
+        
+        # Create the scheduled deployment
+        deployment = await self.create_scheduled_deployment(
+            name=deployment_name,
+            description=deployment_desc,
+            environment=environment,
+            config_type=template["config_type"],
+            config_changes=config_changes,
+            scheduled_at=scheduled_at,
+            duration_hours=duration_hours,
+            enable_auto_rollback=template.get("enable_auto_rollback", True),
+            rollback_on_error_rate=template.get("rollback_on_error_rate", 5.0),
+            rollback_on_metric_drop=template.get("rollback_on_metric_drop", 20.0),
+            metric_to_monitor=template.get("metric_to_monitor", "checkout_conversion"),
+            created_by=created_by
+        )
+        
+        # Update template usage stats
+        await self.deployment_templates.update_one(
+            {"id": template_id},
+            {
+                "$inc": {"usage_count": 1},
+                "$set": {"last_used_at": datetime.now(timezone.utc).isoformat()}
+            }
+        )
+        
+        return deployment
+
 
 # =========================================================================
 # BACKGROUND SCHEDULER
