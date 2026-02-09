@@ -194,6 +194,20 @@ Complete escrow-based payment system allowing verified premium sellers to accept
   - Webhook handlers for all providers
   - Automatic escrow funding on successful payment
 
+- **`/app/backend/sms_service.py`**: Africa's Talking SMS notifications:
+  - Buyer: Order confirmed, Order shipped, Delivery reminder
+  - Seller: New order received, Payment released
+  - Phone normalization for Tanzania (+255)
+  - Delivery report webhook
+
+### Admin Dashboard
+- **`/app/admin-dashboard/frontend/src/app/dashboard/escrow/page.tsx`**: Full management UI
+  - Verified Sellers management (verify/revoke)
+  - Orders list with pagination
+  - Dispute resolution (buyer/seller/split)
+  - Manual escrow release
+  - Settings display (VAT, Commission, Transport pricing)
+
 ### API Endpoints
 **Public:**
 - `GET /api/escrow/transport-pricing` - Available delivery options
@@ -201,7 +215,6 @@ Complete escrow-based payment system allowing verified premium sellers to accept
 - `GET /api/escrow/commission-configs` - Commission rates
 - `GET /api/escrow/seller/{seller_id}/can-sell-online` - Seller verification check
 - `POST /api/escrow/calculate-order-price` - Price breakdown calculator
-- `POST /api/escrow/calculate-transport` - Transport cost calculator
 
 **Buyer:**
 - `POST /api/escrow/orders/create` - Create new order
@@ -224,11 +237,11 @@ Complete escrow-based payment system allowing verified premium sellers to accept
 **Payments:**
 - `POST /api/payments/create` - Create Stripe/PayPal payment
 - `POST /api/payments/mobile-money` - Create M-Pesa payment
-- `GET /api/payments/verify/stripe/{session_id}` - Verify Stripe
-- `POST /api/payments/verify/paypal/{order_id}` - Capture PayPal
-- `GET /api/payments/verify/mobile-money/{tx_ref}` - Verify M-Pesa
-- `POST /api/payments/webhook/stripe` - Stripe webhook
-- `POST /api/payments/webhook/flutterwave` - Flutterwave webhook
+- Webhook handlers for Stripe, Flutterwave
+
+**SMS:**
+- `POST /api/sms/webhook/delivery-report` - Delivery reports
+- `GET /api/sms/notifications/{order_id}` - SMS logs
 
 ### Frontend Implementation
 - **Buy Now Button**: Blue prominent button with escrow shield badge, only shows for verified sellers
@@ -245,12 +258,14 @@ Complete escrow-based payment system allowing verified premium sellers to accept
 - **Commission**: 5% default (hidden from buyers)
 - **Transport**: Base €5 + €0.15/km + €0.50/kg
 - **Escrow Auto-Release**: 7 days after shipping
+- **SMS Provider**: Africa's Talking (sandbox mode)
 
 ### Test Status
 - Backend: 11/11 tests passed (100%)
 - Frontend: All features verified working
+- Admin Dashboard: Created (escrow menu visible)
 - Test Seller: user_3fe547c78c76 (verified)
-- Test Listing: 5375f0a3-e119-4e70-9b80-8214c61f7d64
+- Admin User: admin@admin.com / admin123
 
 ---
 
