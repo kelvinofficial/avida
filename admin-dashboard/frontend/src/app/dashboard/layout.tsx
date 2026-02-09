@@ -76,6 +76,7 @@ const menuItems = [
   { text: 'Notifications', icon: <NotificationsActive />, path: '/dashboard/notifications' },
   { text: 'Smart Notifications', icon: <Notifications />, path: '/dashboard/smart-notifications' },
   { text: 'Notification Analytics', icon: <TrendingUp />, path: '/dashboard/notification-analytics' },
+  { text: 'AI Personalization', icon: <AutoAwesome />, path: '/dashboard/ai-personalization' },
   { text: 'Segment Builder', icon: <FilterList />, path: '/dashboard/segment-builder' },
   { text: 'SMS/WhatsApp', icon: <Sms />, path: '/dashboard/sms-notifications' },
   { text: 'AI Analyzer', icon: <AutoAwesome />, path: '/dashboard/ai-analyzer' },
