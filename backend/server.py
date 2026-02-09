@@ -4579,6 +4579,13 @@ if COMPLIANCE_CENTER_AVAILABLE:
     app.include_router(api_router)  # Re-include to pick up compliance routes
     logger.info("Data Privacy & Compliance Center loaded successfully")
 
+# Config & Environment Manager
+if CONFIG_MANAGER_AVAILABLE:
+    config_manager_router, config_manager_service = create_config_manager_router(db)
+    api_router.include_router(config_manager_router)
+    app.include_router(api_router)  # Re-include to pick up config manager routes
+    logger.info("Config & Environment Manager loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
