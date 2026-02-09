@@ -575,85 +575,353 @@ export default function PlatformConfigPage() {
       {/* Branding Tab */}
       {tabValue === 1 && config && (
         <Grid container spacing={3}>
-          {LOGO_TYPES.map((logoType) => {
-            const asset = config.branding[logoType.id];
-            return (
-              <Grid item xs={12} sm={6} md={4} key={logoType.id}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>{logoType.name}</Typography>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      {logoType.description}
+          {/* Logo Upload Cards */}
+          <Grid item xs={12} lg={7}>
+            <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+              Upload & Manage Logos
+            </Typography>
+            <Grid container spacing={2}>
+              {LOGO_TYPES.map((logoType) => {
+                const asset = config.branding[logoType.id];
+                return (
+                  <Grid item xs={12} sm={6} md={4} key={logoType.id}>
+                    <Card sx={{ height: '100%' }}>
+                      <CardContent sx={{ p: 2 }}>
+                        <Typography variant="subtitle2" fontWeight={600}>{logoType.name}</Typography>
+                        <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
+                          {logoType.description}
+                        </Typography>
+                        
+                        {asset ? (
+                          <Box>
+                            <Box
+                              sx={{
+                                width: '100%',
+                                height: 80,
+                                bgcolor: logoType.id === 'dark' ? '#1a1a1a' : '#f5f5f5',
+                                borderRadius: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                mb: 1,
+                              }}
+                            >
+                              <img
+                                src={`${API_BASE}/platform/assets/branding/${asset.file_path.split('/').pop()}`}
+                                alt={logoType.name}
+                                style={{ maxWidth: '80%', maxHeight: '90%', objectFit: 'contain' }}
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            </Box>
+                            <Typography variant="caption" color="text.secondary">
+                              v{asset.version}
+                            </Typography>
+                          </Box>
+                        ) : (
+                          <Box
+                            sx={{
+                              width: '100%',
+                              height: 80,
+                              bgcolor: '#f5f5f5',
+                              borderRadius: 1,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              border: '2px dashed #ddd',
+                              mb: 1,
+                            }}
+                          >
+                            <Typography variant="caption" color="text.secondary">No logo</Typography>
+                          </Box>
+                        )}
+                        
+                        <Button
+                          variant="outlined"
+                          component="label"
+                          size="small"
+                          startIcon={<CloudUpload />}
+                          fullWidth
+                          sx={{ mt: 1 }}
+                        >
+                          {asset ? 'Replace' : 'Upload'}
+                          <input
+                            type="file"
+                            hidden
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleUploadLogo(logoType.id, file);
+                            }}
+                          />
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                );
+              })}
+            </Grid>
+          </Grid>
+
+          {/* Preview Panel */}
+          <Grid item xs={12} lg={5}>
+            <Card sx={{ position: 'sticky', top: 20 }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                  <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Preview color="primary" />
+                    Live Preview
+                  </Typography>
+                  <Chip label="Real-time" size="small" color="success" />
+                </Box>
+                <Divider sx={{ mb: 2 }} />
+
+                {/* Mobile App Preview */}
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Mobile App
+                </Typography>
+                <Paper
+                  elevation={3}
+                  sx={{
+                    width: 200,
+                    height: 360,
+                    mx: 'auto',
+                    mb: 3,
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    bgcolor: '#000',
+                    position: 'relative',
+                  }}
+                >
+                  {/* Phone notch */}
+                  <Box sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: 80,
+                    height: 24,
+                    bgcolor: '#000',
+                    borderBottomLeftRadius: 12,
+                    borderBottomRightRadius: 12,
+                    zIndex: 2,
+                  }} />
+                  
+                  {/* Splash Screen */}
+                  <Box sx={{
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    p: 2,
+                  }}>
+                    {config.branding.splash || config.branding.primary ? (
+                      <img
+                        src={`${API_BASE}/platform/assets/branding/${(config.branding.splash || config.branding.primary)?.file_path?.split('/').pop()}`}
+                        alt="App Logo"
+                        style={{ maxWidth: 100, maxHeight: 100, objectFit: 'contain' }}
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    ) : (
+                      <Box sx={{
+                        width: 80,
+                        height: 80,
+                        bgcolor: 'rgba(255,255,255,0.2)',
+                        borderRadius: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        <Typography color="white" variant="caption">Logo</Typography>
+                      </Box>
+                    )}
+                    <Typography color="white" variant="body2" sx={{ mt: 2, fontWeight: 600 }}>
+                      Marketplace
                     </Typography>
-                    <Divider sx={{ my: 2 }} />
-                    
-                    {asset ? (
-                      <Box>
+                    <CircularProgress size={20} sx={{ mt: 2, color: 'white' }} />
+                  </Box>
+                </Paper>
+
+                {/* Website Preview */}
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Website Header
+                </Typography>
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: 2,
+                    mb: 3,
+                    bgcolor: '#fff',
+                    border: '1px solid #e0e0e0',
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      {config.branding.primary ? (
+                        <img
+                          src={`${API_BASE}/platform/assets/branding/${config.branding.primary?.file_path?.split('/').pop()}`}
+                          alt="Logo"
+                          style={{ height: 32, objectFit: 'contain' }}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      ) : (
+                        <Box sx={{ width: 100, height: 32, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Typography variant="caption" color="text.secondary">Logo</Typography>
+                        </Box>
+                      )}
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      {['Home', 'Browse', 'Sell'].map((item) => (
+                        <Typography key={item} variant="caption" color="text.secondary">{item}</Typography>
+                      ))}
+                    </Box>
+                  </Box>
+                </Paper>
+
+                {/* Dark Mode Website Preview */}
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Website (Dark Mode)
+                </Typography>
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: 2,
+                    mb: 3,
+                    bgcolor: '#1a1a1a',
+                    border: '1px solid #333',
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      {(config.branding.dark || config.branding.light) ? (
+                        <img
+                          src={`${API_BASE}/platform/assets/branding/${(config.branding.dark || config.branding.light)?.file_path?.split('/').pop()}`}
+                          alt="Logo"
+                          style={{ height: 32, objectFit: 'contain' }}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      ) : (
+                        <Box sx={{ width: 100, height: 32, bgcolor: '#333', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Typography variant="caption" color="#888">Logo</Typography>
+                        </Box>
+                      )}
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      {['Home', 'Browse', 'Sell'].map((item) => (
+                        <Typography key={item} variant="caption" color="#888">{item}</Typography>
+                      ))}
+                    </Box>
+                  </Box>
+                </Paper>
+
+                {/* Email Preview */}
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Email Template
+                </Typography>
+                <Paper
+                  elevation={2}
+                  sx={{
+                    overflow: 'hidden',
+                    border: '1px solid #e0e0e0',
+                  }}
+                >
+                  {/* Email Header */}
+                  <Box sx={{ bgcolor: '#4CAF50', p: 2, textAlign: 'center' }}>
+                    {(config.branding.email || config.branding.primary) ? (
+                      <img
+                        src={`${API_BASE}/platform/assets/branding/${(config.branding.email || config.branding.primary)?.file_path?.split('/').pop()}`}
+                        alt="Email Logo"
+                        style={{ height: 40, objectFit: 'contain' }}
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    ) : (
+                      <Box sx={{ height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Typography color="white" variant="body2" fontWeight={600}>MARKETPLACE</Typography>
+                      </Box>
+                    )}
+                  </Box>
+                  {/* Email Body */}
+                  <Box sx={{ p: 2, bgcolor: '#fff' }}>
+                    <Typography variant="body2" fontWeight={600} gutterBottom>
+                      Welcome to Marketplace!
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Thank you for joining us. Start exploring amazing deals...
+                    </Typography>
+                    <Box sx={{ mt: 2 }}>
+                      <Button size="small" variant="contained" color="success" sx={{ textTransform: 'none' }}>
+                        Get Started
+                      </Button>
+                    </Box>
+                  </Box>
+                  {/* Email Footer */}
+                  <Box sx={{ bgcolor: '#f5f5f5', p: 1.5, borderTop: '1px solid #e0e0e0' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 1 }}>
+                      {config.social_links.filter(s => s.enabled).slice(0, 4).map((social) => (
                         <Box
+                          key={social.platform}
                           sx={{
-                            width: '100%',
-                            height: 120,
-                            bgcolor: logoType.id === 'dark' ? '#1a1a1a' : '#f5f5f5',
-                            borderRadius: 1,
+                            width: 24,
+                            height: 24,
+                            bgcolor: '#4CAF50',
+                            borderRadius: '50%',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            mb: 2,
                           }}
                         >
-                          <img
-                            src={`${API_BASE}/platform/assets/branding/${asset.file_path.split('/').pop()}`}
-                            alt={logoType.name}
-                            style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain' }}
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
+                          <Typography variant="caption" color="white" sx={{ fontSize: 10 }}>
+                            {social.platform[0].toUpperCase()}
+                          </Typography>
                         </Box>
-                        <Typography variant="caption" display="block" color="text.secondary">
-                          Version {asset.version} | {new Date(asset.uploaded_at).toLocaleDateString()}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Box
-                        sx={{
-                          width: '100%',
-                          height: 120,
-                          bgcolor: '#f5f5f5',
-                          borderRadius: 1,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          border: '2px dashed #ccc',
-                          mb: 2,
-                        }}
-                      >
-                        <Typography color="text.secondary">No logo uploaded</Typography>
-                      </Box>
-                    )}
-                    
-                    <Button
-                      variant="outlined"
-                      component="label"
-                      startIcon={<CloudUpload />}
-                      fullWidth
-                    >
-                      {asset ? 'Replace' : 'Upload'}
-                      <input
-                        type="file"
-                        hidden
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleUploadLogo(logoType.id, file);
-                        }}
+                      ))}
+                    </Box>
+                    <Typography variant="caption" color="text.secondary" display="block" textAlign="center">
+                      © 2026 Marketplace. All rights reserved.
+                    </Typography>
+                  </Box>
+                </Paper>
+
+                {/* Browser Tab Preview */}
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    Browser Tab
+                  </Typography>
+                  <Paper
+                    elevation={1}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      p: 1,
+                      bgcolor: '#f5f5f5',
+                      borderRadius: '8px 8px 0 0',
+                      maxWidth: 200,
+                    }}
+                  >
+                    {config.branding.favicon ? (
+                      <img
+                        src={`${API_BASE}/platform/assets/branding/${config.branding.favicon?.file_path?.split('/').pop()}`}
+                        alt="Favicon"
+                        style={{ width: 16, height: 16, objectFit: 'contain' }}
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                       />
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Grid>
-            );
-          })}
+                    ) : (
+                      <Box sx={{ width: 16, height: 16, bgcolor: '#4CAF50', borderRadius: 0.5 }} />
+                    )}
+                    <Typography variant="caption" noWrap>
+                      Marketplace - Buy & Sell
+                    </Typography>
+                    <Close sx={{ fontSize: 14, ml: 'auto', color: '#888' }} />
+                  </Paper>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
       )}
 
