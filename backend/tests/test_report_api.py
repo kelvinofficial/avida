@@ -290,7 +290,7 @@ class TestReportAPI:
                 "description": "Listing by third user",
                 "price": 50,
                 "category_id": "electronics",
-                "subcategory_id": "laptops_computers",
+                "subcategory": "laptops_computers",
                 "condition": "new",
                 "location": "Test Location",
                 "images": []
