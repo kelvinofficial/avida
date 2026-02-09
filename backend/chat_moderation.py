@@ -1683,7 +1683,7 @@ def create_moderation_router(db, require_admin_auth, moderation_manager: ChatMod
 # USER-FACING REPORT ENDPOINT
 # =============================================================================
 
-def create_user_report_router(db, require_auth):
+def create_user_report_router(db, require_auth, moderation_manager: Optional[Any] = None):
     """Create router for user-facing report functionality"""
     
     router = APIRouter(prefix="/report", tags=["User Reports"])
@@ -1715,6 +1715,20 @@ def create_user_report_router(db, require_auth):
         )
         
         await db.user_reports.insert_one(report.model_dump())
+        
+        # Notify moderators about the new report
+        if moderation_manager:
+            try:
+                await moderation_manager._notify_moderators_new_report(
+                    report_id=report.id,
+                    conversation_id=report_req.conversation_id,
+                    reporter_id=user.user_id,
+                    reported_user_id=reported_user_id,
+                    reason=report_req.reason.value if hasattr(report_req.reason, 'value') else report_req.reason,
+                    description=report_req.description
+                )
+            except Exception as e:
+                logger.error(f"Failed to notify moderators about report: {e}")
         
         return {"message": "Report submitted", "report_id": report.id}
     
