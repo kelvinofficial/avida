@@ -80,6 +80,14 @@ except ImportError as e:
     PAYMENT_ROUTES_AVAILABLE = False
     logging.warning(f"Payment routes not available: {e}")
 
+# SMS Notification Service
+try:
+    from sms_service import SMSService, create_sms_router
+    SMS_SERVICE_AVAILABLE = True
+except ImportError as e:
+    SMS_SERVICE_AVAILABLE = False
+    logging.warning(f"SMS service not available: {e}")
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
