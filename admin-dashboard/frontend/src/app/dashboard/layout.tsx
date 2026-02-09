@@ -49,6 +49,7 @@ import {
   AutoAwesome,
   Shield,
   Summarize,
+  TrendingUp,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
