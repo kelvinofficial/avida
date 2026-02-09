@@ -218,9 +218,13 @@ class TestRetentionPolicies:
     
     def test_retention_purge_dry_run(self):
         """Test retention purge in dry-run mode"""
-        payload = {"dry_run": True}
-        response = requests.post(f"{API_URL}/compliance/retention/purge", json=payload)
-        assert response.status_code == 200
+        # The endpoint expects dry_run as a simple boolean body value
+        response = requests.post(
+            f"{API_URL}/compliance/retention/purge",
+            headers={"Content-Type": "application/json"},
+            data="true"  # Send boolean directly, not as JSON object
+        )
+        assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
         assert data["dry_run"] == True
