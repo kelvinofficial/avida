@@ -2096,4 +2096,44 @@ def create_cohort_analytics_router(db: AsyncIOMotorDatabase):
         success = await service.mark_notification_read(notification_id)
         return {"success": success}
     
+    # -------------------------------------------------------------------------
+    # COHORT COMPARISON
+    # -------------------------------------------------------------------------
+    
+    @router.post("/compare")
+    async def compare_cohorts(
+        segments: List[Dict[str, str]] = Body(...),
+        metrics: List[str] = Body(None),
+        time_period_days: int = Body(90)
+    ):
+        """Compare retention and engagement metrics between different cohorts"""
+        return await service.compare_cohorts(segments, metrics, time_period_days)
+    
+    @router.get("/segments/available")
+    async def get_available_segments():
+        """Get all available segments for comparison"""
+        return await service.get_available_segments()
+    
+    # -------------------------------------------------------------------------
+    # SCHEDULED TASKS
+    # -------------------------------------------------------------------------
+    
+    @router.post("/scheduled/alert-check")
+    async def run_scheduled_alert_check():
+        """Run scheduled alert check (for cron job)"""
+        return await service.run_scheduled_alert_check()
+    
+    @router.post("/scheduled/weekly-report")
+    async def run_scheduled_weekly_report():
+        """Run scheduled weekly report (for cron job)"""
+        return await service.run_scheduled_weekly_report()
+    
+    @router.get("/scheduled/logs")
+    async def get_scheduled_task_logs(
+        task: Optional[str] = Query(None),
+        limit: int = Query(20, ge=1, le=100)
+    ):
+        """Get logs of scheduled task runs"""
+        return await service.get_scheduled_task_logs(task, limit)
+    
     return router, service
