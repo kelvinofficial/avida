@@ -41,7 +41,8 @@ def auth_token(api_client):
     
     if response.status_code == 200:
         data = response.json()
-        return data.get("token")
+        # Backend returns session_token, not token
+        return data.get("session_token") or data.get("token")
     
     print(f"Login failed: {response.status_code} - {response.text}")
     return None
@@ -94,8 +95,10 @@ class TestBuyerAuthentication:
         # If buyer doesn't exist, it will be 401 or 400
         if response.status_code == 200:
             data = response.json()
-            assert "token" in data, "Login response should contain token"
+            # Backend returns session_token, not token
+            assert "session_token" in data or "token" in data, "Login response should contain session_token"
             print(f"✓ Buyer login successful")
+            print(f"  User: {data.get('user', {}).get('email', 'N/A')}")
         elif response.status_code == 401:
             print(f"⚠ Buyer account doesn't exist or wrong password: {response.text}")
             pytest.skip("Buyer account not found")
