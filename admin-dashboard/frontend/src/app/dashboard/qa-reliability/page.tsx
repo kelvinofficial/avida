@@ -389,11 +389,17 @@ export default function QAReliabilityPage() {
         value={activeTab}
         onChange={(_, v) => setActiveTab(v)}
         sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
+        variant="scrollable"
+        scrollButtons="auto"
       >
         <Tab icon={<Speed />} label="System Health" data-testid="tab-health" />
         <Tab icon={<BugReport />} label="Error Logs" data-testid="tab-errors" />
         <Tab icon={<Flag />} label="Alerts" data-testid="tab-alerts" />
         <Tab icon={<Assignment />} label="QA Checks" data-testid="tab-qa" />
+        <Tab icon={<PlayArrow />} label="Flow Tests" data-testid="tab-flow-tests" />
+        <Tab icon={<Visibility />} label="Session Replay" data-testid="tab-replay" />
+        <Tab icon={<Storage />} label="Data Integrity" data-testid="tab-integrity" />
+        <Tab icon={<TrendingUp />} label="Monitoring" data-testid="tab-monitoring" />
         <Tab icon={<Timeline />} label="Session Traces" data-testid="tab-traces" />
         <Tab icon={<ToggleOn />} label="Feature Flags" data-testid="tab-features" />
         <Tab icon={<History />} label="Audit Log" data-testid="tab-audit" />
