@@ -1077,7 +1077,13 @@ class CohortAnalyticsService:
         heatmap = await self.get_retention_heatmap()
         funnel = await self.get_conversion_funnel(days=7)
         revenue = await self.get_revenue_metrics(months_back=3)
-        insights = await self.generate_ai_insights()
+        
+        # Get AI insights (handle both dict and list returns)
+        insights_result = await self.generate_ai_insights()
+        if isinstance(insights_result, dict):
+            insights_list = insights_result.get("insights", [])
+        else:
+            insights_list = insights_result if isinstance(insights_result, list) else []
         
         # Identify key trends
         retention_data = heatmap.get("data", [])
