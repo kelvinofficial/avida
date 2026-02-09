@@ -2317,4 +2317,173 @@ def create_compliance_router(db, require_admin_auth=None):
             actor_id, target_user_id, action, start_date, end_date, limit, skip
         )
     
+    # -------------------------------------------------------------------------
+    # LEGAL TEXT MANAGEMENT
+    # -------------------------------------------------------------------------
+    
+    @router.get("/legal-documents")
+    async def get_legal_documents(
+        request: Request = None,
+        document_type: Optional[str] = None,
+        status: Optional[str] = None,
+        country_code: Optional[str] = None,
+        limit: int = Query(100, le=500),
+        skip: int = Query(0, ge=0)
+    ):
+        """Get legal documents with optional filters"""
+        if require_admin_auth:
+            admin = await require_admin_auth(request)
+            await verify_compliance_access(admin)
+        return await service.get_legal_documents(document_type, status, country_code, limit, skip)
+    
+    @router.get("/legal-documents/{document_id}")
+    async def get_legal_document(
+        document_id: str,
+        request: Request = None
+    ):
+        """Get a single legal document"""
+        if require_admin_auth:
+            admin = await require_admin_auth(request)
+            await verify_compliance_access(admin)
+        doc = await service.get_legal_document_by_id(document_id)
+        if not doc:
+            raise HTTPException(status_code=404, detail="Document not found")
+        return doc
+    
+    @router.get("/legal-documents/current/{document_type}")
+    async def get_current_legal_document(
+        document_type: str,
+        country_code: Optional[str] = None
+    ):
+        """Get current published legal document (public endpoint)"""
+        doc = await service.get_current_legal_document(document_type, country_code)
+        if not doc:
+            raise HTTPException(status_code=404, detail="No published document found")
+        return doc
+    
+    @router.post("/legal-documents")
+    async def create_legal_document(
+        request: Request = None,
+        document_type: str = Body(...),
+        title: str = Body(...),
+        content: str = Body(...),
+        summary: Optional[str] = Body(None),
+        country_code: Optional[str] = Body(None),
+        language: str = Body("en"),
+        requires_acceptance: bool = Body(True),
+        changelog: Optional[str] = Body(None),
+        created_by: str = Body("admin")
+    ):
+        """Create a new legal document draft"""
+        if require_admin_auth:
+            admin = await require_admin_auth(request)
+            await verify_compliance_access(admin)
+            created_by = admin.get("admin_id", "admin")
+        return await service.create_legal_document(
+            document_type, title, content, created_by,
+            summary, country_code, language, requires_acceptance, changelog
+        )
+    
+    @router.put("/legal-documents/{document_id}")
+    async def update_legal_document(
+        document_id: str,
+        request: Request = None,
+        title: Optional[str] = Body(None),
+        content: Optional[str] = Body(None),
+        summary: Optional[str] = Body(None),
+        requires_acceptance: Optional[bool] = Body(None),
+        changelog: Optional[str] = Body(None),
+        updated_by: str = Body("admin")
+    ):
+        """Update a draft legal document"""
+        if require_admin_auth:
+            admin = await require_admin_auth(request)
+            await verify_compliance_access(admin)
+            updated_by = admin.get("admin_id", "admin")
+        return await service.update_legal_document(
+            document_id, updated_by, title, content, summary, requires_acceptance, changelog
+        )
+    
+    @router.post("/legal-documents/{document_id}/publish")
+    async def publish_legal_document(
+        document_id: str,
+        request: Request = None,
+        effective_date: Optional[str] = Body(None),
+        force_reaccept: bool = Body(False),
+        published_by: str = Body("admin")
+    ):
+        """Publish a legal document"""
+        if require_admin_auth:
+            admin = await require_admin_auth(request)
+            await verify_compliance_access(admin)
+            published_by = admin.get("admin_id", "admin")
+        return await service.publish_legal_document(
+            document_id, published_by, effective_date, force_reaccept
+        )
+    
+    @router.get("/legal-documents/check-acceptance/{user_id}")
+    async def check_user_acceptance(
+        user_id: str,
+        country_code: Optional[str] = None
+    ):
+        """Check which legal documents user needs to accept (public endpoint)"""
+        return await service.check_user_acceptance(user_id, country_code)
+    
+    @router.post("/legal-documents/accept")
+    async def record_user_acceptance(
+        user_id: str = Body(...),
+        document_id: str = Body(...),
+        ip_address: Optional[str] = Body(None),
+        user_agent: Optional[str] = Body(None),
+        country_code: Optional[str] = Body(None)
+    ):
+        """Record user acceptance of a legal document (public endpoint)"""
+        return await service.record_user_acceptance(
+            user_id, document_id, ip_address, user_agent, country_code
+        )
+    
+    @router.get("/legal-documents/acceptances/{user_id}")
+    async def get_user_acceptances(
+        user_id: str,
+        request: Request = None
+    ):
+        """Get all legal document acceptances for a user"""
+        if require_admin_auth:
+            admin = await require_admin_auth(request)
+            await verify_compliance_access(admin)
+        return await service.get_user_acceptances(user_id)
+    
+    # -------------------------------------------------------------------------
+    # SANDBOX MODE
+    # -------------------------------------------------------------------------
+    
+    @router.get("/sandbox/config")
+    async def get_sandbox_config(request: Request = None):
+        """Get sandbox mode configuration"""
+        if require_admin_auth:
+            admin = await require_admin_auth(request)
+            await verify_compliance_access(admin)
+        return await service.get_sandbox_config()
+    
+    @router.put("/sandbox/config")
+    async def update_sandbox_config(
+        request: Request = None,
+        enabled: bool = Body(...),
+        fake_users_count: int = Body(100),
+        fake_dsar_count: int = Body(25),
+        fake_incidents_count: int = Body(5),
+        include_pii_samples: bool = Body(False),
+        reset_on_disable: bool = Body(True),
+        enabled_by: str = Body("admin")
+    ):
+        """Update sandbox mode configuration"""
+        if require_admin_auth:
+            admin = await require_admin_auth(request)
+            await verify_compliance_access(admin)
+            enabled_by = admin.get("admin_id", "admin")
+        return await service.update_sandbox_config(
+            enabled_by, enabled, fake_users_count, fake_dsar_count,
+            fake_incidents_count, include_pii_samples, reset_on_disable
+        )
+    
     return router, service
