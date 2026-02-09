@@ -1388,6 +1388,348 @@ export default function CompliancePage() {
         </Card>
       )}
 
+      {/* Tab 6: Legal Documents */}
+      {tabValue === 6 && (
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box>
+                <Typography variant="h6">Legal Text Management</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Manage Privacy Policy, Terms of Service, and other legal documents
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <FormControl size="small" sx={{ minWidth: 160 }}>
+                  <InputLabel>Document Type</InputLabel>
+                  <Select
+                    value={legalDocTypeFilter}
+                    label="Document Type"
+                    onChange={(e) => setLegalDocTypeFilter(e.target.value)}
+                  >
+                    <MenuItem value="">All Types</MenuItem>
+                    <MenuItem value="privacy_policy">Privacy Policy</MenuItem>
+                    <MenuItem value="terms_of_service">Terms of Service</MenuItem>
+                    <MenuItem value="cookie_policy">Cookie Policy</MenuItem>
+                    <MenuItem value="dpa">Data Processing Agreement</MenuItem>
+                    <MenuItem value="acceptable_use">Acceptable Use Policy</MenuItem>
+                  </Select>
+                </FormControl>
+                <FormControl size="small" sx={{ minWidth: 120 }}>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    value={legalStatusFilter}
+                    label="Status"
+                    onChange={(e) => setLegalStatusFilter(e.target.value)}
+                  >
+                    <MenuItem value="">All</MenuItem>
+                    <MenuItem value="draft">Draft</MenuItem>
+                    <MenuItem value="published">Published</MenuItem>
+                    <MenuItem value="archived">Archived</MenuItem>
+                  </Select>
+                </FormControl>
+                <Button
+                  variant="contained"
+                  startIcon={<Add />}
+                  onClick={() => {
+                    setSelectedLegalDoc({
+                      id: '',
+                      document_type: 'privacy_policy',
+                      version: '1.0',
+                      title: '',
+                      content: '',
+                      language: 'en',
+                      status: 'draft',
+                      requires_acceptance: true,
+                      force_reaccept: false,
+                      created_at: '',
+                      created_by: 'admin',
+                    });
+                    setLegalDocDialogOpen(true);
+                  }}
+                >
+                  New Document
+                </Button>
+              </Box>
+            </Box>
+
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Title</TableCell>
+                    <TableCell>Type</TableCell>
+                    <TableCell>Version</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Country</TableCell>
+                    <TableCell>Force Re-accept</TableCell>
+                    <TableCell>Created</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {legalDocuments.map((doc) => (
+                    <TableRow key={doc.id} hover>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight={500}>{doc.title || 'Untitled'}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={doc.document_type.replace('_', ' ')}
+                          size="small"
+                          variant="outlined"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">v{doc.version}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={doc.status}
+                          size="small"
+                          color={doc.status === 'published' ? 'success' : doc.status === 'draft' ? 'warning' : 'default'}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">{doc.country_code || 'Global'}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          icon={doc.force_reaccept ? <Check /> : <Close />}
+                          label={doc.force_reaccept ? 'Yes' : 'No'}
+                          size="small"
+                          color={doc.force_reaccept ? 'warning' : 'default'}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">{formatDate(doc.created_at)}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', gap: 0.5 }}>
+                          <Tooltip title="View/Edit">
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                setSelectedLegalDoc(doc);
+                                setLegalDocDialogOpen(true);
+                              }}
+                            >
+                              <Edit />
+                            </IconButton>
+                          </Tooltip>
+                          {doc.status === 'draft' && (
+                            <Tooltip title="Publish">
+                              <IconButton
+                                size="small"
+                                color="success"
+                                onClick={async () => {
+                                  if (confirm('Publish this document? It will replace the current published version.')) {
+                                    setProcessing(true);
+                                    try {
+                                      const response = await fetch(`${API_BASE}/compliance/legal-documents/${doc.id}/publish`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ force_reaccept: false }),
+                                      });
+                                      if (response.ok) {
+                                        setSnackbar({ open: true, message: 'Document published', severity: 'success' });
+                                        fetchLegalDocuments();
+                                      } else {
+                                        throw new Error('Failed');
+                                      }
+                                    } catch {
+                                      setSnackbar({ open: true, message: 'Failed to publish', severity: 'error' });
+                                    }
+                                    setProcessing(false);
+                                  }
+                                }}
+                              >
+                                <Publish />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {legalDocuments.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={8} align="center">
+                        <Typography color="text.secondary">No legal documents found</Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tab 7: Sandbox Mode */}
+      {tabValue === 7 && (
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Box>
+                <Typography variant="h6">Sandbox Mode</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Test compliance features with fake data in a safe environment
+                </Typography>
+              </Box>
+              <Button
+                variant="outlined"
+                startIcon={<Refresh />}
+                onClick={fetchSandboxConfig}
+              >
+                Refresh
+              </Button>
+            </Box>
+
+            {sandboxConfig && (
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <Paper variant="outlined" sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={600}>
+                          Sandbox Status
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {sandboxConfig.enabled
+                            ? 'Sandbox mode is active. Test data has been generated.'
+                            : 'Sandbox mode is disabled. Enable it to generate test data.'}
+                        </Typography>
+                      </Box>
+                      <Chip
+                        icon={sandboxConfig.enabled ? <Science /> : <Close />}
+                        label={sandboxConfig.enabled ? 'ACTIVE' : 'DISABLED'}
+                        color={sandboxConfig.enabled ? 'success' : 'default'}
+                        size="medium"
+                      />
+                    </Box>
+                    
+                    <Divider sx={{ my: 2 }} />
+                    
+                    <Grid container spacing={2}>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="caption" color="text.secondary">Fake Users</Typography>
+                        <Typography variant="h6">{sandboxConfig.fake_users_count}</Typography>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="caption" color="text.secondary">Fake DSARs</Typography>
+                        <Typography variant="h6">{sandboxConfig.fake_dsar_count}</Typography>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="caption" color="text.secondary">Fake Incidents</Typography>
+                        <Typography variant="h6">{sandboxConfig.fake_incidents_count}</Typography>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="caption" color="text.secondary">PII Samples</Typography>
+                        <Typography variant="h6">{sandboxConfig.include_pii_samples ? 'Yes' : 'No'}</Typography>
+                      </Grid>
+                    </Grid>
+                    
+                    <Divider sx={{ my: 2 }} />
+                    
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                      {!sandboxConfig.enabled ? (
+                        <Button
+                          variant="contained"
+                          color="success"
+                          startIcon={<PlayArrow />}
+                          onClick={async () => {
+                            setProcessing(true);
+                            try {
+                              const response = await fetch(`${API_BASE}/compliance/sandbox/config`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  enabled: true,
+                                  fake_users_count: 100,
+                                  fake_dsar_count: 25,
+                                  fake_incidents_count: 5,
+                                  include_pii_samples: false,
+                                  reset_on_disable: true,
+                                }),
+                              });
+                              if (response.ok) {
+                                setSnackbar({ open: true, message: 'Sandbox mode enabled', severity: 'success' });
+                                fetchSandboxConfig();
+                                fetchDashboard();
+                                fetchDsarRequests();
+                                fetchIncidents();
+                              } else {
+                                throw new Error('Failed');
+                              }
+                            } catch {
+                              setSnackbar({ open: true, message: 'Failed to enable sandbox', severity: 'error' });
+                            }
+                            setProcessing(false);
+                          }}
+                          disabled={processing}
+                        >
+                          Enable Sandbox Mode
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          onClick={async () => {
+                            if (confirm('Disable sandbox mode? All test data will be removed.')) {
+                              setProcessing(true);
+                              try {
+                                const response = await fetch(`${API_BASE}/compliance/sandbox/config`, {
+                                  method: 'PUT',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    enabled: false,
+                                    reset_on_disable: true,
+                                  }),
+                                });
+                                if (response.ok) {
+                                  setSnackbar({ open: true, message: 'Sandbox mode disabled', severity: 'success' });
+                                  fetchSandboxConfig();
+                                  fetchDashboard();
+                                  fetchDsarRequests();
+                                  fetchIncidents();
+                                } else {
+                                  throw new Error('Failed');
+                                }
+                              } catch {
+                                setSnackbar({ open: true, message: 'Failed to disable sandbox', severity: 'error' });
+                              }
+                              setProcessing(false);
+                            }
+                          }}
+                          disabled={processing}
+                        >
+                          Disable Sandbox Mode
+                        </Button>
+                      )}
+                    </Box>
+                  </Paper>
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <Alert severity="info">
+                    <Typography variant="body2">
+                      <strong>How Sandbox Mode Works:</strong>
+                      <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
+                        <li>Generates fake DSAR requests with randomized statuses and deadlines</li>
+                        <li>Creates test incidents with various severity levels</li>
+                        <li>All sandbox data is clearly marked and can be safely deleted</li>
+                        <li>Use this to test your compliance workflows without affecting real data</li>
+                      </ul>
+                    </Typography>
+                  </Alert>
+                </Grid>
+              </Grid>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* DSAR Detail Dialog */}
       <Dialog open={dsarDetailOpen} onClose={() => setDsarDetailOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>DSAR Request Details</DialogTitle>
