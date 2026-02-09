@@ -61,23 +61,6 @@ import {
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 
-// Direct API client for escrow endpoints (which are on the main backend, not admin backend)
-const escrowApi = axios.create({
-  baseURL: typeof window !== 'undefined' ? window.location.origin : '',
-  headers: { 'Content-Type': 'application/json' },
-});
-
-// Add auth token from localStorage
-escrowApi.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('admin_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
-
 interface VerifiedSeller {
   seller_id: string;
   is_verified: boolean;
