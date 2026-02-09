@@ -119,7 +119,7 @@ interface AnalyticsData {
   }>;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+const API_BASE = process.env.NEXT_PUBLIC_MAIN_API_URL || '';
 
 const TRIGGER_TYPE_LABELS: Record<string, { label: string; icon: JSX.Element; color: string }> = {
   new_listing_in_category: { label: 'New Listing Alert', icon: <NewReleases />, color: '#4CAF50' },
