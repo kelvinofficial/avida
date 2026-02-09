@@ -1843,12 +1843,35 @@ class SmartNotificationService:
                 return
             
             # Get user info for personalization
-            user = await self.db.users.find_one({"user_id": user_id}, {"_id": 0, "name": 1, "email": 1})
+            user = await self.db.users.find_one({"user_id": user_id}, {"_id": 0, "name": 1, "email": 1, "preferred_language": 1})
             variables["user_name"] = user.get("name", "there") if user else "there"
+            user_language = user.get("preferred_language", "en") if user else "en"
             
-            # Render templates
+            # Render templates (base content)
             title = self._render_template(trigger.get("title_template", ""), variables)
             body = self._render_template(trigger.get("body_template", ""), variables)
+            
+            # Apply AI personalization if enabled - Phase 6
+            try:
+                personalized = await self.ai_personalization.personalize_notification(
+                    user_id=user_id,
+                    trigger_type=trigger_type,
+                    base_content={"title": title, "body": body},
+                    context={
+                        "listing_id": metadata.get("listing_id") if metadata else None,
+                        "listing_title": variables.get("listing_title"),
+                        "price": variables.get("price"),
+                        "old_price": variables.get("old_price"),
+                        "category": variables.get("category_name"),
+                        "sender_name": variables.get("sender_name")
+                    },
+                    language=user_language
+                )
+                title = personalized.get("title", title)
+                body = personalized.get("body", body)
+                logger.debug(f"AI personalized notification for user {user_id}: {title[:30]}...")
+            except Exception as e:
+                logger.warning(f"AI personalization failed, using template content: {e}")
             
             # Determine channels based on user preferences
             channels = []
