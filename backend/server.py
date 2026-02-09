@@ -189,6 +189,14 @@ except ImportError as e:
     COHORT_ANALYTICS_AVAILABLE = False
     logging.warning(f"Cohort Analytics not available: {e}")
 
+# QA & Reliability System
+try:
+    from qa_reliability_system import create_qa_reliability_router, QAReliabilityService
+    QA_RELIABILITY_AVAILABLE = True
+except ImportError as e:
+    QA_RELIABILITY_AVAILABLE = False
+    logging.warning(f"QA & Reliability System not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
