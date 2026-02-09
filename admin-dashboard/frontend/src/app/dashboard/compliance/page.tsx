@@ -176,6 +176,38 @@ interface Dashboard {
   };
 }
 
+interface LegalDocument {
+  id: string;
+  document_type: string;
+  version: string;
+  title: string;
+  content: string;
+  summary?: string;
+  country_code?: string;
+  language: string;
+  status: string;
+  effective_date?: string;
+  requires_acceptance: boolean;
+  force_reaccept: boolean;
+  changelog?: string;
+  previous_version_id?: string;
+  created_at: string;
+  created_by: string;
+  published_at?: string;
+  published_by?: string;
+}
+
+interface SandboxConfig {
+  enabled: boolean;
+  fake_users_count: number;
+  fake_dsar_count: number;
+  fake_incidents_count: number;
+  include_pii_samples: boolean;
+  reset_on_disable: boolean;
+  created_at?: string;
+  enabled_by?: string;
+}
+
 const STATUS_COLORS: Record<string, 'success' | 'error' | 'warning' | 'info' | 'default'> = {
   pending: 'warning',
   in_progress: 'info',
