@@ -66,6 +66,7 @@ import {
   MarkEmailRead,
   GroupWork,
   BugReport,
+  Science,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
@@ -78,6 +79,7 @@ const menuItems = [
   { text: 'Overview', icon: <Dashboard />, path: '/dashboard' },
   { text: 'Executive Summary', icon: <Summarize />, path: '/dashboard/executive-summary' },
   { text: 'QA & Reliability', icon: <BugReport />, path: '/dashboard/qa-reliability' },
+  { text: 'Admin Sandbox', icon: <Science />, path: '/dashboard/sandbox' },
   { text: 'Cohort Analytics', icon: <GroupWork />, path: '/dashboard/cohort-analytics' },
   { text: 'Categories', icon: <Category />, path: '/dashboard/categories' },
   { text: 'Attributes', icon: <Tune />, path: '/dashboard/attributes' },
