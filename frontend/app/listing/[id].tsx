@@ -634,6 +634,14 @@ export default function ListingDetailScreen() {
         const catData = await categoriesApi.getOne(data.category_id);
         setCategory(catData);
       } catch (e) {}
+      
+      // Check if seller can sell online
+      try {
+        const sellerCheck = await api.get(`/escrow/seller/${data.user_id}/can-sell-online`);
+        setCanBuyOnline(sellerCheck.data.can_sell_online === true);
+      } catch (e) {
+        setCanBuyOnline(false);
+      }
     } catch (error) {
       console.error('Error fetching listing:', error);
       Alert.alert('Error', 'Failed to load listing');
