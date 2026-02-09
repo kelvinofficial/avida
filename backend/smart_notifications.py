@@ -1402,6 +1402,63 @@ class SmartNotificationService:
         }
     
     # =========================================================================
+    # PHASE 3: CAMPAIGN SENDING
+    # =========================================================================
+    
+    async def _send_campaign(self, campaign: Dict) -> int:
+        """Send a campaign to all target users"""
+        try:
+            target_segments = campaign.get("target_segments", ["all_users"])
+            channels = campaign.get("channels", ["push", "email"])
+            
+            # Build user query based on segments
+            user_query = {}
+            if "all_users" not in target_segments:
+                # Build more specific query based on segments
+                if "active_buyers" in target_segments:
+                    user_query["total_purchases"] = {"$gt": 0}
+                if "active_sellers" in target_segments:
+                    user_query["listings_count"] = {"$gt": 0}
+            
+            # Get target users
+            users = await self.db.users.find(user_query, {"user_id": 1, "name": 1, "email": 1}).to_list(10000)
+            
+            sent_count = 0
+            trigger = {
+                "id": campaign.get("id"),
+                "trigger_type": campaign.get("trigger_type", "promotional"),
+                "title_template": campaign.get("title", ""),
+                "body_template": campaign.get("body", ""),
+                "channels": channels,
+                "priority": 6,
+                "min_interval_minutes": 0,
+                "max_per_day": 100
+            }
+            
+            for user in users:
+                user_id = user.get("user_id")
+                if not user_id:
+                    continue
+                
+                await self._queue_notification(
+                    user_id=user_id,
+                    trigger=trigger,
+                    variables={
+                        "user_name": user.get("name", "there"),
+                    },
+                    deep_link="/",
+                    metadata={"campaign_id": campaign.get("id"), "trigger": "campaign"}
+                )
+                sent_count += 1
+            
+            logger.info(f"Campaign {campaign.get('id')}: queued {sent_count} notifications")
+            return sent_count
+            
+        except Exception as e:
+            logger.error(f"Error sending campaign: {e}")
+            return 0
+    
+    # =========================================================================
     # PHASE 2: CONVERSION TRACKING
     # =========================================================================
     
