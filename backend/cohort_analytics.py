@@ -1508,6 +1508,16 @@ class CohortAnalyticsService:
             }
         
         return schedule
+
+
+# ============================================================================
+# ROUTER FACTORY
+# ============================================================================
+
+def create_cohort_analytics_router(db: AsyncIOMotorDatabase):
+    """Create the Cohort Analytics router"""
+    router = APIRouter(prefix="/cohort-analytics", tags=["Cohort & Retention Analytics"])
+    service = CohortAnalyticsService(db)
     
     # Initialize on startup
     @router.on_event("startup")
