@@ -1,14 +1,8 @@
 {
-  "summary": "Chat Moderation System API testing complete. 28/30 tests passed, 2 skipped (conversation workflow tests). All moderation endpoints verified working: stats, config, conversations, flags, reports, actions, moderator notes, and user reporting.",
+  "summary": "Chat Moderation System API testing complete. ALL 30/30 tests passed. All moderation endpoints verified working: stats, config, conversations, flags, reports, actions, moderator notes, and user reporting.",
   "backend_issues": {
     "critical": [],
-    "minor": [
-      {
-        "endpoint": "POST /api/conversations",
-        "issue": "listing_id requires query parameter format, not JSON body. Test helper needed update.",
-        "note": "Not a bug - just a design choice"
-      }
-    ]
+    "minor": []
   },
   "frontend_issues": {
     "ui_bugs": [],
