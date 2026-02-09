@@ -72,6 +72,14 @@ except ImportError as e:
     ESCROW_ROUTES_AVAILABLE = False
     logging.warning(f"Escrow routes not available: {e}")
 
+# Payment Processing System
+try:
+    from payment_system import create_payment_router
+    PAYMENT_ROUTES_AVAILABLE = True
+except ImportError as e:
+    PAYMENT_ROUTES_AVAILABLE = False
+    logging.warning(f"Payment routes not available: {e}")
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
