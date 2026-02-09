@@ -5780,6 +5780,13 @@ if NOTIFICATION_QUEUE_AVAILABLE and NOTIFICATION_SERVICE_AVAILABLE:
     
     logger.info("Notification queue and escrow integration loaded successfully")
 
+# AI Listing Analyzer Routes
+if AI_ANALYZER_AVAILABLE:
+    ai_router, ai_analyzer = create_ai_analyzer_router(db, get_current_user)
+    api_router.include_router(ai_router)
+    app.include_router(api_router)  # Re-include to pick up AI routes
+    logger.info("AI Listing Analyzer loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
