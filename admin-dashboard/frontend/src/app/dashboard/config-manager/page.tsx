@@ -1285,6 +1285,150 @@ export default function ConfigManagerPage() {
         </Card>
       )}
 
+      {/* Tab 6: Deployment Templates */}
+      {tabValue === 6 && (
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Box>
+                <Typography variant="h6">Deployment Templates</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Pre-configured deployment templates for common scenarios
+                </Typography>
+              </Box>
+              <IconButton onClick={fetchDeploymentTemplates}>
+                <Refresh />
+              </IconButton>
+            </Box>
+
+            <Grid container spacing={3}>
+              {deploymentTemplates.map((template) => {
+                const getIcon = () => {
+                  switch (template.icon) {
+                    case 'local_offer': return <LocalOffer />;
+                    case 'celebration': return <Celebration />;
+                    case 'build': return <Build />;
+                    case 'new_releases': return <NewReleases />;
+                    case 'flash_on': return <FlashOn />;
+                    case 'storefront': return <Storefront />;
+                    default: return <Rocket />;
+                  }
+                };
+
+                const getCategoryColor = () => {
+                  switch (template.category) {
+                    case 'promotion': return 'warning';
+                    case 'maintenance': return 'error';
+                    case 'feature': return 'info';
+                    case 'seasonal': return 'success';
+                    default: return 'default';
+                  }
+                };
+
+                return (
+                  <Grid item xs={12} sm={6} md={4} key={template.id}>
+                    <Card 
+                      variant="outlined" 
+                      sx={{ 
+                        height: '100%', 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        transition: 'all 0.2s',
+                        '&:hover': { boxShadow: 3, borderColor: 'primary.main' }
+                      }}
+                    >
+                      <CardContent sx={{ flexGrow: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                          <Avatar sx={{ bgcolor: getCategoryColor() === 'warning' ? 'warning.main' : getCategoryColor() === 'error' ? 'error.main' : getCategoryColor() === 'info' ? 'info.main' : getCategoryColor() === 'success' ? 'success.main' : 'grey.500' }}>
+                            {getIcon()}
+                          </Avatar>
+                          <Box sx={{ flexGrow: 1 }}>
+                            <Typography variant="subtitle1" fontWeight="bold">
+                              {template.name}
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 0.5 }}>
+                              <Chip 
+                                label={template.category} 
+                                size="small" 
+                                color={getCategoryColor() as any}
+                                variant="outlined"
+                              />
+                              {template.is_system && (
+                                <Chip label="System" size="small" variant="outlined" />
+                              )}
+                            </Box>
+                          </Box>
+                        </Box>
+                        
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                          {template.description}
+                        </Typography>
+                        
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+                          {Object.entries(template.config_changes).slice(0, 4).map(([key, value]) => (
+                            <Chip
+                              key={key}
+                              label={`${key.replace(/_/g, ' ')}: ${value ? 'ON' : 'OFF'}`}
+                              size="small"
+                              color={value ? 'success' : 'default'}
+                              variant="outlined"
+                              sx={{ fontSize: 10 }}
+                            />
+                          ))}
+                          {Object.keys(template.config_changes).length > 4 && (
+                            <Chip
+                              label={`+${Object.keys(template.config_changes).length - 4} more`}
+                              size="small"
+                              variant="outlined"
+                              sx={{ fontSize: 10 }}
+                            />
+                          )}
+                        </Box>
+                        
+                        <Divider sx={{ my: 1 }} />
+                        
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant="caption" color="text.secondary">
+                            Duration: {template.default_duration_hours ? `${template.default_duration_hours}h` : 'Permanent'}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Used {template.usage_count} times
+                          </Typography>
+                        </Box>
+                        
+                        {template.enable_auto_rollback && (
+                          <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Undo fontSize="small" color="info" />
+                            <Typography variant="caption" color="info.main">
+                              Auto-rollback enabled
+                            </Typography>
+                          </Box>
+                        )}
+                      </CardContent>
+                      
+                      <Box sx={{ p: 2, pt: 0 }}>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          startIcon={<PlayArrow />}
+                          onClick={() => {
+                            setSelectedTemplate(template);
+                            setUseTemplateOpen(true);
+                          }}
+                          data-testid={`use-template-${template.id}`}
+                        >
+                          Use Template
+                        </Button>
+                      </Box>
+                    </Card>
+                  </Grid>
+                );
+              })}
+            </Grid>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Tab 7: Audit Logs */}
       {tabValue === 7 && (
         <Card>
