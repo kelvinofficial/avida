@@ -386,6 +386,35 @@ export default function CompliancePage() {
     }
   }, []);
 
+  // Fetch legal documents
+  const fetchLegalDocuments = useCallback(async () => {
+    try {
+      let url = `${API_BASE}/compliance/legal-documents?limit=100`;
+      if (legalDocTypeFilter) url += `&document_type=${legalDocTypeFilter}`;
+      if (legalStatusFilter) url += `&status=${legalStatusFilter}`;
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        setLegalDocuments(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch legal documents:', error);
+    }
+  }, [legalDocTypeFilter, legalStatusFilter]);
+
+  // Fetch sandbox config
+  const fetchSandboxConfig = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE}/compliance/sandbox/config`);
+      if (response.ok) {
+        const data = await response.json();
+        setSandboxConfig(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch sandbox config:', error);
+    }
+  }, []);
+
   // Initial load
   useEffect(() => {
     const loadData = async () => {
@@ -397,11 +426,13 @@ export default function CompliancePage() {
         fetchIncidents(),
         fetchAuditLogs(),
         fetchThirdPartyProcessors(),
+        fetchLegalDocuments(),
+        fetchSandboxConfig(),
       ]);
       setLoading(false);
     };
     loadData();
-  }, [fetchDashboard, fetchDsarRequests, fetchRetentionPolicies, fetchIncidents, fetchAuditLogs, fetchThirdPartyProcessors]);
+  }, [fetchDashboard, fetchDsarRequests, fetchRetentionPolicies, fetchIncidents, fetchAuditLogs, fetchThirdPartyProcessors, fetchLegalDocuments, fetchSandboxConfig]);
 
   // Reload DSAR when filters change
   useEffect(() => {
