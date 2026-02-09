@@ -382,6 +382,56 @@ def create_conversations_router(db, require_auth, check_rate_limit, sio, create_
                 meta={"conversation_id": conversation_id}
             )
         
+        # Run async AI moderation in background (non-blocking)
+        if moderation_manager and message.message_type == "text":
+            async def run_ai_moderation():
+                """Background task for AI moderation"""
+                try:
+                    moderation_result = await moderation_manager.moderate_message(
+                        message_id=new_message["id"],
+                        conversation_id=conversation_id,
+                        content=message.content,
+                        sender_id=user.user_id
+                    )
+                    
+                    # Update message moderation status
+                    if moderation_result.get("is_violation"):
+                        await db.messages.update_one(
+                            {"id": new_message["id"]},
+                            {"$set": {
+                                "moderation_status": "flagged",
+                                "moderation_risk": moderation_result.get("risk_level"),
+                                "moderation_reasons": moderation_result.get("reason_tags", [])
+                            }}
+                        )
+                        
+                        # Emit moderation event to conversation room
+                        if sio:
+                            await sio.emit("message_flagged", {
+                                "conversation_id": conversation_id,
+                                "message_id": new_message["id"],
+                                "risk_level": moderation_result.get("risk_level"),
+                                "reasons": moderation_result.get("reason_tags", [])
+                            }, room=conversation_id)
+                        
+                        logger.info(f"Message {new_message['id']} flagged: {moderation_result.get('reason_tags')}")
+                    else:
+                        # Mark as clean
+                        await db.messages.update_one(
+                            {"id": new_message["id"]},
+                            {"$set": {"moderation_status": "clean"}}
+                        )
+                except Exception as e:
+                    logger.error(f"Background AI moderation failed for message {new_message['id']}: {e}")
+                    # Mark as pending review on failure (fail-safe)
+                    await db.messages.update_one(
+                        {"id": new_message["id"]},
+                        {"$set": {"moderation_status": "pending_review"}}
+                    )
+            
+            # Schedule background task (non-blocking)
+            asyncio.create_task(run_ai_moderation())
+        
         return response_message
     
     return router
