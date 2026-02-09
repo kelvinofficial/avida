@@ -6,9 +6,18 @@ Contains modular route handlers extracted from server.py
 from .auth import create_auth_router
 from .users import create_users_router
 from .listings import create_listings_router
+from .categories import create_categories_router, DEFAULT_CATEGORIES, LEGACY_CATEGORY_MAP, validate_category_and_subcategory
+from .favorites import create_favorites_router
+from .conversations import create_conversations_router
 
 __all__ = [
     'create_auth_router',
     'create_users_router',
-    'create_listings_router'
+    'create_listings_router',
+    'create_categories_router',
+    'create_favorites_router',
+    'create_conversations_router',
+    'DEFAULT_CATEGORIES',
+    'LEGACY_CATEGORY_MAP',
+    'validate_category_and_subcategory',
 ]
