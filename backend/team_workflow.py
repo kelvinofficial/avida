@@ -1569,7 +1569,16 @@ class TeamWorkflowService:
         if not settings:
             now = datetime.now(timezone.utc).isoformat()
             settings = TeamSettings(updated_at=now, updated_by="system").dict()
-            await self.settings.insert_one(settings)
+            await self.settings.insert_one(settings.copy())
+        
+        # Ensure new fields exist (migration for existing documents)
+        if "roles_requiring_2fa" not in settings:
+            settings["roles_requiring_2fa"] = ["super_admin", "admin", "finance"]
+            await self.settings.update_one(
+                {"id": "default"}, 
+                {"$set": {"roles_requiring_2fa": settings["roles_requiring_2fa"]}}
+            )
+        
         return settings
     
     async def update_settings(
