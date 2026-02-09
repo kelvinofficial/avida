@@ -194,6 +194,14 @@ Build a comprehensive admin dashboard for a marketplace application with feature
     - `GET/PUT /api/ai-analyzer/admin/settings` - Admin settings
     - `GET /api/ai-analyzer/admin/analytics` - Usage analytics
     - `POST /api/ai-analyzer/admin/clear-cache` - Clear AI cache
+  - **AI-Powered Price Suggestions**:
+    - Optional "Get AI Price Suggestion" button on Publish Listing page
+    - Searches database for similar listings (brand, model, category)
+    - AI analyzes market data + condition to suggest optimal price range
+    - Returns: min_price, max_price, recommended_price, reasoning, tip
+    - Quick apply buttons: "Quick Sale" (min), "Best Value" (recommended), "Premium" (max)
+    - Works even without market data (AI uses product knowledge as fallback)
+    - Admin-controlled via "Enable Price Suggestions" toggle
 
 ### Analytics System Details
 
