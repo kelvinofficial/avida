@@ -13,353 +13,146 @@ from datetime import datetime
 
 BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://server-split-3.preview.emergentagent.com')
 
-class TestReportAPI:
-    """Test user-facing Report API endpoints"""
+# Global test data - initialized once per module
+_test_data = {}
+
+
+def setup_module(module):
+    """Setup test users, listing, and conversation once for all tests"""
+    global _test_data
     
-    # Test credentials
-    test_email_reporter = f"test_reporter_{uuid.uuid4().hex[:8]}@test.com"
-    test_email_other = f"test_other_{uuid.uuid4().hex[:8]}@test.com"
-    test_password = "test123456"
+    session = requests.Session()
+    session.headers.update({"Content-Type": "application/json"})
     
-    @pytest.fixture(scope="class")
-    def api_client(self):
-        """Create base API client"""
-        session = requests.Session()
-        session.headers.update({"Content-Type": "application/json"})
-        return session
+    # Create reporter user
+    reporter_email = f"test_reporter_{uuid.uuid4().hex[:8]}@test.com"
+    reg_resp = session.post(f"{BASE_URL}/api/auth/register", json={
+        "email": reporter_email,
+        "password": "test123456",
+        "name": "Test Reporter"
+    })
+    assert reg_resp.status_code in [200, 201, 400], f"Failed to register reporter: {reg_resp.text}"
     
-    @pytest.fixture(scope="class")
-    def reporter_user(self, api_client):
-        """Create and login reporter user"""
-        # Register
-        register_resp = api_client.post(f"{BASE_URL}/api/auth/register", json={
-            "email": self.test_email_reporter,
-            "password": self.test_password,
-            "name": "Test Reporter"
-        })
-        
-        if register_resp.status_code not in [200, 201, 400]:  # 400 if user exists
-            pytest.fail(f"Failed to register reporter: {register_resp.status_code} - {register_resp.text}")
-        
-        # Login
-        login_resp = api_client.post(f"{BASE_URL}/api/auth/login", json={
-            "email": self.test_email_reporter,
-            "password": self.test_password
-        })
-        
-        if login_resp.status_code != 200:
-            pytest.fail(f"Failed to login reporter: {login_resp.status_code} - {login_resp.text}")
-        
-        data = login_resp.json()
-        return {
-            "user_id": data.get("user", {}).get("user_id"),
-            "token": data.get("session_token"),
-            "email": self.test_email_reporter
-        }
+    login_resp = session.post(f"{BASE_URL}/api/auth/login", json={
+        "email": reporter_email,
+        "password": "test123456"
+    })
+    assert login_resp.status_code == 200, f"Failed to login reporter: {login_resp.text}"
+    reporter_data = login_resp.json()
     
-    @pytest.fixture(scope="class")
-    def other_user(self, api_client):
-        """Create and login the other user"""
-        # Register
-        register_resp = api_client.post(f"{BASE_URL}/api/auth/register", json={
-            "email": self.test_email_other,
-            "password": self.test_password,
-            "name": "Other User"
-        })
-        
-        if register_resp.status_code not in [200, 201, 400]:  # 400 if user exists
-            pytest.fail(f"Failed to register other user: {register_resp.status_code} - {register_resp.text}")
-        
-        # Login
-        login_resp = api_client.post(f"{BASE_URL}/api/auth/login", json={
-            "email": self.test_email_other,
-            "password": self.test_password
-        })
-        
-        if login_resp.status_code != 200:
-            pytest.fail(f"Failed to login other user: {login_resp.status_code} - {login_resp.text}")
-        
-        data = login_resp.json()
-        return {
-            "user_id": data.get("user", {}).get("user_id"),
-            "token": data.get("session_token"),
-            "email": self.test_email_other
-        }
+    _test_data['reporter'] = {
+        "user_id": reporter_data.get("user", {}).get("user_id"),
+        "token": reporter_data.get("session_token"),
+        "email": reporter_email
+    }
     
-    @pytest.fixture(scope="class")
-    def test_listing(self, api_client, other_user):
-        """Create test listing by other user"""
-        headers = {"Authorization": f"Bearer {other_user['token']}"}
-        
-        listing_data = {
-            "title": f"Test Listing for Report API {uuid.uuid4().hex[:8]}",
-            "description": "Test listing for report functionality",
-            "price": 100,
-            "category_id": "electronics",
-            "subcategory": "laptops_computers",
-            "condition": "new",
-            "location": "Test Location",
-            "images": []
-        }
-        
-        response = api_client.post(
-            f"{BASE_URL}/api/listings",
-            json=listing_data,
-            headers=headers
-        )
-        
-        if response.status_code not in [200, 201]:
-            pytest.fail(f"Failed to create listing: {response.status_code} - {response.text}")
-        
-        return response.json()
+    # Create listing owner (other user)
+    other_email = f"test_other_{uuid.uuid4().hex[:8]}@test.com"
+    reg_resp = session.post(f"{BASE_URL}/api/auth/register", json={
+        "email": other_email,
+        "password": "test123456",
+        "name": "Other User"
+    })
+    assert reg_resp.status_code in [200, 201, 400], f"Failed to register other: {reg_resp.text}"
     
-    @pytest.fixture(scope="class")
-    def test_conversation(self, api_client, reporter_user, test_listing):
-        """Create conversation between reporter and listing owner"""
-        headers = {"Authorization": f"Bearer {reporter_user['token']}"}
-        
-        # Create conversation by starting chat on listing
-        response = api_client.post(
-            f"{BASE_URL}/api/conversations?listing_id={test_listing['id']}",
-            headers=headers
-        )
-        
-        if response.status_code not in [200, 201]:
-            pytest.fail(f"Failed to create conversation: {response.status_code} - {response.text}")
-        
-        return response.json()
+    login_resp = session.post(f"{BASE_URL}/api/auth/login", json={
+        "email": other_email,
+        "password": "test123456"
+    })
+    assert login_resp.status_code == 200, f"Failed to login other: {login_resp.text}"
+    other_data = login_resp.json()
     
-    # =========================================================================
-    # GET /api/report/reasons Tests
-    # =========================================================================
+    _test_data['other'] = {
+        "user_id": other_data.get("user", {}).get("user_id"),
+        "token": other_data.get("session_token"),
+        "email": other_email
+    }
     
-    def test_get_report_reasons_returns_200(self, api_client):
+    # Create listing by OTHER user
+    listing_data = {
+        "title": f"Test Listing for Report API {uuid.uuid4().hex[:8]}",
+        "description": "Test listing for report functionality",
+        "price": 100,
+        "category_id": "electronics",
+        "subcategory": "laptops_computers",
+        "condition": "new",
+        "location": "Test Location",
+        "images": []
+    }
+    
+    list_resp = session.post(
+        f"{BASE_URL}/api/listings",
+        json=listing_data,
+        headers={"Authorization": f"Bearer {_test_data['other']['token']}"}
+    )
+    assert list_resp.status_code in [200, 201], f"Failed to create listing: {list_resp.text}"
+    _test_data['listing'] = list_resp.json()
+    
+    # Create conversation - REPORTER starts chat on OTHER's listing
+    conv_resp = session.post(
+        f"{BASE_URL}/api/conversations?listing_id={_test_data['listing']['id']}",
+        headers={"Authorization": f"Bearer {_test_data['reporter']['token']}"}
+    )
+    assert conv_resp.status_code in [200, 201], f"Failed to create conversation: {conv_resp.text}"
+    _test_data['conversation'] = conv_resp.json()
+    
+    print(f"Setup complete: reporter={_test_data['reporter']['user_id']}, other={_test_data['other']['user_id']}")
+    print(f"Listing owner: {_test_data['listing'].get('user_id')}")
+    print(f"Conversation: {_test_data['conversation']['id']}")
+
+
+class TestReportReasons:
+    """Test GET /api/report/reasons endpoint"""
+    
+    def test_returns_200(self):
         """Test GET /api/report/reasons returns 200 OK"""
-        response = api_client.get(f"{BASE_URL}/api/report/reasons")
-        
+        response = requests.get(f"{BASE_URL}/api/report/reasons")
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         print("GET /api/report/reasons returns 200 OK")
     
-    def test_get_report_reasons_returns_7_reasons(self, api_client):
+    def test_returns_7_reasons(self):
         """Test GET /api/report/reasons returns exactly 7 report reasons"""
-        response = api_client.get(f"{BASE_URL}/api/report/reasons")
+        response = requests.get(f"{BASE_URL}/api/report/reasons")
         data = response.json()
         
         assert "reasons" in data, "Response should contain 'reasons' key"
-        reasons = data["reasons"]
-        
-        assert len(reasons) == 7, f"Expected 7 reasons, got {len(reasons)}"
-        print(f"GET /api/report/reasons returns {len(reasons)} reasons")
+        assert len(data["reasons"]) == 7, f"Expected 7 reasons, got {len(data['reasons'])}"
+        print(f"GET /api/report/reasons returns {len(data['reasons'])} reasons")
     
-    def test_get_report_reasons_has_correct_ids(self, api_client):
+    def test_has_correct_ids(self):
         """Test report reasons contain all expected IDs"""
-        response = api_client.get(f"{BASE_URL}/api/report/reasons")
+        response = requests.get(f"{BASE_URL}/api/report/reasons")
         data = response.json()
-        reasons = data["reasons"]
         
         expected_ids = ["scam", "abuse", "fake_listing", "off_platform_payment", "harassment", "spam", "other"]
-        actual_ids = [r["id"] for r in reasons]
+        actual_ids = [r["id"] for r in data["reasons"]]
         
         for expected_id in expected_ids:
             assert expected_id in actual_ids, f"Missing reason ID: {expected_id}"
         
         print(f"All expected reason IDs present: {expected_ids}")
     
-    def test_get_report_reasons_has_labels(self, api_client):
+    def test_has_labels(self):
         """Test each report reason has both id and label"""
-        response = api_client.get(f"{BASE_URL}/api/report/reasons")
+        response = requests.get(f"{BASE_URL}/api/report/reasons")
         data = response.json()
-        reasons = data["reasons"]
         
-        for reason in reasons:
+        for reason in data["reasons"]:
             assert "id" in reason, f"Reason missing 'id': {reason}"
             assert "label" in reason, f"Reason missing 'label': {reason}"
             assert reason["label"], f"Reason has empty label: {reason}"
         
         print("All reasons have id and non-empty label")
     
-    # =========================================================================
-    # POST /api/report/message Tests - Authentication
-    # =========================================================================
-    
-    def test_report_message_requires_auth(self, api_client):
-        """Test POST /api/report/message requires authentication"""
-        response = api_client.post(f"{BASE_URL}/api/report/message", json={
-            "conversation_id": "test-conv-id",
-            "reason": "scam"
-        })
-        
-        # Should return 401 or 403 without auth
-        assert response.status_code in [401, 403], f"Expected 401/403 without auth, got {response.status_code}"
-        print(f"POST /api/report/message returns {response.status_code} without auth (correct)")
-    
-    # =========================================================================
-    # POST /api/report/message Tests - Success Cases
-    # =========================================================================
-    
-    def test_report_message_success_with_reason_only(self, api_client, reporter_user, test_conversation):
-        """Test POST /api/report/message succeeds with just conversation_id and reason"""
-        headers = {"Authorization": f"Bearer {reporter_user['token']}"}
-        
-        response = api_client.post(f"{BASE_URL}/api/report/message", json={
-            "conversation_id": test_conversation["id"],
-            "reason": "scam"
-        }, headers=headers)
-        
-        assert response.status_code in [200, 201], f"Expected 200/201, got {response.status_code}: {response.text}"
-        
-        data = response.json()
-        assert "report_id" in data or "message" in data, f"Response should contain report_id or message: {data}"
-        print(f"Report submitted successfully: {data}")
-    
-    def test_report_message_success_with_description(self, api_client, reporter_user, test_conversation):
-        """Test POST /api/report/message succeeds with description"""
-        headers = {"Authorization": f"Bearer {reporter_user['token']}"}
-        
-        response = api_client.post(f"{BASE_URL}/api/report/message", json={
-            "conversation_id": test_conversation["id"],
-            "reason": "harassment",
-            "description": "Test description for harassment report"
-        }, headers=headers)
-        
-        assert response.status_code in [200, 201], f"Expected 200/201, got {response.status_code}: {response.text}"
-        print("Report with description submitted successfully")
-    
-    def test_report_message_all_reasons(self, api_client, reporter_user, test_conversation):
-        """Test POST /api/report/message accepts all 7 reason types"""
-        headers = {"Authorization": f"Bearer {reporter_user['token']}"}
-        
-        reasons = ["scam", "abuse", "fake_listing", "off_platform_payment", "harassment", "spam", "other"]
-        
-        for reason in reasons:
-            response = api_client.post(f"{BASE_URL}/api/report/message", json={
-                "conversation_id": test_conversation["id"],
-                "reason": reason,
-                "description": f"Test report with reason: {reason}"
-            }, headers=headers)
-            
-            assert response.status_code in [200, 201], f"Reason '{reason}' failed: {response.status_code} - {response.text}"
-            print(f"  Reason '{reason}' accepted")
-        
-        print("All 7 reason types accepted successfully")
-    
-    # =========================================================================
-    # POST /api/report/message Tests - Error Cases
-    # =========================================================================
-    
-    def test_report_message_invalid_conversation(self, api_client, reporter_user):
-        """Test POST /api/report/message returns 404 for non-existent conversation"""
-        headers = {"Authorization": f"Bearer {reporter_user['token']}"}
-        
-        response = api_client.post(f"{BASE_URL}/api/report/message", json={
-            "conversation_id": "non-existent-conversation-id",
-            "reason": "scam"
-        }, headers=headers)
-        
-        assert response.status_code == 404, f"Expected 404 for non-existent conv, got {response.status_code}"
-        print("POST /api/report/message returns 404 for non-existent conversation")
-    
-    def test_report_message_not_participant(self, api_client, other_user, test_listing):
-        """Test POST /api/report/message returns 403 when user not in conversation"""
-        headers = {"Authorization": f"Bearer {other_user['token']}"}
-        
-        # Create a new conversation as reporter user
-        reporter_session = requests.Session()
-        reporter_session.headers.update({"Content-Type": "application/json"})
-        
-        # Create another user who is not part of the conversation
-        third_email = f"test_third_{uuid.uuid4().hex[:8]}@test.com"
-        reporter_session.post(f"{BASE_URL}/api/auth/register", json={
-            "email": third_email,
-            "password": "test123456",
-            "name": "Third User"
-        })
-        
-        login_resp = reporter_session.post(f"{BASE_URL}/api/auth/login", json={
-            "email": third_email,
-            "password": "test123456"
-        })
-        
-        if login_resp.status_code == 200:
-            third_token = login_resp.json().get("token")
-            third_headers = {"Authorization": f"Bearer {third_token}"}
-            
-            # Create a conversation for the third user with listing owner
-            third_listing_data = {
-                "title": f"Third User Listing {uuid.uuid4().hex[:8]}",
-                "description": "Listing by third user",
-                "price": 50,
-                "category_id": "electronics",
-                "subcategory": "laptops_computers",
-                "condition": "new",
-                "location": "Test Location",
-                "images": []
-            }
-            listing_resp = reporter_session.post(f"{BASE_URL}/api/listings", json=third_listing_data, headers=third_headers)
-            
-            if listing_resp.status_code in [200, 201]:
-                third_listing = listing_resp.json()
-                
-                # Now other_user tries to create conv and report it
-                conv_resp = api_client.post(f"{BASE_URL}/api/conversations?listing_id={third_listing['id']}", headers=headers)
-                
-                if conv_resp.status_code in [200, 201]:
-                    conv_id = conv_resp.json().get("id")
-                    
-                    # Try to report with third user (who is seller, so should be allowed)
-                    # Instead, we need to test with a completely unrelated user
-                    # Skip this test if we can't set up the scenario properly
-                    print("Test scenario setup successful - user must be participant")
-        
-        print("Verified: Report API checks user participation in conversation")
-    
-    # =========================================================================
-    # Verification Tests - Check Database Entries
-    # =========================================================================
-    
-    def test_report_creates_database_entry(self, api_client, reporter_user, test_conversation):
-        """Test that submitting report creates entry in user_reports collection"""
-        headers = {"Authorization": f"Bearer {reporter_user['token']}"}
-        
-        # Create unique report
-        unique_desc = f"unique_test_report_{uuid.uuid4().hex}"
-        
-        response = api_client.post(f"{BASE_URL}/api/report/message", json={
-            "conversation_id": test_conversation["id"],
-            "reason": "other",
-            "description": unique_desc
-        }, headers=headers)
-        
-        assert response.status_code in [200, 201], f"Failed to create report: {response.status_code}"
-        
-        data = response.json()
-        report_id = data.get("report_id")
-        assert report_id, f"Response should contain report_id: {data}"
-        
-        print(f"Report created with ID: {report_id}")
-        print("Report entry created in user_reports collection")
-
-
-class TestReportAPIEdgeCases:
-    """Test edge cases and validation for Report API"""
-    
-    @pytest.fixture(scope="class")
-    def api_client(self):
-        session = requests.Session()
-        session.headers.update({"Content-Type": "application/json"})
-        return session
-    
-    def test_report_reasons_endpoint_is_public(self, api_client):
+    def test_endpoint_is_public(self):
         """Test that /api/report/reasons does not require authentication"""
-        response = api_client.get(f"{BASE_URL}/api/report/reasons")
-        
-        # Should NOT return 401/403
+        response = requests.get(f"{BASE_URL}/api/report/reasons")
         assert response.status_code == 200, f"Report reasons should be public, got {response.status_code}"
         print("GET /api/report/reasons is public (no auth required)")
     
-    def test_report_reasons_response_format(self, api_client):
+    def test_response_format(self):
         """Test the exact format of report reasons response"""
-        response = api_client.get(f"{BASE_URL}/api/report/reasons")
+        response = requests.get(f"{BASE_URL}/api/report/reasons")
         data = response.json()
         
         expected_reasons = [
@@ -372,7 +165,6 @@ class TestReportAPIEdgeCases:
             {"id": "other", "label": "Other"}
         ]
         
-        # Verify each expected reason is present
         for expected in expected_reasons:
             found = any(
                 r["id"] == expected["id"] and r["label"] == expected["label"]
@@ -381,6 +173,101 @@ class TestReportAPIEdgeCases:
             assert found, f"Expected reason not found or mismatch: {expected}"
         
         print("Report reasons response format verified correctly")
+
+
+class TestReportAuthentication:
+    """Test authentication requirements for report endpoints"""
+    
+    def test_requires_auth(self):
+        """Test POST /api/report/message requires authentication"""
+        response = requests.post(f"{BASE_URL}/api/report/message", json={
+            "conversation_id": "test-conv-id",
+            "reason": "scam"
+        })
+        assert response.status_code in [401, 403], f"Expected 401/403 without auth, got {response.status_code}"
+        print(f"POST /api/report/message returns {response.status_code} without auth (correct)")
+    
+    def test_invalid_conversation_returns_404(self):
+        """Test POST /api/report/message returns 404 for non-existent conversation"""
+        headers = {"Authorization": f"Bearer {_test_data['reporter']['token']}"}
+        
+        response = requests.post(f"{BASE_URL}/api/report/message", json={
+            "conversation_id": "non-existent-conversation-id",
+            "reason": "scam"
+        }, headers=headers)
+        
+        assert response.status_code == 404, f"Expected 404 for non-existent conv, got {response.status_code}"
+        print("POST /api/report/message returns 404 for non-existent conversation")
+
+
+class TestReportSubmission:
+    """Test successful report submission"""
+    
+    def test_success_with_reason_only(self):
+        """Test POST /api/report/message succeeds with just conversation_id and reason"""
+        headers = {"Authorization": f"Bearer {_test_data['reporter']['token']}"}
+        
+        response = requests.post(f"{BASE_URL}/api/report/message", json={
+            "conversation_id": _test_data['conversation']['id'],
+            "reason": "scam"
+        }, headers=headers)
+        
+        assert response.status_code in [200, 201], f"Expected 200/201, got {response.status_code}: {response.text}"
+        
+        data = response.json()
+        assert "report_id" in data or "message" in data, f"Response should contain report_id or message: {data}"
+        print(f"Report submitted successfully: {data}")
+    
+    def test_success_with_description(self):
+        """Test POST /api/report/message succeeds with description"""
+        headers = {"Authorization": f"Bearer {_test_data['reporter']['token']}"}
+        
+        response = requests.post(f"{BASE_URL}/api/report/message", json={
+            "conversation_id": _test_data['conversation']['id'],
+            "reason": "harassment",
+            "description": "Test description for harassment report"
+        }, headers=headers)
+        
+        assert response.status_code in [200, 201], f"Expected 200/201, got {response.status_code}: {response.text}"
+        print("Report with description submitted successfully")
+    
+    def test_all_reasons_accepted(self):
+        """Test POST /api/report/message accepts all 7 reason types"""
+        headers = {"Authorization": f"Bearer {_test_data['reporter']['token']}"}
+        
+        reasons = ["scam", "abuse", "fake_listing", "off_platform_payment", "harassment", "spam", "other"]
+        
+        for reason in reasons:
+            response = requests.post(f"{BASE_URL}/api/report/message", json={
+                "conversation_id": _test_data['conversation']['id'],
+                "reason": reason,
+                "description": f"Test report with reason: {reason}"
+            }, headers=headers)
+            
+            assert response.status_code in [200, 201], f"Reason '{reason}' failed: {response.status_code} - {response.text}"
+            print(f"  Reason '{reason}' accepted")
+        
+        print("All 7 reason types accepted successfully")
+    
+    def test_creates_database_entry(self):
+        """Test that submitting report creates entry with report_id returned"""
+        headers = {"Authorization": f"Bearer {_test_data['reporter']['token']}"}
+        
+        unique_desc = f"unique_test_report_{uuid.uuid4().hex}"
+        
+        response = requests.post(f"{BASE_URL}/api/report/message", json={
+            "conversation_id": _test_data['conversation']['id'],
+            "reason": "other",
+            "description": unique_desc
+        }, headers=headers)
+        
+        assert response.status_code in [200, 201], f"Failed to create report: {response.status_code}"
+        
+        data = response.json()
+        assert "report_id" in data, f"Response should contain report_id: {data}"
+        
+        print(f"Report created with ID: {data['report_id']}")
+        print("Report entry created in user_reports collection")
 
 
 if __name__ == "__main__":
