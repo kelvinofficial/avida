@@ -5661,6 +5661,31 @@ if BANNER_ROUTES_AVAILABLE:
     app.include_router(api_router)  # Re-include to pick up banner routes
     logger.info("Banner routes loaded successfully")
 
+# Escrow & Online Selling System Routes
+if ESCROW_ROUTES_AVAILABLE:
+    async def get_current_user_for_escrow(request: Request):
+        """Wrapper for escrow routes authentication"""
+        user = await get_current_user(request)
+        if not user:
+            return None
+        return user
+    
+    async def get_current_admin_for_escrow(request: Request) -> dict:
+        """Wrapper for escrow admin authentication"""
+        user = await get_current_user(request)
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        return {"user_id": user.user_id, "email": user.email, "is_admin": True}
+    
+    escrow_router, escrow_service = create_escrow_router(
+        db,
+        get_current_user_for_escrow,
+        get_current_admin_for_escrow
+    )
+    api_router.include_router(escrow_router)
+    app.include_router(api_router)  # Re-include to pick up escrow routes
+    logger.info("Escrow & Online Selling routes loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
