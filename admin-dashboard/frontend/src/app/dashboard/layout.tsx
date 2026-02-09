@@ -75,6 +75,7 @@ const menuItems = [
   { text: 'Analytics', icon: <Analytics />, path: '/dashboard/analytics' },
   { text: 'Banners', icon: <Campaign />, path: '/dashboard/banners' },
   { text: 'Moderation', icon: <Shield />, path: '/dashboard/moderation' },
+  { text: 'Data Privacy', icon: <Security />, path: '/dashboard/compliance' },
   { text: 'Notifications', icon: <NotificationsActive />, path: '/dashboard/notifications' },
   { text: 'Smart Notifications', icon: <Notifications />, path: '/dashboard/smart-notifications' },
   { text: 'Notification Analytics', icon: <TrendingUp />, path: '/dashboard/notification-analytics' },
