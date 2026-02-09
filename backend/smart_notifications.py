@@ -1039,7 +1039,7 @@ class SmartNotificationService:
         # Parse quiet hours
         start = consent.get("quiet_hours_start", "22:00")
         end = consent.get("quiet_hours_end", "08:00")
-        tz = consent.get("quiet_hours_timezone", "UTC")
+        # Note: timezone support can be added later for full i18n
         
         # Get current time in user's timezone (simplified - using UTC)
         now = datetime.now(timezone.utc)
