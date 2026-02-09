@@ -181,6 +181,14 @@ except ImportError as e:
     TEAM_WORKFLOW_AVAILABLE = False
     logging.warning(f"Team Workflow not available: {e}")
 
+# Cohort & Retention Analytics
+try:
+    from cohort_analytics import create_cohort_analytics_router, CohortAnalyticsService
+    COHORT_ANALYTICS_AVAILABLE = True
+except ImportError as e:
+    COHORT_ANALYTICS_AVAILABLE = False
+    logging.warning(f"Cohort Analytics not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
