@@ -160,9 +160,97 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 ### Frontend (Mobile)
 - `/app/frontend/app/performance/[listing_id].tsx` - Performance screen
 - `/app/frontend/app/profile/my-listings.tsx` - My Listings with Performance button
+- `/app/frontend/app/checkout/[listing_id].tsx` - Multi-step checkout flow
+- `/app/frontend/app/checkout/success.tsx` - Payment success page
+- `/app/frontend/app/checkout/pending.tsx` - Mobile Money pending page
+- `/app/frontend/app/profile/orders.tsx` - Seller orders management
+- `/app/frontend/app/listing/[id].tsx` - Updated with Buy Now button
 
 ### Tests
 - `/app/backend/tests/test_performance_analytics.py` - Backend API tests
+- `/app/backend/tests/test_escrow_payment_apis.py` - Escrow and Payment API tests
+
+---
+
+## Premium Verified Seller Online Selling System with Escrow Payments ✅ (Feb 9, 2026)
+
+### Overview
+Complete escrow-based payment system allowing verified premium sellers to accept online payments with buyer protection.
+
+### Backend Implementation
+- **`/app/backend/escrow_system.py`**: Core escrow system with:
+  - Order lifecycle management (pending → paid → shipped → delivered → completed)
+  - Escrow status tracking (pending → funded → releasing → released)
+  - Dispute handling with admin resolution
+  - Auto-release background job (7 days after shipping if no dispute)
+  - VAT configuration by country (9 countries preconfigured)
+  - Commission configuration (default 5%)
+  - Transport pricing matrix with distance-based calculation
+  
+- **`/app/backend/payment_system.py`**: Unified payment service:
+  - **Stripe**: Card payments via emergentintegrations library
+  - **PayPal**: OAuth flow with authorization and capture
+  - **Vodacom Mobile Money**: M-Pesa via Flutterwave (Tanzania)
+  - Webhook handlers for all providers
+  - Automatic escrow funding on successful payment
+
+### API Endpoints
+**Public:**
+- `GET /api/escrow/transport-pricing` - Available delivery options
+- `GET /api/escrow/vat-configs` - VAT by country
+- `GET /api/escrow/commission-configs` - Commission rates
+- `GET /api/escrow/seller/{seller_id}/can-sell-online` - Seller verification check
+- `POST /api/escrow/calculate-order-price` - Price breakdown calculator
+- `POST /api/escrow/calculate-transport` - Transport cost calculator
+
+**Buyer:**
+- `POST /api/escrow/orders/create` - Create new order
+- `GET /api/escrow/buyer/orders` - List buyer's orders
+- `POST /api/escrow/orders/{order_id}/confirm` - Confirm delivery
+- `POST /api/escrow/orders/{order_id}/dispute` - Open dispute
+
+**Seller:**
+- `GET /api/escrow/seller/orders` - List seller's orders
+- `POST /api/escrow/orders/{order_id}/ship` - Mark as shipped
+
+**Admin:**
+- `POST /api/escrow/admin/verify-seller/{seller_id}` - Verify/unverify seller
+- `GET /api/escrow/admin/verified-sellers` - List verified sellers
+- `GET /api/escrow/admin/orders` - All orders
+- `GET /api/escrow/admin/disputes` - All disputes
+- `POST /api/escrow/admin/disputes/{dispute_id}/resolve` - Resolve dispute
+- `POST /api/escrow/admin/orders/{order_id}/release-escrow` - Manual release
+
+**Payments:**
+- `POST /api/payments/create` - Create Stripe/PayPal payment
+- `POST /api/payments/mobile-money` - Create M-Pesa payment
+- `GET /api/payments/verify/stripe/{session_id}` - Verify Stripe
+- `POST /api/payments/verify/paypal/{order_id}` - Capture PayPal
+- `GET /api/payments/verify/mobile-money/{tx_ref}` - Verify M-Pesa
+- `POST /api/payments/webhook/stripe` - Stripe webhook
+- `POST /api/payments/webhook/flutterwave` - Flutterwave webhook
+
+### Frontend Implementation
+- **Buy Now Button**: Blue prominent button with escrow shield badge, only shows for verified sellers
+- **Multi-step Checkout Flow**:
+  1. **Order Summary**: Item details, seller info, escrow protection banner
+  2. **Delivery**: Pickup (free) or Door Delivery with address form
+  3. **Payment**: Card, PayPal, or Mobile Money selection
+  4. **Review**: Price breakdown with VAT, confirm and pay
+- **Seller Orders Page**: Stats, earnings, order list with ship/status actions
+- **Success/Pending Pages**: Payment confirmation with escrow info
+
+### Configuration
+- **VAT**: US 0%, UK 20%, DE 19%, FR 20%, KE 16%, NG 7.5%, ZA 15%, UG 18%, TZ 18%
+- **Commission**: 5% default (hidden from buyers)
+- **Transport**: Base €5 + €0.15/km + €0.50/kg
+- **Escrow Auto-Release**: 7 days after shipping
+
+### Test Status
+- Backend: 11/11 tests passed (100%)
+- Frontend: All features verified working
+- Test Seller: user_3fe547c78c76 (verified)
+- Test Listing: 5375f0a3-e119-4e70-9b80-8214c61f7d64
 
 ---
 
@@ -170,6 +258,7 @@ Build a comprehensive admin dashboard for a marketplace application with feature
 - Backend Tests: 52/52 passed (core features)
 - Analytics Backend: 100% pass (14/14 tests - iteration 10)
 - Analytics Frontend: 100% verified
+- Escrow/Payment APIs: 100% pass (11/11 tests - iteration 12)
 
 ---
-Last Updated: February 8, 2026
+Last Updated: February 9, 2026
