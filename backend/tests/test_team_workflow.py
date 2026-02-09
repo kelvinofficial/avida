@@ -229,10 +229,10 @@ class TestTasks:
         """PUT /api/team/tasks/{id} updates task status"""
         task_id = created_task['id']
         
-        # Update to in_progress
+        # Update to in_progress - API expects nested 'updates' object
         response = requests.put(
             f"{BASE_URL}/api/team/tasks/{task_id}",
-            json={"status": "in_progress", "updated_by": "test_admin"}
+            json={"updates": {"status": "in_progress"}, "updated_by": "test_admin"}
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
