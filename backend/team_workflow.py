@@ -656,7 +656,7 @@ class TeamWorkflowService:
             raise HTTPException(status_code=400, detail="Invalid role_id")
         
         # Check for duplicate email
-        existing = await self.team_members.find_one({"email": email})
+        existing = await self.team_members.find_one({"email": email}, {"_id": 0})
         if existing:
             raise HTTPException(status_code=400, detail="Email already registered")
         
