@@ -878,6 +878,33 @@ A fully isolated environment for admins to safely test all platform features wit
 
 Test file: `/app/backend/tests/test_sandbox_system.py`
 
+### Main App Sandbox Indicator - Complete (Feb 9, 2026)
+
+**Overview:**
+Visual sandbox mode indicator in the main customer-facing app when an admin is testing.
+
+**Components:**
+- `SandboxProvider` - React context providing sandbox state to entire app
+- `SandboxBanner` - Prominent orange banner at top of all pages showing:
+  - "SANDBOX" badge with flask icon
+  - Current role selector (Buyer/Seller/Transport/Admin)
+  - Time offset indicator (if fast-forwarded)
+  - "Exit" button to end sandbox session
+  - Striped orange/black border for visual distinction
+
+**Features:**
+- Persists sandbox session in AsyncStorage
+- Role switching modal with all 4 user types
+- Automatically checks for active session on app load
+- Non-intrusive when not in sandbox mode
+
+**Files Created:**
+- `/app/frontend/src/utils/sandboxContext.tsx` - Sandbox state management
+- `/app/frontend/src/components/SandboxBanner.tsx` - Visual indicator component
+
+**Files Updated:**
+- `/app/frontend/app/_layout.tsx` - Added SandboxProvider and SandboxBanner
+
 ---
 
 ### Pending Tasks (P1)
