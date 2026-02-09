@@ -149,6 +149,14 @@ except ImportError as e:
     PLATFORM_CONFIG_AVAILABLE = False
     logging.warning(f"Platform Config not available: {e}")
 
+# API Integrations Manager
+try:
+    from api_integrations import create_integrations_router, IntegrationsManagerService
+    API_INTEGRATIONS_AVAILABLE = True
+except ImportError as e:
+    API_INTEGRATIONS_AVAILABLE = False
+    logging.warning(f"API Integrations not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
