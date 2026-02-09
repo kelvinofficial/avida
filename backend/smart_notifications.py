@@ -10,6 +10,7 @@ Features:
 - Admin controls and user preferences
 - Phase 4: FCM integration, user segmentation, campaign scheduling, analytics
 - Phase 5: Multi-language templates (i18n), campaign automation, visual segment builder
+- Phase 6: AI-powered notification content personalization
 """
 
 import os
@@ -22,8 +23,496 @@ from enum import Enum
 from pydantic import BaseModel, Field
 import hashlib
 import json
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
+
+# =============================================================================
+# AI PERSONALIZATION - PHASE 6
+# =============================================================================
+
+EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
+AI_PERSONALIZATION_ENABLED = False
+llm_chat_class = None
+
+if EMERGENT_LLM_KEY:
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        llm_chat_class = LlmChat
+        AI_PERSONALIZATION_ENABLED = True
+        logger.info("AI Personalization enabled with Emergent LLM")
+    except ImportError:
+        logger.warning("emergentintegrations not installed. Run: pip install emergentintegrations --extra-index-url https://d33sy5i8bnduwe.cloudfront.net/simple/")
+    except Exception as e:
+        logger.error(f"Failed to initialize AI Personalization: {e}")
+else:
+    logger.info("AI Personalization disabled - no EMERGENT_LLM_KEY configured")
+
+
+class PersonalizationStyle(str, Enum):
+    """Notification personalization styles"""
+    FRIENDLY = "friendly"
+    PROFESSIONAL = "professional"
+    URGENT = "urgent"
+    CASUAL = "casual"
+    ENTHUSIASTIC = "enthusiastic"
+    CONCISE = "concise"
+
+
+class PersonalizationConfig(BaseModel):
+    """Configuration for AI personalization"""
+    id: str = "ai_personalization_config"
+    
+    # Enable/disable
+    enabled: bool = True
+    
+    # Model settings
+    model_provider: str = "openai"
+    model_name: str = "gpt-4o"  # Using gpt-4o for speed
+    
+    # Personalization settings
+    default_style: str = PersonalizationStyle.FRIENDLY
+    max_title_length: int = 60
+    max_body_length: int = 150
+    
+    # User context settings
+    include_interests: bool = True
+    include_recent_activity: bool = True
+    include_purchase_history: bool = True
+    include_search_history: bool = True
+    
+    # Rate limiting
+    max_requests_per_minute: int = 60
+    cache_duration_hours: int = 24  # Cache personalized content
+    
+    # Fallback
+    fallback_on_error: bool = True  # Use template if AI fails
+    
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+# System prompt for notification personalization
+AI_PERSONALIZATION_SYSTEM_PROMPT = """You are an expert notification copywriter for a marketplace app. Your job is to create personalized, engaging notification text that drives user engagement.
+
+Guidelines:
+1. Be concise and impactful - every word matters
+2. Create urgency when appropriate (limited time, price drops)
+3. Use the user's name when provided
+4. Reference their specific interests and behavior
+5. Match the requested tone/style
+6. Include relevant emojis sparingly (1-2 max)
+7. Make the value proposition clear immediately
+8. Use action-oriented language
+
+Output Format (JSON):
+{
+  "title": "Short, catchy notification title (max 60 chars)",
+  "body": "Compelling notification body (max 150 chars)",
+  "cta_text": "Call-to-action button text (optional, max 20 chars)"
+}
+
+Only output valid JSON, no explanations."""
+
+
+class AIPersonalizationService:
+    """Service for AI-powered notification personalization"""
+    
+    def __init__(self, db):
+        self.db = db
+        self._request_count = 0
+        self._last_reset = datetime.now(timezone.utc)
+        self._cache = {}  # Simple in-memory cache
+    
+    async def get_config(self) -> Dict:
+        """Get personalization configuration"""
+        config = await self.db.ai_personalization_config.find_one({"id": "ai_personalization_config"})
+        if not config:
+            config = PersonalizationConfig().model_dump()
+            await self.db.ai_personalization_config.insert_one(config)
+        return {k: v for k, v in config.items() if k != "_id"}
+    
+    async def update_config(self, updates: Dict) -> Dict:
+        """Update personalization configuration"""
+        updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+        await self.db.ai_personalization_config.update_one(
+            {"id": "ai_personalization_config"},
+            {"$set": updates},
+            upsert=True
+        )
+        return await self.get_config()
+    
+    async def personalize_notification(
+        self,
+        user_id: str,
+        trigger_type: str,
+        base_content: Dict[str, str],  # title, body from template
+        context: Dict[str, Any],  # listing details, price, etc.
+        style: Optional[str] = None,
+        language: str = "en"
+    ) -> Dict[str, str]:
+        """
+        Generate personalized notification content for a user.
+        
+        Args:
+            user_id: Target user ID
+            trigger_type: Type of notification trigger
+            base_content: Base title and body from template
+            context: Additional context (listing, price, etc.)
+            style: Personalization style (friendly, urgent, etc.)
+            language: Target language
+        
+        Returns:
+            Dict with personalized title, body, and optional cta_text
+        """
+        config = await self.get_config()
+        
+        # Check if AI is enabled and available
+        if not config.get("enabled", True) or not AI_PERSONALIZATION_ENABLED:
+            logger.info("AI personalization disabled, using base content")
+            return base_content
+        
+        # Check rate limit
+        if not self._check_rate_limit(config.get("max_requests_per_minute", 60)):
+            logger.warning("AI personalization rate limited, using base content")
+            return base_content
+        
+        # Check cache
+        cache_key = self._generate_cache_key(user_id, trigger_type, context)
+        if cache_key in self._cache:
+            cached = self._cache[cache_key]
+            cache_age = datetime.now(timezone.utc) - datetime.fromisoformat(cached["timestamp"])
+            if cache_age.total_seconds() < config.get("cache_duration_hours", 24) * 3600:
+                logger.info(f"Using cached personalization for user {user_id}")
+                return cached["content"]
+        
+        try:
+            # Get user profile for personalization
+            user_profile = await self._get_user_profile(user_id)
+            
+            # Build the prompt
+            prompt = self._build_personalization_prompt(
+                user_profile=user_profile,
+                trigger_type=trigger_type,
+                base_content=base_content,
+                context=context,
+                style=style or config.get("default_style", "friendly"),
+                language=language,
+                config=config
+            )
+            
+            # Call LLM
+            personalized = await self._call_llm(prompt, config)
+            
+            # Validate and clean response
+            result = self._validate_response(personalized, base_content, config)
+            
+            # Cache the result
+            self._cache[cache_key] = {
+                "content": result,
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            }
+            
+            # Log for analytics
+            await self._log_personalization(user_id, trigger_type, result)
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"AI personalization error: {e}")
+            if config.get("fallback_on_error", True):
+                return base_content
+            raise
+    
+    def _check_rate_limit(self, max_per_minute: int) -> bool:
+        """Check if we're within rate limits"""
+        now = datetime.now(timezone.utc)
+        if (now - self._last_reset).total_seconds() >= 60:
+            self._request_count = 0
+            self._last_reset = now
+        
+        if self._request_count >= max_per_minute:
+            return False
+        
+        self._request_count += 1
+        return True
+    
+    def _generate_cache_key(self, user_id: str, trigger_type: str, context: Dict) -> str:
+        """Generate cache key for personalization"""
+        key_data = f"{user_id}:{trigger_type}:{json.dumps(context, sort_keys=True)}"
+        return hashlib.md5(key_data.encode()).hexdigest()
+    
+    async def _get_user_profile(self, user_id: str) -> Dict:
+        """Get user profile data for personalization"""
+        profile = {
+            "user_id": user_id,
+            "name": None,
+            "interests": [],
+            "recent_searches": [],
+            "recent_views": [],
+            "purchase_history": [],
+            "preferred_categories": [],
+            "price_range": None,
+            "engagement_level": "medium"
+        }
+        
+        # Get user info
+        user = await self.db.users.find_one({"user_id": user_id}, {"_id": 0, "name": 1, "email": 1})
+        if user:
+            profile["name"] = user.get("name", "").split()[0] if user.get("name") else None
+        
+        # Get interest profile
+        interest_profile = await self.db.user_interest_profiles.find_one({"user_id": user_id}, {"_id": 0})
+        if interest_profile:
+            # Top categories
+            categories = interest_profile.get("category_interests", {})
+            sorted_cats = sorted(categories.items(), key=lambda x: x[1], reverse=True)[:5]
+            profile["preferred_categories"] = [c[0] for c in sorted_cats]
+            
+            # Recent searches
+            profile["recent_searches"] = interest_profile.get("recent_searches", [])[:5]
+            
+            # Engagement level
+            total_engagement = (
+                interest_profile.get("total_views", 0) +
+                interest_profile.get("total_saves", 0) * 3 +
+                interest_profile.get("total_purchases", 0) * 10
+            )
+            if total_engagement > 100:
+                profile["engagement_level"] = "high"
+            elif total_engagement < 20:
+                profile["engagement_level"] = "low"
+            
+            # Price preferences
+            price_prefs = interest_profile.get("price_preferences", {})
+            if price_prefs:
+                all_avgs = [p.get("avg", 0) for p in price_prefs.values() if p.get("avg")]
+                if all_avgs:
+                    avg_price = sum(all_avgs) / len(all_avgs)
+                    if avg_price < 50:
+                        profile["price_range"] = "budget"
+                    elif avg_price < 200:
+                        profile["price_range"] = "mid-range"
+                    else:
+                        profile["price_range"] = "premium"
+        
+        # Get recent behavior
+        recent_events = await self.db.user_behavior_events.find(
+            {"user_id": user_id}
+        ).sort("created_at", -1).limit(10).to_list(10)
+        
+        for event in recent_events:
+            if event.get("event_type") == "view_listing":
+                profile["recent_views"].append(event.get("metadata", {}).get("title", ""))
+        
+        return profile
+    
+    def _build_personalization_prompt(
+        self,
+        user_profile: Dict,
+        trigger_type: str,
+        base_content: Dict[str, str],
+        context: Dict[str, Any],
+        style: str,
+        language: str,
+        config: Dict
+    ) -> str:
+        """Build the prompt for LLM personalization"""
+        
+        # Map trigger types to descriptions
+        trigger_descriptions = {
+            "new_listing_in_category": "New listing alert in a category they follow",
+            "price_drop_saved_item": "Price drop on an item they saved/favorited",
+            "message_received": "New message from another user",
+            "seller_reply": "A seller replied to their inquiry",
+            "similar_listing_alert": "A listing similar to their interests appeared",
+            "weekly_digest": "Weekly summary of marketplace activity",
+            "promotional": "Promotional campaign notification",
+            "offer_received": "Someone made an offer on their listing",
+            "offer_accepted": "Their offer was accepted"
+        }
+        
+        prompt = f"""Create a personalized notification for this user:
+
+## User Profile:
+- Name: {user_profile.get('name') or 'User'}
+- Engagement Level: {user_profile.get('engagement_level', 'medium')}
+- Price Preference: {user_profile.get('price_range') or 'varies'}
+- Top Interests: {', '.join(user_profile.get('preferred_categories', [])[:3]) or 'general'}
+- Recent Searches: {', '.join(user_profile.get('recent_searches', [])[:3]) or 'none'}
+
+## Notification Context:
+- Trigger: {trigger_descriptions.get(trigger_type, trigger_type)}
+- Base Title: {base_content.get('title', '')}
+- Base Body: {base_content.get('body', '')}
+
+## Additional Details:
+{json.dumps(context, indent=2)}
+
+## Requirements:
+- Style: {style}
+- Language: {SUPPORTED_LANGUAGES.get(language, {}).get('name', 'English')}
+- Max Title Length: {config.get('max_title_length', 60)} characters
+- Max Body Length: {config.get('max_body_length', 150)} characters
+
+Generate personalized notification content that will maximize engagement for this specific user."""
+
+        return prompt
+    
+    async def _call_llm(self, prompt: str, config: Dict) -> Dict:
+        """Call the LLM to generate personalized content"""
+        if not llm_chat_class:
+            raise ValueError("LLM not available")
+        
+        chat = llm_chat_class(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"personalization_{uuid.uuid4().hex[:8]}",
+            system_message=AI_PERSONALIZATION_SYSTEM_PROMPT
+        ).with_model(
+            config.get("model_provider", "openai"),
+            config.get("model_name", "gpt-4o")
+        )
+        
+        from emergentintegrations.llm.chat import UserMessage
+        user_message = UserMessage(text=prompt)
+        
+        response = await chat.send_message(user_message)
+        
+        # Parse JSON response
+        try:
+            # Clean up response if it has markdown code blocks
+            clean_response = response.strip()
+            if clean_response.startswith("```"):
+                clean_response = clean_response.split("```")[1]
+                if clean_response.startswith("json"):
+                    clean_response = clean_response[4:]
+            clean_response = clean_response.strip()
+            
+            return json.loads(clean_response)
+        except json.JSONDecodeError:
+            logger.warning(f"Failed to parse LLM response as JSON: {response[:100]}")
+            # Try to extract title and body manually
+            return {"title": response[:60], "body": response[:150]}
+    
+    def _validate_response(self, response: Dict, fallback: Dict, config: Dict) -> Dict:
+        """Validate and clean the LLM response"""
+        result = {}
+        
+        # Validate title
+        title = response.get("title", "")
+        max_title = config.get("max_title_length", 60)
+        if title and len(title) <= max_title:
+            result["title"] = title
+        else:
+            result["title"] = fallback.get("title", "")[:max_title]
+        
+        # Validate body
+        body = response.get("body", "")
+        max_body = config.get("max_body_length", 150)
+        if body and len(body) <= max_body:
+            result["body"] = body
+        else:
+            result["body"] = fallback.get("body", "")[:max_body]
+        
+        # Optional CTA
+        if response.get("cta_text"):
+            result["cta_text"] = response["cta_text"][:20]
+        
+        return result
+    
+    async def _log_personalization(self, user_id: str, trigger_type: str, result: Dict):
+        """Log personalization for analytics"""
+        try:
+            await self.db.personalization_logs.insert_one({
+                "id": f"plog_{uuid.uuid4().hex[:12]}",
+                "user_id": user_id,
+                "trigger_type": trigger_type,
+                "personalized_content": result,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
+        except Exception as e:
+            logger.debug(f"Failed to log personalization: {e}")
+    
+    async def generate_variants(
+        self,
+        trigger_type: str,
+        context: Dict[str, Any],
+        styles: List[str] = None,
+        count: int = 3
+    ) -> List[Dict]:
+        """Generate multiple notification variants for A/B testing"""
+        config = await self.get_config()
+        
+        if not AI_PERSONALIZATION_ENABLED:
+            return []
+        
+        styles = styles or [
+            PersonalizationStyle.FRIENDLY,
+            PersonalizationStyle.URGENT,
+            PersonalizationStyle.ENTHUSIASTIC
+        ]
+        
+        variants = []
+        base_content = {"title": "", "body": ""}
+        
+        # Generate a variant for each style
+        for i, style in enumerate(styles[:count]):
+            try:
+                prompt = self._build_variant_prompt(trigger_type, context, style, config)
+                variant = await self._call_llm(prompt, config)
+                variant["style"] = style
+                variant["variant_id"] = f"v{i+1}"
+                variants.append(variant)
+            except Exception as e:
+                logger.error(f"Error generating variant {style}: {e}")
+        
+        return variants
+    
+    def _build_variant_prompt(
+        self,
+        trigger_type: str,
+        context: Dict[str, Any],
+        style: str,
+        config: Dict
+    ) -> str:
+        """Build prompt for generating a notification variant"""
+        return f"""Create a {style} notification variant for:
+
+Trigger Type: {trigger_type}
+Context: {json.dumps(context, indent=2)}
+
+Requirements:
+- Style: {style}
+- Max Title: {config.get('max_title_length', 60)} chars
+- Max Body: {config.get('max_body_length', 150)} chars
+
+Generate engaging notification content in this style."""
+    
+    async def get_analytics(self, days: int = 30) -> Dict:
+        """Get personalization analytics"""
+        start_date = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+        
+        # Count total personalizations
+        total = await self.db.personalization_logs.count_documents({
+            "created_at": {"$gte": start_date}
+        })
+        
+        # Group by trigger type
+        pipeline = [
+            {"$match": {"created_at": {"$gte": start_date}}},
+            {"$group": {"_id": "$trigger_type", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]
+        by_trigger = await self.db.personalization_logs.aggregate(pipeline).to_list(20)
+        
+        return {
+            "total_personalizations": total,
+            "by_trigger_type": [{"trigger_type": r["_id"], "count": r["count"]} for r in by_trigger],
+            "ai_enabled": AI_PERSONALIZATION_ENABLED,
+            "period_days": days
+        }
+
 
 # =============================================================================
 # SUPPORTED LANGUAGES - PHASE 5
