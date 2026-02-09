@@ -801,6 +801,292 @@ const bubbleStyles = StyleSheet.create({
   },
 });
 
+// Report Modal Component
+interface ReportModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onSubmit: (reason: string, description: string) => void;
+  messageContent?: string;
+  loading?: boolean;
+}
+
+const REPORT_REASONS = [
+  { id: 'scam', label: 'Scam or fraud', icon: 'alert-circle' },
+  { id: 'abuse', label: 'Abusive or threatening', icon: 'warning' },
+  { id: 'fake_listing', label: 'Fake or misleading listing', icon: 'document' },
+  { id: 'off_platform_payment', label: 'Asking for payment outside platform', icon: 'card' },
+  { id: 'harassment', label: 'Harassment', icon: 'person-remove' },
+  { id: 'spam', label: 'Spam', icon: 'mail-unread' },
+  { id: 'other', label: 'Other', icon: 'ellipsis-horizontal' },
+];
+
+const ReportModal: React.FC<ReportModalProps> = ({ 
+  visible, 
+  onClose, 
+  onSubmit, 
+  messageContent,
+  loading 
+}) => {
+  const [selectedReason, setSelectedReason] = useState<string | null>(null);
+  const [description, setDescription] = useState('');
+
+  const handleSubmit = () => {
+    if (!selectedReason) {
+      Alert.alert('Select Reason', 'Please select a reason for your report.');
+      return;
+    }
+    onSubmit(selectedReason, description);
+  };
+
+  const handleClose = () => {
+    setSelectedReason(null);
+    setDescription('');
+    onClose();
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={handleClose}
+    >
+      <View style={reportModalStyles.overlay}>
+        <View style={reportModalStyles.container}>
+          {/* Header */}
+          <View style={reportModalStyles.header}>
+            <Text style={reportModalStyles.title}>Report Message</Text>
+            <TouchableOpacity onPress={handleClose} style={reportModalStyles.closeButton}>
+              <Ionicons name="close" size={24} color={COLORS.text} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Message Preview */}
+          {messageContent && (
+            <View style={reportModalStyles.messagePreview}>
+              <Text style={reportModalStyles.messagePreviewLabel}>Reporting message:</Text>
+              <Text style={reportModalStyles.messagePreviewText} numberOfLines={2}>
+                "{messageContent}"
+              </Text>
+            </View>
+          )}
+
+          {/* Reasons */}
+          <ScrollView style={reportModalStyles.reasonsContainer}>
+            <Text style={reportModalStyles.sectionTitle}>Select a reason</Text>
+            {REPORT_REASONS.map((reason) => (
+              <TouchableOpacity
+                key={reason.id}
+                style={[
+                  reportModalStyles.reasonItem,
+                  selectedReason === reason.id && reportModalStyles.reasonItemSelected,
+                ]}
+                onPress={() => setSelectedReason(reason.id)}
+              >
+                <View style={[
+                  reportModalStyles.reasonIcon,
+                  selectedReason === reason.id && reportModalStyles.reasonIconSelected,
+                ]}>
+                  <Ionicons 
+                    name={reason.icon as any} 
+                    size={20} 
+                    color={selectedReason === reason.id ? '#fff' : COLORS.textSecondary} 
+                  />
+                </View>
+                <Text style={[
+                  reportModalStyles.reasonLabel,
+                  selectedReason === reason.id && reportModalStyles.reasonLabelSelected,
+                ]}>
+                  {reason.label}
+                </Text>
+                {selectedReason === reason.id && (
+                  <Ionicons name="checkmark-circle" size={24} color={COLORS.primary} />
+                )}
+              </TouchableOpacity>
+            ))}
+
+            {/* Additional Description */}
+            <Text style={reportModalStyles.sectionTitle}>Additional details (optional)</Text>
+            <TextInput
+              style={reportModalStyles.descriptionInput}
+              placeholder="Describe the issue in more detail..."
+              placeholderTextColor={COLORS.textMuted}
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              numberOfLines={4}
+              maxLength={500}
+            />
+          </ScrollView>
+
+          {/* Submit Button */}
+          <View style={reportModalStyles.footer}>
+            <TouchableOpacity
+              style={[
+                reportModalStyles.submitButton,
+                !selectedReason && reportModalStyles.submitButtonDisabled,
+              ]}
+              onPress={handleSubmit}
+              disabled={!selectedReason || loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <>
+                  <Ionicons name="flag" size={18} color="#fff" />
+                  <Text style={reportModalStyles.submitButtonText}>Submit Report</Text>
+                </>
+              )}
+            </TouchableOpacity>
+            <Text style={reportModalStyles.disclaimer}>
+              Reports are reviewed by our moderation team. False reports may result in account action.
+            </Text>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+const reportModalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  container: {
+    backgroundColor: COLORS.surface,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '85%',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  messagePreview: {
+    backgroundColor: COLORS.background,
+    marginHorizontal: 20,
+    marginTop: 16,
+    padding: 12,
+    borderRadius: 12,
+  },
+  messagePreviewLabel: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginBottom: 4,
+  },
+  messagePreviewText: {
+    fontSize: 14,
+    color: COLORS.text,
+    fontStyle: 'italic',
+  },
+  reasonsContainer: {
+    paddingHorizontal: 20,
+    maxHeight: 350,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  reasonItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    marginBottom: 8,
+    backgroundColor: COLORS.background,
+  },
+  reasonItemSelected: {
+    backgroundColor: COLORS.primaryLight,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+  },
+  reasonIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  reasonIconSelected: {
+    backgroundColor: COLORS.primary,
+  },
+  reasonLabel: {
+    flex: 1,
+    fontSize: 15,
+    color: COLORS.text,
+  },
+  reasonLabelSelected: {
+    fontWeight: '600',
+    color: COLORS.primaryDark,
+  },
+  descriptionInput: {
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 14,
+    color: COLORS.text,
+    minHeight: 100,
+    textAlignVertical: 'top',
+    marginBottom: 16,
+  },
+  footer: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  submitButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E53935',
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
+  },
+  submitButtonDisabled: {
+    backgroundColor: COLORS.textMuted,
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  disclaimer: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+    marginTop: 12,
+    lineHeight: 16,
+  },
+});
+
 // Quick reply buttons
 const QuickReplies = ({ onSelect }: { onSelect: (text: string) => void }) => {
   const replies = [
