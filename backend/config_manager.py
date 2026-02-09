@@ -1433,6 +1433,11 @@ def create_config_manager_router(db):
     # FEATURE FLAGS
     # -------------------------------------------------------------------------
     
+    @router.get("/available-features")
+    async def get_available_features():
+        """Get list of all available feature flags and roles"""
+        return {"features": FEATURE_FLAGS, "roles": USER_ROLES}
+    
     @router.get("/features/{environment}")
     async def get_feature_flags(
         environment: Environment,
@@ -1486,11 +1491,6 @@ def create_config_manager_router(db):
         return await service.check_feature_enabled(
             environment, feature_id, country_code, user_role, seller_id, user_id
         )
-    
-    @router.get("/features/list/available")
-    async def get_available_features():
-        """Get list of all available feature flags"""
-        return {"features": FEATURE_FLAGS, "roles": USER_ROLES}
     
     # -------------------------------------------------------------------------
     # COUNTRY CONFIGS
