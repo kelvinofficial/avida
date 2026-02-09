@@ -409,6 +409,7 @@ class TeamSettings(BaseModel):
     # Security
     lockdown_mode: bool = False
     require_2fa: bool = False
+    roles_requiring_2fa: List[str] = ["super_admin", "admin", "finance"]  # Roles that must have 2FA
     session_timeout_minutes: int = 480  # 8 hours
     max_failed_logins: int = 5
     
