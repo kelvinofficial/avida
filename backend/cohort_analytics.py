@@ -1132,10 +1132,10 @@ class CohortAnalyticsService:
             },
             
             # AI Insights
-            "ai_insights": insights.get("insights", [])[:5],
+            "ai_insights": insights_list[:5],
             
             # Critical Alerts
-            "critical_alerts": [i for i in insights.get("insights", []) if i.get("severity") == "critical"],
+            "critical_alerts": [i for i in insights_list if i.get("severity") == "critical"],
             
             # Recommendations
             "recommendations": await self._generate_weekly_recommendations(engagement, avg_d7_retention, funnel)
