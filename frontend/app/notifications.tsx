@@ -141,6 +141,11 @@ const NotificationItem = ({
   const config = getNotificationConfig(notification.type);
   const timeAgo = formatTimeAgo(notification.created_at);
 
+  // Safely convert values to strings to prevent object rendering errors
+  const safeTitle = typeof notification.title === 'string' ? notification.title : String(notification.title || '');
+  const safeBody = typeof notification.body === 'string' ? notification.body : 
+    (typeof notification.body === 'object' ? JSON.stringify(notification.body) : String(notification.body || ''));
+
   return (
     <TouchableOpacity
       style={[styles.notificationCard, !notification.read && styles.unreadCard]}
@@ -165,12 +170,12 @@ const NotificationItem = ({
       <View style={styles.contentSection}>
         <View style={styles.headerRow}>
           <Text style={[styles.notifTitle, !notification.read && styles.unreadTitle]} numberOfLines={1}>
-            {notification.title}
+            {safeTitle}
           </Text>
           <Text style={styles.timeText}>{timeAgo}</Text>
         </View>
         <Text style={styles.notifBody} numberOfLines={2}>
-          {notification.body}
+          {safeBody}
         </Text>
         
         {/* Action Button */}
