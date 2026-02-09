@@ -949,6 +949,12 @@ When sandbox mode is active, the following pages now show sandbox data:
 - **Home Page** (`/app/frontend/app/(tabs)/index.tsx`) - Shows sandbox_listings
 - **Search Page** (`/app/frontend/app/(tabs)/search.tsx`) - Searches sandbox_listings
 - **Listing Detail** (`/app/frontend/app/listing/[id].tsx`) - Shows sandbox listing with seller info
+- **Checkout Flow** (`/app/frontend/app/checkout/[listing_id].tsx`) - Full sandbox checkout with:
+  - Sandbox order creation via `/api/sandbox/proxy/order`
+  - Mock payment processing via `/api/sandbox/payment/process`
+  - Local price calculation (no real escrow API calls)
+  - Orange "SANDBOX MODE" banner on checkout page
+  - Success alert with sandbox indicator
 
 ---
 
