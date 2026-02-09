@@ -258,6 +258,90 @@ export default function CohortAnalyticsPage() {
     }
   };
 
+  // Check alerts and trigger notifications
+  const checkAlerts = async () => {
+    setCheckingAlerts(true);
+    try {
+      const res = await fetch(`${API_BASE}/cohort-analytics/alerts/check`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setTriggeredAlerts(data.triggered_alerts || []);
+        // Refresh alerts to get updated last_triggered
+        const alertsRes = await fetch(`${API_BASE}/cohort-analytics/alerts`);
+        if (alertsRes.ok) {
+          setAlerts(await alertsRes.json());
+        }
+      }
+    } catch (err) {
+      console.error('Failed to check alerts:', err);
+    } finally {
+      setCheckingAlerts(false);
+    }
+  };
+
+  // Generate weekly report
+  const generateWeeklyReport = async () => {
+    setGeneratingReport(true);
+    try {
+      const res = await fetch(`${API_BASE}/cohort-analytics/reports/weekly`);
+      if (res.ok) {
+        const data = await res.json();
+        setWeeklyReport(data);
+      }
+    } catch (err) {
+      console.error('Failed to generate report:', err);
+    } finally {
+      setGeneratingReport(false);
+    }
+  };
+
+  // Send weekly report via email
+  const sendWeeklyReport = async () => {
+    if (!reportRecipients.trim()) return;
+    setSendingReport(true);
+    try {
+      const recipients = reportRecipients.split(',').map(e => e.trim()).filter(e => e);
+      const res = await fetch(`${API_BASE}/cohort-analytics/reports/weekly/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(recipients),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setWeeklyReport(data.report);
+        alert(`Report sent to ${recipients.length} recipient(s)`);
+      }
+    } catch (err) {
+      console.error('Failed to send report:', err);
+    } finally {
+      setSendingReport(false);
+    }
+  };
+
+  // Fetch report history
+  const fetchReportHistory = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/cohort-analytics/reports/history?limit=10`);
+      if (res.ok) {
+        setReportHistory(await res.json());
+      }
+    } catch (err) {
+      console.error('Failed to fetch report history:', err);
+    }
+  };
+
+  // Fetch report schedule
+  const fetchReportSchedule = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/cohort-analytics/reports/schedule`);
+      if (res.ok) {
+        setReportSchedule(await res.json());
+      }
+    } catch (err) {
+      console.error('Failed to fetch schedule:', err);
+    }
+  };
+
   // Drill down into cohort
   const drilldownCohort = async (cohortKey: string) => {
     setSelectedCohort(cohortKey);
