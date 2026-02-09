@@ -1483,6 +1483,63 @@ export default function QAReliabilityPage() {
           <Button onClick={() => setErrorDetailDialogOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Threshold Configuration Dialog */}
+      <Dialog open={thresholdDialogOpen} onClose={() => setThresholdDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add Monitoring Threshold</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+            <FormControl fullWidth>
+              <InputLabel>Metric</InputLabel>
+              <Select
+                value={newThreshold.metric_name}
+                label="Metric"
+                onChange={(e) => setNewThreshold({ ...newThreshold, metric_name: e.target.value })}
+              >
+                <MenuItem value="error_rate_hourly">Error Rate (hourly)</MenuItem>
+                <MenuItem value="avg_api_latency_ms">API Latency (ms)</MenuItem>
+                <MenuItem value="payment_success_rate">Payment Success Rate (%)</MenuItem>
+                <MenuItem value="pending_escrows">Pending Escrows</MenuItem>
+                <MenuItem value="notification_queue_size">Notification Queue Size</MenuItem>
+                <MenuItem value="active_alerts">Active Alerts</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel>Condition</InputLabel>
+              <Select
+                value={newThreshold.threshold_type}
+                label="Condition"
+                onChange={(e) => setNewThreshold({ ...newThreshold, threshold_type: e.target.value })}
+              >
+                <MenuItem value="above">Above</MenuItem>
+                <MenuItem value="below">Below</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              label="Threshold Value"
+              type="number"
+              value={newThreshold.threshold_value}
+              onChange={(e) => setNewThreshold({ ...newThreshold, threshold_value: parseFloat(e.target.value) })}
+              fullWidth
+            />
+            <FormControl fullWidth>
+              <InputLabel>Alert Severity</InputLabel>
+              <Select
+                value={newThreshold.alert_severity}
+                label="Alert Severity"
+                onChange={(e) => setNewThreshold({ ...newThreshold, alert_severity: e.target.value })}
+              >
+                <MenuItem value="warning">Warning</MenuItem>
+                <MenuItem value="critical">Critical</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setThresholdDialogOpen(false)}>Cancel</Button>
+          <Button onClick={addMonitoringThreshold} variant="contained">Add Threshold</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
