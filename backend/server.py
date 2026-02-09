@@ -5770,22 +5770,6 @@ if NOTIFICATION_QUEUE_AVAILABLE and NOTIFICATION_SERVICE_AVAILABLE:
         notification_queue.stop()
         logger.info("Notification queue processor stopped")
     
-    # Queue status endpoint
-    @api_router.get("/notifications/queue/stats")
-    async def get_queue_stats():
-        """Get notification queue statistics"""
-        return await notification_queue.get_queue_stats()
-    
-    @api_router.get("/notifications/queue/failed")
-    async def get_failed_messages(page: int = 1, limit: int = 50):
-        """Get failed messages from queue"""
-        return await notification_queue.get_failed_messages(page, limit)
-    
-    @api_router.post("/notifications/queue/{queue_id}/retry")
-    async def retry_queued_message(queue_id: str):
-        """Retry a failed queued message"""
-        return await notification_queue.retry_failed(queue_id)
-    
     logger.info("Notification queue and escrow integration loaded successfully")
 
 app.add_middleware(
