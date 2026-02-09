@@ -979,7 +979,7 @@ class QAReliabilityService:
             roles = await self.db.roles.find({}).to_list(length=100)
             results.append({
                 "id": str(uuid.uuid4()),
-                "check_type": QACheckType.PERMISSION,
+                "check_type": "permission",
                 "name": "Permission: Roles defined",
                 "passed": len(roles) > 0,
                 "executed_at": datetime.now(timezone.utc).isoformat(),
@@ -989,7 +989,7 @@ class QAReliabilityService:
         except Exception as e:
             results.append({
                 "id": str(uuid.uuid4()),
-                "check_type": QACheckType.PERMISSION,
+                "check_type": "permission",
                 "name": "Permission: Roles defined",
                 "passed": True,  # Roles might not exist yet, that's okay
                 "executed_at": datetime.now(timezone.utc).isoformat(),
@@ -1007,7 +1007,7 @@ class QAReliabilityService:
         for flag in flags:
             results.append({
                 "id": str(uuid.uuid4()),
-                "check_type": QACheckType.FEATURE_TOGGLE,
+                "check_type": "feature_toggle",
                 "name": f"Feature: {flag['key']}",
                 "passed": True,
                 "executed_at": datetime.now(timezone.utc).isoformat(),
@@ -1028,7 +1028,7 @@ class QAReliabilityService:
             escrow_count = await self.db.escrow.count_documents({})
             results.append({
                 "id": str(uuid.uuid4()),
-                "check_type": QACheckType.API,
+                "check_type": "data_integrity",
                 "name": "Data: Escrow integrity",
                 "passed": True,
                 "executed_at": datetime.now(timezone.utc).isoformat(),
@@ -1038,7 +1038,7 @@ class QAReliabilityService:
         except Exception as e:
             results.append({
                 "id": str(uuid.uuid4()),
-                "check_type": QACheckType.API,
+                "check_type": "data_integrity",
                 "name": "Data: Escrow integrity",
                 "passed": False,
                 "executed_at": datetime.now(timezone.utc).isoformat(),
