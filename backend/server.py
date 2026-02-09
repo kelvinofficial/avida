@@ -133,6 +133,14 @@ except ImportError as e:
     EXECUTIVE_SUMMARY_AVAILABLE = False
     logging.warning(f"Executive Summary not available: {e}")
 
+# Smart Notification System
+try:
+    from smart_notifications import create_smart_notification_router, SmartNotificationService
+    SMART_NOTIFICATIONS_AVAILABLE = True
+except ImportError as e:
+    SMART_NOTIFICATIONS_AVAILABLE = False
+    logging.warning(f"Smart Notifications not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
