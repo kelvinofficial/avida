@@ -588,6 +588,51 @@ export default function PostListingScreen() {
     }
   };
 
+  // ============ PRICE SUGGESTION ============
+  const getPriceSuggestion = async () => {
+    setPriceSuggestionLoading(true);
+    setPriceSuggestionError(null);
+    setPriceSuggestion(null);
+    
+    try {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/ai-analyzer/price-suggestion`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category: selectedCategoryId || aiResult?.detected_category,
+          subcategory: selectedSubcategoryId || aiResult?.detected_subcategory,
+          brand: attributes.brand || attributes.Brand || aiResult?.detected_brand,
+          model: attributes.model || attributes.Model || aiResult?.detected_model,
+          condition: condition || aiResult?.detected_condition,
+          detected_features: aiResult?.detected_features || [],
+          user_id: user?.user_id,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.price_suggestion) {
+        setPriceSuggestion(data);
+      } else {
+        setPriceSuggestionError(data.error || 'Could not generate price suggestion');
+      }
+    } catch (error) {
+      console.error('Price suggestion error:', error);
+      setPriceSuggestionError('Failed to get price suggestion. Please try again.');
+    } finally {
+      setPriceSuggestionLoading(false);
+    }
+  };
+
+  const applyPriceSuggestion = (suggestedPrice: number) => {
+    setPrice(suggestedPrice.toString());
+    setPriceSuggestion(null);
+  };
+
+  const dismissPriceSuggestion = () => {
+    setPriceSuggestion(null);
+  };
+
   // ============ VALIDATION ============
   const validateStep = useCallback(() => {
     const errors: FieldErrors = {};
