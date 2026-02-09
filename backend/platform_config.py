@@ -258,7 +258,10 @@ class PlatformConfigService:
         if not config:
             # Return default config (fail-safe)
             config = self._get_default_config(environment)
-            await self.config_collection.insert_one(config)
+            await self.config_collection.insert_one(config.copy())  # Use copy to prevent _id mutation
+        
+        # Remove _id if present (safety check)
+        config.pop("_id", None)
         
         # Update cache
         self._config_cache[cache_key] = config
