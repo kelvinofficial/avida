@@ -905,6 +905,39 @@ Visual sandbox mode indicator in the main customer-facing app when an admin is t
 **Files Updated:**
 - `/app/frontend/app/_layout.tsx` - Added SandboxProvider and SandboxBanner
 
+### Sandbox Data Filtering - Complete (Feb 9, 2026)
+
+**Overview:**
+When sandbox mode is active, API calls automatically return sandbox data instead of production data, enabling true end-to-end testing.
+
+**Backend Proxy Endpoints:**
+- `GET /api/sandbox/proxy/listings` - Get sandbox listings
+- `GET /api/sandbox/proxy/listings/{id}` - Get single sandbox listing with seller info
+- `GET /api/sandbox/proxy/orders/{user_id}` - Get sandbox user's orders
+- `GET /api/sandbox/proxy/conversations/{user_id}` - Get sandbox conversations
+- `GET /api/sandbox/proxy/notifications/{user_id}` - Get sandbox notifications
+- `GET /api/sandbox/proxy/categories` - Get categories (tagged for sandbox)
+- `POST /api/sandbox/proxy/order` - Create sandbox order
+- `POST /api/sandbox/proxy/message` - Send sandbox message
+
+**Frontend Sandbox-Aware API:**
+- `sandboxAwareListingsApi` - Routes to sandbox proxy when active
+- `sandboxAwareOrdersApi` - Routes to sandbox proxy when active
+- `sandboxAwareConversationsApi` - Routes to sandbox proxy when active
+- `sandboxAwareNotificationsApi` - Routes to sandbox proxy when active
+- `sandboxAwareCategoriesApi` - Routes to sandbox proxy when active
+- `sandboxUtils` - Helper functions to check sandbox status
+
+**How It Works:**
+1. SandboxContext stores session in AsyncStorage
+2. sandboxAwareApi checks AsyncStorage for active session
+3. If active, routes API calls to `/api/sandbox/proxy/*` endpoints
+4. Proxy endpoints return data from sandbox_* collections
+5. All responses tagged with `sandbox_mode: true`
+
+**Files Created:**
+- `/app/frontend/src/utils/sandboxAwareApi.ts` - Sandbox-aware API wrapper
+
 ---
 
 ### Pending Tasks (P1)
