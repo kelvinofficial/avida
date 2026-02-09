@@ -2698,6 +2698,141 @@ def create_team_workflow_router(db: AsyncIOMotorDatabase):
         return {"marked_read": count}
     
     # -------------------------------------------------------------------------
+    # SHIFTS & AVAILABILITY
+    # -------------------------------------------------------------------------
+    
+    @router.get("/shifts")
+    async def get_shifts(
+        member_id: Optional[str] = None,
+        date: Optional[str] = None
+    ):
+        """Get shift schedules"""
+        return await service.get_shifts(member_id, date)
+    
+    @router.post("/shifts")
+    async def create_shift(
+        member_id: str = Body(...),
+        date: str = Body(...),
+        start_time: str = Body(...),
+        end_time: str = Body(...),
+        shift_type: str = Body("regular"),
+        notes: Optional[str] = Body(None),
+        created_by: str = Body("admin")
+    ):
+        """Create a shift schedule"""
+        return await service.create_shift(member_id, date, start_time, end_time, shift_type, notes, created_by)
+    
+    @router.put("/shifts/{shift_id}")
+    async def update_shift(
+        shift_id: str,
+        updates: Dict[str, Any] = Body(...)
+    ):
+        """Update a shift"""
+        result = await service.update_shift(shift_id, updates)
+        if not result:
+            raise HTTPException(status_code=404, detail="Shift not found")
+        return result
+    
+    @router.delete("/shifts/{shift_id}")
+    async def delete_shift(shift_id: str):
+        """Delete a shift"""
+        result = await service.delete_shift(shift_id)
+        if not result:
+            raise HTTPException(status_code=404, detail="Shift not found")
+        return {"status": "deleted"}
+    
+    @router.get("/on-call")
+    async def get_on_call_members():
+        """Get currently on-call team members"""
+        return await service.get_on_call_members()
+    
+    @router.post("/members/{member_id}/on-call")
+    async def set_on_call_status(
+        member_id: str,
+        is_on_call: bool = Body(...)
+    ):
+        """Set a member's on-call status"""
+        result = await service.set_on_call_status(member_id, is_on_call)
+        return {"status": "updated" if result else "not_found"}
+    
+    @router.get("/available-for-assignment")
+    async def get_available_members(role_id: Optional[str] = None):
+        """Get available team members for task assignment"""
+        return await service.get_available_members_for_assignment(role_id)
+    
+    # -------------------------------------------------------------------------
+    # TWO-FACTOR AUTHENTICATION
+    # -------------------------------------------------------------------------
+    
+    @router.post("/2fa/{member_id}/setup")
+    async def setup_2fa(member_id: str):
+        """Generate 2FA secret for a team member"""
+        return await service.setup_2fa(member_id)
+    
+    @router.post("/2fa/{member_id}/verify-setup")
+    async def verify_2fa_setup(
+        member_id: str,
+        code: str = Body(...)
+    ):
+        """Verify 2FA setup with a code"""
+        return await service.verify_2fa_setup(member_id, code)
+    
+    @router.post("/2fa/{member_id}/verify")
+    async def verify_2fa_code(
+        member_id: str,
+        code: str = Body(...)
+    ):
+        """Verify 2FA code during login"""
+        is_valid = await service.verify_2fa_code(member_id, code)
+        return {"valid": is_valid}
+    
+    @router.post("/2fa/{member_id}/disable")
+    async def disable_2fa(
+        member_id: str,
+        admin_id: str = Body(...)
+    ):
+        """Disable 2FA for a team member"""
+        return await service.disable_2fa(member_id, admin_id)
+    
+    # -------------------------------------------------------------------------
+    # SANDBOX / TRAINING MODE
+    # -------------------------------------------------------------------------
+    
+    @router.get("/sandbox/data")
+    async def get_sandbox_data():
+        """Get sandbox/training environment data"""
+        return await service.get_sandbox_data()
+    
+    @router.post("/sandbox/action")
+    async def process_sandbox_action(
+        action_type: str = Body(...),
+        entity_type: str = Body(...),
+        entity_id: str = Body(...),
+        action_data: Dict[str, Any] = Body({}),
+        member_id: str = Body(...)
+    ):
+        """Process a sandbox action for training"""
+        return await service.process_sandbox_action(action_type, entity_type, entity_id, action_data, member_id)
+    
+    @router.get("/sandbox/progress/{member_id}")
+    async def get_training_progress(member_id: str):
+        """Get training progress for a team member"""
+        return await service.get_training_progress(member_id)
+    
+    # -------------------------------------------------------------------------
+    # EMAIL NOTIFICATIONS
+    # -------------------------------------------------------------------------
+    
+    @router.post("/email/test")
+    async def test_email(
+        to_email: EmailStr = Body(...),
+        subject: str = Body("Test Email"),
+        content: str = Body("This is a test email from the Admin Dashboard.")
+    ):
+        """Send a test email"""
+        return await service.send_email_notification(to_email, subject, content)
+    
+    # -------------------------------------------------------------------------
     # SYSTEM INITIALIZATION
     # -------------------------------------------------------------------------
     
