@@ -1,3 +1,4 @@
+africastalking==2.0.2
 aiofiles==23.2.1
 aiohappyeyeballs==2.6.1
 aiohttp==3.13.3
@@ -119,11 +120,13 @@ referencing==0.37.0
 regex==2026.1.15
 requests==2.32.5
 requests-oauthlib==2.0.0
+responses==0.25.8
 rich==14.2.0
 rpds-py==0.30.0
 rsa==4.9.1
 s3transfer==0.16.0
 s5cmd==0.2.0
+schema==0.7.8
 sendgrid==6.12.5
 shellingham==1.5.4
 simple-websocket==1.1.0
