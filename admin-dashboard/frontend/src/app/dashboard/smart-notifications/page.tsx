@@ -239,7 +239,7 @@ export default function SmartNotificationsPage() {
 
   const processNotifications = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/smart-notifications/admin/process`, {
+      const res = await fetch(`${API_BASE}/smart-notifications/admin/process`, {
         method: 'POST',
       });
       
