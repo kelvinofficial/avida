@@ -141,6 +141,14 @@ except ImportError as e:
     SMART_NOTIFICATIONS_AVAILABLE = False
     logging.warning(f"Smart Notifications not available: {e}")
 
+# Platform Configuration & Brand Manager
+try:
+    from platform_config import create_platform_config_router, PlatformConfigService
+    PLATFORM_CONFIG_AVAILABLE = True
+except ImportError as e:
+    PLATFORM_CONFIG_AVAILABLE = False
+    logging.warning(f"Platform Config not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
