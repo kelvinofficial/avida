@@ -1,5 +1,34 @@
 # Changelog
 
+## [2026-02-09] - Checkout Flow Sandbox Integration
+
+### Updated - Checkout Page (`/app/frontend/app/checkout/[listing_id].tsx`)
+- Added sandbox mode detection on page load
+- Uses `sandboxAwareListingsApi.getOne()` for listing fetch in sandbox mode
+- Mock price calculation in sandbox (local VAT/transport calculation)
+- Sandbox order creation via `/api/sandbox/proxy/order`
+- Mock payment processing via `/api/sandbox/payment/process`
+- Orange "SANDBOX MODE" banner on checkout page
+- Title changes to "🧪 Sandbox Checkout" when in sandbox mode
+- Success alert indicates sandbox transaction completed
+
+### Sandbox Checkout Flow
+1. User navigates to checkout with sandbox listing
+2. Page detects sandbox mode and shows orange banner
+3. Price breakdown calculated locally (no real escrow API)
+4. Order created in sandbox_orders collection
+5. Escrow created in sandbox_escrow collection
+6. Mock payment processed (no real gateway)
+7. Success alert shows sandbox order ID
+
+### Safety Features
+- No real payment gateways triggered
+- No real escrow created
+- No real notifications sent
+- All data isolated in sandbox_* collections
+
+---
+
 ## [2026-02-09] - Main App Pages Updated for Sandbox Mode
 
 ### Updated - Home Page (`/app/frontend/app/(tabs)/index.tsx`)
