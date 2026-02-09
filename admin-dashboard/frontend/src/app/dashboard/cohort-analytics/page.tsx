@@ -679,8 +679,182 @@ export default function CohortAnalyticsPage() {
         </Card>
       )}
 
-      {/* Tab 1: Conversion Funnel */}
+      {/* Tab 1: Cohort Comparison */}
       {activeTab === 1 && (
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Box>
+                <Typography variant="h6">Compare Cohort Segments</Typography>
+                <Typography color="text.secondary" variant="body2">
+                  Analyze retention and engagement metrics across different user segments side-by-side
+                </Typography>
+              </Box>
+              <Button
+                variant="contained"
+                startIcon={comparingCohorts ? <CircularProgress size={20} color="inherit" /> : <Compare />}
+                onClick={runComparison}
+                disabled={comparingCohorts || selectedSegments.length < 2}
+                data-testid="run-comparison-btn"
+              >
+                Compare Segments
+              </Button>
+            </Box>
+
+            {/* Segment Selection */}
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={4}>
+                <Typography variant="subtitle2" gutterBottom>Select Segments to Compare</Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  {[
+                    { dimension: 'user_type', value: 'seller', label: 'Sellers' },
+                    { dimension: 'user_type', value: 'buyer', label: 'Buyers' },
+                    { dimension: 'user_type', value: 'hybrid', label: 'Hybrid Users' },
+                    { dimension: 'platform', value: 'mobile', label: 'Mobile Users' },
+                    { dimension: 'platform', value: 'web', label: 'Web Users' },
+                  ].map((seg) => (
+                    <FormControlLabel
+                      key={`${seg.dimension}:${seg.value}`}
+                      control={
+                        <Switch
+                          checked={selectedSegments.some(s => s.dimension === seg.dimension && s.value === seg.value)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedSegments([...selectedSegments, seg]);
+                            } else {
+                              setSelectedSegments(selectedSegments.filter(s => !(s.dimension === seg.dimension && s.value === seg.value)));
+                            }
+                          }}
+                        />
+                      }
+                      label={seg.label}
+                    />
+                  ))}
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Typography variant="subtitle2" gutterBottom>Time Period</Typography>
+                <FormControl fullWidth size="small">
+                  <Select
+                    value={comparisonTimePeriod}
+                    onChange={(e) => setComparisonTimePeriod(Number(e.target.value))}
+                    data-testid="comparison-period-select"
+                  >
+                    <MenuItem value={30}>Last 30 Days</MenuItem>
+                    <MenuItem value={60}>Last 60 Days</MenuItem>
+                    <MenuItem value={90}>Last 90 Days</MenuItem>
+                    <MenuItem value={180}>Last 6 Months</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Typography variant="subtitle2" gutterBottom>Selected Segments</Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {selectedSegments.map((seg) => (
+                    <Chip
+                      key={`${seg.dimension}:${seg.value}`}
+                      label={seg.label}
+                      size="small"
+                      onDelete={() => setSelectedSegments(selectedSegments.filter(s => !(s.dimension === seg.dimension && s.value === seg.value)))}
+                    />
+                  ))}
+                </Box>
+              </Grid>
+            </Grid>
+
+            <Divider sx={{ my: 2 }} />
+
+            {/* Comparison Results */}
+            {comparisonResult ? (
+              <Box>
+                <Typography variant="h6" gutterBottom>Comparison Results</Typography>
+                
+                {/* Winners Summary */}
+                {comparisonResult.winners && (
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    <Typography variant="subtitle2">Top Performers:</Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 1 }}>
+                      {Object.entries(comparisonResult.winners).map(([metric, winner]: [string, any]) => (
+                        <Chip
+                          key={metric}
+                          icon={<EmojiEvents />}
+                          label={`${metric.replace('_', ' ')}: ${winner.segment} (${winner.value})`}
+                          color="primary"
+                          variant="outlined"
+                          size="small"
+                        />
+                      ))}
+                    </Box>
+                  </Alert>
+                )}
+
+                {/* Comparison Table */}
+                <TableContainer component={Paper} variant="outlined">
+                  <Table data-testid="comparison-table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Segment</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 'bold' }}>Users</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 'bold' }}>D7 Retention</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 'bold' }}>D30 Retention</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 'bold' }}>LTV</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 'bold' }}>Engagement</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 'bold' }}>Conversion</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {comparisonResult.comparison?.map((seg: any) => (
+                        <TableRow key={seg.segment} hover>
+                          <TableCell>
+                            <Chip label={seg.segment} size="small" variant="outlined" />
+                          </TableCell>
+                          <TableCell align="center">{seg.user_count}</TableCell>
+                          <TableCell align="center" sx={{ bgcolor: getRetentionColor(seg.metrics?.retention_d7), color: seg.metrics?.retention_d7 >= 50 ? 'white' : 'inherit' }}>
+                            {seg.metrics?.retention_d7}%
+                          </TableCell>
+                          <TableCell align="center" sx={{ bgcolor: getRetentionColor(seg.metrics?.retention_d30), color: seg.metrics?.retention_d30 >= 50 ? 'white' : 'inherit' }}>
+                            {seg.metrics?.retention_d30}%
+                          </TableCell>
+                          <TableCell align="center">€{seg.metrics?.ltv?.toFixed(2)}</TableCell>
+                          <TableCell align="center">{seg.metrics?.engagement_score}</TableCell>
+                          <TableCell align="center">{seg.metrics?.conversion_rate}%</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                {/* Comparison Chart */}
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="subtitle2" gutterBottom>Visual Comparison</Typography>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={comparisonResult.comparison || []}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="segment" />
+                      <YAxis />
+                      <RechartsTooltip />
+                      <Legend />
+                      <Bar dataKey="metrics.retention_d7" fill="#2196f3" name="D7 Retention %" />
+                      <Bar dataKey="metrics.retention_d30" fill="#4caf50" name="D30 Retention %" />
+                      <Bar dataKey="metrics.conversion_rate" fill="#ff9800" name="Conversion %" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Box>
+              </Box>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Compare sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
+                <Typography color="text.secondary">
+                  Select at least 2 segments and click "Compare Segments" to analyze differences
+                </Typography>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tab 2: Conversion Funnel */}
+      {activeTab === 2 && (
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <Card>
