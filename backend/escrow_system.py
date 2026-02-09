@@ -890,6 +890,41 @@ class EscrowService:
             "created_at": now.isoformat()
         })
         
+        # Track cohort event for purchase completion
+        try:
+            import httpx
+            async with httpx.AsyncClient() as client:
+                # Track for buyer
+                await client.post(
+                    "http://localhost:8001/api/cohort-analytics/events/track",
+                    json={
+                        "user_id": escrow.get("buyer_id", "unknown"),
+                        "event_type": "checkout_completed",
+                        "properties": {
+                            "order_id": order_id,
+                            "amount": escrow["amount"],
+                            "currency": escrow["currency"]
+                        }
+                    },
+                    timeout=2.0
+                )
+                # Track for seller
+                await client.post(
+                    "http://localhost:8001/api/cohort-analytics/events/track",
+                    json={
+                        "user_id": escrow["seller_id"],
+                        "event_type": "escrow_released",
+                        "properties": {
+                            "order_id": order_id,
+                            "amount": escrow["seller_amount"],
+                            "currency": escrow["currency"]
+                        }
+                    },
+                    timeout=2.0
+                )
+        except Exception as e:
+            logger.debug(f"Cohort event tracking failed: {e}")
+        
         logger.info(f"Escrow released for order {order_id}, seller receives {escrow['seller_amount']}")
         
         return await self.db.escrow.find_one({"order_id": order_id}, {"_id": 0})
