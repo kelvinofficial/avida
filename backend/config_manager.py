@@ -96,9 +96,53 @@ CRITICAL_CONFIGS = [
 # User roles for feature flag overrides
 USER_ROLES = ["user", "seller", "verified_seller", "admin", "super_admin", "support", "moderator"]
 
+class ScheduleStatus(str, Enum):
+    PENDING = "pending"
+    ACTIVE = "active"
+    COMPLETED = "completed"
+    ROLLED_BACK = "rolled_back"
+    CANCELLED = "cancelled"
+    FAILED = "failed"
+
+class RollbackTrigger(str, Enum):
+    MANUAL = "manual"
+    METRIC_DROP = "metric_drop"
+    ERROR_RATE = "error_rate"
+    TIME_BASED = "time_based"
+
 # =========================================================================
 # PYDANTIC MODELS
 # =========================================================================
+
+class ScheduledDeployment(BaseModel):
+    """Scheduled config deployment"""
+    id: str
+    name: str
+    description: Optional[str] = None
+    environment: str
+    config_type: str  # feature_flag, global_setting, country_config
+    config_changes: Dict[str, Any]  # What to change
+    scheduled_at: str  # When to deploy
+    duration_hours: Optional[int] = None  # Auto-rollback after duration
+    status: str = "pending"
+    
+    # Rollback settings
+    enable_auto_rollback: bool = True
+    rollback_on_error_rate: float = Field(default=5.0, ge=0, le=100)  # Rollback if error rate exceeds
+    rollback_on_metric_drop: float = Field(default=20.0, ge=0, le=100)  # Rollback if key metric drops %
+    metric_to_monitor: Optional[str] = None  # e.g., "checkout_conversion", "api_success_rate"
+    monitoring_period_minutes: int = Field(default=30, ge=5, le=240)
+    
+    # Execution info
+    original_values: Optional[Dict[str, Any]] = None  # Saved before deployment
+    deployed_at: Optional[str] = None
+    rolled_back_at: Optional[str] = None
+    rollback_reason: Optional[str] = None
+    completed_at: Optional[str] = None
+    
+    created_by: str
+    created_at: str
+    updated_at: Optional[str] = None
 
 class GlobalSettings(BaseModel):
     """Global platform settings"""
