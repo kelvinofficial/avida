@@ -875,7 +875,7 @@ class QAReliabilityService:
                 
                 results.append({
                     "id": str(uuid.uuid4()),
-                    "check_type": QACheckType.API,
+                    "check_type": "api",
                     "name": f"API: {endpoint}",
                     "passed": True,
                     "executed_at": datetime.now(timezone.utc).isoformat(),
@@ -885,7 +885,7 @@ class QAReliabilityService:
             except Exception as e:
                 results.append({
                     "id": str(uuid.uuid4()),
-                    "check_type": QACheckType.API,
+                    "check_type": "api",
                     "name": f"API: {endpoint}",
                     "passed": False,
                     "executed_at": datetime.now(timezone.utc).isoformat(),
@@ -911,7 +911,7 @@ class QAReliabilityService:
                 passed, details = await check_func()
                 results.append({
                     "id": str(uuid.uuid4()),
-                    "check_type": QACheckType.CRITICAL_FLOW,
+                    "check_type": "critical_flow",
                     "name": f"Flow: {flow_name}",
                     "passed": passed,
                     "executed_at": datetime.now(timezone.utc).isoformat(),
@@ -921,7 +921,7 @@ class QAReliabilityService:
             except Exception as e:
                 results.append({
                     "id": str(uuid.uuid4()),
-                    "check_type": QACheckType.CRITICAL_FLOW,
+                    "check_type": "critical_flow",
                     "name": f"Flow: {flow_name}",
                     "passed": False,
                     "executed_at": datetime.now(timezone.utc).isoformat(),
