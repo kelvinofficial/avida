@@ -4520,6 +4520,13 @@ if SMART_NOTIFICATIONS_AVAILABLE:
     
     logger.info("Smart Notification System loaded successfully")
 
+# Platform Configuration & Brand Manager
+if PLATFORM_CONFIG_AVAILABLE:
+    platform_config_router, platform_config_service = create_platform_config_router(db)
+    api_router.include_router(platform_config_router)
+    app.include_router(api_router)  # Re-include to pick up platform config routes
+    logger.info("Platform Configuration & Brand Manager loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
