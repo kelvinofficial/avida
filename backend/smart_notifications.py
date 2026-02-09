@@ -584,6 +584,205 @@ class NotificationAnalytics(BaseModel):
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
+# =============================================================================
+# PHASE 5: MULTI-LANGUAGE TEMPLATES (i18n)
+# =============================================================================
+
+class LocalizedContent(BaseModel):
+    """Localized content for a specific language"""
+    title: str
+    body: str
+    subject: Optional[str] = None  # For email
+    html_content: Optional[str] = None  # For email
+
+
+class MultiLanguageTemplate(BaseModel):
+    """Notification template with multi-language support"""
+    id: str = Field(default_factory=lambda: f"mlt_{uuid.uuid4().hex[:12]}")
+    name: str
+    description: str = ""
+    trigger_type: str
+    
+    # Default language content (fallback)
+    default_language: str = DEFAULT_LANGUAGE
+    
+    # Localized content by language code
+    translations: Dict[str, LocalizedContent] = {}
+    
+    # Template metadata
+    channels: List[str] = ["push", "email", "in_app"]
+    variables: List[str] = []  # List of available variables: user_name, listing_title, etc.
+    
+    # Status
+    is_active: bool = True
+    version: int = 1
+    
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    
+    def get_content(self, language: str = DEFAULT_LANGUAGE) -> LocalizedContent:
+        """Get content for specified language with fallback to default"""
+        if language in self.translations:
+            return self.translations[language]
+        if self.default_language in self.translations:
+            return self.translations[self.default_language]
+        # Return empty content if no translations available
+        return LocalizedContent(title="", body="")
+
+
+class CampaignSchedulerConfig(BaseModel):
+    """Configuration for campaign scheduler automation - Phase 5"""
+    id: str = "campaign_scheduler_config"
+    
+    # Scheduler settings
+    enabled: bool = True
+    check_interval_seconds: int = 60  # How often to check for due campaigns
+    
+    # Processing settings
+    batch_size: int = 100  # How many campaigns to process per run
+    max_retries: int = 3
+    retry_delay_minutes: int = 5
+    
+    # Rate limiting
+    max_campaigns_per_hour: int = 10
+    max_notifications_per_minute: int = 1000
+    
+    # Monitoring
+    alert_on_failure: bool = True
+    alert_email: Optional[str] = None
+    
+    # Stats
+    last_run: Optional[str] = None
+    campaigns_processed_today: int = 0
+    notifications_sent_today: int = 0
+    last_reset: Optional[str] = None
+    
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+# Default multi-language templates
+DEFAULT_ML_TEMPLATES = {
+    "new_listing_alert": {
+        "name": "New Listing Alert",
+        "trigger_type": "new_listing_in_category",
+        "variables": ["user_name", "category_name", "listing_title", "price", "currency", "location", "listing_image"],
+        "translations": {
+            "en": {
+                "title": "New {{category_name}} listing!",
+                "body": "{{listing_title}} - {{currency}}{{price}}",
+                "subject": "New listing in {{category_name}}: {{listing_title}}"
+            },
+            "es": {
+                "title": "¡Nuevo anuncio en {{category_name}}!",
+                "body": "{{listing_title}} - {{currency}}{{price}}",
+                "subject": "Nuevo anuncio en {{category_name}}: {{listing_title}}"
+            },
+            "fr": {
+                "title": "Nouvelle annonce {{category_name}} !",
+                "body": "{{listing_title}} - {{currency}}{{price}}",
+                "subject": "Nouvelle annonce dans {{category_name}}: {{listing_title}}"
+            },
+            "de": {
+                "title": "Neue {{category_name}} Anzeige!",
+                "body": "{{listing_title}} - {{currency}}{{price}}",
+                "subject": "Neue Anzeige in {{category_name}}: {{listing_title}}"
+            },
+            "it": {
+                "title": "Nuovo annuncio {{category_name}}!",
+                "body": "{{listing_title}} - {{currency}}{{price}}",
+                "subject": "Nuovo annuncio in {{category_name}}: {{listing_title}}"
+            },
+            "pt": {
+                "title": "Novo anúncio em {{category_name}}!",
+                "body": "{{listing_title}} - {{currency}}{{price}}",
+                "subject": "Novo anúncio em {{category_name}}: {{listing_title}}"
+            }
+        }
+    },
+    "price_drop_alert": {
+        "name": "Price Drop Alert",
+        "trigger_type": "price_drop_saved_item",
+        "variables": ["user_name", "listing_title", "price", "old_price", "currency", "drop_percent", "savings"],
+        "translations": {
+            "en": {
+                "title": "Price Drop! {{listing_title}}",
+                "body": "Now {{currency}}{{price}} ({{drop_percent}}% off)",
+                "subject": "Price Drop! {{listing_title}} is now {{currency}}{{price}}"
+            },
+            "es": {
+                "title": "¡Bajó de precio! {{listing_title}}",
+                "body": "Ahora {{currency}}{{price}} ({{drop_percent}}% menos)",
+                "subject": "¡Bajó de precio! {{listing_title}} ahora {{currency}}{{price}}"
+            },
+            "fr": {
+                "title": "Baisse de prix ! {{listing_title}}",
+                "body": "Maintenant {{currency}}{{price}} (-{{drop_percent}}%)",
+                "subject": "Baisse de prix ! {{listing_title}} maintenant {{currency}}{{price}}"
+            },
+            "de": {
+                "title": "Preissenkung! {{listing_title}}",
+                "body": "Jetzt {{currency}}{{price}} ({{drop_percent}}% Rabatt)",
+                "subject": "Preissenkung! {{listing_title}} jetzt {{currency}}{{price}}"
+            }
+        }
+    },
+    "message_received": {
+        "name": "Message Received",
+        "trigger_type": "message_received",
+        "variables": ["user_name", "sender_name", "message_preview", "listing_title"],
+        "translations": {
+            "en": {
+                "title": "{{sender_name}}",
+                "body": "{{message_preview}}",
+                "subject": "New message from {{sender_name}}"
+            },
+            "es": {
+                "title": "{{sender_name}}",
+                "body": "{{message_preview}}",
+                "subject": "Nuevo mensaje de {{sender_name}}"
+            },
+            "fr": {
+                "title": "{{sender_name}}",
+                "body": "{{message_preview}}",
+                "subject": "Nouveau message de {{sender_name}}"
+            },
+            "de": {
+                "title": "{{sender_name}}",
+                "body": "{{message_preview}}",
+                "subject": "Neue Nachricht von {{sender_name}}"
+            }
+        }
+    },
+    "weekly_digest": {
+        "name": "Weekly Digest",
+        "trigger_type": "weekly_digest",
+        "variables": ["user_name", "new_listings_count", "price_drops_count"],
+        "translations": {
+            "en": {
+                "title": "Your Weekly Digest",
+                "body": "{{new_listings_count}} new listings, {{price_drops_count}} price drops",
+                "subject": "Your Weekly Marketplace Digest"
+            },
+            "es": {
+                "title": "Tu Resumen Semanal",
+                "body": "{{new_listings_count}} nuevos anuncios, {{price_drops_count}} bajadas de precio",
+                "subject": "Tu Resumen Semanal del Marketplace"
+            },
+            "fr": {
+                "title": "Votre Résumé Hebdomadaire",
+                "body": "{{new_listings_count}} nouvelles annonces, {{price_drops_count}} baisses de prix",
+                "subject": "Votre Résumé Hebdomadaire du Marketplace"
+            },
+            "de": {
+                "title": "Ihre Wochenzusammenfassung",
+                "body": "{{new_listings_count}} neue Anzeigen, {{price_drops_count}} Preissenkungen",
+                "subject": "Ihre wöchentliche Marketplace-Zusammenfassung"
+            }
+        }
+    }
+}
+
+
 class AdminNotificationConfig(BaseModel):
     """Global admin configuration for the notification system"""
     id: str = "smart_notification_config"
