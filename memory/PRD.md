@@ -1406,6 +1406,123 @@ Compliance endpoints are currently open (no auth required) for admin access. In 
 
 ---
 
+## Config & Environment Manager - Complete (Feb 9, 2026)
+
+**Status:** COMPLETE - Centralized configuration management across environments
+
+### Features Implemented:
+
+**1. Multi-Environment Support**
+- 4 environments: Production, Staging, Sandbox, Development
+- Independent configs, API keys, and feature states per environment
+- Environment switcher in admin dashboard header
+
+**2. Global Platform Settings**
+- Platform name, tagline, support contact
+- Default currency, VAT %, Commission %
+- Escrow duration (days), Listing expiry
+- Rate limits (API/min, API/hour, listings/day, messages/min)
+- Notification defaults (Push, Email, SMS, WhatsApp)
+- Transport defaults (provider, free shipping threshold, delivery distance)
+
+**3. Feature Flags System (20 features)**
+- Escrow system, Online checkout, Verified sellers
+- Boosts & credits, Seller analytics, AI descriptions
+- Transport integration, SMS/WhatsApp notifications
+- Chat moderation, Banners & ads, Sandbox mode
+- Price negotiation, Multi-currency, Reviews & ratings
+- Favorites & watchlist, Push/Email notifications
+- Location services, Image AI moderation
+- Scopes: Global → Country → Role → Seller override
+- Gradual rollout with percentage control
+
+**4. Country/Region Configurations**
+- 5 pre-configured countries: US, KE, NG, ZA, GB
+- Per-country: Currency, VAT rate, Timezone
+- Payment methods (card, mobile_money, bank_transfer, cash)
+- Mobile money providers (M-Pesa, MTN, Airtel, OPay)
+- Transport partners (FedEx, Sendy, Glovo, DHL)
+- Notification channels and support languages
+
+**5. API Key Management**
+- Environment-specific storage
+- Masked display (****last4chars)
+- Service types: Stripe, PayPal, M-Pesa, Twilio, SendGrid, OpenAI, Firebase
+- Key types: api_key, secret_key, webhook_secret, access_token
+- Expiration tracking, last used timestamp
+- Super Admin access only
+
+**6. 2-Admin Approval Workflow**
+- Critical configs require second admin approval:
+  - commission_percentage, escrow_duration_days, vat_rate
+  - checkout_enabled, escrow_enabled, payment_gateway_keys
+- 24-hour expiration on pending approvals
+- Approve/Reject with reason tracking
+
+**7. Config Versioning & Rollback**
+- Every change versioned with author/timestamp
+- Change notes for critical configs
+- One-click rollback to previous version
+- Checksum verification for integrity
+
+**8. Preview & Simulation**
+- Preview config changes without saving
+- Simulate user experience by country/role
+- Shows: Currency, VAT, payment methods, feature states
+
+**9. Health Check & Export**
+- Health status: Healthy, Degraded, Unhealthy
+- Checks: Global config, feature flags, country configs, expired keys, pending approvals
+- JSON export of full configuration
+- Fail-safe: Falls back to last known good config on service failure
+
+**10. Audit Trail**
+- Immutable audit log for all config changes
+- Tracks: Action, category, config key, old/new values, performer, timestamp
+- Filterable by environment, category, performer, date range
+
+### API Endpoints:
+- `GET /api/config-manager/global/{environment}` - Get global settings
+- `PUT /api/config-manager/global/{environment}` - Update (with approval for critical)
+- `GET /api/config-manager/available-features` - List all 20 feature flags
+- `GET /api/config-manager/features/{environment}` - Get feature flags for environment
+- `PUT /api/config-manager/features/{environment}/{feature_id}` - Toggle feature
+- `GET /api/config-manager/features/{environment}/check/{feature_id}` - Check if enabled
+- `GET /api/config-manager/countries/{environment}` - Get country configs
+- `PUT /api/config-manager/countries/{environment}/{country_code}` - Update country
+- `GET /api/config-manager/api-keys/{environment}` - Get masked API keys
+- `POST /api/config-manager/api-keys/{environment}` - Add API key
+- `GET /api/config-manager/approvals/pending` - Pending approval requests
+- `POST /api/config-manager/approvals/{id}/approve` - Approve change
+- `POST /api/config-manager/approvals/{id}/reject` - Reject change
+- `GET /api/config-manager/history/{environment}/{category}` - Version history
+- `POST /api/config-manager/rollback/{environment}/{category}` - Rollback
+- `POST /api/config-manager/preview/{environment}/{category}` - Preview changes
+- `GET /api/config-manager/simulate/{environment}` - Simulate user experience
+- `GET /api/config-manager/health/{environment}` - Health check
+- `GET /api/config-manager/export/{environment}` - Export as JSON
+- `GET /api/config-manager/audit-logs` - Audit trail
+
+### Admin Dashboard UI:
+- 6 tabs: Global Settings, Feature Flags, Countries, API Keys, Approvals, Audit Logs
+- Environment selector (Production, Staging, Sandbox, Development)
+- Export button, Simulate button
+- Health status indicator
+- Edit Settings dialog with critical changes warning
+- Feature flag toggle cards
+- Country table with payment methods
+- API Keys table with masked values
+- Pending approvals with approve/reject
+
+### Files Added:
+- `/app/backend/config_manager.py` - Backend service (~1700 lines)
+- `/app/admin-dashboard/frontend/src/app/dashboard/config-manager/page.tsx` - Admin UI (~900 lines)
+- `/app/backend/tests/test_config_manager.py` - Test file
+
+### Testing: 96% backend (25/26), 100% frontend
+
+---
+
 ## Upcoming: Future Enhancements
 
 **Backlog:**
@@ -1416,4 +1533,6 @@ Compliance endpoints are currently open (no auth required) for admin access. In 
 - Data Privacy: PDF export format support
 - Data Privacy: Country-specific privacy policy versions with automatic detection
 - Data Privacy: Automated weekly/monthly compliance reports emailed to DPO
+- Config Manager: WebSocket for real-time config updates across instances
+- Config Manager: Config diff viewer for version comparison
 
