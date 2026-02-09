@@ -352,6 +352,11 @@ export default function PostListingScreen() {
   const [location, setLocation] = useState('');
   const [sellerType, setSellerType] = useState('Individual');
   
+  // Price Suggestion State
+  const [priceSuggestionLoading, setPriceSuggestionLoading] = useState(false);
+  const [priceSuggestion, setPriceSuggestion] = useState<any>(null);
+  const [priceSuggestionError, setPriceSuggestionError] = useState<string | null>(null);
+  
   // Seller Preferences
   const [acceptsOffers, setAcceptsOffers] = useState(true);
   const [acceptsExchanges, setAcceptsExchanges] = useState(false);
