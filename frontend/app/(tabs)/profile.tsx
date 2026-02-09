@@ -652,6 +652,14 @@ const QuickActions = ({ router, onLogout }: { router: any; onLogout: () => void 
         <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
       </TouchableOpacity>
 
+      <TouchableOpacity style={quickActionsStyles.item} onPress={() => router.push('/notification-preferences')}>
+        <View style={[quickActionsStyles.iconContainer, { backgroundColor: '#E8F5E9' }]}>
+          <Ionicons name="chatbubbles-outline" size={22} color="#2E7D32" />
+        </View>
+        <Text style={quickActionsStyles.label}>SMS & WhatsApp</Text>
+        <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+      </TouchableOpacity>
+
       <TouchableOpacity style={quickActionsStyles.item} onPress={() => router.push('/help')}>
         <View style={quickActionsStyles.iconContainer}>
           <Ionicons name="help-circle-outline" size={22} color={COLORS.text} />
