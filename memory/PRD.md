@@ -607,3 +607,43 @@ Last Updated: February 9, 2026
 - `frontend/src/utils/api.ts` - Added reportApi
 - `frontend/app/chat/[id].tsx` - Added ReportModal, handleLongPressMessage, handleSubmitReport
 
+
+---
+
+## Moderator Push Notifications (Feb 9, 2026)
+
+### Push Notifications for Moderators - COMPLETE
+
+**Notification Types:**
+1. **moderation_alert** - High-risk message detected
+   - Trigger: Message flagged with `high` or `critical` risk level
+   - Title: "🔴 URGENT: High-Risk Message Detected" (critical) or "🟠 High-Risk Message Detected" (high)
+   - Body: User name, risk level, reason tags, message preview
+   - CTA: "REVIEW" → `/dashboard/moderation?conversation={id}`
+   - Metadata: flag_id, conversation_id, message_id, risk_level, reason_tags, sender_id
+
+2. **moderation_report** - New user report submitted
+   - Trigger: User submits report via POST /api/report/message
+   - Title: "📢 New User Report Submitted"
+   - Body: Reporter name → Reported user, Reason, Description preview
+   - CTA: "REVIEW" → `/dashboard/moderation?tab=reports`
+   - Metadata: report_id, conversation_id, reporter_id, reported_user_id, reason
+
+**Moderator Management API:**
+- `GET /api/moderation/moderators` - List all moderators
+- `POST /api/moderation/moderators/{user_id}` - Add user as moderator
+- `DELETE /api/moderation/moderators/{user_id}` - Remove moderator role
+
+**Moderator Identification:**
+- Users with `is_moderator: true`
+- Users with `role` in ["moderator", "admin", "super_admin"]
+
+**Push Notification Flow:**
+1. Moderator receives in-app notification (stored in `notifications` collection)
+2. If moderator has `push_token`, receives push notification via Expo
+
+**Testing:** 11/11 tests passed
+
+**Files Modified:**
+- `backend/chat_moderation.py` - Added _notify_moderators_high_risk_message, _notify_moderators_new_report, moderator management endpoints
+
