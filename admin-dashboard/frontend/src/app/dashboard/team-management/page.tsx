@@ -556,6 +556,9 @@ export default function TeamManagementPage() {
           <Tab icon={<Security />} label="Roles & Permissions" data-testid="tab-roles" />
           <Tab icon={<Assignment />} label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>Tasks <Chip label={tasks.filter(t => t.status !== 'closed').length} size="small" color="info" /></Box>} data-testid="tab-tasks" />
           <Tab icon={<CheckCircle />} label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>Approvals <Chip label={approvals.filter(a => a.status === 'pending').length} size="small" color="warning" /></Box>} data-testid="tab-approvals" />
+          <Tab icon={<Schedule />} label="Shifts" data-testid="tab-shifts" />
+          <Tab icon={<School />} label="Sandbox" data-testid="tab-sandbox" />
+          <Tab icon={<VpnKey />} label="Security" data-testid="tab-security" />
           <Tab icon={<Settings />} label="Settings" data-testid="tab-settings" />
           <Tab icon={<History />} label="Audit Log" data-testid="tab-audit" />
         </Tabs>
