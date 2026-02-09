@@ -618,46 +618,6 @@ class SmartNotificationService:
             
         except Exception as e:
             logger.error(f"Error updating interest profile: {e}")
-                    # Track saved categories for price drop alerts
-                    saved_cats = profile.get("saved_categories", [])
-                    if category_id not in saved_cats:
-                        updates["$addToSet"] = {"saved_categories": category_id}
-            
-            elif event.event_type == BehaviorEventType.SEARCH_QUERY:
-                query = event.metadata.get("query", "")
-                if query:
-                    # Add to recent searches (keep last 20)
-                    recent = profile.get("recent_searches", [])
-                    if query not in recent:
-                        recent = [query] + recent[:19]
-                        updates["recent_searches"] = recent
-            
-            elif event.event_type == BehaviorEventType.PURCHASE:
-                updates["$inc"] = {"total_purchases": 1}
-                
-                category_id = event.metadata.get("category_id")
-                if category_id:
-                    # Highest weight for purchases
-                    current_score = profile.get("category_interests", {}).get(category_id, 0)
-                    new_score = min(100, current_score + 20)
-                    updates[f"category_interests.{category_id}"] = new_score
-            
-            elif event.event_type == BehaviorEventType.VIEW_CATEGORY:
-                category_id = event.entity_id
-                if category_id:
-                    current_score = profile.get("category_interests", {}).get(category_id, 0)
-                    new_score = min(100, current_score + 2)
-                    updates[f"category_interests.{category_id}"] = new_score
-            
-            # Upsert profile
-            await self.db.user_interest_profiles.update_one(
-                {"user_id": user_id},
-                {"$set": updates} if "$inc" not in updates else updates,
-                upsert=True
-            )
-            
-        except Exception as e:
-            logger.error(f"Error updating interest profile: {e}")
     
     async def get_interest_profile(self, user_id: str) -> Optional[Dict]:
         """Get user's interest profile"""
