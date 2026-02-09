@@ -372,6 +372,29 @@ class WorkflowRule(BaseModel):
     created_by: str
 
 
+class EmailTemplate(BaseModel):
+    """Email template for notifications"""
+    id: str
+    name: str
+    slug: str  # Unique identifier: task_assignment, approval_request, sla_breach, etc
+    subject: str
+    body_html: str
+    body_text: Optional[str] = None
+    
+    # Template variables available
+    available_variables: List[str] = []  # e.g., ["recipient_name", "task_title", "priority"]
+    
+    # Settings
+    is_active: bool = True
+    is_system: bool = False  # System templates can't be deleted
+    category: str = "general"  # general, task, approval, alert, summary
+    
+    # Metadata
+    created_at: str
+    updated_at: str
+    created_by: str
+
+
 class TeamSettings(BaseModel):
     id: str = "default"
     
