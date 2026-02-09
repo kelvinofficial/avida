@@ -486,7 +486,7 @@ class TeamWorkflowService:
                 logger.info(f"Created default role: {role_enum.value}")
         
         # Create default settings
-        existing_settings = await self.settings.find_one({"id": "default"})
+        existing_settings = await self.settings.find_one({"id": "default"}, {"_id": 0})
         if not existing_settings:
             now = datetime.now(timezone.utc).isoformat()
             settings = TeamSettings(updated_at=now, updated_by="system")
@@ -713,7 +713,7 @@ class TeamWorkflowService:
         actor_info: Dict = {}
     ) -> Optional[Dict]:
         """Update a team member"""
-        member = await self.team_members.find_one({"id": member_id})
+        member = await self.team_members.find_one({"id": member_id}, {"_id": 0})
         if not member:
             return None
         
@@ -758,7 +758,7 @@ class TeamWorkflowService:
         actor_info: Dict = {}
     ) -> bool:
         """Deactivate a team member"""
-        member = await self.team_members.find_one({"id": member_id})
+        member = await self.team_members.find_one({"id": member_id}, {"_id": 0})
         if not member:
             return False
         
@@ -919,7 +919,7 @@ class TeamWorkflowService:
         required_level: PermissionLevel
     ) -> bool:
         """Check if a team member has required permission level"""
-        member = await self.team_members.find_one({"id": member_id})
+        member = await self.team_members.find_one({"id": member_id}, {"_id": 0})
         if not member or member.get("status") != "active":
             return False
         
@@ -1024,7 +1024,7 @@ class TeamWorkflowService:
         now = datetime.now(timezone.utc)
         
         # Calculate SLA deadline
-        settings = await self.settings.find_one({"id": "default"})
+        settings = await self.settings.find_one({"id": "default"}, {"_id": 0})
         sla_minutes = settings.get("sla_timers", {}).get(priority.value, 1440) if settings else 1440
         sla_deadline = (now + timedelta(minutes=sla_minutes)).isoformat()
         
@@ -1081,7 +1081,7 @@ class TeamWorkflowService:
         actor_info: Dict = {}
     ) -> Optional[Dict]:
         """Update a task"""
-        task = await self.tasks.find_one({"id": task_id})
+        task = await self.tasks.find_one({"id": task_id}, {"_id": 0})
         if not task:
             return None
         
@@ -1124,12 +1124,12 @@ class TeamWorkflowService:
         actor_info: Dict = {}
     ) -> Optional[Dict]:
         """Assign a task to a team member"""
-        task = await self.tasks.find_one({"id": task_id})
+        task = await self.tasks.find_one({"id": task_id}, {"_id": 0})
         if not task:
             return None
         
         # Verify assignee exists
-        assignee = await self.team_members.find_one({"id": assigned_to})
+        assignee = await self.team_members.find_one({"id": assigned_to}, {"_id": 0})
         if not assignee:
             raise HTTPException(status_code=400, detail="Invalid team member ID")
         
@@ -1179,11 +1179,11 @@ class TeamWorkflowService:
         attachments: List[Dict] = []
     ) -> Dict:
         """Add internal comment to a task"""
-        task = await self.tasks.find_one({"id": task_id})
+        task = await self.tasks.find_one({"id": task_id}, {"_id": 0})
         if not task:
             raise HTTPException(status_code=404, detail="Task not found")
         
-        author = await self.team_members.find_one({"id": author_id})
+        author = await self.team_members.find_one({"id": author_id}, {"_id": 0})
         if not author:
             raise HTTPException(status_code=404, detail="Author not found")
         
@@ -1371,7 +1371,7 @@ class TeamWorkflowService:
         actor_info: Dict = {}
     ) -> Optional[Dict]:
         """Approve an approval request"""
-        approval = await self.approvals.find_one({"id": approval_id})
+        approval = await self.approvals.find_one({"id": approval_id}, {"_id": 0})
         if not approval:
             return None
         
@@ -1442,7 +1442,7 @@ class TeamWorkflowService:
         actor_info: Dict = {}
     ) -> Optional[Dict]:
         """Reject an approval request"""
-        approval = await self.approvals.find_one({"id": approval_id})
+        approval = await self.approvals.find_one({"id": approval_id}, {"_id": 0})
         if not approval:
             return None
         
@@ -1541,7 +1541,7 @@ class TeamWorkflowService:
         updated_by: str
     ) -> Optional[Dict]:
         """Update a workflow rule"""
-        rule = await self.workflow_rules.find_one({"id": rule_id})
+        rule = await self.workflow_rules.find_one({"id": rule_id}, {"_id": 0})
         if not rule:
             return None
         
