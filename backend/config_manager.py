@@ -799,6 +799,72 @@ class ConfigManagerService:
                 "notification_channels": ["push", "email"],
                 "timezone": "Europe/London",
                 "phone_prefix": "+44"
+            },
+            # New African Countries
+            {
+                "country_code": "GH",
+                "country_name": "Ghana",
+                "enabled": True,
+                "currency_code": "GHS",
+                "vat_rate": 15,
+                "payment_methods": ["mobile_money", "card", "bank_transfer"],
+                "mobile_money_providers": ["mtn", "vodafone", "airteltigo"],
+                "transport_partners": ["glovo", "bolt_delivery"],
+                "notification_channels": ["push", "sms", "whatsapp"],
+                "timezone": "Africa/Accra",
+                "phone_prefix": "+233"
+            },
+            {
+                "country_code": "TZ",
+                "country_name": "Tanzania",
+                "enabled": True,
+                "currency_code": "TZS",
+                "vat_rate": 18,
+                "payment_methods": ["mobile_money", "card"],
+                "mobile_money_providers": ["mpesa", "tigopesa", "airtel"],
+                "transport_partners": ["sendy", "local_delivery"],
+                "notification_channels": ["push", "sms", "whatsapp"],
+                "timezone": "Africa/Dar_es_Salaam",
+                "phone_prefix": "+255"
+            },
+            {
+                "country_code": "UG",
+                "country_name": "Uganda",
+                "enabled": True,
+                "currency_code": "UGX",
+                "vat_rate": 18,
+                "payment_methods": ["mobile_money", "card"],
+                "mobile_money_providers": ["mtn", "airtel"],
+                "transport_partners": ["sendy", "safeboda"],
+                "notification_channels": ["push", "sms", "whatsapp"],
+                "timezone": "Africa/Kampala",
+                "phone_prefix": "+256"
+            },
+            {
+                "country_code": "ZM",
+                "country_name": "Zambia",
+                "enabled": True,
+                "currency_code": "ZMW",
+                "vat_rate": 16,
+                "payment_methods": ["mobile_money", "card", "bank_transfer"],
+                "mobile_money_providers": ["mtn", "airtel", "zamtel"],
+                "transport_partners": ["local_delivery"],
+                "notification_channels": ["push", "sms"],
+                "timezone": "Africa/Lusaka",
+                "phone_prefix": "+260"
+            },
+            {
+                "country_code": "ZW",
+                "country_name": "Zimbabwe",
+                "enabled": True,
+                "currency_code": "ZWL",
+                "vat_rate": 15,
+                "payment_methods": ["mobile_money", "card", "ecocash"],
+                "mobile_money_providers": ["ecocash", "onemoney", "telecash"],
+                "transport_partners": ["local_delivery"],
+                "notification_channels": ["push", "sms", "whatsapp"],
+                "timezone": "Africa/Harare",
+                "phone_prefix": "+263"
             }
         ]
     
