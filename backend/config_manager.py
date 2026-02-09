@@ -150,6 +150,33 @@ class ScheduledDeployment(BaseModel):
     created_at: str
     updated_at: Optional[str] = None
 
+
+class DeploymentTemplate(BaseModel):
+    """Pre-configured deployment template for common scenarios"""
+    id: str
+    name: str
+    description: str
+    icon: str = "rocket"  # Icon identifier for UI
+    category: str = "general"  # general, promotion, maintenance, feature, seasonal
+    config_type: str  # feature_flag, global_setting, country_config
+    config_changes: Dict[str, Any]  # Pre-configured changes
+    
+    # Default rollback settings
+    default_duration_hours: Optional[int] = None
+    enable_auto_rollback: bool = True
+    rollback_on_error_rate: float = Field(default=5.0, ge=0, le=100)
+    rollback_on_metric_drop: float = Field(default=20.0, ge=0, le=100)
+    metric_to_monitor: Optional[str] = "checkout_conversion"
+    
+    # Template metadata
+    is_system: bool = False  # System templates cannot be deleted
+    usage_count: int = 0
+    last_used_at: Optional[str] = None
+    created_by: str
+    created_at: str
+    updated_at: Optional[str] = None
+
+
 class GlobalSettings(BaseModel):
     """Global platform settings"""
     platform_name: str = "Marketplace"
