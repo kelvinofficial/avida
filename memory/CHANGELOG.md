@@ -1,5 +1,26 @@
 # Changelog
 
+## [2026-02-09] - Main App Sandbox Indicator
+
+### Added - Frontend Sandbox Banner
+- `SandboxProvider` React context for sandbox state management
+- `SandboxBanner` component with prominent orange banner showing:
+  - SANDBOX badge with flask icon
+  - Role selector (Buyer/Seller/Transport/Admin)
+  - Time offset indicator
+  - Exit button
+  - Striped orange/black border
+
+### Files Created
+- `/app/frontend/src/utils/sandboxContext.tsx` - Sandbox state provider
+- `/app/frontend/src/components/SandboxBanner.tsx` - Visual banner component
+
+### Files Updated
+- `/app/frontend/app/_layout.tsx` - Wrapped app with SandboxProvider, added SandboxBanner
+- `/app/admin-dashboard/frontend/src/app/dashboard/sandbox/page.tsx` - Added Preview App button
+
+---
+
 ## [2026-02-09] - Admin Sandbox / Preview Mode
 
 ### Added - Sandbox System
