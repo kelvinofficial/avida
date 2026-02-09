@@ -112,6 +112,34 @@ Build a comprehensive admin dashboard for a marketplace application with feature
   - **Integration**:
     - Home page: Banners injected after every 5 rows of listings
     - Listing detail: Banner before "Similar Listings" section
+- [x] **Multi-Channel Notification System - Complete** (Feb 9)
+  - **Backend Service** (`/app/backend/notification_service.py`):
+    - Event-driven notification orchestrator for SMS, WhatsApp, Email
+    - Multi-provider support: Twilio + Africa's Talking with fallback
+    - 13+ default message templates for order, delivery, escrow events
+    - Template variables: {{order_id}}, {{buyer_name}}, {{tracking_url}}, etc.
+    - Delivery OTP generation and verification
+    - Secure tracking link generation (short URLs with expiry)
+    - Phone number normalization for TZ, KE, NG, ZA, UG, US, GB
+    - Notification logs with retry tracking
+  - **Transport Partner Model**:
+    - Basic driver/partner management (name, phone, vehicle type/plate)
+    - Status tracking (available, busy, offline)
+    - Rating and delivery count tracking
+    - Order assignment functionality
+  - **Admin Dashboard** (`/app/admin-dashboard/frontend/src/app/dashboard/sms-notifications/page.tsx`):
+    - Templates tab: View/edit message templates with dynamic variables
+    - Notification Logs tab: Filter by event/status, resend failed
+    - Transport Partners tab: Manage delivery partners, assign to orders
+  - **API Endpoints** (`/api/notifications/*`):
+    - `GET /api/notifications/admin/templates` - Get all templates
+    - `POST/PUT /api/notifications/admin/templates` - CRUD templates
+    - `GET /api/notifications/admin/logs` - Paginated logs with filters
+    - `GET/POST /api/notifications/admin/transport-partners` - Manage partners
+    - `GET /api/notifications/track/{code}` - Tracking link lookup
+    - `POST /api/notifications/delivery/verify-otp` - OTP verification
+    - `GET/PUT /api/notifications/preferences` - User preferences
+  - **Providers**: Sandbox mode for Twilio and Africa's Talking
 
 ### Analytics System Details
 
