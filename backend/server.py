@@ -4453,7 +4453,7 @@ if CHAT_MODERATION_AVAILABLE:
     
     moderation_manager = ChatModerationManager(db)
     moderation_router = create_moderation_router(db, require_admin_for_moderation, moderation_manager)
-    user_report_router = create_user_report_router(db, require_auth)
+    user_report_router = create_user_report_router(db, require_auth, moderation_manager)
     api_router.include_router(moderation_router)
     api_router.include_router(user_report_router)
     app.include_router(api_router)  # Re-include to pick up moderation routes
