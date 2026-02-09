@@ -522,6 +522,17 @@ class ChatModerationManager:
                 }}
             )
             
+            # Notify moderators for high/critical risk
+            if combined_result["risk_level"] in ["high", "critical"]:
+                await self._notify_moderators_high_risk_message(
+                    flag_id=flag.id,
+                    conversation_id=conversation_id,
+                    message_id=message_id,
+                    risk_level=combined_result["risk_level"],
+                    reason_tags=[t.value if hasattr(t, 'value') else t for t in valid_reason_tags],
+                    sender_id=sender_id
+                )
+            
             # Auto-moderation actions
             if self.config.auto_moderation_enabled:
                 await self._apply_auto_moderation(
