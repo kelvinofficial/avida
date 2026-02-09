@@ -78,6 +78,9 @@ class BehaviorEventType(str, Enum):
     MAKE_OFFER = "make_offer"
     PURCHASE = "purchase"
     POST_LISTING = "post_listing"
+    NOTIFICATION_OPENED = "notification_opened"
+    NOTIFICATION_CLICKED = "notification_clicked"
+    NOTIFICATION_CONVERTED = "notification_converted"
 
 
 class NotificationStatus(str, Enum):
@@ -88,6 +91,12 @@ class NotificationStatus(str, Enum):
     THROTTLED = "throttled"
     QUIET_HOURS = "quiet_hours"
     USER_OPTED_OUT = "user_opted_out"
+
+
+class ABTestVariant(str, Enum):
+    CONTROL = "control"
+    VARIANT_A = "variant_a"
+    VARIANT_B = "variant_b"
 
 
 # =============================================================================
