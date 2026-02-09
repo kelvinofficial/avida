@@ -273,12 +273,12 @@ export default function SmartNotificationsPage() {
     setLoading(true);
     try {
       const [configRes, triggersRes, analyticsRes, templatesRes, campaignsRes, abTestsRes] = await Promise.all([
-        fetch(`${API_BASE}/api/smart-notifications/admin/config`),
-        fetch(`${API_BASE}/api/smart-notifications/admin/triggers`),
-        fetch(`${API_BASE}/api/smart-notifications/admin/analytics`),
-        fetch(`${API_BASE}/api/smart-notifications/admin/templates`).catch(() => ({ ok: false })),
-        fetch(`${API_BASE}/api/smart-notifications/admin/campaigns`).catch(() => ({ ok: false })),
-        fetch(`${API_BASE}/api/smart-notifications/admin/ab-tests`),
+        fetch(`${API_BASE}/smart-notifications/admin/config`),
+        fetch(`${API_BASE}/smart-notifications/admin/triggers`),
+        fetch(`${API_BASE}/smart-notifications/admin/analytics`),
+        fetch(`${API_BASE}/smart-notifications/admin/templates`).catch(() => ({ ok: false })),
+        fetch(`${API_BASE}/smart-notifications/admin/campaigns`).catch(() => ({ ok: false })),
+        fetch(`${API_BASE}/smart-notifications/admin/ab-tests`),
       ]);
       
       if (configRes.ok) setConfig(await configRes.json());
@@ -298,7 +298,7 @@ export default function SmartNotificationsPage() {
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/smart-notifications/admin/config`, {
+      const res = await fetch(`${API_BASE}/smart-notifications/admin/config`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
@@ -323,8 +323,8 @@ export default function SmartNotificationsPage() {
     setSaving(true);
     try {
       const url = editingTrigger
-        ? `${API_BASE}/api/smart-notifications/admin/triggers/${editingTrigger.id}`
-        : `${API_BASE}/api/smart-notifications/admin/triggers`;
+        ? `${API_BASE}/smart-notifications/admin/triggers/${editingTrigger.id}`
+        : `${API_BASE}/smart-notifications/admin/triggers`;
       
       const res = await fetch(url, {
         method: editingTrigger ? 'PUT' : 'POST',
@@ -350,7 +350,7 @@ export default function SmartNotificationsPage() {
     if (!confirm('Are you sure you want to delete this trigger?')) return;
     
     try {
-      const res = await fetch(`${API_BASE}/api/smart-notifications/admin/triggers/${triggerId}`, {
+      const res = await fetch(`${API_BASE}/smart-notifications/admin/triggers/${triggerId}`, {
         method: 'DELETE',
       });
       
@@ -365,7 +365,7 @@ export default function SmartNotificationsPage() {
 
   const processNotifications = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/smart-notifications/admin/process`, {
+      const res = await fetch(`${API_BASE}/smart-notifications/admin/process`, {
         method: 'POST',
       });
       
@@ -402,8 +402,8 @@ export default function SmartNotificationsPage() {
     setSaving(true);
     try {
       const url = editingTemplate
-        ? `${API_BASE}/api/smart-notifications/admin/templates/${editingTemplate.id}`
-        : `${API_BASE}/api/smart-notifications/admin/templates`;
+        ? `${API_BASE}/smart-notifications/admin/templates/${editingTemplate.id}`
+        : `${API_BASE}/smart-notifications/admin/templates`;
       
       const res = await fetch(url, {
         method: editingTemplate ? 'PUT' : 'POST',
@@ -429,8 +429,8 @@ export default function SmartNotificationsPage() {
     setSaving(true);
     try {
       const url = editingCampaign
-        ? `${API_BASE}/api/smart-notifications/admin/campaigns/${editingCampaign.id}`
-        : `${API_BASE}/api/smart-notifications/admin/campaigns`;
+        ? `${API_BASE}/smart-notifications/admin/campaigns/${editingCampaign.id}`
+        : `${API_BASE}/smart-notifications/admin/campaigns`;
       
       const res = await fetch(url, {
         method: editingCampaign ? 'PUT' : 'POST',
@@ -454,7 +454,7 @@ export default function SmartNotificationsPage() {
   const cancelCampaign = async (campaignId: string) => {
     if (!confirm('Cancel this scheduled campaign?')) return;
     try {
-      await fetch(`${API_BASE}/api/smart-notifications/admin/campaigns/${campaignId}/cancel`, { method: 'POST' });
+      await fetch(`${API_BASE}/smart-notifications/admin/campaigns/${campaignId}/cancel`, { method: 'POST' });
       fetchData();
       setSuccess('Campaign cancelled');
     } catch (err) {
@@ -467,8 +467,8 @@ export default function SmartNotificationsPage() {
     setSaving(true);
     try {
       const url = editingAbTest
-        ? `${API_BASE}/api/smart-notifications/admin/ab-tests/${editingAbTest.id}`
-        : `${API_BASE}/api/smart-notifications/admin/ab-tests`;
+        ? `${API_BASE}/smart-notifications/admin/ab-tests/${editingAbTest.id}`
+        : `${API_BASE}/smart-notifications/admin/ab-tests`;
       
       const res = await fetch(url, {
         method: editingAbTest ? 'PUT' : 'POST',
@@ -492,7 +492,7 @@ export default function SmartNotificationsPage() {
   const endAbTest = async (testId: string) => {
     if (!confirm('End this A/B test and determine winner?')) return;
     try {
-      const res = await fetch(`${API_BASE}/api/smart-notifications/admin/ab-tests/${testId}/end`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/smart-notifications/admin/ab-tests/${testId}/end`, { method: 'POST' });
       if (res.ok) {
         fetchData();
         setSuccess('A/B Test ended!');
