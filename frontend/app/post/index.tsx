@@ -1002,6 +1002,122 @@ export default function PostListingScreen() {
         <Text style={styles.tipText}>• Show the item from multiple angles</Text>
         <Text style={styles.tipText}>• Include any defects or damage</Text>
       </View>
+
+      {/* AI Analyzer Status */}
+      {aiAnalyzing && (
+        <View style={aiStyles.analyzingContainer}>
+          <ActivityIndicator size="small" color={COLORS.primary} />
+          <Text style={aiStyles.analyzingText}>Analyzing photos...</Text>
+        </View>
+      )}
+
+      {aiError && !aiAnalyzing && (
+        <View style={aiStyles.errorContainer}>
+          <Ionicons name="alert-circle" size={18} color={COLORS.warning} />
+          <Text style={aiStyles.errorText}>{aiError}</Text>
+          <TouchableOpacity onPress={() => triggerAiAnalysis(images)} style={aiStyles.retryButton}>
+            <Text style={aiStyles.retryText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* AI Suggestions Panel */}
+      {showAiSuggestions && aiResult && (
+        <View style={aiStyles.suggestionsContainer}>
+          <View style={aiStyles.suggestionsHeader}>
+            <View style={aiStyles.suggestionsHeaderLeft}>
+              <Ionicons name="sparkles" size={20} color={COLORS.primary} />
+              <Text style={aiStyles.suggestionsTitle}>AI Suggestions</Text>
+            </View>
+            <TouchableOpacity onPress={dismissAiSuggestions}>
+              <Ionicons name="close" size={22} color={COLORS.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          <Text style={aiStyles.disclaimer}>
+            ⚠️ AI suggestions may not be 100% accurate. Please review before publishing.
+          </Text>
+
+          {/* Detected Info */}
+          {aiResult.detected_brand && (
+            <View style={aiStyles.detectedItem}>
+              <Text style={aiStyles.detectedLabel}>Brand:</Text>
+              <Text style={aiStyles.detectedValue}>{aiResult.detected_brand}</Text>
+            </View>
+          )}
+          {aiResult.detected_object_type && (
+            <View style={aiStyles.detectedItem}>
+              <Text style={aiStyles.detectedLabel}>Item Type:</Text>
+              <Text style={aiStyles.detectedValue}>{aiResult.detected_object_type}</Text>
+            </View>
+          )}
+          {aiResult.detected_condition && (
+            <View style={aiStyles.detectedItem}>
+              <Text style={aiStyles.detectedLabel}>Condition:</Text>
+              <Text style={aiStyles.detectedValue}>{aiResult.detected_condition}</Text>
+            </View>
+          )}
+          {aiResult.detected_color && (
+            <View style={aiStyles.detectedItem}>
+              <Text style={aiStyles.detectedLabel}>Color:</Text>
+              <Text style={aiStyles.detectedValue}>{aiResult.detected_color}</Text>
+            </View>
+          )}
+
+          {/* Suggested Title */}
+          {aiResult.suggested_title && (
+            <View style={aiStyles.suggestionField}>
+              <Text style={aiStyles.suggestionLabel}>Suggested Title:</Text>
+              <Text style={aiStyles.suggestionValue}>{aiResult.suggested_title}</Text>
+              <TouchableOpacity 
+                style={aiStyles.applyButton}
+                onPress={() => applyPartialAiSuggestions('title')}
+              >
+                <Text style={aiStyles.applyButtonText}>Use Title</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Suggested Description Preview */}
+          {aiResult.suggested_description && (
+            <View style={aiStyles.suggestionField}>
+              <Text style={aiStyles.suggestionLabel}>Suggested Description:</Text>
+              <Text style={aiStyles.suggestionValue} numberOfLines={3}>
+                {aiResult.suggested_description}
+              </Text>
+              <TouchableOpacity 
+                style={aiStyles.applyButton}
+                onPress={() => applyPartialAiSuggestions('description')}
+              >
+                <Text style={aiStyles.applyButtonText}>Use Description</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Action Buttons */}
+          <View style={aiStyles.actionButtons}>
+            <TouchableOpacity style={aiStyles.acceptAllButton} onPress={applyAiSuggestions}>
+              <Ionicons name="checkmark-circle" size={18} color="#fff" />
+              <Text style={aiStyles.acceptAllText}>Accept All</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={aiStyles.regenerateButton} onPress={regenerateAiAnalysis}>
+              <Ionicons name="refresh" size={18} color={COLORS.primary} />
+              <Text style={aiStyles.regenerateText}>Regenerate</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {/* Show button to view AI suggestions if they were dismissed */}
+      {aiResult && !showAiSuggestions && !aiSuggestionsApplied && images.length > 0 && (
+        <TouchableOpacity 
+          style={aiStyles.viewSuggestionsButton}
+          onPress={() => setShowAiSuggestions(true)}
+        >
+          <Ionicons name="sparkles" size={16} color={COLORS.primary} />
+          <Text style={aiStyles.viewSuggestionsText}>View AI Suggestions</Text>
+        </TouchableOpacity>
+      )}
     </ScrollView>
   );
 
