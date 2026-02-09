@@ -243,22 +243,31 @@ def create_conversations_router(db, require_auth, check_rate_limit, sio, create_
                 )
             if chat_status == "muted":
                 muted_until = user_doc.get("chat_muted_until")
+                now = datetime.now(timezone.utc)
+                
                 if muted_until:
                     # Ensure timezone awareness for comparison
                     if muted_until.tzinfo is None:
                         muted_until = muted_until.replace(tzinfo=timezone.utc)
-                    now = datetime.now(timezone.utc)
+                    
                     if muted_until > now:
+                        # Still muted
                         remaining = (muted_until - now).total_seconds() / 3600
                         raise HTTPException(
                             status_code=403, 
                             detail=f"You are temporarily muted. Chat access will be restored in {remaining:.1f} hours."
                         )
+                    else:
+                        # Mute expired, restore access
+                        await db.users.update_one(
+                            {"user_id": user.user_id},
+                            {"$set": {"chat_status": "active"}, "$unset": {"chat_muted_until": "", "chat_mute_reason": ""}}
+                        )
                 else:
-                    # Mute expired, restore access
-                    await db.users.update_one(
-                        {"user_id": user.user_id},
-                        {"$set": {"chat_status": "active"}, "$unset": {"chat_muted_until": "", "chat_mute_reason": ""}}
+                    # No muted_until timestamp but status is muted - treat as indefinitely muted
+                    raise HTTPException(
+                        status_code=403, 
+                        detail="You are temporarily muted. Chat access is restricted."
                     )
         
         # Rate limiting
