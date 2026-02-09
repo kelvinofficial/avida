@@ -1,11 +1,13 @@
 """
 Conversations Routes Module
 Handles conversations and messaging between users
+Integrates with Chat Moderation System for real-time message scanning
 """
 
 import uuid
+import asyncio
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Any
 from fastapi import APIRouter, HTTPException, Request, Query
 from pydantic import BaseModel
 import logging
@@ -28,7 +30,7 @@ class MessageCreate(BaseModel):
 # ROUTER FACTORY
 # =============================================================================
 
-def create_conversations_router(db, require_auth, check_rate_limit, sio, create_notification_func):
+def create_conversations_router(db, require_auth, check_rate_limit, sio, create_notification_func, moderation_manager: Any = None):
     """
     Create the conversations router with dependencies injected
     
