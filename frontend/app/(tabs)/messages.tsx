@@ -306,6 +306,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onPre
 export default function MessagesScreen() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
+  const { isSandboxMode, sandboxSession } = useSandbox();
   const { isDesktop, isTablet, isReady } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
   
@@ -315,6 +316,7 @@ export default function MessagesScreen() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [isSandbox, setIsSandbox] = useState(false);
   
   // Embedded chat states
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
@@ -328,28 +330,63 @@ export default function MessagesScreen() {
   const [userStatuses, setUserStatuses] = useState<Record<string, { is_online: boolean | null; last_seen: string | null }>>({});
 
   const fetchConversations = useCallback(async () => {
-    if (!isAuthenticated) {
+    // Check sandbox mode
+    const sandboxActive = await sandboxUtils.isActive();
+    setIsSandbox(sandboxActive);
+    
+    if (!sandboxActive && !isAuthenticated) {
       setLoading(false);
       return;
     }
 
     try {
-      const data = await conversationsApi.getAll();
-      setConversations(data);
+      let data: Conversation[] = [];
       
-      // Fetch online status for all conversation users
-      const userIds = data
-        .map((c: Conversation) => c.other_user?.user_id)
-        .filter((id: string | undefined): id is string => !!id);
-      
-      if (userIds.length > 0) {
-        try {
-          const statuses = await usersApi.getStatusBatch(userIds);
-          setUserStatuses(statuses);
-        } catch (err) {
-          console.error('Error fetching user statuses:', err);
+      if (sandboxActive) {
+        // Fetch sandbox conversations
+        const session = await sandboxUtils.getSession();
+        const userId = session?.sandbox_user_id;
+        
+        if (userId) {
+          const response = await api.get(`/sandbox/proxy/conversations/${userId}`);
+          const rawConversations = response.data || [];
+          
+          // Transform sandbox conversations to match expected format
+          data = rawConversations.map((conv: any, index: number) => ({
+            ...conv,
+            other_user: {
+              user_id: conv.participants?.find((p: string) => p !== userId) || `sandbox_user_${index}`,
+              name: `[SANDBOX] User ${index + 1}`,
+              avatar: `https://i.pravatar.cc/150?u=${conv.id}`,
+            },
+            last_message: conv.last_message || {
+              text: '[SANDBOX] Sample conversation',
+              created_at: conv.created_at || new Date().toISOString(),
+            },
+            unread: 0,
+            sandbox_mode: true,
+          }));
+        }
+      } else {
+        // Normal production flow
+        data = await conversationsApi.getAll();
+        
+        // Fetch online status for all conversation users
+        const userIds = data
+          .map((c: Conversation) => c.other_user?.user_id)
+          .filter((id: string | undefined): id is string => !!id);
+        
+        if (userIds.length > 0) {
+          try {
+            const statuses = await usersApi.getStatusBatch(userIds);
+            setUserStatuses(statuses);
+          } catch (err) {
+            console.error('Error fetching user statuses:', err);
+          }
         }
       }
+      
+      setConversations(data);
     } catch (error) {
       console.error('Error fetching conversations:', error);
     } finally {
