@@ -1285,8 +1285,8 @@ export default function ConfigManagerPage() {
         </Card>
       )}
 
-      {/* Tab 6: Audit Logs */}
-      {tabValue === 6 && (
+      {/* Tab 7: Audit Logs */}
+      {tabValue === 7 && (
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
