@@ -60,12 +60,14 @@ export default function CheckoutScreen() {
   const router = useRouter();
   const { listing_id } = useLocalSearchParams<{ listing_id: string }>();
   const { isAuthenticated, user } = useAuthStore();
+  const { isSandboxMode, sandboxSession } = useSandbox();
   
   // State
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [listing, setListing] = useState<any>(null);
   const [step, setStep] = useState(1); // 1: Summary, 2: Delivery, 3: Payment, 4: Review
+  const [isSandbox, setIsSandbox] = useState(false);
   
   // Delivery
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('pickup');
