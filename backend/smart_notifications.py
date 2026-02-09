@@ -3127,4 +3127,238 @@ def create_smart_notification_router(db, get_current_user, require_auth):
         
         return {"processed": len(results), "campaigns": results}
     
+    # =========================================================================
+    # PHASE 5: MULTI-LANGUAGE TEMPLATES (i18n)
+    # =========================================================================
+    
+    @router.get("/admin/languages")
+    async def get_supported_languages():
+        """Get all supported languages"""
+        return SUPPORTED_LANGUAGES
+    
+    @router.get("/admin/ml-templates")
+    async def get_ml_templates():
+        """Get all multi-language templates"""
+        # Get custom templates from DB
+        custom_templates = await db.ml_templates.find({}, {"_id": 0}).to_list(100)
+        
+        # Convert default templates to list format
+        default_templates = []
+        for template_id, template_data in DEFAULT_ML_TEMPLATES.items():
+            default_templates.append({
+                "id": template_id,
+                "is_default": True,
+                **template_data
+            })
+        
+        return default_templates + custom_templates
+    
+    @router.get("/admin/ml-templates/{template_id}")
+    async def get_ml_template(template_id: str):
+        """Get a specific multi-language template"""
+        # Check defaults first
+        if template_id in DEFAULT_ML_TEMPLATES:
+            return {"id": template_id, "is_default": True, **DEFAULT_ML_TEMPLATES[template_id]}
+        
+        template = await db.ml_templates.find_one({"id": template_id}, {"_id": 0})
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+        return template
+    
+    @router.post("/admin/ml-templates")
+    async def create_ml_template(template_data: Dict[str, Any] = Body(...)):
+        """Create a new multi-language template"""
+        template = {
+            "id": f"mlt_{uuid.uuid4().hex[:12]}",
+            "name": template_data.get("name", ""),
+            "description": template_data.get("description", ""),
+            "trigger_type": template_data.get("trigger_type", ""),
+            "default_language": template_data.get("default_language", DEFAULT_LANGUAGE),
+            "translations": template_data.get("translations", {}),
+            "channels": template_data.get("channels", ["push", "email", "in_app"]),
+            "variables": template_data.get("variables", []),
+            "is_active": True,
+            "version": 1,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.ml_templates.insert_one(template)
+        return {k: v for k, v in template.items() if k != "_id"}
+    
+    @router.put("/admin/ml-templates/{template_id}")
+    async def update_ml_template(template_id: str, updates: Dict[str, Any] = Body(...)):
+        """Update a multi-language template"""
+        if template_id in DEFAULT_ML_TEMPLATES:
+            raise HTTPException(status_code=400, detail="Cannot modify default templates")
+        
+        updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+        updates["$inc"] = {"version": 1}
+        
+        # Separate $inc from $set
+        set_updates = {k: v for k, v in updates.items() if k != "$inc"}
+        
+        await db.ml_templates.update_one(
+            {"id": template_id},
+            {"$set": set_updates, "$inc": {"version": 1}}
+        )
+        return await db.ml_templates.find_one({"id": template_id}, {"_id": 0})
+    
+    @router.delete("/admin/ml-templates/{template_id}")
+    async def delete_ml_template(template_id: str):
+        """Delete a multi-language template"""
+        if template_id in DEFAULT_ML_TEMPLATES:
+            raise HTTPException(status_code=400, detail="Cannot delete default templates")
+        
+        result = await db.ml_templates.delete_one({"id": template_id})
+        return {"success": result.deleted_count > 0}
+    
+    @router.post("/admin/ml-templates/{template_id}/add-language")
+    async def add_template_language(
+        template_id: str,
+        language: str = Body(...),
+        content: Dict[str, str] = Body(...)
+    ):
+        """Add a language translation to a template"""
+        if template_id in DEFAULT_ML_TEMPLATES:
+            raise HTTPException(status_code=400, detail="Cannot modify default templates")
+        
+        if language not in SUPPORTED_LANGUAGES:
+            raise HTTPException(status_code=400, detail=f"Language '{language}' not supported")
+        
+        await db.ml_templates.update_one(
+            {"id": template_id},
+            {
+                "$set": {
+                    f"translations.{language}": content,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        return await db.ml_templates.find_one({"id": template_id}, {"_id": 0})
+    
+    @router.delete("/admin/ml-templates/{template_id}/language/{language}")
+    async def remove_template_language(template_id: str, language: str):
+        """Remove a language translation from a template"""
+        if template_id in DEFAULT_ML_TEMPLATES:
+            raise HTTPException(status_code=400, detail="Cannot modify default templates")
+        
+        await db.ml_templates.update_one(
+            {"id": template_id},
+            {
+                "$unset": {f"translations.{language}": ""},
+                "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}
+            }
+        )
+        return await db.ml_templates.find_one({"id": template_id}, {"_id": 0})
+    
+    @router.post("/admin/ml-templates/preview")
+    async def preview_ml_template(
+        template_id: str = Body(...),
+        language: str = Body(DEFAULT_LANGUAGE),
+        variables: Dict[str, str] = Body({})
+    ):
+        """Preview a multi-language template with sample data"""
+        # Get template
+        if template_id in DEFAULT_ML_TEMPLATES:
+            template_data = DEFAULT_ML_TEMPLATES[template_id]
+            translations = template_data.get("translations", {})
+        else:
+            template = await db.ml_templates.find_one({"id": template_id})
+            if not template:
+                raise HTTPException(status_code=404, detail="Template not found")
+            translations = template.get("translations", {})
+        
+        # Get content for language
+        content = translations.get(language, translations.get(DEFAULT_LANGUAGE, {}))
+        
+        # Sample variables
+        sample_vars = {
+            "user_name": "John",
+            "category_name": "Electronics",
+            "listing_title": "iPhone 15 Pro Max",
+            "price": "899",
+            "old_price": "999",
+            "currency": "€",
+            "drop_percent": "10",
+            "savings": "100",
+            "location": "Dublin",
+            "sender_name": "Sarah",
+            "message_preview": "Hi, is this available?",
+            "new_listings_count": "12",
+            "price_drops_count": "3",
+            **variables
+        }
+        
+        # Render templates
+        def render(text: str) -> str:
+            result = text
+            for key, value in sample_vars.items():
+                result = result.replace(f"{{{{{key}}}}}", str(value))
+            return result
+        
+        return {
+            "language": language,
+            "title": render(content.get("title", "")),
+            "body": render(content.get("body", "")),
+            "subject": render(content.get("subject", "")) if content.get("subject") else None,
+            "variables_used": sample_vars
+        }
+    
+    # =========================================================================
+    # PHASE 5: CAMPAIGN SCHEDULER AUTOMATION
+    # =========================================================================
+    
+    @router.get("/admin/scheduler/config")
+    async def get_scheduler_config():
+        """Get campaign scheduler configuration"""
+        config = await db.campaign_scheduler_config.find_one({"id": "campaign_scheduler_config"})
+        if not config:
+            config = CampaignSchedulerConfig().model_dump()
+            await db.campaign_scheduler_config.insert_one(config)
+        return {k: v for k, v in config.items() if k != "_id"}
+    
+    @router.put("/admin/scheduler/config")
+    async def update_scheduler_config(updates: Dict[str, Any] = Body(...)):
+        """Update campaign scheduler configuration"""
+        updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+        await db.campaign_scheduler_config.update_one(
+            {"id": "campaign_scheduler_config"},
+            {"$set": updates},
+            upsert=True
+        )
+        return await db.campaign_scheduler_config.find_one({"id": "campaign_scheduler_config"}, {"_id": 0})
+    
+    @router.post("/admin/scheduler/start")
+    async def start_scheduler():
+        """Start the campaign scheduler"""
+        if not service.is_running:
+            service.start(interval=30)
+            return {"message": "Scheduler started", "status": "running"}
+        return {"message": "Scheduler already running", "status": "running"}
+    
+    @router.post("/admin/scheduler/stop")
+    async def stop_scheduler():
+        """Stop the campaign scheduler"""
+        service.stop()
+        return {"message": "Scheduler stopped", "status": "stopped"}
+    
+    @router.get("/admin/scheduler/logs")
+    async def get_scheduler_logs(limit: int = Query(50)):
+        """Get recent scheduler logs"""
+        logs = await db.scheduler_logs.find({}, {"_id": 0}).sort("timestamp", -1).limit(limit).to_list(limit)
+        return logs
+    
+    @router.post("/admin/scheduler/reset-daily-stats")
+    async def reset_daily_stats():
+        """Reset daily scheduler statistics"""
+        await db.campaign_scheduler_config.update_one(
+            {"id": "campaign_scheduler_config"},
+            {"$set": {
+                "campaigns_processed_today": 0,
+                "notifications_sent_today": 0,
+                "last_reset": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        return {"message": "Daily stats reset", "reset_at": datetime.now(timezone.utc).isoformat()}
+    
     return router, service
