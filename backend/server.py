@@ -4494,6 +4494,24 @@ if EXECUTIVE_SUMMARY_AVAILABLE:
     app.include_router(api_router)  # Re-include to pick up executive summary routes
     logger.info("Executive Summary System loaded successfully")
 
+# Smart Notification System
+smart_notification_service = None
+if SMART_NOTIFICATIONS_AVAILABLE:
+    smart_notification_router, smart_notification_service = create_smart_notification_router(
+        db, get_current_user, require_auth
+    )
+    api_router.include_router(smart_notification_router)
+    app.include_router(api_router)  # Re-include to pick up smart notification routes
+    
+    # Start background processor for smart notifications
+    @app.on_event("startup")
+    async def start_smart_notification_processor():
+        if smart_notification_service:
+            smart_notification_service.start(interval=30)
+            logger.info("Smart Notification processor started")
+    
+    logger.info("Smart Notification System loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
