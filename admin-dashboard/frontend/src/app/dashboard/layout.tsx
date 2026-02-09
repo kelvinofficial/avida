@@ -47,6 +47,7 @@ import {
   AccountBalance,
   Sms,
   AutoAwesome,
+  Shield,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
@@ -67,6 +68,7 @@ const menuItems = [
   { text: 'Tickets', icon: <SupportAgent />, path: '/dashboard/tickets' },
   { text: 'Analytics', icon: <Analytics />, path: '/dashboard/analytics' },
   { text: 'Banners', icon: <Campaign />, path: '/dashboard/banners' },
+  { text: 'Moderation', icon: <Shield />, path: '/dashboard/moderation' },
   { text: 'Notifications', icon: <NotificationsActive />, path: '/dashboard/notifications' },
   { text: 'SMS/WhatsApp', icon: <Sms />, path: '/dashboard/sms-notifications' },
   { text: 'AI Analyzer', icon: <AutoAwesome />, path: '/dashboard/ai-analyzer' },
