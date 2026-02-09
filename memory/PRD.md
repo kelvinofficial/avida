@@ -1413,7 +1413,7 @@ Compliance endpoints are currently open (no auth required) for admin access. In 
 - Real-time notification dashboard with WebSocket
 - Advanced segment builder with drag-and-drop
 - Notification performance benchmarks
-- Data Privacy: Role-based access control for compliance endpoints
-- Data Privacy: Legal text management with re-consent workflow
-- Data Privacy: Sandbox mode for testing compliance features
+- Data Privacy: PDF export format support
+- Data Privacy: Country-specific privacy policy versions with automatic detection
+- Data Privacy: Automated weekly/monthly compliance reports emailed to DPO
 
