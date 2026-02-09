@@ -197,7 +197,7 @@ export default function SmartNotificationsPage() {
     setSaving(true);
     try {
       const url = editingTrigger
-        ? `${API_BASE}/api/smart-notifications/admin/triggers/${editingTrigger.id}`
+        ? `${API_BASE}/smart-notifications/admin/triggers/${editingTrigger.id}`
         : `${API_BASE}/smart-notifications/admin/triggers`;
       
       const res = await fetch(url, {
