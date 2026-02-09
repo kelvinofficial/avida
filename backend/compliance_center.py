@@ -1498,6 +1498,501 @@ class ComplianceService:
             "generated_at": now.isoformat()
         }
 
+    # -------------------------------------------------------------------------
+    # LEGAL TEXT MANAGEMENT
+    # -------------------------------------------------------------------------
+    
+    async def get_legal_documents(
+        self,
+        document_type: Optional[str] = None,
+        status: Optional[str] = None,
+        country_code: Optional[str] = None,
+        limit: int = 100,
+        skip: int = 0
+    ) -> List[Dict]:
+        """Get legal documents with optional filters"""
+        query = {}
+        if document_type:
+            query["document_type"] = document_type
+        if status:
+            query["status"] = status
+        if country_code:
+            query["$or"] = [{"country_code": country_code}, {"country_code": None}]
+        
+        docs = await self.legal_documents_collection.find(
+            query, {"_id": 0}
+        ).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
+        
+        return docs
+    
+    async def get_legal_document_by_id(self, document_id: str) -> Optional[Dict]:
+        """Get a single legal document"""
+        return await self.legal_documents_collection.find_one(
+            {"id": document_id}, {"_id": 0}
+        )
+    
+    async def get_current_legal_document(
+        self,
+        document_type: str,
+        country_code: Optional[str] = None
+    ) -> Optional[Dict]:
+        """Get the current published version of a legal document"""
+        query = {
+            "document_type": document_type,
+            "status": "published"
+        }
+        if country_code:
+            # Try country-specific first, then global
+            country_doc = await self.legal_documents_collection.find_one(
+                {**query, "country_code": country_code}, {"_id": 0}
+            )
+            if country_doc:
+                return country_doc
+        
+        # Fall back to global
+        return await self.legal_documents_collection.find_one(
+            {**query, "country_code": None}, {"_id": 0}
+        )
+    
+    async def create_legal_document(
+        self,
+        document_type: str,
+        title: str,
+        content: str,
+        created_by: str,
+        summary: Optional[str] = None,
+        country_code: Optional[str] = None,
+        language: str = "en",
+        requires_acceptance: bool = True,
+        changelog: Optional[str] = None
+    ) -> Dict:
+        """Create a new legal document"""
+        now = datetime.now(timezone.utc)
+        
+        # Get latest version for this document type
+        existing = await self.legal_documents_collection.find_one(
+            {"document_type": document_type, "country_code": country_code},
+            sort=[("version", -1)]
+        )
+        
+        if existing:
+            # Increment version
+            try:
+                major, minor = existing.get("version", "1.0").split(".")
+                new_version = f"{major}.{int(minor) + 1}"
+            except:
+                new_version = "1.1"
+            previous_version_id = existing.get("id")
+        else:
+            new_version = "1.0"
+            previous_version_id = None
+        
+        doc = {
+            "id": str(uuid.uuid4()),
+            "document_type": document_type,
+            "version": new_version,
+            "title": title,
+            "content": content,
+            "summary": summary,
+            "country_code": country_code,
+            "language": language,
+            "status": "draft",
+            "effective_date": None,
+            "requires_acceptance": requires_acceptance,
+            "force_reaccept": False,
+            "changelog": changelog,
+            "previous_version_id": previous_version_id,
+            "created_at": now.isoformat(),
+            "created_by": created_by,
+            "published_at": None,
+            "published_by": None
+        }
+        
+        await self.legal_documents_collection.insert_one(doc)
+        
+        await self._log_audit(
+            action="legal_document_created",
+            actor_id=created_by,
+            actor_role="admin",
+            details={"document_id": doc["id"], "document_type": document_type, "version": new_version}
+        )
+        
+        return doc
+    
+    async def update_legal_document(
+        self,
+        document_id: str,
+        updated_by: str,
+        title: Optional[str] = None,
+        content: Optional[str] = None,
+        summary: Optional[str] = None,
+        requires_acceptance: Optional[bool] = None,
+        changelog: Optional[str] = None
+    ) -> Optional[Dict]:
+        """Update a draft legal document"""
+        doc = await self.legal_documents_collection.find_one({"id": document_id})
+        if not doc:
+            return None
+        
+        if doc.get("status") != "draft":
+            raise HTTPException(status_code=400, detail="Can only edit draft documents")
+        
+        updates = {}
+        if title is not None:
+            updates["title"] = title
+        if content is not None:
+            updates["content"] = content
+        if summary is not None:
+            updates["summary"] = summary
+        if requires_acceptance is not None:
+            updates["requires_acceptance"] = requires_acceptance
+        if changelog is not None:
+            updates["changelog"] = changelog
+        
+        if updates:
+            await self.legal_documents_collection.update_one(
+                {"id": document_id},
+                {"$set": updates}
+            )
+            
+            await self._log_audit(
+                action="legal_document_updated",
+                actor_id=updated_by,
+                actor_role="admin",
+                details={"document_id": document_id, "updates": list(updates.keys())}
+            )
+        
+        return await self.get_legal_document_by_id(document_id)
+    
+    async def publish_legal_document(
+        self,
+        document_id: str,
+        published_by: str,
+        effective_date: Optional[str] = None,
+        force_reaccept: bool = False
+    ) -> Dict:
+        """Publish a legal document and optionally force re-acceptance"""
+        doc = await self.legal_documents_collection.find_one({"id": document_id})
+        if not doc:
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        if doc.get("status") == "published":
+            raise HTTPException(status_code=400, detail="Document already published")
+        
+        now = datetime.now(timezone.utc)
+        
+        # Archive the current published version if it exists
+        current = await self.legal_documents_collection.find_one({
+            "document_type": doc["document_type"],
+            "country_code": doc.get("country_code"),
+            "status": "published"
+        })
+        
+        if current:
+            await self.legal_documents_collection.update_one(
+                {"id": current["id"]},
+                {"$set": {"status": "archived"}}
+            )
+        
+        # Publish the new document
+        update_data = {
+            "status": "published",
+            "published_at": now.isoformat(),
+            "published_by": published_by,
+            "effective_date": effective_date or now.isoformat(),
+            "force_reaccept": force_reaccept
+        }
+        
+        await self.legal_documents_collection.update_one(
+            {"id": document_id},
+            {"$set": update_data}
+        )
+        
+        await self._log_audit(
+            action="legal_document_published",
+            actor_id=published_by,
+            actor_role="admin",
+            details={
+                "document_id": document_id,
+                "document_type": doc["document_type"],
+                "version": doc["version"],
+                "force_reaccept": force_reaccept
+            }
+        )
+        
+        return await self.get_legal_document_by_id(document_id)
+    
+    async def check_user_acceptance(
+        self,
+        user_id: str,
+        country_code: Optional[str] = None
+    ) -> Dict:
+        """Check which legal documents user needs to accept"""
+        required_documents = []
+        
+        # Get all published documents requiring acceptance
+        query = {"status": "published", "requires_acceptance": True}
+        if country_code:
+            query["$or"] = [{"country_code": country_code}, {"country_code": None}]
+        else:
+            query["country_code"] = None
+        
+        docs = await self.legal_documents_collection.find(
+            query, {"_id": 0}
+        ).to_list(length=100)
+        
+        for doc in docs:
+            # Check if user has accepted this version
+            acceptance = await self.user_acceptances_collection.find_one({
+                "user_id": user_id,
+                "document_id": doc["id"],
+                "document_version": doc["version"]
+            })
+            
+            if not acceptance:
+                # Check if force reaccept is set
+                if doc.get("force_reaccept"):
+                    required_documents.append({
+                        "document_id": doc["id"],
+                        "document_type": doc["document_type"],
+                        "title": doc["title"],
+                        "version": doc["version"],
+                        "reason": "new_version_requires_acceptance"
+                    })
+                else:
+                    # Check if user has accepted any version
+                    any_acceptance = await self.user_acceptances_collection.find_one({
+                        "user_id": user_id,
+                        "document_type": doc["document_type"]
+                    })
+                    if not any_acceptance:
+                        required_documents.append({
+                            "document_id": doc["id"],
+                            "document_type": doc["document_type"],
+                            "title": doc["title"],
+                            "version": doc["version"],
+                            "reason": "never_accepted"
+                        })
+        
+        return {
+            "user_id": user_id,
+            "requires_acceptance": len(required_documents) > 0,
+            "pending_documents": required_documents
+        }
+    
+    async def record_user_acceptance(
+        self,
+        user_id: str,
+        document_id: str,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
+        country_code: Optional[str] = None
+    ) -> Dict:
+        """Record user acceptance of a legal document"""
+        doc = await self.legal_documents_collection.find_one({"id": document_id})
+        if not doc:
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        now = datetime.now(timezone.utc)
+        
+        acceptance = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "document_id": document_id,
+            "document_type": doc["document_type"],
+            "document_version": doc["version"],
+            "accepted_at": now.isoformat(),
+            "ip_address": ip_address,
+            "user_agent": user_agent,
+            "country_code": country_code
+        }
+        
+        await self.user_acceptances_collection.insert_one(acceptance)
+        
+        await self._log_audit(
+            action="user_accepted_legal_document",
+            actor_id=user_id,
+            actor_role="user",
+            details={
+                "document_id": document_id,
+                "document_type": doc["document_type"],
+                "version": doc["version"]
+            },
+            ip_address=ip_address
+        )
+        
+        return {"success": True, "acceptance_id": acceptance["id"]}
+    
+    async def get_user_acceptances(self, user_id: str) -> List[Dict]:
+        """Get all legal document acceptances for a user"""
+        acceptances = await self.user_acceptances_collection.find(
+            {"user_id": user_id}, {"_id": 0}
+        ).sort("accepted_at", -1).to_list(length=100)
+        return acceptances
+
+    # -------------------------------------------------------------------------
+    # SANDBOX MODE
+    # -------------------------------------------------------------------------
+    
+    async def get_sandbox_config(self) -> Dict:
+        """Get sandbox mode configuration"""
+        config = await self.sandbox_collection.find_one({"id": "sandbox_config"}, {"_id": 0})
+        if not config:
+            return {
+                "enabled": False,
+                "fake_users_count": 100,
+                "fake_dsar_count": 25,
+                "fake_incidents_count": 5,
+                "include_pii_samples": False,
+                "reset_on_disable": True,
+                "created_at": None,
+                "enabled_by": None
+            }
+        return config
+    
+    async def update_sandbox_config(
+        self,
+        enabled_by: str,
+        enabled: bool,
+        fake_users_count: int = 100,
+        fake_dsar_count: int = 25,
+        fake_incidents_count: int = 5,
+        include_pii_samples: bool = False,
+        reset_on_disable: bool = True
+    ) -> Dict:
+        """Update sandbox mode configuration"""
+        now = datetime.now(timezone.utc)
+        
+        current_config = await self.get_sandbox_config()
+        was_enabled = current_config.get("enabled", False)
+        
+        config = {
+            "id": "sandbox_config",
+            "enabled": enabled,
+            "fake_users_count": fake_users_count,
+            "fake_dsar_count": fake_dsar_count,
+            "fake_incidents_count": fake_incidents_count,
+            "include_pii_samples": include_pii_samples,
+            "reset_on_disable": reset_on_disable,
+            "created_at": now.isoformat(),
+            "enabled_by": enabled_by
+        }
+        
+        await self.sandbox_collection.update_one(
+            {"id": "sandbox_config"},
+            {"$set": config},
+            upsert=True
+        )
+        
+        self._sandbox_mode = enabled
+        
+        # Generate fake data if enabling
+        if enabled and not was_enabled:
+            await self._generate_sandbox_data(config)
+        
+        # Clean up sandbox data if disabling and reset_on_disable is true
+        if not enabled and was_enabled and reset_on_disable:
+            await self._cleanup_sandbox_data()
+        
+        await self._log_audit(
+            action="sandbox_mode_changed",
+            actor_id=enabled_by,
+            actor_role="admin",
+            details={"enabled": enabled, "config": config}
+        )
+        
+        return config
+    
+    async def _generate_sandbox_data(self, config: Dict):
+        """Generate fake data for sandbox mode"""
+        import random
+        
+        now = datetime.now(timezone.utc)
+        
+        # Fake user data for DSARs
+        fake_names = [
+            "John Smith", "Jane Doe", "Alex Johnson", "Sarah Williams",
+            "Michael Brown", "Emily Davis", "David Wilson", "Emma Taylor",
+            "James Anderson", "Olivia Martinez", "William Thomas", "Sophia Garcia"
+        ]
+        
+        fake_emails = [
+            "sandbox_user_1@test.com", "sandbox_user_2@test.com",
+            "sandbox_user_3@test.com", "sandbox_user_4@test.com",
+            "sandbox_user_5@test.com", "sandbox_user_6@test.com"
+        ]
+        
+        # Generate fake DSARs
+        dsar_types = ["access", "export", "deletion", "rectification"]
+        dsar_statuses = ["pending", "in_progress", "completed", "rejected"]
+        
+        for i in range(config.get("fake_dsar_count", 25)):
+            deadline = now + timedelta(days=random.randint(5, 30))
+            submitted = now - timedelta(days=random.randint(1, 20))
+            
+            dsar = {
+                "id": f"sandbox_dsar_{i+1}",
+                "user_id": f"sandbox_user_{random.randint(1, 6)}",
+                "user_email": random.choice(fake_emails),
+                "user_name": random.choice(fake_names),
+                "request_type": random.choice(dsar_types),
+                "status": random.choice(dsar_statuses),
+                "regulation": random.choice(["gdpr", "popia", "ndpr"]),
+                "data_categories": random.sample(["profile", "orders", "chats", "payments"], k=random.randint(1, 4)),
+                "reason": "Sandbox test request",
+                "submitted_at": submitted.isoformat(),
+                "deadline": deadline.isoformat(),
+                "processed_at": None if random.random() > 0.5 else now.isoformat(),
+                "processed_by": None,
+                "notes": "This is sandbox test data",
+                "is_sandbox": True
+            }
+            
+            await self.dsar_collection.update_one(
+                {"id": dsar["id"]},
+                {"$set": dsar},
+                upsert=True
+            )
+        
+        # Generate fake incidents
+        severities = ["low", "medium", "high", "critical"]
+        incident_statuses = ["open", "investigating", "mitigated", "resolved"]
+        
+        for i in range(config.get("fake_incidents_count", 5)):
+            incident = {
+                "id": f"sandbox_incident_{i+1}",
+                "title": f"Sandbox Test Incident #{i+1}",
+                "description": "This is a sandbox test incident for compliance testing.",
+                "severity": random.choice(severities),
+                "affected_users": random.randint(10, 1000),
+                "affected_data": random.sample(["profile", "payments", "location"], k=random.randint(1, 3)),
+                "discovered_at": (now - timedelta(days=random.randint(1, 10))).isoformat(),
+                "status": random.choice(incident_statuses),
+                "actions_taken": [],
+                "notifications_sent": random.choice([True, False]),
+                "reported_to_authority": random.choice([True, False]),
+                "notes": "Sandbox test incident",
+                "is_sandbox": True
+            }
+            
+            await self.incidents_collection.update_one(
+                {"id": incident["id"]},
+                {"$set": incident},
+                upsert=True
+            )
+        
+        logger.info(f"Generated sandbox data: {config.get('fake_dsar_count', 25)} DSARs, {config.get('fake_incidents_count', 5)} incidents")
+    
+    async def _cleanup_sandbox_data(self):
+        """Remove all sandbox data"""
+        # Delete sandbox DSARs
+        result_dsar = await self.dsar_collection.delete_many({"is_sandbox": True})
+        
+        # Delete sandbox incidents
+        result_incidents = await self.incidents_collection.delete_many({"is_sandbox": True})
+        
+        logger.info(f"Cleaned up sandbox data: {result_dsar.deleted_count} DSARs, {result_incidents.deleted_count} incidents")
+
 
 # =========================================================================
 # API ROUTER
