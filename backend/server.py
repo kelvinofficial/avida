@@ -173,6 +173,14 @@ except ImportError as e:
     CONFIG_MANAGER_AVAILABLE = False
     logging.warning(f"Config Manager not available: {e}")
 
+# Team & Workflow Management
+try:
+    from team_workflow import create_team_workflow_router, TeamWorkflowService
+    TEAM_WORKFLOW_AVAILABLE = True
+except ImportError as e:
+    TEAM_WORKFLOW_AVAILABLE = False
+    logging.warning(f"Team Workflow not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
