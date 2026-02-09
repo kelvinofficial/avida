@@ -153,9 +153,9 @@ export default function SmartNotificationsPage() {
     setLoading(true);
     try {
       const [configRes, triggersRes, analyticsRes] = await Promise.all([
-        fetch(`${API_BASE}/api/smart-notifications/admin/config`),
-        fetch(`${API_BASE}/api/smart-notifications/admin/triggers`),
-        fetch(`${API_BASE}/api/smart-notifications/admin/analytics`),
+        fetch(`${API_BASE}/smart-notifications/admin/config`),
+        fetch(`${API_BASE}/smart-notifications/admin/triggers`),
+        fetch(`${API_BASE}/smart-notifications/admin/analytics`),
       ]);
       
       if (configRes.ok) setConfig(await configRes.json());
