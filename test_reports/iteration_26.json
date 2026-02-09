@@ -29,7 +29,8 @@
     "Admin dashboard Smart Notifications page has all tabs: System Settings, Triggers, Analytics"
   ],
   "updated_files": [
-    "/app/backend/tests/test_smart_notifications.py"
+    "/app/backend/tests/test_smart_notifications.py",
+    "/app/admin-dashboard/frontend/src/app/dashboard/smart-notifications/page.tsx"
   ],
   "success_rate": {
     "backend": "100% (24/24 tests passed)",
