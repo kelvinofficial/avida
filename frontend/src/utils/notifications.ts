@@ -64,17 +64,20 @@ export function useNotificationDeepLinking() {
     );
 
     // Handle notification when app was killed and user taps notification (cold start)
-    Notifications.getLastNotificationResponseAsync().then((response) => {
-      if (response) {
-        console.log('App opened from notification (cold start):', response);
-        const data = response.notification.request.content.data as NotificationData;
-        
-        // Small delay to ensure navigation is ready
-        setTimeout(() => {
-          handleDeepLink(data);
-        }, 500);
-      }
-    });
+    // This API is only available on native platforms, not on web
+    if (Platform.OS !== 'web') {
+      Notifications.getLastNotificationResponseAsync().then((response) => {
+        if (response) {
+          console.log('App opened from notification (cold start):', response);
+          const data = response.notification.request.content.data as NotificationData;
+          
+          // Small delay to ensure navigation is ready
+          setTimeout(() => {
+            handleDeepLink(data);
+          }, 500);
+        }
+      });
+    }
 
     return () => {
       if (notificationListener.current) {
