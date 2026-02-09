@@ -182,7 +182,7 @@ export default function AIPersonalizationPage() {
 
   const fetchStyles = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/smart-notifications/admin/ai-personalization/styles`);
+      const response = await fetch(`${API_BASE}/smart-notifications/admin/ai-personalization/styles`);
       const data = await response.json();
       setStyles(data.styles || []);
     } catch (error) {
@@ -192,7 +192,7 @@ export default function AIPersonalizationPage() {
 
   const fetchAnalytics = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/smart-notifications/admin/ai-personalization/analytics?days=30`);
+      const response = await fetch(`${API_BASE}/smart-notifications/admin/ai-personalization/analytics?days=30`);
       const data = await response.json();
       setAnalytics(data);
     } catch (error) {
@@ -213,7 +213,7 @@ export default function AIPersonalizationPage() {
     if (!config) return;
     setSaving(true);
     try {
-      const response = await fetch(`${API_BASE}/api/smart-notifications/admin/ai-personalization/config`, {
+      const response = await fetch(`${API_BASE}/smart-notifications/admin/ai-personalization/config`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config),
@@ -231,7 +231,7 @@ export default function AIPersonalizationPage() {
   const handleTestPersonalization = async () => {
     setPreviewLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/smart-notifications/admin/ai-personalization/test`, {
+      const response = await fetch(`${API_BASE}/smart-notifications/admin/ai-personalization/test`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -253,7 +253,7 @@ export default function AIPersonalizationPage() {
   const handleGenerateVariants = async () => {
     setVariantsLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/smart-notifications/admin/ai-personalization/generate-variants`, {
+      const response = await fetch(`${API_BASE}/smart-notifications/admin/ai-personalization/generate-variants`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
