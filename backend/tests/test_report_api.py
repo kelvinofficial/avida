@@ -96,7 +96,7 @@ class TestReportAPI:
             "description": "Test listing for report functionality",
             "price": 100,
             "category_id": "electronics",
-            "subcategory_id": "laptops_computers",
+            "subcategory": "laptops_computers",
             "condition": "new",
             "location": "Test Location",
             "images": []
