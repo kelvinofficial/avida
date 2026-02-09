@@ -9,6 +9,8 @@ import { theme } from '../src/utils/theme';
 import { useNotificationDeepLinking, registerForPushNotifications } from '../src/utils/notifications';
 import { setupGlobalErrorHandler } from '../src/utils/errorLogger';
 import ErrorBoundary from '../src/components/ErrorBoundary';
+import { SandboxProvider } from '../src/utils/sandboxContext';
+import SandboxBanner from '../src/components/SandboxBanner';
 
 // Initialize global error handler
 if (typeof window !== 'undefined' || Platform.OS !== 'web') {
