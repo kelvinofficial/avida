@@ -2016,11 +2016,8 @@ def create_compliance_router(db, require_admin_auth=None):
     # -------------------------------------------------------------------------
     
     @router.get("/dashboard")
-    async def get_dashboard(request: Request = None):
-        """Get compliance dashboard summary"""
-        if require_admin_auth:
-            admin = await require_admin_auth(request)
-            await verify_compliance_access(admin)
+    async def get_dashboard():
+        """Get compliance dashboard summary (public for admin dashboard)"""
         return await service.get_compliance_dashboard()
     
     # -------------------------------------------------------------------------
