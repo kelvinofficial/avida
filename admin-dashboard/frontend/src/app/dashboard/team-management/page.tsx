@@ -80,7 +80,6 @@ import {
   Comment,
   AttachFile,
   Send,
-  Schedule,
   AccessTime,
   PhoneCallback,
   School,
