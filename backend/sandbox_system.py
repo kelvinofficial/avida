@@ -1299,6 +1299,239 @@ class SandboxService:
         escrows = await self.sandbox_escrow.find(query, {"_id": 0}).to_list(length=100)
         return escrows
 
+    # =========================================================================
+    # SANDBOX DATA PROXY - For main app to fetch sandbox data
+    # =========================================================================
+
+    async def verify_sandbox_session(self, session_id: str) -> Optional[Dict]:
+        """Verify a sandbox session is active and return session data"""
+        session = await self.sandbox_sessions.find_one(
+            {"id": session_id, "status": "active"},
+            {"_id": 0}
+        )
+        return session
+
+    async def get_proxy_listings(
+        self,
+        category: Optional[str] = None,
+        search: Optional[str] = None,
+        limit: int = 20,
+        skip: int = 0
+    ) -> Dict:
+        """Get listings for sandbox mode (returns sandbox_listings data)"""
+        query = {"status": "active"}
+        if category:
+            query["category"] = category
+        if search:
+            query["$or"] = [
+                {"title": {"$regex": search, "$options": "i"}},
+                {"description": {"$regex": search, "$options": "i"}}
+            ]
+        
+        total = await self.sandbox_listings.count_documents(query)
+        listings = await self.sandbox_listings.find(
+            query, {"_id": 0}
+        ).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
+        
+        return {
+            "listings": listings,
+            "total": total,
+            "sandbox_mode": True
+        }
+
+    async def get_proxy_listing_detail(self, listing_id: str) -> Optional[Dict]:
+        """Get single listing detail for sandbox mode"""
+        listing = await self.sandbox_listings.find_one(
+            {"$or": [{"id": listing_id}, {"listing_id": listing_id}]},
+            {"_id": 0}
+        )
+        if listing:
+            # Get seller info
+            seller = await self.sandbox_users.find_one(
+                {"id": listing.get("seller_id")},
+                {"_id": 0, "password": 0}
+            )
+            listing["seller"] = seller
+            listing["sandbox_mode"] = True
+        return listing
+
+    async def get_proxy_user_orders(self, user_id: str) -> List[Dict]:
+        """Get orders for a sandbox user"""
+        orders = await self.sandbox_orders.find(
+            {"$or": [{"buyer_id": user_id}, {"seller_id": user_id}]},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(length=50)
+        
+        for order in orders:
+            order["sandbox_mode"] = True
+        
+        return orders
+
+    async def get_proxy_conversations(self, user_id: str) -> List[Dict]:
+        """Get conversations for a sandbox user"""
+        conversations = await self.sandbox_messages.find(
+            {"participants": user_id, "conversation_id": {"$exists": False}},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(length=50)
+        
+        for conv in conversations:
+            conv["sandbox_mode"] = True
+        
+        return conversations
+
+    async def get_proxy_notifications(self, user_id: str) -> List[Dict]:
+        """Get notifications for a sandbox user"""
+        notifications = await self.sandbox_notifications.find(
+            {"user_id": user_id},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(length=50)
+        
+        for notif in notifications:
+            notif["sandbox_mode"] = True
+        
+        return notifications
+
+    async def get_proxy_categories(self) -> List[Dict]:
+        """Get categories (from production, with sandbox tag)"""
+        # Categories come from production but we tag them
+        categories = await self.db.categories.find({}, {"_id": 0}).to_list(length=100)
+        for cat in categories:
+            cat["sandbox_mode"] = True
+        return categories
+
+    async def create_proxy_order(
+        self,
+        session_id: str,
+        listing_id: str,
+        shipping_address: Dict
+    ) -> Dict:
+        """Create a sandbox order through the proxy"""
+        session = await self.verify_sandbox_session(session_id)
+        if not session:
+            raise HTTPException(status_code=403, detail="Invalid sandbox session")
+        
+        # Get listing
+        listing = await self.sandbox_listings.find_one({"id": listing_id}, {"_id": 0})
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        # Get buyer (sandbox user from session)
+        buyer_id = session.get("sandbox_user_id")
+        buyer = await self.sandbox_users.find_one({"id": buyer_id}, {"_id": 0})
+        if not buyer:
+            raise HTTPException(status_code=404, detail="Sandbox user not found")
+        
+        # Get seller
+        seller = await self.sandbox_users.find_one({"id": listing["seller_id"]}, {"_id": 0})
+        
+        # Create order
+        order_id = f"sandbox_order_{uuid.uuid4().hex[:8]}"
+        
+        subtotal = listing["price"]
+        vat = int(subtotal * 0.18)
+        transport_fee = random.randint(5000, 20000)
+        commission = int(subtotal * 0.05)
+        total = subtotal + vat + transport_fee
+        
+        order = {
+            "id": order_id,
+            "order_id": order_id,
+            "buyer_id": buyer_id,
+            "seller_id": listing["seller_id"],
+            "listing_id": listing_id,
+            "status": "pending",
+            "subtotal": subtotal,
+            "vat": vat,
+            "transport_fee": transport_fee,
+            "commission": commission,
+            "total": total,
+            "currency": "TZS",
+            "shipping_address": shipping_address,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "metadata": {"sandbox": True, "created_via_proxy": True}
+        }
+        
+        await self.sandbox_orders.insert_one(order)
+        
+        # Create escrow
+        escrow = {
+            "id": f"sandbox_escrow_{uuid.uuid4().hex[:8]}",
+            "escrow_id": f"sandbox_escrow_{uuid.uuid4().hex[:8]}",
+            "order_id": order_id,
+            "buyer_id": buyer_id,
+            "seller_id": listing["seller_id"],
+            "amount": total,
+            "seller_amount": subtotal - commission,
+            "commission": commission,
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "metadata": {"sandbox": True}
+        }
+        await self.sandbox_escrow.insert_one(escrow)
+        
+        await self._log_audit("proxy_order_created", session.get("admin_id"), {
+            "order_id": order_id,
+            "listing_id": listing_id,
+            "total": total
+        })
+        
+        return {
+            "success": True,
+            "order": {k: v for k, v in order.items() if k != "_id"},
+            "sandbox_mode": True
+        }
+
+    async def send_proxy_message(
+        self,
+        session_id: str,
+        recipient_id: str,
+        message: str
+    ) -> Dict:
+        """Send a message through the proxy (sandbox)"""
+        session = await self.verify_sandbox_session(session_id)
+        if not session:
+            raise HTTPException(status_code=403, detail="Invalid sandbox session")
+        
+        sender_id = session.get("sandbox_user_id")
+        
+        # Find or create conversation
+        conv = await self.sandbox_messages.find_one({
+            "participants": {"$all": [sender_id, recipient_id]},
+            "conversation_id": {"$exists": False}
+        })
+        
+        if not conv:
+            conv_id = f"sandbox_conv_{uuid.uuid4().hex[:8]}"
+            conv = {
+                "id": conv_id,
+                "participants": [sender_id, recipient_id],
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "metadata": {"sandbox": True}
+            }
+            await self.sandbox_messages.insert_one(conv)
+        else:
+            conv_id = conv["id"]
+        
+        # Create message
+        msg = {
+            "id": f"{conv_id}_msg_{uuid.uuid4().hex[:8]}",
+            "conversation_id": conv_id,
+            "sender_id": sender_id,
+            "text": f"[SANDBOX] {message}",
+            "read": False,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "metadata": {"sandbox": True}
+        }
+        await self.sandbox_messages.insert_one(msg)
+        
+        return {
+            "success": True,
+            "message_id": msg["id"],
+            "conversation_id": conv_id,
+            "sandbox_mode": True
+        }
+
 
 # =============================================================================
 # ROUTER FACTORY
