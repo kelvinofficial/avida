@@ -81,6 +81,7 @@ const menuItems = [
   { text: 'Segment Builder', icon: <FilterList />, path: '/dashboard/segment-builder' },
   { text: 'SMS/WhatsApp', icon: <Sms />, path: '/dashboard/sms-notifications' },
   { text: 'Platform Config', icon: <Palette />, path: '/dashboard/platform-config' },
+  { text: 'API Integrations', icon: <Settings />, path: '/dashboard/integrations' },
   { text: 'AI Analyzer', icon: <AutoAwesome />, path: '/dashboard/ai-analyzer' },
   { text: 'Settings', icon: <Settings />, path: '/dashboard/settings' },
   { text: 'Audit Logs', icon: <History />, path: '/dashboard/audit-logs' },
