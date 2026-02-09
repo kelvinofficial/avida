@@ -344,6 +344,12 @@ class ComplianceService:
         self.audit_collection = db.compliance_audit
         self.user_policy_acceptance = db.compliance_policy_acceptance
         self.deleted_data_collection = db.compliance_deleted_data  # Soft delete storage
+        self.legal_documents_collection = db.compliance_legal_documents
+        self.user_acceptances_collection = db.compliance_user_acceptances
+        self.sandbox_collection = db.compliance_sandbox_config
+        
+        # Sandbox mode state
+        self._sandbox_mode = False
     
     # -------------------------------------------------------------------------
     # AUDIT LOGGING (Immutable)
