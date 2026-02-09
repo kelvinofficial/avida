@@ -1625,4 +1625,92 @@ def create_qa_reliability_router(db: AsyncIOMotorDatabase):
             page=page, limit=limit, action=action, admin_id=admin_id
         )
 
+    # -------------------------------------------------------------------------
+    # CRITICAL USER FLOW TESTING
+    # -------------------------------------------------------------------------
+
+    @router.post("/flow-tests/run")
+    async def run_flow_tests():
+        """Run comprehensive critical user flow tests"""
+        return await service.run_critical_flow_tests()
+
+    @router.get("/flow-tests/history")
+    async def get_flow_test_history(
+        page: int = Query(1, ge=1),
+        limit: int = Query(20, ge=1, le=50),
+        flow_type: Optional[str] = None,
+        passed: Optional[bool] = None
+    ):
+        """Get flow test history"""
+        return await service.get_flow_test_history(page, limit, flow_type, passed)
+
+    # -------------------------------------------------------------------------
+    # FAIL-SAFE SYSTEM
+    # -------------------------------------------------------------------------
+
+    @router.get("/failsafe/status")
+    async def get_failsafe_status():
+        """Get current fail-safe system status"""
+        return await service.get_failsafe_status()
+
+    @router.post("/failsafe/check/{operation}")
+    async def check_operation_allowed(operation: str):
+        """Check if a critical operation is allowed (fail-safe check)"""
+        result = await service.check_operation_allowed(operation)
+        return result
+
+    # -------------------------------------------------------------------------
+    # RETRY & RECOVERY
+    # -------------------------------------------------------------------------
+
+    @router.get("/retry/config")
+    async def get_retry_config():
+        """Get retry configuration"""
+        return await service.get_retry_config()
+
+    @router.put("/retry/config")
+    async def update_retry_config(
+        max_retries: int = Body(3, ge=1, le=10),
+        base_delay_seconds: int = Body(30, ge=5, le=300),
+        max_delay_seconds: int = Body(3600, ge=60, le=7200),
+        admin_id: str = Body(...)
+    ):
+        """Update retry configuration"""
+        return await service.update_retry_config(max_retries, base_delay_seconds, max_delay_seconds, admin_id)
+
+    @router.post("/retry/trigger/{job_type}")
+    async def trigger_retry_job(
+        job_type: str,
+        job_id: Optional[str] = Body(None)
+    ):
+        """Manually trigger retry for a specific job type or ID"""
+        return await service.trigger_retry_job(job_type, job_id)
+
+    # -------------------------------------------------------------------------
+    # REAL-TIME ALERTS (WebSocket)
+    # -------------------------------------------------------------------------
+
+    @router.get("/realtime/subscriptions")
+    async def get_realtime_subscriptions():
+        """Get current real-time alert subscriptions"""
+        return await service.get_realtime_subscriptions()
+
+    @router.post("/realtime/subscribe")
+    async def subscribe_admin_alerts(
+        admin_id: str = Body(...),
+        alert_types: List[str] = Body(default=["critical", "system_down", "high_error_rate"])
+    ):
+        """Subscribe admin to real-time alerts"""
+        return await service.subscribe_admin_to_alerts(admin_id, alert_types)
+
+    @router.post("/realtime/unsubscribe")
+    async def unsubscribe_admin_alerts(admin_id: str = Body(...)):
+        """Unsubscribe admin from real-time alerts"""
+        return await service.unsubscribe_admin_from_alerts(admin_id)
+
+    @router.post("/realtime/test-alert")
+    async def send_test_alert(admin_id: str = Body(...)):
+        """Send a test real-time alert to verify WebSocket connection"""
+        return await service.send_test_realtime_alert(admin_id)
+
     return router, service
