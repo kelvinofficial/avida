@@ -558,6 +558,7 @@ export default function TeamManagementPage() {
           <Tab icon={<Schedule />} label="Shifts" data-testid="tab-shifts" />
           <Tab icon={<School />} label="Sandbox" data-testid="tab-sandbox" />
           <Tab icon={<VpnKey />} label="Security" data-testid="tab-security" />
+          <Tab icon={<Email />} label="Email Templates" data-testid="tab-email" />
           <Tab icon={<Settings />} label="Settings" data-testid="tab-settings" />
           <Tab icon={<History />} label="Audit Log" data-testid="tab-audit" />
         </Tabs>
