@@ -133,7 +133,7 @@ export default function AIAnalyzerPage() {
     if (!settings) return;
     setSaving(true);
     try {
-      await api.put('/ai-analyzer/admin/settings', settings as Record<string, unknown>);
+      await api.put('/ai-analyzer/admin/settings', settings as unknown as Record<string, unknown>);
       setSnackbar({ open: true, message: 'Settings saved successfully', severity: 'success' });
     } catch (error) {
       setSnackbar({ open: true, message: 'Failed to save settings', severity: 'error' });
