@@ -283,11 +283,15 @@ export default function CompliancePage() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [thirdPartyProcessors, setThirdPartyProcessors] = useState<ThirdPartyProcessor[]>([]);
+  const [legalDocuments, setLegalDocuments] = useState<LegalDocument[]>([]);
+  const [sandboxConfig, setSandboxConfig] = useState<SandboxConfig | null>(null);
   
   // Filter states
   const [dsarStatusFilter, setDsarStatusFilter] = useState<string>('');
   const [dsarTypeFilter, setDsarTypeFilter] = useState<string>('');
   const [incidentStatusFilter, setIncidentStatusFilter] = useState<string>('');
+  const [legalDocTypeFilter, setLegalDocTypeFilter] = useState<string>('');
+  const [legalStatusFilter, setLegalStatusFilter] = useState<string>('');
   
   // Dialog states
   const [dsarDetailOpen, setDsarDetailOpen] = useState(false);
@@ -300,6 +304,9 @@ export default function CompliancePage() {
   const [consentUserId, setConsentUserId] = useState('');
   const [userConsents, setUserConsents] = useState<Record<string, ConsentRecord>>({});
   const [purgeDialogOpen, setPurgeDialogOpen] = useState(false);
+  const [legalDocDialogOpen, setLegalDocDialogOpen] = useState(false);
+  const [selectedLegalDoc, setSelectedLegalDoc] = useState<LegalDocument | null>(null);
+  const [sandboxDialogOpen, setSandboxDialogOpen] = useState(false);
   
   // Pagination
   const [page, setPage] = useState(0);
