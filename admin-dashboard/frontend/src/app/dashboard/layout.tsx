@@ -65,6 +65,7 @@ import {
   AccessTime,
   MarkEmailRead,
   GroupWork,
+  BugReport,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
