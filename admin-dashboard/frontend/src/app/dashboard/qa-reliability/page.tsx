@@ -805,8 +805,434 @@ export default function QAReliabilityPage() {
         </Card>
       )}
 
-      {/* Tab 4: Session Traces */}
+      {/* Tab 4: Flow Tests */}
       {activeTab === 4 && (
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+              <Typography variant="h6">Critical User Flow Tests</Typography>
+              <Button
+                variant="contained"
+                startIcon={runningFlowTests ? <CircularProgress size={20} color="inherit" /> : <PlayArrow />}
+                onClick={runFlowTests}
+                disabled={runningFlowTests}
+                data-testid="run-flow-tests-btn"
+              >
+                Run Flow Tests
+              </Button>
+            </Box>
+            
+            {flowTests && (
+              <Alert 
+                severity={flowTests.failed === 0 ? 'success' : 'warning'} 
+                sx={{ mb: 3 }}
+              >
+                Last Run: {flowTests.passed}/{flowTests.total_tests} passed ({flowTests.success_rate?.toFixed(1)}%)
+              </Alert>
+            )}
+
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              {flowTests?.results?.map((result: any) => (
+                <Grid item xs={12} sm={6} md={4} key={result.flow}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="subtitle1" fontWeight="bold">
+                          {result.flow.replace('_', ' ').toUpperCase()}
+                        </Typography>
+                        {result.passed ? (
+                          <CheckCircle color="success" />
+                        ) : (
+                          <ErrorIcon color="error" />
+                        )}
+                      </Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Duration: {result.duration_ms?.toFixed(0)}ms
+                      </Typography>
+                      {result.steps && (
+                        <Box sx={{ mt: 1 }}>
+                          {result.steps.map((step: any, idx: number) => (
+                            <Chip
+                              key={idx}
+                              label={step.step}
+                              size="small"
+                              color={step.passed ? 'success' : 'error'}
+                              variant="outlined"
+                              sx={{ mr: 0.5, mb: 0.5, fontSize: '0.65rem' }}
+                            />
+                          ))}
+                        </Box>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+
+            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>Test History</Typography>
+            <TableContainer component={Paper}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Run ID</TableCell>
+                    <TableCell>Time</TableCell>
+                    <TableCell>Tests</TableCell>
+                    <TableCell>Passed</TableCell>
+                    <TableCell>Failed</TableCell>
+                    <TableCell>Success Rate</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {flowTestHistory.map((test: any) => (
+                    <TableRow key={test.id} hover>
+                      <TableCell>
+                        <Typography variant="caption" fontFamily="monospace">
+                          {test.id?.substring(0, 8)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        {new Date(test.started_at).toLocaleString()}
+                      </TableCell>
+                      <TableCell>{test.total_tests}</TableCell>
+                      <TableCell>
+                        <Chip label={test.passed} color="success" size="small" />
+                      </TableCell>
+                      <TableCell>
+                        <Chip label={test.failed} color={test.failed > 0 ? 'error' : 'default'} size="small" />
+                      </TableCell>
+                      <TableCell>{test.success_rate?.toFixed(1)}%</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tab 5: Session Replay */}
+      {activeTab === 5 && (
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>Session Replay Summary</Typography>
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              {sessionReplaySummary && Object.entries(sessionReplaySummary).map(([flowType, data]: [string, any]) => (
+                <Grid item xs={12} sm={6} md={4} key={flowType}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="subtitle1" fontWeight="bold" textTransform="capitalize">
+                        {flowType.replace('_', ' ')}
+                      </Typography>
+                      <Grid container spacing={1} sx={{ mt: 1 }}>
+                        <Grid item xs={6}>
+                          <Typography variant="caption" color="text.secondary">Total</Typography>
+                          <Typography variant="h6">{data.total_recordings}</Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography variant="caption" color="text.secondary">Success Rate</Typography>
+                          <Typography variant="h6">{data.success_rate?.toFixed(1)}%</Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Chip label={`${data.completed} completed`} size="small" color="success" variant="outlined" />
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Chip label={`${data.failed} failed`} size="small" color="error" variant="outlined" />
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+            
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Session replays are automatically recorded for critical user flows. Click on a session to view the full replay.
+            </Alert>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tab 6: Data Integrity */}
+      {activeTab === 6 && (
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+              <Typography variant="h6">Data Integrity Checks</Typography>
+              <Button
+                variant="contained"
+                color="warning"
+                startIcon={runningIntegrityCheck ? <CircularProgress size={20} color="inherit" /> : <Storage />}
+                onClick={runIntegrityCheck}
+                disabled={runningIntegrityCheck}
+                data-testid="run-integrity-btn"
+              >
+                Run Integrity Check
+              </Button>
+            </Box>
+
+            {integrityResults && (
+              <Alert 
+                severity={integrityResults.issues_found === 0 ? 'success' : 'warning'} 
+                sx={{ mb: 3 }}
+              >
+                Last Run: {integrityResults.passed}/{integrityResults.total_checks} passed, {integrityResults.issues_found} issues found
+              </Alert>
+            )}
+
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              {integrityResults?.results?.map((result: any) => (
+                <Grid item xs={12} sm={6} key={result.check}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="subtitle1" fontWeight="bold">
+                          {result.check.replace(/_/g, ' ').toUpperCase()}
+                        </Typography>
+                        {result.passed ? (
+                          <CheckCircle color="success" />
+                        ) : (
+                          <ErrorIcon color="error" />
+                        )}
+                      </Box>
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        Issues: {result.issues_count}
+                      </Typography>
+                      {result.details && (
+                        <Typography variant="caption" component="pre" sx={{ mt: 1, overflow: 'auto' }}>
+                          {JSON.stringify(result.details, null, 2)}
+                        </Typography>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+
+            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>Check History</Typography>
+            <TableContainer component={Paper}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Check ID</TableCell>
+                    <TableCell>Time</TableCell>
+                    <TableCell>Passed</TableCell>
+                    <TableCell>Failed</TableCell>
+                    <TableCell>Issues</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {integrityHistory.map((check: any) => (
+                    <TableRow key={check.id} hover>
+                      <TableCell>
+                        <Typography variant="caption" fontFamily="monospace">
+                          {check.id?.substring(0, 8)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>{new Date(check.started_at).toLocaleString()}</TableCell>
+                      <TableCell>
+                        <Chip label={check.passed} color="success" size="small" />
+                      </TableCell>
+                      <TableCell>
+                        <Chip label={check.failed} color={check.failed > 0 ? 'error' : 'default'} size="small" />
+                      </TableCell>
+                      <TableCell>
+                        <Chip label={check.issues_found} color={check.issues_found > 0 ? 'warning' : 'default'} size="small" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tab 7: Advanced Monitoring */}
+      {activeTab === 7 && (
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>Real-Time Metrics</Typography>
+            {currentMetrics && (
+              <Grid container spacing={2} sx={{ mb: 3 }}>
+                <Grid item xs={6} sm={4} md={3}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="caption" color="text.secondary">Error Rate (hourly)</Typography>
+                      <Typography variant="h5">{currentMetrics.error_rate_hourly}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={6} sm={4} md={3}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="caption" color="text.secondary">API Latency</Typography>
+                      <Typography variant="h5">{currentMetrics.avg_api_latency_ms}ms</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={6} sm={4} md={3}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="caption" color="text.secondary">Payment Success</Typography>
+                      <Typography variant="h5">{currentMetrics.payment_success_rate}%</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={6} sm={4} md={3}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="caption" color="text.secondary">Pending Escrows</Typography>
+                      <Typography variant="h5">{currentMetrics.pending_escrows}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={6} sm={4} md={3}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="caption" color="text.secondary">Notification Queue</Typography>
+                      <Typography variant="h5">{currentMetrics.notification_queue_size}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={6} sm={4} md={3}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="caption" color="text.secondary">Signup Rate (hourly)</Typography>
+                      <Typography variant="h5">{currentMetrics.signup_rate_hourly}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={6} sm={4} md={3}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="caption" color="text.secondary">Active Alerts</Typography>
+                      <Typography variant="h5" color={currentMetrics.active_alerts > 0 ? 'error.main' : 'inherit'}>
+                        {currentMetrics.active_alerts}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            )}
+
+            <Divider sx={{ my: 3 }} />
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6">Alert Thresholds</Typography>
+              <Button
+                variant="outlined"
+                onClick={() => setThresholdDialogOpen(true)}
+                data-testid="add-threshold-btn"
+              >
+                Add Threshold
+              </Button>
+            </Box>
+            
+            <TableContainer component={Paper}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Metric</TableCell>
+                    <TableCell>Condition</TableCell>
+                    <TableCell>Threshold</TableCell>
+                    <TableCell>Severity</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {monitoringThresholds.map((threshold: any) => (
+                    <TableRow key={threshold.metric_name} hover>
+                      <TableCell>{threshold.metric_name}</TableCell>
+                      <TableCell>{threshold.threshold_type}</TableCell>
+                      <TableCell>{threshold.threshold_value}</TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={threshold.alert_severity} 
+                          size="small"
+                          color={threshold.alert_severity === 'critical' ? 'error' : 'warning'}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <IconButton size="small" onClick={() => deleteMonitoringThreshold(threshold.metric_name)}>
+                          <Close fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {monitoringThresholds.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center">
+                        <Typography color="text.secondary">No thresholds configured</Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            <Divider sx={{ my: 3 }} />
+
+            <Typography variant="h6" gutterBottom>Fail-Safe Status</Typography>
+            {failsafeStatus && (
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <Alert severity={failsafeStatus.overall_status === 'operational' ? 'success' : 'warning'}>
+                    Overall System: {failsafeStatus.overall_status?.toUpperCase()}
+                  </Alert>
+                </Grid>
+                {failsafeStatus.operations && Object.entries(failsafeStatus.operations).map(([op, status]: [string, any]) => (
+                  <Grid item xs={6} sm={4} key={op}>
+                    <Card variant="outlined">
+                      <CardContent>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant="subtitle2" textTransform="capitalize">
+                            {op.replace('_', ' ')}
+                          </Typography>
+                          {status.allowed ? (
+                            <CheckCircle color="success" fontSize="small" />
+                          ) : (
+                            <ErrorIcon color="error" fontSize="small" />
+                          )}
+                        </Box>
+                        {status.warnings?.length > 0 && (
+                          <Typography variant="caption" color="warning.main">
+                            {status.warnings[0]}
+                          </Typography>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+
+            <Divider sx={{ my: 3 }} />
+
+            <Typography variant="h6" gutterBottom>Retry Queue</Typography>
+            {retryConfig && (
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Max Retries: {retryConfig.max_retries} | Base Delay: {retryConfig.base_delay_seconds}s | Max Delay: {retryConfig.max_delay_seconds}s
+                </Typography>
+              </Box>
+            )}
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button variant="outlined" size="small" onClick={() => triggerRetry('notification')}>
+                Retry Notifications
+              </Button>
+              <Button variant="outlined" size="small" onClick={() => triggerRetry('payment_webhook')}>
+                Retry Payment Webhooks
+              </Button>
+              <Button variant="outlined" size="small" onClick={() => triggerRetry('escrow_release')}>
+                Retry Escrow Releases
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tab 8: Session Traces (moved from 4) */}
+      {activeTab === 8 && (
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>Session Traces</Typography>
