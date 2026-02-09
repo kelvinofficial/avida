@@ -647,3 +647,64 @@ Last Updated: February 9, 2026
 **Files Modified:**
 - `backend/chat_moderation.py` - Added _notify_moderators_high_risk_message, _notify_moderators_new_report, moderator management endpoints
 
+
+---
+
+## AI-Powered Executive Summary System (Feb 9, 2026)
+
+### Executive Summary Dashboard - COMPLETE
+
+**Purpose:**
+Provides daily/weekly/monthly AI-generated overview of platform performance, risks, and opportunities for founders, executives, and senior admins.
+
+**Summary Sections (AI-Generated):**
+1. **Platform Overview** - Users, active users, listings, transactions, escrow volume
+2. **Revenue & Monetization** - Total revenue, commission, boosts, banners, transport fees
+3. **Growth & Retention** - Signups, retention rate, conversion, top categories/locations
+4. **Trust & Safety** - Disputes, fraud flags, moderation incidents, risk rating
+5. **Operations & Logistics** - Transport success rate, delivery delays, partner performance
+6. **System Health** - API errors, payment failures, notification delivery
+7. **Actionable Recommendations** - AI-suggested actions with impact/urgency levels
+
+**AI Features:**
+- Executive brief (2-3 sentence summary)
+- Key highlights list
+- What changed vs previous period
+- What to do next (action items)
+- Recommendations with: title, description, impact (low/medium/high), urgency (low/medium/high/immediate), category
+
+**Admin Controls:**
+- Enable/disable system
+- Choose frequency: Daily, Weekly, Monthly
+- Select tone: Formal, Concise, Casual
+- Email digest option
+
+**API Endpoints:**
+- `GET /api/executive-summary/config` - Configuration
+- `PUT /api/executive-summary/config` - Update settings
+- `POST /api/executive-summary/generate` - Generate new summary
+- `GET /api/executive-summary/latest` - Get latest cached summary
+- `GET /api/executive-summary/quick-stats` - Fallback KPI dashboard
+- `GET /api/executive-summary/history` - Historical summaries
+
+**Caching:**
+- Daily summaries: 6 hours validity
+- Weekly summaries: 24 hours validity
+- Monthly summaries: 48 hours validity
+- Force regenerate option available
+
+**Admin Dashboard UI:**
+- Located at `/dashboard/executive-summary`
+- Period selector (daily/weekly/monthly)
+- Generate New button
+- Settings dialog
+- Quick stats cards (always visible)
+- AI-generated summary sections
+- Recommendation cards with impact/urgency badges
+
+**Testing:** 22/22 tests passed
+
+**Files:**
+- `backend/executive_summary.py` - Core service with data aggregation and AI
+- `admin-dashboard/frontend/src/app/dashboard/executive-summary/page.tsx` - Admin UI
+
