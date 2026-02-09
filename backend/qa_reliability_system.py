@@ -2080,6 +2080,609 @@ class QAReliabilityService:
         
         return alerts
 
+    # =========================================================================
+    # SESSION REPLAY
+    # =========================================================================
+
+    async def start_session_recording(self, user_id: str, session_type: str = "checkout") -> Dict:
+        """Start recording a user session for replay"""
+        session_id = str(uuid.uuid4())
+        session = {
+            "id": session_id,
+            "user_id": user_id,
+            "session_type": session_type,
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "events": [],
+            "status": "recording",
+            "metadata": {}
+        }
+        await self.db.qa_session_replays.insert_one(session)
+        return {"session_id": session_id, "status": "recording"}
+
+    async def record_session_event(
+        self,
+        session_id: str,
+        event_type: str,
+        event_data: Dict,
+        timestamp: Optional[str] = None
+    ) -> Dict:
+        """Record an event in a session"""
+        event = {
+            "id": str(uuid.uuid4()),
+            "type": event_type,
+            "data": event_data,
+            "timestamp": timestamp or datetime.now(timezone.utc).isoformat()
+        }
+        
+        result = await self.db.qa_session_replays.update_one(
+            {"id": session_id, "status": "recording"},
+            {"$push": {"events": event}}
+        )
+        
+        return {"success": result.modified_count > 0, "event_id": event["id"]}
+
+    async def end_session_recording(self, session_id: str, status: str = "completed") -> Dict:
+        """End a session recording"""
+        result = await self.db.qa_session_replays.update_one(
+            {"id": session_id},
+            {"$set": {
+                "status": status,
+                "ended_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        return {"success": result.modified_count > 0}
+
+    async def get_session_replays(
+        self,
+        page: int = 1,
+        limit: int = 20,
+        session_type: Optional[str] = None,
+        user_id: Optional[str] = None,
+        status: Optional[str] = None
+    ) -> Dict:
+        """Get session replays with filtering"""
+        query = {}
+        if session_type:
+            query["session_type"] = session_type
+        if user_id:
+            query["user_id"] = user_id
+        if status:
+            query["status"] = status
+        
+        skip = (page - 1) * limit
+        total = await self.db.qa_session_replays.count_documents(query)
+        
+        sessions = await self.db.qa_session_replays.find(
+            query, {"_id": 0, "events": 0}  # Exclude events in list view
+        ).sort("started_at", -1).skip(skip).limit(limit).to_list(length=limit)
+        
+        # Add event count
+        for session in sessions:
+            event_count = await self.db.qa_session_replays.aggregate([
+                {"$match": {"id": session["id"]}},
+                {"$project": {"event_count": {"$size": {"$ifNull": ["$events", []]}}}}
+            ]).to_list(length=1)
+            session["event_count"] = event_count[0]["event_count"] if event_count else 0
+        
+        return {
+            "sessions": sessions,
+            "total": total,
+            "page": page,
+            "limit": limit
+        }
+
+    async def get_session_replay(self, session_id: str) -> Optional[Dict]:
+        """Get a specific session replay with all events"""
+        session = await self.db.qa_session_replays.find_one(
+            {"id": session_id}, {"_id": 0}
+        )
+        return session
+
+    async def get_critical_flow_recordings(self) -> Dict:
+        """Get summary of critical flow recordings for dashboard"""
+        flow_types = ["checkout", "listing_create", "escrow_release", "payment", "registration"]
+        summary = {}
+        
+        for flow_type in flow_types:
+            count = await self.db.qa_session_replays.count_documents({"session_type": flow_type})
+            last_recording = await self.db.qa_session_replays.find_one(
+                {"session_type": flow_type},
+                {"_id": 0, "events": 0},
+                sort=[("started_at", -1)]
+            )
+            completed = await self.db.qa_session_replays.count_documents({
+                "session_type": flow_type,
+                "status": "completed"
+            })
+            failed = await self.db.qa_session_replays.count_documents({
+                "session_type": flow_type,
+                "status": "failed"
+            })
+            
+            summary[flow_type] = {
+                "total_recordings": count,
+                "completed": completed,
+                "failed": failed,
+                "success_rate": (completed / count * 100) if count > 0 else 0,
+                "last_recording": last_recording
+            }
+        
+        return summary
+
+    # =========================================================================
+    # DATA INTEGRITY CHECKS
+    # =========================================================================
+
+    async def run_data_integrity_checks(self) -> Dict:
+        """Run comprehensive data integrity checks"""
+        check_id = str(uuid.uuid4())
+        started_at = datetime.now(timezone.utc)
+        results = []
+        
+        # Check 1: Orders vs Escrow consistency
+        results.append(await self._check_orders_escrow_consistency())
+        
+        # Check 2: Users with invalid roles
+        results.append(await self._check_user_roles_integrity())
+        
+        # Check 3: Listings with missing categories
+        results.append(await self._check_listings_category_integrity())
+        
+        # Check 4: Escrow vs Payment transactions
+        results.append(await self._check_escrow_payment_consistency())
+        
+        # Check 5: Orphaned notifications
+        results.append(await self._check_orphaned_notifications())
+        
+        # Check 6: Duplicate records
+        results.append(await self._check_duplicate_records())
+        
+        # Check 7: Referential integrity
+        results.append(await self._check_referential_integrity())
+        
+        # Check 8: Expired session cleanup needed
+        results.append(await self._check_stale_sessions())
+        
+        # Calculate summary
+        passed = len([r for r in results if r["passed"]])
+        issues_found = sum(r.get("issues_count", 0) for r in results)
+        
+        check_run = {
+            "id": check_id,
+            "type": "data_integrity",
+            "started_at": started_at.isoformat(),
+            "completed_at": datetime.now(timezone.utc).isoformat(),
+            "duration_ms": (datetime.now(timezone.utc) - started_at).total_seconds() * 1000,
+            "total_checks": len(results),
+            "passed": passed,
+            "failed": len(results) - passed,
+            "issues_found": issues_found,
+            "results": results
+        }
+        
+        # Store results
+        await self.db.qa_integrity_checks.insert_one({**check_run})
+        
+        # Create alert if issues found
+        if issues_found > 0:
+            await self.create_alert(
+                alert_type=AlertType.DATA_INTEGRITY_ISSUE,
+                severity=Severity.WARNING if issues_found < 10 else Severity.CRITICAL,
+                title=f"Data Integrity Issues Found: {issues_found}",
+                message=f"Data integrity check found {issues_found} issues across {len(results) - passed} checks.",
+                metadata={"check_id": check_id, "issues_found": issues_found}
+            )
+            await self._broadcast_realtime_alert({
+                "type": "data_integrity",
+                "severity": "warning" if issues_found < 10 else "critical",
+                "title": f"Data Integrity: {issues_found} issues found",
+                "check_id": check_id,
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            })
+        
+        return check_run
+
+    async def _check_orders_escrow_consistency(self) -> Dict:
+        """Check that all orders have corresponding escrow records"""
+        orders_count = await self.db.orders.count_documents({})
+        escrow_count = await self.db.escrow.count_documents({})
+        
+        # Find orders without escrow
+        orders_without_escrow = []
+        async for order in self.db.orders.find({}, {"id": 1, "order_id": 1}):
+            order_id = order.get("order_id") or order.get("id")
+            escrow = await self.db.escrow.find_one({"order_id": order_id})
+            if not escrow:
+                orders_without_escrow.append(order_id)
+                if len(orders_without_escrow) >= 10:
+                    break
+        
+        return {
+            "check": "orders_escrow_consistency",
+            "passed": len(orders_without_escrow) == 0,
+            "issues_count": len(orders_without_escrow),
+            "details": {
+                "orders_count": orders_count,
+                "escrow_count": escrow_count,
+                "sample_missing": orders_without_escrow[:5]
+            }
+        }
+
+    async def _check_user_roles_integrity(self) -> Dict:
+        """Check users have valid roles"""
+        valid_roles = ["admin", "super_admin", "user", "seller", "buyer", "moderator", "support"]
+        invalid_users = await self.db.users.count_documents({
+            "role": {"$nin": valid_roles, "$exists": True}
+        })
+        
+        return {
+            "check": "user_roles_integrity",
+            "passed": invalid_users == 0,
+            "issues_count": invalid_users,
+            "details": {"invalid_role_users": invalid_users}
+        }
+
+    async def _check_listings_category_integrity(self) -> Dict:
+        """Check listings have valid categories"""
+        # Get all valid category IDs
+        categories = await self.db.categories.find({}, {"id": 1}).to_list(length=1000)
+        valid_category_ids = {c.get("id") for c in categories}
+        
+        # Find listings with invalid categories
+        invalid_count = 0
+        async for listing in self.db.listings.find({"category": {"$exists": True}}, {"category": 1}):
+            if listing.get("category") and listing["category"] not in valid_category_ids:
+                invalid_count += 1
+        
+        return {
+            "check": "listings_category_integrity",
+            "passed": invalid_count == 0,
+            "issues_count": invalid_count,
+            "details": {"listings_with_invalid_category": invalid_count}
+        }
+
+    async def _check_escrow_payment_consistency(self) -> Dict:
+        """Check escrow records have matching payment transactions"""
+        funded_escrows = await self.db.escrow.count_documents({"status": {"$in": ["funded", "released"]}})
+        
+        # Sample check for missing payments
+        missing_payment = 0
+        async for escrow in self.db.escrow.find(
+            {"status": {"$in": ["funded", "released"]}},
+            {"id": 1, "order_id": 1}
+        ).limit(100):
+            payment = await self.db.payment_transactions.find_one({
+                "$or": [
+                    {"escrow_id": escrow["id"]},
+                    {"order_id": escrow.get("order_id")}
+                ]
+            })
+            if not payment:
+                missing_payment += 1
+        
+        return {
+            "check": "escrow_payment_consistency",
+            "passed": missing_payment == 0,
+            "issues_count": missing_payment,
+            "details": {
+                "funded_escrows_checked": min(funded_escrows, 100),
+                "missing_payments": missing_payment
+            }
+        }
+
+    async def _check_orphaned_notifications(self) -> Dict:
+        """Check for notifications to non-existent users"""
+        orphaned = 0
+        async for notif in self.db.notifications.find({}, {"user_id": 1}).limit(200):
+            user = await self.db.users.find_one({"user_id": notif.get("user_id")})
+            if not user:
+                orphaned += 1
+        
+        return {
+            "check": "orphaned_notifications",
+            "passed": orphaned == 0,
+            "issues_count": orphaned,
+            "details": {"orphaned_notifications": orphaned}
+        }
+
+    async def _check_duplicate_records(self) -> Dict:
+        """Check for duplicate records in critical collections"""
+        duplicates = {}
+        
+        # Check duplicate users by email
+        pipeline = [
+            {"$group": {"_id": "$email", "count": {"$sum": 1}}},
+            {"$match": {"count": {"$gt": 1}}}
+        ]
+        dup_emails = await self.db.users.aggregate(pipeline).to_list(length=100)
+        duplicates["duplicate_emails"] = len(dup_emails)
+        
+        # Check duplicate orders
+        pipeline = [
+            {"$group": {"_id": "$order_id", "count": {"$sum": 1}}},
+            {"$match": {"count": {"$gt": 1}, "_id": {"$ne": None}}}
+        ]
+        dup_orders = await self.db.orders.aggregate(pipeline).to_list(length=100)
+        duplicates["duplicate_orders"] = len(dup_orders)
+        
+        total_duplicates = sum(duplicates.values())
+        
+        return {
+            "check": "duplicate_records",
+            "passed": total_duplicates == 0,
+            "issues_count": total_duplicates,
+            "details": duplicates
+        }
+
+    async def _check_referential_integrity(self) -> Dict:
+        """Check referential integrity across collections"""
+        issues = 0
+        
+        # Check orders reference valid users
+        async for order in self.db.orders.find({}, {"buyer_id": 1, "seller_id": 1}).limit(50):
+            if order.get("buyer_id"):
+                buyer = await self.db.users.find_one({"user_id": order["buyer_id"]})
+                if not buyer:
+                    issues += 1
+            if order.get("seller_id"):
+                seller = await self.db.users.find_one({"user_id": order["seller_id"]})
+                if not seller:
+                    issues += 1
+        
+        return {
+            "check": "referential_integrity",
+            "passed": issues == 0,
+            "issues_count": issues,
+            "details": {"broken_references": issues}
+        }
+
+    async def _check_stale_sessions(self) -> Dict:
+        """Check for expired sessions that need cleanup"""
+        now = datetime.now(timezone.utc).isoformat()
+        stale_count = await self.db.user_sessions.count_documents({
+            "expires_at": {"$lt": now}
+        })
+        
+        return {
+            "check": "stale_sessions",
+            "passed": stale_count < 1000,  # Allow some stale sessions
+            "issues_count": stale_count if stale_count >= 1000 else 0,
+            "details": {
+                "stale_sessions": stale_count,
+                "threshold": 1000,
+                "needs_cleanup": stale_count >= 1000
+            }
+        }
+
+    async def get_integrity_check_history(
+        self,
+        page: int = 1,
+        limit: int = 20
+    ) -> Dict:
+        """Get data integrity check history"""
+        skip = (page - 1) * limit
+        total = await self.db.qa_integrity_checks.count_documents({})
+        
+        checks = await self.db.qa_integrity_checks.find(
+            {}, {"_id": 0}
+        ).sort("started_at", -1).skip(skip).limit(limit).to_list(length=limit)
+        
+        return {
+            "checks": checks,
+            "total": total,
+            "page": page,
+            "limit": limit
+        }
+
+    async def auto_fix_integrity_issues(self, check_type: str, admin_id: str) -> Dict:
+        """Automatically fix certain data integrity issues"""
+        fixed = 0
+        
+        if check_type == "stale_sessions":
+            # Clean up expired sessions
+            result = await self.db.user_sessions.delete_many({
+                "expires_at": {"$lt": datetime.now(timezone.utc).isoformat()}
+            })
+            fixed = result.deleted_count
+            
+        elif check_type == "orphaned_notifications":
+            # Remove notifications for non-existent users
+            user_ids = await self.db.users.distinct("user_id")
+            result = await self.db.notifications.delete_many({
+                "user_id": {"$nin": user_ids}
+            })
+            fixed = result.deleted_count
+        
+        # Log the fix action
+        await self._log_audit(
+            f"auto_fix_{check_type}",
+            admin_id,
+            {"items_fixed": fixed}
+        )
+        
+        return {"success": True, "check_type": check_type, "items_fixed": fixed}
+
+    # =========================================================================
+    # ADVANCED MONITORING ALERTS
+    # =========================================================================
+
+    async def configure_monitoring_threshold(
+        self,
+        metric_name: str,
+        threshold_type: str,  # 'above', 'below'
+        threshold_value: float,
+        alert_severity: str,
+        admin_id: str
+    ) -> Dict:
+        """Configure a monitoring threshold alert"""
+        config = {
+            "id": str(uuid.uuid4()),
+            "metric_name": metric_name,
+            "threshold_type": threshold_type,
+            "threshold_value": threshold_value,
+            "alert_severity": alert_severity,
+            "enabled": True,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "created_by": admin_id
+        }
+        
+        await self.db.qa_monitoring_thresholds.update_one(
+            {"metric_name": metric_name},
+            {"$set": config},
+            upsert=True
+        )
+        
+        return config
+
+    async def get_monitoring_thresholds(self) -> List[Dict]:
+        """Get all monitoring thresholds"""
+        thresholds = await self.db.qa_monitoring_thresholds.find(
+            {}, {"_id": 0}
+        ).to_list(length=100)
+        return thresholds
+
+    async def delete_monitoring_threshold(self, metric_name: str) -> Dict:
+        """Delete a monitoring threshold"""
+        result = await self.db.qa_monitoring_thresholds.delete_one({"metric_name": metric_name})
+        return {"success": result.deleted_count > 0}
+
+    async def check_monitoring_thresholds(self) -> Dict:
+        """Check all monitoring thresholds and create alerts if breached"""
+        thresholds = await self.get_monitoring_thresholds()
+        metrics = await self.get_current_metrics()
+        
+        alerts_created = []
+        
+        for threshold in thresholds:
+            if not threshold.get("enabled"):
+                continue
+            
+            metric_name = threshold["metric_name"]
+            metric_value = metrics.get(metric_name)
+            
+            if metric_value is None:
+                continue
+            
+            breached = False
+            if threshold["threshold_type"] == "above" and metric_value > threshold["threshold_value"]:
+                breached = True
+            elif threshold["threshold_type"] == "below" and metric_value < threshold["threshold_value"]:
+                breached = True
+            
+            if breached:
+                alert = await self.create_alert(
+                    alert_type=AlertType.THRESHOLD_BREACHED,
+                    severity=Severity(threshold["alert_severity"]),
+                    title=f"Threshold Breached: {metric_name}",
+                    message=f"{metric_name} is {metric_value}, threshold is {threshold['threshold_type']} {threshold['threshold_value']}",
+                    metadata={
+                        "metric_name": metric_name,
+                        "current_value": metric_value,
+                        "threshold": threshold["threshold_value"],
+                        "threshold_type": threshold["threshold_type"]
+                    }
+                )
+                alerts_created.append(alert)
+                
+                # Send real-time alert
+                await self._broadcast_realtime_alert({
+                    "type": "threshold_breached",
+                    "severity": threshold["alert_severity"],
+                    "title": f"Threshold Breached: {metric_name}",
+                    "metric_name": metric_name,
+                    "current_value": metric_value,
+                    "threshold": threshold["threshold_value"],
+                    "timestamp": datetime.now(timezone.utc).isoformat()
+                })
+        
+        return {
+            "thresholds_checked": len(thresholds),
+            "alerts_created": len(alerts_created),
+            "alerts": alerts_created
+        }
+
+    async def get_current_metrics(self) -> Dict:
+        """Get current system metrics for monitoring"""
+        now = datetime.now(timezone.utc)
+        hour_ago = (now - timedelta(hours=1)).isoformat()
+        day_ago = (now - timedelta(days=1)).isoformat()
+        
+        # Error rate (errors per hour)
+        recent_errors = await self.db.qa_errors.count_documents({
+            "timestamp": {"$gte": hour_ago}
+        })
+        
+        # API latency (from tracked times)
+        avg_latency = 0
+        if self._request_times:
+            all_times = []
+            for times in self._request_times.values():
+                all_times.extend(times[-100:])
+            if all_times:
+                avg_latency = sum(all_times) / len(all_times)
+        
+        # Payment success rate
+        recent_payments = await self.db.payment_transactions.find({
+            "created_at": {"$gte": day_ago}
+        }).to_list(length=1000)
+        payment_success_rate = 0
+        if recent_payments:
+            successful = len([p for p in recent_payments if p.get("status") == "completed"])
+            payment_success_rate = (successful / len(recent_payments)) * 100
+        
+        # Escrow pending count
+        pending_escrows = await self.db.escrow.count_documents({"status": "pending"})
+        
+        # Notification queue size
+        notification_queue_size = await self.db.notification_queue.count_documents({"status": "pending"})
+        
+        # User signup rate (per hour)
+        recent_signups = await self.db.users.count_documents({
+            "created_at": {"$gte": hour_ago}
+        })
+        
+        # Active alerts
+        active_alerts = await self.db.qa_alerts.count_documents({"resolved": False})
+        
+        return {
+            "error_rate_hourly": recent_errors,
+            "avg_api_latency_ms": round(avg_latency, 2),
+            "payment_success_rate": round(payment_success_rate, 2),
+            "pending_escrows": pending_escrows,
+            "notification_queue_size": notification_queue_size,
+            "signup_rate_hourly": recent_signups,
+            "active_alerts": active_alerts,
+            "timestamp": now.isoformat()
+        }
+
+    async def get_metrics_history(
+        self,
+        metric_name: str,
+        hours: int = 24
+    ) -> List[Dict]:
+        """Get historical values for a specific metric"""
+        # For now, return from stored metrics if available
+        history = await self.db.qa_metrics_history.find({
+            "metric_name": metric_name,
+            "timestamp": {"$gte": (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()}
+        }, {"_id": 0}).sort("timestamp", 1).to_list(length=1000)
+        
+        return history
+
+    async def store_current_metrics(self) -> Dict:
+        """Store current metrics for historical tracking"""
+        metrics = await self.get_current_metrics()
+        timestamp = metrics.pop("timestamp")
+        
+        for metric_name, value in metrics.items():
+            await self.db.qa_metrics_history.insert_one({
+                "metric_name": metric_name,
+                "value": value,
+                "timestamp": timestamp
+            })
+        
+        return {"stored": len(metrics), "timestamp": timestamp}
+
 
 # =============================================================================
 # ROUTER FACTORY
