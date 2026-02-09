@@ -1773,6 +1773,506 @@ class TeamWorkflowService:
         )
         return result.modified_count
 
+    # -------------------------------------------------------------------------
+    # SHIFT & AVAILABILITY
+    # -------------------------------------------------------------------------
+    
+    async def get_shifts(self, member_id: Optional[str] = None, date: Optional[str] = None) -> List[Dict]:
+        """Get shift schedules"""
+        query = {}
+        if member_id:
+            query["member_id"] = member_id
+        if date:
+            query["date"] = date
+        
+        return await self.shifts.find(query, {"_id": 0}).sort("date", 1).to_list(length=500)
+    
+    async def create_shift(
+        self,
+        member_id: str,
+        date: str,
+        start_time: str,
+        end_time: str,
+        shift_type: str = "regular",  # regular, on_call, off
+        notes: Optional[str] = None,
+        created_by: str = "system"
+    ) -> Dict:
+        """Create a shift schedule"""
+        shift = {
+            "id": str(uuid.uuid4()),
+            "member_id": member_id,
+            "date": date,
+            "start_time": start_time,
+            "end_time": end_time,
+            "shift_type": shift_type,
+            "notes": notes,
+            "created_by": created_by,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await self.shifts.insert_one(shift.copy())
+        return shift
+    
+    async def update_shift(self, shift_id: str, updates: Dict[str, Any]) -> Optional[Dict]:
+        """Update a shift"""
+        updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+        await self.shifts.update_one({"id": shift_id}, {"$set": updates})
+        return await self.shifts.find_one({"id": shift_id}, {"_id": 0})
+    
+    async def delete_shift(self, shift_id: str) -> bool:
+        """Delete a shift"""
+        result = await self.shifts.delete_one({"id": shift_id})
+        return result.deleted_count > 0
+    
+    async def get_on_call_members(self) -> List[Dict]:
+        """Get currently on-call team members"""
+        now = datetime.now(timezone.utc)
+        today = now.strftime("%Y-%m-%d")
+        current_time = now.strftime("%H:%M")
+        
+        # Find members with on_call shifts for today
+        on_call_shifts = await self.shifts.find({
+            "date": today,
+            "shift_type": "on_call",
+            "start_time": {"$lte": current_time},
+            "end_time": {"$gte": current_time}
+        }, {"_id": 0}).to_list(length=50)
+        
+        member_ids = [s["member_id"] for s in on_call_shifts]
+        
+        if not member_ids:
+            # Fallback to members marked as on_call
+            members = await self.team_members.find(
+                {"is_on_call": True, "status": "active"}, {"_id": 0, "password_hash": 0}
+            ).to_list(length=50)
+            return members
+        
+        members = await self.team_members.find(
+            {"id": {"$in": member_ids}, "status": "active"}, {"_id": 0, "password_hash": 0}
+        ).to_list(length=50)
+        
+        return members
+    
+    async def set_on_call_status(self, member_id: str, is_on_call: bool) -> bool:
+        """Set a member's on-call status"""
+        result = await self.team_members.update_one(
+            {"id": member_id},
+            {"$set": {"is_on_call": is_on_call, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        return result.modified_count > 0
+    
+    async def get_available_members_for_assignment(self, role_id: Optional[str] = None) -> List[Dict]:
+        """Get available team members for task assignment based on shift schedule"""
+        now = datetime.now(timezone.utc)
+        today = now.strftime("%Y-%m-%d")
+        current_time = now.strftime("%H:%M")
+        
+        # Get members with active shifts today
+        active_shifts = await self.shifts.find({
+            "date": today,
+            "shift_type": {"$in": ["regular", "on_call"]},
+            "start_time": {"$lte": current_time},
+            "end_time": {"$gte": current_time}
+        }, {"_id": 0}).to_list(length=100)
+        
+        member_ids = [s["member_id"] for s in active_shifts]
+        
+        query = {"status": "active", "sandbox_only": False}
+        if member_ids:
+            query["id"] = {"$in": member_ids}
+        if role_id:
+            query["role_id"] = role_id
+        
+        members = await self.team_members.find(
+            query, {"_id": 0, "password_hash": 0, "two_factor_secret": 0}
+        ).to_list(length=100)
+        
+        return members
+
+    # -------------------------------------------------------------------------
+    # TWO-FACTOR AUTHENTICATION (2FA)
+    # -------------------------------------------------------------------------
+    
+    async def setup_2fa(self, member_id: str) -> Dict:
+        """Generate 2FA secret for a team member"""
+        import pyotp
+        import base64
+        
+        member = await self.team_members.find_one({"id": member_id}, {"_id": 0})
+        if not member:
+            raise HTTPException(status_code=404, detail="Member not found")
+        
+        # Generate secret
+        secret = pyotp.random_base32()
+        
+        # Store encrypted secret (in production, use proper encryption)
+        await self.team_members.update_one(
+            {"id": member_id},
+            {"$set": {
+                "two_factor_secret": secret,
+                "two_factor_enabled": False,  # Not enabled until verified
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        # Generate provisioning URI for QR code
+        totp = pyotp.TOTP(secret)
+        provisioning_uri = totp.provisioning_uri(
+            name=member.get("email"),
+            issuer_name="Admin Dashboard"
+        )
+        
+        return {
+            "secret": secret,
+            "provisioning_uri": provisioning_uri,
+            "message": "Scan the QR code with your authenticator app, then verify with a code"
+        }
+    
+    async def verify_2fa_setup(self, member_id: str, code: str) -> Dict:
+        """Verify 2FA setup with a code from authenticator app"""
+        import pyotp
+        
+        member = await self.team_members.find_one({"id": member_id})
+        if not member:
+            raise HTTPException(status_code=404, detail="Member not found")
+        
+        secret = member.get("two_factor_secret")
+        if not secret:
+            raise HTTPException(status_code=400, detail="2FA not set up. Call setup_2fa first.")
+        
+        totp = pyotp.TOTP(secret)
+        if totp.verify(code):
+            await self.team_members.update_one(
+                {"id": member_id},
+                {"$set": {
+                    "two_factor_enabled": True,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            await self.log_audit(
+                actor_id=member_id,
+                actor_name=member.get("name"),
+                actor_role=member.get("role_id"),
+                action="enable_2fa",
+                module="security",
+                entity_type="team_member",
+                entity_id=member_id,
+                after_state={"two_factor_enabled": True}
+            )
+            
+            return {"success": True, "message": "2FA enabled successfully"}
+        else:
+            return {"success": False, "message": "Invalid code. Please try again."}
+    
+    async def verify_2fa_code(self, member_id: str, code: str) -> bool:
+        """Verify 2FA code during login"""
+        import pyotp
+        
+        member = await self.team_members.find_one({"id": member_id})
+        if not member or not member.get("two_factor_enabled"):
+            return True  # 2FA not enabled, skip verification
+        
+        secret = member.get("two_factor_secret")
+        if not secret:
+            return True
+        
+        totp = pyotp.TOTP(secret)
+        return totp.verify(code)
+    
+    async def disable_2fa(self, member_id: str, admin_id: str) -> Dict:
+        """Disable 2FA for a team member (admin action)"""
+        member = await self.team_members.find_one({"id": member_id}, {"_id": 0})
+        if not member:
+            raise HTTPException(status_code=404, detail="Member not found")
+        
+        await self.team_members.update_one(
+            {"id": member_id},
+            {"$set": {
+                "two_factor_enabled": False,
+                "two_factor_secret": None,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        await self.log_audit(
+            actor_id=admin_id,
+            actor_name="Admin",
+            actor_role="admin",
+            action="disable_2fa",
+            module="security",
+            entity_type="team_member",
+            entity_id=member_id,
+            before_state={"two_factor_enabled": True},
+            after_state={"two_factor_enabled": False}
+        )
+        
+        return {"success": True, "message": "2FA disabled"}
+
+    # -------------------------------------------------------------------------
+    # SANDBOX / TRAINING MODE
+    # -------------------------------------------------------------------------
+    
+    async def get_sandbox_data(self) -> Dict:
+        """Get sandbox/training environment data"""
+        # Create mock data for training
+        mock_tasks = [
+            {
+                "id": f"sandbox_task_{i}",
+                "title": f"Training Task #{i}: {['Handle refund request', 'Review seller verification', 'Moderate chat report', 'Resolve dispute'][i % 4]}",
+                "description": "This is a mock task for training purposes. Practice handling this type of request.",
+                "type": ["refund", "verification", "moderation", "dispute"][i % 4],
+                "priority": ["low", "medium", "high", "critical"][i % 4],
+                "status": "open",
+                "is_sandbox": True,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            for i in range(1, 6)
+        ]
+        
+        mock_approvals = [
+            {
+                "id": f"sandbox_approval_{i}",
+                "type": ["refund", "seller_verification", "user_ban"][i % 3],
+                "title": f"Training Approval #{i}",
+                "description": "This is a mock approval request for training purposes.",
+                "requester_name": "Training Bot",
+                "status": "pending",
+                "request_data": {"amount": (i + 1) * 50, "reason": "Training exercise"},
+                "is_sandbox": True,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            for i in range(1, 4)
+        ]
+        
+        return {
+            "tasks": mock_tasks,
+            "approvals": mock_approvals,
+            "message": "This is sandbox data for training. Actions here do not affect real users or transactions."
+        }
+    
+    async def process_sandbox_action(
+        self,
+        action_type: str,
+        entity_type: str,
+        entity_id: str,
+        action_data: Dict[str, Any],
+        member_id: str
+    ) -> Dict:
+        """Process a sandbox action (for training)"""
+        # Validate this is a sandbox entity
+        if not entity_id.startswith("sandbox_"):
+            raise HTTPException(status_code=400, detail="Cannot perform sandbox actions on real entities")
+        
+        # Log the training action
+        training_log = {
+            "id": str(uuid.uuid4()),
+            "member_id": member_id,
+            "action_type": action_type,
+            "entity_type": entity_type,
+            "entity_id": entity_id,
+            "action_data": action_data,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "feedback": self._generate_training_feedback(action_type, action_data)
+        }
+        
+        await self.db.team_training_logs.insert_one(training_log.copy())
+        
+        return {
+            "success": True,
+            "message": f"Training action '{action_type}' completed",
+            "feedback": training_log["feedback"],
+            "entity_id": entity_id
+        }
+    
+    def _generate_training_feedback(self, action_type: str, action_data: Dict) -> str:
+        """Generate feedback for training actions"""
+        feedback_templates = {
+            "approve": "Good job! You approved the request. In production, always verify the details before approving.",
+            "reject": "You rejected the request. Make sure to provide a clear reason to the requester.",
+            "assign": "Task assigned successfully. Consider workload balance when assigning tasks.",
+            "resolve": "Task marked as resolved. Don't forget to add resolution notes for future reference.",
+            "escalate": "Escalation initiated. This is appropriate for complex issues requiring senior review."
+        }
+        return feedback_templates.get(action_type, "Action completed. Review the guidelines for best practices.")
+    
+    async def get_training_progress(self, member_id: str) -> Dict:
+        """Get training progress for a team member"""
+        logs = await self.db.team_training_logs.find(
+            {"member_id": member_id}, {"_id": 0}
+        ).sort("timestamp", -1).to_list(length=100)
+        
+        action_counts = {}
+        for log in logs:
+            action = log.get("action_type", "unknown")
+            action_counts[action] = action_counts.get(action, 0) + 1
+        
+        return {
+            "member_id": member_id,
+            "total_training_actions": len(logs),
+            "action_breakdown": action_counts,
+            "recent_actions": logs[:10],
+            "training_status": "completed" if len(logs) >= 20 else "in_progress"
+        }
+
+    # -------------------------------------------------------------------------
+    # EMAIL NOTIFICATIONS (SENDGRID)
+    # -------------------------------------------------------------------------
+    
+    async def send_email_notification(
+        self,
+        to_email: str,
+        subject: str,
+        content: str,
+        template_type: str = "task_assignment"
+    ) -> Dict:
+        """Send email notification via SendGrid"""
+        import os
+        import httpx
+        
+        sendgrid_key = os.environ.get("SENDGRID_API_KEY")
+        if not sendgrid_key:
+            logger.warning("SendGrid API key not configured")
+            return {"success": False, "error": "SendGrid not configured"}
+        
+        from_email = os.environ.get("SENDGRID_FROM_EMAIL", "noreply@marketplace.com")
+        
+        # HTML email template
+        html_content = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: #1B5E20; color: white; padding: 20px; text-align: center;">
+                <h1 style="margin: 0;">Admin Dashboard</h1>
+            </div>
+            <div style="padding: 20px; background: #f5f5f5;">
+                <h2 style="color: #333;">{subject}</h2>
+                <div style="background: white; padding: 15px; border-radius: 5px;">
+                    {content}
+                </div>
+                <p style="color: #666; font-size: 12px; margin-top: 20px;">
+                    This is an automated notification from the Admin Dashboard.
+                    <br>Do not reply to this email.
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "https://api.sendgrid.com/v3/mail/send",
+                    headers={
+                        "Authorization": f"Bearer {sendgrid_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "personalizations": [{"to": [{"email": to_email}]}],
+                        "from": {"email": from_email, "name": "Admin Dashboard"},
+                        "subject": subject,
+                        "content": [
+                            {"type": "text/plain", "value": content},
+                            {"type": "text/html", "value": html_content}
+                        ]
+                    },
+                    timeout=30.0
+                )
+                
+                if response.status_code in [200, 202]:
+                    logger.info(f"Email sent to {to_email}: {subject}")
+                    return {"success": True, "message": "Email sent successfully"}
+                else:
+                    logger.error(f"SendGrid error: {response.status_code} - {response.text}")
+                    return {"success": False, "error": f"SendGrid error: {response.status_code}"}
+        except Exception as e:
+            logger.error(f"Failed to send email: {e}")
+            return {"success": False, "error": str(e)}
+    
+    async def send_task_assignment_email(self, task: Dict, assignee: Dict):
+        """Send email when task is assigned"""
+        content = f"""
+        <p>You have been assigned a new task:</p>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Task:</strong></td><td>{task.get('title')}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Type:</strong></td><td>{task.get('type')}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Priority:</strong></td><td style="color: {'red' if task.get('priority') == 'critical' else 'orange' if task.get('priority') == 'high' else 'blue'};">{task.get('priority', '').upper()}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>SLA Deadline:</strong></td><td>{task.get('sla_deadline', 'N/A')}</td></tr>
+        </table>
+        <p style="margin-top: 15px;">
+            <a href="/dashboard/team-management/tasks/{task.get('id')}" 
+               style="background: #1B5E20; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                View Task
+            </a>
+        </p>
+        """
+        
+        await self.send_email_notification(
+            to_email=assignee.get("email"),
+            subject=f"[Task Assigned] {task.get('title')}",
+            content=content,
+            template_type="task_assignment"
+        )
+    
+    async def send_approval_request_email(self, approval: Dict, approvers: List[Dict]):
+        """Send email when approval is requested"""
+        content = f"""
+        <p>A new approval request requires your attention:</p>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Request:</strong></td><td>{approval.get('title')}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Type:</strong></td><td>{approval.get('type')}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Requester:</strong></td><td>{approval.get('requester_name')}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Priority:</strong></td><td>{approval.get('priority', 'medium').upper()}</td></tr>
+        </table>
+        <p style="margin-top: 15px;">
+            <a href="/dashboard/team-management/approvals/{approval.get('id')}" 
+               style="background: #1B5E20; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                Review Request
+            </a>
+        </p>
+        """
+        
+        for approver in approvers:
+            await self.send_email_notification(
+                to_email=approver.get("email"),
+                subject=f"[Approval Required] {approval.get('title')}",
+                content=content,
+                template_type="approval_request"
+            )
+    
+    async def send_sla_breach_alert(self, task: Dict, assigned_member: Optional[Dict] = None):
+        """Send email alert when SLA is breached"""
+        content = f"""
+        <p style="color: #d32f2f;"><strong>SLA BREACH ALERT</strong></p>
+        <p>The following task has breached its SLA deadline:</p>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Task:</strong></td><td>{task.get('title')}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Priority:</strong></td><td style="color: red;">{task.get('priority', '').upper()}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>SLA Deadline:</strong></td><td style="color: red;">{task.get('sla_deadline')}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Assigned To:</strong></td><td>{assigned_member.get('name') if assigned_member else 'Unassigned'}</td></tr>
+        </table>
+        <p style="margin-top: 15px;"><strong>Immediate action required.</strong></p>
+        """
+        
+        # Send to assigned member and their manager
+        recipients = []
+        if assigned_member:
+            recipients.append(assigned_member.get("email"))
+        
+        # Also notify admins
+        admins = await self.team_members.find(
+            {"role_id": {"$in": ["admin", "super_admin"]}, "status": "active"},
+            {"_id": 0, "email": 1}
+        ).to_list(length=10)
+        recipients.extend([a.get("email") for a in admins])
+        
+        for email in set(recipients):
+            if email:
+                await self.send_email_notification(
+                    to_email=email,
+                    subject=f"[SLA BREACH] {task.get('title')}",
+                    content=content,
+                    template_type="sla_breach"
+                )
+
 
 # ============================================================================
 # ROUTER FACTORY
