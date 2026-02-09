@@ -7,6 +7,13 @@ import { useAuthStore, saveUserData } from '../src/store/authStore';
 import { authApi } from '../src/utils/api';
 import { theme } from '../src/utils/theme';
 import { useNotificationDeepLinking, registerForPushNotifications } from '../src/utils/notifications';
+import { setupGlobalErrorHandler } from '../src/utils/errorLogger';
+import ErrorBoundary from '../src/components/ErrorBoundary';
+
+// Initialize global error handler
+if (typeof window !== 'undefined' || Platform.OS !== 'web') {
+  setupGlobalErrorHandler();
+}
 
 export default function RootLayout() {
   const { loadStoredAuth, setUser, setToken, isAuthenticated, user } = useAuthStore();
