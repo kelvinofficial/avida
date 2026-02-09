@@ -572,6 +572,12 @@ export default function SettingsScreen() {
             label="Advanced Alert Settings"
             onPress={() => router.push('/settings/alerts')}
           />
+          <NavigationRow
+            icon="sparkles-outline"
+            label="Smart Alerts"
+            description="Personalized notifications"
+            onPress={() => router.push('/smart-alerts')}
+          />
         </View>
 
         {/* SECURITY */}
