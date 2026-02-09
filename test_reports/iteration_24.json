@@ -31,7 +31,7 @@
     "frontend": "N/A (backend-only testing requested)"
   },
   "test_credentials": {
-    "api_base": "https://smart-notify-ai.preview.emergentagent.com",
+    "api_base": "https://compliance-hub-323.preview.emergentagent.com",
     "test_pattern": "test_mod_push_*@test.com / test123456"
   },
   "seed_data_creation": "Test moderators, test users, test listings, and test conversations created during setup. Test reports submitted to verify notification flow.",

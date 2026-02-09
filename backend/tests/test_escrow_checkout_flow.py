@@ -13,7 +13,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://smart-notify-ai.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://compliance-hub-323.preview.emergentagent.com')
 
 # Test credentials
 TEST_BUYER_EMAIL = "buyer@test.com"
@@ -242,7 +242,7 @@ class TestPaymentCreation:
             json={
                 "order_id": TEST_EXISTING_ORDER,
                 "provider": "stripe",
-                "origin_url": "https://smart-notify-ai.preview.emergentagent.com"
+                "origin_url": "https://compliance-hub-323.preview.emergentagent.com"
             }
         )
         
@@ -259,7 +259,7 @@ class TestPaymentCreation:
             json={
                 "order_id": TEST_EXISTING_ORDER,
                 "provider": "stripe",
-                "origin_url": "https://smart-notify-ai.preview.emergentagent.com"
+                "origin_url": "https://compliance-hub-323.preview.emergentagent.com"
             }
         )
         
