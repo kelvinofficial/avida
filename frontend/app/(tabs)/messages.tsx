@@ -1270,6 +1270,22 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   
+  // Sandbox Banner
+  sandboxBanner: {
+    backgroundColor: '#FF9800',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  sandboxText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  
   // Header
   headerContainer: {
     backgroundColor: COLORS.surface,
