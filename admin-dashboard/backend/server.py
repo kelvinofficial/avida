@@ -4919,6 +4919,114 @@ async def proxy_assign_partner_to_order(
     return {"success": True, "assignment": assignment}
 
 # =============================================================================
+# AI ANALYZER PROXY ENDPOINTS
+# =============================================================================
+
+@app.get("/api/admin/ai-analyzer/admin/settings")
+async def proxy_get_ai_settings(admin = Depends(get_current_admin)):
+    """Get AI analyzer settings"""
+    settings = await db.ai_settings.find_one({"id": "ai_settings_global"}, {"_id": 0})
+    if not settings:
+        # Return defaults
+        return {
+            "id": "ai_settings_global",
+            "enabled": True,
+            "enabled_categories": [],
+            "disabled_categories": [],
+            "max_uses_per_day_free": 3,
+            "max_uses_per_day_verified": 10,
+            "max_uses_per_day_premium": 50,
+            "max_images_per_analysis": 5,
+            "allow_free_users": True,
+            "require_verified_email": False,
+            "require_verified_phone": False,
+            "enable_price_suggestions": False,
+            "enable_category_suggestions": True,
+            "profanity_filter_enabled": True,
+            "policy_compliance_filter": True,
+            "blocked_terms": ["guarantee", "warranty", "authentic"],
+            "vision_system_prompt": "You are a product analyst...",
+            "text_system_prompt": "You are a copywriter..."
+        }
+    return settings
+
+@app.put("/api/admin/ai-analyzer/admin/settings")
+async def proxy_update_ai_settings(
+    updates: Dict[str, Any] = Body(...),
+    admin = Depends(get_current_admin)
+):
+    """Update AI analyzer settings"""
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+    updates["updated_by"] = admin.get("admin_id") if admin else "admin"
+    await db.ai_settings.update_one(
+        {"id": "ai_settings_global"},
+        {"$set": updates},
+        upsert=True
+    )
+    return await db.ai_settings.find_one({"id": "ai_settings_global"}, {"_id": 0})
+
+@app.get("/api/admin/ai-analyzer/admin/analytics")
+async def proxy_get_ai_analytics(
+    days: int = 30,
+    admin = Depends(get_current_admin)
+):
+    """Get AI usage analytics"""
+    start_date = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    
+    # Total calls
+    total_calls = await db.ai_usage_logs.count_documents({
+        "created_at": {"$gte": start_date}
+    })
+    
+    # Aggregated stats
+    pipeline = [
+        {"$match": {"created_at": {"$gte": start_date}}},
+        {"$group": {
+            "_id": None,
+            "total": {"$sum": 1},
+            "accepted": {"$sum": {"$cond": ["$was_accepted", 1, 0]}},
+            "edited": {"$sum": {"$cond": ["$was_edited", 1, 0]}},
+            "rejected": {"$sum": {"$cond": ["$was_rejected", 1, 0]}},
+            "total_images": {"$sum": "$images_analyzed"}
+        }}
+    ]
+    
+    agg_result = await db.ai_usage_logs.aggregate(pipeline).to_list(1)
+    stats = agg_result[0] if agg_result else {
+        "total": 0, "accepted": 0, "edited": 0, "rejected": 0, "total_images": 0
+    }
+    
+    # Daily breakdown
+    daily_pipeline = [
+        {"$match": {"created_at": {"$gte": start_date}}},
+        {"$addFields": {"date": {"$substr": ["$created_at", 0, 10]}}},
+        {"$group": {"_id": "$date", "calls": {"$sum": 1}, "images": {"$sum": "$images_analyzed"}}},
+        {"$sort": {"_id": 1}}
+    ]
+    daily = await db.ai_usage_logs.aggregate(daily_pipeline).to_list(days)
+    
+    # Cache count
+    cache_count = await db.ai_cache.count_documents({})
+    
+    return {
+        "period_days": days,
+        "total_calls": total_calls,
+        "total_images_analyzed": stats.get("total_images", 0),
+        "acceptance_rate": round(stats["accepted"] / stats["total"] * 100, 1) if stats["total"] > 0 else 0,
+        "edit_rate": round(stats["edited"] / stats["total"] * 100, 1) if stats["total"] > 0 else 0,
+        "rejection_rate": round(stats["rejected"] / stats["total"] * 100, 1) if stats["total"] > 0 else 0,
+        "pending_rate": round((stats["total"] - stats["accepted"] - stats["edited"] - stats["rejected"]) / stats["total"] * 100, 1) if stats["total"] > 0 else 0,
+        "daily_breakdown": [{"date": d["_id"], "calls": d["calls"], "images": d["images"]} for d in daily],
+        "cache_entries": cache_count
+    }
+
+@app.post("/api/admin/ai-analyzer/admin/clear-cache")
+async def proxy_clear_ai_cache(admin = Depends(get_current_admin)):
+    """Clear AI analysis cache"""
+    result = await db.ai_cache.delete_many({})
+    return {"success": True, "deleted": result.deleted_count}
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
