@@ -396,9 +396,10 @@ class RuleBasedModeration:
 class ChatModerationManager:
     """Main moderation manager combining AI and rule-based moderation"""
     
-    def __init__(self, db, config: ModerationConfig = None):
+    def __init__(self, db, config: ModerationConfig = None, send_push_func=None):
         self.db = db
         self.config = config or ModerationConfig()
+        self._send_push_func = send_push_func  # Function to send push notifications
         
         # Initialize AI moderation
         api_key = os.environ.get('EMERGENT_LLM_KEY')
@@ -408,6 +409,10 @@ class ChatModerationManager:
         self.rule_service = RuleBasedModeration(self.config.rules)
         
         logger.info(f"Chat moderation initialized. AI enabled: {self.ai_service is not None}")
+    
+    def set_push_function(self, send_push_func):
+        """Set the push notification function after initialization"""
+        self._send_push_func = send_push_func
     
     async def load_config(self):
         """Load configuration from database"""
