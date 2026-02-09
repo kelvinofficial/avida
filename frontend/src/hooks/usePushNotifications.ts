@@ -190,6 +190,11 @@ export function usePushNotifications() {
     data?: Record<string, any>,
     seconds: number = 1
   ) => {
+    // Not supported on web
+    if (Platform.OS === 'web') {
+      console.log('Local notifications not supported on web');
+      return;
+    }
     await Notifications.scheduleNotificationAsync({
       content: {
         title,
