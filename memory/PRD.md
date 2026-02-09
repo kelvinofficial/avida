@@ -1609,6 +1609,28 @@ US, GB, KE, NG, ZA, **GH**, **TZ**, **UG**, **ZM**, **ZW**
 
 ## Session Update: Dec 2025
 
+### Deployment Templates Feature - COMPLETE ✅ (Feb 9, 2026)
+**Backend (15/15 tests passed):**
+- `GET /api/config-manager/templates` - List all templates
+- `GET /api/config-manager/templates/{id}` - Get specific template
+- `POST /api/config-manager/templates` - Create custom template
+- `POST /api/config-manager/templates/{id}/use` - Create deployment from template
+- `DELETE /api/config-manager/templates/{id}` - Delete custom template (403 for system)
+
+**System Templates (6 pre-configured):**
+1. Black Friday Sale (promotion, 72h)
+2. Holiday Season (seasonal, 168h)
+3. Maintenance Mode (maintenance, 4h)
+4. New Feature Rollout (feature, permanent)
+5. Flash Sale Event (promotion, 24h)
+6. Seller Onboarding Campaign (promotion, permanent)
+
+**Frontend:**
+- Templates tab in Config Manager with badge count
+- Card grid displaying template name, category, description, config changes
+- "Use Template" dialog with schedule picker and environment selector
+- Auto-rollback settings display
+
 ### Schedule Deployment Dialog - VERIFIED COMPLETE
 - All features confirmed working via testing agent (11/11 backend tests passed)
 - Frontend dialog tested via playwright screenshots
