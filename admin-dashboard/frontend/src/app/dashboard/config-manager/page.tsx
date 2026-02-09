@@ -194,6 +194,26 @@ interface ScheduledDeployment {
   created_at: string;
 }
 
+interface DeploymentTemplate {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: string;
+  config_type: string;
+  config_changes: Record<string, any>;
+  default_duration_hours?: number;
+  enable_auto_rollback: boolean;
+  rollback_on_error_rate: number;
+  rollback_on_metric_drop: number;
+  metric_to_monitor?: string;
+  is_system: boolean;
+  usage_count: number;
+  last_used_at?: string;
+  created_by: string;
+  created_at: string;
+}
+
 const ENVIRONMENTS: Environment[] = ['production', 'staging', 'sandbox', 'development'];
 
 const ENV_COLORS: Record<Environment, 'error' | 'warning' | 'info' | 'success'> = {
