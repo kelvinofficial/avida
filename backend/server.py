@@ -157,6 +157,14 @@ except ImportError as e:
     API_INTEGRATIONS_AVAILABLE = False
     logging.warning(f"API Integrations not available: {e}")
 
+# Data Privacy & Compliance Center
+try:
+    from compliance_center import create_compliance_router, ComplianceService
+    COMPLIANCE_CENTER_AVAILABLE = True
+except ImportError as e:
+    COMPLIANCE_CENTER_AVAILABLE = False
+    logging.warning(f"Compliance Center not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
