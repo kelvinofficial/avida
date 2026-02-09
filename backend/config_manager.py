@@ -316,6 +316,7 @@ class ConfigManagerService:
         self.audit_log = db.config_audit_log
         self.scheduled_deployments = db.config_scheduled_deployments
         self.deployment_metrics = db.config_deployment_metrics
+        self.deployment_templates = db.config_deployment_templates
         
         # In-memory cache for fast reads
         self._cache: Dict[str, Dict] = {}
