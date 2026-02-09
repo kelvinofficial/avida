@@ -40,6 +40,7 @@ def create_conversations_router(db, require_auth, check_rate_limit, sio, create_
         check_rate_limit: Function to check rate limits
         sio: Socket.IO server instance for real-time messaging
         create_notification_func: Function to create notifications
+        moderation_manager: Optional ChatModerationManager for real-time message scanning
     
     Returns:
         APIRouter with conversation endpoints
