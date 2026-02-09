@@ -94,6 +94,7 @@ class TestHelperFunctions:
             "description": "Test listing for moderation testing",
             "price": 100.00,
             "category_id": "electronics",
+            "subcategory": "laptops_computers",
             "location": "Test City"
         }, headers=headers)
         
