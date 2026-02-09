@@ -1474,6 +1474,81 @@ export default function ChatScreen() {
     }
   };
 
+  // Report message functions
+  const handleLongPressMessage = (message: Message) => {
+    // Only allow reporting messages from other users
+    if (message.sender_id === user?.user_id) {
+      return;
+    }
+    
+    // Show action sheet with options
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Report Message', 'Copy Text'],
+          destructiveButtonIndex: 1,
+          cancelButtonIndex: 0,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) {
+            setReportingMessage(message);
+            setReportModalVisible(true);
+          } else if (buttonIndex === 2 && message.message_type === 'text') {
+            // Copy message to clipboard (would need expo-clipboard)
+          }
+        }
+      );
+    } else {
+      // For Android, show the report modal directly
+      Alert.alert(
+        'Message Options',
+        'What would you like to do?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Report Message', 
+            style: 'destructive',
+            onPress: () => {
+              setReportingMessage(message);
+              setReportModalVisible(true);
+            }
+          },
+        ]
+      );
+    }
+  };
+
+  const handleSubmitReport = async (reason: string, description: string) => {
+    if (!id) return;
+    
+    setReportLoading(true);
+    try {
+      await reportApi.reportMessage(
+        id,
+        reason,
+        reportingMessage?.id,
+        description
+      );
+      
+      Alert.alert(
+        'Report Submitted',
+        'Thank you for your report. Our moderation team will review it shortly.',
+        [{ text: 'OK' }]
+      );
+      
+      setReportModalVisible(false);
+      setReportingMessage(null);
+    } catch (error: any) {
+      console.error('Error submitting report:', error);
+      Alert.alert(
+        'Error',
+        error.response?.data?.detail || 'Failed to submit report. Please try again.'
+      );
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
   // Image/Video Attachment Functions
   const showAttachmentOptions = () => {
     if (Platform.OS === 'ios') {
