@@ -285,15 +285,16 @@ class TestReportAPI:
             third_headers = {"Authorization": f"Bearer {third_token}"}
             
             # Create a conversation for the third user with listing owner
-            third_listing_data = {
-                "title": f"Third User Listing {uuid.uuid4().hex[:8]}",
-                "description": "Listing by third user",
-                "price": 50,
-                "category_id": "electronics",
-                "condition": "new",
-                "location": "Test Location",
-                "images": []
-            }
+                third_listing_data = {
+                    "title": f"Third User Listing {uuid.uuid4().hex[:8]}",
+                    "description": "Listing by third user",
+                    "price": 50,
+                    "category_id": "electronics",
+                    "subcategory_id": "laptops_computers",
+                    "condition": "new",
+                    "location": "Test Location",
+                    "images": []
+                }
             listing_resp = reporter_session.post(f"{BASE_URL}/api/listings", json=third_listing_data, headers=third_headers)
             
             if listing_resp.status_code in [200, 201]:
