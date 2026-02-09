@@ -134,7 +134,7 @@ class TestCurrencyManagement:
     def test_add_new_currency(self, api_client):
         """POST /api/platform/currencies/staging - Add a new currency"""
         test_currency = {
-            "code": f"TEST{uuid.uuid4().hex[:4].upper()}",
+            "code": f"T{uuid.uuid4().hex[:2].upper()}",  # Shorter code (3 chars)
             "name": "Test Currency",
             "symbol": "T$",
             "decimal_precision": 2,
@@ -147,9 +147,10 @@ class TestCurrencyManagement:
             "locked_for_historical": False
         }
         
+        # API expects nested currency object
         response = api_client.post(
             f"{BASE_URL}/api/platform/currencies/staging",
-            json=test_currency
+            json={"currency": test_currency, "added_by": "test_agent"}
         )
         
         assert response.status_code == 200
@@ -163,18 +164,22 @@ class TestCurrencyManagement:
     
     def test_add_duplicate_currency_fails(self, api_client):
         """POST /api/platform/currencies/staging - Adding duplicate currency fails"""
+        # API expects nested currency object
         response = api_client.post(
             f"{BASE_URL}/api/platform/currencies/staging",
             json={
-                "code": "USD",  # Already exists
-                "name": "Duplicate Dollar",
-                "symbol": "$",
-                "decimal_precision": 2,
-                "rounding_rule": "round_half_up",
-                "enabled": True,
-                "is_default": False,
-                "countries": ["US"],
-                "fx_rate_to_base": 1.0
+                "currency": {
+                    "code": "USD",  # Already exists
+                    "name": "Duplicate Dollar",
+                    "symbol": "$",
+                    "decimal_precision": 2,
+                    "rounding_rule": "round_half_up",
+                    "enabled": True,
+                    "is_default": False,
+                    "countries": ["US"],
+                    "fx_rate_to_base": 1.0
+                },
+                "added_by": "test_agent"
             }
         )
         
