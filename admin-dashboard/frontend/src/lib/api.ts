@@ -56,6 +56,17 @@ class ApiClient {
     }
   }
 
+  // Generic HTTP methods for custom endpoints
+  async get(path: string, params?: Record<string, any>) {
+    const { data } = await this.client.get(path, { params });
+    return data;
+  }
+
+  async post(path: string, body?: Record<string, any>) {
+    const { data } = await this.client.post(path, body);
+    return data;
+  }
+
   // Auth
   async login(email: string, password: string, totpCode?: string) {
     const { data } = await this.client.post('/auth/login', { email, password, totp_code: totpCode });
