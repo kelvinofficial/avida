@@ -1,5 +1,38 @@
 # Changelog
 
+## [2026-02-09] - QA System Enhancements
+
+### Added - Critical User Flow Testing
+- 6 automated flow tests: listing_creation, checkout, escrow, notifications, payment_integration, authentication
+- Flow test history with filtering
+- Real-time alerts on test failures
+
+### Added - Fail-Safe Behaviors
+- Service health checks before critical operations (checkout, payment, escrow, notification, listing)
+- Feature flag integration for operations
+- Returns allowed/blocked status with reasons and warnings
+
+### Added - Retry & Recovery Logic
+- Exponential backoff configuration (30s → 60s → 120s)
+- Manual retry triggers for notification, payment_webhook, escrow_release jobs
+- Admin-audited configuration updates
+
+### Added - Real-time WebSocket Alerts
+- Admin subscription to alert types (critical, warning, system_down, etc.)
+- Immediate broadcast on QA failures and high error rates
+- Test alert functionality for connection verification
+- Polling fallback for environments without WebSocket
+
+### Files Changed
+- `/app/backend/qa_reliability_system.py` - Added ~700 lines for new features
+- `/app/backend/server.py` - Added WebSocket events for QA alerts
+
+### Testing
+- 34/34 new tests passed
+- Test file: `/app/backend/tests/test_qa_new_features.py`
+
+---
+
 ## [2026-02-09] - Frontend Error Logging Integration
 
 ### Added
