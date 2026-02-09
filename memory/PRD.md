@@ -392,3 +392,38 @@ Complete escrow-based payment system allowing verified premium sellers to accept
 
 ---
 Last Updated: February 9, 2026
+
+---
+
+## Backend Refactoring Progress (Feb 9, 2026)
+
+### server.py Modularization - Phase 1 COMPLETE
+
+**Objective**: Reduce the monolithic server.py (~5925 lines) by extracting core routes into modular files.
+
+**Completed Extractions**:
+1. **`routes/auth.py`** - Authentication endpoints (register, login, session, me, logout)
+2. **`routes/users.py`** - User management (profile, block/unblock, status)
+3. **`routes/listings.py`** - Listing CRUD (create, read, update, delete, search, similar)
+
+**Results**:
+- **Before**: ~5925 lines
+- **After**: ~5112 lines  
+- **Reduction**: ~813 lines (14%)
+- All endpoints tested and verified working
+
+**Architecture Pattern**:
+- Factory functions: `create_xxx_router(db, dependencies...)`
+- Routers included via `api_router.include_router(router)`
+- Dependencies injected to maintain decoupling
+
+**Reference**: See `/app/REFACTORING.md` for detailed documentation.
+
+### Future Refactoring (Phase 2)
+- Categories/Subcategories endpoints
+- Favorites endpoints  
+- Conversations/Messages endpoints
+- Media upload endpoints
+- Profile/Activity endpoints
+- Settings endpoints
+
