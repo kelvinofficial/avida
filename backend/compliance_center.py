@@ -82,10 +82,26 @@ class UserRole(str, Enum):
     USER = "user"
     SELLER = "seller"
     ADMIN = "admin"
+    SUPER_ADMIN = "super_admin"
+    COMPLIANCE_OFFICER = "compliance_officer"
     SUPPORT = "support"
     MODERATOR = "moderator"
     FINANCE = "finance"
     TRANSPORT_PARTNER = "transport_partner"
+
+class LegalDocumentType(str, Enum):
+    PRIVACY_POLICY = "privacy_policy"
+    TERMS_OF_SERVICE = "terms_of_service"
+    COOKIE_POLICY = "cookie_policy"
+    DPA = "data_processing_agreement"
+    ACCEPTABLE_USE = "acceptable_use"
+
+class SandboxMode(str, Enum):
+    OFF = "off"
+    ON = "on"
+
+# Roles allowed to access compliance endpoints
+COMPLIANCE_ROLES = [UserRole.SUPER_ADMIN, UserRole.COMPLIANCE_OFFICER, UserRole.ADMIN]
 
 # Default SLA in days per request type
 DEFAULT_SLA_DAYS = {
