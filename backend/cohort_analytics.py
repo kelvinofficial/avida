@@ -1698,4 +1698,61 @@ def create_cohort_analytics_router(db: AsyncIOMotorDatabase):
         """Get events for a user"""
         return await service.get_user_events(user_id, event_type, limit=limit)
     
+    # -------------------------------------------------------------------------
+    # WEEKLY HEALTH REPORTS
+    # -------------------------------------------------------------------------
+    
+    @router.get("/reports/weekly")
+    async def generate_weekly_report():
+        """Generate a weekly cohort health report"""
+        return await service.generate_weekly_health_report()
+    
+    @router.post("/reports/weekly/send")
+    async def send_weekly_report(recipients: List[str] = Body(...)):
+        """Send the weekly health report via email to specified recipients"""
+        return await service.send_weekly_report_email(recipients)
+    
+    @router.get("/reports/history")
+    async def get_report_history(limit: int = Query(10, ge=1, le=50)):
+        """Get previous weekly reports"""
+        return await service.get_report_history(limit)
+    
+    @router.get("/reports/schedule")
+    async def get_report_schedule():
+        """Get current report scheduling configuration"""
+        return await service.get_report_schedule()
+    
+    @router.post("/reports/schedule")
+    async def configure_report_schedule(
+        enabled: bool = Body(...),
+        frequency: str = Body("weekly"),
+        recipients: List[str] = Body(...),
+        day_of_week: int = Body(1)
+    ):
+        """Configure automated report scheduling"""
+        return await service.configure_report_schedule(enabled, frequency, recipients, day_of_week)
+    
+    # -------------------------------------------------------------------------
+    # ALERT AUTOMATION & NOTIFICATIONS
+    # -------------------------------------------------------------------------
+    
+    @router.post("/alerts/check")
+    async def check_alerts_and_notify():
+        """Manually check all alerts and trigger notifications for breached thresholds"""
+        return await service.check_alerts_and_notify()
+    
+    @router.get("/notifications")
+    async def get_cohort_notifications(
+        unread_only: bool = Query(False),
+        limit: int = Query(50, ge=1, le=100)
+    ):
+        """Get cohort-related notifications"""
+        return await service.get_cohort_notifications(unread_only, limit)
+    
+    @router.post("/notifications/{notification_id}/read")
+    async def mark_notification_read(notification_id: str):
+        """Mark a notification as read"""
+        success = await service.mark_notification_read(notification_id)
+        return {"success": success}
+    
     return router, service
