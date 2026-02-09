@@ -708,3 +708,102 @@ Provides daily/weekly/monthly AI-generated overview of platform performance, ris
 - `backend/executive_summary.py` - Core service with data aggregation and AI
 - `admin-dashboard/frontend/src/app/dashboard/executive-summary/page.tsx` - Admin UI
 
+
+---
+
+## Smart Notification System - Phase 1 Complete (Feb 9, 2026)
+
+**Status:** COMPLETE - Backend infrastructure, admin dashboard, and user preferences implemented
+
+**Overview:**
+A personalized notification system that sends Email and Push notifications to users based on their behavior and interests. Features user behavior tracking, interest profile building, configurable triggers, multi-channel delivery, smart throttling, and admin controls.
+
+### Core Components:
+
+**1. User Behavior Tracking**
+- Automatically tracks: listing views, saves, searches, purchases
+- Builds interest profiles with category scores, price preferences, recent searches
+- Integrated into existing endpoints (GET /api/listings/{id}, POST /api/favorites/{id})
+
+**2. Interest Profile**
+- Category interests (0-100 score): +1 per view, +5 per save, +20 per purchase
+- Price preferences per category (min/max/avg)
+- Recent searches (last 20 queries)
+- Saved categories for price drop alerts
+- Total engagement metrics (views, saves, purchases)
+
+**3. Notification Triggers**
+- New Listing in Category: When new items match user interests
+- Price Drop on Saved Items: When favorites decrease in price (min 5% drop)
+- Message Received: Real-time message notifications
+- Offer Received/Accepted: Transaction updates
+- Weekly Digest: Summary of activity in interests
+
+**4. Multi-Channel Delivery**
+- **Email**: SendGrid integration with HTML templates
+- **Push**: Expo Push Notifications
+- **In-App**: Internal notification system
+
+**5. Smart Features**
+- Throttling: Per-trigger limits (max/day, min interval)
+- Deduplication: 24-hour window for same trigger+entity
+- Quiet Hours: User-configurable do-not-disturb periods
+- User Consent: Per-channel and per-trigger-type opt-in/out
+
+### API Endpoints:
+
+**Admin Endpoints (no auth):**
+- `GET /api/smart-notifications/admin/config` - System configuration
+- `PUT /api/smart-notifications/admin/config` - Update config
+- `GET /api/smart-notifications/admin/triggers` - List triggers
+- `POST /api/smart-notifications/admin/triggers` - Create trigger
+- `PUT /api/smart-notifications/admin/triggers/{id}` - Update trigger
+- `DELETE /api/smart-notifications/admin/triggers/{id}` - Delete trigger
+- `GET /api/smart-notifications/admin/analytics` - Performance analytics
+- `POST /api/smart-notifications/admin/process` - Manual queue processing
+
+**User Endpoints (auth required):**
+- `GET /api/smart-notifications/consent` - Get notification preferences
+- `PUT /api/smart-notifications/consent` - Update preferences
+- `GET /api/smart-notifications/profile` - Get interest profile
+- `POST /api/smart-notifications/track` - Manual behavior tracking
+- `GET /api/smart-notifications/history` - Notification history
+
+### Files:
+- `backend/smart_notifications.py` - Core service (1100+ lines)
+- `backend/routes/listings.py` - Behavior tracking integration
+- `backend/routes/favorites.py` - Save behavior tracking
+- `admin-dashboard/frontend/src/app/dashboard/smart-notifications/page.tsx` - Admin UI
+- `frontend/app/smart-alerts.tsx` - User preferences screen
+
+### Admin Dashboard Features:
+- System Settings tab: Email/Push toggles, throttling sliders, quiet hours
+- Triggers tab: CRUD for custom notification rules
+- Analytics tab: Sent/delivered/opened/clicked metrics
+
+### User Settings Features:
+- Delivery channels: Push, Email, In-App toggles
+- Alert types: New listings, price drops, messages, offers, digest, promotional
+- Quiet hours: Enable/configure do-not-disturb times
+
+### Testing: 24/24 backend tests passed
+
+### Environment Variables:
+```
+SENDGRID_API_KEY=SG.xxx
+SENDGRID_FROM_EMAIL=noreply@marketplace.com
+SENDGRID_FROM_NAME=Marketplace
+```
+
+---
+
+## Upcoming: Smart Notification System - Phase 2
+
+**Not Started:**
+- Firebase Cloud Messaging integration for mobile push
+- Advanced trigger logic (similar listing alerts, seller reply alerts)
+- A/B testing for notification content
+- Conversion tracking (notification -> purchase)
+- Weekly digest email generation
+- Admin email template editor
+
