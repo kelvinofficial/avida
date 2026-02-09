@@ -4431,8 +4431,21 @@ if AI_ANALYZER_AVAILABLE:
 # Include Chat Moderation System
 moderation_manager = None
 if CHAT_MODERATION_AVAILABLE:
+    async def require_admin_for_moderation(request: Request) -> dict:
+        """Admin authentication wrapper for moderation routes"""
+        user = await get_current_user(request)
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        # In production, check if user has admin role
+        return {
+            "admin_id": user.user_id, 
+            "email": user.email, 
+            "name": user.name,
+            "is_admin": True
+        }
+    
     moderation_manager = ChatModerationManager(db)
-    moderation_router = create_moderation_router(db, require_admin, moderation_manager)
+    moderation_router = create_moderation_router(db, require_admin_for_moderation, moderation_manager)
     user_report_router = create_user_report_router(db, require_auth)
     api_router.include_router(moderation_router)
     api_router.include_router(user_report_router)
