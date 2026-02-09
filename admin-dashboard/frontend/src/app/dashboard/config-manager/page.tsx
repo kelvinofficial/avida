@@ -617,6 +617,18 @@ export default function ConfigManagerPage() {
             } 
             data-testid="tab-approvals" 
           />
+          <Tab 
+            icon={<Schedule />} 
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                Scheduled
+                {scheduledDeployments.filter(d => d.status === 'pending').length > 0 && (
+                  <Chip label={scheduledDeployments.filter(d => d.status === 'pending').length} size="small" color="info" />
+                )}
+              </Box>
+            } 
+            data-testid="tab-scheduled" 
+          />
           <Tab icon={<History />} label="Audit Logs" data-testid="tab-audit" />
         </Tabs>
       </Paper>
