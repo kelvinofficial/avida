@@ -363,9 +363,124 @@ export default function DashboardLayout({
             ))}
           </Menu>
 
-          <IconButton>
-            <Notifications />
-          </IconButton>
+          <Tooltip title="Notifications">
+            <IconButton 
+              onClick={(e) => setNotificationAnchor(e.currentTarget)}
+              data-testid="notification-bell"
+            >
+              <Badge badgeContent={unreadCount} color="error" max={99}>
+                {unreadCount > 0 ? <NotificationsActive color="warning" /> : <NotificationsNone />}
+              </Badge>
+            </IconButton>
+          </Tooltip>
+
+          <Popover
+            open={Boolean(notificationAnchor)}
+            anchorEl={notificationAnchor}
+            onClose={() => setNotificationAnchor(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            PaperProps={{ sx: { width: 380, maxHeight: 480 } }}
+          >
+            <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h6" fontWeight="bold">Notifications</Typography>
+              {unreadCount > 0 && (
+                <Chip label={`${unreadCount} new`} size="small" color="error" />
+              )}
+            </Box>
+            
+            {notifications.length === 0 ? (
+              <Box sx={{ p: 4, textAlign: 'center' }}>
+                <NotificationsNone sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
+                <Typography color="text.secondary">No new notifications</Typography>
+              </Box>
+            ) : (
+              <List sx={{ p: 0, maxHeight: 340, overflow: 'auto' }}>
+                {notifications.map((notification) => (
+                  <ListItem
+                    key={notification.id}
+                    component="div"
+                    sx={{
+                      cursor: 'pointer',
+                      borderBottom: 1,
+                      borderColor: 'divider',
+                      '&:hover': { bgcolor: 'action.hover' },
+                      bgcolor: notification.sla_breached ? 'error.50' : 'inherit'
+                    }}
+                    onClick={() => {
+                      router.push(notification.link);
+                      setNotificationAnchor(null);
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 40 }}>
+                      {notification.type === 'task' ? (
+                        <Avatar sx={{ width: 32, height: 32, bgcolor: notification.sla_breached ? 'error.main' : notification.priority === 'critical' ? 'error.light' : notification.priority === 'high' ? 'warning.light' : 'info.light' }}>
+                          <Assignment fontSize="small" />
+                        </Avatar>
+                      ) : (
+                        <Avatar sx={{ width: 32, height: 32, bgcolor: 'warning.light' }}>
+                          <CheckCircle fontSize="small" />
+                        </Avatar>
+                      )}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="body2" fontWeight="bold" noWrap sx={{ maxWidth: 200 }}>
+                            {notification.title}
+                          </Typography>
+                          {notification.sla_breached && (
+                            <Chip label="SLA Breach" size="small" color="error" sx={{ height: 18, fontSize: 10 }} />
+                          )}
+                        </Box>
+                      }
+                      secondary={
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" noWrap>
+                            {notification.description}
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                            <AccessTime sx={{ fontSize: 12 }} color="action" />
+                            <Typography variant="caption" color="text.secondary">
+                              {new Date(notification.time).toLocaleString()}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      }
+                    />
+                    <Chip 
+                      label={notification.type === 'task' ? notification.priority : 'Pending'} 
+                      size="small" 
+                      color={notification.priority === 'critical' ? 'error' : notification.priority === 'high' ? 'warning' : 'default'}
+                      sx={{ fontSize: 10 }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            )}
+            
+            <Box sx={{ p: 1.5, borderTop: 1, borderColor: 'divider' }}>
+              <Box 
+                component="div"
+                sx={{ 
+                  width: '100%', 
+                  textAlign: 'center', 
+                  py: 1, 
+                  cursor: 'pointer',
+                  '&:hover': { bgcolor: 'action.hover' },
+                  borderRadius: 1
+                }}
+                onClick={() => {
+                  router.push('/dashboard/team-management');
+                  setNotificationAnchor(null);
+                }}
+              >
+                <Typography variant="body2" color="primary">
+                  View All in Team Management
+                </Typography>
+              </Box>
+            </Box>
+          </Popover>
 
           <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
             <AccountCircle />
