@@ -48,6 +48,7 @@ import {
   Sms,
   AutoAwesome,
   Shield,
+  Summarize,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
@@ -58,6 +59,7 @@ const DRAWER_WIDTH = 260;
 
 const menuItems = [
   { text: 'Overview', icon: <Dashboard />, path: '/dashboard' },
+  { text: 'Executive Summary', icon: <Summarize />, path: '/dashboard/executive-summary' },
   { text: 'Categories', icon: <Category />, path: '/dashboard/categories' },
   { text: 'Attributes', icon: <Tune />, path: '/dashboard/attributes' },
   { text: 'Users', icon: <People />, path: '/dashboard/users' },
