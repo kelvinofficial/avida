@@ -4550,6 +4550,13 @@ if API_INTEGRATIONS_AVAILABLE:
     app.include_router(api_router)  # Re-include to pick up integrations routes
     logger.info("API Integrations Manager loaded successfully")
 
+# Data Privacy & Compliance Center
+if COMPLIANCE_CENTER_AVAILABLE:
+    compliance_router, compliance_service = create_compliance_router(db)
+    api_router.include_router(compliance_router)
+    app.include_router(api_router)  # Re-include to pick up compliance routes
+    logger.info("Data Privacy & Compliance Center loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
