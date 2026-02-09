@@ -2058,4 +2058,114 @@ def create_smart_notification_router(db, get_current_user, require_auth):
         """Manually trigger notification processing"""
         return await service.process_pending_notifications()
     
+    # =========================================================================
+    # PHASE 2: CONVERSION TRACKING ENDPOINTS
+    # =========================================================================
+    
+    @router.post("/track/open/{notification_id}")
+    async def track_notification_open(notification_id: str, request: Request):
+        """Track notification open event"""
+        user = await get_current_user(request)
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        return await service.track_notification_open(notification_id, user.user_id)
+    
+    @router.post("/track/click/{notification_id}")
+    async def track_notification_click(notification_id: str, request: Request):
+        """Track notification click event"""
+        user = await get_current_user(request)
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        return await service.track_notification_click(notification_id, user.user_id)
+    
+    @router.post("/track/conversion/{notification_id}")
+    async def track_conversion(
+        notification_id: str,
+        request: Request,
+        conversion_type: str = Body(...),
+        conversion_value: Optional[float] = Body(None),
+        entity_id: Optional[str] = Body(None)
+    ):
+        """Track conversion from notification"""
+        user = await get_current_user(request)
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        return await service.track_conversion(
+            notification_id, user.user_id, conversion_type, conversion_value, entity_id
+        )
+    
+    @router.get("/admin/conversions")
+    async def get_conversion_analytics(
+        start_date: Optional[str] = Query(None),
+        end_date: Optional[str] = Query(None),
+        trigger_type: Optional[str] = Query(None)
+    ):
+        """Get conversion analytics"""
+        return await service.get_conversion_analytics(start_date, end_date, trigger_type)
+    
+    # =========================================================================
+    # PHASE 2: A/B TESTING ENDPOINTS
+    # =========================================================================
+    
+    @router.get("/admin/ab-tests")
+    async def get_ab_tests(active_only: bool = Query(False)):
+        """Get all A/B tests"""
+        return await service.get_ab_tests(active_only)
+    
+    @router.post("/admin/ab-tests")
+    async def create_ab_test(test_data: Dict[str, Any] = Body(...)):
+        """Create a new A/B test"""
+        return await service.create_ab_test(test_data)
+    
+    @router.get("/admin/ab-tests/{test_id}")
+    async def get_ab_test(test_id: str):
+        """Get a specific A/B test"""
+        test = await service.get_ab_test(test_id)
+        if not test:
+            raise HTTPException(status_code=404, detail="A/B test not found")
+        return test
+    
+    @router.put("/admin/ab-tests/{test_id}")
+    async def update_ab_test(test_id: str, updates: Dict[str, Any] = Body(...)):
+        """Update an A/B test"""
+        result = await service.update_ab_test(test_id, updates)
+        if not result:
+            raise HTTPException(status_code=404, detail="A/B test not found")
+        return result
+    
+    @router.post("/admin/ab-tests/{test_id}/end")
+    async def end_ab_test(test_id: str):
+        """End an A/B test and determine winner"""
+        result = await service.end_ab_test(test_id)
+        if not result:
+            raise HTTPException(status_code=404, detail="A/B test not found")
+        return result
+    
+    # =========================================================================
+    # PHASE 2: WEEKLY DIGEST ENDPOINTS
+    # =========================================================================
+    
+    @router.get("/admin/weekly-digest/config")
+    async def get_weekly_digest_config():
+        """Get weekly digest configuration"""
+        return await service.get_weekly_digest_config()
+    
+    @router.put("/admin/weekly-digest/config")
+    async def update_weekly_digest_config(updates: Dict[str, Any] = Body(...)):
+        """Update weekly digest configuration"""
+        return await service.update_weekly_digest_config(updates)
+    
+    @router.post("/admin/weekly-digest/send")
+    async def send_weekly_digests():
+        """Manually trigger weekly digest sending"""
+        return await service.send_weekly_digests()
+    
+    @router.get("/admin/weekly-digest/preview/{user_id}")
+    async def preview_weekly_digest(user_id: str):
+        """Preview weekly digest for a user"""
+        digest = await service.generate_weekly_digest(user_id)
+        if not digest:
+            raise HTTPException(status_code=404, detail="Could not generate digest for user")
+        return digest
+    
     return router, service
