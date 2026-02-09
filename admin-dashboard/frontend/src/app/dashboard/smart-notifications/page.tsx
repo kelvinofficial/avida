@@ -224,7 +224,7 @@ export default function SmartNotificationsPage() {
     if (!confirm('Are you sure you want to delete this trigger?')) return;
     
     try {
-      const res = await fetch(`${API_BASE}/api/smart-notifications/admin/triggers/${triggerId}`, {
+      const res = await fetch(`${API_BASE}/smart-notifications/admin/triggers/${triggerId}`, {
         method: 'DELETE',
       });
       
