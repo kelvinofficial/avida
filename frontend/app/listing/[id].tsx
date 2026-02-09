@@ -1074,6 +1074,19 @@ export default function ListingDetailScreen() {
                 {/* Action Buttons */}
                 {listing.user_id !== user?.user_id && (
                   <View style={desktopStyles.actionButtons}>
+                    {canBuyOnline && (
+                      <TouchableOpacity 
+                        style={desktopStyles.buyNowBtn} 
+                        onPress={() => router.push(`/checkout/${id}`)}
+                        data-testid="buy-now-btn"
+                      >
+                        <Ionicons name="flash" size={20} color="#fff" />
+                        <Text style={desktopStyles.buyNowText}>Buy Now</Text>
+                        <View style={desktopStyles.escrowBadge}>
+                          <Ionicons name="shield-checkmark" size={12} color="#fff" />
+                        </View>
+                      </TouchableOpacity>
+                    )}
                     <TouchableOpacity style={desktopStyles.primaryActionBtn} onPress={() => setShowOfferModal(true)}>
                       <Ionicons name="pricetag" size={20} color="#fff" />
                       <Text style={desktopStyles.primaryActionText}>Make an Offer</Text>
