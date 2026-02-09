@@ -623,26 +623,42 @@ export default function ListingDetailScreen() {
   const fetchListing = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await listingsApi.getOne(id!);
+      
+      // Check if sandbox mode is active and use sandbox-aware API
+      const sandboxActive = await sandboxUtils.isActive();
+      
+      let data;
+      if (sandboxActive) {
+        data = await sandboxAwareListingsApi.getOne(id!);
+      } else {
+        data = await listingsApi.getOne(id!);
+      }
+      
       setListing(data);
       setIsFavorited(data.is_favorited || false);
       
-      // Track recently viewed (don't await, fire and forget)
-      if (isAuthenticated) {
+      // Track recently viewed (don't await, fire and forget) - skip in sandbox
+      if (isAuthenticated && !sandboxActive) {
         api.post(`/profile/activity/recently-viewed/${id}`).catch(() => {});
       }
       
-      try {
-        const catData = await categoriesApi.getOne(data.category_id);
-        setCategory(catData);
-      } catch (e) {}
-      
-      // Check if seller can sell online
-      try {
-        const sellerCheck = await api.get(`/escrow/seller/${data.user_id}/can-sell-online`);
-        setCanBuyOnline(sellerCheck.data.can_sell_online === true);
-      } catch (e) {
-        setCanBuyOnline(false);
+      // Skip category fetch in sandbox (not critical)
+      if (!sandboxActive) {
+        try {
+          const catData = await categoriesApi.getOne(data.category_id);
+          setCategory(catData);
+        } catch (e) {}
+        
+        // Check if seller can sell online
+        try {
+          const sellerCheck = await api.get(`/escrow/seller/${data.user_id}/can-sell-online`);
+          setCanBuyOnline(sellerCheck.data.can_sell_online === true);
+        } catch (e) {
+          setCanBuyOnline(false);
+        }
+      } else {
+        // In sandbox mode, enable buy online for testing
+        setCanBuyOnline(true);
       }
     } catch (error) {
       console.error('Error fetching listing:', error);
