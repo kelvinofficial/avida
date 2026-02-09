@@ -174,12 +174,12 @@ export default function EscrowPage() {
     setLoading(true);
     try {
       const [sellersRes, ordersRes, disputesRes, vatRes, commissionRes, transportRes] = await Promise.all([
-        api.get('/escrow/admin/verified-sellers'),
-        api.get('/escrow/admin/orders?limit=100'),
-        api.get('/escrow/admin/disputes'),
-        api.get('/escrow/vat-configs'),
-        api.get('/escrow/commission-configs'),
-        api.get('/escrow/transport-pricing'),
+        escrowApi.get('/escrow/admin/verified-sellers'),
+        escrowApi.get('/escrow/admin/orders?limit=100'),
+        escrowApi.get('/escrow/admin/disputes'),
+        escrowApi.get('/escrow/vat-configs'),
+        escrowApi.get('/escrow/commission-configs'),
+        escrowApi.get('/escrow/transport-pricing'),
       ]);
       
       setVerifiedSellers(sellersRes.data || []);
