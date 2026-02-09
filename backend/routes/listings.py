@@ -543,7 +543,21 @@ def create_listings_router(
         update_data = {k: v for k, v in update.model_dump().items() if v is not None}
         update_data["updated_at"] = datetime.now(timezone.utc)
         
+        # Check for price drop to trigger notifications
+        old_price = listing.get("price", 0)
+        new_price = update_data.get("price")
+        
         await db.listings.update_one({"id": listing_id}, {"$set": update_data})
+        
+        # Trigger price drop notifications if price decreased
+        if new_price is not None and new_price < old_price:
+            try:
+                from smart_notifications import SmartNotificationService
+                smart_service = SmartNotificationService(db)
+                import asyncio
+                asyncio.create_task(smart_service.check_price_drop_triggers(listing_id, old_price, new_price))
+            except Exception as e:
+                logger.debug(f"Price drop notification trigger failed: {e}")
         
         updated = await db.listings.find_one({"id": listing_id}, {"_id": 0})
         return updated
