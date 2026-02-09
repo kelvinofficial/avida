@@ -51,7 +51,6 @@ import {
   Summarize,
   TrendingUp,
   FilterList,
-  Language,
   Palette,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
