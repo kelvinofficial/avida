@@ -5694,6 +5694,23 @@ if ESCROW_ROUTES_AVAILABLE:
     app.include_router(api_router)  # Re-include to pick up escrow routes
     logger.info("Escrow & Online Selling routes loaded successfully")
 
+# Payment Processing Routes
+if PAYMENT_ROUTES_AVAILABLE:
+    async def get_current_user_for_payments(request: Request):
+        """Wrapper for payment routes authentication"""
+        user = await get_current_user(request)
+        if not user:
+            return None
+        return user
+    
+    payment_router, payment_service = create_payment_router(
+        db,
+        get_current_user_for_payments
+    )
+    api_router.include_router(payment_router)
+    app.include_router(api_router)  # Re-include to pick up payment routes
+    logger.info("Payment Processing routes loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
