@@ -85,6 +85,14 @@ class LocationService:
         await self.districts.create_index([("country_code", 1), ("region_code", 1), ("district_code", 1)], unique=True)
         await self.cities.create_index([("country_code", 1), ("region_code", 1), ("district_code", 1), ("city_code", 1)], unique=True)
         await self.cities.create_index([("country_code", 1), ("name", "text")])
+        
+        # Create 2dsphere index on listings for geospatial queries
+        try:
+            await self.db.listings.create_index([("geo_point", "2dsphere")])
+            logger.info("Created 2dsphere geospatial index on listings")
+        except Exception as e:
+            logger.warning(f"Could not create geospatial index: {e}")
+        
         logger.info("Location indexes created")
     
     # =========================================================================
