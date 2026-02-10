@@ -166,6 +166,7 @@ Payment success page with:
 - [x] Admin Users tab with sections: All Users, Verified Sellers, Verified Business, Premium Business
 - [x] Email notifications for admin-initiated verification and premium upgrade
 - [x] Notification preferences page with opt-in/out for email types
+- [x] Push notification support with Firebase Cloud Messaging (FCM)
 
 ### Future/Backlog
 - [ ] PayPal SDK button integration on native platforms
@@ -188,6 +189,24 @@ The system now sends the following emails (via SendGrid):
 - **subscription_expired**: When premium subscription expires
 
 **Note:** All non-transactional emails respect user notification preferences. Users can opt-out via `/profile/notifications`.
+
+## Push Notifications (FCM)
+Push notification support via Firebase Cloud Messaging:
+- **Backend**: `/app/backend/push_notification_service.py` - Device token management, FCM integration
+- **Frontend**: `/app/frontend/src/utils/pushNotifications.ts` - Expo notifications utility
+- **API Endpoints**:
+  - `POST /api/push/register-token`: Register device push token
+  - `DELETE /api/push/unregister-token`: Unregister device token
+  - `GET /api/push/status`: Get push notification status
+  - `POST /api/push/test`: Send test notification
+  - `GET /api/push/templates`: Get available templates
+  - `POST /api/admin/push/send`: Admin bulk push endpoint
+- **Templates**: new_message, order_confirmed, profile_verified, profile_rejected, premium_activated, premium_expiring, listing_sold, price_drop, promotion
+
+**Setup Required:**
+1. Create Firebase project at https://console.firebase.google.com
+2. Download service account JSON and save to `/app/backend/secrets/firebase-admin.json`
+3. Or set `FIREBASE_SERVICE_ACCOUNT_JSON` environment variable with JSON string
 
 ## Notification Preferences API
 - `GET /api/notification-preferences`: Get user's preferences
