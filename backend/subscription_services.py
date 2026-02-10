@@ -300,12 +300,47 @@ class SubscriptionEmailService:
         self.from_name = os.environ.get("SENDGRID_FROM_NAME", "Avida Marketplace")
         self.base_url = os.environ.get("FRONTEND_URL", "https://verified-sellers-hub.preview.emergentagent.com")
     
-    async def send_email(self, to_email: str, template_name: str, context: Dict) -> bool:
-        """Send an email using a template"""
+    # Map email templates to preference keys
+    TEMPLATE_PREFERENCE_MAP = {
+        "premium_activated": "email_premium_updates",
+        "renewal_reminder": "email_reminders",
+        "subscription_expired": "email_premium_updates",
+        "profile_verified": "email_verification_updates",
+        "profile_verification_rejected": "email_verification_updates",
+        "admin_premium_upgrade": "email_premium_updates",
+    }
+    
+    async def check_user_email_preference(self, user_id: str, template_name: str) -> bool:
+        """Check if user has opted in to receive this type of email"""
+        preference_key = self.TEMPLATE_PREFERENCE_MAP.get(template_name)
+        
+        # Transactional emails are always sent (no preference key means required)
+        if not preference_key:
+            return True
+        
+        # Get user preferences
+        prefs = await self.db.notification_preferences.find_one({"user_id": user_id})
+        
+        if not prefs:
+            # No preferences set, use defaults (all enabled by default)
+            return True
+        
+        # Check specific preference
+        return prefs.get(preference_key, True)
+    
+    async def send_email(self, to_email: str, template_name: str, context: Dict, user_id: str = None) -> bool:
+        """Send an email using a template, respecting user preferences"""
         try:
             if not self.sg:
                 logger.warning("SendGrid not configured, skipping email")
                 return False
+            
+            # Check user preference if user_id is provided
+            if user_id:
+                can_send = await self.check_user_email_preference(user_id, template_name)
+                if not can_send:
+                    logger.info(f"User {user_id} opted out of {template_name} emails, skipping")
+                    return False
             
             template = EMAIL_TEMPLATES.get(template_name)
             if not template:
@@ -333,7 +368,7 @@ class SubscriptionEmailService:
             logger.error(f"Failed to send email to {to_email}: {e}")
             return False
     
-    async def send_premium_activated(self, user_email: str, business_name: str, package_name: str, amount: float, expires_at: str):
+    async def send_premium_activated(self, user_email: str, business_name: str, package_name: str, amount: float, expires_at: str, user_id: str = None):
         """Send premium activation confirmation email"""
         context = {
             "business_name": business_name,
