@@ -6322,13 +6322,23 @@ async def create_experiment(request: Request, admin: dict = Depends(get_current_
         "assignment_type": data.get("assignment_type", "both"),  # cookie, user, both
         "min_sample_size": data.get("min_sample_size", 100),
         "confidence_level": data.get("confidence_level", 95),
+        # Smart Winner settings
+        "smart_winner": {
+            "enabled": data.get("smart_winner_enabled", False),
+            "strategy": data.get("smart_winner_strategy", "notify"),  # notify, auto_rollout, gradual
+            "min_runtime_hours": data.get("min_runtime_hours", 48),
+            "auto_stop_on_significance": data.get("auto_stop_on_significance", True),
+            "notification_emails": data.get("notification_emails", []),
+        },
         "status": "draft",
         "created_by": admin.get("id"),
         "created_at": now,
         "updated_at": now,
         "started_at": None,
         "ended_at": None,
-        "winner_variant_id": None
+        "winner_variant_id": None,
+        "winner_declared_at": None,
+        "winner_declared_by": None,  # "auto" or admin_id
     }
     
     await db.ab_experiments.insert_one(experiment)
