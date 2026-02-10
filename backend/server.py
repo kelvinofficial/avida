@@ -5907,10 +5907,8 @@ if BUSINESS_PROFILE_AVAILABLE:
     business_profile_router = create_business_profile_router(db, get_current_user, require_auth_dict)
     business_profile_admin_router = create_business_profile_admin_router(db, require_admin_for_business)
     
-    # Register user-facing routes on api_router
-    api_router.include_router(business_profile_router)
-    
-    # Register admin routes directly on app (avoids router registration order issues)
+    # Register both routers directly on app (avoids router registration order issues)
+    app.include_router(business_profile_router, prefix="/api")
     app.include_router(business_profile_admin_router, prefix="/api")
     
     logger.info("Business Profile System loaded successfully")
