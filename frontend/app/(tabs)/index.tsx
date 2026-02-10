@@ -542,7 +542,7 @@ export default function HomeScreen() {
         const nearby = await locationsApi.getNearby(
           userLocation.lat,
           userLocation.lng,
-          50, // radius in km
+          searchRadius, // Use dynamic radius from context
           20, // limit
           1,  // page
           selectedCategory || undefined
@@ -555,7 +555,7 @@ export default function HomeScreen() {
     };
 
     fetchNearbyListings();
-  }, [nearMeEnabled, userLocation, selectedCategory]);
+  }, [nearMeEnabled, userLocation, selectedCategory, searchRadius]);
 
   // Handle Near Me toggle
   const handleNearMeToggle = async () => {
