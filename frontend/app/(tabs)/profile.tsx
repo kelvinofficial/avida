@@ -1154,6 +1154,42 @@ export default function ProfileScreen() {
               </View>
             </View>
 
+            {/* Credits & Boosts Section */}
+            <View style={desktopStyles.sectionCard}>
+              <Text style={desktopStyles.sectionTitle}>Credits & Boosts</Text>
+              <Text style={desktopStyles.sectionSubtitle}>Boost your listings to reach more buyers</Text>
+              <View style={desktopStyles.creditsBoostsGrid}>
+                <TouchableOpacity 
+                  style={desktopStyles.creditsBoostItem} 
+                  onPress={() => handleActivityPress('/credits')}
+                  data-testid="desktop-credits-btn"
+                >
+                  <View style={[desktopStyles.creditsBoostIcon, { backgroundColor: '#E8F5E9' }]}>
+                    <Ionicons name="wallet" size={28} color={COLORS.primary} />
+                  </View>
+                  <View style={desktopStyles.creditsBoostContent}>
+                    <Text style={desktopStyles.creditsBoostTitle}>Buy Credits</Text>
+                    <Text style={desktopStyles.creditsBoostDesc}>Purchase credit packages to boost your listings</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={desktopStyles.creditsBoostItem} 
+                  onPress={() => handleActivityPress('/profile/my-listings')}
+                  data-testid="desktop-boosts-btn"
+                >
+                  <View style={[desktopStyles.creditsBoostIcon, { backgroundColor: '#FFF3E0' }]}>
+                    <Ionicons name="rocket" size={28} color="#F57C00" />
+                  </View>
+                  <View style={desktopStyles.creditsBoostContent}>
+                    <Text style={desktopStyles.creditsBoostTitle}>Boost Listings</Text>
+                    <Text style={desktopStyles.creditsBoostDesc}>Feature your listings at the top of search results</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+                </TouchableOpacity>
+              </View>
+            </View>
+
             {/* Trust & Identity */}
             <View style={desktopStyles.sectionCard}>
               <Text style={desktopStyles.sectionTitle}>Trust & Identity</Text>
