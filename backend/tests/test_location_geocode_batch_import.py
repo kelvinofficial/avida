@@ -224,6 +224,7 @@ class TestBatchImportAPI:
             json={"geojson": geojson}
         )
         
+        print(f"Missing props response: {response.status_code}, {response.text}")
         assert response.status_code == 200, "Should return 200 with errors array"
         result = response.json()
         
