@@ -11,6 +11,7 @@ import { setupGlobalErrorHandler } from '../src/utils/errorLogger';
 import ErrorBoundary from '../src/components/ErrorBoundary';
 import { SandboxProvider } from '../src/utils/sandboxContext';
 import SandboxBanner from '../src/components/SandboxBanner';
+import { LocationProvider } from '../src/context/LocationContext';
 
 // Initialize global error handler
 if (typeof window !== 'undefined' || Platform.OS !== 'web') {
