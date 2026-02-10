@@ -213,6 +213,14 @@ except ImportError as e:
     CSV_IMPORT_AVAILABLE = False
     logging.warning(f"CSV Import System not available: {e}")
 
+# Location System
+try:
+    from location_system import create_location_router, create_admin_location_router, LocationService
+    LOCATION_SYSTEM_AVAILABLE = True
+except ImportError as e:
+    LOCATION_SYSTEM_AVAILABLE = False
+    logging.warning(f"Location System not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
