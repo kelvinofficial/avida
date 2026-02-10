@@ -103,6 +103,10 @@ export default function CreditsPage() {
     loadData();
   }, [loadData]);
 
+  const handlePackageSelect = (packageId: string) => {
+    setSelectedPackage(packageId);
+  };
+
   const handlePurchase = async (packageId: string) => {
     if (!user) {
       Alert.alert('Login Required', 'Please login to purchase credits');
