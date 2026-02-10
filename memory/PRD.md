@@ -2636,6 +2636,7 @@ Added "Near Me" toggle filter on home page that uses GPS location to show nearby
 - LocationProvider wraps entire app in `_layout.tsx`
 - Manages `userLocation` state (lat, lng, timestamp, city, country)
 - `nearMeEnabled` toggle state
+- `searchRadius` state (5-100km, default 50km)
 - `requestLocation()` triggers GPS permission prompt
 - 30-minute location caching in AsyncStorage
 - Reverse geocoding for city/country names
@@ -2647,18 +2648,25 @@ Added "Near Me" toggle filter on home page that uses GPS location to show nearby
 - Loading indicator during location fetch
 - Clear button clears both category and Near Me filters
 
-**3. Distance Badge on Listing Cards**
+**3. Radius Selector (`/app/frontend/src/components/RadiusSelector.tsx`)**
+- Shows when Near Me is active
+- **Preset Buttons**: Quick select - 5km, 10km, 25km, 50km, 100km
+- **Slider**: Fine-tuning from 5km to 100km
+- Modal interface with current radius display
+- Radius cached in AsyncStorage
+
+**4. Distance Badge on Listing Cards**
 - Haversine formula for accurate distance calculation
 - Format: "Xkm away" or "Xm away" (if <1km)
 - Blue badge (#E3F2FD background, #1976D2 text)
 - Only shows when user has granted location permission
 
-**4. userLocation Prop**
+**5. userLocation Prop**
 - `ListingCard` component accepts optional `userLocation` prop
 - Home page passes `userLocation` from context to all cards
 - Search page also passes `userLocation` to cards
 
-**5. Nearby Listings API**
+**6. Nearby Listings API**
 - `GET /api/locations/nearby?lat=&lng=&radius_km=50`
 - Uses MongoDB 2dsphere geospatial index
 - Returns listings sorted by distance within radius
@@ -2667,7 +2675,7 @@ Added "Near Me" toggle filter on home page that uses GPS location to show nearby
 - **1b**: GPS permission requested only when user taps "Near Me" (not on app launch)
 - **2c**: Near Me toggle available on both home page (header) and search page
 
-### Testing: 100% frontend tests passed
+### Testing: 100% (32/32 backend, 100% frontend)
 
 ---
 
@@ -2676,7 +2684,7 @@ Added "Near Me" toggle filter on home page that uses GPS location to show nearby
 ### Overview
 Admin dashboard page for CRUD operations on location data (countries, regions, districts, cities).
 
-### File: `/app/admin-dashboard/frontend/src/app/locations/page.tsx`
+### Admin Dashboard UI: `/app/admin-dashboard/frontend/src/app/locations/page.tsx`
 
 ### Features:
 - **Stats Cards**: Visual display of counts (13 countries, 55 regions, 79 districts, 130 cities)
@@ -2692,11 +2700,34 @@ Admin dashboard page for CRUD operations on location data (countries, regions, d
   - District: district_code, name
   - City: city_code, name, lat, lng
 
-### Admin API Endpoints (to be implemented):
-- `POST /admin/locations/countrys` - Create country
-- `PUT /admin/locations/countrys/{code}` - Update country
-- `DELETE /admin/locations/countrys/{code}` - Delete country
-- Similar endpoints for regions, districts, cities
+### Backend API Endpoints (`/app/backend/location_system.py`):
+- `POST /admin/locations/countries` - Create country
+- `PUT /admin/locations/countries/{code}` - Update country
+- `DELETE /admin/locations/countries/{code}` - Delete country (cascades to regions/districts/cities)
+- Same pattern for regions, districts, cities
+- All endpoints require admin authentication
+
+---
+
+## GPS Onboarding - COMPLETE ✅ (Feb 10, 2026)
+
+### Overview
+Location permission prompt shown after user registration to enable Near Me features.
+
+### Component: `/app/frontend/src/components/LocationOnboarding.tsx`
+
+### Flow:
+1. User registers via Google OAuth
+2. After successful session exchange, `LocationOnboarding` modal appears
+3. Shows benefits: Near Me Filter, Distance Info, Local Sellers
+4. "Enable Location" button triggers GPS permission
+5. "Maybe Later" option to skip
+6. Success/Skipped states with auto-redirect to home
+
+### Integration:
+- Integrated in `/app/frontend/app/register.tsx`
+- Shows only once (tracked via `@location_onboarding_shown` in AsyncStorage)
+- Checks `checkLocationOnboardingShown()` before displaying
 
 ---
 
