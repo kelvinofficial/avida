@@ -1250,6 +1250,26 @@ class ApiClient {
     const { data } = await this.client.get('/experiments/stats/overview');
     return data;
   }
+
+  async evaluateExperiment(experimentId: string) {
+    const { data } = await this.client.post(`/experiments/${experimentId}/evaluate`);
+    return data;
+  }
+
+  async checkAllExperimentsForWinners() {
+    const { data } = await this.client.post('/experiments/check-all-winners');
+    return data;
+  }
+
+  async getWinnerNotifications() {
+    const { data } = await this.client.get('/notifications/ab-winners');
+    return data;
+  }
+
+  async markNotificationRead(notificationId: string) {
+    const { data } = await this.client.put(`/notifications/${notificationId}/read`);
+    return data;
+  }
 }
 
 export const api = new ApiClient();
