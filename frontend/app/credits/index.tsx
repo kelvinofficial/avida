@@ -131,6 +131,29 @@ export default function CreditsPage() {
 
   const handlePackageSelect = (packageId: string) => {
     setSelectedPackage(packageId);
+    
+    // Trigger animation
+    Animated.sequence([
+      Animated.parallel([
+        Animated.spring(scaleAnim, {
+          toValue: 1.02,
+          useNativeDriver: true,
+          friction: 8,
+          tension: 100,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: false,
+        }),
+      ]),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        friction: 8,
+        tension: 100,
+      }),
+    ]).start();
   };
 
   const handlePurchase = async (packageId: string) => {
