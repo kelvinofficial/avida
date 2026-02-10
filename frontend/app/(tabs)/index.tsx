@@ -543,7 +543,7 @@ export default function HomeScreen() {
     finally { setLoading(false); setRefreshing(false); setInitialLoadDone(true); }
   }, [selectedCategory, currentCity, page, isAuthenticated, fetchNotificationCount]);
 
-  useEffect(() => { fetchData(true); }, [selectedCategory, currentCity]);
+  useEffect(() => { fetchData(true); }, [selectedCategory, currentCity, selectedLocationFilter]);
 
   // Fetch nearby listings when Near Me is enabled and user has location
   useEffect(() => {
