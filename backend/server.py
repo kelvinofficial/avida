@@ -5057,8 +5057,8 @@ async def admin_reverse_geocode(
     lng: float = Query(..., description="Longitude")
 ):
     """Reverse geocode coordinates to get place name using Nominatim"""
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        try:
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(
                 "https://nominatim.openstreetmap.org/reverse",
                 params={
@@ -5077,6 +5077,7 @@ async def admin_reverse_geocode(
             address = result.get("address", {})
             
             return {
+                "success": True,
                 "display_name": result.get("display_name"),
                 "suggested_name": address.get("city") or address.get("town") or address.get("village") or address.get("suburb") or address.get("neighbourhood"),
                 "district": address.get("city_district") or address.get("county") or address.get("district"),
@@ -5089,8 +5090,54 @@ async def admin_reverse_geocode(
                 "osm_type": result.get("osm_type"),
                 "osm_id": result.get("osm_id")
             }
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Reverse geocoding failed: {str(e)}")
+    except Exception as e:
+        # Fallback: Try to find nearest city in our database
+        from location_system import LocationService
+        service = LocationService(db)
+        
+        # Find nearest city using haversine formula
+        try:
+            pipeline = [
+                {"$match": {"location_data.coordinates": {"$exists": True}}},
+                {"$addFields": {
+                    "distance": {
+                        "$sqrt": {
+                            "$add": [
+                                {"$pow": [{"$subtract": [{"$arrayElemAt": ["$location_data.coordinates.coordinates", 1]}, lat]}, 2]},
+                                {"$pow": [{"$subtract": [{"$arrayElemAt": ["$location_data.coordinates.coordinates", 0]}, lng]}, 2]}
+                            ]
+                        }
+                    }
+                }},
+                {"$sort": {"distance": 1}},
+                {"$limit": 1}
+            ]
+            nearest = await db.listings.aggregate(pipeline).to_list(length=1)
+            
+            if nearest:
+                loc_data = nearest[0].get("location_data", {})
+                return {
+                    "success": True,
+                    "source": "database_fallback",
+                    "suggested_name": loc_data.get("city_name"),
+                    "district": loc_data.get("district_code"),
+                    "region": loc_data.get("region_code"),
+                    "country_code": loc_data.get("country_code"),
+                    "lat": lat,
+                    "lng": lng,
+                    "note": "Nominatim unavailable, using nearest listing location"
+                }
+        except:
+            pass
+        
+        return {
+            "success": False,
+            "error": "Geocoding service temporarily unavailable",
+            "lat": lat,
+            "lng": lng,
+            "suggested_name": None,
+            "note": "Enter name manually"
+        }
 
 @app.get("/api/admin/locations/auto-detect")
 async def admin_auto_detect_location(
