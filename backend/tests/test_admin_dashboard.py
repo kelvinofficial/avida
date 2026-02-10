@@ -8,7 +8,7 @@ import requests
 import os
 
 # Use the public URL for testing
-BASE_URL = "https://nearby-listings.preview.emergentagent.com"
+BASE_URL = "https://vendor-portal-90.preview.emergentagent.com"
 
 # Test credentials
 ADMIN_EMAIL = "admin@marketplace.com"

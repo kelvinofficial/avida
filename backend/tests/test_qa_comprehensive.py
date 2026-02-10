@@ -14,7 +14,7 @@ import requests
 import os
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://nearby-listings.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://vendor-portal-90.preview.emergentagent.com')
 if not BASE_URL.endswith('/api'):
     BASE_URL = BASE_URL.rstrip('/') + '/api'
 
