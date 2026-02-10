@@ -7,7 +7,6 @@ import {
   CardContent,
   Typography,
   Button,
-  Grid,
   Chip,
   Table,
   TableBody,
@@ -41,6 +40,7 @@ import {
   ListItemText,
   ListItemIcon,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   PlayArrow,
   Stop,
