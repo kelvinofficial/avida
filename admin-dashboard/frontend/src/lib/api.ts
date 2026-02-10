@@ -67,6 +67,16 @@ class ApiClient {
     return data;
   }
 
+  async put(path: string, body?: Record<string, any>) {
+    const { data } = await this.client.put(path, body);
+    return data;
+  }
+
+  async delete(path: string) {
+    const { data } = await this.client.delete(path);
+    return data;
+  }
+
   // Auth
   async login(email: string, password: string, totpCode?: string) {
     const { data } = await this.client.post('/auth/login', { email, password, totp_code: totpCode });
