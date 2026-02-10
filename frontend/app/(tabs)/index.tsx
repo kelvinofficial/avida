@@ -925,6 +925,14 @@ export default function HomeScreen() {
               </>
             )}
           </TouchableOpacity>
+          {/* Radius Selector - only visible when Near Me is active */}
+          {nearMeEnabled && (
+            <RadiusSelector 
+              value={searchRadius} 
+              onChange={setSearchRadius}
+              disabled={locationLoading}
+            />
+          )}
         </View>
       </View>
 
