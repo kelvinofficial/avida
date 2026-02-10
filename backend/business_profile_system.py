@@ -608,6 +608,168 @@ def create_business_profile_router(db, get_current_user, require_auth):
         
         return {"cover_url": cover_url}
     
+    # =========================================================================
+    # GALLERY ENDPOINTS
+    # =========================================================================
+    
+    @router.get("/me/gallery")
+    async def get_gallery(request: Request, user: dict = Depends(require_auth)):
+        """Get business profile gallery (images and videos)"""
+        profile = await db.business_profiles.find_one({"user_id": user["user_id"]})
+        
+        if not profile:
+            raise HTTPException(status_code=404, detail="Business profile not found")
+        
+        return {
+            "images": profile.get("gallery_images", []),
+            "videos": profile.get("gallery_videos", [])
+        }
+    
+    @router.post("/me/gallery/image")
+    async def add_gallery_image(
+        request: Request,
+        file: UploadFile = File(...),
+        caption: Optional[str] = Form(None),
+        user: dict = Depends(require_auth)
+    ):
+        """Add image to business profile gallery"""
+        profile = await db.business_profiles.find_one({"user_id": user["user_id"]})
+        
+        if not profile:
+            raise HTTPException(status_code=404, detail="Business profile not found")
+        
+        # Check gallery limit (max 20 images)
+        existing_images = profile.get("gallery_images", [])
+        if len(existing_images) >= 20:
+            raise HTTPException(status_code=400, detail="Gallery limit reached (max 20 images)")
+        
+        contents = await file.read()
+        if len(contents) > 5 * 1024 * 1024:  # 5MB limit per image
+            raise HTTPException(status_code=400, detail="Image too large (max 5MB)")
+        
+        base64_image = base64.b64encode(contents).decode('utf-8')
+        image_url = f"data:{file.content_type};base64,{base64_image}"
+        
+        now = datetime.now(timezone.utc)
+        image_entry = {
+            "id": str(uuid.uuid4()),
+            "url": image_url,
+            "caption": caption,
+            "order": len(existing_images),
+            "created_at": now.isoformat()
+        }
+        
+        await db.business_profiles.update_one(
+            {"id": profile["id"]},
+            {
+                "$push": {"gallery_images": image_entry},
+                "$set": {"updated_at": now}
+            }
+        )
+        
+        return {"image": image_entry}
+    
+    @router.delete("/me/gallery/image/{image_id}")
+    async def delete_gallery_image(
+        image_id: str,
+        request: Request,
+        user: dict = Depends(require_auth)
+    ):
+        """Delete image from business profile gallery"""
+        profile = await db.business_profiles.find_one({"user_id": user["user_id"]})
+        
+        if not profile:
+            raise HTTPException(status_code=404, detail="Business profile not found")
+        
+        await db.business_profiles.update_one(
+            {"id": profile["id"]},
+            {
+                "$pull": {"gallery_images": {"id": image_id}},
+                "$set": {"updated_at": datetime.now(timezone.utc)}
+            }
+        )
+        
+        return {"message": "Image deleted"}
+    
+    @router.post("/me/gallery/video")
+    async def add_gallery_video(
+        request: Request,
+        url: str = Body(..., embed=True),
+        title: Optional[str] = Body(None, embed=True),
+        user: dict = Depends(require_auth)
+    ):
+        """Add video link to business profile gallery (YouTube/Vimeo)"""
+        profile = await db.business_profiles.find_one({"user_id": user["user_id"]})
+        
+        if not profile:
+            raise HTTPException(status_code=404, detail="Business profile not found")
+        
+        # Check gallery limit (max 10 videos)
+        existing_videos = profile.get("gallery_videos", [])
+        if len(existing_videos) >= 10:
+            raise HTTPException(status_code=400, detail="Video gallery limit reached (max 10 videos)")
+        
+        # Validate URL is YouTube or Vimeo
+        video_url = url.strip()
+        is_youtube = "youtube.com" in video_url or "youtu.be" in video_url
+        is_vimeo = "vimeo.com" in video_url
+        
+        if not (is_youtube or is_vimeo):
+            raise HTTPException(status_code=400, detail="Only YouTube and Vimeo links are supported")
+        
+        # Extract thumbnail for YouTube
+        thumbnail = None
+        if is_youtube:
+            video_id = None
+            if "youtu.be/" in video_url:
+                video_id = video_url.split("youtu.be/")[1].split("?")[0]
+            elif "v=" in video_url:
+                video_id = video_url.split("v=")[1].split("&")[0]
+            if video_id:
+                thumbnail = f"https://img.youtube.com/vi/{video_id}/mqdefault.jpg"
+        
+        now = datetime.now(timezone.utc)
+        video_entry = {
+            "id": str(uuid.uuid4()),
+            "url": video_url,
+            "title": title,
+            "thumbnail": thumbnail,
+            "order": len(existing_videos),
+            "created_at": now.isoformat()
+        }
+        
+        await db.business_profiles.update_one(
+            {"id": profile["id"]},
+            {
+                "$push": {"gallery_videos": video_entry},
+                "$set": {"updated_at": now}
+            }
+        )
+        
+        return {"video": video_entry}
+    
+    @router.delete("/me/gallery/video/{video_id}")
+    async def delete_gallery_video(
+        video_id: str,
+        request: Request,
+        user: dict = Depends(require_auth)
+    ):
+        """Delete video from business profile gallery"""
+        profile = await db.business_profiles.find_one({"user_id": user["user_id"]})
+        
+        if not profile:
+            raise HTTPException(status_code=404, detail="Business profile not found")
+        
+        await db.business_profiles.update_one(
+            {"id": profile["id"]},
+            {
+                "$pull": {"gallery_videos": {"id": video_id}},
+                "$set": {"updated_at": datetime.now(timezone.utc)}
+            }
+        )
+        
+        return {"message": "Video deleted"}
+    
     @router.post("/me/request-verification")
     async def request_verification(
         data: VerificationRequest,
