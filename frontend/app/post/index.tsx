@@ -452,6 +452,28 @@ export default function PostListingScreen() {
     setCategoriesLoading(false);
   }, [isAuthenticated]);
 
+  // Load user's default location for new listings
+  useEffect(() => {
+    const loadDefaultLocation = async () => {
+      // Only load default location for new listings (not edit)
+      if (editListingId || !isAuthenticated) return;
+      
+      try {
+        const response = await api.get('/users/me/location');
+        const defaultLoc = response.data?.default_location;
+        if (defaultLoc && !locationData) {
+          setLocationData(defaultLoc);
+          setLocation(defaultLoc.location_text || defaultLoc.city_name || '');
+        }
+      } catch (error) {
+        // Silently fail - default location is optional
+        console.log('Could not load default location:', error);
+      }
+    };
+    
+    loadDefaultLocation();
+  }, [isAuthenticated, editListingId]);
+
   // Reset subcategory when category changes
   useEffect(() => {
     if (selectedCategoryId) {
