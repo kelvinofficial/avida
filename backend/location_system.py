@@ -1,0 +1,467 @@
+"""
+Location System for Avida Marketplace
+
+Features:
+- Hierarchical location selection: Country → Region → District → City
+- Curated location data for 13 countries
+- Geospatial queries with MongoDB 2dsphere index
+- Admin location management
+"""
+
+import uuid
+import logging
+from datetime import datetime, timezone
+from typing import Optional, List, Dict, Any
+from pydantic import BaseModel, Field
+
+from fastapi import APIRouter, HTTPException, Query, Body, Depends
+from motor.motor_asyncio import AsyncIOMotorDatabase
+
+logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# MODELS
+# =============================================================================
+
+class Country(BaseModel):
+    code: str
+    name: str
+    flag: Optional[str] = None
+
+
+class Region(BaseModel):
+    country_code: str
+    region_code: str
+    name: str
+
+
+class District(BaseModel):
+    country_code: str
+    region_code: str
+    district_code: str
+    name: str
+
+
+class City(BaseModel):
+    country_code: str
+    region_code: str
+    district_code: str
+    city_code: str
+    name: str
+    lat: float
+    lng: float
+
+
+class LocationSelection(BaseModel):
+    country_code: str
+    region_code: str
+    district_code: str
+    city_code: str
+    city_name: str
+    lat: float
+    lng: float
+    location_text: str  # "City, District, Region"
+
+
+# =============================================================================
+# SERVICE
+# =============================================================================
+
+class LocationService:
+    """Service for managing location data"""
+    
+    def __init__(self, db: AsyncIOMotorDatabase):
+        self.db = db
+        self.countries = db.location_countries
+        self.regions = db.location_regions
+        self.districts = db.location_districts
+        self.cities = db.location_cities
+    
+    async def initialize_indexes(self):
+        """Create indexes for location collections"""
+        await self.countries.create_index("code", unique=True)
+        await self.regions.create_index([("country_code", 1), ("region_code", 1)], unique=True)
+        await self.districts.create_index([("country_code", 1), ("region_code", 1), ("district_code", 1)], unique=True)
+        await self.cities.create_index([("country_code", 1), ("region_code", 1), ("district_code", 1), ("city_code", 1)], unique=True)
+        await self.cities.create_index([("country_code", 1), ("name", "text")])
+        logger.info("Location indexes created")
+    
+    # =========================================================================
+    # READ OPERATIONS
+    # =========================================================================
+    
+    async def get_countries(self) -> List[Dict]:
+        """Get all countries"""
+        countries = await self.countries.find({}, {"_id": 0}).sort("name", 1).to_list(100)
+        return countries
+    
+    async def get_regions(self, country_code: str, search: str = None) -> List[Dict]:
+        """Get regions for a country"""
+        query = {"country_code": country_code.upper()}
+        if search:
+            query["name"] = {"$regex": search, "$options": "i"}
+        
+        regions = await self.regions.find(query, {"_id": 0}).sort("name", 1).to_list(500)
+        return regions
+    
+    async def get_districts(self, country_code: str, region_code: str, search: str = None) -> List[Dict]:
+        """Get districts for a region"""
+        query = {
+            "country_code": country_code.upper(),
+            "region_code": region_code.upper()
+        }
+        if search:
+            query["name"] = {"$regex": search, "$options": "i"}
+        
+        districts = await self.districts.find(query, {"_id": 0}).sort("name", 1).to_list(500)
+        return districts
+    
+    async def get_cities(self, country_code: str, region_code: str, district_code: str, search: str = None) -> List[Dict]:
+        """Get cities for a district"""
+        query = {
+            "country_code": country_code.upper(),
+            "region_code": region_code.upper(),
+            "district_code": district_code.upper()
+        }
+        if search:
+            query["name"] = {"$regex": search, "$options": "i"}
+        
+        cities = await self.cities.find(query, {"_id": 0}).sort("name", 1).to_list(1000)
+        return cities
+    
+    async def search_cities(self, country_code: str, search: str, limit: int = 20) -> List[Dict]:
+        """Search cities by name across all regions/districts"""
+        query = {
+            "country_code": country_code.upper(),
+            "name": {"$regex": search, "$options": "i"}
+        }
+        
+        cities = await self.cities.find(query, {"_id": 0}).sort("name", 1).limit(limit).to_list(limit)
+        
+        # Enrich with region/district names
+        enriched = []
+        for city in cities:
+            region = await self.regions.find_one({
+                "country_code": city["country_code"],
+                "region_code": city["region_code"]
+            }, {"_id": 0, "name": 1})
+            
+            district = await self.districts.find_one({
+                "country_code": city["country_code"],
+                "region_code": city["region_code"],
+                "district_code": city["district_code"]
+            }, {"_id": 0, "name": 1})
+            
+            city["region_name"] = region["name"] if region else ""
+            city["district_name"] = district["name"] if district else ""
+            city["location_text"] = f"{city['name']}, {city.get('district_name', '')}, {city.get('region_name', '')}"
+            enriched.append(city)
+        
+        return enriched
+    
+    async def get_city_by_code(self, country_code: str, region_code: str, district_code: str, city_code: str) -> Optional[Dict]:
+        """Get a specific city by its codes"""
+        city = await self.cities.find_one({
+            "country_code": country_code.upper(),
+            "region_code": region_code.upper(),
+            "district_code": district_code.upper(),
+            "city_code": city_code.upper()
+        }, {"_id": 0})
+        
+        if city:
+            # Get region and district names
+            region = await self.regions.find_one({
+                "country_code": city["country_code"],
+                "region_code": city["region_code"]
+            }, {"_id": 0, "name": 1})
+            
+            district = await self.districts.find_one({
+                "country_code": city["country_code"],
+                "region_code": city["region_code"],
+                "district_code": city["district_code"]
+            }, {"_id": 0, "name": 1})
+            
+            city["region_name"] = region["name"] if region else ""
+            city["district_name"] = district["name"] if district else ""
+            city["location_text"] = f"{city['name']}, {city.get('district_name', '')}, {city.get('region_name', '')}"
+        
+        return city
+    
+    # =========================================================================
+    # ADMIN OPERATIONS
+    # =========================================================================
+    
+    async def add_country(self, code: str, name: str, flag: str = None) -> Dict:
+        """Add a new country"""
+        doc = {
+            "code": code.upper(),
+            "name": name,
+            "flag": flag,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await self.countries.update_one(
+            {"code": code.upper()},
+            {"$set": doc},
+            upsert=True
+        )
+        return doc
+    
+    async def add_region(self, country_code: str, region_code: str, name: str) -> Dict:
+        """Add a new region"""
+        doc = {
+            "country_code": country_code.upper(),
+            "region_code": region_code.upper(),
+            "name": name,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await self.regions.update_one(
+            {"country_code": country_code.upper(), "region_code": region_code.upper()},
+            {"$set": doc},
+            upsert=True
+        )
+        return doc
+    
+    async def add_district(self, country_code: str, region_code: str, district_code: str, name: str) -> Dict:
+        """Add a new district"""
+        doc = {
+            "country_code": country_code.upper(),
+            "region_code": region_code.upper(),
+            "district_code": district_code.upper(),
+            "name": name,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await self.districts.update_one(
+            {
+                "country_code": country_code.upper(),
+                "region_code": region_code.upper(),
+                "district_code": district_code.upper()
+            },
+            {"$set": doc},
+            upsert=True
+        )
+        return doc
+    
+    async def add_city(
+        self,
+        country_code: str,
+        region_code: str,
+        district_code: str,
+        city_code: str,
+        name: str,
+        lat: float,
+        lng: float
+    ) -> Dict:
+        """Add a new city"""
+        doc = {
+            "country_code": country_code.upper(),
+            "region_code": region_code.upper(),
+            "district_code": district_code.upper(),
+            "city_code": city_code.upper(),
+            "name": name,
+            "lat": lat,
+            "lng": lng,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await self.cities.update_one(
+            {
+                "country_code": country_code.upper(),
+                "region_code": region_code.upper(),
+                "district_code": district_code.upper(),
+                "city_code": city_code.upper()
+            },
+            {"$set": doc},
+            upsert=True
+        )
+        return doc
+    
+    async def update_city_coordinates(self, country_code: str, region_code: str, district_code: str, city_code: str, lat: float, lng: float) -> bool:
+        """Update city coordinates"""
+        result = await self.cities.update_one(
+            {
+                "country_code": country_code.upper(),
+                "region_code": region_code.upper(),
+                "district_code": district_code.upper(),
+                "city_code": city_code.upper()
+            },
+            {"$set": {"lat": lat, "lng": lng, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        return result.modified_count > 0
+    
+    async def delete_city(self, country_code: str, region_code: str, district_code: str, city_code: str) -> bool:
+        """Delete a city"""
+        result = await self.cities.delete_one({
+            "country_code": country_code.upper(),
+            "region_code": region_code.upper(),
+            "district_code": district_code.upper(),
+            "city_code": city_code.upper()
+        })
+        return result.deleted_count > 0
+    
+    async def get_location_stats(self) -> Dict:
+        """Get location statistics"""
+        countries_count = await self.countries.count_documents({})
+        regions_count = await self.regions.count_documents({})
+        districts_count = await self.districts.count_documents({})
+        cities_count = await self.cities.count_documents({})
+        
+        return {
+            "countries": countries_count,
+            "regions": regions_count,
+            "districts": districts_count,
+            "cities": cities_count
+        }
+
+
+# =============================================================================
+# ROUTER
+# =============================================================================
+
+def create_location_router(db: AsyncIOMotorDatabase):
+    """Create location API router"""
+    router = APIRouter(prefix="/locations", tags=["Locations"])
+    service = LocationService(db)
+    
+    @router.get("/countries")
+    async def get_countries():
+        """Get all available countries"""
+        return await service.get_countries()
+    
+    @router.get("/regions")
+    async def get_regions(
+        country_code: str = Query(..., description="Country code (e.g., TZ, KE)"),
+        search: str = Query(None, description="Search by name")
+    ):
+        """Get regions/states for a country"""
+        return await service.get_regions(country_code, search)
+    
+    @router.get("/districts")
+    async def get_districts(
+        country_code: str = Query(...),
+        region_code: str = Query(...),
+        search: str = Query(None)
+    ):
+        """Get districts for a region"""
+        return await service.get_districts(country_code, region_code, search)
+    
+    @router.get("/cities")
+    async def get_cities(
+        country_code: str = Query(...),
+        region_code: str = Query(...),
+        district_code: str = Query(...),
+        search: str = Query(None)
+    ):
+        """Get cities for a district"""
+        return await service.get_cities(country_code, region_code, district_code, search)
+    
+    @router.get("/cities/search")
+    async def search_cities(
+        country_code: str = Query(...),
+        q: str = Query(..., min_length=2, description="Search query"),
+        limit: int = Query(20, ge=1, le=50)
+    ):
+        """Search cities by name across all regions"""
+        return await service.search_cities(country_code, q, limit)
+    
+    @router.get("/city")
+    async def get_city(
+        country_code: str = Query(...),
+        region_code: str = Query(...),
+        district_code: str = Query(...),
+        city_code: str = Query(...)
+    ):
+        """Get a specific city by codes"""
+        city = await service.get_city_by_code(country_code, region_code, district_code, city_code)
+        if not city:
+            raise HTTPException(status_code=404, detail="City not found")
+        return city
+    
+    @router.get("/stats")
+    async def get_stats():
+        """Get location statistics"""
+        return await service.get_location_stats()
+    
+    return router, service
+
+
+def create_admin_location_router(db: AsyncIOMotorDatabase, require_admin):
+    """Create admin location management router"""
+    router = APIRouter(prefix="/locations", tags=["Admin Locations"])
+    service = LocationService(db)
+    
+    @router.post("/countries")
+    async def add_country(
+        code: str = Body(...),
+        name: str = Body(...),
+        flag: str = Body(None),
+        admin = Depends(require_admin)
+    ):
+        """Add a new country"""
+        return await service.add_country(code, name, flag)
+    
+    @router.post("/regions")
+    async def add_region(
+        country_code: str = Body(...),
+        region_code: str = Body(...),
+        name: str = Body(...),
+        admin = Depends(require_admin)
+    ):
+        """Add a new region"""
+        return await service.add_region(country_code, region_code, name)
+    
+    @router.post("/districts")
+    async def add_district(
+        country_code: str = Body(...),
+        region_code: str = Body(...),
+        district_code: str = Body(...),
+        name: str = Body(...),
+        admin = Depends(require_admin)
+    ):
+        """Add a new district"""
+        return await service.add_district(country_code, region_code, district_code, name)
+    
+    @router.post("/cities")
+    async def add_city(
+        country_code: str = Body(...),
+        region_code: str = Body(...),
+        district_code: str = Body(...),
+        city_code: str = Body(...),
+        name: str = Body(...),
+        lat: float = Body(...),
+        lng: float = Body(...),
+        admin = Depends(require_admin)
+    ):
+        """Add a new city"""
+        return await service.add_city(country_code, region_code, district_code, city_code, name, lat, lng)
+    
+    @router.put("/cities/coordinates")
+    async def update_city_coordinates(
+        country_code: str = Body(...),
+        region_code: str = Body(...),
+        district_code: str = Body(...),
+        city_code: str = Body(...),
+        lat: float = Body(...),
+        lng: float = Body(...),
+        admin = Depends(require_admin)
+    ):
+        """Update city coordinates"""
+        success = await service.update_city_coordinates(country_code, region_code, district_code, city_code, lat, lng)
+        if not success:
+            raise HTTPException(status_code=404, detail="City not found")
+        return {"success": True}
+    
+    @router.delete("/cities")
+    async def delete_city(
+        country_code: str = Query(...),
+        region_code: str = Query(...),
+        district_code: str = Query(...),
+        city_code: str = Query(...),
+        admin = Depends(require_admin)
+    ):
+        """Delete a city"""
+        success = await service.delete_city(country_code, region_code, district_code, city_code)
+        if not success:
+            raise HTTPException(status_code=404, detail="City not found")
+        return {"success": True}
+    
+    return router, service
