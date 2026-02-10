@@ -1454,7 +1454,16 @@ export default function ListingDetailScreen() {
           
           {/* Make Offer button - Only if seller allows offers */}
           {(listing as any).accepts_offers !== false && (
-            <TouchableOpacity style={[styles.actionBtn, styles.primaryBtn]} onPress={() => setShowOfferModal(true)}>
+            <TouchableOpacity 
+              style={[styles.actionBtn, styles.primaryBtn]} 
+              onPress={() => {
+                if (!isAuthenticated) {
+                  router.push(`/login?redirect=${encodeURIComponent(`/listing/${id}`)}`);
+                  return;
+                }
+                setShowOfferModal(true);
+              }}
+            >
               <Ionicons name="pricetag" size={20} color="#fff" />
               <Text style={[styles.actionText, { color: '#fff' }]}>Make Offer</Text>
             </TouchableOpacity>
