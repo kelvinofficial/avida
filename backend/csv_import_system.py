@@ -476,12 +476,19 @@ class CSVImportService:
         job_id: str,
         result: Optional[ImportResult],
         status: ImportStatus,
-        error: Optional[str] = None
+        error: Optional[str] = None,
+        emails_sent: int = 0,
+        emails_failed: int = 0
     ):
         """Send in-app notification to admin"""
         if status == ImportStatus.COMPLETED and result:
             title = "CSV Import Complete"
-            body = f"Successfully imported {result.imported} users. Download the password report from the import history."
+            body = f"Successfully imported {result.imported} users."
+            if emails_sent > 0:
+                body += f" Welcome emails sent to {emails_sent} users."
+            if emails_failed > 0:
+                body += f" {emails_failed} emails failed to send."
+            body += " Download the password report from the import history."
         elif status == ImportStatus.FAILED:
             title = "CSV Import Failed"
             body = error or "An error occurred during import. Please check the import history for details."
@@ -498,7 +505,9 @@ class CSVImportService:
                 "job_id": job_id,
                 "status": status,
                 "imported_count": result.imported if result else 0,
-                "password_report_id": result.password_report_id if result else None
+                "password_report_id": result.password_report_id if result else None,
+                "emails_sent": emails_sent,
+                "emails_failed": emails_failed
             },
             "read": False,
             "created_at": datetime.now(timezone.utc).isoformat()
