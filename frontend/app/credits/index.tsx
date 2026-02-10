@@ -244,40 +244,69 @@ export default function CreditsPage() {
 
   return (
     <View style={styles.outerContainer}>
+      {/* Desktop Header */}
+      {isDesktop && (
+        <View style={styles.desktopHeader}>
+          <View style={styles.desktopHeaderContent}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.desktopBackButton}>
+              <Ionicons name="arrow-back" size={20} color="#333" />
+              <Text style={styles.desktopBackText}>Back</Text>
+            </TouchableOpacity>
+            <View style={styles.desktopHeaderCenter}>
+              <View style={styles.desktopHeaderIcon}>
+                <Ionicons name="wallet" size={28} color="#4CAF50" />
+              </View>
+              <View>
+                <Text style={styles.desktopHeaderTitle}>Credits Store</Text>
+                <Text style={styles.desktopHeaderSubtitle}>Purchase credits to boost your listings</Text>
+              </View>
+            </View>
+            <View style={styles.desktopHeaderBalance}>
+              <Text style={styles.desktopBalanceLabel}>Your Balance</Text>
+              <Text style={styles.desktopBalanceValue}>{credits?.balance || 0} credits</Text>
+            </View>
+          </View>
+        </View>
+      )}
+      
       <ScrollView 
         style={styles.container}
         contentContainerStyle={isDesktop ? styles.scrollContentDesktop : undefined}
       >
         <View style={[styles.contentWrapper, isDesktop && styles.desktopContentWrapper]}>
-          {/* Header */}
-          <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#333" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Credits</Text>
-          <View style={{ width: 40 }} />
-        </View>
+          {/* Mobile Header */}
+          {!isDesktop && (
+            <View style={styles.header}>
+              <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                <Ionicons name="arrow-back" size={24} color="#333" />
+              </TouchableOpacity>
+              <Text style={styles.headerTitle}>Credits</Text>
+              <View style={{ width: 40 }} />
+            </View>
+          )}
 
-        {/* Balance Card */}
-        <View style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>Your Balance</Text>
-          <View style={styles.balanceRow}>
-            <Ionicons name="wallet" size={32} color="#4CAF50" />
-            <Text style={styles.balanceAmount}>{credits?.balance || 0}</Text>
-            <Text style={styles.balanceUnit}>credits</Text>
-          </View>
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{credits?.total_purchased || 0}</Text>
-              <Text style={styles.statLabel}>Purchased</Text>
+        {/* Balance Card - Mobile Only */}
+        {!isDesktop && (
+          <View style={styles.balanceCard}>
+            <Text style={styles.balanceLabel}>Your Balance</Text>
+            <View style={styles.balanceRow}>
+              <Ionicons name="wallet" size={32} color="#4CAF50" />
+              <Text style={styles.balanceAmount}>{credits?.balance || 0}</Text>
+              <Text style={styles.balanceUnit}>credits</Text>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{credits?.total_spent || 0}</Text>
-              <Text style={styles.statLabel}>Spent</Text>
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{credits?.total_purchased || 0}</Text>
+                <Text style={styles.statLabel}>Purchased</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{credits?.total_spent || 0}</Text>
+                <Text style={styles.statLabel}>Spent</Text>
+              </View>
             </View>
           </View>
-        </View>
+        )}
 
         {/* Credit Packages */}
         <Text style={styles.sectionTitle}>Buy Credits</Text>
