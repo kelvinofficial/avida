@@ -5149,9 +5149,14 @@ async def admin_auto_detect_location(
     from location_system import LocationService
     service = LocationService(db)
     
-    # First, reverse geocode to get location info
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        try:
+    nominatim_country_code = None
+    nominatim_state = None
+    nominatim_district = None
+    nominatim_city = None
+    
+    # First, try reverse geocode to get location info
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(
                 "https://nominatim.openstreetmap.org/reverse",
                 params={
@@ -5172,14 +5177,11 @@ async def admin_auto_detect_location(
             nominatim_state = address.get("state") or address.get("region") or address.get("province")
             nominatim_district = address.get("city_district") or address.get("county") or address.get("district")
             nominatim_city = address.get("city") or address.get("town") or address.get("village")
-            
-        except Exception as e:
-            return {
-                "detected": False,
-                "error": f"Reverse geocoding failed: {str(e)}"
-            }
+    except Exception as e:
+        # Nominatim failed, try database-based detection
+        pass
     
-    # Now try to match with our database
+    # Try to match with our database
     detected = {
         "country": None,
         "region": None,
@@ -5194,36 +5196,79 @@ async def admin_auto_detect_location(
     
     # Try to find matching country
     countries = await service.get_countries()
-    for country in countries:
-        if country['code'] == nominatim_country_code:
-            detected['country'] = country
-            break
     
-    # If country found, try to find matching region
-    if detected['country'] and nominatim_state:
+    # If no Nominatim data, try to find nearest location from database
+    if not nominatim_country_code:
+        # Find nearest city in our database
         try:
-            regions = await service.get_regions(detected['country']['code'])
-            for region in regions:
-                # Try fuzzy match on name
-                if nominatim_state.lower() in region['name'].lower() or region['name'].lower() in nominatim_state.lower():
-                    detected['region'] = region
-                    break
+            all_cities = []
+            for country in countries[:5]:
+                try:
+                    regions = await service.get_regions(country['code'])
+                    for region in regions[:3]:
+                        try:
+                            districts = await service.get_districts(country['code'], region['region_code'])
+                            for district in districts[:3]:
+                                try:
+                                    cities = await service.get_cities(country['code'], region['region_code'], district['district_code'])
+                                    for city in cities:
+                                        if city.get('lat') and city.get('lng'):
+                                            # Simple distance calculation
+                                            dist = ((city['lat'] - lat) ** 2 + (city['lng'] - lng) ** 2) ** 0.5
+                                            all_cities.append({
+                                                'city': city,
+                                                'district': district,
+                                                'region': region,
+                                                'country': country,
+                                                'distance': dist
+                                            })
+                                except:
+                                    pass
+                        except:
+                            pass
+                except:
+                    pass
+            
+            if all_cities:
+                all_cities.sort(key=lambda x: x['distance'])
+                nearest = all_cities[0]
+                detected['country'] = nearest['country']
+                detected['region'] = nearest['region']
+                detected['district'] = nearest['district']
+                nominatim_city = nearest['city']['name']
         except:
             pass
-    
-    # If region found, try to find matching district
-    if detected['region'] and nominatim_district:
-        try:
-            districts = await service.get_districts(detected['country']['code'], detected['region']['region_code'])
-            for district in districts:
-                if nominatim_district.lower() in district['name'].lower() or district['name'].lower() in nominatim_district.lower():
-                    detected['district'] = district
-                    break
-        except:
-            pass
+    else:
+        # Use Nominatim data to match
+        for country in countries:
+            if country['code'] == nominatim_country_code:
+                detected['country'] = country
+                break
+        
+        # If country found, try to find matching region
+        if detected['country'] and nominatim_state:
+            try:
+                regions = await service.get_regions(detected['country']['code'])
+                for region in regions:
+                    if nominatim_state.lower() in region['name'].lower() or region['name'].lower() in nominatim_state.lower():
+                        detected['region'] = region
+                        break
+            except:
+                pass
+        
+        # If region found, try to find matching district
+        if detected['region'] and nominatim_district:
+            try:
+                districts = await service.get_districts(detected['country']['code'], detected['region']['region_code'])
+                for district in districts:
+                    if nominatim_district.lower() in district['name'].lower() or district['name'].lower() in nominatim_district.lower():
+                        detected['district'] = district
+                        break
+            except:
+                pass
     
     return {
-        "detected": True,
+        "detected": detected['country'] is not None,
         "country": detected['country'],
         "region": detected['region'],
         "district": detected['district'],
