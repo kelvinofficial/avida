@@ -306,6 +306,109 @@ class LocationService:
         })
         return result.deleted_count > 0
     
+    async def update_country(self, code: str, name: str = None, flag: str = None) -> bool:
+        """Update a country"""
+        update_data = {"updated_at": datetime.now(timezone.utc).isoformat()}
+        if name is not None:
+            update_data["name"] = name
+        if flag is not None:
+            update_data["flag"] = flag
+        
+        result = await self.countries.update_one(
+            {"code": code.upper()},
+            {"$set": update_data}
+        )
+        return result.matched_count > 0
+    
+    async def update_region(self, country_code: str, region_code: str, name: str) -> bool:
+        """Update a region"""
+        result = await self.regions.update_one(
+            {
+                "country_code": country_code.upper(),
+                "region_code": region_code.upper()
+            },
+            {"$set": {"name": name, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        return result.matched_count > 0
+    
+    async def update_district(self, country_code: str, region_code: str, district_code: str, name: str) -> bool:
+        """Update a district"""
+        result = await self.districts.update_one(
+            {
+                "country_code": country_code.upper(),
+                "region_code": region_code.upper(),
+                "district_code": district_code.upper()
+            },
+            {"$set": {"name": name, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        return result.matched_count > 0
+    
+    async def update_city(self, country_code: str, region_code: str, district_code: str, city_code: str,
+                          name: str = None, lat: float = None, lng: float = None) -> bool:
+        """Update a city"""
+        update_data = {"updated_at": datetime.now(timezone.utc).isoformat()}
+        if name is not None:
+            update_data["name"] = name
+        if lat is not None:
+            update_data["lat"] = lat
+        if lng is not None:
+            update_data["lng"] = lng
+        
+        result = await self.cities.update_one(
+            {
+                "country_code": country_code.upper(),
+                "region_code": region_code.upper(),
+                "district_code": district_code.upper(),
+                "city_code": city_code.upper()
+            },
+            {"$set": update_data}
+        )
+        return result.matched_count > 0
+    
+    async def delete_country(self, code: str) -> bool:
+        """Delete a country and all its regions, districts, cities"""
+        code = code.upper()
+        # Delete all cities in this country
+        await self.cities.delete_many({"country_code": code})
+        # Delete all districts in this country
+        await self.districts.delete_many({"country_code": code})
+        # Delete all regions in this country
+        await self.regions.delete_many({"country_code": code})
+        # Delete the country
+        result = await self.countries.delete_one({"code": code})
+        return result.deleted_count > 0
+    
+    async def delete_region(self, country_code: str, region_code: str) -> bool:
+        """Delete a region and all its districts, cities"""
+        country_code = country_code.upper()
+        region_code = region_code.upper()
+        # Delete all cities in this region
+        await self.cities.delete_many({"country_code": country_code, "region_code": region_code})
+        # Delete all districts in this region
+        await self.districts.delete_many({"country_code": country_code, "region_code": region_code})
+        # Delete the region
+        result = await self.regions.delete_one({"country_code": country_code, "region_code": region_code})
+        return result.deleted_count > 0
+    
+    async def delete_district(self, country_code: str, region_code: str, district_code: str) -> bool:
+        """Delete a district and all its cities"""
+        country_code = country_code.upper()
+        region_code = region_code.upper()
+        district_code = district_code.upper()
+        # Delete all cities in this district
+        await self.cities.delete_many({
+            "country_code": country_code,
+            "region_code": region_code,
+            "district_code": district_code
+        })
+        # Delete the district
+        result = await self.districts.delete_one({
+            "country_code": country_code,
+            "region_code": region_code,
+            "district_code": district_code
+        })
+        return result.deleted_count > 0
+    
     async def get_location_stats(self) -> Dict:
         """Get location statistics"""
         countries_count = await self.countries.count_documents({})
