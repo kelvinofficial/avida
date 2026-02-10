@@ -295,11 +295,16 @@ const DynamicField: React.FC<DynamicFieldProps> = ({ field, value, onChange, par
 
 // ============ MAIN COMPONENT ============
 export default function PostListingScreen() {
-  const { category: categoryId } = useLocalSearchParams<{ category: string }>();
+  const { category: categoryId, edit: editListingId } = useLocalSearchParams<{ category: string; edit: string }>();
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
   const { isDesktop, isTablet } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
+
+  // Edit mode state
+  const [isEditMode, setIsEditMode] = useState(!!editListingId);
+  const [editLoading, setEditLoading] = useState(!!editListingId);
+  const [originalListing, setOriginalListing] = useState<any>(null);
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -373,6 +378,54 @@ export default function PostListingScreen() {
 
   // Form Validation Errors
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+
+  // Load existing listing data when in edit mode
+  useEffect(() => {
+    const loadListingForEdit = async () => {
+      if (!editListingId) return;
+      
+      setEditLoading(true);
+      try {
+        const listing = await listingsApi.getOne(editListingId);
+        if (listing) {
+          setOriginalListing(listing);
+          
+          // Pre-fill all fields with existing data
+          setSelectedCategoryId(listing.category_id || '');
+          setSelectedSubcategoryId(listing.subcategory_id || '');
+          setImages(listing.images || []);
+          setTitle(listing.title || '');
+          setDescription(listing.description || '');
+          setCondition(listing.condition || '');
+          setAttributes(listing.attributes || {});
+          setPrice(listing.price?.toString() || '');
+          setNegotiable(listing.negotiable !== false);
+          setCurrency(listing.currency || 'EUR');
+          setLocation(listing.location || '');
+          setSellerType(listing.seller_type || 'Individual');
+          setAcceptsOffers(listing.accepts_offers !== false);
+          setAcceptsExchanges(listing.accepts_exchanges || false);
+          setWhatsappNumber(listing.whatsapp_number || '');
+          setPhoneNumber(listing.phone_number || '');
+          
+          // Set contact preferences
+          if (listing.contact_preferences) {
+            setContactPreferences(listing.contact_preferences);
+          }
+          
+          // Skip to step 2 (images) since category is already set
+          setStep(2);
+        }
+      } catch (error) {
+        console.error('Failed to load listing for edit:', error);
+        Alert.alert('Error', 'Failed to load listing data. Please try again.');
+      } finally {
+        setEditLoading(false);
+      }
+    };
+    
+    loadListingForEdit();
+  }, [editListingId]);
 
   // Clear specific field error
   const clearFieldError = (fieldName: string) => {
