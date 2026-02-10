@@ -40,6 +40,7 @@ import {
   Divider,
   Badge,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   CheckCircle,
   Error as ErrorIcon,
