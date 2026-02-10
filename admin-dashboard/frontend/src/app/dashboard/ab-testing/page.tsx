@@ -262,6 +262,9 @@ export default function ABTestingPage() {
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button startIcon={<Refresh />} onClick={loadData} disabled={loading}>Refresh</Button>
+          <Button variant="outlined" color="warning" startIcon={<EmojiEvents />} onClick={handleCheckWinners}>
+            Check Winners
+          </Button>
           <Button variant="contained" startIcon={<Add />} onClick={() => { resetForm(); setCreateDialogOpen(true); }}>
             New Experiment
           </Button>
@@ -270,6 +273,13 @@ export default function ABTestingPage() {
 
       {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
       {success && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>{success}</Alert>}
+      
+      {/* Winner Notifications */}
+      {notifications.filter(n => !n.is_read).length > 0 && (
+        <Alert severity="success" sx={{ mb: 2 }} icon={<EmojiEvents />}>
+          <strong>Winner Found!</strong> {notifications.filter(n => !n.is_read).map(n => n.message).join(' | ')}
+        </Alert>
+      )}
 
       {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
