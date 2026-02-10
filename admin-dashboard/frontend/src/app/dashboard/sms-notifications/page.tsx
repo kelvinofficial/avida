@@ -131,7 +131,7 @@ const RECIPIENT_LABELS: Record<string, string> = {
   admin: 'Admin',
 };
 
-const CHANNEL_ICONS: Record<string, JSX.Element> = {
+const CHANNEL_ICONS: Record<string, ReactElement> = {
   sms: <Sms fontSize="small" />,
   whatsapp: <WhatsApp fontSize="small" />,
   email: <Email fontSize="small" />,
