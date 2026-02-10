@@ -814,6 +814,7 @@ export default function PostListingScreen() {
         negotiable,
         category_id: selectedCategoryId,
         subcategory: selectedSubcategoryId, // Required - the subcategory ID
+        subcategory_id: selectedSubcategoryId, // Also store for edit pre-fill
         condition: condition || undefined,
         images,
         location: location.trim(),
@@ -827,13 +828,24 @@ export default function PostListingScreen() {
         contact_methods: getContactMethods(),
         whatsapp_number: contactPreferences.whatsapp ? whatsappNumber : undefined,
         phone_number: contactPreferences.call ? phoneNumber : undefined,
+        contact_preferences: contactPreferences,
+        seller_type: sellerType,
       };
 
-      await listingsApi.create(listingData);
-      setShowSuccessModal(true);
+      if (isEditMode && editListingId) {
+        // Update existing listing
+        await listingsApi.update(editListingId, listingData);
+        Alert.alert('Success', 'Listing updated successfully!', [
+          { text: 'OK', onPress: () => router.replace('/profile/my-listings') }
+        ]);
+      } else {
+        // Create new listing
+        await listingsApi.create(listingData);
+        setShowSuccessModal(true);
+      }
     } catch (error: any) {
-      console.error('Error creating listing:', error);
-      Alert.alert('Error', error.response?.data?.detail || 'Failed to post listing');
+      console.error('Error saving listing:', error);
+      Alert.alert('Error', error.response?.data?.detail || `Failed to ${isEditMode ? 'update' : 'post'} listing`);
     } finally {
       setLoading(false);
     }
