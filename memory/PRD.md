@@ -159,6 +159,9 @@ Payment success page with:
 - [x] My Invoices page in user profile section
 - [x] SEO sitemap for business profiles (/api/sitemap.xml, /api/robots.txt)
 - [x] Premium badge on invoices page for premium users
+- [x] Share Profile feature with OG meta tags for social media preview
+- [x] Success modal after saving business profile with profile URL
+- [x] Image selection before profile save (uploaded after creation)
 
 ### Future/Backlog
 - [ ] PayPal SDK button integration on native platforms
@@ -167,10 +170,9 @@ Payment success page with:
 - [ ] Region search bar visibility fix in LocationPicker
 
 ## Testing Status
-- Backend: 100% (35/35 tests passed across iterations 65, 66, 67)
+- Backend: 100% (46/46 tests passed across iterations 65, 66, 67, 68)
 - Frontend: 100% (All UI flows verified)
-- Test files: `/app/backend/tests/test_premium_subscription.py`, `/app/backend/tests/test_invoices_page.py`, `/app/backend/tests/test_seo_sitemap_premium_badge.py`
-- Test reports: `/app/test_reports/iteration_65.json`, `/app/test_reports/iteration_66.json`, `/app/test_reports/iteration_67.json`
+- Test reports: `/app/test_reports/iteration_65.json` through `/app/test_reports/iteration_68.json`
 
 ## Key Files Reference
 - `/app/frontend/app/business/edit.tsx` - Full business profile editor with payment buttons
