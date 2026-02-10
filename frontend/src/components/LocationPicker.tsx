@@ -500,72 +500,11 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             </View>
           )}
 
-          {/* Search (for city step) */}
-          {currentStep === 'city' && selectedCountry && (
-            <View style={styles.searchContainer}>
-              <Ionicons name="search" size={20} color={theme.colors.onSurfaceVariant} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search cities..."
-                placeholderTextColor={theme.colors.onSurfaceVariant}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                autoCapitalize="none"
-                data-testid="city-search-input"
-              />
-              {searchQuery.length > 0 && (
-                <TouchableOpacity onPress={() => setSearchQuery('')}>
-                  <Ionicons name="close-circle" size={20} color={theme.colors.onSurfaceVariant} />
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
-
           {/* List */}
           {loading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
-          ) : currentStep === 'city' ? (
-            /* Use ScrollView for city step to avoid FlatList click issues on web */
-            <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.listContent}>
-              {(searchQuery.length >= 2 ? searchResults : cities).length === 0 ? (
-                <View style={styles.emptyContainer}>
-                  <Ionicons name="location-outline" size={48} color={theme.colors.outline} />
-                  <Text style={styles.emptyText}>
-                    {searchQuery.length > 0 ? 'No cities found' : 'No locations available'}
-                  </Text>
-                </View>
-              ) : (
-                (searchQuery.length >= 2 ? searchResults : cities).map((city: City, index: number) => (
-                  <React.Fragment key={`${city.country_code}-${city.region_code}-${city.district_code}-${city.city_code}`}>
-                    <TouchableHighlight
-                      style={styles.listItem}
-                      onPress={() => handleCitySelect(city)}
-                      underlayColor={theme.colors.surfaceVariant}
-                      activeOpacity={0.8}
-                    >
-                      <View style={styles.cityRow}>
-                        <View style={styles.iconContainer}>
-                          <Ionicons name="location" size={20} color={theme.colors.primary} />
-                        </View>
-                        <View style={styles.cityInfo}>
-                          <Text style={styles.itemText}>{city.name}</Text>
-                          {city.location_text && (
-                            <Text style={styles.citySubtext} numberOfLines={1}>
-                              {city.location_text}
-                            </Text>
-                          )}
-                        </View>
-                      </View>
-                    </TouchableHighlight>
-                    {index < (searchQuery.length >= 2 ? searchResults : cities).length - 1 && (
-                      <View style={styles.separator} />
-                    )}
-                  </React.Fragment>
-                ))
-              )}
-            </ScrollView>
           ) : (
             <FlatList
               key={`list-${currentStep}`}
@@ -576,10 +515,6 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                     return item.code;
                   case 'region':
                     return `${item.country_code}-${item.region_code}`;
-                  case 'district':
-                    return `${item.country_code}-${item.region_code}-${item.district_code}`;
-                  case 'city':
-                    return `${item.country_code}-${item.region_code}-${item.district_code}-${item.city_code}`;
                 }
               }}
               renderItem={renderItem}
@@ -589,9 +524,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
                   <Ionicons name="location-outline" size={48} color={theme.colors.outline} />
-                  <Text style={styles.emptyText}>
-                    {searchQuery.length > 0 ? 'No cities found' : 'No locations available'}
-                  </Text>
+                  <Text style={styles.emptyText}>No locations available</Text>
                 </View>
               }
             />
