@@ -779,32 +779,57 @@ export default function HomeScreen() {
       <View style={styles.row2}>
         <TouchableOpacity style={styles.searchField} onPress={() => router.push('/search')} activeOpacity={0.8}>
           <Ionicons name="search" size={20} color="#666" />
-          <Text style={styles.searchPlaceholder}>Search in {currentCity === 'All Locations' ? 'all areas' : currentCity}</Text>
+          <Text style={styles.searchPlaceholder}>Search in {currentCity === 'Select Location' ? 'all areas' : currentCity}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.locationChip} activeOpacity={0.7} onPress={() => setShowLocationModal(true)}>
           <Ionicons name="location" size={16} color="#2E7D32" />
           <Text style={styles.locationText} numberOfLines={1}>{currentCity}</Text>
           <Ionicons name="chevron-down" size={14} color="#666" />
         </TouchableOpacity>
-        {/* Near Me Toggle Button */}
-        <TouchableOpacity 
-          style={[styles.nearMeChip, nearMeEnabled && styles.nearMeChipActive]}
-          activeOpacity={0.7}
-          onPress={handleNearMeToggle}
-          data-testid="near-me-toggle"
-        >
-          {locationLoading ? (
-            <ActivityIndicator size="small" color={nearMeEnabled ? "#fff" : "#1976D2"} />
-          ) : (
-            <>
-              <Ionicons name="navigate" size={14} color={nearMeEnabled ? "#fff" : "#1976D2"} />
-              <Text style={[styles.nearMeText, nearMeEnabled && styles.nearMeTextActive]}>
-                Near Me
-              </Text>
-            </>
-          )}
-        </TouchableOpacity>
       </View>
+
+      {/* LOCATION FILTER CONTROLS */}
+      {selectedCity && (
+        <View style={styles.filterControlsRow}>
+          <View style={styles.filterToggle}>
+            <Text style={styles.filterLabel}>Include nearby cities</Text>
+            <Switch
+              value={includeNearbyCities}
+              onValueChange={(value) => {
+                setIncludeNearbyCities(value);
+                AsyncStorage.setItem('@include_nearby', value.toString());
+              }}
+              trackColor={{ false: '#ccc', true: '#81C784' }}
+              thumbColor={includeNearbyCities ? '#2E7D32' : '#f4f3f4'}
+            />
+          </View>
+          {includeNearbyCities && (
+            <View style={styles.radiusSelector}>
+              <Text style={styles.filterLabel}>Radius:</Text>
+              {[50, 100].map((r) => (
+                <TouchableOpacity
+                  key={r}
+                  style={[styles.radiusOption, searchRadius === r && styles.radiusOptionActive]}
+                  onPress={() => {
+                    setSearchRadius(r);
+                    AsyncStorage.setItem('@search_radius', r.toString());
+                  }}
+                >
+                  <Text style={[styles.radiusText, searchRadius === r && styles.radiusTextActive]}>{r}km</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* EXPANDED SEARCH MESSAGE */}
+      {expandedSearch && expandedSearchMessage && (
+        <View style={styles.expandedSearchBanner}>
+          <Ionicons name="information-circle" size={16} color="#1976D2" />
+          <Text style={styles.expandedSearchText}>{expandedSearchMessage}</Text>
+        </View>
+      )}
 
       {/* FULL-WIDTH DIVIDER */}
       <View style={styles.divider} />
@@ -833,10 +858,10 @@ export default function HomeScreen() {
       {/* SECTION TITLE */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>
-          {nearMeEnabled ? 'Near Me' : (selectedCategory ? FULL_CATEGORIES.find(c => c.id === selectedCategory)?.name || 'Listings' : 'Recent Listings')}
+          {selectedCategory ? FULL_CATEGORIES.find(c => c.id === selectedCategory)?.name || 'Listings' : (expandedSearch ? 'Nearby Listings' : 'Recent Listings')}
         </Text>
-        {(selectedCategory || nearMeEnabled) && (
-          <TouchableOpacity onPress={() => { setSelectedCategory(null); setNearMeEnabled(false); }}>
+        {selectedCategory && (
+          <TouchableOpacity onPress={() => { setSelectedCategory(null); }}>
             <Text style={styles.clearFilter}>Clear</Text>
           </TouchableOpacity>
         )}
