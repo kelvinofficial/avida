@@ -35,6 +35,7 @@ import {
 import { safeGoBack } from '../../src/utils/navigation';
 import { SuccessModal } from '../../src/components/SuccessModal';
 import { useResponsive } from '../../src/hooks/useResponsive';
+import { LocationPicker, LocationData } from '../../src/components/LocationPicker';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const MAX_IMAGES = 10;
