@@ -4,7 +4,7 @@ Tests:
 1. GET /sitemap.xml - XML sitemap with homepage and business profiles
 2. GET /robots.txt - robots.txt with sitemap reference
 3. GET /api/seo/sitemap-stats - Sitemap statistics
-4. Premium badge visibility on invoices page
+4. Premium badge visibility on invoices page (GET /api/users/me)
 """
 
 import pytest
@@ -13,6 +13,9 @@ import os
 import xml.etree.ElementTree as ET
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://verified-sellers-hub.preview.emergentagent.com').rstrip('/')
+# Use direct backend URL for sitemap/robots.txt since they're registered on root path
+# The public URL routes non-/api paths to frontend
+BACKEND_DIRECT_URL = "http://localhost:8001"
 
 
 class TestSEOSitemap:
