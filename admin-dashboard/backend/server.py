@@ -6738,7 +6738,7 @@ async def check_all_experiments_for_winners(admin: dict = Depends(get_current_ad
         "results": results
     }
 
-@app.get("/api/admin/notifications/ab-winners")
+@app.get("/api/admin/ab-testing/winner-notifications")
 async def get_winner_notifications(admin: dict = Depends(get_current_admin)):
     """Get A/B testing winner notifications"""
     notifications = await db.admin_notifications.find(
@@ -6748,9 +6748,9 @@ async def get_winner_notifications(admin: dict = Depends(get_current_admin)):
     
     return {"notifications": notifications}
 
-@app.put("/api/admin/notifications/{notification_id}/read")
-async def mark_notification_read(notification_id: str, admin: dict = Depends(get_current_admin)):
-    """Mark notification as read"""
+@app.put("/api/admin/ab-testing/notifications/{notification_id}/read")
+async def mark_ab_notification_read(notification_id: str, admin: dict = Depends(get_current_admin)):
+    """Mark A/B notification as read"""
     await db.admin_notifications.update_one(
         {"id": notification_id},
         {"$set": {"is_read": True, "read_at": datetime.now(timezone.utc)}}
