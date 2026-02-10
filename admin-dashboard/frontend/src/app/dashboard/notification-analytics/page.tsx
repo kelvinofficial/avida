@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid,
   CircularProgress,
   Alert,
   FormControl,
@@ -27,6 +26,7 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   LineChart,
   Line,
