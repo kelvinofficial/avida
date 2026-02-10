@@ -88,18 +88,21 @@ export default function ABTestingPage() {
 
   // Winner notifications
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [schedulerStatus, setSchedulerStatus] = useState<SchedulerStatus | null>(null);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [expRes, overviewRes, notifRes] = await Promise.all([
+      const [expRes, overviewRes, notifRes, schedulerRes] = await Promise.all([
         api.getExperiments(statusFilter || undefined),
         api.getExperimentsOverview(),
-        api.getWinnerNotifications().catch(() => ({ notifications: [] }))
+        api.getWinnerNotifications().catch(() => ({ notifications: [] })),
+        api.getSchedulerStatus().catch(() => null)
       ]);
       setExperiments(expRes.experiments || []);
       setOverview(overviewRes);
       setNotifications(notifRes.notifications || []);
+      setSchedulerStatus(schedulerRes);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load experiments');
     } finally {
