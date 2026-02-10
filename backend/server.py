@@ -5626,6 +5626,7 @@ async def get_sitemap():
     
     return Response(content=xml_content, media_type="application/xml")
 
+@app.get("/api/robots.txt")
 @app.get("/robots.txt")
 async def get_robots():
     """Generate robots.txt with sitemap reference"""
