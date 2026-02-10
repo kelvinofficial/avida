@@ -835,6 +835,97 @@ export default function HomeScreen() {
     }
   };
 
+  // ============ FEATURED SELLERS SECTION ============
+  const FeaturedSellersSection = () => {
+    if (loadingFeatured) {
+      return null; // Don't show loading state to avoid layout shift
+    }
+    
+    if (featuredSellers.length === 0) {
+      return null; // Don't show section if no verified sellers
+    }
+    
+    return (
+      <View style={featuredStyles.container}>
+        <View style={featuredStyles.header}>
+          <View style={featuredStyles.titleRow}>
+            <Ionicons name="shield-checkmark" size={20} color="#2E7D32" />
+            <Text style={featuredStyles.title}>Verified Sellers</Text>
+          </View>
+          <TouchableOpacity onPress={() => router.push('/business-directory')}>
+            <Text style={featuredStyles.seeAll}>See All</Text>
+          </TouchableOpacity>
+        </View>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={featuredStyles.scrollContent}
+        >
+          {featuredSellers.map((seller) => (
+            <TouchableOpacity
+              key={seller.id}
+              style={featuredStyles.sellerCard}
+              onPress={() => router.push(`/business/${seller.identifier}`)}
+              data-testid={`featured-seller-${seller.id}`}
+            >
+              {/* Logo */}
+              <View style={featuredStyles.logoContainer}>
+                {seller.logo_url ? (
+                  <Image source={{ uri: seller.logo_url }} style={featuredStyles.logo} />
+                ) : (
+                  <View style={featuredStyles.logoPlaceholder}>
+                    <Ionicons name="storefront" size={24} color="#2E7D32" />
+                  </View>
+                )}
+                {/* Verification Badge */}
+                <View style={[
+                  featuredStyles.badge,
+                  seller.is_premium ? featuredStyles.premiumBadge : featuredStyles.verifiedBadge
+                ]}>
+                  <Ionicons 
+                    name={seller.is_premium ? "diamond" : "checkmark-circle"} 
+                    size={12} 
+                    color="#fff" 
+                  />
+                </View>
+              </View>
+              
+              {/* Business Name */}
+              <Text style={featuredStyles.businessName} numberOfLines={1}>
+                {seller.business_name}
+              </Text>
+              
+              {/* Location */}
+              {seller.city && (
+                <Text style={featuredStyles.location} numberOfLines={1}>
+                  {seller.city}
+                </Text>
+              )}
+              
+              {/* Stats */}
+              <View style={featuredStyles.statsRow}>
+                <Text style={featuredStyles.stat}>{seller.total_listings} items</Text>
+              </View>
+              
+              {/* Tier Label */}
+              <View style={[
+                featuredStyles.tierLabel,
+                seller.is_premium ? featuredStyles.premiumLabel : featuredStyles.verifiedLabel
+              ]}>
+                <Text style={[
+                  featuredStyles.tierText,
+                  seller.is_premium ? featuredStyles.premiumText : featuredStyles.verifiedText
+                ]}>
+                  {seller.is_premium ? 'Premium' : 'Verified'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
   // ============ HEADER COMPONENT ============
   const renderHeader = () => (
     <View style={styles.headerWrapper}>
