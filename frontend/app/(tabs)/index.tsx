@@ -906,6 +906,24 @@ export default function HomeScreen() {
             <Text style={desktopStyles.locationText} numberOfLines={1}>{currentCity}</Text>
             <Ionicons name="chevron-down" size={16} color="#666" />
           </TouchableOpacity>
+          {/* Near Me Toggle Button */}
+          <TouchableOpacity 
+            style={[desktopStyles.nearMeChip, nearMeEnabled && desktopStyles.nearMeChipActive]}
+            activeOpacity={0.7}
+            onPress={handleNearMeToggle}
+            data-testid="near-me-toggle-desktop"
+          >
+            {locationLoading ? (
+              <ActivityIndicator size="small" color={nearMeEnabled ? "#fff" : "#1976D2"} />
+            ) : (
+              <>
+                <Ionicons name="navigate" size={16} color={nearMeEnabled ? "#fff" : "#1976D2"} />
+                <Text style={[desktopStyles.nearMeText, nearMeEnabled && desktopStyles.nearMeTextActive]}>
+                  Near Me
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
         </View>
       </View>
 
