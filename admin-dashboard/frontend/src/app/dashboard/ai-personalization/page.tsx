@@ -936,7 +936,7 @@ export default function AIPersonalizationPage() {
                       cx="50%"
                       cy="50%"
                       outerRadius={100}
-                      label={({ trigger_type }) => trigger_type.replace(/_/g, ' ').slice(0, 10)}
+                      label={({ name }: { name: string }) => name?.replace(/_/g, ' ').slice(0, 10) || ''}
                     >
                       {analytics.by_trigger_type.map((_, index) => (
                         <Cell
