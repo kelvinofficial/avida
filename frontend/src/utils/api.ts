@@ -115,6 +115,24 @@ export const listingsApi = {
     const response = await api.get('/listings', { params });
     return response.data;
   },
+  
+  // Smart location-based search with nearby city fallback
+  getByLocation: async (params: {
+    city_code: string;
+    city_lat: number;
+    city_lng: number;
+    include_nearby?: boolean;
+    radius?: number;
+    category?: string;
+    subcategory?: string;
+    page?: number;
+    limit?: number;
+    only_my_city?: boolean;
+  }) => {
+    const response = await api.get('/listings/by-location', { params });
+    return response.data;
+  },
+  
   getOne: async (id: string) => {
     const response = await api.get(`/listings/${id}`);
     return response.data;
