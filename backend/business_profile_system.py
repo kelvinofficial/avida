@@ -50,6 +50,25 @@ class SocialLinks(BaseModel):
     pinterest: Optional[str] = None
 
 
+class GalleryImage(BaseModel):
+    """Gallery image entry"""
+    id: str
+    url: str
+    caption: Optional[str] = None
+    order: int = 0
+    created_at: Optional[datetime] = None
+
+
+class GalleryVideo(BaseModel):
+    """Gallery video entry (YouTube/Vimeo links)"""
+    id: str
+    url: str  # YouTube or Vimeo URL
+    title: Optional[str] = None
+    thumbnail: Optional[str] = None
+    order: int = 0
+    created_at: Optional[datetime] = None
+
+
 class BusinessProfileCreate(BaseModel):
     """Request model for creating a business profile"""
     business_name: str = Field(..., min_length=2, max_length=100)
