@@ -998,13 +998,20 @@ Admin feature to bulk import users from CSV files with secure password generatio
 
 ### API Endpoints:
 - `GET /api/csv-import/template` - Download CSV template
-- `GET /api/csv-import/fields` - Get field information
+- `GET /api/csv-import/fields` - Get field information (includes email_delivery_available flag)
 - `POST /api/csv-import/upload` - Upload CSV, get validation_id
 - `POST /api/csv-import/validate/{validation_id}` - Validate all rows
-- `POST /api/csv-import/import/{validation_id}` - Start background import
-- `GET /api/csv-import/job/{job_id}` - Check job status
+- `POST /api/csv-import/import/{validation_id}` - Start background import (accepts send_emails: boolean)
+- `GET /api/csv-import/job/{job_id}` - Check job status (includes emails_sent/emails_failed stats)
 - `GET /api/csv-import/password-report/{report_id}/download` - Download passwords CSV
 - `GET /api/csv-import/history` - Import job history
+
+### Email Delivery Feature (Feb 10, 2026):
+- **Optional welcome emails**: When `send_emails: true` is passed to the import endpoint, each newly created user receives a welcome email with their credentials
+- **SendGrid integration**: Uses existing SendGrid configuration (SENDGRID_API_KEY, SENDER_EMAIL)
+- **HTML email template**: Professional styled email with credentials and first-login password change requirement
+- **Tracking**: Job status includes `emails_sent` and `emails_failed` counts
+- **Note**: Email delivery requires valid SendGrid configuration with proper domain verification
 
 ### Validation Rules:
 - Email: Required, valid format, unique in CSV and database
