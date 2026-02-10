@@ -350,7 +350,9 @@ export default function HomeScreen() {
   const { isAuthenticated } = useAuthStore();
   const { isSandboxMode } = useSandbox();
   const { width: windowWidth } = useWindowDimensions();
+  const { userLocation, nearMeEnabled, setNearMeEnabled, isLoading: locationLoading, requestLocation } = useUserLocation();
   const [listings, setListings] = useState<Listing[]>([]);
+  const [nearbyListings, setNearbyListings] = useState<Listing[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
