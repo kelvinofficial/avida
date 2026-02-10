@@ -742,6 +742,9 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: theme.spacing.xl,
   },
+  scrollViewContainer: {
+    flex: 1,
+  },
   listItem: {
     flexDirection: 'row',
     alignItems: 'center',
