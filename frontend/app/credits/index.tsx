@@ -427,6 +427,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  scrollContentDesktop: {
+    alignItems: 'center',
+  },
   contentWrapper: {
     flex: 1,
     width: '100%',
