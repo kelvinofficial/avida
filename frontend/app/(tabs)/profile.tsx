@@ -282,6 +282,7 @@ const statsStyles = StyleSheet.create({
 const ActivitySection = ({ onItemPress }: { onItemPress: (route: string) => void }) => {
   const activityItems = [
     { id: 'listings', label: 'My Listings', icon: 'list-outline', route: '/profile/my-listings', badge: null },
+    { id: 'business', label: 'Business Profile', icon: 'storefront-outline', route: '/business/edit', badge: null },
     { id: 'credits', label: 'Credits & Boosts', icon: 'wallet-outline', route: '/credits', badge: null },
     { id: 'purchases', label: 'Purchases', icon: 'bag-outline', route: '/profile/purchases', badge: null },
     { id: 'sales', label: 'Sales', icon: 'cash-outline', route: '/profile/sales', badge: null },
