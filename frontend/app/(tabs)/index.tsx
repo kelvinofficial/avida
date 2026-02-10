@@ -698,6 +698,24 @@ export default function HomeScreen() {
           <Text style={styles.locationText} numberOfLines={1}>{currentCity}</Text>
           <Ionicons name="chevron-down" size={14} color="#666" />
         </TouchableOpacity>
+        {/* Near Me Toggle Button */}
+        <TouchableOpacity 
+          style={[styles.nearMeChip, nearMeEnabled && styles.nearMeChipActive]}
+          activeOpacity={0.7}
+          onPress={handleNearMeToggle}
+          data-testid="near-me-toggle"
+        >
+          {locationLoading ? (
+            <ActivityIndicator size="small" color={nearMeEnabled ? "#fff" : "#1976D2"} />
+          ) : (
+            <>
+              <Ionicons name="navigate" size={14} color={nearMeEnabled ? "#fff" : "#1976D2"} />
+              <Text style={[styles.nearMeText, nearMeEnabled && styles.nearMeTextActive]}>
+                Near Me
+              </Text>
+            </>
+          )}
+        </TouchableOpacity>
       </View>
 
       {/* FULL-WIDTH DIVIDER */}
