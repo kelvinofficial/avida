@@ -6586,6 +6586,71 @@ if LOCATION_SYSTEM_AVAILABLE:
     
     logger.info("Location System loaded successfully")
 
+# =============================================================================
+# VOUCHER SYSTEM
+# =============================================================================
+if VOUCHER_SYSTEM_AVAILABLE:
+    voucher_router = create_voucher_router(db, get_current_user)
+    app.include_router(voucher_router, prefix="/api")
+    logger.info("Voucher System loaded successfully")
+
+# =============================================================================
+# LISTING MODERATION SYSTEM
+# =============================================================================
+if MODERATION_SYSTEM_AVAILABLE:
+    moderation_router = create_moderation_router(db, get_current_user)
+    app.include_router(moderation_router, prefix="/api")
+    logger.info("Listing Moderation System loaded successfully")
+
+# =============================================================================
+# ADMIN TOOLS (SEO, URL Masking, Polls, Cookies, reCAPTCHA, WebP, Invoice PDF)
+# =============================================================================
+if ADMIN_TOOLS_AVAILABLE:
+    seo_router = create_seo_router(db, get_current_user)
+    url_masking_router = create_url_masking_router(db, get_current_user)
+    polls_router = create_polls_router(db, get_current_user)
+    cookie_consent_router = create_cookie_consent_router(db, get_current_user)
+    recaptcha_router = create_recaptcha_router(db, get_current_user)
+    webp_router = create_webp_router(db, get_current_user)
+    invoice_pdf_router = create_invoice_pdf_router(db, get_current_user)
+    
+    app.include_router(seo_router, prefix="/api")
+    app.include_router(url_masking_router, prefix="/api")
+    app.include_router(polls_router, prefix="/api")
+    app.include_router(cookie_consent_router, prefix="/api")
+    app.include_router(recaptcha_router, prefix="/api")
+    app.include_router(webp_router, prefix="/api")
+    app.include_router(invoice_pdf_router, prefix="/api")
+    
+    # URL redirect endpoint for short URLs
+    @app.get("/s/{code}")
+    async def redirect_short_url(code: str, request: Request):
+        """Redirect short URL to target"""
+        from fastapi.responses import RedirectResponse
+        
+        url = await db.short_urls.find_one({"code": code, "is_active": True})
+        if not url:
+            raise HTTPException(status_code=404, detail="Short URL not found")
+        
+        # Check expiration
+        if url.get("expires_at") and url["expires_at"] < datetime.now(timezone.utc):
+            raise HTTPException(status_code=410, detail="Short URL has expired")
+        
+        # Record click
+        await db.short_url_clicks.insert_one({
+            "code": code,
+            "ip_address": request.client.host if request.client else None,
+            "user_agent": request.headers.get("user-agent"),
+            "clicked_at": datetime.now(timezone.utc)
+        })
+        
+        # Update click count
+        await db.short_urls.update_one({"code": code}, {"$inc": {"clicks": 1}})
+        
+        return RedirectResponse(url=url["target_url"], status_code=302)
+    
+    logger.info("Admin Tools loaded successfully (SEO, URL Masking, Polls, Cookies, reCAPTCHA, WebP, Invoice PDF)")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
