@@ -591,6 +591,48 @@ def create_admin_location_router(db: AsyncIOMotorDatabase, require_admin):
     router = APIRouter(prefix="/locations", tags=["Admin Locations"])
     service = LocationService(db)
     
+    # Read endpoints (needed for admin dashboard)
+    @router.get("/stats")
+    async def get_stats(admin = Depends(require_admin)):
+        """Get location statistics"""
+        return await service.get_location_stats()
+    
+    @router.get("/countries")
+    async def get_countries(admin = Depends(require_admin)):
+        """Get all available countries"""
+        return await service.get_countries()
+    
+    @router.get("/regions")
+    async def get_regions(
+        country_code: str = Query(..., description="Country code (e.g., TZ, KE)"),
+        search: str = Query(None, description="Search by name"),
+        admin = Depends(require_admin)
+    ):
+        """Get regions/states for a country"""
+        return await service.get_regions(country_code, search)
+    
+    @router.get("/districts")
+    async def get_districts(
+        country_code: str = Query(...),
+        region_code: str = Query(...),
+        search: str = Query(None),
+        admin = Depends(require_admin)
+    ):
+        """Get districts for a region"""
+        return await service.get_districts(country_code, region_code, search)
+    
+    @router.get("/cities")
+    async def get_cities(
+        country_code: str = Query(...),
+        region_code: str = Query(...),
+        district_code: str = Query(...),
+        search: str = Query(None),
+        admin = Depends(require_admin)
+    ):
+        """Get cities for a district"""
+        return await service.get_cities(country_code, region_code, district_code, search)
+    
+    # Write endpoints
     @router.post("/countries")
     async def add_country(
         code: str = Body(...),
