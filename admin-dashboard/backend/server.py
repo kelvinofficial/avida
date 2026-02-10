@@ -2658,6 +2658,42 @@ async def respond_to_ticket(
         }
     )
     
+    # Send notification to user about ticket reply
+    if ticket.get("user_id"):
+        notification = {
+            "id": f"notif_{uuid.uuid4().hex[:12]}",
+            "user_id": ticket["user_id"],
+            "type": "support_ticket_reply",
+            "title": "Support Ticket Update",
+            "body": f"You have a new response on your ticket: {ticket.get('subject', 'Support Request')}",
+            "read": False,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "meta": {
+                "ticket_id": ticket_id,
+                "action": "view_tickets"
+            },
+            "data_payload": {
+                "screen": "/help",
+                "tab": "tickets",
+                "ticket_id": ticket_id
+            }
+        }
+        await db.notifications.insert_one(notification)
+        
+        # Also send push notification
+        try:
+            from push_service import send_push_notification, get_user_tokens
+            tokens_data = await get_user_tokens(db, [ticket["user_id"]])
+            if tokens_data.get("expo_tokens"):
+                await send_push_notification(
+                    title="Support Ticket Update",
+                    body=f"New response on: {ticket.get('subject', 'Support Request')}",
+                    expo_tokens=tokens_data["expo_tokens"],
+                    data={"screen": "/help", "tab": "tickets", "ticket_id": ticket_id}
+                )
+        except Exception as e:
+            logger.error(f"Failed to send ticket notification: {e}")
+    
     await log_audit(admin["id"], admin["email"], AuditAction.UPDATE, "ticket", ticket_id, {"response_added": True}, request)
     return response
 
