@@ -532,6 +532,43 @@ export default function HomeScreen() {
 
   useEffect(() => { fetchData(true); }, [selectedCategory, currentCity]);
 
+  // Fetch nearby listings when Near Me is enabled and user has location
+  useEffect(() => {
+    const fetchNearbyListings = async () => {
+      if (!nearMeEnabled || !userLocation) return;
+      
+      try {
+        const nearby = await locationsApi.getNearby(
+          userLocation.lat,
+          userLocation.lng,
+          50, // radius in km
+          20, // limit
+          1,  // page
+          selectedCategory || undefined
+        );
+        setNearbyListings(nearby.listings || []);
+      } catch (error) {
+        console.error('Error fetching nearby listings:', error);
+        setNearbyListings([]);
+      }
+    };
+
+    fetchNearbyListings();
+  }, [nearMeEnabled, userLocation, selectedCategory]);
+
+  // Handle Near Me toggle
+  const handleNearMeToggle = async () => {
+    if (!nearMeEnabled) {
+      // Request location when enabling
+      const location = await requestLocation();
+      if (location) {
+        setNearMeEnabled(true);
+      }
+    } else {
+      setNearMeEnabled(false);
+    }
+  };
+
   const onRefresh = useCallback(() => { setRefreshing(true); fetchData(true); }, [fetchData]);
 
   const loadMore = () => { if (!loading && hasMore) { setPage((prev) => prev + 1); fetchData(); } };
