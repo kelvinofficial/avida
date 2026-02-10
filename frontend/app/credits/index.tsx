@@ -424,6 +424,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  contentWrapper: {
+    flex: 1,
+    width: '100%',
+  },
+  desktopWrapper: {
+    maxWidth: 1280,
+    alignSelf: 'center',
+    width: '100%',
+    paddingHorizontal: 24,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -518,6 +528,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 10,
   },
+  paymentMethodGridDesktop: {
+    gap: 16,
+  },
   paymentMethodCard: {
     width: '48%',
     flexDirection: 'row',
@@ -528,6 +541,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#eee',
     gap: 10,
+  },
+  paymentMethodCardDesktop: {
+    width: 'auto',
+    minWidth: 200,
+    flex: 1,
+    maxWidth: 300,
   },
   paymentMethodSelected: {
     borderColor: '#4CAF50',
@@ -619,17 +638,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     gap: 12,
   },
+  packagesContainerDesktop: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 20,
+  },
   packageCard: {
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
     marginBottom: 12,
     borderWidth: 2,
     borderColor: '#eee',
+    position: 'relative',
+  },
+  packageCardDesktop: {
+    flex: 1,
+    minWidth: 280,
+    maxWidth: 400,
+    marginBottom: 0,
   },
   popularPackage: {
     borderColor: '#4CAF50',
     backgroundColor: '#f8fff8',
+  },
+  selectedPackage: {
+    borderColor: '#2196F3',
+    backgroundColor: '#f0f7ff',
+    shadowColor: '#2196F3',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  selectedBadge: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
   },
   popularBadge: {
     position: 'absolute',
@@ -650,6 +695,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     marginBottom: 4,
+  },
+  selectedPackageName: {
+    color: '#1976D2',
   },
   packageDescription: {
     fontSize: 13,
@@ -692,10 +740,13 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   buyButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#e0e0e0',
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
+  },
+  buyButtonSelected: {
+    backgroundColor: '#4CAF50',
   },
   buyButtonText: {
     color: '#fff',
@@ -713,6 +764,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     marginBottom: 16,
+  },
+  infoItemsContainer: {
+    gap: 12,
+  },
+  infoItemsContainerDesktop: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 24,
   },
   infoItem: {
     flexDirection: 'row',
