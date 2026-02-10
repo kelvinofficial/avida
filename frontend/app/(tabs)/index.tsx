@@ -20,7 +20,7 @@ import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { theme } from '../../src/utils/theme';
-import { listingsApi, categoriesApi, favoritesApi, notificationsApi } from '../../src/utils/api';
+import { listingsApi, categoriesApi, favoritesApi, notificationsApi, locationsApi } from '../../src/utils/api';
 import { sandboxAwareListingsApi, sandboxAwareCategoriesApi, sandboxUtils } from '../../src/utils/sandboxAwareApi';
 import { Listing, Category } from '../../src/types';
 import { EmptyState } from '../../src/components/EmptyState';
@@ -31,6 +31,7 @@ import { getSubcategories, SubcategoryConfig, getMainCategory } from '../../src/
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { ResponsiveLayout, Footer } from '../../src/components/layout';
 import { FeedBanner, HeaderBanner } from '../../src/components/BannerSlot';
+import { useUserLocation } from '../../src/context/LocationContext';
 
 const { width } = Dimensions.get('window');
 
