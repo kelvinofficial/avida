@@ -70,6 +70,7 @@ export interface AttributeCondition {
 export interface Listing {
   id: string;
   title: string;
+  name?: string;
   description: string;
   price: number;
   currency: string;
@@ -83,6 +84,11 @@ export interface Listing {
   created_at: string;
   updated_at: string;
   seller?: User;
+  location?: string | { city?: string; country?: string };
+  condition?: string;
+  contact_phone?: string;
+  contact_email?: string;
+  negotiable?: boolean;
 }
 
 export type ListingStatus = 'active' | 'pending' | 'rejected' | 'paused' | 'sold' | 'deleted';
