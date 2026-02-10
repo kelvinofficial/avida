@@ -870,7 +870,27 @@ const styles = StyleSheet.create({
   checkoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: COLORS.premium, paddingVertical: 16, borderRadius: 12 },
   checkoutBtnDisabled: { opacity: 0.6 },
   checkoutBtnText: { fontSize: 16, fontWeight: '700', color: '#fff' },
+  orDivider: { flexDirection: 'row', alignItems: 'center', marginVertical: 16 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: COLORS.border },
+  orText: { marginHorizontal: 12, fontSize: 13, color: COLORS.textSecondary },
+  altPayments: { flexDirection: 'row', gap: 10, marginBottom: 8 },
+  altPaymentBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 10, borderWidth: 1 },
+  paypalBtn: { borderColor: '#00457C', backgroundColor: '#fff' },
+  paypalBtnText: { fontSize: 14, fontWeight: '600', color: '#00457C' },
+  mpesaBtn: { borderColor: '#4CAF50', backgroundColor: '#fff' },
+  mpesaBtnText: { fontSize: 14, fontWeight: '600', color: '#4CAF50' },
   paymentNote: { fontSize: 12, color: COLORS.textSecondary, textAlign: 'center', marginTop: 12 },
+  
+  // M-Pesa Modal
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContent: { backgroundColor: COLORS.surface, borderRadius: 16, padding: 24, width: '100%', maxWidth: 360 },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text, marginBottom: 8, textAlign: 'center' },
+  modalSubtitle: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 20, textAlign: 'center' },
+  mpesaInput: { backgroundColor: COLORS.background, borderWidth: 1, borderColor: COLORS.border, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: COLORS.text, marginBottom: 16 },
+  mpesaSubmitBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#4CAF50', paddingVertical: 14, borderRadius: 10, marginBottom: 12 },
+  mpesaSubmitText: { fontSize: 15, fontWeight: '600', color: '#fff' },
+  mpesaCancelBtn: { alignItems: 'center', padding: 10 },
+  mpesaCancelText: { fontSize: 14, color: COLORS.textSecondary },
   
   // Cover
   coverSection: { marginBottom: 20, alignItems: 'center' },
