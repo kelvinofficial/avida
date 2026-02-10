@@ -396,11 +396,19 @@ class CSVImportService:
                         "role": role
                     })
                     
+                    # Send welcome email if option enabled
+                    if send_emails:
+                        email_sent = await self._send_welcome_email(email, first_name, password)
+                        if email_sent:
+                            emails_sent += 1
+                        else:
+                            emails_failed += 1
+                    
                     # Update progress
                     progress = int((i + 1) / len(rows) * 100)
                     await self.import_jobs.update_one(
                         {"id": job_id},
-                        {"$set": {"progress": progress}}
+                        {"$set": {"progress": progress, "emails_sent": emails_sent, "emails_failed": emails_failed}}
                     )
                     
                 except Exception as e:
@@ -435,15 +443,17 @@ class CSVImportService:
                     "progress": 100,
                     "result": result.dict(),
                     "password_report_id": report_id,
-                    "completed_at": datetime.now(timezone.utc).isoformat()
+                    "completed_at": datetime.now(timezone.utc).isoformat(),
+                    "emails_sent": emails_sent,
+                    "emails_failed": emails_failed
                 }}
             )
             
             # Log the import
             await self._log_import(job_id, admin_id, result)
             
-            # Send in-app notification to admin
-            await self._notify_admin(admin_id, job_id, result, status)
+            # Send in-app notification to admin (include email stats)
+            await self._notify_admin(admin_id, job_id, result, status, emails_sent=emails_sent, emails_failed=emails_failed)
             
             return result
             
