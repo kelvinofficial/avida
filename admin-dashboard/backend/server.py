@@ -3814,8 +3814,10 @@ async def send_notification(
     )
     
     # Create notification records for users (in-app notifications)
+    # Insert into both user_notifications (for admin tracking) and notifications (for mobile app)
     if users:
-        notification_records = [
+        # Records for admin dashboard tracking
+        user_notification_records = [
             {
                 "id": f"nr_{uuid.uuid4().hex[:12]}",
                 "notification_id": notif_id,
@@ -3825,7 +3827,32 @@ async def send_notification(
             }
             for u in users
         ]
-        await db.user_notifications.insert_many(notification_records)
+        await db.user_notifications.insert_many(user_notification_records)
+        
+        # Records for mobile app (this is what the app reads)
+        mobile_notification_records = [
+            {
+                "id": f"notif_{uuid.uuid4().hex[:12]}",
+                "user_id": u["user_id"],
+                "type": existing.get("type", "system"),
+                "title": existing.get("title", ""),
+                "body": existing.get("message", ""),
+                "read": False,
+                "created_at": now,
+                "meta": {
+                    "admin_notification_id": notif_id,
+                    "source": "admin_broadcast"
+                },
+                "data_payload": {
+                    "notification_id": notif_id,
+                    "type": existing.get("type", "broadcast"),
+                    "cta_route": existing.get("cta_route"),
+                    "cta_label": existing.get("cta_label"),
+                }
+            }
+            for u in users
+        ]
+        await db.notifications.insert_many(mobile_notification_records)
     
     # Broadcast to connected WebSocket clients
     await broadcast_admin_event("notification_sent", {
