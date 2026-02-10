@@ -1030,69 +1030,67 @@ export default function HomeScreen() {
       <SafeAreaView style={styles.container} edges={isMobile ? ['top'] : []}>
         {mainContent}
 
-        {/* Location Picker Modal */}
+        {/* Location Picker Modal - Using New Hierarchical Location System */}
         <Modal
           visible={showLocationModal}
           animationType="slide"
-          transparent={true}
+          presentationStyle="pageSheet"
           onRequestClose={() => setShowLocationModal(false)}
         >
-          <View style={styles.modalOverlay}>
-            <View style={[styles.modalContent, (isDesktop || isTablet) && { maxWidth: 500, alignSelf: 'center' }]}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Select Location</Text>
-                <TouchableOpacity onPress={() => setShowLocationModal(false)} style={styles.modalCloseBtn}>
-                  <Ionicons name="close" size={24} color="#333" />
+          <View style={styles.locationPickerModal}>
+            <View style={styles.locationPickerHeader}>
+              <Text style={styles.locationPickerTitle}>Select Location</Text>
+              <TouchableOpacity onPress={() => setShowLocationModal(false)} style={styles.modalCloseBtn}>
+                <Ionicons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+            
+            {/* Current selection info */}
+            {selectedLocationFilter && (
+              <View style={styles.currentLocationBanner}>
+                <Ionicons name="location" size={20} color="#2E7D32" />
+                <Text style={styles.currentLocationText}>
+                  {selectedLocationFilter.location_text || selectedLocationFilter.city_name}
+                </Text>
+                <TouchableOpacity onPress={handleClearLocationFilter} style={styles.clearFilterBtn}>
+                  <Text style={styles.clearFilterBtnText}>Clear</Text>
                 </TouchableOpacity>
               </View>
+            )}
+            
+            <View style={styles.locationPickerContent}>
+              <Text style={styles.locationPickerHint}>
+                Select a location to filter listings. Choose a country, then narrow down to region, district, and city.
+              </Text>
               
-              <View style={styles.searchInputContainer}>
-                <Ionicons name="search" size={20} color="#999" />
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder="Search cities..."
-                  value={locationSearch}
-                  onChangeText={setLocationSearch}
-                  placeholderTextColor="#999"
-                />
-                {locationSearch.length > 0 && (
-                  <TouchableOpacity onPress={() => setLocationSearch('')}>
-                    <Ionicons name="close-circle" size={20} color="#999" />
-                  </TouchableOpacity>
+              <LocationPicker
+                value={selectedLocationFilter}
+                onChange={(location) => {
+                  handleLocationSelect(location);
+                  setShowLocationModal(false);
+                }}
+                placeholder="Browse locations..."
+              />
+              
+              {/* All Locations option */}
+              <TouchableOpacity 
+                style={[styles.allLocationsBtn, !selectedLocationFilter && styles.allLocationsBtnActive]}
+                onPress={() => {
+                  handleClearLocationFilter();
+                  setShowLocationModal(false);
+                }}
+              >
+                <Ionicons name="globe-outline" size={20} color={!selectedLocationFilter ? "#2E7D32" : "#666"} />
+                <Text style={[styles.allLocationsBtnText, !selectedLocationFilter && styles.allLocationsBtnTextActive]}>
+                  All Locations
+                </Text>
+                {!selectedLocationFilter && (
+                  <Ionicons name="checkmark" size={20} color="#2E7D32" />
                 )}
-              </View>
-
-              <ScrollView style={styles.citiesList} showsVerticalScrollIndicator={false}>
-                {filteredCities.map((city) => (
-                  <TouchableOpacity
-                    key={city.name}
-                    style={[
-                      styles.cityItem,
-                      currentCity === city.name && styles.cityItemSelected
-                    ]}
-                    onPress={() => handleLocationSelect(city.name)}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons 
-                      name={city.icon as any} 
-                      size={20} 
-                      color={currentCity === city.name ? '#2E7D32' : '#666'} 
-                    />
-                    <Text style={[
-                      styles.cityName,
-                      currentCity === city.name && styles.cityNameSelected
-                    ]}>
-                      {city.name}
-                    </Text>
-                    {currentCity === city.name && (
-                      <Ionicons name="checkmark" size={20} color="#2E7D32" />
-                  )}
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
 
       {/* Subcategory Selection Modal */}
       <Modal
