@@ -423,7 +423,7 @@ def create_premium_subscription_router(db, get_current_user):
             "user_id": transaction["user_id"],
             "type": "premium_activated",
             "title": "Premium Business Activated!",
-            "message": f"Your business profile has been upgraded to Premium Verified Business via PayPal.",
+            "message": "Your business profile has been upgraded to Premium Verified Business via PayPal.",
             "is_read": False,
             "created_at": now
         })
