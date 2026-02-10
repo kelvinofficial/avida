@@ -245,6 +245,14 @@ except ImportError as e:
     SUBSCRIPTION_SERVICES_AVAILABLE = False
     logging.warning(f"Subscription Services not available: {e}")
 
+# Push Notification Service
+try:
+    from push_notification_service import PushNotificationService, send_templated_notification, PUSH_TEMPLATES
+    PUSH_SERVICE_AVAILABLE = True
+except ImportError as e:
+    PUSH_SERVICE_AVAILABLE = False
+    logging.warning(f"Push Notification Service not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
