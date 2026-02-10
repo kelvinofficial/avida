@@ -312,6 +312,7 @@ export default function MyListingsScreen() {
   const params = useLocalSearchParams();
   const { isAuthenticated } = useAuthStore();
   const { isDesktop, isTablet, isReady } = useResponsive();
+  const { goToLogin } = useLoginRedirect();
   const isLargeScreen = isDesktop || isTablet;
   
   const [activeTab, setActiveTab] = useState(params.tab as string || 'all');
