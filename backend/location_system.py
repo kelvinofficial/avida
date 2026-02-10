@@ -357,18 +357,6 @@ class LocationService:
         )
         return result.matched_count > 0
     
-    async def update_district(self, country_code: str, region_code: str, district_code: str, name: str) -> bool:
-        """Update a district"""
-        result = await self.districts.update_one(
-            {
-                "country_code": country_code.upper(),
-                "region_code": region_code.upper(),
-                "district_code": district_code.upper()
-            },
-            {"$set": {"name": name, "updated_at": datetime.now(timezone.utc).isoformat()}}
-        )
-        return result.matched_count > 0
-    
     async def update_city(self, country_code: str, region_code: str, district_code: str, city_code: str,
                           name: str = None, lat: float = None, lng: float = None) -> bool:
         """Update a city"""
