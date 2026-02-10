@@ -450,7 +450,7 @@ export default function SandboxPage() {
 
       {/* Quick Stats */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={6} sm={4} md={2}>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
           <Card variant="outlined">
             <CardContent sx={{ textAlign: 'center', py: 1 }}>
               <Typography variant="caption" color="text.secondary">Users</Typography>
@@ -458,7 +458,7 @@ export default function SandboxPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} sm={4} md={2}>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
           <Card variant="outlined">
             <CardContent sx={{ textAlign: 'center', py: 1 }}>
               <Typography variant="caption" color="text.secondary">Sellers</Typography>
@@ -466,7 +466,7 @@ export default function SandboxPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} sm={4} md={2}>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
           <Card variant="outlined">
             <CardContent sx={{ textAlign: 'center', py: 1 }}>
               <Typography variant="caption" color="text.secondary">Listings</Typography>
@@ -474,7 +474,7 @@ export default function SandboxPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} sm={4} md={2}>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
           <Card variant="outlined">
             <CardContent sx={{ textAlign: 'center', py: 1 }}>
               <Typography variant="caption" color="text.secondary">Orders</Typography>
@@ -482,7 +482,7 @@ export default function SandboxPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} sm={4} md={2}>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
           <Card variant="outlined">
             <CardContent sx={{ textAlign: 'center', py: 1 }}>
               <Typography variant="caption" color="text.secondary">Escrows</Typography>
@@ -490,7 +490,7 @@ export default function SandboxPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} sm={4} md={2}>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
           <Card variant="outlined">
             <CardContent sx={{ textAlign: 'center', py: 1 }}>
               <Typography variant="caption" color="text.secondary">Sessions</Typography>
@@ -520,7 +520,7 @@ export default function SandboxPage() {
       {/* Tab 0: Controls */}
       {activeTab === 0 && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Session Controls</Typography>
@@ -553,7 +553,7 @@ export default function SandboxPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Data Management</Typography>
@@ -740,7 +740,7 @@ export default function SandboxPage() {
             <Typography variant="h6" gutterBottom>Sandbox Listings</Typography>
             <Grid container spacing={2}>
               {sandboxListings.map((listing) => (
-                <Grid item xs={12} sm={6} md={4} key={listing.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={listing.id}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="subtitle1" fontWeight="bold" noWrap>
@@ -775,7 +775,7 @@ export default function SandboxPage() {
               Use these tools to test edge cases and failure scenarios safely.
             </Alert>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1" fontWeight="bold">
@@ -799,7 +799,7 @@ export default function SandboxPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1" fontWeight="bold">
@@ -823,7 +823,7 @@ export default function SandboxPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1" fontWeight="bold">
@@ -847,7 +847,7 @@ export default function SandboxPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1" fontWeight="bold">
@@ -871,7 +871,7 @@ export default function SandboxPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1" fontWeight="bold">

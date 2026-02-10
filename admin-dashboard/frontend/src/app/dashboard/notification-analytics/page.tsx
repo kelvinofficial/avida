@@ -225,7 +225,7 @@ export default function NotificationAnalyticsPage() {
 
       {/* Summary Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={6} md={2.4}>
+        <Grid size={{ xs: 6, md: 2.4 }}>
           <Card sx={{ bgcolor: '#E3F2FD' }}>
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -241,7 +241,7 @@ export default function NotificationAnalyticsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} md={2.4}>
+        <Grid size={{ xs: 6, md: 2.4 }}>
           <Card sx={{ bgcolor: '#E8F5E9' }}>
             <CardContent>
               <Typography variant="h4" color="#2E7D32" fontWeight="bold">{totals.delivered.toLocaleString()}</Typography>
@@ -252,7 +252,7 @@ export default function NotificationAnalyticsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} md={2.4}>
+        <Grid size={{ xs: 6, md: 2.4 }}>
           <Card sx={{ bgcolor: '#FFF3E0' }}>
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -271,7 +271,7 @@ export default function NotificationAnalyticsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} md={2.4}>
+        <Grid size={{ xs: 6, md: 2.4 }}>
           <Card sx={{ bgcolor: '#F3E5F5' }}>
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -290,7 +290,7 @@ export default function NotificationAnalyticsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} md={2.4}>
+        <Grid size={{ xs: 6, md: 2.4 }}>
           <Card sx={{ bgcolor: conversions && conversions.total_conversions > 0 ? '#E8F5E9' : '#ECEFF1' }}>
             <CardContent>
               <Typography variant="h4" color={conversions && conversions.total_conversions > 0 ? '#2E7D32' : '#607D8B'} fontWeight="bold">

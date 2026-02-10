@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Grid from "@mui/material/Grid2";
 import {
   Box,
   Card,
@@ -18,7 +19,7 @@ import {
   Tabs,
   Tab,
   Snackbar,
-  Grid,
+
   Paper,
   Switch,
   FormControlLabel,
@@ -49,6 +50,7 @@ import {
   AccordionDetails,
   InputAdornment,
 } from '@mui/material';
+import Grid from "@mui/material/Grid2";
 import {
   Settings,
   Add,
@@ -393,25 +395,25 @@ export default function IntegrationsPage() {
       {/* Health Summary */}
       {healthData && (
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'success.light', color: 'success.contrastText' }}>
               <Typography variant="h4" fontWeight={700}>{healthData.connected}</Typography>
               <Typography variant="body2">Connected</Typography>
             </Paper>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'error.light', color: 'error.contrastText' }}>
               <Typography variant="h4" fontWeight={700}>{healthData.error}</Typography>
               <Typography variant="body2">Error</Typography>
             </Paper>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'warning.light', color: 'warning.contrastText' }}>
               <Typography variant="h4" fontWeight={700}>{healthData.disabled}</Typography>
               <Typography variant="body2">Disabled</Typography>
             </Paper>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'grey.200' }}>
               <Typography variant="h4" fontWeight={700}>{healthData.not_configured}</Typography>
               <Typography variant="body2">Not Configured</Typography>
@@ -446,7 +448,7 @@ export default function IntegrationsPage() {
               <AccordionDetails>
                 <Grid container spacing={2}>
                   {categoryIntegrations.map((integration) => (
-                    <Grid item xs={12} sm={6} md={4} key={integration.provider_id}>
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={integration.provider_id}>
                       <Card
                         sx={{
                           height: '100%',
