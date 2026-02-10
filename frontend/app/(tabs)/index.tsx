@@ -951,7 +951,7 @@ export default function HomeScreen() {
           <Text style={desktopStyles.sectionTitle}>
             {selectedCategory ? FULL_CATEGORIES.find(c => c.id === selectedCategory)?.name || 'Listings' : 'Recent Listings'}
           </Text>
-          <Text style={desktopStyles.listingCount}>{listings.length} items</Text>
+          <Text style={desktopStyles.listingCount}>{(nearMeEnabled && nearbyListings.length > 0 ? nearbyListings : listings).length} items</Text>
         </View>
       </View>
     </View>
