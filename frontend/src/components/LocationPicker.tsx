@@ -691,13 +691,29 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceVariant,
     paddingTop: theme.spacing.md,
   },
+  recentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+  },
   recentTitle: {
     fontSize: 12,
     fontWeight: '600',
     color: theme.colors.onSurfaceVariant,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    paddingHorizontal: theme.spacing.md,
+  },
+  clearRecentButton: {
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+  },
+  clearRecentText: {
+    fontSize: 13,
+    color: theme.colors.error,
+    fontWeight: '500',
+  },
     marginBottom: theme.spacing.sm,
   },
   recentItem: {
