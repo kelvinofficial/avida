@@ -269,7 +269,17 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       location_text: city.location_text || `${city.name}, ${selectedDistrict?.name || ''}, ${selectedRegion?.name || ''}`,
     };
     
+    // Save to recent locations
+    saveRecentLocation(locationData);
+    
     onChange(locationData);
+    closeModal();
+  };
+
+  const handleRecentLocationSelect = (location: LocationData) => {
+    // Save to recent locations (moves to top)
+    saveRecentLocation(location);
+    onChange(location);
     closeModal();
   };
 
