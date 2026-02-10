@@ -5572,6 +5572,103 @@ if SUBSCRIPTION_SERVICES_AVAILABLE:
     logger.info("Subscription Services initialized (Email, Auto-Renewal, Invoices)")
 
 # =============================================================================
+# SEO SITEMAP FOR BUSINESS PROFILES
+# =============================================================================
+
+@app.get("/sitemap.xml")
+async def get_sitemap():
+    """Generate XML sitemap for all public business profiles"""
+    from fastapi.responses import Response
+    
+    base_url = os.environ.get("SITE_URL", "https://verified-sellers-hub.preview.emergentagent.com")
+    
+    # Get all active, verified business profiles
+    profiles = await db.business_profiles.find(
+        {"is_active": True, "verification_status": {"$in": ["verified", "premium"]}},
+        {"slug": 1, "updated_at": 1, "is_premium": 1}
+    ).to_list(length=10000)
+    
+    # Build XML sitemap
+    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    
+    # Add homepage
+    xml_content += f'''  <url>
+    <loc>{base_url}/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>\n'''
+    
+    # Add business profiles
+    for profile in profiles:
+        slug = profile.get("slug", "")
+        if not slug:
+            continue
+        
+        updated = profile.get("updated_at", datetime.now(timezone.utc))
+        if isinstance(updated, datetime):
+            lastmod = updated.strftime("%Y-%m-%d")
+        else:
+            lastmod = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        
+        # Premium profiles get higher priority
+        priority = "0.9" if profile.get("is_premium") else "0.7"
+        
+        xml_content += f'''  <url>
+    <loc>{base_url}/business/{slug}</loc>
+    <lastmod>{lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>{priority}</priority>
+  </url>\n'''
+    
+    xml_content += '</urlset>'
+    
+    return Response(content=xml_content, media_type="application/xml")
+
+@app.get("/robots.txt")
+async def get_robots():
+    """Generate robots.txt with sitemap reference"""
+    from fastapi.responses import PlainTextResponse
+    
+    base_url = os.environ.get("SITE_URL", "https://verified-sellers-hub.preview.emergentagent.com")
+    
+    robots_content = f"""User-agent: *
+Allow: /
+Allow: /business/
+Disallow: /api/
+Disallow: /admin/
+Disallow: /profile/
+Disallow: /login
+Disallow: /register
+
+Sitemap: {base_url}/sitemap.xml
+"""
+    return PlainTextResponse(content=robots_content)
+
+@app.get("/api/seo/sitemap-stats")
+async def get_sitemap_stats():
+    """Get statistics about sitemap entries"""
+    total_profiles = await db.business_profiles.count_documents({"is_active": True})
+    verified_profiles = await db.business_profiles.count_documents({
+        "is_active": True, 
+        "verification_status": {"$in": ["verified", "premium"]}
+    })
+    premium_profiles = await db.business_profiles.count_documents({
+        "is_active": True, 
+        "is_premium": True
+    })
+    
+    return {
+        "total_profiles": total_profiles,
+        "verified_in_sitemap": verified_profiles,
+        "premium_profiles": premium_profiles,
+        "sitemap_url": "/sitemap.xml",
+        "robots_url": "/robots.txt"
+    }
+
+logger.info("SEO Sitemap endpoints registered (/sitemap.xml, /robots.txt)")
+
+# =============================================================================
 # ADMIN API PROXY - Forward /api/admin/* to admin backend on port 8002
 # =============================================================================
 
