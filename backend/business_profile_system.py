@@ -1096,7 +1096,7 @@ def create_business_profile_admin_router(db, require_admin):
             {"$set": update_data}
         )
         
-        # Notify user
+        # Notify user via in-app notification
         await db.notifications.insert_one({
             "id": str(uuid.uuid4()),
             "user_id": profile["user_id"],
@@ -1106,6 +1106,29 @@ def create_business_profile_admin_router(db, require_admin):
             "is_read": False,
             "created_at": now
         })
+        
+        # Send email notification
+        try:
+            from subscription_services import SubscriptionEmailService
+            from sendgrid import SendGridAPIClient
+            import os
+            
+            sendgrid_api_key = os.environ.get("SENDGRID_API_KEY")
+            if sendgrid_api_key:
+                sg_client = SendGridAPIClient(sendgrid_api_key)
+                email_service = SubscriptionEmailService(db, sg_client)
+                
+                user = await db.users.find_one({"user_id": profile["user_id"]})
+                if user and user.get("email"):
+                    await email_service.send_admin_premium_upgrade(
+                        user["email"],
+                        profile["business_name"],
+                        profile.get("identifier") or profile.get("slug", profile_id),
+                        expires_at.strftime("%B %d, %Y")
+                    )
+                    logger.info(f"Sent premium upgrade email to {user['email']}")
+        except Exception as e:
+            logger.warning(f"Failed to send premium upgrade email: {e}")
         
         logger.info(f"Profile {profile_id} upgraded to premium by {admin.get('email')}, expires {expires_at}")
         
