@@ -125,7 +125,7 @@ export default function LocationsPage() {
   const loadStats = async () => {
     try {
       const response = await api.get('/locations/stats');
-      setStats(response.data);
+      setStats(response);
     } catch (err) {
       console.error('Failed to load stats:', err);
     }
@@ -135,7 +135,7 @@ export default function LocationsPage() {
     try {
       setLoading(true);
       const response = await api.get('/locations/countries');
-      setCountries(response.data);
+      setCountries(response);
       setError(null);
     } catch (err: any) {
       setError(err.message || 'Failed to load countries');
@@ -148,7 +148,7 @@ export default function LocationsPage() {
     try {
       setLoading(true);
       const response = await api.get(`/locations/regions?country_code=${countryCode}`);
-      setRegions(response.data);
+      setRegions(response);
     } catch (err: any) {
       setError(err.message || 'Failed to load regions');
     } finally {
@@ -160,7 +160,7 @@ export default function LocationsPage() {
     try {
       setLoading(true);
       const response = await api.get(`/locations/districts?country_code=${countryCode}&region_code=${regionCode}`);
-      setDistricts(response.data);
+      setDistricts(response);
     } catch (err: any) {
       setError(err.message || 'Failed to load districts');
     } finally {
@@ -172,7 +172,7 @@ export default function LocationsPage() {
     try {
       setLoading(true);
       const response = await api.get(`/locations/cities?country_code=${countryCode}&region_code=${regionCode}&district_code=${districtCode}`);
-      setCities(response.data);
+      setCities(response);
     } catch (err: any) {
       setError(err.message || 'Failed to load cities');
     } finally {
