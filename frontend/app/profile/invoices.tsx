@@ -188,9 +188,34 @@ export default function InvoicesPage() {
         >
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Invoices</Text>
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle}>My Invoices</Text>
+          {userProfile?.is_premium && (
+            <View style={styles.premiumBadge} data-testid="premium-badge">
+              <Ionicons name="diamond" size={12} color="#fff" />
+              <Text style={styles.premiumBadgeText}>Premium</Text>
+            </View>
+          )}
+        </View>
         <View style={{ width: 40 }} />
       </View>
+
+      {/* Premium User Banner */}
+      {userProfile?.is_premium && (
+        <View style={styles.premiumBanner}>
+          <Ionicons name="shield-checkmark" size={18} color={COLORS.premium} />
+          <View style={styles.premiumBannerText}>
+            <Text style={styles.premiumBannerTitle}>
+              {userProfile?.name || user?.name || 'Premium Member'}
+            </Text>
+            {userProfile?.premium_expires_at && (
+              <Text style={styles.premiumBannerSubtitle}>
+                Valid until {new Date(userProfile.premium_expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </Text>
+            )}
+          </View>
+        </View>
+      )}
 
       <ScrollView
         style={styles.content}
@@ -208,14 +233,16 @@ export default function InvoicesPage() {
             <Text style={styles.emptySubtitle}>
               Your payment receipts and invoices will appear here after you make a purchase.
             </Text>
-            <TouchableOpacity 
-              style={styles.upgradeBtn}
-              onPress={() => router.push('/business/edit')}
-              data-testid="upgrade-premium-button"
-            >
-              <Ionicons name="diamond-outline" size={18} color="#fff" />
-              <Text style={styles.upgradeBtnText}>Upgrade to Premium</Text>
-            </TouchableOpacity>
+            {!userProfile?.is_premium && (
+              <TouchableOpacity 
+                style={styles.upgradeBtn}
+                onPress={() => router.push('/business/edit')}
+                data-testid="upgrade-premium-button"
+              >
+                <Ionicons name="diamond-outline" size={18} color="#fff" />
+                <Text style={styles.upgradeBtnText}>Upgrade to Premium</Text>
+              </TouchableOpacity>
+            )}
           </View>
         ) : (
           <View style={styles.invoicesList}>
