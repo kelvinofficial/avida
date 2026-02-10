@@ -435,6 +435,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     width: '100%',
   },
+  desktopContainer: {
+    maxWidth: 1280,
+  },
   scrollContentDesktop: {
     alignItems: 'center',
   },
