@@ -6759,6 +6759,270 @@ async def mark_ab_notification_read(notification_id: str, admin: dict = Depends(
     return {"message": "Notification marked as read"}
 
 # =============================================================================
+# SCHEDULED A/B WINNER CHECKING (Background Job)
+# =============================================================================
+
+# Global flag to track if scheduler is running
+ab_scheduler_running = False
+
+async def scheduled_winner_check():
+    """Background task to check for A/B test winners every 6 hours"""
+    global ab_scheduler_running
+    
+    # Check interval in seconds (6 hours = 21600 seconds)
+    CHECK_INTERVAL = int(os.environ.get('AB_CHECK_INTERVAL_HOURS', 6)) * 3600
+    
+    logger.info(f"A/B Winner Checker started - will check every {CHECK_INTERVAL // 3600} hours")
+    
+    while ab_scheduler_running:
+        try:
+            # Wait for the interval
+            await asyncio.sleep(CHECK_INTERVAL)
+            
+            if not ab_scheduler_running:
+                break
+            
+            logger.info("Running scheduled A/B winner check...")
+            
+            # Get all running experiments with smart_winner enabled
+            running = await db.ab_experiments.find({
+                "status": "running",
+                "smart_winner.enabled": True
+            }, {"_id": 0}).to_list(length=100)
+            
+            winners_found = 0
+            
+            for exp in running:
+                try:
+                    eval_result = await evaluate_experiment_for_winner(exp["id"])
+                    
+                    if eval_result.get("has_winner"):
+                        winners_found += 1
+                        smart_winner = exp.get("smart_winner", {})
+                        
+                        # Create notification
+                        notification = {
+                            "id": str(uuid.uuid4()),
+                            "type": "ab_winner_found",
+                            "experiment_id": exp["id"],
+                            "experiment_name": exp["name"],
+                            "winner_variant_id": eval_result["winner_variant_id"],
+                            "winner_variant_name": eval_result["winner_variant_name"],
+                            "improvement": eval_result["improvement"],
+                            "message": f"[Auto] Experiment '{exp['name']}' has a winner! {eval_result['winner_variant_name']} outperforms control by {eval_result['improvement']}%",
+                            "is_read": False,
+                            "source": "scheduled_check",
+                            "created_at": datetime.now(timezone.utc)
+                        }
+                        await db.admin_notifications.insert_one(notification)
+                        
+                        logger.info(f"Winner found for experiment '{exp['name']}': {eval_result['winner_variant_name']}")
+                        
+                        # If strategy is auto_rollout, declare winner
+                        if smart_winner.get("strategy") == "auto_rollout":
+                            now = datetime.now(timezone.utc)
+                            await db.ab_experiments.update_one(
+                                {"id": exp["id"]},
+                                {"$set": {
+                                    "status": "completed",
+                                    "winner_variant_id": eval_result["winner_variant_id"],
+                                    "winner_declared_at": now,
+                                    "winner_declared_by": "auto_scheduled",
+                                    "ended_at": now,
+                                    "updated_at": now
+                                }}
+                            )
+                            logger.info(f"Auto-stopped experiment '{exp['name']}' with winner")
+                        
+                        # If strategy is gradual, increase winner traffic
+                        elif smart_winner.get("strategy") == "gradual":
+                            # Find current winner traffic
+                            variants = exp.get("variants", [])
+                            winner_variant = None
+                            for v in variants:
+                                if v["id"] == eval_result["winner_variant_id"]:
+                                    winner_variant = v
+                                    break
+                            
+                            if winner_variant:
+                                current_traffic = winner_variant.get("traffic_percent", 50)
+                                # Gradual increase: 50 -> 75 -> 100
+                                if current_traffic < 75:
+                                    new_traffic = 75
+                                elif current_traffic < 100:
+                                    new_traffic = 100
+                                else:
+                                    new_traffic = current_traffic
+                                
+                                if new_traffic > current_traffic:
+                                    # Update variant traffic
+                                    remaining = 100 - new_traffic
+                                    other_count = len(variants) - 1
+                                    other_traffic = remaining // other_count if other_count > 0 else 0
+                                    
+                                    new_variants = []
+                                    for v in variants:
+                                        if v["id"] == eval_result["winner_variant_id"]:
+                                            v["traffic_percent"] = new_traffic
+                                        else:
+                                            v["traffic_percent"] = other_traffic
+                                        new_variants.append(v)
+                                    
+                                    await db.ab_experiments.update_one(
+                                        {"id": exp["id"]},
+                                        {"$set": {"variants": new_variants, "updated_at": datetime.now(timezone.utc)}}
+                                    )
+                                    logger.info(f"Gradual rollout: Increased winner traffic to {new_traffic}% for '{exp['name']}'")
+                                    
+                                    # If reached 100%, complete the experiment
+                                    if new_traffic >= 100:
+                                        now = datetime.now(timezone.utc)
+                                        await db.ab_experiments.update_one(
+                                            {"id": exp["id"]},
+                                            {"$set": {
+                                                "status": "completed",
+                                                "winner_variant_id": eval_result["winner_variant_id"],
+                                                "winner_declared_at": now,
+                                                "winner_declared_by": "gradual_rollout",
+                                                "ended_at": now
+                                            }}
+                                        )
+                
+                except Exception as e:
+                    logger.error(f"Error evaluating experiment {exp.get('id')}: {e}")
+            
+            # Log scheduled check to DB
+            await db.scheduled_jobs_log.insert_one({
+                "id": str(uuid.uuid4()),
+                "job_type": "ab_winner_check",
+                "experiments_checked": len(running),
+                "winners_found": winners_found,
+                "completed_at": datetime.now(timezone.utc)
+            })
+            
+            logger.info(f"Scheduled A/B check complete: {len(running)} experiments, {winners_found} winners found")
+            
+        except asyncio.CancelledError:
+            logger.info("A/B Winner Checker cancelled")
+            break
+        except Exception as e:
+            logger.error(f"Error in scheduled winner check: {e}")
+            # Continue running even if there's an error
+            await asyncio.sleep(60)  # Brief pause before retrying
+
+@app.on_event("startup")
+async def start_ab_scheduler():
+    """Start the A/B winner checker background task on server startup"""
+    global ab_scheduler_running
+    ab_scheduler_running = True
+    asyncio.create_task(scheduled_winner_check())
+    logger.info("A/B Winner Scheduler initialized")
+
+@app.on_event("shutdown")
+async def stop_ab_scheduler():
+    """Stop the A/B winner checker on server shutdown"""
+    global ab_scheduler_running
+    ab_scheduler_running = False
+    logger.info("A/B Winner Scheduler stopped")
+
+@app.get("/api/admin/ab-testing/scheduler-status")
+async def get_scheduler_status(admin: dict = Depends(get_current_admin)):
+    """Get status of the A/B testing scheduler"""
+    # Get last check log
+    last_check = await db.scheduled_jobs_log.find_one(
+        {"job_type": "ab_winner_check"},
+        {"_id": 0}
+    )
+    if last_check:
+        last_check = await db.scheduled_jobs_log.find(
+            {"job_type": "ab_winner_check"},
+            {"_id": 0}
+        ).sort("completed_at", -1).limit(1).to_list(length=1)
+        last_check = last_check[0] if last_check else None
+    
+    check_interval = int(os.environ.get('AB_CHECK_INTERVAL_HOURS', 6))
+    
+    return {
+        "scheduler_running": ab_scheduler_running,
+        "check_interval_hours": check_interval,
+        "last_check": last_check,
+        "next_check_approx": (datetime.now(timezone.utc) + timedelta(hours=check_interval)).isoformat() if ab_scheduler_running else None
+    }
+
+@app.post("/api/admin/ab-testing/trigger-check")
+async def trigger_manual_check(admin: dict = Depends(get_current_admin)):
+    """Manually trigger an immediate winner check (same as Check Winners button)"""
+    running = await db.ab_experiments.find({
+        "status": "running",
+        "smart_winner.enabled": True
+    }, {"_id": 0}).to_list(length=100)
+    
+    results = []
+    winners_found = 0
+    
+    for exp in running:
+        eval_result = await evaluate_experiment_for_winner(exp["id"])
+        
+        if eval_result.get("has_winner"):
+            winners_found += 1
+            smart_winner = exp.get("smart_winner", {})
+            
+            # Create notification
+            notification = {
+                "id": str(uuid.uuid4()),
+                "type": "ab_winner_found",
+                "experiment_id": exp["id"],
+                "experiment_name": exp["name"],
+                "winner_variant_id": eval_result["winner_variant_id"],
+                "winner_variant_name": eval_result["winner_variant_name"],
+                "improvement": eval_result["improvement"],
+                "message": f"Experiment '{exp['name']}' has a winner! {eval_result['winner_variant_name']} outperforms control by {eval_result['improvement']}%",
+                "is_read": False,
+                "source": "manual_trigger",
+                "created_at": datetime.now(timezone.utc)
+            }
+            await db.admin_notifications.insert_one(notification)
+            
+            # If strategy is auto_rollout, declare winner
+            if smart_winner.get("strategy") == "auto_rollout":
+                now = datetime.now(timezone.utc)
+                await db.ab_experiments.update_one(
+                    {"id": exp["id"]},
+                    {"$set": {
+                        "status": "completed",
+                        "winner_variant_id": eval_result["winner_variant_id"],
+                        "winner_declared_at": now,
+                        "winner_declared_by": "auto",
+                        "ended_at": now,
+                        "updated_at": now
+                    }}
+                )
+                eval_result["auto_stopped"] = True
+            
+            results.append({
+                "experiment_id": exp["id"],
+                "experiment_name": exp["name"],
+                **eval_result
+            })
+    
+    # Log the manual check
+    await db.scheduled_jobs_log.insert_one({
+        "id": str(uuid.uuid4()),
+        "job_type": "ab_winner_check",
+        "source": "manual",
+        "triggered_by": admin.get("email"),
+        "experiments_checked": len(running),
+        "winners_found": winners_found,
+        "completed_at": datetime.now(timezone.utc)
+    })
+    
+    return {
+        "checked": len(running),
+        "winners_found": winners_found,
+        "results": results
+    }
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
