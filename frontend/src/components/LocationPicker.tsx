@@ -105,7 +105,7 @@ interface LocationPickerProps {
   showRecentLocations?: boolean;
 }
 
-type SelectionStep = 'country' | 'region' | 'district' | 'city';
+type SelectionStep = 'country' | 'region';
 
 const RECENT_LOCATIONS_KEY = '@recent_locations';
 const MAX_RECENT_LOCATIONS = 5;
