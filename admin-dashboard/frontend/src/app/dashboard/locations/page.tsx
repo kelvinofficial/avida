@@ -29,15 +29,15 @@ import {
   Tooltip,
   ToggleButton,
   ToggleButtonGroup,
-  Autocomplete,
-  Tabs,
-  Tab,
   InputAdornment,
   List,
-  ListItem,
-  ListItemText,
   ListItemButton,
-  Divider,
+  ListItemText,
+  Menu,
+  MenuItem,
+  LinearProgress,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -53,7 +53,10 @@ import {
   Map as MapIcon,
   Search as SearchIcon,
   Upload as UploadIcon,
+  Download as DownloadIcon,
+  AutoFixHigh as AutoFixIcon,
   MyLocation as MyLocationIcon,
+  Layers as LayersIcon,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import dynamic from 'next/dynamic';
@@ -114,6 +117,14 @@ interface GeocodingResult {
   address: Record<string, string>;
 }
 
+interface HeatmapCity {
+  city_code: string;
+  city_name: string;
+  lat: number;
+  lng: number;
+  listing_count: number;
+}
+
 export default function LocationsPage() {
   const [viewMode, setViewMode] = useState<'table' | 'map'>('table');
   const [stats, setStats] = useState<LocationStats | null>(null);
@@ -150,11 +161,34 @@ export default function LocationsPage() {
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<any>(null);
 
+  // Bulk update
+  const [bulkUpdating, setBulkUpdating] = useState(false);
+  const [bulkUpdateResult, setBulkUpdateResult] = useState<any>(null);
+  const [bulkUpdateDialogOpen, setBulkUpdateDialogOpen] = useState(false);
+
+  // Export menu
+  const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
+
+  // Heatmap
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [heatmapData, setHeatmapData] = useState<number[][]>([]);
+  const [heatmapCities, setHeatmapCities] = useState<HeatmapCity[]>([]);
+
+  // Auto-suggest
+  const [suggestedCoords, setSuggestedCoords] = useState<{ lat: number; lng: number } | null>(null);
+
   useEffect(() => {
     loadStats();
     loadCountries();
     loadAllCities();
   }, []);
+
+  // Load heatmap data when enabled
+  useEffect(() => {
+    if (showHeatmap) {
+      loadHeatmapData();
+    }
+  }, [showHeatmap]);
 
   const loadStats = async () => {
     try {
@@ -203,6 +237,16 @@ export default function LocationsPage() {
       setAllCities(allCitiesData);
     } catch (err) {
       console.error('Failed to load all cities:', err);
+    }
+  };
+
+  const loadHeatmapData = async () => {
+    try {
+      const response = await api.get('/locations/listing-density');
+      setHeatmapData(response.heatmap_data || []);
+      setHeatmapCities(response.city_details || []);
+    } catch (err) {
+      console.error('Failed to load heatmap data:', err);
     }
   };
 
@@ -296,6 +340,26 @@ export default function LocationsPage() {
     setTimeout(() => setSuccessMessage(null), 3000);
   };
 
+  // Auto-suggest coordinates
+  const handleAutoSuggest = async () => {
+    if (!selectedCountry || !selectedRegion || !selectedDistrict) return;
+    
+    try {
+      const response = await api.get(`/locations/suggest-coordinates?country_code=${selectedCountry.code}&region_code=${selectedRegion.region_code}&district_code=${selectedDistrict.district_code}`);
+      
+      if (response.suggested_lat && response.suggested_lng) {
+        setFormData({ ...formData, lat: response.suggested_lat, lng: response.suggested_lng });
+        setSuggestedCoords({ lat: response.suggested_lat, lng: response.suggested_lng });
+        setSuccessMessage(`Suggested coordinates (${response.source}): ${response.suggested_lat.toFixed(4)}, ${response.suggested_lng.toFixed(4)}`);
+      } else {
+        setError(response.message || 'Could not suggest coordinates');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to get suggested coordinates');
+    }
+    setTimeout(() => setSuccessMessage(null), 3000);
+  };
+
   const openAddDialog = (type: 'country' | 'region' | 'district' | 'city', coords?: { lat: number; lng: number }) => {
     setDialogType(type);
     setEditItem(null);
@@ -306,6 +370,7 @@ export default function LocationsPage() {
     }
     setSearchQuery('');
     setSearchResults([]);
+    setSuggestedCoords(null);
     setDialogOpen(true);
   };
 
@@ -315,6 +380,7 @@ export default function LocationsPage() {
     setFormData(item);
     setSearchQuery('');
     setSearchResults([]);
+    setSuggestedCoords(null);
     setDialogOpen(true);
   };
 
@@ -451,6 +517,57 @@ export default function LocationsPage() {
     }
   };
 
+  // Bulk coordinate update
+  const handleBulkUpdate = async () => {
+    setBulkUpdating(true);
+    setBulkUpdateResult(null);
+    try {
+      const result = await api.post('/locations/bulk-update-coordinates', {});
+      setBulkUpdateResult(result);
+      if (result.updated_count > 0) {
+        loadStats();
+        loadAllCities();
+        if (selectedRegion) {
+          loadDistricts(selectedRegion.country_code, selectedRegion.region_code);
+        }
+        setSuccessMessage(`Updated coordinates for ${result.updated_count} districts`);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Bulk update failed');
+    } finally {
+      setBulkUpdating(false);
+    }
+  };
+
+  // Export functions
+  const handleExport = async (level: string) => {
+    setExportMenuAnchor(null);
+    try {
+      let params = `level=${level}`;
+      if (selectedCountry) params += `&country_code=${selectedCountry.code}`;
+      if (selectedRegion) params += `&region_code=${selectedRegion.region_code}`;
+      if (selectedDistrict) params += `&district_code=${selectedDistrict.district_code}`;
+      
+      const result = await api.get(`/locations/export?${params}`);
+      
+      // Download as file
+      const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `locations_${level}_${new Date().toISOString().split('T')[0]}.geojson`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      setSuccessMessage(`Exported ${result.metadata.feature_count} features`);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err: any) {
+      setError(err.message || 'Export failed');
+    }
+  };
+
   const renderBreadcrumbs = () => (
     <Breadcrumbs sx={{ mb: 2 }}>
       <Link 
@@ -536,6 +653,16 @@ export default function LocationsPage() {
           </List>
         </Paper>
       )}
+      {dialogType === 'city' && selectedDistrict && (
+        <Button
+          size="small"
+          startIcon={<MyLocationIcon />}
+          onClick={handleAutoSuggest}
+          sx={{ mt: 1 }}
+        >
+          Auto-suggest from nearby cities
+        </Button>
+      )}
     </Box>
   );
 
@@ -545,14 +672,38 @@ export default function LocationsPage() {
         <Typography variant="h4" component="h1">
           Location Manager
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Button 
+            startIcon={<AutoFixIcon />} 
+            variant="outlined"
+            color="secondary"
+            onClick={() => setBulkUpdateDialogOpen(true)}
+          >
+            Bulk Update
+          </Button>
           <Button 
             startIcon={<UploadIcon />} 
             variant="outlined"
             onClick={() => setImportDialogOpen(true)}
           >
-            Import GeoJSON
+            Import
           </Button>
+          <Button 
+            startIcon={<DownloadIcon />} 
+            variant="outlined"
+            onClick={(e) => setExportMenuAnchor(e.currentTarget)}
+          >
+            Export
+          </Button>
+          <Menu
+            anchorEl={exportMenuAnchor}
+            open={Boolean(exportMenuAnchor)}
+            onClose={() => setExportMenuAnchor(null)}
+          >
+            <MenuItem onClick={() => handleExport('cities')}>Export Cities</MenuItem>
+            <MenuItem onClick={() => handleExport('districts')}>Export Districts</MenuItem>
+            <MenuItem onClick={() => handleExport('all')}>Export All</MenuItem>
+          </Menu>
           <ToggleButtonGroup
             value={viewMode}
             exclusive
@@ -641,17 +792,29 @@ export default function LocationsPage() {
               {selectedDistrict 
                 ? `Cities in ${selectedDistrict.name}` 
                 : selectedRegion 
-                  ? `Districts in ${selectedRegion.name} (click to add district)` 
+                  ? `Districts in ${selectedRegion.name}` 
                   : selectedCountry 
                     ? `Regions in ${selectedCountry.name}` 
                     : 'All Cities (Map View)'
               }
             </Typography>
-            {(selectedDistrict || selectedRegion) && (
-              <Typography variant="body2" color="text.secondary">
-                Click on map to add • Drag markers to update coordinates
-              </Typography>
-            )}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={showHeatmap}
+                    onChange={(e) => setShowHeatmap(e.target.checked)}
+                    size="small"
+                  />
+                }
+                label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}><LayersIcon fontSize="small" /> Listing Heatmap</Box>}
+              />
+              {(selectedDistrict || selectedRegion) && (
+                <Typography variant="body2" color="text.secondary">
+                  Click on map to add • Drag markers to update
+                </Typography>
+              )}
+            </Box>
           </Box>
           <LocationMapView
             cities={currentCities}
@@ -665,6 +828,9 @@ export default function LocationsPage() {
             onCityDelete={(city) => handleDelete('city', city)}
             onDistrictClick={handleDistrictClick}
             onDistrictEdit={(district) => openEditDialog('district', district)}
+            showHeatmap={showHeatmap}
+            heatmapData={heatmapData}
+            heatmapCities={heatmapCities}
           />
         </Paper>
       )}
@@ -1056,6 +1222,49 @@ export default function LocationsPage() {
             startIcon={importing ? <CircularProgress size={20} /> : <UploadIcon />}
           >
             Import
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Bulk Update Dialog */}
+      <Dialog open={bulkUpdateDialogOpen} onClose={() => setBulkUpdateDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Bulk Update District Coordinates</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2 }}>
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              This will scan all districts without coordinates and attempt to find them using OpenStreetMap Nominatim.
+              <br /><br />
+              <strong>Note:</strong> This may take several minutes due to rate limiting (1 request/second).
+            </Alert>
+            {bulkUpdating && (
+              <Box sx={{ mb: 2 }}>
+                <LinearProgress />
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  Searching for coordinates... Please wait.
+                </Typography>
+              </Box>
+            )}
+            {bulkUpdateResult && (
+              <Alert 
+                severity={bulkUpdateResult.error_count > 0 ? 'warning' : 'success'} 
+                sx={{ mb: 2 }}
+              >
+                Updated: {bulkUpdateResult.updated_count} districts
+                {bulkUpdateResult.error_count > 0 && ` | Errors: ${bulkUpdateResult.error_count}`}
+              </Alert>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setBulkUpdateDialogOpen(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            color="secondary"
+            onClick={handleBulkUpdate}
+            disabled={bulkUpdating}
+            startIcon={bulkUpdating ? <CircularProgress size={20} /> : <AutoFixIcon />}
+          >
+            Start Bulk Update
           </Button>
         </DialogActions>
       </Dialog>
