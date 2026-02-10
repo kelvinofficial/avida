@@ -1967,13 +1967,24 @@ export default function PostListingScreen() {
   // Mobile Layout
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Loading overlay for edit mode */}
+      {editLoading && (
+        <View style={styles.editLoadingOverlay}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.editLoadingText}>Loading listing...</Text>
+        </View>
+      )}
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={prevStep}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
-          {step === 1 ? 'New Listing' : stepLabels[step - 1]}
+          {isEditMode 
+            ? (step === 1 ? 'Edit Listing' : `Edit: ${stepLabels[step - 1]}`)
+            : (step === 1 ? 'New Listing' : stepLabels[step - 1])
+          }
         </Text>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.cancelText}>Cancel</Text>
@@ -2014,8 +2025,10 @@ export default function PostListingScreen() {
               <ActivityIndicator color="#fff" />
             ) : (
               <>
-                <Ionicons name="checkmark-circle" size={20} color="#fff" />
-                <Text style={styles.publishButtonText}>Publish Listing</Text>
+                <Ionicons name={isEditMode ? "save" : "checkmark-circle"} size={20} color="#fff" />
+                <Text style={styles.publishButtonText}>
+                  {isEditMode ? 'Update Listing' : 'Publish Listing'}
+                </Text>
               </>
             )}
           </TouchableOpacity>
