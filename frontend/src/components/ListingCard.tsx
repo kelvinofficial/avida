@@ -195,12 +195,17 @@ export const ListingCard: React.FC<ListingCardProps> = ({
       </View>
       
       <View style={styles.content}>
-        {/* Location */}
+        {/* Location with distance */}
         <View style={styles.locationRow}>
           <Ionicons name="location" size={12} color={theme.colors.onSurfaceVariant} />
           <Text style={styles.location} numberOfLines={1}>
-            {listing.location}
+            {getDisplayLocation()}
           </Text>
+          {distance && (
+            <View style={styles.distanceBadge}>
+              <Text style={styles.distanceText}>{distance} away</Text>
+            </View>
+          )}
         </View>
 
         {/* Title */}
