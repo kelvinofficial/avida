@@ -561,7 +561,7 @@ export default function HomeScreen() {
         if (selectedLocationFilter.region_code) locationParams.region_code = selectedLocationFilter.region_code;
         if (selectedLocationFilter.district_code) locationParams.district_code = selectedLocationFilter.district_code;
         if (selectedLocationFilter.city_code) locationParams.city_code = selectedLocationFilter.city_code;
-      } else if (currentCity !== 'All Locations') {
+      } else if (currentCity !== 'Select Location' && currentCity !== 'All Locations') {
         // Fallback to text search for legacy compatibility
         locationParams.location = currentCity;
       }
@@ -572,7 +572,43 @@ export default function HomeScreen() {
       let listingsRes;
       let categoriesRes;
       
-      if (sandboxActive) {
+      // Use smart location-based search if city is selected
+      if (selectedCity && !sandboxActive) {
+        try {
+          listingsRes = await listingsApi.getByLocation({
+            city_code: selectedCity.city_code,
+            city_lat: selectedCity.lat,
+            city_lng: selectedCity.lng,
+            include_nearby: includeNearbyCities,
+            radius: searchRadius,
+            category: selectedCategory || undefined,
+            page: refresh ? 1 : page,
+            limit: 20,
+            only_my_city: !includeNearbyCities,
+          });
+          
+          // Handle expanded search message
+          if (listingsRes.expanded_search) {
+            setExpandedSearch(true);
+            setExpandedSearchMessage(listingsRes.message);
+          } else {
+            setExpandedSearch(false);
+            setExpandedSearchMessage(null);
+          }
+          
+          categoriesRes = await categoriesApi.getAll();
+        } catch (error) {
+          console.error('Error with location-based fetch:', error);
+          // Fallback to regular fetch
+          listingsRes = await listingsApi.getAll({ 
+            category: selectedCategory || undefined, 
+            ...locationParams,
+            page: refresh ? 1 : page, 
+            limit: 20 
+          });
+          categoriesRes = await categoriesApi.getAll();
+        }
+      } else if (sandboxActive) {
         // Use sandbox proxy APIs
         [listingsRes, categoriesRes] = await Promise.all([
           sandboxAwareListingsApi.getAll({ 
@@ -583,6 +619,8 @@ export default function HomeScreen() {
           }),
           sandboxAwareCategoriesApi.getAll(),
         ]);
+        setExpandedSearch(false);
+        setExpandedSearchMessage(null);
       } else {
         // Use normal production APIs
         [listingsRes, categoriesRes] = await Promise.all([
@@ -594,6 +632,8 @@ export default function HomeScreen() {
           }),
           categoriesApi.getAll(),
         ]);
+        setExpandedSearch(false);
+        setExpandedSearchMessage(null);
       }
       
       if (refresh) { setListings(listingsRes.listings || listingsRes); }
@@ -607,46 +647,9 @@ export default function HomeScreen() {
       }
     } catch (error) { console.error('Error fetching data:', error); }
     finally { setLoading(false); setRefreshing(false); setInitialLoadDone(true); }
-  }, [selectedCategory, currentCity, selectedLocationFilter, page, isAuthenticated, fetchNotificationCount]);
+  }, [selectedCategory, currentCity, selectedLocationFilter, selectedCity, includeNearbyCities, searchRadius, page, isAuthenticated, fetchNotificationCount]);
 
-  useEffect(() => { fetchData(true); }, [selectedCategory, currentCity, selectedLocationFilter]);
-
-  // Fetch nearby listings when Near Me is enabled and user has location
-  useEffect(() => {
-    const fetchNearbyListings = async () => {
-      if (!nearMeEnabled || !userLocation) return;
-      
-      try {
-        const nearby = await locationsApi.getNearby(
-          userLocation.lat,
-          userLocation.lng,
-          searchRadius, // Use dynamic radius from context
-          20, // limit
-          1,  // page
-          selectedCategory || undefined
-        );
-        setNearbyListings(nearby.listings || []);
-      } catch (error) {
-        console.error('Error fetching nearby listings:', error);
-        setNearbyListings([]);
-      }
-    };
-
-    fetchNearbyListings();
-  }, [nearMeEnabled, userLocation, selectedCategory, searchRadius]);
-
-  // Handle Near Me toggle
-  const handleNearMeToggle = async () => {
-    if (!nearMeEnabled) {
-      // Request location when enabling
-      const location = await requestLocation();
-      if (location) {
-        setNearMeEnabled(true);
-      }
-    } else {
-      setNearMeEnabled(false);
-    }
-  };
+  useEffect(() => { fetchData(true); }, [selectedCategory, currentCity, selectedLocationFilter, selectedCity, includeNearbyCities, searchRadius]);
 
   const onRefresh = useCallback(() => { setRefreshing(true); fetchData(true); }, [fetchData]);
 
