@@ -903,6 +903,108 @@ class ApiClient {
     const { data } = await this.client.put(`/banners/admin/pricing/${pricingId}`, update);
     return data;
   }
+
+  // =========================================================================
+  // VOUCHER MANAGEMENT (Proxied through admin backend to main backend)
+  // =========================================================================
+
+  async getVouchers(params?: { status?: string; voucher_type?: string; limit?: number; skip?: number }) {
+    const { data } = await this.client.get('/vouchers/list', { params });
+    return data;
+  }
+
+  async getVoucher(voucherId: string) {
+    const { data } = await this.client.get(`/vouchers/${voucherId}`);
+    return data;
+  }
+
+  async createVoucher(voucher: {
+    code: string;
+    voucher_type: 'amount' | 'percent' | 'credit';
+    value: number;
+    description?: string;
+    max_uses?: number;
+    max_uses_per_user?: number;
+    min_order_amount?: number;
+    max_discount_amount?: number;
+    valid_from?: string;
+    valid_until?: string;
+    allowed_user_ids?: string[];
+    new_users_only?: boolean;
+    verified_users_only?: boolean;
+    premium_users_only?: boolean;
+    allowed_categories?: string[];
+    excluded_categories?: string[];
+    stackable?: boolean;
+    is_active?: boolean;
+  }) {
+    const { data } = await this.client.post('/vouchers/create', voucher);
+    return data;
+  }
+
+  async updateVoucher(voucherId: string, updates: Record<string, any>) {
+    const { data } = await this.client.put(`/vouchers/${voucherId}`, updates);
+    return data;
+  }
+
+  async deleteVoucher(voucherId: string) {
+    const { data } = await this.client.delete(`/vouchers/${voucherId}`);
+    return data;
+  }
+
+  async getVoucherStats() {
+    const { data } = await this.client.get('/vouchers/stats');
+    return data;
+  }
+
+  // =========================================================================
+  // LISTING MODERATION (Proxied through admin backend to main backend)
+  // =========================================================================
+
+  async getModerationQueue(params?: { status?: string; category?: string; limit?: number; skip?: number }) {
+    const { data } = await this.client.get('/listing-moderation/queue', { params });
+    return data;
+  }
+
+  async moderateListing(listingId: string, decision: { action: 'validate' | 'reject' | 'remove'; reason?: string; notify_user?: boolean }) {
+    const { data } = await this.client.post(`/listing-moderation/decide/${listingId}`, decision);
+    return data;
+  }
+
+  async bulkModerateListing(listingIds: string[], action: string, reason?: string, notifyUsers?: boolean) {
+    const { data } = await this.client.post('/listing-moderation/bulk-decide', {
+      listing_ids: listingIds,
+      action,
+      reason,
+      notify_users: notifyUsers
+    });
+    return data;
+  }
+
+  async getModerationLog(params?: { listing_id?: string; admin_id?: string; action?: string; limit?: number }) {
+    const { data } = await this.client.get('/listing-moderation/log', { params });
+    return data;
+  }
+
+  async getListingLimitSettings() {
+    const { data } = await this.client.get('/listing-moderation/limits/settings');
+    return data;
+  }
+
+  async updateListingLimitSettings(settings: Record<string, any>) {
+    const { data } = await this.client.put('/listing-moderation/limits/settings', settings);
+    return data;
+  }
+
+  async getUserListingLimits(userId: string) {
+    const { data } = await this.client.get(`/listing-moderation/limits/user/${userId}`);
+    return data;
+  }
+
+  async setUserListingLimits(userId: string, limits: { tier?: string; custom_limit?: number; is_unlimited?: boolean }) {
+    const { data } = await this.client.put(`/listing-moderation/limits/user/${userId}`, limits);
+    return data;
+  }
 }
 
 export const api = new ApiClient();
