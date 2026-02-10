@@ -418,15 +418,15 @@ export default function HomeScreen() {
 
   const loadSavedLocation = async () => {
     try {
-      const saved = await AsyncStorage.getItem('@selected_city');
+      const saved = await Storage.getItem('@selected_city');
       if (saved) {
         const city = JSON.parse(saved);
         setSelectedCity(city);
         setCurrentCity(city.city_name);
       }
-      const savedRadius = await AsyncStorage.getItem('@search_radius');
+      const savedRadius = await Storage.getItem('@search_radius');
       if (savedRadius) setSearchRadius(parseInt(savedRadius, 10));
-      const savedInclude = await AsyncStorage.getItem('@include_nearby');
+      const savedInclude = await Storage.getItem('@include_nearby');
       if (savedInclude !== null) setIncludeNearbyCities(savedInclude === 'true');
     } catch (err) {
       console.error('Failed to load saved location:', err);
@@ -438,7 +438,7 @@ export default function HomeScreen() {
     if (city) {
       setCurrentCity(city.city_name);
       try {
-        await AsyncStorage.setItem('@selected_city', JSON.stringify(city));
+        await Storage.setItem('@selected_city', JSON.stringify(city));
       } catch (err) {
         console.error('Failed to save city:', err);
       }
@@ -448,7 +448,7 @@ export default function HomeScreen() {
   // Load recent subcategories from storage
   const loadRecentSubcategories = useCallback(async () => {
     try {
-      const stored = await AsyncStorage.getItem(RECENT_SUBCATEGORIES_KEY);
+      const stored = await Storage.getItem(RECENT_SUBCATEGORIES_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         // Keep only last 10 and those from last 30 days
@@ -490,7 +490,7 @@ export default function HomeScreen() {
       ].slice(0, 10);
       
       setRecentSubcategories(updated);
-      await AsyncStorage.setItem(RECENT_SUBCATEGORIES_KEY, JSON.stringify(updated));
+      await Storage.setItem(RECENT_SUBCATEGORIES_KEY, JSON.stringify(updated));
     } catch (error) {
       console.log('Error saving recent subcategory:', error);
     }
@@ -775,7 +775,7 @@ export default function HomeScreen() {
     setExpandedSearch(false);
     setExpandedSearchMessage(null);
     try {
-      await AsyncStorage.removeItem('@selected_city');
+      await Storage.removeItem('@selected_city');
     } catch (err) {
       console.error('Failed to clear saved city:', err);
     }
@@ -823,7 +823,7 @@ export default function HomeScreen() {
               value={includeNearbyCities}
               onValueChange={(value) => {
                 setIncludeNearbyCities(value);
-                AsyncStorage.setItem('@include_nearby', value.toString());
+                Storage.setItem('@include_nearby', value.toString());
               }}
               trackColor={{ false: '#ccc', true: '#81C784' }}
               thumbColor={includeNearbyCities ? '#2E7D32' : '#f4f3f4'}
@@ -838,7 +838,7 @@ export default function HomeScreen() {
                   style={[styles.radiusOption, searchRadius === r && styles.radiusOptionActive]}
                   onPress={() => {
                     setSearchRadius(r);
-                    AsyncStorage.setItem('@search_radius', r.toString());
+                    Storage.setItem('@search_radius', r.toString());
                   }}
                 >
                   <Text style={[styles.radiusText, searchRadius === r && styles.radiusTextActive]}>{r}km</Text>
@@ -1052,7 +1052,7 @@ export default function HomeScreen() {
               activeOpacity={0.7}
               onPress={() => {
                 setIncludeNearbyCities(!includeNearbyCities);
-                AsyncStorage.setItem('@include_nearby', (!includeNearbyCities).toString());
+                Storage.setItem('@include_nearby', (!includeNearbyCities).toString());
               }}
               data-testid="include-nearby-toggle-desktop"
             >
