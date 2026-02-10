@@ -281,11 +281,11 @@ except ImportError as e:
 
 # Listing Moderation System
 try:
-    from listing_moderation_system import create_moderation_router, check_user_can_post, should_auto_approve
-    MODERATION_SYSTEM_AVAILABLE = True
+    from listing_moderation_system import create_moderation_router as create_listing_moderation_router, check_user_can_post, should_auto_approve
+    LISTING_MODERATION_AVAILABLE = True
 except ImportError as e:
-    MODERATION_SYSTEM_AVAILABLE = False
-    logging.warning(f"Moderation system not available: {e}")
+    LISTING_MODERATION_AVAILABLE = False
+    logging.warning(f"Listing moderation system not available: {e}")
 
 # Admin Tools (SEO, URL Masking, Polls, Cookies, reCAPTCHA, WebP, Invoice PDF)
 try:
