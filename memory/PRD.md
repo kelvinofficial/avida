@@ -194,6 +194,7 @@ Payment success page with:
 - View voucher details with usage history
 - Delete voucher with confirmation
 - Status/Type filters
+- **Bulk CSV Import** with template download
 
 #### Admin Listing Moderation (`/dashboard/listing-moderation`)
 - Three tabs: Moderation Queue, Moderation Log, Settings
@@ -215,17 +216,52 @@ Payment success page with:
   - Tier limits configuration (Free, Basic, Premium)
   - Save Settings button
 
+### 2026-02-10: Full Admin Tools Suite
+**COMPLETED**
+
+#### SEO Tools (`/dashboard/seo-tools`)
+- **Meta Tags Tab**: Page-specific meta tags management (title, description, keywords, OG tags, robots)
+- **Global Settings Tab**: Site name, description, Twitter handle, OG image, Google Analytics/GTM/FB Pixel IDs
+- **Sitemap Tab**: Auto-generate toggle, include options (listings, categories, profiles), change frequency, regenerate button
+
+#### Polls & Surveys (`/dashboard/polls-surveys`)
+- Create feedback forms, surveys, and quick polls
+- Support for app feedback and feature improvement collection
+- Multiple question types: Text, Rating (1-5), Multiple Choice
+- Target audience filtering (all/verified/premium users)
+- Response export to JSON
+- Active/Inactive toggle
+
+#### Cookie Consent (`/dashboard/cookie-consent`)
+- **Banner Settings**: Enable toggle, banner text, policy URLs, preference customization
+- **Categories Tab**: Manage cookie categories (Necessary, Analytics, Marketing, Preferences)
+- **Appearance Tab**: Position, theme, button text customization
+- Statistics dashboard with consent tracking
+
+#### URL Shortener (`/dashboard/url-shortener`)
+- Create short URLs with custom codes
+- Click tracking with analytics
+- Stats cards: Total URLs, Active URLs, Total Clicks
+- Expiration date support
+
+#### reCAPTCHA (`/dashboard/recaptcha`)
+- v2 Invisible configuration (as requested)
+- Site key and secret key management
+- Protected forms selection (Login, Register, Contact, Checkout, etc.)
+- Score threshold for v3
+
+#### Image Settings (`/dashboard/image-settings`)
+- **WebP Conversion**: Auto-convert toggle, quality slider (10-100%)
+- Max dimensions and thumbnail size configuration
+- Allowed formats selection
+- **Batch Conversion**: Convert existing listing/profile images to WebP
+- Stats: Image counts by type
+
 ### Future/Backlog
 - [ ] PayPal SDK button integration on native platforms
 - [ ] M-Pesa callback handling in production (Safaricom API)
 - [ ] End-to-end user flow test (create -> verify -> premium upgrade)
 - [ ] Region search bar visibility fix in LocationPicker
-- [ ] Admin UI for advanced SEO tools
-- [ ] Admin UI for Polls/Surveys
-- [ ] Admin UI for Cookie Consent management
-- [ ] WebP image generation implementation
-- [ ] Invisible reCAPTCHA integration
-- [ ] URL masking functionality
 
 ## Testing Status
 - Backend: 100% (All tests passed)
