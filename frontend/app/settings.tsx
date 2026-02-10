@@ -1076,4 +1076,54 @@ const desktopStyles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  // Location section styles
+  locationSection: {
+    padding: 16,
+  },
+  locationInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    marginBottom: 16,
+  },
+  locationTextContainer: {
+    flex: 1,
+  },
+  locationLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  locationValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginTop: 4,
+  },
+  locationHint: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    backgroundColor: COLORS.background,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  locationPickerContainer: {
+    marginBottom: 16,
+  },
+  clearLocationBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.error,
+    alignSelf: 'flex-start',
+  },
+  clearLocationText: {
+    fontSize: 14,
+    color: COLORS.error,
+    fontWeight: '500',
+  },
 });
