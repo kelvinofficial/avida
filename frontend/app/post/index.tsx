@@ -20,6 +20,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { listingsApi, categoriesApi } from '../../src/utils/api';
+import api from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
 import { 
   ALL_CATEGORIES, 
