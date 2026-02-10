@@ -221,6 +221,14 @@ except ImportError as e:
     LOCATION_SYSTEM_AVAILABLE = False
     logging.warning(f"Location System not available: {e}")
 
+# Business Profile System
+try:
+    from business_profile_system import create_business_profile_router, create_business_profile_admin_router
+    BUSINESS_PROFILE_AVAILABLE = True
+except ImportError as e:
+    BUSINESS_PROFILE_AVAILABLE = False
+    logging.warning(f"Business Profile System not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
