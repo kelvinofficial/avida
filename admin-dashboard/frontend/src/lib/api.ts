@@ -1216,6 +1216,10 @@ class ApiClient {
     assignment_type?: string;
     min_sample_size?: number;
     confidence_level?: number;
+    smart_winner_enabled?: boolean;
+    smart_winner_strategy?: string;
+    min_runtime_hours?: number;
+    notification_emails?: string[];
   }) {
     const { data } = await this.client.post('/experiments/create', experiment);
     return data;
