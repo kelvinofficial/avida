@@ -1,7 +1,7 @@
 /**
  * LocationPicker Component
  * Hierarchical location selection: Country → Region → District → City
- * Supports search and GPS location detection
+ * Supports search, GPS location detection, and recent locations
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -17,6 +17,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { theme } from '../utils/theme';
 import { locationsApi } from '../utils/api';
 
