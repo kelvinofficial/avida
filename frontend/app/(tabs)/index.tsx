@@ -748,7 +748,7 @@ export default function HomeScreen() {
           {nearMeEnabled ? 'Near Me' : (selectedCategory ? FULL_CATEGORIES.find(c => c.id === selectedCategory)?.name || 'Listings' : 'Recent Listings')}
         </Text>
         {(selectedCategory || nearMeEnabled) && (
-          <TouchableOpacity onPress={() => setSelectedCategory(null)}>
+          <TouchableOpacity onPress={() => { setSelectedCategory(null); setNearMeEnabled(false); }}>
             <Text style={styles.clearFilter}>Clear</Text>
           </TouchableOpacity>
         )}
