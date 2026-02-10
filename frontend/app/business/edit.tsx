@@ -1021,10 +1021,11 @@ export default function BusinessProfileEditScreen() {
               <TouchableOpacity
                 style={styles.successCloseBtn}
                 onPress={() => setShowSuccessModal(false)}
-            >
-              <Text style={styles.successCloseBtnText}>Continue Editing</Text>
-            </TouchableOpacity>
-          </View>
+              >
+                <Text style={styles.successCloseBtnText}>Continue Editing</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
         </View>
       </Modal>
     </SafeAreaView>
