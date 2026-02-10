@@ -48,6 +48,8 @@ interface BusinessProfile {
   city: string | null;
   country: string | null;
   is_verified: boolean;
+  is_premium: boolean;
+  verification_tier: string;
   total_listings: number;
   total_views: number;
   created_at: string;
