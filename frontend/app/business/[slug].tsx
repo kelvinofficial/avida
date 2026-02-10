@@ -80,7 +80,13 @@ const ListingCard = ({ item, onPress }: { item: Listing; onPress: () => void }) 
       onPress={onPress}
       data-testid={`listing-card-${item.id}`}
     >
-      <Image source={imageSource} style={cardStyles.image} />
+      {hasImage ? (
+        <Image source={{ uri: item.images[0] }} style={cardStyles.image} />
+      ) : (
+        <View style={[cardStyles.image, { backgroundColor: COLORS.border, justifyContent: 'center', alignItems: 'center' }]}>
+          <Ionicons name="image-outline" size={32} color={COLORS.textSecondary} />
+        </View>
+      )}
       <View style={cardStyles.content}>
         <Text style={cardStyles.price}>EUR {item.price?.toLocaleString()}</Text>
         <Text style={cardStyles.title} numberOfLines={2}>{item.title}</Text>
