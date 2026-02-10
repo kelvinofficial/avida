@@ -343,24 +343,10 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   };
 
   const goBack = () => {
-    switch (currentStep) {
-      case 'region':
-        setCurrentStep('country');
-        setSelectedCountry(null);
-        setRegions([]);
-        break;
-      case 'district':
-        setCurrentStep('region');
-        setSelectedRegion(null);
-        setDistricts([]);
-        break;
-      case 'city':
-        setCurrentStep('district');
-        setSelectedDistrict(null);
-        setCities([]);
-        setSearchQuery('');
-        setSearchResults([]);
-        break;
+    if (currentStep === 'region') {
+      setCurrentStep('country');
+      setSelectedCountry(null);
+      setRegions([]);
     }
   };
 
@@ -370,10 +356,6 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         return 'Select Country';
       case 'region':
         return `Select Region in ${selectedCountry?.name || ''}`;
-      case 'district':
-        return `Select District in ${selectedRegion?.name || ''}`;
-      case 'city':
-        return `Select City in ${selectedDistrict?.name || ''}`;
     }
   };
 
