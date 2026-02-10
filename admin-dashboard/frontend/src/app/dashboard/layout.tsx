@@ -113,6 +113,7 @@ const menuItems = [
   { text: 'URL Shortener', icon: <Link />, path: '/dashboard/url-shortener' },
   { text: 'reCAPTCHA', icon: <Security />, path: '/dashboard/recaptcha' },
   { text: 'Image Settings', icon: <Image />, path: '/dashboard/image-settings' },
+  { text: 'A/B Testing', icon: <Science />, path: '/dashboard/ab-testing' },
   { text: 'Notifications', icon: <NotificationsActive />, path: '/dashboard/notifications' },
   { text: 'Smart Notifications', icon: <Notifications />, path: '/dashboard/smart-notifications' },
   { text: 'Notification Analytics', icon: <TrendingUp />, path: '/dashboard/notification-analytics' },
