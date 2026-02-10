@@ -6559,6 +6559,204 @@ async def track_event(request: Request):
     
     return {"message": "Event tracked"}
 
+# Smart Winner evaluation function
+async def evaluate_experiment_for_winner(experiment_id: str) -> dict:
+    """Evaluate if an experiment has a statistically significant winner"""
+    experiment = await db.ab_experiments.find_one({"id": experiment_id}, {"_id": 0})
+    if not experiment or experiment.get("status") != "running":
+        return {"has_winner": False, "reason": "Experiment not running"}
+    
+    smart_winner = experiment.get("smart_winner", {})
+    if not smart_winner.get("enabled"):
+        return {"has_winner": False, "reason": "Smart winner not enabled"}
+    
+    # Check minimum runtime
+    started_at = experiment.get("started_at")
+    if started_at:
+        if isinstance(started_at, str):
+            started_at = datetime.fromisoformat(started_at.replace('Z', '+00:00'))
+        min_hours = smart_winner.get("min_runtime_hours", 48)
+        runtime = (datetime.now(timezone.utc) - started_at).total_seconds() / 3600
+        if runtime < min_hours:
+            return {"has_winner": False, "reason": f"Min runtime not met ({runtime:.1f}/{min_hours}h)"}
+    
+    # Get results for each variant
+    variants = experiment.get("variants", [])
+    min_sample = experiment.get("min_sample_size", 100)
+    confidence = experiment.get("confidence_level", 95)
+    goal_type = experiment.get("goal_type", "conversion")
+    
+    # Map goal type to event type
+    event_type_map = {"conversion": "conversion", "click": "click", "consent": "consent"}
+    target_event = event_type_map.get(goal_type, "conversion")
+    
+    results = []
+    control_result = None
+    
+    for variant in variants:
+        participants = await db.ab_assignments.count_documents({
+            "experiment_id": experiment_id,
+            "variant_id": variant["id"]
+        })
+        
+        if participants < min_sample:
+            return {"has_winner": False, "reason": f"Min sample not met for {variant['name']}"}
+        
+        conversions = await db.ab_events.count_documents({
+            "experiment_id": experiment_id,
+            "variant_id": variant["id"],
+            "event_type": target_event
+        })
+        
+        rate = conversions / participants if participants > 0 else 0
+        
+        result = {
+            "variant_id": variant["id"],
+            "variant_name": variant["name"],
+            "is_control": variant.get("is_control", False),
+            "participants": participants,
+            "conversions": conversions,
+            "rate": rate
+        }
+        results.append(result)
+        
+        if variant.get("is_control"):
+            control_result = result
+    
+    if not control_result:
+        control_result = results[0]  # Use first variant as control
+    
+    # Find best performing non-control variant
+    best_variant = None
+    best_improvement = 0
+    is_significant = False
+    
+    for result in results:
+        if result["variant_id"] == control_result["variant_id"]:
+            continue
+        
+        # Calculate z-score
+        p1 = control_result["rate"]
+        p2 = result["rate"]
+        n1 = control_result["participants"]
+        n2 = result["participants"]
+        
+        if p1 + p2 > 0 and n1 > 0 and n2 > 0:
+            p_pooled = (p1 * n1 + p2 * n2) / (n1 + n2)
+            if p_pooled > 0 and p_pooled < 1:
+                se = (p_pooled * (1 - p_pooled) * (1/n1 + 1/n2)) ** 0.5
+                if se > 0:
+                    z = (p2 - p1) / se
+                    
+                    # Z-score thresholds: 90%=1.645, 95%=1.96, 99%=2.576
+                    z_threshold = {90: 1.645, 95: 1.96, 99: 2.576}.get(confidence, 1.96)
+                    
+                    if z > z_threshold:  # Positive z means variant beats control
+                        improvement = ((p2 - p1) / p1 * 100) if p1 > 0 else 0
+                        if improvement > best_improvement:
+                            best_improvement = improvement
+                            best_variant = result
+                            is_significant = True
+    
+    if is_significant and best_variant:
+        return {
+            "has_winner": True,
+            "winner_variant_id": best_variant["variant_id"],
+            "winner_variant_name": best_variant["variant_name"],
+            "improvement": round(best_improvement, 2),
+            "control_rate": round(control_result["rate"] * 100, 2),
+            "winner_rate": round(best_variant["rate"] * 100, 2),
+            "confidence": confidence
+        }
+    
+    return {"has_winner": False, "reason": "No statistically significant winner yet"}
+
+@app.post("/api/admin/experiments/{experiment_id}/evaluate")
+async def evaluate_experiment(experiment_id: str, admin: dict = Depends(get_current_admin)):
+    """Manually trigger winner evaluation for an experiment"""
+    result = await evaluate_experiment_for_winner(experiment_id)
+    return result
+
+@app.post("/api/admin/experiments/check-all-winners")
+async def check_all_experiments_for_winners(admin: dict = Depends(get_current_admin)):
+    """Check all running experiments for winners (admin triggered)"""
+    running = await db.ab_experiments.find({"status": "running"}, {"_id": 0}).to_list(length=100)
+    
+    results = []
+    winners_found = 0
+    
+    for exp in running:
+        smart_winner = exp.get("smart_winner", {})
+        if not smart_winner.get("enabled"):
+            continue
+        
+        eval_result = await evaluate_experiment_for_winner(exp["id"])
+        
+        if eval_result.get("has_winner"):
+            winners_found += 1
+            
+            # Create notification
+            notification = {
+                "id": str(uuid.uuid4()),
+                "type": "ab_winner_found",
+                "experiment_id": exp["id"],
+                "experiment_name": exp["name"],
+                "winner_variant_id": eval_result["winner_variant_id"],
+                "winner_variant_name": eval_result["winner_variant_name"],
+                "improvement": eval_result["improvement"],
+                "message": f"Experiment '{exp['name']}' has a winner! {eval_result['winner_variant_name']} outperforms control by {eval_result['improvement']}%",
+                "is_read": False,
+                "created_at": datetime.now(timezone.utc)
+            }
+            await db.admin_notifications.insert_one(notification)
+            
+            # If strategy is auto_rollout, declare winner
+            if smart_winner.get("strategy") == "auto_rollout":
+                now = datetime.now(timezone.utc)
+                await db.ab_experiments.update_one(
+                    {"id": exp["id"]},
+                    {"$set": {
+                        "status": "completed",
+                        "winner_variant_id": eval_result["winner_variant_id"],
+                        "winner_declared_at": now,
+                        "winner_declared_by": "auto",
+                        "ended_at": now,
+                        "updated_at": now
+                    }}
+                )
+                eval_result["auto_stopped"] = True
+            
+            results.append({
+                "experiment_id": exp["id"],
+                "experiment_name": exp["name"],
+                **eval_result
+            })
+    
+    return {
+        "checked": len(running),
+        "winners_found": winners_found,
+        "results": results
+    }
+
+@app.get("/api/admin/notifications/ab-winners")
+async def get_winner_notifications(admin: dict = Depends(get_current_admin)):
+    """Get A/B testing winner notifications"""
+    notifications = await db.admin_notifications.find(
+        {"type": "ab_winner_found"},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(50).to_list(length=50)
+    
+    return {"notifications": notifications}
+
+@app.put("/api/admin/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str, admin: dict = Depends(get_current_admin)):
+    """Mark notification as read"""
+    await db.admin_notifications.update_one(
+        {"id": notification_id},
+        {"$set": {"is_read": True, "read_at": datetime.now(timezone.utc)}}
+    )
+    return {"message": "Notification marked as read"}
+
 # =============================================================================
 # MAIN
 # =============================================================================
