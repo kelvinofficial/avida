@@ -412,8 +412,11 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       case 'city':
         const city = item as City;
         return (
-          <TouchableOpacity
-            style={styles.listItem}
+          <Pressable
+            style={({ pressed }) => [
+              styles.listItem,
+              pressed && { backgroundColor: theme.colors.surfaceVariant }
+            ]}
             onPress={() => handleCitySelect(city)}
             data-testid={`city-${city.city_code}`}
           >
@@ -428,7 +431,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                 </Text>
               )}
             </View>
-          </TouchableOpacity>
+          </Pressable>
         );
     }
   };
