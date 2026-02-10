@@ -828,6 +828,7 @@ export default function HomeScreen() {
                     onPress={() => router.push(`/listing/${item.id}`)}
                     onFavorite={() => toggleFavorite(item.id)}
                     isFavorited={favorites.has(item.id)}
+                    userLocation={userLocation}
                   />
                 </View>
               ))}
