@@ -17,12 +17,47 @@ TEST_USER_PASSWORD = "testpass123"
 TEST_USER_NAME = "Premium Test User"
 
 
+@pytest.fixture(scope="module")
+def session():
+    """Create requests session"""
+    return requests.Session()
+
+
+@pytest.fixture(scope="module")
+def auth_token(session):
+    """Create a test user and get auth token"""
+    # Register user
+    reg_response = session.post(f"{BASE_URL}/api/auth/signup", json={
+        "email": TEST_USER_EMAIL,
+        "password": TEST_USER_PASSWORD,
+        "name": TEST_USER_NAME
+    })
+    
+    # Login to get token
+    login_response = session.post(f"{BASE_URL}/api/auth/login", json={
+        "email": TEST_USER_EMAIL,
+        "password": TEST_USER_PASSWORD
+    })
+    
+    if login_response.status_code != 200:
+        pytest.skip(f"Could not login test user: {login_response.text}")
+    
+    data = login_response.json()
+    return data.get("session_token")
+
+
+@pytest.fixture(scope="module")
+def auth_headers(auth_token):
+    """Get authenticated headers"""
+    return {"Authorization": f"Bearer {auth_token}"}
+
+
 class TestPremiumSubscriptionPublicEndpoints:
     """Test public premium subscription endpoints (no auth required)"""
     
-    def test_get_packages_returns_all_payment_options(self):
+    def test_get_packages_returns_all_payment_options(self, session):
         """GET /api/premium-subscription/packages - Returns all payment packages"""
-        response = requests.get(f"{BASE_URL}/api/premium-subscription/packages")
+        response = session.get(f"{BASE_URL}/api/premium-subscription/packages")
         
         assert response.status_code == 200
         data = response.json()
@@ -68,9 +103,9 @@ class TestPremiumSubscriptionPublicEndpoints:
 class TestInvoiceEndpoints:
     """Test invoice API endpoints - require authentication"""
     
-    def test_invoices_requires_auth(self):
+    def test_invoices_requires_auth(self, session):
         """GET /api/invoices - Should return 401 when not logged in"""
-        response = requests.get(f"{BASE_URL}/api/invoices")
+        response = session.get(f"{BASE_URL}/api/invoices")
         
         assert response.status_code == 401
         data = response.json()
@@ -78,16 +113,16 @@ class TestInvoiceEndpoints:
         
         print("PASSED: /api/invoices correctly requires authentication")
     
-    def test_invoice_by_id_requires_auth(self):
+    def test_invoice_by_id_requires_auth(self, session):
         """GET /api/invoices/{id} - Should return 401 when not logged in"""
-        response = requests.get(f"{BASE_URL}/api/invoices/fake-invoice-id")
+        response = session.get(f"{BASE_URL}/api/invoices/fake-invoice-id")
         
         assert response.status_code == 401
         print("PASSED: /api/invoices/{id} correctly requires authentication")
     
-    def test_invoice_html_requires_auth(self):
+    def test_invoice_html_requires_auth(self, session):
         """GET /api/invoices/{id}/html - Should return 401 when not logged in"""
-        response = requests.get(f"{BASE_URL}/api/invoices/fake-invoice-id/html")
+        response = session.get(f"{BASE_URL}/api/invoices/fake-invoice-id/html")
         
         assert response.status_code == 401
         print("PASSED: /api/invoices/{id}/html correctly requires authentication")
@@ -96,36 +131,9 @@ class TestInvoiceEndpoints:
 class TestAuthenticatedPremiumEndpoints:
     """Test endpoints that require authentication"""
     
-    @pytest.fixture(autouse=True)
-    def setup_auth(self):
-        """Create a test user and get auth token"""
-        # Register user
-        reg_response = requests.post(f"{BASE_URL}/api/auth/signup", json={
-            "email": TEST_USER_EMAIL,
-            "password": TEST_USER_PASSWORD,
-            "name": TEST_USER_NAME
-        })
-        
-        if reg_response.status_code not in [200, 201, 409]:
-            pytest.skip(f"Could not create test user: {reg_response.text}")
-        
-        # Login to get token
-        login_response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": TEST_USER_EMAIL,
-            "password": TEST_USER_PASSWORD
-        })
-        
-        if login_response.status_code != 200:
-            pytest.skip(f"Could not login test user: {login_response.text}")
-        
-        self.token = login_response.json().get("session_token")
-        self.headers = {"Authorization": f"Bearer {self.token}"}
-        self.user_id = login_response.json().get("user_id")
-        print(f"Created test user: {TEST_USER_EMAIL}")
-    
-    def test_stripe_checkout_requires_auth(self):
+    def test_stripe_checkout_requires_auth_without_token(self, session):
         """POST /api/premium-subscription/stripe/checkout - Requires auth"""
-        response = requests.post(f"{BASE_URL}/api/premium-subscription/stripe/checkout", json={
+        response = session.post(f"{BASE_URL}/api/premium-subscription/stripe/checkout", json={
             "package_id": "monthly",
             "origin_url": "https://example.com",
             "business_profile_id": "fake-id"
@@ -134,9 +142,9 @@ class TestAuthenticatedPremiumEndpoints:
         assert response.status_code == 401
         print("PASSED: Stripe checkout requires authentication")
     
-    def test_paypal_checkout_requires_auth(self):
+    def test_paypal_checkout_requires_auth_without_token(self, session):
         """POST /api/premium-subscription/paypal/checkout - Requires auth"""
-        response = requests.post(f"{BASE_URL}/api/premium-subscription/paypal/checkout", json={
+        response = session.post(f"{BASE_URL}/api/premium-subscription/paypal/checkout", json={
             "package_id": "monthly",
             "origin_url": "https://example.com",
             "business_profile_id": "fake-id"
@@ -145,9 +153,9 @@ class TestAuthenticatedPremiumEndpoints:
         assert response.status_code == 401
         print("PASSED: PayPal checkout requires authentication")
     
-    def test_mpesa_stk_push_requires_auth(self):
+    def test_mpesa_stk_push_requires_auth_without_token(self, session):
         """POST /api/premium-subscription/mpesa/stk-push - Requires auth"""
-        response = requests.post(f"{BASE_URL}/api/premium-subscription/mpesa/stk-push", json={
+        response = session.post(f"{BASE_URL}/api/premium-subscription/mpesa/stk-push", json={
             "package_id": "monthly_kes",
             "phone_number": "+254712345678",
             "business_profile_id": "fake-id"
@@ -156,16 +164,16 @@ class TestAuthenticatedPremiumEndpoints:
         assert response.status_code == 401
         print("PASSED: M-Pesa STK push requires authentication")
     
-    def test_my_subscription_requires_auth(self):
+    def test_my_subscription_requires_auth_without_token(self, session):
         """GET /api/premium-subscription/my-subscription - Requires auth"""
-        response = requests.get(f"{BASE_URL}/api/premium-subscription/my-subscription")
+        response = session.get(f"{BASE_URL}/api/premium-subscription/my-subscription")
         
         assert response.status_code == 401
         print("PASSED: my-subscription requires authentication")
     
-    def test_get_user_invoices_with_auth(self):
+    def test_get_user_invoices_with_auth(self, session, auth_headers):
         """GET /api/invoices - Returns invoices for authenticated user"""
-        response = requests.get(f"{BASE_URL}/api/invoices", headers=self.headers)
+        response = session.get(f"{BASE_URL}/api/invoices", headers=auth_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -174,9 +182,9 @@ class TestAuthenticatedPremiumEndpoints:
         
         print(f"PASSED: User invoices API returns {len(data['invoices'])} invoices")
     
-    def test_my_subscription_returns_status(self):
+    def test_my_subscription_returns_status(self, session, auth_headers):
         """GET /api/premium-subscription/my-subscription - Returns subscription status"""
-        response = requests.get(f"{BASE_URL}/api/premium-subscription/my-subscription", headers=self.headers)
+        response = session.get(f"{BASE_URL}/api/premium-subscription/my-subscription", headers=auth_headers)
         
         assert response.status_code == 200
         data = response.json()
@@ -191,11 +199,11 @@ class TestAuthenticatedPremiumEndpoints:
         
         print(f"PASSED: my-subscription returns correct status: {data}")
     
-    def test_stripe_checkout_requires_valid_business_profile(self):
+    def test_stripe_checkout_requires_valid_business_profile(self, session, auth_headers):
         """POST /api/premium-subscription/stripe/checkout - Fails without valid business profile"""
-        response = requests.post(
+        response = session.post(
             f"{BASE_URL}/api/premium-subscription/stripe/checkout",
-            headers=self.headers,
+            headers=auth_headers,
             json={
                 "package_id": "monthly",
                 "origin_url": "https://example.com",
@@ -209,11 +217,11 @@ class TestAuthenticatedPremiumEndpoints:
         
         print("PASSED: Stripe checkout validates business profile ownership")
     
-    def test_paypal_checkout_requires_valid_business_profile(self):
+    def test_paypal_checkout_requires_valid_business_profile(self, session, auth_headers):
         """POST /api/premium-subscription/paypal/checkout - Fails without valid business profile"""
-        response = requests.post(
+        response = session.post(
             f"{BASE_URL}/api/premium-subscription/paypal/checkout",
-            headers=self.headers,
+            headers=auth_headers,
             json={
                 "package_id": "monthly",
                 "origin_url": "https://example.com",
@@ -224,11 +232,11 @@ class TestAuthenticatedPremiumEndpoints:
         assert response.status_code == 404
         print("PASSED: PayPal checkout validates business profile ownership")
     
-    def test_mpesa_checkout_requires_valid_business_profile(self):
+    def test_mpesa_checkout_requires_valid_business_profile(self, session, auth_headers):
         """POST /api/premium-subscription/mpesa/stk-push - Fails without valid business profile"""
-        response = requests.post(
+        response = session.post(
             f"{BASE_URL}/api/premium-subscription/mpesa/stk-push",
-            headers=self.headers,
+            headers=auth_headers,
             json={
                 "package_id": "monthly_kes",
                 "phone_number": "+254712345678",
@@ -238,101 +246,46 @@ class TestAuthenticatedPremiumEndpoints:
         
         assert response.status_code == 404
         print("PASSED: M-Pesa checkout validates business profile ownership")
-    
-    def test_stripe_checkout_validates_package_id(self):
-        """POST /api/premium-subscription/stripe/checkout - Validates package ID"""
-        # First create a business profile
-        bp_response = requests.post(
-            f"{BASE_URL}/api/business-profiles/",
-            headers=self.headers,
-            json={
-                "business_name": f"Premium Test Business {uuid.uuid4().hex[:6]}",
-                "description": "Test business for premium subscription testing"
-            }
-        )
-        
-        if bp_response.status_code in [200, 201]:
-            profile_id = bp_response.json().get("id")
-            
-            # Try checkout with invalid package
-            response = requests.post(
-                f"{BASE_URL}/api/premium-subscription/stripe/checkout",
-                headers=self.headers,
-                json={
-                    "package_id": "invalid_package",
-                    "origin_url": "https://example.com",
-                    "business_profile_id": profile_id
-                }
-            )
-            
-            assert response.status_code == 400
-            assert "Invalid package ID" in response.json().get("detail", "")
-            
-            print("PASSED: Stripe checkout validates package ID")
-        else:
-            pytest.skip("Could not create business profile for package validation test")
 
 
 class TestAdminSubscriptionEndpoints:
     """Test admin subscription management endpoints"""
     
-    def test_admin_check_renewals_requires_auth(self):
+    def test_admin_check_renewals_requires_auth(self, session):
         """POST /api/admin/subscriptions/check-renewals - Requires authentication"""
-        response = requests.post(f"{BASE_URL}/api/admin/subscriptions/check-renewals")
+        response = session.post(f"{BASE_URL}/api/admin/subscriptions/check-renewals")
         
         # Should return 401 (not authenticated) or 307 (redirect to login)
         assert response.status_code in [401, 307, 403]
         print("PASSED: Admin check-renewals requires authentication")
     
-    def test_admin_check_renewals_requires_admin_role(self):
-        """POST /api/admin/subscriptions/check-renewals - Requires admin role"""
-        # Create a regular user
-        email = f"regular_user_{uuid.uuid4().hex[:8]}@example.com"
+    def test_admin_check_renewals_requires_admin_role(self, session, auth_headers):
+        """POST /api/admin/subscriptions/check-renewals - Requires admin role for regular user"""
+        # Try to access admin endpoint with regular user
+        response = session.post(
+            f"{BASE_URL}/api/admin/subscriptions/check-renewals",
+            headers=auth_headers
+        )
         
-        # Register
-        requests.post(f"{BASE_URL}/api/auth/signup", json={
-            "email": email,
-            "password": "testpass123",
-            "name": "Regular User"
-        })
-        
-        # Login
-        login_response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": email,
-            "password": "testpass123"
-        })
-        
-        if login_response.status_code == 200:
-            token = login_response.json().get("session_token")
-            headers = {"Authorization": f"Bearer {token}"}
-            
-            # Try to access admin endpoint
-            response = requests.post(
-                f"{BASE_URL}/api/admin/subscriptions/check-renewals",
-                headers=headers
-            )
-            
-            # Should be 403 Forbidden for non-admin users
-            assert response.status_code == 403
-            print("PASSED: Admin check-renewals requires admin role")
-        else:
-            pytest.skip("Could not create regular user for admin role test")
+        # Should be 403 Forbidden for non-admin users
+        assert response.status_code == 403
+        print("PASSED: Admin check-renewals requires admin role")
 
 
 class TestPaymentIntegrations:
     """Test payment integration setup (partially mocked)"""
     
-    def test_stripe_api_key_configured(self):
+    def test_stripe_api_key_configured(self, session):
         """Verify Stripe API key is configured (via error message)"""
         # We can indirectly check by looking at error messages or successful responses
         # The packages endpoint works, indicating the system is operational
-        response = requests.get(f"{BASE_URL}/api/premium-subscription/packages")
+        response = session.get(f"{BASE_URL}/api/premium-subscription/packages")
         assert response.status_code == 200
         print("PASSED: Stripe packages available (API configured)")
     
-    def test_mpesa_packages_available(self):
+    def test_mpesa_packages_available(self, session):
         """Verify M-Pesa packages are configured"""
-        response = requests.get(f"{BASE_URL}/api/premium-subscription/packages")
+        response = session.get(f"{BASE_URL}/api/premium-subscription/packages")
         data = response.json()
         
         assert "mpesa_packages" in data
@@ -344,11 +297,11 @@ class TestPaymentIntegrations:
         
         print(f"PASSED: M-Pesa packages configured for currencies: {currencies}")
     
-    def test_paypal_client_id_available_in_checkout(self):
+    def test_paypal_client_id_available_in_checkout(self, session):
         """Verify PayPal client ID would be returned in checkout response"""
         # Note: This would need auth + business profile to fully test
         # We can verify the endpoint structure exists
-        response = requests.post(f"{BASE_URL}/api/premium-subscription/paypal/checkout", json={
+        response = session.post(f"{BASE_URL}/api/premium-subscription/paypal/checkout", json={
             "package_id": "monthly",
             "origin_url": "https://example.com",
             "business_profile_id": "test"
@@ -357,6 +310,64 @@ class TestPaymentIntegrations:
         # Should return 401 (auth required), not 404 (endpoint not found)
         assert response.status_code == 401
         print("PASSED: PayPal checkout endpoint exists and requires auth")
+
+
+class TestFullPremiumFlow:
+    """Test the complete premium subscription flow with a real business profile"""
+    
+    def test_create_business_profile_for_premium(self, session, auth_headers):
+        """Create a business profile that can be used for premium checkout"""
+        business_name = f"Premium Test Business {uuid.uuid4().hex[:6]}"
+        
+        response = session.post(
+            f"{BASE_URL}/api/business-profiles/",
+            headers=auth_headers,
+            json={
+                "business_name": business_name,
+                "description": "Test business for premium subscription testing",
+                "city": "Nairobi",
+                "country": "Kenya"
+            }
+        )
+        
+        if response.status_code in [200, 201]:
+            data = response.json()
+            assert "id" in data
+            assert data["business_name"] == business_name
+            print(f"PASSED: Created business profile {data['id']}")
+            return data["id"]
+        else:
+            print(f"Note: Business profile creation returned {response.status_code}")
+            return None
+    
+    def test_stripe_checkout_with_invalid_package(self, session, auth_headers):
+        """Verify Stripe checkout fails gracefully with invalid package"""
+        # First get or create a business profile
+        my_profile_response = session.get(f"{BASE_URL}/api/business-profiles/me", headers=auth_headers)
+        
+        if my_profile_response.status_code == 200:
+            profile_data = my_profile_response.json()
+            if profile_data.get("has_profile"):
+                profile_id = profile_data["profile"]["id"]
+                
+                # Try checkout with invalid package
+                response = session.post(
+                    f"{BASE_URL}/api/premium-subscription/stripe/checkout",
+                    headers=auth_headers,
+                    json={
+                        "package_id": "invalid_package_xyz",
+                        "origin_url": "https://example.com",
+                        "business_profile_id": profile_id
+                    }
+                )
+                
+                assert response.status_code == 400
+                assert "Invalid package ID" in response.json().get("detail", "")
+                print("PASSED: Stripe checkout validates package ID")
+            else:
+                pytest.skip("No business profile available for this test")
+        else:
+            pytest.skip("Could not get business profile")
 
 
 # Module to run tests
