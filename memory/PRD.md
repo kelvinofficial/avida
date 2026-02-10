@@ -162,6 +162,8 @@ Payment success page with:
 - [x] Share Profile feature with OG meta tags for social media preview
 - [x] Success modal after saving business profile with profile URL
 - [x] Image selection before profile save (uploaded after creation)
+- [x] QR code generation in success modal for business profile sharing
+- [x] Admin Users tab with sections: All Users, Verified Sellers, Verified Business, Premium Business
 
 ### Future/Backlog
 - [ ] PayPal SDK button integration on native platforms
@@ -170,9 +172,9 @@ Payment success page with:
 - [ ] Region search bar visibility fix in LocationPicker
 
 ## Testing Status
-- Backend: 100% (46/46 tests passed across iterations 65, 66, 67, 68)
+- Backend: 100% (57/57 tests passed across iterations 65-69)
 - Frontend: 100% (All UI flows verified)
-- Test reports: `/app/test_reports/iteration_65.json` through `/app/test_reports/iteration_68.json`
+- Test reports: `/app/test_reports/iteration_65.json` through `/app/test_reports/iteration_69.json`
 
 ## Key Files Reference
 - `/app/frontend/app/business/edit.tsx` - Full business profile editor with payment buttons
