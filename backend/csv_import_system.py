@@ -690,13 +690,15 @@ def create_csv_import_router(db: AsyncIOMotorDatabase, notify_callback: Optional
     @router.post("/import/{validation_id}")
     async def import_users(
         validation_id: str,
-        admin_id: str = Body(..., embed=True),
+        admin_id: str = Body(...),
+        send_emails: bool = Body(False, description="Send welcome emails with credentials to each user"),
         background_tasks: BackgroundTasks = None
     ):
         """
         Step 3: Import validated users.
         Requires validation_id from previous step.
         Runs as background job and returns job_id for status tracking.
+        Optionally sends welcome emails with credentials to each user.
         """
         rows = validated_data_store.get(validation_id)
         if not rows:
@@ -734,7 +736,8 @@ def create_csv_import_router(db: AsyncIOMotorDatabase, notify_callback: Optional
                 service.import_users_background,
                 rows,
                 admin_id,
-                job["id"]
+                job["id"],
+                send_emails
             )
         else:
             # Fallback to asyncio task if BackgroundTasks not available
