@@ -21,7 +21,7 @@ import os
 import uuid
 
 # Base URLs
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://hierarchical-picker.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://location-admin-4.preview.emergentagent.com')
 if BASE_URL.endswith('/'):
     BASE_URL = BASE_URL.rstrip('/')
 

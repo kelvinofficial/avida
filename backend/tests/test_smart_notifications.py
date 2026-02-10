@@ -18,7 +18,7 @@ import uuid
 import time
 
 # Base URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://hierarchical-picker.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://location-admin-4.preview.emergentagent.com').rstrip('/')
 
 
 class TestSmartNotificationAdminEndpoints:
