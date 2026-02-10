@@ -177,7 +177,7 @@ export default function CreditsPage() {
   return (
     <View style={styles.outerContainer}>
       <ScrollView 
-        style={[styles.container, isDesktop && { maxWidth: 1280, alignSelf: 'center' as const }]}
+        style={[styles.container, isDesktop && styles.desktopContainer]}
         contentContainerStyle={isDesktop ? styles.scrollContentDesktop : undefined}
       >
         <View style={styles.contentWrapper}>
