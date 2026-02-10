@@ -88,13 +88,25 @@ export default function HelpSupportScreen() {
   const { isDesktop, isTablet } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
   
-  const [activeTab, setActiveTab] = useState<'faq' | 'contact' | 'tickets'>('faq');
+  // Get tab parameter from URL (for deep linking from notifications)
+  const params = useLocalSearchParams<{ tab?: string }>();
+  
+  const [activeTab, setActiveTab] = useState<'faq' | 'contact' | 'tickets'>(
+    (params.tab as 'faq' | 'contact' | 'tickets') || 'faq'
+  );
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [tickets, setTickets] = useState<any[]>([]);
   const [loadingTickets, setLoadingTickets] = useState(false);
+
+  // Update active tab when URL param changes (e.g., from notification deep link)
+  useEffect(() => {
+    if (params.tab && ['faq', 'contact', 'tickets'].includes(params.tab)) {
+      setActiveTab(params.tab as 'faq' | 'contact' | 'tickets');
+    }
+  }, [params.tab]);
 
   const fetchTickets = useCallback(async () => {
     if (!isAuthenticated) return;
