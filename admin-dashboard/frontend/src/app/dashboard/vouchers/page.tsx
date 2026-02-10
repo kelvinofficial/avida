@@ -251,6 +251,73 @@ export default function VouchersPage() {
     });
   };
 
+  // CSV Import functions
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        const lines = text.split('\n').filter(line => line.trim());
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+        
+        const vouchers = lines.slice(1).map(line => {
+          const values = line.split(',').map(v => v.trim());
+          const voucher: any = {};
+          headers.forEach((header, idx) => {
+            let val = values[idx];
+            if (header === 'new_users_only' || header === 'verified_users_only' || header === 'premium_users_only' || header === 'stackable') {
+              voucher[header] = val?.toLowerCase() === 'true';
+            } else if (header === 'value' || header === 'max_uses' || header === 'max_uses_per_user' || header === 'min_order_amount' || header === 'max_discount_amount') {
+              voucher[header] = val ? parseFloat(val) : undefined;
+            } else {
+              voucher[header] = val || undefined;
+            }
+          });
+          return voucher;
+        }).filter(v => v.code);
+        
+        setImportData(vouchers);
+        setImportDialogOpen(true);
+      } catch (err) {
+        setError('Failed to parse CSV file');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleImport = async () => {
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const result = await api.bulkImportVouchers(importData, `import_${Date.now()}`);
+      setImportResult(result);
+      setSuccess(`Import complete: ${result.created} created, ${result.skipped} skipped`);
+      loadData();
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Import failed');
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const downloadTemplate = () => {
+    const headers = 'code,voucher_type,value,description,max_uses,max_uses_per_user,min_order_amount,max_discount_amount,valid_until,new_users_only,verified_users_only,premium_users_only';
+    const example1 = 'SUMMER20,percent,20,Summer sale discount,100,1,,,2025-12-31,false,false,false';
+    const example2 = 'FLAT10,amount,10,Flat $10 off,50,1,50,,2025-12-31,false,false,false';
+    const csv = [headers, example1, example2].join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'voucher_import_template.csv';
+    a.click();
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setSuccess('Code copied to clipboard');
