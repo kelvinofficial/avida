@@ -335,17 +335,20 @@ class CSVImportService:
         self,
         rows: List[Dict],
         admin_id: str,
-        job_id: str
+        job_id: str,
+        send_emails: bool = False
     ):
         """Background task to import users after validation passed"""
         try:
             result = ImportResult(total_rows=len(rows))
             password_entries = []
+            emails_sent = 0
+            emails_failed = 0
             
             # Update job status to importing
             await self.import_jobs.update_one(
                 {"id": job_id},
-                {"$set": {"status": ImportStatus.IMPORTING, "progress": 0}}
+                {"$set": {"status": ImportStatus.IMPORTING, "progress": 0, "send_emails": send_emails}}
             )
             
             for i, row in enumerate(rows):
