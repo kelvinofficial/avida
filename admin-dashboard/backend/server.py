@@ -6159,30 +6159,6 @@ async def bulk_import_vouchers(request: Request, admin: dict = Depends(get_curre
         "errors": errors[:20]  # Limit error messages
     }
 
-@app.get("/api/admin/vouchers/template")
-async def get_voucher_template(admin: dict = Depends(get_current_admin)):
-    """Get CSV template for voucher import"""
-    return {
-        "columns": [
-            {"name": "code", "required": True, "description": "Unique voucher code"},
-            {"name": "voucher_type", "required": True, "description": "amount, percent, or credit"},
-            {"name": "value", "required": True, "description": "Discount value"},
-            {"name": "description", "required": False, "description": "Voucher description"},
-            {"name": "max_uses", "required": False, "description": "Total usage limit"},
-            {"name": "max_uses_per_user", "required": False, "description": "Per-user limit (default: 1)"},
-            {"name": "min_order_amount", "required": False, "description": "Minimum order amount"},
-            {"name": "max_discount_amount", "required": False, "description": "Maximum discount (for percent type)"},
-            {"name": "valid_until", "required": False, "description": "Expiration date (ISO format)"},
-            {"name": "new_users_only", "required": False, "description": "true/false"},
-            {"name": "verified_users_only", "required": False, "description": "true/false"},
-            {"name": "premium_users_only", "required": False, "description": "true/false"}
-        ],
-        "example": [
-            {"code": "SUMMER20", "voucher_type": "percent", "value": 20, "description": "Summer sale", "max_uses": 100},
-            {"code": "FLAT10", "voucher_type": "amount", "value": 10, "description": "Flat $10 off", "min_order_amount": 50}
-        ]
-    }
-
 # =============================================================================
 # MAIN
 # =============================================================================
