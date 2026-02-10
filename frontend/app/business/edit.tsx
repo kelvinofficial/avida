@@ -945,64 +945,82 @@ export default function BusinessProfileEditScreen() {
         onRequestClose={() => setShowSuccessModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.successModalContent}>
-            <View style={styles.successIcon}>
-              <Ionicons name="checkmark-circle" size={64} color={COLORS.primary} />
-            </View>
-            <Text style={styles.successTitle}>Profile Saved!</Text>
-            <Text style={styles.successSubtitle}>
-              Your business profile has been saved successfully.
-            </Text>
-            
-            <View style={styles.profileUrlBox}>
-              <Text style={styles.profileUrlLabel}>Your Profile URL</Text>
-              <Text style={styles.profileUrl} numberOfLines={2} selectable={true}>
-                {successProfileUrl}
+          <ScrollView contentContainerStyle={styles.successModalScrollContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.successModalContent}>
+              <View style={styles.successIcon}>
+                <Ionicons name="checkmark-circle" size={64} color={COLORS.primary} />
+              </View>
+              <Text style={styles.successTitle}>Profile Saved!</Text>
+              <Text style={styles.successSubtitle}>
+                Your business profile has been saved successfully.
               </Text>
-            </View>
-
-            <View style={styles.successActions}>
-              <TouchableOpacity
-                style={styles.viewProfileBtn}
-                onPress={() => {
-                  setShowSuccessModal(false);
-                  router.push(`/business/${successProfileSlug}`);
-                }}
-                data-testid="view-profile-button"
-              >
-                <Ionicons name="eye-outline" size={18} color="#fff" />
-                <Text style={styles.viewProfileBtnText}>View Profile</Text>
-              </TouchableOpacity>
               
-              <TouchableOpacity
-                style={styles.copyLinkBtn}
-                onPress={async () => {
-                  if (Platform.OS === 'web') {
-                    try {
-                      await navigator.clipboard.writeText(successProfileUrl);
-                      Alert.alert('Copied!', 'Profile link copied to clipboard');
-                    } catch (e) {
-                      console.error('Failed to copy:', e);
-                    }
-                  } else {
-                    // On mobile, use Share API
-                    const { Share } = require('react-native');
-                    Share.share({
-                      message: `Check out my business on Avida: ${successProfileUrl}`,
-                      url: successProfileUrl,
-                    });
-                  }
-                }}
-                data-testid="copy-link-button"
-              >
-                <Ionicons name="copy-outline" size={18} color={COLORS.primary} />
-                <Text style={styles.copyLinkBtnText}>Copy Link</Text>
-              </TouchableOpacity>
-            </View>
+              {/* QR Code Section */}
+              <View style={styles.qrCodeSection}>
+                <Text style={styles.qrCodeLabel}>Scan to View Profile</Text>
+                <View style={styles.qrCodeContainer}>
+                  {successProfileUrl ? (
+                    <QRCode
+                      value={successProfileUrl}
+                      size={140}
+                      level="M"
+                      bgColor="#FFFFFF"
+                      fgColor="#000000"
+                    />
+                  ) : null}
+                </View>
+                <Text style={styles.qrCodeHint}>Share this QR code with customers</Text>
+              </View>
+              
+              <View style={styles.profileUrlBox}>
+                <Text style={styles.profileUrlLabel}>Your Profile URL</Text>
+                <Text style={styles.profileUrl} numberOfLines={2} selectable={true}>
+                  {successProfileUrl}
+                </Text>
+              </View>
 
-            <TouchableOpacity
-              style={styles.successCloseBtn}
-              onPress={() => setShowSuccessModal(false)}
+              <View style={styles.successActions}>
+                <TouchableOpacity
+                  style={styles.viewProfileBtn}
+                  onPress={() => {
+                    setShowSuccessModal(false);
+                    router.push(`/business/${successProfileSlug}`);
+                  }}
+                  data-testid="view-profile-button"
+                >
+                  <Ionicons name="eye-outline" size={18} color="#fff" />
+                  <Text style={styles.viewProfileBtnText}>View Profile</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.copyLinkBtn}
+                  onPress={async () => {
+                    if (Platform.OS === 'web') {
+                      try {
+                        await navigator.clipboard.writeText(successProfileUrl);
+                        Alert.alert('Copied!', 'Profile link copied to clipboard');
+                      } catch (e) {
+                        console.error('Failed to copy:', e);
+                      }
+                    } else {
+                      // On mobile, use Share API
+                      const { Share } = require('react-native');
+                      Share.share({
+                        message: `Check out my business on Avida: ${successProfileUrl}`,
+                        url: successProfileUrl,
+                      });
+                    }
+                  }}
+                  data-testid="copy-link-button"
+                >
+                  <Ionicons name="copy-outline" size={18} color={COLORS.primary} />
+                  <Text style={styles.copyLinkBtnText}>Copy Link</Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity
+                style={styles.successCloseBtn}
+                onPress={() => setShowSuccessModal(false)}
             >
               <Text style={styles.successCloseBtnText}>Continue Editing</Text>
             </TouchableOpacity>
