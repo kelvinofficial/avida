@@ -745,27 +745,27 @@ export default function HomeScreen() {
 
   const handleLocationSelect = async (location: LocationData) => {
     setSelectedLocationFilter(location);
-    setCurrentCity(location.city_name || location.location_text || 'Selected Location');
+    // Use region_name for display since we're now using region-level selection
+    const displayName = location.region_name || location.city_name || location.location_text || 'Selected Location';
+    setCurrentCity(displayName);
     setShowLocationModal(false);
     setLocationSearch('');
     
-    // Also update selectedCity for the smart search functionality
-    // Use typeof checks for lat/lng since 0 is a valid coordinate
-    if (typeof location.lat === 'number' && typeof location.lng === 'number' && location.city_code) {
-      const cityData = {
-        country_code: location.country_code || '',
-        country_name: '', // Will be populated from API if needed
-        region_code: location.region_code || '',
-        region_name: location.region_name || '',
-        district_code: location.district_code,
-        district_name: location.district_name,
-        city_code: location.city_code,
-        city_name: location.city_name || '',
-        lat: location.lat,
-        lng: location.lng,
-      };
-      await saveSelectedCity(cityData);
-    }
+    // Save location data - now supports both city-level and region-level selection
+    const locationData = {
+      country_code: location.country_code || '',
+      country_name: '', 
+      region_code: location.region_code || '',
+      region_name: location.region_name || '',
+      district_code: location.district_code,
+      district_name: location.district_name,
+      city_code: location.city_code,
+      city_name: location.region_name || location.city_name || '', // Use region_name as fallback
+      lat: location.lat,
+      lng: location.lng,
+      location_text: location.location_text,
+    };
+    await saveSelectedCity(locationData);
   };
 
   const handleClearLocationFilter = async () => {
