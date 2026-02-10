@@ -86,7 +86,7 @@ export default function CreditsPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { width: windowWidth } = useWindowDimensions();
-  const isDesktop = Platform.OS === 'web' && windowWidth >= 768;
+  const isDesktop = windowWidth >= 768;
   
   const [loading, setLoading] = useState(true);
   const [packages, setPackages] = useState<CreditPackage[]>([]);
