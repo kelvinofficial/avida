@@ -470,7 +470,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 autoCapitalize="none"
-                data-testid="region-search-input"
+                testID="region-search-input"
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={() => setSearchQuery('')}>
