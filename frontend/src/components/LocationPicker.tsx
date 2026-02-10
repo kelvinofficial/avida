@@ -24,12 +24,9 @@ import { locationsApi } from '../utils/api';
 // Cross-platform storage helper for web compatibility
 const Storage = {
   async getItem(key: string): Promise<string | null> {
-    console.log('[Storage] getItem called, Platform.OS:', Platform.OS);
     if (Platform.OS === 'web') {
       try {
-        const value = localStorage.getItem(key);
-        console.log('[Storage] localStorage.getItem result:', value);
-        return value;
+        return localStorage.getItem(key);
       } catch (e) {
         console.error('localStorage getItem error:', e);
         return null;
@@ -38,11 +35,9 @@ const Storage = {
     return AsyncStorage.getItem(key);
   },
   async setItem(key: string, value: string): Promise<void> {
-    console.log('[Storage] setItem called, Platform.OS:', Platform.OS, 'key:', key);
     if (Platform.OS === 'web') {
       try {
         localStorage.setItem(key, value);
-        console.log('[Storage] localStorage.setItem success');
       } catch (e) {
         console.error('localStorage setItem error:', e);
       }
