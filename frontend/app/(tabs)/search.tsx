@@ -16,7 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { listingsApi, categoriesApi, favoritesApi } from '../../src/utils/api';
+import { listingsApi, categoriesApi, favoritesApi, locationsApi } from '../../src/utils/api';
 import { sandboxAwareListingsApi, sandboxAwareCategoriesApi, sandboxUtils } from '../../src/utils/sandboxAwareApi';
 import { Listing, Category } from '../../src/types';
 import { ListingCard } from '../../src/components/ListingCard';
@@ -24,6 +24,7 @@ import { EmptyState } from '../../src/components/EmptyState';
 import { useAuthStore } from '../../src/store/authStore';
 import { useSandbox } from '../../src/utils/sandboxContext';
 import { useResponsive } from '../../src/hooks/useResponsive';
+import { useUserLocation } from '../../src/context/LocationContext';
 
 const { width } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
