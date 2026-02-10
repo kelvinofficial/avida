@@ -287,21 +287,23 @@ async def send_push_notification(
     body: str,
     user_ids: Optional[List[str]] = None,
     fcm_tokens: Optional[List[str]] = None,
+    expo_tokens: Optional[List[str]] = None,
     segments: Optional[List[str]] = None,
     data: Optional[Dict[str, Any]] = None,
     image_url: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Send push notification using available provider (FCM or OneSignal)
+    Send push notification using available provider (Expo, FCM, or OneSignal)
     
     This is the main function to use for sending notifications.
-    It will use whichever provider is enabled and configured.
+    Priority: Expo Push > FCM > OneSignal
     
     Args:
         title: Notification title
         body: Notification body text
         user_ids: List of user IDs (for OneSignal external user IDs)
         fcm_tokens: List of FCM device tokens
+        expo_tokens: List of Expo push tokens
         segments: List of segments to target
         data: Optional data payload
         image_url: Optional image URL
@@ -315,7 +317,17 @@ async def send_push_notification(
         "providers": []
     }
     
-    # Try FCM first if tokens provided
+    # Try Expo Push first (primary for this app)
+    if EXPO_PUSH_ENABLED and expo_tokens:
+        expo_result = await send_expo_push_notification(
+            push_tokens=expo_tokens,
+            title=title,
+            body=body,
+            data=data
+        )
+        results["providers"].append({"provider": "expo", **expo_result})
+    
+    # Try FCM if tokens provided
     if FIREBASE_ENABLED and fcm_tokens:
         fcm_result = await send_fcm_notification(
             tokens=fcm_tokens,
@@ -370,13 +382,52 @@ async def register_device_token(db, user_id: str, token: str, platform: str = "w
     )
 
 
-async def get_user_tokens(db, user_ids: List[str]) -> List[str]:
-    """Get FCM tokens for a list of users"""
-    tokens = await db.user_device_tokens.find(
+async def get_user_tokens(db, user_ids: List[str]) -> Dict[str, List[str]]:
+    """
+    Get push tokens for a list of users.
+    Returns both Expo tokens and FCM tokens if available.
+    
+    Looks in:
+    1. users collection -> push_token field (Expo tokens from mobile app)
+    2. user_device_tokens collection -> token field (FCM/other tokens)
+    """
+    expo_tokens = []
+    fcm_tokens = []
+    
+    # Get Expo tokens from users collection (mobile app stores them here)
+    users = await db.users.find(
+        {"user_id": {"$in": user_ids}, "push_token": {"$exists": True, "$ne": None}},
+        {"push_token": 1}
+    ).to_list(10000)
+    
+    for user in users:
+        token = user.get("push_token")
+        if token:
+            if token.startswith("ExponentPushToken"):
+                expo_tokens.append(token)
+            else:
+                fcm_tokens.append(token)
+    
+    # Also check user_device_tokens collection
+    device_tokens = await db.user_device_tokens.find(
         {"user_id": {"$in": user_ids}},
         {"token": 1}
     ).to_list(10000)
-    return [t["token"] for t in tokens]
+    
+    for dt in device_tokens:
+        token = dt.get("token")
+        if token:
+            if token.startswith("ExponentPushToken"):
+                if token not in expo_tokens:
+                    expo_tokens.append(token)
+            else:
+                if token not in fcm_tokens:
+                    fcm_tokens.append(token)
+    
+    return {
+        "expo_tokens": expo_tokens,
+        "fcm_tokens": fcm_tokens
+    }
 
 
 async def remove_device_token(db, user_id: str, token: str):
