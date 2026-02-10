@@ -70,12 +70,12 @@ export default function InvoicesPage() {
   }, []);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.replace('/auth/login');
-      return;
+    if (isAuthenticated) {
+      fetchInvoices();
+    } else {
+      setLoading(false);
     }
-    fetchInvoices();
-  }, [isAuthenticated, fetchInvoices, router]);
+  }, [isAuthenticated, fetchInvoices]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -120,6 +120,28 @@ export default function InvoicesPage() {
       default: return COLORS.textSecondary;
     }
   };
+
+  // Not authenticated state
+  if (!isAuthenticated) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>My Invoices</Text>
+          <View style={{ width: 40 }} />
+        </View>
+        <View style={styles.centerContent}>
+          <Ionicons name="lock-closed-outline" size={48} color={COLORS.textSecondary} />
+          <Text style={styles.loginMessage}>Please sign in to view invoices</Text>
+          <TouchableOpacity style={styles.signInBtn} onPress={() => router.push('/auth/login')}>
+            <Text style={styles.signInBtnText}>Sign In</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (loading) {
     return (
