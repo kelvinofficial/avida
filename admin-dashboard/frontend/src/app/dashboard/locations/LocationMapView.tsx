@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Box, Typography, IconButton, Paper, Tooltip } from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Box, Typography, IconButton, Paper, Tooltip, Chip } from '@mui/material';
+import { Edit as EditIcon, Delete as DeleteIcon, ArrowForward as ArrowIcon } from '@mui/icons-material';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -15,7 +15,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-// Custom marker icon
+// Custom marker icons
 const createCustomIcon = (color: string = '#2563eb') => {
   return L.divIcon({
     className: 'custom-marker',
@@ -34,6 +34,9 @@ const createCustomIcon = (color: string = '#2563eb') => {
   });
 };
 
+const districtIcon = createCustomIcon('#f59e0b'); // Orange for districts
+const cityIcon = createCustomIcon('#2563eb'); // Blue for cities
+
 interface City {
   country_code: string;
   region_code: string;
@@ -42,6 +45,15 @@ interface City {
   name: string;
   lat: number;
   lng: number;
+}
+
+interface District {
+  country_code: string;
+  region_code: string;
+  district_code: string;
+  name: string;
+  lat?: number;
+  lng?: number;
 }
 
 interface Country {
@@ -56,15 +68,9 @@ interface Region {
   name: string;
 }
 
-interface District {
-  country_code: string;
-  region_code: string;
-  district_code: string;
-  name: string;
-}
-
 interface LocationMapViewProps {
   cities: City[];
+  districts?: District[];
   selectedCountry: Country | null;
   selectedRegion: Region | null;
   selectedDistrict: District | null;
@@ -72,6 +78,8 @@ interface LocationMapViewProps {
   onMapClick: (lat: number, lng: number) => void;
   onCityEdit: (city: City) => void;
   onCityDelete: (city: City) => void;
+  onDistrictClick?: (district: District) => void;
+  onDistrictEdit?: (district: District) => void;
 }
 
 // Component to handle map click events
@@ -86,25 +94,34 @@ function MapClickHandler({ onClick, enabled }: { onClick: (lat: number, lng: num
   return null;
 }
 
-// Component to fit bounds when cities change
-function FitBounds({ cities }: { cities: City[] }) {
+// Component to fit bounds when markers change
+function FitBounds({ cities, districts }: { cities: City[]; districts?: District[] }) {
   const map = useMap();
   
   useEffect(() => {
-    if (cities.length > 0) {
-      const validCities = cities.filter(c => c.lat && c.lng);
-      if (validCities.length > 0) {
-        const bounds = L.latLngBounds(validCities.map(c => [c.lat, c.lng] as [number, number]));
-        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
-      }
+    const allPoints: [number, number][] = [];
+    
+    // Add city coordinates
+    cities.filter(c => c.lat && c.lng).forEach(c => {
+      allPoints.push([c.lat, c.lng]);
+    });
+    
+    // Add district coordinates
+    districts?.filter(d => d.lat && d.lng).forEach(d => {
+      allPoints.push([d.lat!, d.lng!]);
+    });
+    
+    if (allPoints.length > 0) {
+      const bounds = L.latLngBounds(allPoints);
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
     }
-  }, [cities, map]);
+  }, [cities, districts, map]);
   
   return null;
 }
 
-// Draggable marker component
-function DraggableMarker({ 
+// Draggable city marker component
+function DraggableCityMarker({ 
   city, 
   onDragEnd, 
   onEdit, 
@@ -136,10 +153,11 @@ function DraggableMarker({
       eventHandlers={eventHandlers}
       position={[city.lat, city.lng]}
       ref={markerRef}
-      icon={createCustomIcon('#2563eb')}
+      icon={cityIcon}
     >
       <Popup>
         <Box sx={{ minWidth: 150 }}>
+          <Chip label="City" size="small" color="primary" sx={{ mb: 1 }} />
           <Typography variant="subtitle2" fontWeight="bold">
             {city.name}
           </Typography>
@@ -173,8 +191,63 @@ function DraggableMarker({
   );
 }
 
+// District marker component (clickable to drill down)
+function DistrictMarker({ 
+  district, 
+  onClick,
+  onEdit
+}: { 
+  district: District; 
+  onClick?: () => void;
+  onEdit?: () => void;
+}) {
+  if (!district.lat || !district.lng) return null;
+  
+  return (
+    <Marker
+      position={[district.lat, district.lng]}
+      icon={districtIcon}
+    >
+      <Popup>
+        <Box sx={{ minWidth: 150 }}>
+          <Chip label="District" size="small" color="warning" sx={{ mb: 1 }} />
+          <Typography variant="subtitle2" fontWeight="bold">
+            {district.name}
+          </Typography>
+          <Typography variant="caption" display="block" color="text.secondary">
+            Code: {district.district_code}
+          </Typography>
+          <Typography variant="caption" display="block" color="text.secondary">
+            Lat: {district.lat.toFixed(4)}
+          </Typography>
+          <Typography variant="caption" display="block" color="text.secondary">
+            Lng: {district.lng.toFixed(4)}
+          </Typography>
+          <Box sx={{ mt: 1, display: 'flex', gap: 0.5 }}>
+            {onClick && (
+              <Tooltip title="View Cities">
+                <IconButton size="small" color="primary" onClick={onClick}>
+                  <ArrowIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {onEdit && (
+              <Tooltip title="Edit District">
+                <IconButton size="small" onClick={onEdit}>
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+        </Box>
+      </Popup>
+    </Marker>
+  );
+}
+
 export default function LocationMapView({
   cities,
+  districts = [],
   selectedCountry,
   selectedRegion,
   selectedDistrict,
@@ -182,6 +255,8 @@ export default function LocationMapView({
   onMapClick,
   onCityEdit,
   onCityDelete,
+  onDistrictClick,
+  onDistrictEdit,
 }: LocationMapViewProps) {
   // Filter cities with valid coordinates
   const validCities = useMemo(() => 
@@ -189,27 +264,43 @@ export default function LocationMapView({
     [cities]
   );
 
-  // Calculate center based on cities or default to world center
+  // Filter districts with valid coordinates
+  const validDistricts = useMemo(() =>
+    districts.filter(d => d.lat && d.lng && !isNaN(d.lat!) && !isNaN(d.lng!)),
+    [districts]
+  );
+
+  // Calculate center based on markers or default to world center
   const center = useMemo(() => {
-    if (validCities.length > 0) {
-      const avgLat = validCities.reduce((sum, c) => sum + c.lat, 0) / validCities.length;
-      const avgLng = validCities.reduce((sum, c) => sum + c.lng, 0) / validCities.length;
+    const allPoints: [number, number][] = [];
+    
+    validCities.forEach(c => allPoints.push([c.lat, c.lng]));
+    validDistricts.forEach(d => allPoints.push([d.lat!, d.lng!]));
+    
+    if (allPoints.length > 0) {
+      const avgLat = allPoints.reduce((sum, p) => sum + p[0], 0) / allPoints.length;
+      const avgLng = allPoints.reduce((sum, p) => sum + p[1], 0) / allPoints.length;
       return [avgLat, avgLng] as [number, number];
     }
+    
     // Default centers for common regions
-    if (selectedCountry?.code === 'TZ') return [-6.7924, 39.2083] as [number, number]; // Dar es Salaam
-    if (selectedCountry?.code === 'KE') return [-1.2921, 36.8219] as [number, number]; // Nairobi
-    if (selectedCountry?.code === 'US') return [39.8283, -98.5795] as [number, number]; // US center
-    if (selectedCountry?.code === 'DE') return [51.1657, 10.4515] as [number, number]; // Germany
-    return [0, 20] as [number, number]; // Africa-centric world view
-  }, [validCities, selectedCountry]);
+    if (selectedCountry?.code === 'TZ') return [-6.7924, 39.2083] as [number, number];
+    if (selectedCountry?.code === 'KE') return [-1.2921, 36.8219] as [number, number];
+    if (selectedCountry?.code === 'US') return [39.8283, -98.5795] as [number, number];
+    if (selectedCountry?.code === 'DE') return [51.1657, 10.4515] as [number, number];
+    return [0, 20] as [number, number];
+  }, [validCities, validDistricts, selectedCountry]);
 
-  const zoom = validCities.length > 0 ? 6 : 3;
+  const zoom = (validCities.length + validDistricts.length) > 0 ? 6 : 3;
+  
+  // Check if we can add items
+  const canAddCity = !!selectedDistrict;
+  const canAddDistrict = !!selectedRegion && !selectedDistrict;
 
   return (
     <Box sx={{ position: 'relative' }}>
       {/* Instructions overlay */}
-      {selectedDistrict && (
+      {(canAddCity || canAddDistrict) && (
         <Paper 
           elevation={3}
           sx={{ 
@@ -223,7 +314,7 @@ export default function LocationMapView({
           }}
         >
           <Typography variant="body2" color="primary">
-            Click anywhere on the map to add a new city
+            Click anywhere on the map to add a new {canAddCity ? 'city' : 'district'}
           </Typography>
         </Paper>
       )}
@@ -254,15 +345,25 @@ export default function LocationMapView({
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           
-          {/* Click handler for adding new cities */}
-          <MapClickHandler onClick={onMapClick} enabled={!!selectedDistrict} />
+          {/* Click handler for adding new items */}
+          <MapClickHandler onClick={onMapClick} enabled={canAddCity || canAddDistrict} />
           
-          {/* Auto-fit bounds when cities change */}
-          <FitBounds cities={validCities} />
+          {/* Auto-fit bounds when markers change */}
+          <FitBounds cities={validCities} districts={validDistricts} />
+          
+          {/* District markers (shown when viewing a region) */}
+          {validDistricts.map((district) => (
+            <DistrictMarker
+              key={`${district.country_code}-${district.region_code}-${district.district_code}`}
+              district={district}
+              onClick={() => onDistrictClick?.(district)}
+              onEdit={() => onDistrictEdit?.(district)}
+            />
+          ))}
           
           {/* City markers */}
           {validCities.map((city) => (
-            <DraggableMarker
+            <DraggableCityMarker
               key={`${city.country_code}-${city.region_code}-${city.district_code}-${city.city_code}`}
               city={city}
               onDragEnd={(lat, lng) => onMarkerDrag(city, lat, lng)}
@@ -274,25 +375,45 @@ export default function LocationMapView({
       </Box>
       
       {/* Legend */}
-      <Box sx={{ mt: 2, display: 'flex', gap: 3, alignItems: 'center', justifyContent: 'center' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box 
-            sx={{ 
-              width: 16, 
-              height: 16, 
-              bgcolor: '#2563eb', 
-              borderRadius: '50% 50% 50% 0',
-              transform: 'rotate(-45deg)',
-              border: '2px solid white',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-            }} 
-          />
-          <Typography variant="caption" color="text.secondary">
-            City Location
-          </Typography>
-        </Box>
+      <Box sx={{ mt: 2, display: 'flex', gap: 3, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+        {validDistricts.length > 0 && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box 
+              sx={{ 
+                width: 16, 
+                height: 16, 
+                bgcolor: '#f59e0b', 
+                borderRadius: '50% 50% 50% 0',
+                transform: 'rotate(-45deg)',
+                border: '2px solid white',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+              }} 
+            />
+            <Typography variant="caption" color="text.secondary">
+              District ({validDistricts.length})
+            </Typography>
+          </Box>
+        )}
+        {validCities.length > 0 && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box 
+              sx={{ 
+                width: 16, 
+                height: 16, 
+                bgcolor: '#2563eb', 
+                borderRadius: '50% 50% 50% 0',
+                transform: 'rotate(-45deg)',
+                border: '2px solid white',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+              }} 
+            />
+            <Typography variant="caption" color="text.secondary">
+              City ({validCities.length})
+            </Typography>
+          </Box>
+        )}
         <Typography variant="caption" color="text.secondary">
-          {validCities.length} cities displayed
+          Total: {validCities.length + validDistricts.length} markers
         </Typography>
       </Box>
     </Box>
