@@ -2977,3 +2977,69 @@ Fixed admin dashboard sidebar to show Location Manager link and updated the Near
 - Password: `Admin@123456`
 
 ---
+
+## Location Manager Map View - COMPLETE ✅ (Feb 10, 2026)
+
+### Overview
+Added interactive Map View to the Location Manager in admin dashboard using Leaflet + OpenStreetMap.
+
+### Features Implemented:
+
+**1. Table/Map View Toggle**
+- Toggle buttons in top-right corner of Location Manager
+- data-testid: `view-table-btn` and `view-map-btn`
+- View state persists during navigation
+
+**2. Interactive Map View (`LocationMapView.tsx`)**
+- Uses Leaflet with OpenStreetMap tiles (free, no API key required)
+- Shows all cities as draggable markers
+- Custom blue pin markers with drop-shadow
+- Auto-zooms to fit markers using `FitBounds` component
+- Default centers for major regions (TZ: Dar es Salaam, KE: Nairobi, US: center, DE: Germany)
+
+**3. Draggable Markers**
+- Click and drag any city marker to update coordinates
+- Calls `PUT /api/admin/locations/cities/{city_code}` to save new position
+- Marker popup shows: City name, code, lat/lng, edit/delete buttons
+
+**4. Click to Add City**
+- Only enabled when drilled down to district level
+- Click anywhere on map to open Add City dialog with coordinates pre-filled
+- Overlay instruction: "Click anywhere on the map to add a new city"
+- Header text: "Click on map to add new city • Drag markers to update coordinates"
+
+**5. Hierarchical Navigation**
+- Map updates when drilling down Countries → Regions → Districts → Cities
+- Breadcrumb navigation works in both views
+- Auto-zooms to relevant area based on selected location
+
+### Files Created:
+- `/app/admin-dashboard/frontend/src/app/dashboard/locations/LocationMapView.tsx` - Map component
+
+### Files Updated:
+- `/app/admin-dashboard/frontend/src/app/dashboard/locations/page.tsx` - Added toggle, map integration
+- `/app/backend/server.py` - Added `PUT /api/admin/locations/cities/{city_code}` endpoint
+
+### Dependencies Added:
+- `leaflet@1.9.4`
+- `react-leaflet@5.0.0`
+- `@types/leaflet@1.9.21`
+
+### Testing: 100% (8/8 features verified)
+- Table/Map toggle buttons: PASSED
+- Map View with OpenStreetMap: PASSED
+- City markers on map: PASSED (34 cities at country level, 3 at Ilala district)
+- Click to add city instruction: PASSED
+- Map zoom on drilldown: PASSED
+- Table view CRUD: PASSED
+- Breadcrumb navigation: PASSED
+- View toggle persistence: PASSED
+
+### Usage:
+1. Go to Admin Dashboard → Location Manager
+2. Click Map icon toggle (top-right) to switch to Map View
+3. Drill down: Click country → region → district to see cities
+4. To add city: Click anywhere on map (when at district level)
+5. To update coordinates: Drag a marker and drop it at new location
+
+---
