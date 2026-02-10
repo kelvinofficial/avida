@@ -39,12 +39,27 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
   message = 'Your listing has been published successfully!',
   buttonText = 'View Listings',
   onClose,
+  listingId,
+  showBoostOption = true,
+  boostPackages = [],
+  onBoostSelect,
 }) => {
+  const [showBoost, setShowBoost] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const checkmarkScale = useRef(new Animated.Value(0)).current;
   const checkmarkRotate = useRef(new Animated.Value(0)).current;
   const confettiAnim = useRef(new Animated.Value(0)).current;
+
+  // Default boost packages if none provided
+  const defaultBoostPackages: BoostPackage[] = [
+    { id: 'basic', name: 'Basic Boost', duration_days: 3, price: 2.99, features: ['3x more views', 'Priority placement'] },
+    { id: 'standard', name: 'Standard Boost', duration_days: 7, price: 4.99, features: ['5x more views', 'Top of category', 'Featured badge'] },
+    { id: 'premium', name: 'Premium Boost', duration_days: 14, price: 9.99, features: ['10x more views', 'Homepage feature', 'Premium badge', 'Social promotion'] },
+  ];
+
+  const packages = boostPackages.length > 0 ? boostPackages : defaultBoostPackages;
 
   useEffect(() => {
     if (visible) {
