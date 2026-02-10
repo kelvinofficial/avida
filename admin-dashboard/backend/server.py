@@ -7088,6 +7088,7 @@ async def trigger_manual_check(admin: dict = Depends(get_current_admin)):
     
     results = []
     winners_found = 0
+    emails_sent = 0
     
     for exp in running:
         eval_result = await evaluate_experiment_for_winner(exp["id"])
@@ -7111,6 +7112,21 @@ async def trigger_manual_check(admin: dict = Depends(get_current_admin)):
                 "created_at": datetime.now(timezone.utc)
             }
             await db.admin_notifications.insert_one(notification)
+            
+            # Send email notification if emails configured
+            notification_emails = smart_winner.get("notification_emails", [])
+            if notification_emails:
+                email_sent = await send_ab_winner_email(
+                    to_emails=notification_emails,
+                    experiment_name=exp["name"],
+                    winner_variant_name=eval_result["winner_variant_name"],
+                    improvement=eval_result["improvement"],
+                    control_rate=eval_result.get("control_rate", 0),
+                    winner_rate=eval_result.get("winner_rate", 0),
+                    experiment_id=exp["id"]
+                )
+                if email_sent:
+                    emails_sent += 1
             
             # If strategy is auto_rollout, declare winner
             if smart_winner.get("strategy") == "auto_rollout":
