@@ -1,20 +1,12 @@
 """
 Push Notification Service
 
-This module provides integration with Firebase Cloud Messaging (FCM) or OneSignal
-for sending push notifications to users.
+This module provides integration with:
+1. Expo Push Notifications (for React Native/Expo apps)
+2. Firebase Cloud Messaging (FCM) for native apps
+3. OneSignal for cross-platform delivery
 
-To enable FCM:
-1. Create a Firebase project at https://console.firebase.google.com
-2. Download the service account JSON file
-3. Set FIREBASE_CREDENTIALS_PATH environment variable
-4. Set FIREBASE_ENABLED=true
-
-To enable OneSignal:
-1. Create a OneSignal account at https://onesignal.com
-2. Get your App ID and REST API Key
-3. Set ONESIGNAL_APP_ID and ONESIGNAL_API_KEY environment variables
-4. Set ONESIGNAL_ENABLED=true
+The default provider for this app is Expo Push, since the mobile app is built with Expo.
 """
 
 import os
@@ -26,6 +18,8 @@ from datetime import datetime, timezone
 logger = logging.getLogger(__name__)
 
 # Configuration
+EXPO_PUSH_ENABLED = os.environ.get("EXPO_PUSH_ENABLED", "true").lower() == "true"
+
 FIREBASE_ENABLED = os.environ.get("FIREBASE_ENABLED", "false").lower() == "true"
 FIREBASE_CREDENTIALS_PATH = os.environ.get("FIREBASE_CREDENTIALS_PATH", "")
 
@@ -35,6 +29,89 @@ ONESIGNAL_API_KEY = os.environ.get("ONESIGNAL_API_KEY", "")
 
 # Firebase Admin SDK (lazy loaded)
 firebase_app = None
+
+
+async def send_expo_push_notification(
+    push_tokens: List[str],
+    title: str,
+    body: str,
+    data: Optional[Dict[str, Any]] = None,
+    channel_id: str = "default"
+) -> Dict[str, Any]:
+    """
+    Send push notifications via Expo Push Service
+    
+    Args:
+        push_tokens: List of Expo push tokens (ExponentPushToken[xxx])
+        title: Notification title
+        body: Notification body text
+        data: Optional data payload for deep linking
+        channel_id: Android notification channel
+    
+    Returns:
+        Result dict with success/failure info
+    """
+    if not push_tokens:
+        return {"success": 0, "failure": 0, "reason": "No tokens provided"}
+    
+    # Filter valid Expo tokens
+    valid_tokens = [t for t in push_tokens if t and t.startswith("ExponentPushToken")]
+    
+    if not valid_tokens:
+        logger.info("No valid Expo push tokens found")
+        return {"success": 0, "failure": len(push_tokens), "reason": "No valid Expo tokens"}
+    
+    try:
+        # Build messages
+        messages = []
+        for token in valid_tokens:
+            message = {
+                "to": token,
+                "title": title,
+                "body": body,
+                "sound": "default",
+                "channelId": channel_id,
+            }
+            if data:
+                message["data"] = data
+            messages.append(message)
+        
+        # Send to Expo Push API
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://exp.host/--/api/v2/push/send",
+                json=messages,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            result = response.json()
+            
+            success_count = 0
+            failure_count = 0
+            errors = []
+            
+            if "data" in result:
+                for i, ticket in enumerate(result["data"]):
+                    if ticket.get("status") == "ok":
+                        success_count += 1
+                    else:
+                        failure_count += 1
+                        if ticket.get("message"):
+                            errors.append({
+                                "token": valid_tokens[i][:30] + "...",
+                                "error": ticket.get("message")
+                            })
+            
+            logger.info(f"Expo push sent: {success_count} success, {failure_count} failed")
+            
+            return {
+                "success": success_count,
+                "failure": failure_count,
+                "errors": errors if errors else None
+            }
+    except Exception as e:
+        logger.error(f"Expo push failed: {e}")
+        return {"success": 0, "failure": len(valid_tokens), "error": str(e)}
 
 def init_firebase():
     """Initialize Firebase Admin SDK"""
