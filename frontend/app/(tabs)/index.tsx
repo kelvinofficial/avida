@@ -440,6 +440,27 @@ export default function HomeScreen() {
     loadSavedLocation();
   }, []);
 
+  // Fetch featured sellers
+  const fetchFeaturedSellers = useCallback(async () => {
+    try {
+      setLoadingFeatured(true);
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || ''}/api/business-profiles/featured?limit=8`);
+      if (response.ok) {
+        const data = await response.json();
+        setFeaturedSellers(data.sellers || []);
+      }
+    } catch (error) {
+      console.error('Error fetching featured sellers:', error);
+    } finally {
+      setLoadingFeatured(false);
+    }
+  }, []);
+
+  // Load featured sellers on mount
+  useEffect(() => {
+    fetchFeaturedSellers();
+  }, [fetchFeaturedSellers]);
+
   const loadSavedLocation = async () => {
     try {
       const saved = await Storage.getItem('@selected_city');
