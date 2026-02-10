@@ -1262,12 +1262,12 @@ class ApiClient {
   }
 
   async getWinnerNotifications() {
-    const { data } = await this.client.get('/notifications/ab-winners');
+    const { data } = await this.client.get('/ab-testing/winner-notifications');
     return data;
   }
 
   async markNotificationRead(notificationId: string) {
-    const { data } = await this.client.put(`/notifications/${notificationId}/read`);
+    const { data } = await this.client.put(`/ab-testing/notifications/${notificationId}/read`);
     return data;
   }
 }
