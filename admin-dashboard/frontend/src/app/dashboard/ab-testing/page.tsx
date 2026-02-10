@@ -610,6 +610,18 @@ export default function ABTestingPage() {
                       />
                     </Grid>
                     <Grid size={{ xs: 12 }}>
+                      <TextField 
+                        fullWidth 
+                        size="small"
+                        label="Notification Emails" 
+                        value={formData.notification_emails}
+                        onChange={e => setFormData({...formData, notification_emails: e.target.value})}
+                        placeholder="admin@example.com, manager@example.com"
+                        helperText="Comma-separated list of email addresses to notify when a winner is found"
+                        data-testid="notification-emails-input"
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
                       <Alert severity="info" sx={{ mt: 1 }}>
                         {formData.smart_winner_strategy === 'notify' && 'You will receive a notification when a statistically significant winner is found. Manual action required.'}
                         {formData.smart_winner_strategy === 'auto_rollout' && 'Experiment will automatically stop and winner will be declared when significance is reached.'}
