@@ -288,7 +288,12 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
       <View style={cardStyles.content}>
         <View style={cardStyles.locationRow}>
           <Ionicons name="location" size={11} color="#999" />
-          <Text style={cardStyles.location} numberOfLines={1}>{listing.location}</Text>
+          <Text style={cardStyles.location} numberOfLines={1}>{getDisplayLocation()}</Text>
+          {distance && (
+            <View style={cardStyles.distanceBadge}>
+              <Text style={cardStyles.distanceText}>{distance} away</Text>
+            </View>
+          )}
         </View>
         <Text style={cardStyles.title} numberOfLines={2}>{listing.title}</Text>
         <View style={cardStyles.priceRow}>
