@@ -90,6 +90,8 @@ const menuItems = [
   { text: 'Users', icon: <People />, path: '/dashboard/users' },
   { text: 'Verification', icon: <VerifiedUser />, path: '/dashboard/verification' },
   { text: 'Listings', icon: <Inventory />, path: '/dashboard/listings' },
+  { text: 'Listing Moderation', icon: <Shield />, path: '/dashboard/listing-moderation' },
+  { text: 'Vouchers', icon: <Percent />, path: '/dashboard/vouchers' },
   { text: 'Commission', icon: <Percent />, path: '/dashboard/commission' },
   { text: 'Boosts', icon: <RocketLaunch />, path: '/dashboard/boosts' },
   { text: 'Escrow', icon: <AccountBalance />, path: '/dashboard/escrow' },
