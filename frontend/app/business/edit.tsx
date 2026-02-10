@@ -279,21 +279,67 @@ export default function BusinessProfileEditScreen() {
         social_links: socialLinks,
       };
 
+      let profileSlug = identifier;
+      let isNewProfile = false;
+      
       if (hasProfile) {
         await api.put('/business-profiles/me', payload);
       } else {
         const response = await api.post('/business-profiles/', payload);
         setProfileId(response.data.id);
         setIdentifier(response.data.identifier);
+        profileSlug = response.data.identifier;
         setHasProfile(true);
+        isNewProfile = true;
+        
+        // Upload pending images after profile creation
+        if (pendingLogoUri) {
+          try {
+            const formData = new FormData();
+            formData.append('file', { uri: pendingLogoUri, type: 'image/jpeg', name: 'logo.jpg' } as any);
+            const logoResponse = await api.post('/business-profiles/me/logo', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+            setLogo(logoResponse.data.logo_url);
+            setPendingLogoUri(null);
+          } catch (e) {
+            console.error('Failed to upload logo:', e);
+          }
+        }
+        
+        if (pendingCoverUri) {
+          try {
+            const formData = new FormData();
+            formData.append('file', { uri: pendingCoverUri, type: 'image/jpeg', name: 'cover.jpg' } as any);
+            const coverResponse = await api.post('/business-profiles/me/cover', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+            setCover(coverResponse.data.cover_url);
+            setPendingCoverUri(null);
+          } catch (e) {
+            console.error('Failed to upload cover:', e);
+          }
+        }
       }
-      Alert.alert('Success', 'Business profile saved successfully');
+      
+      // Show success modal with profile URL
+      const baseUrl = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace('/api', '').replace(/\/$/, '');
+      const profileUrl = `${baseUrl}/business/${profileSlug}`;
+      setSuccessProfileUrl(profileUrl);
+      setSuccessProfileSlug(profileSlug);
+      setShowSuccessModal(true);
+      
     } catch (error: any) {
       console.error('Error saving business profile:', error);
       Alert.alert('Error', error.response?.data?.detail || 'Failed to save business profile');
     } finally {
       setSaving(false);
     }
+  };
+
+  // Helper to upload pending images (selected before profile is saved)
+  const uploadPendingImage = async (uri: string, type: 'logo' | 'cover') => {
+    const formData = new FormData();
+    formData.append('file', { uri, type: 'image/jpeg', name: `${type}.jpg` } as any);
+    const endpoint = type === 'logo' ? '/business-profiles/me/logo' : '/business-profiles/me/cover';
+    const response = await api.post(endpoint, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+    return response.data;
   };
 
   const handleUploadLogo = async () => {
@@ -306,7 +352,10 @@ export default function BusinessProfileEditScreen() {
 
     if (!result.canceled && result.assets[0]) {
       if (!hasProfile) {
-        Alert.alert('Save First', 'Please save your business profile before uploading a logo');
+        // Store for upload after save
+        setPendingLogoUri(result.assets[0].uri);
+        setLogo(result.assets[0].uri); // Show preview
+        Alert.alert('Image Selected', 'Logo will be uploaded when you save the profile');
         return;
       }
       try {
