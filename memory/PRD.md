@@ -230,7 +230,11 @@ Payment success page with:
 ## Testing Status
 - Backend: 100% (All tests passed)
 - Frontend: 100% (All UI flows verified)
-- Test reports: `/app/test_reports/iteration_65.json` through `/app/test_reports/iteration_69.json`
+- Test reports: `/app/test_reports/iteration_70.json` (Vouchers & Moderation)
+
+## Key Admin UI Pages
+- `/app/admin-dashboard/frontend/src/app/dashboard/vouchers/page.tsx` - Voucher management
+- `/app/admin-dashboard/frontend/src/app/dashboard/listing-moderation/page.tsx` - Listing moderation
 
 ## Email Notifications
 The system now sends the following emails (via SendGrid):
