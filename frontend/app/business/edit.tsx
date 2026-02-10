@@ -380,7 +380,10 @@ export default function BusinessProfileEditScreen() {
 
     if (!result.canceled && result.assets[0]) {
       if (!hasProfile) {
-        Alert.alert('Save First', 'Please save your business profile before uploading a cover');
+        // Store for upload after save
+        setPendingCoverUri(result.assets[0].uri);
+        setCover(result.assets[0].uri); // Show preview
+        Alert.alert('Image Selected', 'Cover will be uploaded when you save the profile');
         return;
       }
       try {
