@@ -352,57 +352,90 @@ export default function CreditsPage() {
         )}
         
         <View style={[styles.packagesContainer, isDesktop && styles.packagesContainerDesktop]}>
-          {packages.map((pkg) => (
-            <TouchableOpacity
-              key={pkg.id}
-              style={[
-                styles.packageCard,
-                isDesktop && styles.packageCardDesktop,
-                pkg.is_popular && styles.popularPackage,
-                selectedPackage === pkg.id && styles.selectedPackage
-              ]}
-              onPress={() => handlePackageSelect(pkg.id)}
-              disabled={purchasing !== null}
-              data-testid={`package-card-${pkg.id}`}
-            >
-              {pkg.is_popular && (
-                <View style={styles.popularBadge}>
-                  <Text style={styles.popularText}>POPULAR</Text>
-                </View>
-              )}
-              {selectedPackage === pkg.id && (
-                <View style={styles.selectedBadge}>
-                  <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
-                </View>
-              )}
-              <Text style={[styles.packageName, selectedPackage === pkg.id && styles.selectedPackageName]}>{pkg.name}</Text>
-              <Text style={styles.packageDescription}>{pkg.description}</Text>
-              <View style={styles.packageCredits}>
-                <Text style={styles.creditsValue}>{pkg.credits}</Text>
-                <Text style={styles.creditsLabel}>credits</Text>
-                {pkg.bonus_credits > 0 && (
-                  <View style={styles.bonusBadge}>
-                    <Text style={styles.bonusText}>+{pkg.bonus_credits} BONUS</Text>
-                  </View>
-                )}
-              </View>
-              <View style={styles.packagePrice}>
-                <Text style={styles.priceValue}>${pkg.price}</Text>
-              </View>
-              {purchasing === pkg.id ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <TouchableOpacity 
-                  style={[styles.buyButton, selectedPackage === pkg.id && styles.buyButtonSelected]}
-                  onPress={() => handlePurchase(pkg.id)}
+          {packages.map((pkg) => {
+            const savings = calculateSavings(pkg, packages);
+            const isSelected = selectedPackage === pkg.id;
+            
+            return (
+              <Animated.View
+                key={pkg.id}
+                style={[
+                  { transform: [{ scale: isSelected ? scaleAnim : 1 }] }
+                ]}
+              >
+                <TouchableOpacity
+                  style={[
+                    styles.packageCard,
+                    isDesktop && styles.packageCardDesktop,
+                    pkg.is_popular && styles.popularPackage,
+                    isSelected && styles.selectedPackage
+                  ]}
+                  onPress={() => handlePackageSelect(pkg.id)}
+                  disabled={purchasing !== null}
+                  data-testid={`package-card-${pkg.id}`}
+                  activeOpacity={0.8}
                 >
-                  <Text style={styles.buyButtonText}>
-                    {selectedPackage === pkg.id ? 'Purchase Now' : 'Select'}
+                  {/* Savings Badge */}
+                  {savings && (
+                    <View style={styles.savingsBadge}>
+                      <Ionicons name="trending-down" size={12} color="#fff" />
+                      <Text style={styles.savingsText}>SAVE {savings.percent}%</Text>
+                    </View>
+                  )}
+                  
+                  {pkg.is_popular && (
+                    <View style={styles.popularBadge}>
+                      <Text style={styles.popularText}>POPULAR</Text>
+                    </View>
+                  )}
+                  
+                  {isSelected && (
+                    <View style={styles.selectedBadge}>
+                      <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
+                    </View>
+                  )}
+                  
+                  <Text style={[styles.packageName, isSelected && styles.selectedPackageName]}>{pkg.name}</Text>
+                  <Text style={styles.packageDescription}>{pkg.description}</Text>
+                  
+                  <View style={styles.packageCredits}>
+                    <Text style={styles.creditsValue}>{pkg.credits}</Text>
+                    <Text style={styles.creditsLabel}>credits</Text>
+                    {pkg.bonus_credits > 0 && (
+                      <View style={styles.bonusBadge}>
+                        <Text style={styles.bonusText}>+{pkg.bonus_credits} BONUS</Text>
+                      </View>
+                    )}
+                  </View>
+                  
+                  <View style={styles.packagePrice}>
+                    <Text style={styles.priceValue}>${pkg.price}</Text>
+                    {savings && (
+                      <Text style={styles.savingsAmount}>Save ${savings.amount.toFixed(2)}</Text>
+                    )}
+                  </View>
+                  
+                  {/* Price per credit */}
+                  <Text style={styles.pricePerCredit}>
+                    ${(pkg.price / (pkg.credits + pkg.bonus_credits)).toFixed(3)} per credit
                   </Text>
+                  
+                  {purchasing === pkg.id ? (
+                    <ActivityIndicator color="#4CAF50" />
+                  ) : (
+                    <TouchableOpacity 
+                      style={[styles.buyButton, isSelected && styles.buyButtonSelected]}
+                      onPress={() => handlePurchase(pkg.id)}
+                    >
+                      <Text style={[styles.buyButtonText, !isSelected && styles.buyButtonTextUnselected]}>
+                        {isSelected ? 'Purchase Now' : 'Select'}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </TouchableOpacity>
-              )}
-            </TouchableOpacity>
-          ))}
+              </Animated.View>
+            );
+          })}
         </View>
 
         {/* What can you do with credits */}
