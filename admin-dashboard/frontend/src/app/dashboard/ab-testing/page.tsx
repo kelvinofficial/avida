@@ -191,6 +191,7 @@ export default function ABTestingPage() {
       target_page: '', goal_type: 'conversion', goal_event: '',
       assignment_type: 'both', min_sample_size: 100, confidence_level: 95,
       smart_winner_enabled: false, smart_winner_strategy: 'notify', min_runtime_hours: 48,
+      notification_emails: '',
       variants: [
         { name: 'Control', description: 'Original', traffic_percent: 50, is_control: true, config: {} },
         { name: 'Variant A', description: 'Test', traffic_percent: 50, is_control: false, config: {} }
