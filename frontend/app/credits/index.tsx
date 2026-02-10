@@ -444,10 +444,10 @@ const styles = StyleSheet.create({
   contentWrapper: {
     flex: 1,
     width: '100%',
-    alignSelf: 'center',
   },
-  desktopWrapper: {
+  desktopContentWrapper: {
     maxWidth: 1280,
+    alignSelf: 'center',
   },
   loadingContainer: {
     flex: 1,
