@@ -5575,6 +5575,7 @@ if SUBSCRIPTION_SERVICES_AVAILABLE:
 # SEO SITEMAP FOR BUSINESS PROFILES
 # =============================================================================
 
+@app.get("/api/sitemap.xml")
 @app.get("/sitemap.xml")
 async def get_sitemap():
     """Generate XML sitemap for all public business profiles"""
