@@ -714,8 +714,6 @@ const styles = StyleSheet.create({
     color: theme.colors.error,
     fontWeight: '500',
   },
-    marginBottom: theme.spacing.sm,
-  },
   recentItem: {
     flexDirection: 'row',
     alignItems: 'center',
