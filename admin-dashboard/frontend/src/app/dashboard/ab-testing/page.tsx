@@ -70,21 +70,29 @@ export default function ABTestingPage() {
     assignment_type: 'both',
     min_sample_size: 100,
     confidence_level: 95,
+    smart_winner_enabled: false,
+    smart_winner_strategy: 'notify',
+    min_runtime_hours: 48,
     variants: [
       { name: 'Control', description: 'Original version', traffic_percent: 50, is_control: true, config: {} },
       { name: 'Variant A', description: 'Test version', traffic_percent: 50, is_control: false, config: {} }
     ] as Variant[]
   });
 
+  // Winner notifications
+  const [notifications, setNotifications] = useState<any[]>([]);
+
   const loadData = async () => {
     setLoading(true);
     try {
-      const [expRes, overviewRes] = await Promise.all([
+      const [expRes, overviewRes, notifRes] = await Promise.all([
         api.getExperiments(statusFilter || undefined),
-        api.getExperimentsOverview()
+        api.getExperimentsOverview(),
+        api.getWinnerNotifications().catch(() => ({ notifications: [] }))
       ]);
       setExperiments(expRes.experiments || []);
       setOverview(overviewRes);
+      setNotifications(notifRes.notifications || []);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load experiments');
     } finally {
