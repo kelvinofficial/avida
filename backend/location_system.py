@@ -219,7 +219,7 @@ class LocationService:
         )
         return doc
     
-    async def add_region(self, country_code: str, region_code: str, name: str) -> Dict:
+    async def add_region(self, country_code: str, region_code: str, name: str, lat: float = None, lng: float = None) -> Dict:
         """Add a new region"""
         doc = {
             "country_code": country_code.upper(),
@@ -227,6 +227,10 @@ class LocationService:
             "name": name,
             "created_at": datetime.now(timezone.utc).isoformat()
         }
+        if lat is not None:
+            doc["lat"] = lat
+        if lng is not None:
+            doc["lng"] = lng
         await self.regions.update_one(
             {"country_code": country_code.upper(), "region_code": region_code.upper()},
             {"$set": doc},
