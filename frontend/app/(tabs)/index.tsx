@@ -782,9 +782,12 @@ export default function HomeScreen() {
       return null;
     }
     
+    // Determine which listings to display
+    const displayedListings = nearMeEnabled && nearbyListings.length > 0 ? nearbyListings : listings;
+    
     // Show empty state only when initial load is done and no listings
-    if (listings.length === 0) {
-      return <EmptyState icon="pricetags-outline" title="No listings yet" description="Be the first to post an ad in your area!" />;
+    if (displayedListings.length === 0) {
+      return <EmptyState icon="pricetags-outline" title={nearMeEnabled ? "No listings nearby" : "No listings yet"} description={nearMeEnabled ? "Try increasing the search radius or check back later!" : "Be the first to post an ad in your area!"} />;
     }
     
     // Create rows based on column count
@@ -792,12 +795,12 @@ export default function HomeScreen() {
     const BANNER_INTERVAL = 5; // Show banner after every 5 rows (10-20 listings depending on columns)
     
     let rowCount = 0;
-    for (let i = 0; i < listings.length; i += columns) {
-      rows.push(listings.slice(i, i + columns));
+    for (let i = 0; i < displayedListings.length; i += columns) {
+      rows.push(displayedListings.slice(i, i + columns));
       rowCount++;
       
       // Inject banner after every BANNER_INTERVAL rows
-      if (rowCount % BANNER_INTERVAL === 0 && i + columns < listings.length) {
+      if (rowCount % BANNER_INTERVAL === 0 && i + columns < displayedListings.length) {
         rows.push({ type: 'banner', position: rowCount * columns });
       }
     }
