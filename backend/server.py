@@ -4401,6 +4401,185 @@ async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
 # =============================================================================
+# ADMIN LOCATION ROUTES - Must be defined before admin proxy catch-all
+# These routes are handled locally by the main backend
+# =============================================================================
+
+@app.get("/api/admin/locations/stats")
+async def admin_location_stats(request: Request):
+    """Get location statistics for admin dashboard"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.get_location_stats()
+
+@app.get("/api/admin/locations/countries")
+async def admin_location_countries(request: Request):
+    """Get all countries for admin dashboard"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.get_countries()
+
+@app.get("/api/admin/locations/regions")
+async def admin_location_regions(
+    request: Request, 
+    country_code: str = Query(...),
+    search: str = Query(None)
+):
+    """Get regions for admin dashboard"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.get_regions(country_code, search)
+
+@app.get("/api/admin/locations/districts")
+async def admin_location_districts(
+    request: Request,
+    country_code: str = Query(...),
+    region_code: str = Query(...),
+    search: str = Query(None)
+):
+    """Get districts for admin dashboard"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.get_districts(country_code, region_code, search)
+
+@app.get("/api/admin/locations/cities")
+async def admin_location_cities(
+    request: Request,
+    country_code: str = Query(...),
+    region_code: str = Query(...),
+    district_code: str = Query(...),
+    search: str = Query(None)
+):
+    """Get cities for admin dashboard"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.get_cities(country_code, region_code, district_code, search)
+
+# Admin location CRUD operations
+@app.post("/api/admin/locations/countries")
+async def admin_add_country(
+    request: Request,
+    code: str = Body(...),
+    name: str = Body(...),
+    flag: str = Body(None)
+):
+    """Add a new country"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.add_country(code, name, flag)
+
+@app.post("/api/admin/locations/regions")
+async def admin_add_region(
+    request: Request,
+    country_code: str = Body(...),
+    region_code: str = Body(...),
+    name: str = Body(...)
+):
+    """Add a new region"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.add_region(country_code, region_code, name)
+
+@app.post("/api/admin/locations/districts")
+async def admin_add_district(
+    request: Request,
+    country_code: str = Body(...),
+    region_code: str = Body(...),
+    district_code: str = Body(...),
+    name: str = Body(...)
+):
+    """Add a new district"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.add_district(country_code, region_code, district_code, name)
+
+@app.post("/api/admin/locations/cities")
+async def admin_add_city(
+    request: Request,
+    country_code: str = Body(...),
+    region_code: str = Body(...),
+    district_code: str = Body(...),
+    city_code: str = Body(...),
+    name: str = Body(...),
+    lat: float = Body(...),
+    lng: float = Body(...)
+):
+    """Add a new city"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.add_city(country_code, region_code, district_code, city_code, name, lat, lng)
+
+@app.put("/api/admin/locations/countries/{code}")
+async def admin_update_country(
+    code: str,
+    request: Request,
+    name: str = Body(None),
+    flag: str = Body(None)
+):
+    """Update a country"""
+    from location_system import LocationService
+    service = LocationService(db)
+    success = await service.update_country(code, name, flag)
+    if not success:
+        raise HTTPException(status_code=404, detail="Country not found")
+    return {"success": True}
+
+@app.delete("/api/admin/locations/countries/{code}")
+async def admin_delete_country(code: str, request: Request):
+    """Delete a country"""
+    from location_system import LocationService
+    service = LocationService(db)
+    success = await service.delete_country(code)
+    if not success:
+        raise HTTPException(status_code=404, detail="Country not found")
+    return {"success": True}
+
+@app.delete("/api/admin/locations/regions")
+async def admin_delete_region(
+    request: Request,
+    country_code: str = Query(...),
+    region_code: str = Query(...)
+):
+    """Delete a region"""
+    from location_system import LocationService
+    service = LocationService(db)
+    success = await service.delete_region(country_code, region_code)
+    if not success:
+        raise HTTPException(status_code=404, detail="Region not found")
+    return {"success": True}
+
+@app.delete("/api/admin/locations/districts")
+async def admin_delete_district(
+    request: Request,
+    country_code: str = Query(...),
+    region_code: str = Query(...),
+    district_code: str = Query(...)
+):
+    """Delete a district"""
+    from location_system import LocationService
+    service = LocationService(db)
+    success = await service.delete_district(country_code, region_code, district_code)
+    if not success:
+        raise HTTPException(status_code=404, detail="District not found")
+    return {"success": True}
+
+@app.delete("/api/admin/locations/cities")
+async def admin_delete_city(
+    request: Request,
+    country_code: str = Query(...),
+    region_code: str = Query(...),
+    district_code: str = Query(...),
+    city_code: str = Query(...)
+):
+    """Delete a city"""
+    from location_system import LocationService
+    service = LocationService(db)
+    success = await service.delete_city(country_code, region_code, district_code, city_code)
+    if not success:
+        raise HTTPException(status_code=404, detail="City not found")
+    return {"success": True}
+
+# =============================================================================
 # ADMIN API PROXY - Forward /api/admin/* to admin backend on port 8002
 # =============================================================================
 
