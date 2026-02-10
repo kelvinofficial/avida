@@ -523,6 +523,57 @@ export default function ABTestingPage() {
                 Total: {formData.variants.reduce((s, v) => s + v.traffic_percent, 0)}% (must equal 100%)
               </Typography>
             </Grid>
+
+            {/* Smart Winner Section */}
+            <Grid size={{ xs: 12 }}>
+              <Paper variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <EmojiEvents color="warning" />
+                  <Typography variant="subtitle1" fontWeight={600}>Smart Winner (Auto-Detection)</Typography>
+                  <Switch 
+                    checked={formData.smart_winner_enabled}
+                    onChange={e => setFormData({...formData, smart_winner_enabled: e.target.checked})}
+                  />
+                </Box>
+                
+                {formData.smart_winner_enabled && (
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <FormControl fullWidth size="small">
+                        <InputLabel>When Winner Found</InputLabel>
+                        <Select 
+                          value={formData.smart_winner_strategy} 
+                          label="When Winner Found"
+                          onChange={e => setFormData({...formData, smart_winner_strategy: e.target.value})}
+                        >
+                          <MenuItem value="notify">Notify Only (Recommended)</MenuItem>
+                          <MenuItem value="auto_rollout">Auto-Stop & Declare Winner</MenuItem>
+                          <MenuItem value="gradual">Gradual Rollout</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <TextField 
+                        fullWidth 
+                        size="small"
+                        type="number" 
+                        label="Min Runtime (hours)" 
+                        value={formData.min_runtime_hours}
+                        onChange={e => setFormData({...formData, min_runtime_hours: parseInt(e.target.value) || 48})}
+                        helperText="Wait this long before declaring winners"
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <Alert severity="info" sx={{ mt: 1 }}>
+                        {formData.smart_winner_strategy === 'notify' && 'You will receive a notification when a statistically significant winner is found. Manual action required.'}
+                        {formData.smart_winner_strategy === 'auto_rollout' && 'Experiment will automatically stop and winner will be declared when significance is reached.'}
+                        {formData.smart_winner_strategy === 'gradual' && 'Winner traffic will be gradually increased: 50% → 75% → 100%.'}
+                      </Alert>
+                    </Grid>
+                  </Grid>
+                )}
+              </Paper>
+            </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
