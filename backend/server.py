@@ -4820,6 +4820,31 @@ async def admin_export_locations(
         # Get cities based on filters
         if country_code and region_code and district_code:
             cities = await service.get_cities(country_code, region_code, district_code)
+        elif country_code and region_code:
+            # Get all cities in a region
+            cities = []
+            districts = await service.get_districts(country_code, region_code)
+            for district in districts:
+                try:
+                    district_cities = await service.get_cities(country_code, region_code, district['district_code'])
+                    cities.extend(district_cities)
+                except:
+                    pass
+        elif country_code:
+            # Get all cities in a country
+            cities = []
+            regions = await service.get_regions(country_code)
+            for region in regions:
+                try:
+                    districts = await service.get_districts(country_code, region['region_code'])
+                    for district in districts:
+                        try:
+                            district_cities = await service.get_cities(country_code, region['region_code'], district['district_code'])
+                            cities.extend(district_cities)
+                        except:
+                            pass
+                except:
+                    pass
         else:
             # Get all cities (limited for performance)
             countries = await service.get_countries()
