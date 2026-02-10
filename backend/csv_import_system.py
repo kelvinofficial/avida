@@ -8,6 +8,7 @@ Allows admins to bulk import users from CSV files with:
 - Async background job processing for large files
 - In-app notifications on completion
 - Downloadable password report for admin
+- Optional email delivery of credentials to each user
 """
 
 import csv
@@ -18,6 +19,7 @@ import logging
 import secrets
 import string
 import asyncio
+import os
 from datetime import datetime, timezone
 from typing import Optional, Dict, List, Any, Callable
 from enum import Enum
@@ -29,6 +31,19 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 import bcrypt
 
 logger = logging.getLogger(__name__)
+
+# Email configuration
+try:
+    from sendgrid import SendGridAPIClient
+    from sendgrid.helpers.mail import Mail
+    SENDGRID_AVAILABLE = True
+    SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
+    SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'noreply@marketplace.com')
+except ImportError:
+    SENDGRID_AVAILABLE = False
+    SENDGRID_API_KEY = None
+    SENDER_EMAIL = None
+    logger.warning("SendGrid not available - email delivery disabled")
 
 # Constants
 MAX_IMPORT_ROWS = 1000
