@@ -177,10 +177,10 @@ export default function CreditsPage() {
   return (
     <View style={styles.outerContainer}>
       <ScrollView 
-        style={[styles.container, isDesktop && styles.desktopContainer]}
+        style={styles.container}
         contentContainerStyle={isDesktop ? styles.scrollContentDesktop : undefined}
       >
-        <View style={styles.contentWrapper}>
+        <View style={[styles.contentWrapper, isDesktop && styles.desktopContentWrapper]}>
           {/* Header */}
           <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
