@@ -6597,9 +6597,9 @@ if VOUCHER_SYSTEM_AVAILABLE:
 # =============================================================================
 # LISTING MODERATION SYSTEM
 # =============================================================================
-if MODERATION_SYSTEM_AVAILABLE:
-    moderation_router = create_moderation_router(db, get_current_user)
-    app.include_router(moderation_router, prefix="/api")
+if LISTING_MODERATION_AVAILABLE:
+    listing_moderation_router = create_listing_moderation_router(db, get_current_user)
+    app.include_router(listing_moderation_router, prefix="/api")
     logger.info("Listing Moderation System loaded successfully")
 
 # =============================================================================
