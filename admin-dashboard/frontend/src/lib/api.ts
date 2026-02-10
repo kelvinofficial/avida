@@ -797,7 +797,7 @@ class ApiClient {
     return data;
   }
 
-  async post(endpoint: string, body?: Record<string, unknown>) {
+  async postSellerAnalytics(endpoint: string, body?: Record<string, unknown>) {
     const proxyMap: Record<string, string> = {
       '/analytics/admin/trigger-engagement-check': '/seller-analytics/trigger-engagement-check',
     };
