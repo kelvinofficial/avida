@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Linking, TextInput } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Linking, TextInput, Platform, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { boostApi } from '../../src/utils/api';
@@ -45,6 +45,8 @@ interface PaymentProvider {
 export default function CreditsPage() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const { width: windowWidth } = useWindowDimensions();
+  const isDesktop = Platform.OS === 'web' && windowWidth >= 768;
   
   const [loading, setLoading] = useState(true);
   const [packages, setPackages] = useState<CreditPackage[]>([]);
@@ -56,6 +58,7 @@ export default function CreditsPage() {
   const [selectedProvider, setSelectedProvider] = useState<string>('stripe');
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [mobileNetwork, setMobileNetwork] = useState<string>('MTN');
+  const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     try {
