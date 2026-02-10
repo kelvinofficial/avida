@@ -164,6 +164,7 @@ Payment success page with:
 - [x] Image selection before profile save (uploaded after creation)
 - [x] QR code generation in success modal for business profile sharing
 - [x] Admin Users tab with sections: All Users, Verified Sellers, Verified Business, Premium Business
+- [x] Email notifications for admin-initiated verification and premium upgrade
 
 ### Future/Backlog
 - [ ] PayPal SDK button integration on native platforms
@@ -175,6 +176,15 @@ Payment success page with:
 - Backend: 100% (57/57 tests passed across iterations 65-69)
 - Frontend: 100% (All UI flows verified)
 - Test reports: `/app/test_reports/iteration_65.json` through `/app/test_reports/iteration_69.json`
+
+## Email Notifications
+The system now sends the following emails (via SendGrid):
+- **profile_verified**: When admin approves a business profile verification
+- **profile_verification_rejected**: When admin rejects a verification with reason
+- **admin_premium_upgrade**: When admin upgrades a profile to premium
+- **premium_activated**: When user pays for premium subscription
+- **renewal_reminder**: 7 days and 1 day before premium expiration
+- **subscription_expired**: When premium subscription expires
 
 ## Key Files Reference
 - `/app/frontend/app/business/edit.tsx` - Full business profile editor with payment buttons
