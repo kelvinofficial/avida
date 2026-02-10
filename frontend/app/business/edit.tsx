@@ -190,6 +190,8 @@ export default function BusinessProfileEditScreen() {
   const [showPremiumUpgrade, setShowPremiumUpgrade] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState('monthly');
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [showMpesaModal, setShowMpesaModal] = useState(false);
+  const [mpesaPhone, setMpesaPhone] = useState('');
 
   useEffect(() => {
     if (!isAuthenticated) {
