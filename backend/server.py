@@ -5421,6 +5421,21 @@ if BUSINESS_PROFILE_AVAILABLE:
     logger.info("Business Profile System routes registered (before admin proxy)")
 
 # =============================================================================
+# PREMIUM SUBSCRIPTION SYSTEM
+# =============================================================================
+if PREMIUM_SUBSCRIPTION_AVAILABLE:
+    premium_router = create_premium_subscription_router(db, get_current_user)
+    app.include_router(premium_router, prefix="/api")
+    
+    # Stripe webhook endpoint
+    @app.post("/api/webhook/stripe")
+    async def stripe_webhook(request: Request):
+        """Handle Stripe webhook events"""
+        return await handle_stripe_webhook(request, db)
+    
+    logger.info("Premium Subscription System routes registered")
+
+# =============================================================================
 # ADMIN API PROXY - Forward /api/admin/* to admin backend on port 8002
 # =============================================================================
 
