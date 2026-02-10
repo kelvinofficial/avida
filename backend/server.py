@@ -4718,6 +4718,313 @@ async def admin_batch_import_locations(
         "errors": errors
     }
 
+@app.post("/api/admin/locations/bulk-update-coordinates")
+async def admin_bulk_update_coordinates(request: Request):
+    """Bulk update coordinates for districts/cities without coordinates using Nominatim"""
+    from location_system import LocationService
+    service = LocationService(db)
+    
+    updated = []
+    errors = []
+    
+    # Get all countries for reference
+    countries = await service.get_countries()
+    country_map = {c['code']: c['name'] for c in countries}
+    
+    # Process each country
+    for country in countries:
+        try:
+            regions = await service.get_regions(country['code'])
+            for region in regions:
+                try:
+                    districts = await service.get_districts(country['code'], region['region_code'])
+                    for district in districts:
+                        # Skip if already has coordinates
+                        if district.get('lat') and district.get('lng'):
+                            continue
+                        
+                        # Search for coordinates using Nominatim
+                        search_query = f"{district['name']}, {region['name']}, {country['name']}"
+                        try:
+                            async with httpx.AsyncClient(timeout=10.0) as client:
+                                response = await client.get(
+                                    "https://nominatim.openstreetmap.org/search",
+                                    params={"q": search_query, "format": "json", "limit": 1},
+                                    headers={"User-Agent": "AvidaMarketplace/1.0"}
+                                )
+                                results = response.json()
+                                
+                                if results:
+                                    lat = float(results[0]['lat'])
+                                    lng = float(results[0]['lon'])
+                                    
+                                    # Update district
+                                    await service.update_district(
+                                        country['code'], 
+                                        region['region_code'],
+                                        district['district_code'],
+                                        lat=lat, lng=lng
+                                    )
+                                    updated.append({
+                                        "type": "district",
+                                        "name": district['name'],
+                                        "lat": lat,
+                                        "lng": lng,
+                                        "search_query": search_query
+                                    })
+                                else:
+                                    errors.append({
+                                        "type": "district",
+                                        "name": district['name'],
+                                        "error": "No results found"
+                                    })
+                        except Exception as e:
+                            errors.append({
+                                "type": "district",
+                                "name": district['name'],
+                                "error": str(e)
+                            })
+                        
+                        # Rate limit to avoid Nominatim throttling
+                        import asyncio
+                        await asyncio.sleep(1)
+                        
+                except Exception as e:
+                    errors.append({"region": region['name'], "error": str(e)})
+        except Exception as e:
+            errors.append({"country": country['code'], "error": str(e)})
+    
+    return {
+        "success": True,
+        "updated_count": len(updated),
+        "error_count": len(errors),
+        "updated": updated,
+        "errors": errors[:20]  # Limit errors in response
+    }
+
+@app.get("/api/admin/locations/export")
+async def admin_export_locations(
+    request: Request,
+    level: str = Query("cities", description="Export level: cities, districts, or all"),
+    country_code: str = Query(None, description="Filter by country code"),
+    region_code: str = Query(None, description="Filter by region code"),
+    district_code: str = Query(None, description="Filter by district code")
+):
+    """Export locations as GeoJSON FeatureCollection"""
+    from location_system import LocationService
+    service = LocationService(db)
+    
+    features = []
+    
+    if level in ["cities", "all"]:
+        # Get cities based on filters
+        if country_code and region_code and district_code:
+            cities = await service.get_cities(country_code, region_code, district_code)
+        else:
+            # Get all cities (limited for performance)
+            countries = await service.get_countries()
+            cities = []
+            for country in countries[:10]:
+                try:
+                    regions = await service.get_regions(country['code'])
+                    for region in regions[:5]:
+                        try:
+                            districts = await service.get_districts(country['code'], region['region_code'])
+                            for district in districts[:5]:
+                                try:
+                                    district_cities = await service.get_cities(
+                                        country['code'], region['region_code'], district['district_code']
+                                    )
+                                    cities.extend(district_cities)
+                                except:
+                                    pass
+                        except:
+                            pass
+                except:
+                    pass
+        
+        for city in cities:
+            if city.get('lat') and city.get('lng'):
+                features.append({
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [city['lng'], city['lat']]  # GeoJSON is [lng, lat]
+                    },
+                    "properties": {
+                        "type": "city",
+                        "name": city['name'],
+                        "city_code": city['city_code'],
+                        "district_code": city['district_code'],
+                        "region_code": city['region_code'],
+                        "country_code": city['country_code']
+                    }
+                })
+    
+    if level in ["districts", "all"]:
+        # Get districts
+        countries = await service.get_countries()
+        for country in countries:
+            if country_code and country['code'] != country_code:
+                continue
+            try:
+                regions = await service.get_regions(country['code'])
+                for region in regions:
+                    if region_code and region['region_code'] != region_code:
+                        continue
+                    try:
+                        districts = await service.get_districts(country['code'], region['region_code'])
+                        for district in districts:
+                            if district.get('lat') and district.get('lng'):
+                                features.append({
+                                    "type": "Feature",
+                                    "geometry": {
+                                        "type": "Point",
+                                        "coordinates": [district['lng'], district['lat']]
+                                    },
+                                    "properties": {
+                                        "type": "district",
+                                        "name": district['name'],
+                                        "district_code": district['district_code'],
+                                        "region_code": district['region_code'],
+                                        "country_code": district['country_code']
+                                    }
+                                })
+                    except:
+                        pass
+            except:
+                pass
+    
+    return {
+        "type": "FeatureCollection",
+        "features": features,
+        "metadata": {
+            "export_level": level,
+            "feature_count": len(features),
+            "exported_at": datetime.now(timezone.utc).isoformat()
+        }
+    }
+
+@app.get("/api/admin/locations/listing-density")
+async def admin_listing_density(request: Request):
+    """Get listing counts per city for heatmap visualization"""
+    # Aggregate listings by city
+    pipeline = [
+        {"$match": {"location_data.city_code": {"$exists": True}}},
+        {"$group": {
+            "_id": {
+                "city_code": "$location_data.city_code",
+                "city_name": "$location_data.city_name",
+                "lat": "$location_data.coordinates.coordinates",
+            },
+            "listing_count": {"$sum": 1}
+        }},
+        {"$project": {
+            "_id": 0,
+            "city_code": "$_id.city_code",
+            "city_name": "$_id.city_name",
+            "coordinates": "$_id.lat",
+            "listing_count": 1
+        }}
+    ]
+    
+    try:
+        results = await db.listings.aggregate(pipeline).to_list(length=1000)
+        
+        # Format for heatmap - [lat, lng, intensity]
+        heatmap_data = []
+        city_details = []
+        
+        for r in results:
+            coords = r.get('coordinates')
+            if coords and len(coords) >= 2:
+                lng, lat = coords[0], coords[1]  # MongoDB stores as [lng, lat]
+                intensity = min(r['listing_count'] / 10, 1.0)  # Normalize intensity
+                heatmap_data.append([lat, lng, intensity])
+                city_details.append({
+                    "city_code": r.get('city_code'),
+                    "city_name": r.get('city_name'),
+                    "lat": lat,
+                    "lng": lng,
+                    "listing_count": r['listing_count']
+                })
+        
+        return {
+            "heatmap_data": heatmap_data,
+            "city_details": city_details,
+            "total_cities": len(city_details),
+            "total_listings": sum(c['listing_count'] for c in city_details)
+        }
+    except Exception as e:
+        return {
+            "heatmap_data": [],
+            "city_details": [],
+            "total_cities": 0,
+            "total_listings": 0,
+            "error": str(e)
+        }
+
+@app.get("/api/admin/locations/suggest-coordinates")
+async def admin_suggest_coordinates(
+    request: Request,
+    country_code: str = Query(...),
+    region_code: str = Query(...),
+    district_code: str = Query(...)
+):
+    """Auto-suggest coordinates based on existing cities in the district"""
+    from location_system import LocationService
+    service = LocationService(db)
+    
+    try:
+        # Get existing cities in the district
+        cities = await service.get_cities(country_code, region_code, district_code)
+        
+        valid_cities = [c for c in cities if c.get('lat') and c.get('lng')]
+        
+        if not valid_cities:
+            # Try to get district center
+            districts = await service.get_districts(country_code, region_code)
+            district = next((d for d in districts if d['district_code'] == district_code), None)
+            
+            if district and district.get('lat') and district.get('lng'):
+                return {
+                    "suggested_lat": district['lat'],
+                    "suggested_lng": district['lng'],
+                    "source": "district_center",
+                    "confidence": "medium"
+                }
+            
+            return {
+                "suggested_lat": None,
+                "suggested_lng": None,
+                "source": "none",
+                "confidence": "low",
+                "message": "No existing cities or district center to base suggestion on"
+            }
+        
+        # Calculate centroid of existing cities
+        avg_lat = sum(c['lat'] for c in valid_cities) / len(valid_cities)
+        avg_lng = sum(c['lng'] for c in valid_cities) / len(valid_cities)
+        
+        # Add small offset to avoid exact overlap
+        import random
+        offset_lat = random.uniform(-0.01, 0.01)
+        offset_lng = random.uniform(-0.01, 0.01)
+        
+        return {
+            "suggested_lat": round(avg_lat + offset_lat, 6),
+            "suggested_lng": round(avg_lng + offset_lng, 6),
+            "source": f"centroid_of_{len(valid_cities)}_cities",
+            "confidence": "high" if len(valid_cities) >= 3 else "medium",
+            "nearby_cities": [{"name": c['name'], "lat": c['lat'], "lng": c['lng']} for c in valid_cities[:5]]
+        }
+    except Exception as e:
+        return {
+            "suggested_lat": None,
+            "suggested_lng": None,
+            "error": str(e)
+        }
+
 # =============================================================================
 # ADMIN API PROXY - Forward /api/admin/* to admin backend on port 8002
 # =============================================================================
