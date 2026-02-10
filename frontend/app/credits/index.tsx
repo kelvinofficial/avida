@@ -829,26 +829,60 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   packagePrice: {
-    marginBottom: 16,
+    marginBottom: 8,
   },
   priceValue: {
     fontSize: 24,
     fontWeight: '700',
     color: '#333',
   },
-  buyButton: {
-    backgroundColor: '#e0e0e0',
-    borderRadius: 8,
-    paddingVertical: 12,
+  savingsAmount: {
+    fontSize: 13,
+    color: '#4CAF50',
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  pricePerCredit: {
+    fontSize: 12,
+    color: '#888',
+    marginBottom: 16,
+  },
+  savingsBadge: {
+    position: 'absolute',
+    top: -10,
+    left: 16,
+    backgroundColor: '#E91E63',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
+  },
+  savingsText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  buyButton: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   buyButtonSelected: {
     backgroundColor: '#4CAF50',
+    borderColor: '#4CAF50',
   },
   buyButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  buyButtonTextUnselected: {
+    color: '#333',
   },
   infoCard: {
     backgroundColor: '#fff',
