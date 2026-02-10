@@ -553,7 +553,35 @@ export default function BusinessProfileEditScreen() {
                 )}
               </TouchableOpacity>
 
-              <Text style={styles.paymentNote}>Secure payment powered by Stripe. Cancel anytime.</Text>
+              <View style={styles.orDivider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.orText}>or pay with</Text>
+                <View style={styles.dividerLine} />
+              </View>
+
+              <View style={styles.altPayments}>
+                <TouchableOpacity
+                  style={[styles.altPaymentBtn, styles.paypalBtn]}
+                  onPress={handlePayPalCheckout}
+                  disabled={processingPayment}
+                  data-testid="paypal-checkout-button"
+                >
+                  <Ionicons name="logo-paypal" size={20} color="#00457C" />
+                  <Text style={styles.paypalBtnText}>PayPal</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.altPaymentBtn, styles.mpesaBtn]}
+                  onPress={() => setShowMpesaModal(true)}
+                  disabled={processingPayment}
+                  data-testid="mpesa-checkout-button"
+                >
+                  <Ionicons name="phone-portrait-outline" size={20} color="#4CAF50" />
+                  <Text style={styles.mpesaBtnText}>M-Pesa</Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.paymentNote}>Secure payment. Cancel anytime.</Text>
             </View>
           )}
 
