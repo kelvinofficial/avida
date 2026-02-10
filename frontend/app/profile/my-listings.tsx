@@ -19,6 +19,7 @@ import api from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { Footer } from '../../src/components/layout';
+import { useLoginRedirect } from '../../src/hooks/useLoginRedirect';
 
 const COLORS = {
   primary: '#2E7D32',
