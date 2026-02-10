@@ -763,7 +763,7 @@ class ApiClient {
   // SELLER ANALYTICS (via Admin Backend Proxy)
   // =========================================================================
 
-  async get(endpoint: string) {
+  async getSellerAnalytics(endpoint: string) {
     // Map main app endpoints to admin backend proxy endpoints
     const proxyMap: Record<string, string> = {
       '/analytics/admin/settings': '/seller-analytics/settings',
@@ -776,7 +776,7 @@ class ApiClient {
     return data;
   }
 
-  async put(endpoint: string, body: Record<string, unknown>) {
+  async putSellerAnalytics(endpoint: string, body: Record<string, unknown>) {
     const proxyMap: Record<string, string> = {
       '/analytics/admin/settings': '/seller-analytics/settings',
       '/analytics/admin/engagement-notification-config': '/seller-analytics/engagement-config',
