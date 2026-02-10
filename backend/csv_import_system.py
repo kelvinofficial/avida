@@ -112,6 +112,89 @@ class CSVImportService:
         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         return bool(re.match(pattern, email))
     
+    async def _send_welcome_email(
+        self,
+        user_email: str,
+        first_name: str,
+        password: str,
+        platform_name: str = "Marketplace"
+    ) -> bool:
+        """Send welcome email with credentials to newly created user"""
+        if not SENDGRID_AVAILABLE or not SENDGRID_API_KEY:
+            logger.warning(f"SendGrid not configured - skipping email to {user_email}")
+            return False
+        
+        try:
+            subject = f"Welcome to {platform_name} - Your Account Details"
+            
+            html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+        .credentials {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea; }}
+        .password {{ font-family: monospace; background: #eee; padding: 10px 15px; border-radius: 4px; font-size: 16px; }}
+        .warning {{ color: #e74c3c; margin-top: 20px; padding: 15px; background: #fdf2f2; border-radius: 8px; }}
+        .button {{ display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin-top: 20px; }}
+        .footer {{ text-align: center; margin-top: 30px; color: #888; font-size: 12px; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to {platform_name}!</h1>
+        </div>
+        <div class="content">
+            <p>Hello <strong>{first_name}</strong>,</p>
+            <p>Your account has been successfully created. Here are your login credentials:</p>
+            
+            <div class="credentials">
+                <p><strong>Email:</strong> {user_email}</p>
+                <p><strong>Temporary Password:</strong></p>
+                <p class="password">{password}</p>
+            </div>
+            
+            <div class="warning">
+                <strong>Important:</strong> For security reasons, you will be required to change your password when you first log in.
+            </div>
+            
+            <p>If you have any questions, please contact our support team.</p>
+            
+            <p>Best regards,<br>The {platform_name} Team</p>
+        </div>
+        <div class="footer">
+            <p>This is an automated message. Please do not reply directly to this email.</p>
+        </div>
+    </div>
+</body>
+</html>
+"""
+            
+            message = Mail(
+                from_email=SENDER_EMAIL,
+                to_emails=user_email,
+                subject=subject,
+                html_content=html_content
+            )
+            
+            sg = SendGridAPIClient(SENDGRID_API_KEY)
+            response = sg.send(message)
+            
+            if response.status_code == 202:
+                logger.info(f"Welcome email sent to {user_email}")
+                return True
+            else:
+                logger.warning(f"Email send status: {response.status_code} for {user_email}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Failed to send email to {user_email}: {e}")
+            return False
+    
     async def parse_csv(self, file_content: bytes) -> Dict:
         """Parse CSV file and return structured data"""
         try:
