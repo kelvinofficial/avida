@@ -372,9 +372,21 @@ export default function BusinessProfileScreen() {
             <View style={styles.nameRow}>
               <Text style={styles.businessName}>{profile.business_name}</Text>
               {profile.is_verified && (
-                <View style={styles.verifiedBadge} data-testid="verified-badge">
-                  <Ionicons name="checkmark-circle" size={18} color={COLORS.verified} />
-                  <Text style={styles.verifiedText}>Verified</Text>
+                <View style={[
+                  styles.verifiedBadge,
+                  profile.is_premium && styles.premiumBadge
+                ]} data-testid="verified-badge">
+                  <Ionicons 
+                    name={profile.is_premium ? "diamond" : "checkmark-circle"} 
+                    size={18} 
+                    color={profile.is_premium ? '#FF8F00' : COLORS.verified} 
+                  />
+                  <Text style={[
+                    styles.verifiedText,
+                    profile.is_premium && styles.premiumText
+                  ]}>
+                    {profile.is_premium ? 'Premium' : 'Verified'}
+                  </Text>
                 </View>
               )}
             </View>
