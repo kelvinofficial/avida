@@ -229,6 +229,14 @@ except ImportError as e:
     BUSINESS_PROFILE_AVAILABLE = False
     logging.warning(f"Business Profile System not available: {e}")
 
+# Premium Subscription System
+try:
+    from premium_subscription_system import create_premium_subscription_router, handle_stripe_webhook
+    PREMIUM_SUBSCRIPTION_AVAILABLE = True
+except ImportError as e:
+    PREMIUM_SUBSCRIPTION_AVAILABLE = False
+    logging.warning(f"Premium Subscription System not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
