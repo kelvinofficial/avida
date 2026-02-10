@@ -8,12 +8,31 @@ Build a local marketplace application (Avida) with:
 
 ## What's Been Implemented
 
+### 2026-02-10: Complete Subscription Backend
+**COMPLETED**
+
+#### Subscription Services Integration
+- Invoice API endpoints (GET /api/invoices, GET /api/invoices/{id}, GET /api/invoices/{id}/html, POST /api/invoices/create/{transaction_id})
+- Background task for checking expiring subscriptions (runs every 6 hours)
+- Email notification integration with SendGrid for:
+  - Premium activation confirmation
+  - Subscription expiration reminders (7 days and 1 day before)
+  - Premium expired notifications
+- Invoice generation with HTML rendering
+
+#### Frontend Payment Options
+- PayPal checkout button (requires PayPal SDK for native)
+- M-Pesa payment modal with phone number input
+- Updated payment section with "or pay with" divider
+
 ### 2026-02-10: Complete Frontend UI for All Features
 **COMPLETED**
 
 #### Premium Subscription Purchase Flow
 - Package selection cards (Monthly $29.99, Quarterly $79.99, Yearly $249.99)
 - Stripe checkout integration with redirect
+- PayPal and M-Pesa payment buttons added
+- M-Pesa modal for phone number entry
 - Success page (`/premium/success`) with payment verification
 - Shows benefits and expiration date after successful purchase
 - "Upgrade to Premium" button appears for verified (non-premium) profiles
@@ -64,6 +83,7 @@ Complete business profile editor with:
 - Gallery section (expandable)
 - Premium upgrade section (for verified profiles)
 - Verification status banner
+- Multiple payment options (Stripe, PayPal, M-Pesa)
 
 ### `/app/frontend/app/admin/business-profiles.tsx`
 Admin management page with:
@@ -92,6 +112,12 @@ Payment success page with:
 - `POST /api/premium-subscription/mpesa/stk-push`
 - `GET /api/premium-subscription/my-subscription`
 
+### Invoices
+- `GET /api/invoices` - Get user's invoices
+- `GET /api/invoices/{invoice_id}` - Get specific invoice
+- `GET /api/invoices/{invoice_id}/html` - Get invoice as HTML
+- `POST /api/invoices/create/{transaction_id}` - Create invoice for transaction
+
 ### Business Profile Gallery
 - `GET /api/business-profiles/me/gallery`
 - `POST /api/business-profiles/me/gallery/image`
@@ -106,12 +132,14 @@ Payment success page with:
 - `POST /api/admin/business-profiles/{id}/upgrade-premium`
 - `POST /api/admin/business-profiles/{id}/revoke-premium`
 - `POST /api/admin/business-profiles/{id}/toggle-active`
+- `POST /api/admin/subscriptions/check-renewals` - Admin: manually trigger renewal checks
 
 ## Tech Stack
 - Frontend: React Native + Expo (web), TypeScript
 - Backend: Python FastAPI, MongoDB
 - Payments: Stripe, PayPal, M-Pesa
 - Storage: Base64 images in MongoDB
+- Email: SendGrid for subscription notifications
 
 ## Status
 
@@ -123,22 +151,31 @@ Payment success page with:
 - [x] Gallery system (backend + frontend)
 - [x] Social links (backend + frontend)
 - [x] Cover image upload
-- [x] Premium subscription UI
+- [x] Premium subscription UI with multiple payment options
 - [x] Admin management page
+- [x] Invoice API endpoints
+- [x] Subscription auto-renewal background task
+- [x] Email notifications for payment events (SendGrid)
 
 ### Future/Backlog
-- [ ] PayPal SDK button integration (currently shows config only)
-- [ ] M-Pesa callback handling in production
-- [ ] Subscription auto-renewal
-- [ ] Invoice/receipt generation
-- [ ] Email notifications for payment events
+- [ ] PayPal SDK button integration on native platforms
+- [ ] M-Pesa callback handling in production (Safaricom API)
+- [ ] End-to-end user flow test (create -> verify -> premium upgrade)
 - [ ] SEO sitemap generation for business profiles
+- [ ] Region search bar visibility fix in LocationPicker
+
+## Testing Status
+- Backend: 100% (20/20 tests passed)
+- Frontend: 100% (Business Profile Edit page loads correctly)
+- Test file: `/app/backend/tests/test_premium_subscription.py`
+- Test report: `/app/test_reports/iteration_65.json`
 
 ## Key Files Reference
-- `/app/frontend/app/business/edit.tsx` - Full business profile editor
+- `/app/frontend/app/business/edit.tsx` - Full business profile editor with payment buttons
 - `/app/frontend/app/admin/business-profiles.tsx` - Admin management
 - `/app/frontend/app/premium/success.tsx` - Payment success page
 - `/app/backend/premium_subscription_system.py` - Payment integration
+- `/app/backend/subscription_services.py` - Email, Auto-Renewal, Invoices
 - `/app/backend/business_profile_system.py` - Gallery & profiles
 
 ## Environment Variables
@@ -147,4 +184,5 @@ STRIPE_API_KEY=sk_test_xxx (configured)
 PAYPAL_CLIENT_ID=xxx (optional)
 MPESA_CONSUMER_KEY=xxx (optional)
 MPESA_CONSUMER_SECRET=xxx (optional)
+SENDGRID_API_KEY=xxx (configured)
 ```
