@@ -1105,7 +1105,16 @@ export default function ListingDetailScreen() {
                         </View>
                       </TouchableOpacity>
                     )}
-                    <TouchableOpacity style={desktopStyles.primaryActionBtn} onPress={() => setShowOfferModal(true)}>
+                    <TouchableOpacity 
+                      style={desktopStyles.primaryActionBtn} 
+                      onPress={() => {
+                        if (!isAuthenticated) {
+                          router.push(`/login?redirect=${encodeURIComponent(`/listing/${id}`)}`);
+                          return;
+                        }
+                        setShowOfferModal(true);
+                      }}
+                    >
                       <Ionicons name="pricetag" size={20} color="#fff" />
                       <Text style={desktopStyles.primaryActionText}>Make an Offer</Text>
                     </TouchableOpacity>
