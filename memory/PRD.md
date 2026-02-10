@@ -178,12 +178,54 @@ Payment success page with:
 - [x] WebP Image Conversion
 - [x] Invoice PDF Generation
 
+### 2026-02-10: Admin UI Pages for Vouchers & Listing Moderation
+**COMPLETED**
+
+#### Admin Voucher Management (`/dashboard/vouchers`)
+- Stats cards: Total Vouchers, Active Vouchers, Total Redemptions, Total Discounts Given
+- Voucher table with Code, Type, Value, Usage, Status, Valid Until columns
+- Create voucher dialog with:
+  - Code, Type (Amount/Percent/Credit), Value
+  - Max uses, Max uses per user
+  - Min order amount, Max discount amount
+  - Valid until date
+  - Restrictions: New users only, Verified only, Premium only, Stackable
+- Edit voucher with all editable fields
+- View voucher details with usage history
+- Delete voucher with confirmation
+- Status/Type filters
+
+#### Admin Listing Moderation (`/dashboard/listing-moderation`)
+- Three tabs: Moderation Queue, Moderation Log, Settings
+- Moderation Queue:
+  - Pending/Approved/Rejected filter
+  - Bulk selection with checkboxes
+  - Listing cards with image, title, user info, price
+  - Quick actions: Approve, Reject, Remove
+  - Bulk actions: Approve All, Reject All, Remove All
+- Moderation Log:
+  - History of all moderation actions
+  - Admin email, action, reason, timestamp
+- Settings Tab:
+  - Enable Listing Moderation toggle
+  - Require Moderation for New Listings
+  - Auto-approve Verified Users
+  - Auto-approve Premium Users
+  - Default Tier selection
+  - Tier limits configuration (Free, Basic, Premium)
+  - Save Settings button
+
 ### Future/Backlog
 - [ ] PayPal SDK button integration on native platforms
 - [ ] M-Pesa callback handling in production (Safaricom API)
 - [ ] End-to-end user flow test (create -> verify -> premium upgrade)
 - [ ] Region search bar visibility fix in LocationPicker
-- [ ] Admin UI pages for new features (Marketing tab, Settings tab)
+- [ ] Admin UI for advanced SEO tools
+- [ ] Admin UI for Polls/Surveys
+- [ ] Admin UI for Cookie Consent management
+- [ ] WebP image generation implementation
+- [ ] Invisible reCAPTCHA integration
+- [ ] URL masking functionality
 
 ## Testing Status
 - Backend: 100% (All tests passed)
