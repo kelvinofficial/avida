@@ -103,6 +103,10 @@ export const listingsApi = {
     max_price?: number;
     condition?: string;
     location?: string;
+    country_code?: string;
+    region_code?: string;
+    district_code?: string;
+    city_code?: string;
     sort?: string;
     page?: number;
     limit?: number;
