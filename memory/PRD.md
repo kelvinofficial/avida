@@ -313,9 +313,21 @@ Payment success page with:
 
 #### Savings Comparison Feature
 - "SAVE X%" badge displayed on larger packages (pink badge with trending-down icon)
-- Save amount shown below price (e.g., "Save $2.00", "Save $10.00")
+- "BEST VALUE" orange badge on the package with highest savings percentage (currently Pro Pack at 29%)
+- Save amount shown below price with percentage (e.g., "Save $2.00 (17% off)")
 - Price per credit displayed for each package (e.g., "$0.100 per credit")
 - Savings calculated by comparing to the base (smallest) package
+
+#### Desktop Header
+- New desktop header with "Credits Store" title and subtitle
+- Wallet icon with green background
+- Balance display in the header (right side)
+- "Back" button with icon on the left
+- Balance card hidden on desktop (shown only in header)
+
+#### Hover Effects (Desktop)
+- Package cards have hover effect (border change, slight scale up)
+- Best deal package has orange theme (border, button, savings text)
 
 #### Desktop Profile Enhancements
 - Added "Credits & Boosts" section in Desktop Profile (authenticated users only)
