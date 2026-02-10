@@ -771,6 +771,11 @@ const styles = StyleSheet.create({
   cityInfo: {
     flex: 1,
   },
+  cityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.md,
+  },
   citySubtext: {
     fontSize: 12,
     color: theme.colors.onSurfaceVariant,
