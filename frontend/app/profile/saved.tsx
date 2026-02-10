@@ -18,6 +18,7 @@ import { useRouter } from 'expo-router';
 import api from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
 import { useResponsive } from '../../src/hooks/useResponsive';
+import { useLoginRedirect } from '../../src/hooks/useLoginRedirect';
 import { Footer } from '../../src/components/layout';
 
 const COLORS = {
