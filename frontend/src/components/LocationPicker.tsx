@@ -567,6 +567,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             </View>
           ) : (
             <FlatList
+              key={`list-${currentStep}`}
               data={getData()}
               keyExtractor={(item) => {
                 switch (currentStep) {
@@ -583,6 +584,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
               renderItem={renderItem}
               contentContainerStyle={styles.listContent}
               ItemSeparatorComponent={() => <View style={styles.separator} />}
+              extraData={currentStep}
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
                   <Ionicons name="location-outline" size={48} color={theme.colors.outline} />
