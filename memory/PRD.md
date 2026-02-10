@@ -2838,6 +2838,42 @@ Added "Recent Locations" section in LocationPicker showing the last 5 selected l
 
 ---
 
+
+
+## Backend Location Filter Enhancement - COMPLETE ✅ (Feb 10, 2026)
+
+### Overview
+Enhanced the listings API to support filtering by hierarchical location codes for more precise location filtering.
+
+### Backend Changes (`/app/backend/routes/listings.py` lines 244-320)
+
+**New Query Parameters:**
+- `country_code` - Filter by country (e.g., TZ, KE, US)
+- `region_code` - Filter by region (e.g., DSM, NAI)
+- `district_code` - Filter by district (e.g., KIN, ILA)
+- `city_code` - Filter by city (e.g., MIK, KIM)
+
+**Filter Logic:**
+- Codes are converted to uppercase for case-insensitive matching
+- Filters on `location_data.country_code`, `location_data.region_code`, etc.
+- Supports any combination of codes (country only, country+region, etc.)
+- Falls back to text search on `location` field when no codes provided
+- Text search also checks `location_data.city_name` and `location_data.location_text`
+
+### Frontend Changes
+
+**API Client (`/app/frontend/src/utils/api.ts` lines 106-109):**
+- `listingsApi.getAll` accepts country_code, region_code, district_code, city_code params
+
+**Home Page (`/app/frontend/app/(tabs)/index.tsx` lines 493-560):**
+- `fetchData` builds locationParams from selectedLocationFilter
+- Passes hierarchical codes when available, falls back to text location
+
+### Testing: 100% (15/15 backend tests passed)
+- Test file: `/app/backend/tests/test_location_filter.py`
+- Verified with Kijitonyama apartment listing (TZ/DSM/KIN/KIM)
+
+---
 ### Testing: 100% (7/7 backend tests passed)
 
 ---
