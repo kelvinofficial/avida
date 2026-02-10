@@ -750,7 +750,8 @@ export default function HomeScreen() {
     setLocationSearch('');
     
     // Also update selectedCity for the smart search functionality
-    if (location.lat && location.lng && location.city_code) {
+    // Use typeof checks for lat/lng since 0 is a valid coordinate
+    if (typeof location.lat === 'number' && typeof location.lng === 'number' && location.city_code) {
       const cityData = {
         country_code: location.country_code || '',
         country_name: '', // Will be populated from API if needed
