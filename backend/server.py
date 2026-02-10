@@ -271,6 +271,38 @@ except ImportError as e:
     MODULAR_ROUTES_AVAILABLE = False
     logging.warning(f"Modular routes not available: {e}")
 
+# Voucher System
+try:
+    from voucher_system import create_voucher_router
+    VOUCHER_SYSTEM_AVAILABLE = True
+except ImportError as e:
+    VOUCHER_SYSTEM_AVAILABLE = False
+    logging.warning(f"Voucher system not available: {e}")
+
+# Listing Moderation System
+try:
+    from listing_moderation_system import create_moderation_router, check_user_can_post, should_auto_approve
+    MODERATION_SYSTEM_AVAILABLE = True
+except ImportError as e:
+    MODERATION_SYSTEM_AVAILABLE = False
+    logging.warning(f"Moderation system not available: {e}")
+
+# Admin Tools (SEO, URL Masking, Polls, Cookies, reCAPTCHA, WebP, Invoice PDF)
+try:
+    from admin_tools_system import (
+        create_seo_router,
+        create_url_masking_router,
+        create_polls_router,
+        create_cookie_consent_router,
+        create_recaptcha_router,
+        create_webp_router,
+        create_invoice_pdf_router
+    )
+    ADMIN_TOOLS_AVAILABLE = True
+except ImportError as e:
+    ADMIN_TOOLS_AVAILABLE = False
+    logging.warning(f"Admin tools not available: {e}")
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
