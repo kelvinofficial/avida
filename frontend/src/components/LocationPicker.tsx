@@ -389,65 +389,18 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             <View style={styles.iconContainer}>
               <Ionicons name="map-outline" size={20} color={theme.colors.primary} />
             </View>
-            <Text style={styles.itemText}>{item.name}</Text>
-            <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceVariant} />
+            <Text style={[styles.itemText, { flex: 1 }]}>{item.name}</Text>
           </TouchableOpacity>
-        );
-      case 'district':
-        return (
-          <TouchableOpacity
-            style={styles.listItem}
-            onPress={() => handleDistrictSelect(item)}
-            data-testid={`district-${item.district_code}`}
-          >
-            <View style={styles.iconContainer}>
-              <Ionicons name="business-outline" size={20} color={theme.colors.primary} />
-            </View>
-            <Text style={styles.itemText}>{item.name}</Text>
-            <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceVariant} />
-          </TouchableOpacity>
-        );
-      case 'city':
-        const city = item as City;
-        return (
-          <Pressable
-            style={({ pressed }) => [
-              styles.listItem,
-              pressed && { backgroundColor: theme.colors.surfaceVariant }
-            ]}
-            onPress={() => handleCitySelect(city)}
-            data-testid={`city-${city.city_code}`}
-          >
-            <View style={styles.iconContainer}>
-              <Ionicons name="location" size={20} color={theme.colors.primary} />
-            </View>
-            <View style={styles.cityInfo}>
-              <Text style={styles.itemText}>{city.name}</Text>
-              {city.location_text && (
-                <Text style={styles.citySubtext} numberOfLines={1}>
-                  {city.location_text}
-                </Text>
-              )}
-            </View>
-          </Pressable>
         );
     }
   };
 
   const getData = () => {
-    if (currentStep === 'city' && searchQuery.length >= 2) {
-      return searchResults;
-    }
-    
     switch (currentStep) {
       case 'country':
         return countries;
       case 'region':
         return regions;
-      case 'district':
-        return districts;
-      case 'city':
-        return cities;
     }
   };
 
