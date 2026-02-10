@@ -135,7 +135,7 @@ export default function InvoicesPage() {
         <View style={styles.centerContent}>
           <Ionicons name="lock-closed-outline" size={48} color={COLORS.textSecondary} />
           <Text style={styles.loginMessage}>Please sign in to view invoices</Text>
-          <TouchableOpacity style={styles.signInBtn} onPress={() => router.push('/auth/login')}>
+          <TouchableOpacity style={styles.signInBtn} onPress={() => router.push('/login')}>
             <Text style={styles.signInBtnText}>Sign In</Text>
           </TouchableOpacity>
         </View>
