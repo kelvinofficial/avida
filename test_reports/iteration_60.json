@@ -1,5 +1,5 @@
 {
-  "summary": "Tested location-based features: LocationPicker modal, hierarchical Country>Region>District>City selection, All Locations option, and listings display. Found UI bug where clicking region items doesn't navigate to district selection step (click event not triggering properly in React Native Web). Backend APIs work correctly.",
+  "summary": "Tested location-based features: LocationPicker modal, hierarchical Country>Region>District>City selection, All Locations option, and listings display. Found UI bug where clicking region items triggers API call (confirmed in backend logs: GET /api/locations/districts?country_code=TZ&region_code=DSM returns 200 OK) but UI doesn't update to show districts. This is a React state/rendering issue, not a click event issue. Backend APIs work correctly.",
   "backend_issues": {
     "critical": [],
     "minor": []
