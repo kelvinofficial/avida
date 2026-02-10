@@ -250,6 +250,10 @@ def create_listings_router(
         max_price: Optional[float] = None,
         condition: Optional[str] = None,
         location: Optional[str] = None,
+        country_code: Optional[str] = None,
+        region_code: Optional[str] = None,
+        district_code: Optional[str] = None,
+        city_code: Optional[str] = None,
         sort: str = "newest",
         page: int = 1,
         limit: int = 20,
@@ -285,8 +289,37 @@ def create_listings_router(
         if condition:
             query["condition"] = condition
         
-        if location:
-            query["location"] = {"$regex": location, "$options": "i"}
+        # Location filter - supports both hierarchical codes and text search
+        if country_code:
+            query["location_data.country_code"] = country_code.upper()
+        if region_code:
+            query["location_data.region_code"] = region_code.upper()
+        if district_code:
+            query["location_data.district_code"] = district_code.upper()
+        if city_code:
+            query["location_data.city_code"] = city_code.upper()
+        
+        # Fallback to text location search if no hierarchical codes provided
+        if location and not any([country_code, region_code, district_code, city_code]):
+            # Search in both legacy location field and new location_data.city_name
+            query["$or"] = query.get("$or", []) + [
+                {"location": {"$regex": location, "$options": "i"}},
+                {"location_data.city_name": {"$regex": location, "$options": "i"}},
+                {"location_data.location_text": {"$regex": location, "$options": "i"}}
+            ]
+            # If $or was already set for search, combine them with $and
+            if search:
+                search_or = [
+                    {"title": {"$regex": search, "$options": "i"}},
+                    {"description": {"$regex": search, "$options": "i"}}
+                ]
+                location_or = [
+                    {"location": {"$regex": location, "$options": "i"}},
+                    {"location_data.city_name": {"$regex": location, "$options": "i"}},
+                    {"location_data.location_text": {"$regex": location, "$options": "i"}}
+                ]
+                query["$and"] = [{"$or": search_or}, {"$or": location_or}]
+                del query["$or"]
         
         # Parse and apply dynamic attribute filters
         if filters:
