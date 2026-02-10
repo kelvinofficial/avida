@@ -4406,9 +4406,25 @@ async def health_check():
 
 ADMIN_BACKEND_URL = "http://localhost:8002"
 
+# Paths that should NOT be proxied - handled by main backend
+ADMIN_PATHS_HANDLED_LOCALLY = [
+    "locations/stats",
+    "locations/countries", 
+    "locations/regions",
+    "locations/districts",
+    "locations/cities",
+]
+
 @app.api_route("/api/admin/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 async def admin_proxy(request: Request, path: str):
     """Proxy all admin requests to the admin backend"""
+    
+    # Check if this path should be handled locally (not proxied)
+    for local_path in ADMIN_PATHS_HANDLED_LOCALLY:
+        if path.startswith(local_path):
+            # Let FastAPI handle this route via the api_router
+            raise HTTPException(status_code=404, detail="Route handled locally")
+    
     async with httpx.AsyncClient(timeout=30.0) as client:
         # Build the target URL
         url = f"{ADMIN_BACKEND_URL}/api/admin/{path}"
