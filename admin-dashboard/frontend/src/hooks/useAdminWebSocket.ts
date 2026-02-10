@@ -20,7 +20,7 @@ export function useAdminWebSocket(options: UseAdminWebSocketOptions = {}) {
   const wsRef = useRef<WebSocket | null>(null);
   const [connected, setConnected] = useState(false);
   const [lastEvent, setLastEvent] = useState<AdminEvent | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reconnectAttemptsRef = useRef(0);
 
   const connect = useCallback(() => {
