@@ -349,6 +349,7 @@ export default function SettingsScreen() {
 
   const SETTINGS_SECTIONS = [
     { key: 'notifications', icon: 'notifications-outline', label: 'Notifications' },
+    { key: 'location', icon: 'location-outline', label: 'Default Location' },
     { key: 'security', icon: 'shield-outline', label: 'Security' },
     { key: 'privacy', icon: 'eye-outline', label: 'Privacy' },
     { key: 'preferences', icon: 'color-palette-outline', label: 'App Preferences' },
