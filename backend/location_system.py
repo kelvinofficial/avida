@@ -311,6 +311,84 @@ class LocationService:
             "districts": districts_count,
             "cities": cities_count
         }
+    
+    async def get_nearby_listings(
+        self,
+        lat: float,
+        lng: float,
+        radius_km: float = 50,
+        limit: int = 20,
+        skip: int = 0,
+        category_id: str = None
+    ) -> Dict:
+        """
+        Get listings near a location using MongoDB geospatial query
+        Requires 2dsphere index on listings.geo_point
+        """
+        listings = self.db.listings
+        
+        # Build query with geospatial filter
+        query = {
+            "status": "active",
+            "geo_point": {
+                "$nearSphere": {
+                    "$geometry": {
+                        "type": "Point",
+                        "coordinates": [lng, lat]  # GeoJSON is [lng, lat]
+                    },
+                    "$maxDistance": radius_km * 1000  # Convert km to meters
+                }
+            }
+        }
+        
+        if category_id:
+            query["category_id"] = category_id
+        
+        # Execute query
+        results = await listings.find(query, {"_id": 0}).skip(skip).limit(limit).to_list(limit)
+        
+        # Calculate distances for each result
+        for listing in results:
+            if listing.get('location_data') and listing['location_data'].get('lat'):
+                listing_lat = listing['location_data']['lat']
+                listing_lng = listing['location_data']['lng']
+                listing['distance_km'] = self._haversine_distance(lat, lng, listing_lat, listing_lng)
+            elif listing.get('geo_point'):
+                coords = listing['geo_point'].get('coordinates', [])
+                if len(coords) >= 2:
+                    listing['distance_km'] = self._haversine_distance(lat, lng, coords[1], coords[0])
+        
+        # Get total count (for pagination)
+        total_query = {
+            "status": "active",
+            "geo_point": {"$exists": True}
+        }
+        if category_id:
+            total_query["category_id"] = category_id
+        total = await listings.count_documents(total_query)
+        
+        return {
+            "listings": results,
+            "total": total,
+            "center": {"lat": lat, "lng": lng},
+            "radius_km": radius_km
+        }
+    
+    def _haversine_distance(self, lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+        """Calculate distance between two points using Haversine formula"""
+        import math
+        
+        R = 6371  # Earth's radius in km
+        
+        lat1_rad = math.radians(lat1)
+        lat2_rad = math.radians(lat2)
+        delta_lat = math.radians(lat2 - lat1)
+        delta_lng = math.radians(lng2 - lng1)
+        
+        a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lng / 2) ** 2
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        
+        return round(R * c, 1)  # Round to 1 decimal place
 
 
 # =============================================================================
