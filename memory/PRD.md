@@ -2731,3 +2731,41 @@ Location permission prompt shown after user registration to enable Near Me featu
 
 ---
 
+
+## Save Location Feature - COMPLETE ✅ (Feb 10, 2026)
+
+### Overview
+Users can save a default location in settings that automatically pre-fills when posting new listings.
+
+### Features Implemented:
+
+**1. Backend API Endpoints (`/app/backend/routes/users.py`)**
+- `GET /api/users/me/location` - Get user's default location
+- `PUT /api/users/me/location` - Save/update/clear default location
+- Both endpoints require authentication (return 401 if not logged in)
+- Location stored in `users.default_location` field
+
+**2. Settings Page Location Section (`/app/frontend/app/settings.tsx`)**
+- "Default Location" option in settings sidebar
+- LocationPicker component for hierarchical selection
+- Shows current saved location or "Not set"
+- "Clear Default Location" button to remove saved location
+- Visual feedback during save operation
+
+**3. Post Listing Pre-fill (`/app/frontend/app/post/index.tsx`)**
+- Automatically loads user's default location for new listings
+- Pre-fills `locationData` and `location` fields
+- Only applies to new listings (not edit mode)
+- User can override the pre-filled location
+
+### User Flow:
+1. User goes to Settings → Default Location
+2. Selects location using hierarchical picker (Country → Region → District → City)
+3. Location is saved to their profile
+4. When creating new listing, location is auto-filled
+5. User can change or keep the default location
+
+### Testing: 100% (7/7 backend tests passed)
+
+---
+
