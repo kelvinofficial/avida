@@ -18,6 +18,20 @@ logger = logging.getLogger(__name__)
 # MODELS
 # =============================================================================
 
+class LocationData(BaseModel):
+    """Structured location data for listings"""
+    country_code: Optional[str] = None
+    region_code: Optional[str] = None
+    district_code: Optional[str] = None
+    city_code: Optional[str] = None
+    city_name: Optional[str] = None
+    region_name: Optional[str] = None
+    district_name: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    location_text: Optional[str] = None  # "City, District, Region"
+
+
 class ListingCreate(BaseModel):
     title: str
     description: str
@@ -28,7 +42,8 @@ class ListingCreate(BaseModel):
     subcategory: Optional[str] = None
     condition: Optional[str] = None
     images: List[str] = []
-    location: Optional[str] = None
+    location: Optional[str] = None  # Legacy text location
+    location_data: Optional[LocationData] = None  # New structured location
     attributes: Dict[str, Any] = {}
     # Seller preferences
     accepts_offers: bool = True
