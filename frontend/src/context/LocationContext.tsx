@@ -25,12 +25,16 @@ interface LocationContextType {
   clearLocation: () => void;
   nearMeEnabled: boolean;
   setNearMeEnabled: (enabled: boolean) => void;
+  searchRadius: number;
+  setSearchRadius: (radius: number) => void;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(undefined);
 
 const LOCATION_STORAGE_KEY = '@user_location';
+const RADIUS_STORAGE_KEY = '@search_radius';
 const LOCATION_EXPIRY_MS = 30 * 60 * 1000; // 30 minutes
+const DEFAULT_RADIUS = 50; // Default 50km
 
 export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
@@ -38,10 +42,32 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [error, setError] = useState<string | null>(null);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [nearMeEnabled, setNearMeEnabled] = useState(false);
+  const [searchRadius, setSearchRadiusState] = useState(DEFAULT_RADIUS);
 
-  // Load cached location on mount
+  // Load cached location and radius on mount
   useEffect(() => {
     loadCachedLocation();
+    loadCachedRadius();
+  }, []);
+
+  const loadCachedRadius = async () => {
+    try {
+      const cached = await AsyncStorage.getItem(RADIUS_STORAGE_KEY);
+      if (cached) {
+        setSearchRadiusState(parseInt(cached, 10));
+      }
+    } catch (err) {
+      console.log('Failed to load cached radius:', err);
+    }
+  };
+
+  const setSearchRadius = useCallback(async (radius: number) => {
+    setSearchRadiusState(radius);
+    try {
+      await AsyncStorage.setItem(RADIUS_STORAGE_KEY, radius.toString());
+    } catch (err) {
+      console.log('Failed to save radius:', err);
+    }
   }, []);
 
   const loadCachedLocation = async () => {
