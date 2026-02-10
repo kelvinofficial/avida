@@ -257,6 +257,20 @@ Payment success page with:
 - **Batch Conversion**: Convert existing listing/profile images to WebP
 - Stats: Image counts by type
 
+#### A/B Testing Framework (`/dashboard/ab-testing`)
+- **Experiment Management**: Create, start, pause, stop experiments
+- **Variant Configuration**: Multiple variants with traffic % allocation
+- **Assignment Types**: Cookie-based (anonymous) + User-based (logged-in) with fallback
+- **Experiment Types**: Feature flags, Cookie banner, Polls, CTA buttons, UI elements
+- **Goal Metrics Tracked**:
+  - Conversion rates
+  - Click-through rates
+  - Consent rates
+  - Custom events
+- **Statistical Analysis**: Automatic significance calculation (z-test)
+- **Results Dashboard**: Per-variant stats, improvement %, winner declaration
+- **Public APIs**: `/api/ab/assign` for variant assignment, `/api/ab/track` for event tracking
+
 ### Future/Backlog
 - [ ] PayPal SDK button integration on native platforms
 - [ ] M-Pesa callback handling in production (Safaricom API)
