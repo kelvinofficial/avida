@@ -356,6 +356,7 @@ export default function PostListingScreen() {
   const [negotiable, setNegotiable] = useState(true);
   const [currency, setCurrency] = useState('EUR');
   const [location, setLocation] = useState('');
+  const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [sellerType, setSellerType] = useState('Individual');
   
   // Price Suggestion State
