@@ -232,7 +232,7 @@ class LocationService:
         )
         return doc
     
-    async def add_district(self, country_code: str, region_code: str, district_code: str, name: str) -> Dict:
+    async def add_district(self, country_code: str, region_code: str, district_code: str, name: str, lat: float = None, lng: float = None) -> Dict:
         """Add a new district"""
         doc = {
             "country_code": country_code.upper(),
@@ -241,6 +241,10 @@ class LocationService:
             "name": name,
             "created_at": datetime.now(timezone.utc).isoformat()
         }
+        if lat is not None:
+            doc["lat"] = lat
+        if lng is not None:
+            doc["lng"] = lng
         await self.districts.update_one(
             {
                 "country_code": country_code.upper(),
@@ -251,6 +255,26 @@ class LocationService:
             upsert=True
         )
         return doc
+    
+    async def update_district(self, country_code: str, region_code: str, district_code: str, name: str = None, lat: float = None, lng: float = None) -> bool:
+        """Update a district's name or coordinates"""
+        update_data = {"updated_at": datetime.now(timezone.utc).isoformat()}
+        if name is not None:
+            update_data["name"] = name
+        if lat is not None:
+            update_data["lat"] = lat
+        if lng is not None:
+            update_data["lng"] = lng
+        
+        result = await self.districts.update_one(
+            {
+                "country_code": country_code.upper(),
+                "region_code": region_code.upper(),
+                "district_code": district_code.upper()
+            },
+            {"$set": update_data}
+        )
+        return result.modified_count > 0 or result.matched_count > 0
     
     async def add_city(
         self,
