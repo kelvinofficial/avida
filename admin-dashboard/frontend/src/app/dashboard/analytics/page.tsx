@@ -239,7 +239,7 @@ export default function AnalyticsPage() {
     if (!analyticsSettings) return;
     setSavingSettings(true);
     try {
-      await api.put('/analytics/admin/settings', analyticsSettings as unknown as Record<string, unknown>);
+      await api.put('/analytics/admin/settings', analyticsSettings as unknown as Record<string, unknown> as unknown as Record<string, unknown>);
       setSnackbar({ open: true, message: 'Analytics settings saved!', severity: 'success' });
     } catch (error) {
       setSnackbar({ open: true, message: 'Failed to save settings', severity: 'error' });
@@ -252,7 +252,7 @@ export default function AnalyticsPage() {
     if (!engagementConfig) return;
     setSavingSettings(true);
     try {
-      await api.put('/analytics/admin/engagement-notification-config', engagementConfig);
+      await api.put('/analytics/admin/engagement-notification-config', engagementConfig as unknown as Record<string, unknown>);
       setSnackbar({ open: true, message: 'Notification settings saved!', severity: 'success' });
     } catch (error) {
       setSnackbar({ open: true, message: 'Failed to save notification settings', severity: 'error' });

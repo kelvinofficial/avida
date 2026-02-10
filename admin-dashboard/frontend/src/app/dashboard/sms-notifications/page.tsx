@@ -236,7 +236,7 @@ export default function SMSNotificationsPage() {
   const handleSaveTemplate = async () => {
     try {
       if (editingTemplate) {
-        await api.put(`/notifications/admin/templates/${editingTemplate.id}`, templateForm);
+        await api.put(`/notifications/admin/templates/${editingTemplate.id}`, templateForm as unknown as Record<string, unknown>);
         setSnackbar({ open: true, message: 'Template updated', severity: 'success' });
       } else {
         await api.post('/notifications/admin/templates', templateForm);
@@ -289,7 +289,7 @@ export default function SMSNotificationsPage() {
   const handleSavePartner = async () => {
     try {
       if (editingPartner) {
-        await api.put(`/notifications/admin/transport-partners/${editingPartner.id}`, partnerForm);
+        await api.put(`/notifications/admin/transport-partners/${editingPartner.id}`, partnerForm as unknown as Record<string, unknown>);
         setSnackbar({ open: true, message: 'Partner updated', severity: 'success' });
       } else {
         await api.post('/notifications/admin/transport-partners', partnerForm);
