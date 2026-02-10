@@ -3206,3 +3206,61 @@ Added advanced location management capabilities: bulk coordinate update, export 
 4. Coordinates are filled based on centroid calculation
 
 ---
+
+## Reverse Geocoding & Advanced Features - COMPLETE ✅ (Feb 10, 2026)
+
+### Overview
+Added reverse geocoding, auto-detect from coordinates, district boundaries, and fixed export filter. All APIs include database fallback when Nominatim is unavailable.
+
+### Features Implemented:
+
+**1. Reverse Geocoding (with Fallback)**
+- When clicking on map, attempts to auto-suggest city/district name
+- Uses Nominatim reverse geocoding API
+- Falls back to finding nearest listing in database
+- Returns user-friendly message when unavailable
+- API: `GET /api/admin/locations/reverse-geocode?lat=&lng=`
+
+**2. Auto-detect Location (with Fallback)**
+- Detects country, region, district from coordinates
+- Uses Nominatim + fuzzy matching against our database
+- Falls back to nearest city calculation when Nominatim unavailable
+- Returns matched location hierarchy from database
+- API: `GET /api/admin/locations/auto-detect?lat=&lng=`
+
+**3. District Polygon Boundaries**
+- Retrieves GeoJSON polygon boundaries from OpenStreetMap
+- Includes bounding box and center point
+- Falls back to district center point if available
+- API: `GET /api/admin/locations/district-boundary?country_code=&region_code=&district_code=`
+
+**4. Fixed Export Filter**
+- Export now properly filters by country_code parameter
+- Supports cascading filters: country → region → district
+- All exported features respect the filter
+
+**5. Bulk Update (Background)**
+- Running bulk coordinate update for districts
+- Updates districts without lat/lng using Nominatim
+- Rate limited to 1 request/second
+- Can be run from UI via "Bulk Update" button
+
+### API Endpoints Added/Updated:
+- `GET /api/admin/locations/reverse-geocode?lat=&lng=` - Reverse geocode with fallback
+- `GET /api/admin/locations/auto-detect?lat=&lng=` - Auto-detect location hierarchy
+- `GET /api/admin/locations/district-boundary` - Get polygon boundary
+- `GET /api/admin/locations/export` - Fixed to respect country_code filter
+
+### Network Note:
+External connections to Nominatim may be restricted in the container environment. All APIs include graceful fallback:
+- Reverse geocode: Returns "enter name manually" suggestion
+- Auto-detect: Uses nearest city from database
+- District boundary: Returns stored center point
+
+### Testing Results:
+- Export filter: ✅ 18 features from TZ only
+- Auto-detect: ✅ Returns matched location from database
+- Reverse geocode: ✅ Graceful fallback when Nominatim unavailable
+- District boundary: ✅ Falls back to center point
+
+---
