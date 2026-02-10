@@ -20,7 +20,6 @@ import {
   Tab,
   Tooltip,
   Snackbar,
-  Grid,
   Paper,
   Switch,
   FormControlLabel,
@@ -34,6 +33,7 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   AutoAwesome,
   Settings,
