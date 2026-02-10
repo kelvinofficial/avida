@@ -297,10 +297,11 @@ class TestPaymentIntegrations:
         
         print(f"PASSED: M-Pesa packages configured for currencies: {currencies}")
     
-    def test_paypal_checkout_endpoint_exists(self, session):
+    def test_paypal_checkout_endpoint_exists(self):
         """Verify PayPal checkout endpoint exists and requires auth"""
-        # Verify the endpoint exists (returns auth error, not 404 Not Found)
-        response = session.post(f"{BASE_URL}/api/premium-subscription/paypal/checkout", json={
+        # Use a fresh session without auth headers
+        fresh_session = requests.Session()
+        response = fresh_session.post(f"{BASE_URL}/api/premium-subscription/paypal/checkout", json={
             "package_id": "monthly",
             "origin_url": "https://example.com",
             "business_profile_id": "test"
