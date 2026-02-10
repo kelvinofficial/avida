@@ -432,6 +432,126 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
   },
+  // Boost section styles
+  boostSection: {
+    width: '100%',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  boostDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E0E0E0',
+  },
+  boostDividerText: {
+    marginHorizontal: 12,
+    color: '#666',
+    fontSize: 13,
+  },
+  boostButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#FF6B00',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+  },
+  boostButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  boostPackages: {
+    width: '100%',
+    marginTop: 8,
+  },
+  boostTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 16,
+    color: '#333',
+  },
+  packageCard: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  packageCardSelected: {
+    borderColor: '#FF6B00',
+    backgroundColor: '#FFF8F3',
+  },
+  packageHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  packageName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  packagePrice: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FF6B00',
+  },
+  packageDuration: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 8,
+  },
+  packageFeatures: {
+    marginTop: 4,
+  },
+  featureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
+  featureText: {
+    fontSize: 13,
+    color: '#555',
+  },
+  boostActions: {
+    marginTop: 8,
+    gap: 12,
+  },
+  skipButton: {
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  skipButtonText: {
+    color: '#666',
+    fontSize: 15,
+  },
+  purchaseButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#FF6B00',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+  },
+  purchaseButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });
 
 export default SuccessModal;
