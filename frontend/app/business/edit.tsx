@@ -1074,6 +1074,22 @@ const styles = StyleSheet.create({
   mpesaCancelBtn: { alignItems: 'center', padding: 10 },
   mpesaCancelText: { fontSize: 14, color: COLORS.textSecondary },
   
+  // Success Modal
+  successModalContent: { backgroundColor: COLORS.surface, borderRadius: 20, padding: 28, width: '100%', maxWidth: 380, alignItems: 'center' },
+  successIcon: { marginBottom: 16 },
+  successTitle: { fontSize: 22, fontWeight: '700', color: COLORS.text, marginBottom: 8, textAlign: 'center' },
+  successSubtitle: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 20, textAlign: 'center', lineHeight: 20 },
+  profileUrlBox: { backgroundColor: COLORS.primaryLight, borderRadius: 12, padding: 16, width: '100%', marginBottom: 20 },
+  profileUrlLabel: { fontSize: 12, fontWeight: '600', color: COLORS.primary, marginBottom: 6, textTransform: 'uppercase' },
+  profileUrl: { fontSize: 13, color: COLORS.text, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
+  successActions: { flexDirection: 'row', gap: 12, width: '100%', marginBottom: 16 },
+  viewProfileBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: COLORS.primary, paddingVertical: 14, borderRadius: 10 },
+  viewProfileBtnText: { fontSize: 14, fontWeight: '600', color: '#fff' },
+  copyLinkBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: COLORS.primaryLight, paddingVertical: 14, borderRadius: 10 },
+  copyLinkBtnText: { fontSize: 14, fontWeight: '600', color: COLORS.primary },
+  successCloseBtn: { paddingVertical: 10 },
+  successCloseBtnText: { fontSize: 14, color: COLORS.textSecondary },
+  
   // Cover
   coverSection: { marginBottom: 20, alignItems: 'center' },
   coverImage: { width: '100%', height: 120, borderRadius: 12, backgroundColor: COLORS.border },
