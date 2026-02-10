@@ -1095,10 +1095,18 @@ const styles = StyleSheet.create({
   mpesaCancelText: { fontSize: 14, color: COLORS.textSecondary },
   
   // Success Modal
+  successModalScrollContent: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   successModalContent: { backgroundColor: COLORS.surface, borderRadius: 20, padding: 28, width: '100%', maxWidth: 380, alignItems: 'center' },
   successIcon: { marginBottom: 16 },
   successTitle: { fontSize: 22, fontWeight: '700', color: COLORS.text, marginBottom: 8, textAlign: 'center' },
   successSubtitle: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 20, textAlign: 'center', lineHeight: 20 },
+  
+  // QR Code Section
+  qrCodeSection: { alignItems: 'center', marginBottom: 20, width: '100%' },
+  qrCodeLabel: { fontSize: 13, fontWeight: '600', color: COLORS.text, marginBottom: 12 },
+  qrCodeContainer: { backgroundColor: '#FFFFFF', padding: 16, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border },
+  qrCodeHint: { fontSize: 11, color: COLORS.textSecondary, marginTop: 10 },
+  
   profileUrlBox: { backgroundColor: COLORS.primaryLight, borderRadius: 12, padding: 16, width: '100%', marginBottom: 20 },
   profileUrlLabel: { fontSize: 12, fontWeight: '600', color: COLORS.primary, marginBottom: 6, textTransform: 'uppercase' },
   profileUrl: { fontSize: 13, color: COLORS.text, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
