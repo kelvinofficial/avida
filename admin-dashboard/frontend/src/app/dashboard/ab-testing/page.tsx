@@ -199,7 +199,7 @@ export default function ABTestingPage() {
 
   const handleCheckWinners = async () => {
     try {
-      const result = await api.checkAllExperimentsForWinners();
+      const result = await api.triggerWinnerCheck();
       if (result.winners_found > 0) {
         setSuccess(`Found ${result.winners_found} winner(s)! Check notifications.`);
       } else {
