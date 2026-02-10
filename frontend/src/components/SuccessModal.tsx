@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -7,10 +7,19 @@ import {
   Animated,
   TouchableOpacity,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
+
+interface BoostPackage {
+  id: string;
+  name: string;
+  duration_days: number;
+  price: number;
+  features: string[];
+}
 
 interface SuccessModalProps {
   visible: boolean;
@@ -18,6 +27,10 @@ interface SuccessModalProps {
   message?: string;
   buttonText?: string;
   onClose: () => void;
+  listingId?: string;
+  showBoostOption?: boolean;
+  boostPackages?: BoostPackage[];
+  onBoostSelect?: (packageId: string) => void;
 }
 
 export const SuccessModal: React.FC<SuccessModalProps> = ({
