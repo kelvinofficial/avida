@@ -404,6 +404,7 @@ export default function PostListingScreen() {
           setNegotiable(listing.negotiable !== false);
           setCurrency(listing.currency || 'EUR');
           setLocation(listing.location || '');
+          setLocationData(listing.location_data || null);
           setSellerType(listing.seller_type || 'Individual');
           setAcceptsOffers(listing.accepts_offers !== false);
           setAcceptsExchanges(listing.accepts_exchanges || false);
