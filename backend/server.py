@@ -4875,6 +4875,34 @@ if CSV_IMPORT_AVAILABLE:
     app.include_router(api_router)  # Re-include to pick up CSV import routes
     logger.info("CSV Import System loaded successfully")
 
+# Location System
+if LOCATION_SYSTEM_AVAILABLE:
+    async def require_admin_for_locations(request: Request) -> dict:
+        """Admin authentication wrapper for location management"""
+        user = await get_current_user(request)
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        return {
+            "admin_id": user.user_id,
+            "email": user.email,
+            "name": user.name,
+            "is_admin": True
+        }
+    
+    location_router, location_service = create_location_router(db)
+    admin_location_router, _ = create_admin_location_router(db, require_admin_for_locations)
+    api_router.include_router(location_router)
+    api_router.include_router(admin_location_router, prefix="/admin")
+    app.include_router(api_router)  # Re-include to pick up location routes
+    
+    # Initialize location indexes on startup
+    @app.on_event("startup")
+    async def init_location_indexes():
+        await location_service.initialize_indexes()
+        logger.info("Location system indexes initialized")
+    
+    logger.info("Location System loaded successfully")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
