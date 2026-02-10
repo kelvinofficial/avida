@@ -266,13 +266,19 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   };
 
   const handleRegionSelect = (region: Region) => {
-    setSelectedRegion(region);
-    setSelectedDistrict(null);
-    setDistricts([]);
-    setCities([]);
-    setSearchQuery('');
-    setCurrentStep('district');
-    loadDistricts(region.country_code, region.region_code);
+    // Complete the selection at region level (no district/city selection)
+    const locationData: LocationData = {
+      country_code: region.country_code,
+      region_code: region.region_code,
+      region_name: region.name,
+      location_text: `${region.name}, ${selectedCountry?.name || ''}`,
+    };
+    
+    // Save to recent locations
+    saveRecentLocation(locationData);
+    
+    onChange(locationData);
+    closeModal();
   };
 
   const handleDistrictSelect = (district: District) => {
