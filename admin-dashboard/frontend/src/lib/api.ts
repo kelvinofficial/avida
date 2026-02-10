@@ -1005,6 +1005,184 @@ class ApiClient {
     const { data } = await this.client.put(`/listing-moderation/limits/user/${userId}`, limits);
     return data;
   }
+
+  // =========================================================================
+  // SEO TOOLS
+  // =========================================================================
+
+  async getSeoMeta() {
+    const { data } = await this.client.get('/seo/meta');
+    return data;
+  }
+
+  async getSeoGlobalSettings() {
+    const { data } = await this.client.get('/seo/global-settings');
+    return data;
+  }
+
+  async updateSeoGlobalSettings(settings: Record<string, any>) {
+    const { data } = await this.client.put('/seo/global-settings', settings);
+    return data;
+  }
+
+  async createSeoMeta(meta: Record<string, any>) {
+    const { data } = await this.client.post('/seo/meta', meta);
+    return data;
+  }
+
+  async updateSeoMeta(metaId: string, meta: Record<string, any>) {
+    const { data } = await this.client.put(`/seo/meta/${metaId}`, meta);
+    return data;
+  }
+
+  async deleteSeoMeta(metaId: string) {
+    const { data } = await this.client.delete(`/seo/meta/${metaId}`);
+    return data;
+  }
+
+  async getSitemapConfig() {
+    const { data } = await this.client.get('/seo/sitemap-config');
+    return data;
+  }
+
+  async updateSitemapConfig(config: Record<string, any>) {
+    const { data } = await this.client.put('/seo/sitemap-config', config);
+    return data;
+  }
+
+  async regenerateSitemap() {
+    const { data } = await this.client.post('/seo/regenerate-sitemap');
+    return data;
+  }
+
+  // =========================================================================
+  // POLLS & SURVEYS
+  // =========================================================================
+
+  async getPolls(params?: { poll_type?: string; is_active?: boolean }) {
+    const { data } = await this.client.get('/polls/list', { params });
+    return data;
+  }
+
+  async getPoll(pollId: string) {
+    const { data } = await this.client.get(`/polls/${pollId}`);
+    return data;
+  }
+
+  async createPoll(poll: Record<string, any>) {
+    const { data } = await this.client.post('/polls/create', poll);
+    return data;
+  }
+
+  async updatePoll(pollId: string, poll: Record<string, any>) {
+    const { data } = await this.client.put(`/polls/${pollId}`, poll);
+    return data;
+  }
+
+  async deletePoll(pollId: string) {
+    const { data } = await this.client.delete(`/polls/${pollId}`);
+    return data;
+  }
+
+  async exportPollResponses(pollId: string) {
+    const { data } = await this.client.get(`/polls/${pollId}/export`);
+    return data;
+  }
+
+  // =========================================================================
+  // COOKIE CONSENT
+  // =========================================================================
+
+  async getCookieSettings() {
+    const { data } = await this.client.get('/cookies/settings');
+    return data;
+  }
+
+  async updateCookieSettings(settings: Record<string, any>) {
+    const { data } = await this.client.put('/cookies/settings', settings);
+    return data;
+  }
+
+  async getCookieStats() {
+    const { data } = await this.client.get('/cookies/stats');
+    return data;
+  }
+
+  // =========================================================================
+  // RECAPTCHA
+  // =========================================================================
+
+  async getRecaptchaSettings() {
+    const { data } = await this.client.get('/recaptcha/settings');
+    return data;
+  }
+
+  async updateRecaptchaSettings(settings: Record<string, any>) {
+    const { data } = await this.client.put('/recaptcha/settings', settings);
+    return data;
+  }
+
+  // =========================================================================
+  // IMAGE PROCESSING / WEBP
+  // =========================================================================
+
+  async getImageSettings() {
+    const { data } = await this.client.get('/images/settings');
+    return data;
+  }
+
+  async updateImageSettings(settings: Record<string, any>) {
+    const { data } = await this.client.put('/images/settings', settings);
+    return data;
+  }
+
+  async convertImagesBatch(target: string) {
+    const { data } = await this.client.post('/images/convert-batch', { target });
+    return data;
+  }
+
+  async getImageStats() {
+    const { data } = await this.client.get('/images/stats');
+    return data;
+  }
+
+  // =========================================================================
+  // URL SHORTENER
+  // =========================================================================
+
+  async getShortUrls() {
+    const { data } = await this.client.get('/urls/list');
+    return data;
+  }
+
+  async createShortUrl(url: { target_url: string; custom_code?: string; title?: string; expires_at?: string }) {
+    const { data } = await this.client.post('/urls/create', url);
+    return data;
+  }
+
+  async getShortUrlStats(code: string) {
+    const { data } = await this.client.get(`/urls/${code}/stats`);
+    return data;
+  }
+
+  async deleteShortUrl(code: string) {
+    const { data } = await this.client.delete(`/urls/${code}`);
+    return data;
+  }
+
+  // =========================================================================
+  // BULK VOUCHER IMPORT
+  // =========================================================================
+
+  async bulkImportVouchers(vouchers: Record<string, any>[], batchName?: string) {
+    const { data } = await this.client.post('/vouchers/bulk-import', { vouchers, batch_name: batchName });
+    return data;
+  }
+
+  async getVoucherImportTemplate() {
+    const { data } = await this.client.get('/vouchers/template');
+    return data;
+  }
 }
 
 export const api = new ApiClient();
