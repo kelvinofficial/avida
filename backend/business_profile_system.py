@@ -321,6 +321,70 @@ def create_business_profile_router(db, get_current_user, require_auth):
             "total_pages": (total + limit - 1) // limit
         }
     
+    @router.get("/featured")
+    async def get_featured_sellers(
+        request: Request,
+        limit: int = 8
+    ):
+        """Get featured verified sellers for homepage display (Premium first, then Verified)"""
+        # First get premium verified profiles
+        premium_profiles = await db.business_profiles.find(
+            {
+                "is_active": True,
+                "is_verified": True,
+                "is_premium": True,
+                "$or": [
+                    {"premium_expires_at": None},
+                    {"premium_expires_at": {"$gt": datetime.now(timezone.utc)}}
+                ]
+            },
+            {"_id": 0}
+        ).sort([("total_views", -1), ("created_at", -1)]).limit(limit).to_list(length=limit)
+        
+        # If we don't have enough premium, fill with regular verified
+        remaining = limit - len(premium_profiles)
+        verified_profiles = []
+        
+        if remaining > 0:
+            premium_ids = [p["id"] for p in premium_profiles]
+            verified_profiles = await db.business_profiles.find(
+                {
+                    "is_active": True,
+                    "is_verified": True,
+                    "id": {"$nin": premium_ids},
+                    "$or": [
+                        {"is_premium": False},
+                        {"is_premium": {"$exists": False}}
+                    ]
+                },
+                {"_id": 0}
+            ).sort([("total_views", -1), ("created_at", -1)]).limit(remaining).to_list(length=remaining)
+        
+        all_profiles = premium_profiles + verified_profiles
+        
+        # Enrich with user data and listing count
+        for profile in all_profiles:
+            user = await db.users.find_one(
+                {"user_id": profile["user_id"]},
+                {"_id": 0, "name": 1, "picture": 1, "rating": 1, "total_ratings": 1}
+            )
+            profile["user"] = user
+            profile["total_listings"] = await db.listings.count_documents({
+                "user_id": profile["user_id"],
+                "status": "active"
+            })
+            # Mark verification tier for UI
+            profile["verification_tier"] = profile.get("verification_tier", "verified")
+            if profile.get("is_premium"):
+                profile["verification_tier"] = "premium"
+        
+        return {
+            "sellers": all_profiles,
+            "total": len(all_profiles),
+            "premium_count": len(premium_profiles),
+            "verified_count": len(verified_profiles)
+        }
+    
     # =========================================================================
     # AUTHENTICATED USER ENDPOINTS
     # =========================================================================
