@@ -486,12 +486,38 @@ export default function LocationsPage() {
     }
   };
 
-  // Handle map click to add new city/district
-  const handleMapClick = (lat: number, lng: number) => {
+  // Reverse geocoding on map click
+  const handleReverseGeocode = async (lat: number, lng: number) => {
+    try {
+      const result = await api.get(`/locations/reverse-geocode?lat=${lat}&lng=${lng}`);
+      return result;
+    } catch (err) {
+      console.error('Reverse geocoding failed:', err);
+      return null;
+    }
+  };
+
+  // Handle map click to add new city/district with reverse geocoding
+  const handleMapClick = async (lat: number, lng: number) => {
+    // Get place name from reverse geocoding
+    const reverseResult = await handleReverseGeocode(lat, lng);
+    
     if (selectedDistrict) {
+      const suggestedName = reverseResult?.suggested_name || '';
       openAddDialog('city', { lat, lng });
+      if (suggestedName) {
+        setFormData(prev => ({ ...prev, name: suggestedName, lat, lng }));
+        setSuccessMessage(`Suggested name: ${suggestedName}`);
+        setTimeout(() => setSuccessMessage(null), 3000);
+      }
     } else if (selectedRegion) {
+      const suggestedName = reverseResult?.district || '';
       openAddDialog('district', { lat, lng });
+      if (suggestedName) {
+        setFormData(prev => ({ ...prev, name: suggestedName, lat, lng }));
+        setSuccessMessage(`Suggested name: ${suggestedName}`);
+        setTimeout(() => setSuccessMessage(null), 3000);
+      }
     }
   };
 
