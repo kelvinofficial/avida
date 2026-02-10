@@ -840,7 +840,9 @@ def create_csv_import_router(db: AsyncIOMotorDatabase, notify_callback: Optional
                 "Users will be required to change their password on first login",
                 "All rows must pass validation before any users are created",
                 "Maximum 1000 users per import"
-            ]
+            ],
+            "email_delivery_available": SENDGRID_AVAILABLE and bool(SENDGRID_API_KEY),
+            "email_delivery_note": "Welcome emails with credentials can be sent to each user automatically" if SENDGRID_AVAILABLE and SENDGRID_API_KEY else "Email delivery not configured - set SENDGRID_API_KEY to enable"
         }
     
     return router, service
