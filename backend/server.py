@@ -4654,11 +4654,14 @@ async def admin_geocode_search(
 @app.post("/api/admin/locations/batch-import")
 async def admin_batch_import_locations(
     request: Request,
-    geojson: dict = Body(..., description="GeoJSON FeatureCollection to import")
+    body: dict = Body(..., description="GeoJSON FeatureCollection to import")
 ):
     """Batch import cities from GeoJSON format"""
     from location_system import LocationService
     service = LocationService(db)
+    
+    # Support both { geojson: {...} } and direct FeatureCollection
+    geojson = body.get("geojson", body)
     
     if geojson.get("type") != "FeatureCollection":
         raise HTTPException(status_code=400, detail="Invalid GeoJSON: must be FeatureCollection")
