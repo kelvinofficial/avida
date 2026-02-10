@@ -64,6 +64,24 @@ const calculateSavings = (pkg: CreditPackage, packages: CreditPackage[]): { perc
   return percentSaved > 0 ? { percent: percentSaved, amount: amountSaved } : null;
 };
 
+// Find the package with the best value (highest savings percentage)
+const findBestDealPackage = (packages: CreditPackage[]): string | null => {
+  if (packages.length === 0) return null;
+  
+  let bestDealId: string | null = null;
+  let highestSavings = 0;
+  
+  packages.forEach(pkg => {
+    const savings = calculateSavings(pkg, packages);
+    if (savings && savings.percent > highestSavings) {
+      highestSavings = savings.percent;
+      bestDealId = pkg.id;
+    }
+  });
+  
+  return bestDealId;
+};
+
 export default function CreditsPage() {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -78,6 +96,7 @@ export default function CreditsPage() {
   const [showHistory, setShowHistory] = useState(false);
   const [providers, setProviders] = useState<PaymentProvider[]>([]);
   const [selectedProvider, setSelectedProvider] = useState<string>('stripe');
+  const [hoveredPackage, setHoveredPackage] = useState<string | null>(null);
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [mobileNetwork, setMobileNetwork] = useState<string>('MTN');
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
