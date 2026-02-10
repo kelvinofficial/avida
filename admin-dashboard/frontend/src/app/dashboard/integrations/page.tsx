@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import {
   Box,
   Card,
@@ -50,7 +50,7 @@ import {
   AccordionDetails,
   InputAdornment,
 } from '@mui/material';
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import {
   Settings,
   Add,
