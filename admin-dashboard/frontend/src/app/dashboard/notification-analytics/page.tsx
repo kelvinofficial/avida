@@ -486,7 +486,7 @@ export default function NotificationAnalyticsPage() {
                       cy="50%"
                       outerRadius={100}
                       dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }: { name?: string; percent?: number }) => `${name || ''} ${((percent || 0) * 100).toFixed(0)}%`}
                     >
                       {byChannel.map((entry, index) => (
                         <Cell key={entry.channel} fill={CHANNEL_COLORS[entry.channel as keyof typeof CHANNEL_COLORS] || '#9E9E9E'} />
