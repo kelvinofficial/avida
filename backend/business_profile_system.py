@@ -98,9 +98,12 @@ class BusinessProfileResponse(BaseModel):
     city: Optional[str] = None
     country: Optional[str] = None
     is_verified: bool = False
+    is_premium: bool = False  # Premium verified business tier
+    verification_tier: str = "none"  # none, verified, premium
     verification_status: str = "none"  # none, pending, approved, rejected
     verification_requested_at: Optional[datetime] = None
     verified_at: Optional[datetime] = None
+    premium_expires_at: Optional[datetime] = None  # When premium subscription expires
     is_active: bool = True
     created_at: datetime
     updated_at: datetime
