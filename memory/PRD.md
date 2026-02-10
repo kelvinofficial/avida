@@ -269,6 +269,13 @@ Payment success page with:
   - Custom events
 - **Statistical Analysis**: Automatic significance calculation (z-test)
 - **Results Dashboard**: Per-variant stats, improvement %, winner declaration
+- **Smart Winner (Auto-Detection)**:
+  - Enable per experiment to auto-detect winners
+  - Strategies: Notify Only (default), Auto-Rollout, Gradual Rollout
+  - Configurable minimum runtime (default 48 hours)
+  - "Check Winners" button to evaluate all running experiments
+  - Admin notification when significant winner is found
+  - Safeguards: Minimum sample size, minimum runtime
 - **Public APIs**: `/api/ab/assign` for variant assignment, `/api/ab/track` for event tracking
 
 ### Future/Backlog
