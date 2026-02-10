@@ -2916,3 +2916,64 @@ cd /app/backend && python seed_test_listings.py
 - `GET /api/listings?country_code=ZA&region_code=GT` → 2 Gauteng listings
 
 ---
+
+## Admin Location Manager & Radius Update - COMPLETE ✅ (Feb 10, 2026)
+
+### Overview
+Fixed admin dashboard sidebar to show Location Manager link and updated the Near Me radius slider max to 250km.
+
+### Changes Made:
+
+**1. Admin Sidebar Navigation Fix (`/app/admin-dashboard/frontend/src/app/dashboard/layout.tsx` line 89)**
+- Added "Location Manager" entry to menuItems array with Place icon
+- Path: `/dashboard/locations`
+- Displays between "Attributes" and "Users" in sidebar
+
+**2. Admin Location API Routes (`/app/backend/server.py` lines 4403-4570)**
+- Added explicit routes BEFORE the catch-all admin proxy to handle location endpoints locally
+- Read endpoints (GET):
+  - `/api/admin/locations/stats` - Returns {countries, regions, districts, cities}
+  - `/api/admin/locations/countries` - Returns all countries with flags
+  - `/api/admin/locations/regions` - Returns regions for a country
+  - `/api/admin/locations/districts` - Returns districts for a region
+  - `/api/admin/locations/cities` - Returns cities for a district
+- Write endpoints (POST/PUT/DELETE):
+  - POST `/api/admin/locations/countries` - Add country
+  - POST `/api/admin/locations/regions` - Add region
+  - POST `/api/admin/locations/districts` - Add district
+  - POST `/api/admin/locations/cities` - Add city
+  - PUT/DELETE for countries, regions, districts, cities
+
+**3. Frontend API Response Handling (`/app/admin-dashboard/frontend/src/app/dashboard/locations/page.tsx`)**
+- Fixed API response handling (api client already returns data, not response.data)
+- Functions updated: loadStats, loadCountries, loadRegions, loadDistricts, loadCities
+
+**4. Near Me Radius Slider Max to 250km (`/app/frontend/src/components/RadiusSelector.tsx`)**
+- Updated PRESET_RADII from [5, 10, 25, 50, 100] to [5, 10, 25, 50, 100, 150, 250]
+- Updated slider maximumValue from 100 to 250
+- Updated slider label from "100km" to "250km"
+
+### Location Manager UI Features:
+- **Stats Cards**: Shows 13 Countries, 55 Regions, 79 Districts, 130 Cities
+- **Tabbed Interface**: Countries → Regions → Districts → Cities (hierarchical drill-down)
+- **Country Table**: Displays flags, codes (AU, CA, DE, etc.), and names
+- **Action Buttons**: View children (arrow), Edit (pencil), Delete (trash)
+- **Add Buttons**: Add Country, Add Region, Add District, Add City at each level
+- **Breadcrumb Navigation**: Shows path through hierarchy (e.g., Tanzania > Dar es Salaam > Kinondoni)
+
+### Testing: 100% (8/8 verified features)
+- Location Manager link in sidebar: PASSED
+- Location stats display: PASSED
+- Countries table: PASSED
+- Add Country button: PASSED
+- Country drill-down to regions: PASSED
+- API /api/admin/locations/stats: PASSED
+- API /api/admin/locations/countries: PASSED
+- RadiusSelector max 250km: PASSED (code verification)
+
+### Admin Credentials:
+- URL: `/api/admin-ui`
+- Email: `admin@marketplace.com`
+- Password: `Admin@123456`
+
+---
