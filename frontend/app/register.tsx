@@ -291,6 +291,12 @@ export default function RegisterScreen() {
           </Text>
         </ScrollView>
       </View>
+      
+      {/* Location Onboarding Modal */}
+      <LocationOnboarding
+        visible={showLocationOnboarding}
+        onComplete={handleLocationOnboardingComplete}
+      />
     </View>
   );
 }
