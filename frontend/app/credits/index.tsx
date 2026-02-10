@@ -176,224 +176,245 @@ export default function CreditsPage() {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Credits</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
-      {/* Balance Card */}
-      <View style={styles.balanceCard}>
-        <Text style={styles.balanceLabel}>Your Balance</Text>
-        <View style={styles.balanceRow}>
-          <Ionicons name="wallet" size={32} color="#4CAF50" />
-          <Text style={styles.balanceAmount}>{credits?.balance || 0}</Text>
-          <Text style={styles.balanceUnit}>credits</Text>
-        </View>
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{credits?.total_purchased || 0}</Text>
-            <Text style={styles.statLabel}>Purchased</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{credits?.total_spent || 0}</Text>
-            <Text style={styles.statLabel}>Spent</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Credit Packages */}
-      <Text style={styles.sectionTitle}>Buy Credits</Text>
-      
-      {/* Payment Method Selector */}
-      {providers.length > 0 && (
-        <View style={styles.paymentMethodSection}>
-          <Text style={styles.paymentMethodLabel}>Payment Method</Text>
-          <View style={styles.paymentMethodGrid}>
-            {providers.map((provider) => (
-              <TouchableOpacity
-                key={provider.id}
-                style={[
-                  styles.paymentMethodCard,
-                  selectedProvider === provider.id && styles.paymentMethodSelected,
-                  !provider.available && styles.paymentMethodDisabled
-                ]}
-                onPress={() => provider.available && setSelectedProvider(provider.id)}
-                disabled={!provider.available}
-              >
-                <Ionicons 
-                  name={provider.icon as any} 
-                  size={24} 
-                  color={selectedProvider === provider.id ? '#4CAF50' : provider.available ? '#666' : '#ccc'} 
-                />
-                <View style={styles.paymentMethodInfo}>
-                  <Text style={[
-                    styles.paymentMethodName,
-                    selectedProvider === provider.id && styles.paymentMethodNameSelected,
-                    !provider.available && styles.paymentMethodNameDisabled
-                  ]}>
-                    {provider.name}
-                  </Text>
-                  <Text style={[
-                    styles.paymentMethodDesc,
-                    !provider.available && styles.paymentMethodNameDisabled
-                  ]}>
-                    {provider.description}
-                  </Text>
-                </View>
-                {selectedProvider === provider.id && (
-                  <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-          
-          {/* Phone Input for Mobile Money */}
-          {['mpesa', 'mtn', 'vodacom_tz'].includes(selectedProvider) && (
-            <View style={styles.phoneInputSection}>
-              <Text style={styles.phoneInputLabel}>
-                {selectedProvider === 'mpesa' ? 'M-Pesa Phone Number (254...)' : 
-                 selectedProvider === 'vodacom_tz' ? 'Vodacom Tanzania Number (255...)' :
-                 'Mobile Money Number'}
-              </Text>
-              <TextInput
-                style={styles.phoneInput}
-                placeholder={selectedProvider === 'mpesa' ? '254712345678' : 
-                             selectedProvider === 'vodacom_tz' ? '255712345678' :
-                             'Enter phone number'}
-                value={phoneNumber}
-                onChangeText={setPhoneNumber}
-                keyboardType="phone-pad"
-              />
-              {selectedProvider === 'mtn' && (
-                <View style={styles.networkSelector}>
-                  <Text style={styles.networkLabel}>Network:</Text>
-                  {['MTN', 'VODAFONE', 'TIGO'].map((network) => (
-                    <TouchableOpacity
-                      key={network}
-                      style={[
-                        styles.networkOption,
-                        mobileNetwork === network && styles.networkOptionSelected
-                      ]}
-                      onPress={() => setMobileNetwork(network)}
-                    >
-                      <Text style={[
-                        styles.networkOptionText,
-                        mobileNetwork === network && styles.networkOptionTextSelected
-                      ]}>
-                        {network}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
-          )}
-        </View>
-      )}
-      
-      <View style={styles.packagesContainer}>
-        {packages.map((pkg) => (
-          <TouchableOpacity
-            key={pkg.id}
-            style={[styles.packageCard, pkg.is_popular && styles.popularPackage]}
-            onPress={() => handlePurchase(pkg.id)}
-            disabled={purchasing !== null}
-          >
-            {pkg.is_popular && (
-              <View style={styles.popularBadge}>
-                <Text style={styles.popularText}>POPULAR</Text>
-              </View>
-            )}
-            <Text style={styles.packageName}>{pkg.name}</Text>
-            <Text style={styles.packageDescription}>{pkg.description}</Text>
-            <View style={styles.packageCredits}>
-              <Text style={styles.creditsValue}>{pkg.credits}</Text>
-              <Text style={styles.creditsLabel}>credits</Text>
-              {pkg.bonus_credits > 0 && (
-                <View style={styles.bonusBadge}>
-                  <Text style={styles.bonusText}>+{pkg.bonus_credits} BONUS</Text>
-                </View>
-              )}
-            </View>
-            <View style={styles.packagePrice}>
-              <Text style={styles.priceValue}>${pkg.price}</Text>
-            </View>
-            {purchasing === pkg.id ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <View style={styles.buyButton}>
-                <Text style={styles.buyButtonText}>Buy Now</Text>
-              </View>
-            )}
+      <View style={[styles.contentWrapper, isDesktop && styles.desktopWrapper]}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#333" />
           </TouchableOpacity>
-        ))}
-      </View>
+          <Text style={styles.headerTitle}>Credits</Text>
+          <View style={{ width: 40 }} />
+        </View>
 
-      {/* What can you do with credits */}
-      <View style={styles.infoCard}>
-        <Text style={styles.infoTitle}>What can you do with credits?</Text>
-        <View style={styles.infoItem}>
-          <Ionicons name="star" size={20} color="#FFD700" />
-          <Text style={styles.infoText}>Feature your listing at the top</Text>
+        {/* Balance Card */}
+        <View style={styles.balanceCard}>
+          <Text style={styles.balanceLabel}>Your Balance</Text>
+          <View style={styles.balanceRow}>
+            <Ionicons name="wallet" size={32} color="#4CAF50" />
+            <Text style={styles.balanceAmount}>{credits?.balance || 0}</Text>
+            <Text style={styles.balanceUnit}>credits</Text>
+          </View>
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{credits?.total_purchased || 0}</Text>
+              <Text style={styles.statLabel}>Purchased</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{credits?.total_spent || 0}</Text>
+              <Text style={styles.statLabel}>Spent</Text>
+            </View>
+          </View>
         </View>
-        <View style={styles.infoItem}>
-          <Ionicons name="home" size={20} color="#FF6B6B" />
-          <Text style={styles.infoText}>Spotlight on homepage</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Ionicons name="flash" size={20} color="#FF9800" />
-          <Text style={styles.infoText}>Add urgent badge</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Ionicons name="location" size={20} color="#4CAF50" />
-          <Text style={styles.infoText}>Boost in specific location</Text>
-        </View>
-      </View>
 
-      {/* Transaction History */}
-      <TouchableOpacity 
-        style={styles.historyHeader}
-        onPress={() => setShowHistory(!showHistory)}
-      >
-        <Text style={styles.sectionTitle}>Transaction History</Text>
-        <Ionicons name={showHistory ? 'chevron-up' : 'chevron-down'} size={24} color="#666" />
-      </TouchableOpacity>
-
-      {showHistory && (
-        <View style={styles.historyContainer}>
-          {history.length === 0 ? (
-            <Text style={styles.emptyText}>No transactions yet</Text>
-          ) : (
-            history.map((tx) => (
-              <View key={tx.id} style={styles.transactionItem}>
-                <View style={[styles.txIcon, { backgroundColor: getTransactionColor(tx.amount) + '20' }]}>
+        {/* Credit Packages */}
+        <Text style={styles.sectionTitle}>Buy Credits</Text>
+        
+        {/* Payment Method Selector */}
+        {providers.length > 0 && (
+          <View style={styles.paymentMethodSection}>
+            <Text style={styles.paymentMethodLabel}>Payment Method</Text>
+            <View style={[styles.paymentMethodGrid, isDesktop && styles.paymentMethodGridDesktop]}>
+              {providers.map((provider) => (
+                <TouchableOpacity
+                  key={provider.id}
+                  style={[
+                    styles.paymentMethodCard,
+                    isDesktop && styles.paymentMethodCardDesktop,
+                    selectedProvider === provider.id && styles.paymentMethodSelected,
+                    !provider.available && styles.paymentMethodDisabled
+                  ]}
+                  onPress={() => provider.available && setSelectedProvider(provider.id)}
+                  disabled={!provider.available}
+                >
                   <Ionicons 
-                    name={getTransactionIcon(tx.transaction_type)} 
-                    size={20} 
-                    color={getTransactionColor(tx.amount)} 
+                    name={provider.icon as any} 
+                    size={24} 
+                    color={selectedProvider === provider.id ? '#4CAF50' : provider.available ? '#666' : '#ccc'} 
                   />
+                  <View style={styles.paymentMethodInfo}>
+                    <Text style={[
+                      styles.paymentMethodName,
+                      selectedProvider === provider.id && styles.paymentMethodNameSelected,
+                      !provider.available && styles.paymentMethodNameDisabled
+                    ]}>
+                      {provider.name}
+                    </Text>
+                    <Text style={[
+                      styles.paymentMethodDesc,
+                      !provider.available && styles.paymentMethodNameDisabled
+                    ]}>
+                      {provider.description}
+                    </Text>
+                  </View>
+                  {selectedProvider === provider.id && (
+                    <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+            
+            {/* Phone Input for Mobile Money */}
+            {['mpesa', 'mtn', 'vodacom_tz'].includes(selectedProvider) && (
+              <View style={styles.phoneInputSection}>
+                <Text style={styles.phoneInputLabel}>
+                  {selectedProvider === 'mpesa' ? 'M-Pesa Phone Number (254...)' : 
+                   selectedProvider === 'vodacom_tz' ? 'Vodacom Tanzania Number (255...)' :
+                   'Mobile Money Number'}
+                </Text>
+                <TextInput
+                  style={styles.phoneInput}
+                  placeholder={selectedProvider === 'mpesa' ? '254712345678' : 
+                               selectedProvider === 'vodacom_tz' ? '255712345678' :
+                               'Enter phone number'}
+                  value={phoneNumber}
+                  onChangeText={setPhoneNumber}
+                  keyboardType="phone-pad"
+                />
+                {selectedProvider === 'mtn' && (
+                  <View style={styles.networkSelector}>
+                    <Text style={styles.networkLabel}>Network:</Text>
+                    {['MTN', 'VODAFONE', 'TIGO'].map((network) => (
+                      <TouchableOpacity
+                        key={network}
+                        style={[
+                          styles.networkOption,
+                          mobileNetwork === network && styles.networkOptionSelected
+                        ]}
+                        onPress={() => setMobileNetwork(network)}
+                      >
+                        <Text style={[
+                          styles.networkOptionText,
+                          mobileNetwork === network && styles.networkOptionTextSelected
+                        ]}>
+                          {network}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+        )}
+        
+        <View style={[styles.packagesContainer, isDesktop && styles.packagesContainerDesktop]}>
+          {packages.map((pkg) => (
+            <TouchableOpacity
+              key={pkg.id}
+              style={[
+                styles.packageCard,
+                isDesktop && styles.packageCardDesktop,
+                pkg.is_popular && styles.popularPackage,
+                selectedPackage === pkg.id && styles.selectedPackage
+              ]}
+              onPress={() => handlePackageSelect(pkg.id)}
+              disabled={purchasing !== null}
+              data-testid={`package-card-${pkg.id}`}
+            >
+              {pkg.is_popular && (
+                <View style={styles.popularBadge}>
+                  <Text style={styles.popularText}>POPULAR</Text>
                 </View>
-                <View style={styles.txDetails}>
-                  <Text style={styles.txDescription}>{tx.description}</Text>
-                  <Text style={styles.txDate}>
-                    {new Date(tx.created_at).toLocaleDateString()}
+              )}
+              {selectedPackage === pkg.id && (
+                <View style={styles.selectedBadge}>
+                  <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
+                </View>
+              )}
+              <Text style={[styles.packageName, selectedPackage === pkg.id && styles.selectedPackageName]}>{pkg.name}</Text>
+              <Text style={styles.packageDescription}>{pkg.description}</Text>
+              <View style={styles.packageCredits}>
+                <Text style={styles.creditsValue}>{pkg.credits}</Text>
+                <Text style={styles.creditsLabel}>credits</Text>
+                {pkg.bonus_credits > 0 && (
+                  <View style={styles.bonusBadge}>
+                    <Text style={styles.bonusText}>+{pkg.bonus_credits} BONUS</Text>
+                  </View>
+                )}
+              </View>
+              <View style={styles.packagePrice}>
+                <Text style={styles.priceValue}>${pkg.price}</Text>
+              </View>
+              {purchasing === pkg.id ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <TouchableOpacity 
+                  style={[styles.buyButton, selectedPackage === pkg.id && styles.buyButtonSelected]}
+                  onPress={() => handlePurchase(pkg.id)}
+                >
+                  <Text style={styles.buyButtonText}>
+                    {selectedPackage === pkg.id ? 'Purchase Now' : 'Select'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* What can you do with credits */}
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>What can you do with credits?</Text>
+          <View style={[styles.infoItemsContainer, isDesktop && styles.infoItemsContainerDesktop]}>
+            <View style={styles.infoItem}>
+              <Ionicons name="star" size={20} color="#FFD700" />
+              <Text style={styles.infoText}>Feature your listing at the top</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Ionicons name="home" size={20} color="#FF6B6B" />
+              <Text style={styles.infoText}>Spotlight on homepage</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Ionicons name="flash" size={20} color="#FF9800" />
+              <Text style={styles.infoText}>Add urgent badge</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Ionicons name="location" size={20} color="#4CAF50" />
+              <Text style={styles.infoText}>Boost in specific location</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Transaction History */}
+        <TouchableOpacity 
+          style={styles.historyHeader}
+          onPress={() => setShowHistory(!showHistory)}
+        >
+          <Text style={styles.sectionTitle}>Transaction History</Text>
+          <Ionicons name={showHistory ? 'chevron-up' : 'chevron-down'} size={24} color="#666" />
+        </TouchableOpacity>
+
+        {showHistory && (
+          <View style={styles.historyContainer}>
+            {history.length === 0 ? (
+              <Text style={styles.emptyText}>No transactions yet</Text>
+            ) : (
+              history.map((tx) => (
+                <View key={tx.id} style={styles.transactionItem}>
+                  <View style={[styles.txIcon, { backgroundColor: getTransactionColor(tx.amount) + '20' }]}>
+                    <Ionicons 
+                      name={getTransactionIcon(tx.transaction_type)} 
+                      size={20} 
+                      color={getTransactionColor(tx.amount)} 
+                    />
+                  </View>
+                  <View style={styles.txDetails}>
+                    <Text style={styles.txDescription}>{tx.description}</Text>
+                    <Text style={styles.txDate}>
+                      {new Date(tx.created_at).toLocaleDateString()}
+                    </Text>
+                  </View>
+                  <Text style={[styles.txAmount, { color: getTransactionColor(tx.amount) }]}>
+                    {tx.amount > 0 ? '+' : ''}{tx.amount}
                   </Text>
                 </View>
-                <Text style={[styles.txAmount, { color: getTransactionColor(tx.amount) }]}>
-                  {tx.amount > 0 ? '+' : ''}{tx.amount}
-                </Text>
-              </View>
-            ))
-          )}
-        </View>
-      )}
+              ))
+            )}
+          </View>
+        )}
 
-      <View style={{ height: 40 }} />
+        <View style={{ height: 40 }} />
+      </View>
     </ScrollView>
   );
 }
