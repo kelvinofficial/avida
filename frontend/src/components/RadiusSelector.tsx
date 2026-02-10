@@ -123,7 +123,7 @@ export const RadiusSelector: React.FC<RadiusSelectorProps> = ({
               <Slider
                 style={styles.slider}
                 minimumValue={5}
-                maximumValue={100}
+                maximumValue={250}
                 step={1}
                 value={tempValue}
                 onValueChange={handleSliderChange}
@@ -131,7 +131,7 @@ export const RadiusSelector: React.FC<RadiusSelectorProps> = ({
                 maximumTrackTintColor="#E0E0E0"
                 thumbTintColor="#1976D2"
               />
-              <Text style={styles.sliderLabel}>100km</Text>
+              <Text style={styles.sliderLabel}>250km</Text>
             </View>
 
             {/* Action Buttons */}
