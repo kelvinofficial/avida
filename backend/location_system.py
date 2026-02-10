@@ -41,6 +41,8 @@ class District(BaseModel):
     region_code: str
     district_code: str
     name: str
+    lat: Optional[float] = None
+    lng: Optional[float] = None
 
 
 class City(BaseModel):
