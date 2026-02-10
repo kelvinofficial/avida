@@ -425,9 +425,15 @@ export default function CreditsPage() {
 }
 
 const styles = StyleSheet.create({
+  outerContainer: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+    alignItems: 'center',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+    width: '100%',
   },
   scrollContentDesktop: {
     alignItems: 'center',
