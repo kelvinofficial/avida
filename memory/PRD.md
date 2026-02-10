@@ -971,6 +971,9 @@ When sandbox mode is active, the following pages now show sandbox data:
 ### Pending Tasks (P1)
 - [ ] Location-based analytics with map visualization (Mapbox) - Skipped by user
 
+### Completed (Feb 10, 2026)
+- [x] Admin Dashboard TypeScript errors fixed (MUI Grid v7, API client types, Pie chart labels, etc.)
+
 ### Future/Backlog (P2)
 - Notification Template Analytics
 - Full A/B Testing Logic and UI
