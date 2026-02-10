@@ -344,6 +344,18 @@ const styles = StyleSheet.create({
     color: theme.colors.onSurfaceVariant,
     flex: 1,
   },
+  distanceBadge: {
+    backgroundColor: theme.colors.primaryContainer,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginLeft: 4,
+  },
+  distanceText: {
+    fontSize: 10,
+    color: theme.colors.primary,
+    fontWeight: '500',
+  },
   title: {
     fontSize: 13,
     fontWeight: '500',
