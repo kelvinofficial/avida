@@ -896,11 +896,11 @@ export default function HomeScreen() {
     }
     
     // Determine which listings to display
-    const displayedListings = nearMeEnabled && nearbyListings.length > 0 ? nearbyListings : listings;
+    const displayedListings = listings;
     
     // Show empty state only when initial load is done and no listings
     if (displayedListings.length === 0) {
-      return <EmptyState icon="pricetags-outline" title={nearMeEnabled ? "No listings nearby" : "No listings yet"} description={nearMeEnabled ? "Try increasing the search radius or check back later!" : "Be the first to post an ad in your area!"} />;
+      return <EmptyState icon="pricetags-outline" title={expandedSearch ? "Showing nearby listings" : "No listings yet"} description={expandedSearch ? "Try adjusting your location or search settings." : "Be the first to post an ad in your area!"} />;
     }
     
     // Create rows based on column count
