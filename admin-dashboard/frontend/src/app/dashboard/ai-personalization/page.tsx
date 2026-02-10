@@ -805,7 +805,7 @@ export default function AIPersonalizationPage() {
       {tabValue === 2 && (
         <Grid container spacing={3}>
           {styles.map((style) => (
-            <Grid item xs={12} sm={6} md={4} key={style.id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={style.id}>
               <Card
                 sx={{
                   borderTop: `4px solid ${STYLE_COLORS[style.id] || '#888'}`,
@@ -1009,7 +1009,7 @@ export default function AIPersonalizationPage() {
         <DialogContent dividers>
           <Grid container spacing={2}>
             {variants.map((variant, index) => (
-              <Grid item xs={12} md={4} key={variant.variant_id}>
+              <Grid size={{ xs: 12, md: 4 }} key={variant.variant_id}>
                 <Card
                   variant="outlined"
                   sx={{

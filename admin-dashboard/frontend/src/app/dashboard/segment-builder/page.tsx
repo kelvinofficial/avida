@@ -232,7 +232,7 @@ export default function SegmentBuilderPage() {
       </Typography>
       <Grid container spacing={2} sx={{ mb: 4 }}>
         {predefinedSegments.map((segment) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={segment.id}>
+          <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={segment.id}>
             <Card sx={{ height: '100%', bgcolor: '#F5F5F5' }}>
               <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>

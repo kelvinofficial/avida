@@ -584,7 +584,7 @@ export default function PlatformConfigPage() {
               {LOGO_TYPES.map((logoType) => {
                 const asset = config.branding[logoType.id];
                 return (
-                  <Grid item xs={12} sm={6} md={4} key={logoType.id}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={logoType.id}>
                     <Card sx={{ height: '100%' }}>
                       <CardContent sx={{ p: 2 }}>
                         <Typography variant="subtitle2" fontWeight={600}>{logoType.name}</Typography>

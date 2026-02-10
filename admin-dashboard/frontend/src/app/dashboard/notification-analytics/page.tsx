@@ -522,7 +522,7 @@ export default function NotificationAnalyticsPage() {
           <Grid size={{ xs: 12 }}>
             <Grid container spacing={2}>
               {byChannel.map((channel) => (
-                <Grid item xs={12} md={4} key={channel.channel}>
+                <Grid size={{ xs: 12, md: 4 }} key={channel.channel}>
                   <Card>
                     <CardContent>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>

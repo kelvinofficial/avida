@@ -851,7 +851,7 @@ function AnalyticsTab({ analytics }: { analytics: AnalyticsData }) {
                 { label: 'Clicked', value: analytics.totals.clicked, color: 'warning.main' },
                 { label: 'Failed', value: analytics.totals.failed, color: 'error.main' },
               ].map((stat) => (
-                <Grid item xs={6} md={2} key={stat.label}>
+                <Grid size={{ xs: 6, md: 2 }} key={stat.label}>
                   <Box sx={{ textAlign: 'center' }}>
                     <Typography variant="h4" color={stat.color}>{stat.value}</Typography>
                     <Typography variant="body2">{stat.label}</Typography>
@@ -943,7 +943,7 @@ function PreviewTab({ onPreview }: { onPreview: (title: string, body: string, ty
             <Typography variant="subtitle2" gutterBottom>Sample Variables</Typography>
             <Grid container spacing={1}>
               {Object.entries(variables).slice(0, 8).map(([key, value]) => (
-                <Grid item xs={6} key={key}>
+                <Grid size={{ xs: 6 }} key={key}>
                   <TextField
                     size="small"
                     fullWidth
@@ -1056,7 +1056,7 @@ function TemplatesTab({ templates, onAdd, onEdit, onPreview }: { templates: Emai
         ) : (
           <Grid container spacing={2}>
             {templates.map((t) => (
-              <Grid item xs={12} md={4} key={t.id}>
+              <Grid size={{ xs: 12, md: 4 }} key={t.id}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="h6">{t.name}</Typography>
@@ -1182,7 +1182,7 @@ function ABTestsTab({ tests, onAdd, onEdit, onEnd, onPreview }: { tests: ABTest[
                     
                     const isWinner = test.winner === variant;
                     return (
-                      <Grid item xs={12} md={4} key={variant}>
+                      <Grid size={{ xs: 12, md: 4 }} key={variant}>
                         <Card variant="outlined" sx={{ bgcolor: isWinner ? '#E8F5E9' : 'white', border: isWinner ? '2px solid #4CAF50' : undefined }}>
                           <CardContent>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>

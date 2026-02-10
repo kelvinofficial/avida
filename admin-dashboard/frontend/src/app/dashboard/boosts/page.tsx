@@ -616,7 +616,7 @@ export default function BoostsPage() {
             
             <Grid container spacing={2}>
               {paymentMethods.map((method) => (
-                <Grid item xs={12} md={6} key={method.id}>
+                <Grid size={{ xs: 12, md: 6 }} key={method.id}>
                   <Card 
                     variant="outlined" 
                     sx={{ 

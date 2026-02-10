@@ -1011,7 +1011,7 @@ export default function CompliancePage() {
             </Typography>
             <Grid container spacing={2}>
               {CONSENT_CATEGORIES.map((cat) => (
-                <Grid item xs={12} sm={6} md={4} key={cat.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={cat.id}>
                   <Paper variant="outlined" sx={{ p: 2 }}>
                     <Typography variant="subtitle2">{cat.label}</Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -1279,7 +1279,7 @@ export default function CompliancePage() {
 
             <Grid container spacing={2}>
               {thirdPartyProcessors.map((processor) => (
-                <Grid item xs={12} sm={6} md={4} key={processor.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={processor.id}>
                   <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                       <Typography variant="subtitle1" fontWeight={600}>

@@ -343,7 +343,7 @@ const EmailTemplatesTab = () => {
 
         <Grid container spacing={2}>
           {templates.map((template) => (
-            <Grid item xs={12} md={6} key={template.id}>
+            <Grid size={{ xs: 12, md: 6 }} key={template.id}>
               <Card variant="outlined" sx={{ height: '100%' }}>
                 <CardContent>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
@@ -1010,7 +1010,7 @@ export default function TeamManagementPage() {
 
             <Grid container spacing={2}>
               {roles.map((role) => (
-                <Grid item xs={12} md={6} lg={4} key={role.id}>
+                <Grid size={{ xs: 12, md: 6, lg: 4 }} key={role.id}>
                   <Card variant="outlined">
                     <CardContent>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>

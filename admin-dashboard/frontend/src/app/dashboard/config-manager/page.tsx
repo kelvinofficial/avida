@@ -836,7 +836,7 @@ export default function ConfigManagerPage() {
 
             <Grid container spacing={2}>
               {featureFlags.map((flag) => (
-                <Grid item xs={12} sm={6} md={4} key={flag.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={flag.id}>
                   <Paper 
                     variant="outlined" 
                     sx={{ 
@@ -1327,7 +1327,7 @@ export default function ConfigManagerPage() {
                 };
 
                 return (
-                  <Grid item xs={12} sm={6} md={4} key={template.id}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={template.id}>
                     <Card 
                       variant="outlined" 
                       sx={{ 
@@ -1764,7 +1764,7 @@ export default function ConfigManagerPage() {
               <Grid size={{ xs: 12 }}>
                 <Grid container spacing={1}>
                   {featureFlags.slice(0, 12).map((flag) => (
-                    <Grid item xs={6} sm={4} md={3} key={flag.feature_id}>
+                    <Grid size={{ xs: 6, sm: 4, md: 3 }} key={flag.feature_id}>
                       <Paper variant="outlined" sx={{ p: 1 }}>
                         <FormControlLabel
                           control={

@@ -619,7 +619,7 @@ export default function ExecutiveSummaryPage() {
                   </Typography>
                   <Grid container spacing={2}>
                     {summary.recommendations.map((rec) => (
-                      <Grid item xs={12} md={6} key={rec.id}>
+                      <Grid size={{ xs: 12, md: 6 }} key={rec.id}>
                         <Card sx={{ 
                           borderLeft: 4, 
                           borderColor: rec.urgency === 'immediate' ? 'error.main' : 

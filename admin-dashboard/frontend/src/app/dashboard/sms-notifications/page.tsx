@@ -602,7 +602,7 @@ export default function SMSNotificationsPage() {
 
             <Grid container spacing={2}>
               {partners.map((partner) => (
-                <Grid item xs={12} md={6} lg={4} key={partner.id}>
+                <Grid size={{ xs: 12, md: 6, lg: 4 }} key={partner.id}>
                   <Paper elevation={2} sx={{ p: 2 }}>
                     <Box display="flex" justifyContent="space-between" alignItems="start">
                       <Box>
