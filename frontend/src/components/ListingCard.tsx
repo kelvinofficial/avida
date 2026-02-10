@@ -41,6 +41,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   isFavorited = false,
   compact = false,
   imageHeight = 130,
+  userLocation = null,
 }) => {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -58,6 +59,51 @@ export const ListingCard: React.FC<ListingCardProps> = ({
       return '';
     }
   };
+
+  // Haversine distance calculation
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 6371; // Earth's radius in km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLng = ((lng2 - lng1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Get distance from user if location data available
+  const getDistance = (): string | null => {
+    if (!userLocation) return null;
+    
+    const listingLat = listing.location_data?.lat;
+    const listingLng = listing.location_data?.lng;
+    
+    if (!listingLat || !listingLng) return null;
+    
+    const distance = calculateDistance(
+      userLocation.lat,
+      userLocation.lng,
+      listingLat,
+      listingLng
+    );
+    
+    if (distance < 1) {
+      return `${Math.round(distance * 1000)}m`;
+    }
+    return `${Math.round(distance)}km`;
+  };
+
+  // Get display location (city name or text location)
+  const getDisplayLocation = (): string => {
+    if (listing.location_data?.city_name) {
+      return listing.location_data.city_name;
+    }
+    return listing.location || 'Unknown';
+  };
+
+  const distance = getDistance();
 
   const imageSource = listing.images?.[0]
     ? listing.images[0].startsWith('data:')
