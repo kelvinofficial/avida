@@ -20,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore, saveUserData } from '../src/store/authStore';
 import { authApi } from '../src/utils/api';
 import { LinearGradient } from 'expo-linear-gradient';
+import { LocationOnboarding, checkLocationOnboardingShown } from '../src/components/LocationOnboarding';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
