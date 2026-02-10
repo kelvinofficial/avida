@@ -29,6 +29,19 @@ export interface Category {
   attributes: CategoryAttribute[];
 }
 
+export interface LocationData {
+  country_code?: string;
+  region_code?: string;
+  district_code?: string;
+  city_code?: string;
+  city_name?: string;
+  region_name?: string;
+  district_name?: string;
+  lat?: number;
+  lng?: number;
+  location_text?: string;
+}
+
 export interface Listing {
   id: string;
   user_id: string;
@@ -41,6 +54,7 @@ export interface Listing {
   condition?: string;
   images: string[];
   location: string;
+  location_data?: LocationData;
   attributes: Record<string, any>;
   status: 'active' | 'sold' | 'deleted' | 'pending';
   featured: boolean;
@@ -61,6 +75,8 @@ export interface Listing {
     preferredContact?: 'whatsapp' | 'call';
   };
   is_favorited?: boolean;
+  is_boosted?: boolean;
+  boosts?: Record<string, { is_active: boolean }>;
 }
 
 export interface Message {
