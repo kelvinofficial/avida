@@ -479,6 +479,61 @@ export default function SettingsScreen() {
               </View>
             )}
 
+            {activeSection === 'location' && (
+              <View style={desktopStyles.sectionCard}>
+                <Text style={desktopStyles.sectionTitle}>Default Location</Text>
+                <Text style={desktopStyles.sectionSubtitle}>Set your preferred location for posting listings</Text>
+                
+                <View style={desktopStyles.settingsGroup}>
+                  <View style={desktopStyles.locationSection}>
+                    <View style={desktopStyles.locationInfo}>
+                      <Ionicons name="location" size={24} color={COLORS.primary} />
+                      <View style={desktopStyles.locationTextContainer}>
+                        <Text style={desktopStyles.locationLabel}>
+                          {defaultLocation ? 'Current Default Location' : 'No default location set'}
+                        </Text>
+                        {defaultLocation && (
+                          <Text style={desktopStyles.locationValue}>
+                            {defaultLocation.location_text || defaultLocation.city_name || 'Unknown'}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                    
+                    <Text style={desktopStyles.locationHint}>
+                      When you post a new listing, this location will be pre-selected for you.
+                    </Text>
+                    
+                    <View style={desktopStyles.locationPickerContainer}>
+                      <LocationPicker
+                        value={defaultLocation}
+                        onChange={(loc) => saveDefaultLocation(loc)}
+                        placeholder="Select your default location"
+                        disabled={locationSaving}
+                      />
+                    </View>
+                    
+                    {defaultLocation && (
+                      <TouchableOpacity 
+                        style={desktopStyles.clearLocationBtn}
+                        onPress={clearDefaultLocation}
+                        disabled={locationSaving}
+                      >
+                        {locationSaving ? (
+                          <ActivityIndicator size="small" color={COLORS.error} />
+                        ) : (
+                          <>
+                            <Ionicons name="trash-outline" size={18} color={COLORS.error} />
+                            <Text style={desktopStyles.clearLocationText}>Clear Default Location</Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+              </View>
+            )}
+
             {activeSection === 'security' && (
               <View style={desktopStyles.sectionCard}>
                 <Text style={desktopStyles.sectionTitle}>Security Settings</Text>
