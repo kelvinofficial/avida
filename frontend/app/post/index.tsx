@@ -1490,12 +1490,14 @@ export default function PostListingScreen() {
       {/* Location */}
       <View style={styles.fieldContainer}>
         <Text style={styles.fieldLabel}>Location <Text style={styles.required}>*</Text></Text>
-        <TextInput
-          style={styles.input}
-          placeholder="City, State (e.g., Berlin, Germany)"
-          placeholderTextColor={COLORS.textSecondary}
-          value={location}
-          onChangeText={setLocation}
+        <LocationPicker
+          value={locationData}
+          onChange={(loc) => {
+            setLocationData(loc);
+            setLocation(loc.location_text || loc.city_name || '');
+          }}
+          placeholder="Select your location"
+          error={fieldErrors.location}
         />
       </View>
 
