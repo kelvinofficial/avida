@@ -570,6 +570,46 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
+          ) : currentStep === 'city' ? (
+            /* Use ScrollView for city step to avoid FlatList click issues on web */
+            <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.listContent}>
+              {(searchQuery.length >= 2 ? searchResults : cities).length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <Ionicons name="location-outline" size={48} color={theme.colors.outline} />
+                  <Text style={styles.emptyText}>
+                    {searchQuery.length > 0 ? 'No cities found' : 'No locations available'}
+                  </Text>
+                </View>
+              ) : (
+                (searchQuery.length >= 2 ? searchResults : cities).map((city: City, index: number) => (
+                  <React.Fragment key={`${city.country_code}-${city.region_code}-${city.district_code}-${city.city_code}`}>
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.listItem,
+                        pressed && { backgroundColor: theme.colors.surfaceVariant }
+                      ]}
+                      onPress={() => handleCitySelect(city)}
+                      data-testid={`city-${city.city_code}`}
+                    >
+                      <View style={styles.iconContainer}>
+                        <Ionicons name="location" size={20} color={theme.colors.primary} />
+                      </View>
+                      <View style={styles.cityInfo}>
+                        <Text style={styles.itemText}>{city.name}</Text>
+                        {city.location_text && (
+                          <Text style={styles.citySubtext} numberOfLines={1}>
+                            {city.location_text}
+                          </Text>
+                        )}
+                      </View>
+                    </Pressable>
+                    {index < (searchQuery.length >= 2 ? searchResults : cities).length - 1 && (
+                      <View style={styles.separator} />
+                    )}
+                  </React.Fragment>
+                ))
+              )}
+            </ScrollView>
           ) : (
             <FlatList
               key={`list-${currentStep}`}
