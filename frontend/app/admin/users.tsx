@@ -256,7 +256,7 @@ export default function UsersManagementPage() {
 
   const handleVerifyUser = async (userId: string) => {
     try {
-      await api.post(`/admin/users/${userId}/verify`);
+      await api.post(`/admin/verification/users/${userId}/verify`);
       Alert.alert('Success', 'User verified successfully');
       fetchData();
     } catch (error: any) {
@@ -266,9 +266,9 @@ export default function UsersManagementPage() {
 
   const handleBanUser = async (userId: string, currentStatus: string) => {
     try {
-      const action = currentStatus === 'banned' ? 'unban' : 'ban';
-      await api.post(`/admin/users/${userId}/${action}`);
-      Alert.alert('Success', `User ${action}ned successfully`);
+      const action = currentStatus === 'banned' ? 'activate' : 'deactivate';
+      await api.post(`/admin/verification/users/${userId}/${action}`);
+      Alert.alert('Success', `User ${action}d successfully`);
       fetchData();
     } catch (error: any) {
       Alert.alert('Error', error.response?.data?.detail || 'Failed to update user');
@@ -277,7 +277,7 @@ export default function UsersManagementPage() {
 
   const handleVerifyBusiness = async (profileId: string) => {
     try {
-      await api.post(`/business-profiles/admin/${profileId}/verify`);
+      await api.post(`/admin/business-profiles/${profileId}/verify`);
       Alert.alert('Success', 'Business profile verified');
       fetchData();
     } catch (error: any) {
@@ -287,7 +287,7 @@ export default function UsersManagementPage() {
 
   const handleUpgradePremium = async (profileId: string) => {
     try {
-      await api.post(`/business-profiles/admin/${profileId}/upgrade-premium`);
+      await api.post(`/admin/business-profiles/${profileId}/upgrade-premium`);
       Alert.alert('Success', 'Business upgraded to Premium');
       fetchData();
     } catch (error: any) {
@@ -306,7 +306,7 @@ export default function UsersManagementPage() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await api.post(`/business-profiles/admin/${profileId}/revoke-premium`);
+              await api.post(`/admin/business-profiles/${profileId}/revoke-premium`);
               Alert.alert('Success', 'Premium status revoked');
               fetchData();
             } catch (error: any) {
