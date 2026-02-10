@@ -285,6 +285,12 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
   content: { flex: 1 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  
+  // Auth required state
+  centerContent: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  loginMessage: { fontSize: 16, color: COLORS.textSecondary, marginTop: 16, marginBottom: 20 },
+  signInBtn: { backgroundColor: COLORS.primary, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 8 },
+  signInBtnText: { fontSize: 15, fontWeight: '600', color: '#fff' },
 
   // Empty State
   emptyState: {
