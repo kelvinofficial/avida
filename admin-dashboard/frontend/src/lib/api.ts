@@ -1183,6 +1183,73 @@ class ApiClient {
     const { data } = await this.client.get('/vouchers/template');
     return data;
   }
+
+  // =========================================================================
+  // A/B TESTING
+  // =========================================================================
+
+  async getExperiments(status?: string) {
+    const { data } = await this.client.get('/experiments/list', { params: { status } });
+    return data;
+  }
+
+  async getExperiment(experimentId: string) {
+    const { data } = await this.client.get(`/experiments/${experimentId}`);
+    return data;
+  }
+
+  async createExperiment(experiment: {
+    name: string;
+    description?: string;
+    hypothesis?: string;
+    experiment_type: string;
+    target_page?: string;
+    goal_type: string;
+    goal_event?: string;
+    variants: Array<{
+      name: string;
+      description?: string;
+      traffic_percent: number;
+      config?: Record<string, any>;
+      is_control?: boolean;
+    }>;
+    assignment_type?: string;
+    min_sample_size?: number;
+    confidence_level?: number;
+  }) {
+    const { data } = await this.client.post('/experiments/create', experiment);
+    return data;
+  }
+
+  async updateExperiment(experimentId: string, updates: Record<string, any>) {
+    const { data } = await this.client.put(`/experiments/${experimentId}`, updates);
+    return data;
+  }
+
+  async startExperiment(experimentId: string) {
+    const { data } = await this.client.post(`/experiments/${experimentId}/start`);
+    return data;
+  }
+
+  async pauseExperiment(experimentId: string) {
+    const { data } = await this.client.post(`/experiments/${experimentId}/pause`);
+    return data;
+  }
+
+  async stopExperiment(experimentId: string, winnerVariantId?: string) {
+    const { data } = await this.client.post(`/experiments/${experimentId}/stop`, { winner_variant_id: winnerVariantId });
+    return data;
+  }
+
+  async deleteExperiment(experimentId: string) {
+    const { data } = await this.client.delete(`/experiments/${experimentId}`);
+    return data;
+  }
+
+  async getExperimentsOverview() {
+    const { data } = await this.client.get('/experiments/stats/overview');
+    return data;
+  }
 }
 
 export const api = new ApiClient();
