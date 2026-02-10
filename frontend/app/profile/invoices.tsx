@@ -47,12 +47,29 @@ interface Invoice {
   package_name?: string;
 }
 
+interface UserProfile {
+  name?: string;
+  email?: string;
+  is_premium?: boolean;
+  premium_expires_at?: string;
+}
+
 export default function InvoicesPage() {
   const router = useRouter();
-  const { isAuthenticated, token } = useAuthStore();
+  const { isAuthenticated, token, user } = useAuthStore();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+
+  const fetchUserProfile = useCallback(async () => {
+    try {
+      const response = await api.get('/users/me');
+      setUserProfile(response.data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  }, []);
 
   const fetchInvoices = useCallback(async () => {
     try {
