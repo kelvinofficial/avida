@@ -411,6 +411,30 @@ export default function HomeScreen() {
     timestamp: number;
   }>>([]);
 
+  // Featured Sellers State
+  interface FeaturedSeller {
+    id: string;
+    business_name: string;
+    identifier: string;
+    logo_url: string | null;
+    city: string | null;
+    country: string | null;
+    is_verified: boolean;
+    is_premium: boolean;
+    verification_tier: string;
+    total_listings: number;
+    total_views: number;
+    primary_categories: string[];
+    user?: {
+      name: string;
+      picture: string | null;
+      rating?: number;
+      total_ratings?: number;
+    };
+  }
+  const [featuredSellers, setFeaturedSellers] = useState<FeaturedSeller[]>([]);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
+
   // Load saved location on mount
   useEffect(() => {
     loadSavedLocation();
