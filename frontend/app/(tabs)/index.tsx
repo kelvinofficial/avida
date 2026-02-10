@@ -351,9 +351,26 @@ export default function HomeScreen() {
   const { isAuthenticated } = useAuthStore();
   const { isSandboxMode } = useSandbox();
   const { width: windowWidth } = useWindowDimensions();
-  const { userLocation, nearMeEnabled, setNearMeEnabled, isLoading: locationLoading, requestLocation, searchRadius, setSearchRadius } = useUserLocation();
+  
+  // Location state - MANDATORY SELECTION, NO GPS
+  const [selectedCity, setSelectedCity] = useState<{
+    country_code: string;
+    country_name: string;
+    region_code: string;
+    region_name: string;
+    district_code?: string;
+    district_name?: string;
+    city_code: string;
+    city_name: string;
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [includeNearbyCities, setIncludeNearbyCities] = useState(true);
+  const [searchRadius, setSearchRadius] = useState(50);
+  const [expandedSearch, setExpandedSearch] = useState(false);
+  const [expandedSearchMessage, setExpandedSearchMessage] = useState<string | null>(null);
+  
   const [listings, setListings] = useState<Listing[]>([]);
-  const [nearbyListings, setNearbyListings] = useState<Listing[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -363,7 +380,7 @@ export default function HomeScreen() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [notificationCount, setNotificationCount] = useState(0);
-  const [currentCity, setCurrentCity] = useState('All Locations');
+  const [currentCity, setCurrentCity] = useState('Select Location');
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [locationSearch, setLocationSearch] = useState('');
   const [selectedLocationFilter, setSelectedLocationFilter] = useState<{
@@ -393,6 +410,40 @@ export default function HomeScreen() {
     subcategoryName: string;
     timestamp: number;
   }>>([]);
+
+  // Load saved location on mount
+  useEffect(() => {
+    loadSavedLocation();
+  }, []);
+
+  const loadSavedLocation = async () => {
+    try {
+      const saved = await AsyncStorage.getItem('@selected_city');
+      if (saved) {
+        const city = JSON.parse(saved);
+        setSelectedCity(city);
+        setCurrentCity(city.city_name);
+      }
+      const savedRadius = await AsyncStorage.getItem('@search_radius');
+      if (savedRadius) setSearchRadius(parseInt(savedRadius, 10));
+      const savedInclude = await AsyncStorage.getItem('@include_nearby');
+      if (savedInclude !== null) setIncludeNearbyCities(savedInclude === 'true');
+    } catch (err) {
+      console.error('Failed to load saved location:', err);
+    }
+  };
+
+  const saveSelectedCity = async (city: typeof selectedCity) => {
+    setSelectedCity(city);
+    if (city) {
+      setCurrentCity(city.city_name);
+      try {
+        await AsyncStorage.setItem('@selected_city', JSON.stringify(city));
+      } catch (err) {
+        console.error('Failed to save city:', err);
+      }
+    }
+  };
 
   // Load recent subcategories from storage
   const loadRecentSubcategories = useCallback(async () => {
