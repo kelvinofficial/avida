@@ -1713,6 +1713,127 @@ const desktopStyles = StyleSheet.create({
   },
 });
 
+// Featured Sellers Styles
+const featuredStyles = StyleSheet.create({
+  container: {
+    backgroundColor: '#fff',
+    paddingVertical: 16,
+    marginTop: 8,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: HORIZONTAL_PADDING,
+    marginBottom: 12,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  seeAll: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2E7D32',
+  },
+  scrollContent: {
+    paddingHorizontal: HORIZONTAL_PADDING,
+    gap: 12,
+  },
+  sellerCard: {
+    width: 140,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+  },
+  logoContainer: {
+    position: 'relative',
+    marginBottom: 8,
+  },
+  logo: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    backgroundColor: '#E8F5E9',
+  },
+  logoPlaceholder: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    backgroundColor: '#E8F5E9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badge: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  verifiedBadge: {
+    backgroundColor: '#2E7D32',
+  },
+  premiumBadge: {
+    backgroundColor: '#FFB300',
+  },
+  businessName: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  location: {
+    fontSize: 11,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  stat: {
+    fontSize: 11,
+    color: '#888',
+  },
+  tierLabel: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  verifiedLabel: {
+    backgroundColor: '#E8F5E9',
+  },
+  premiumLabel: {
+    backgroundColor: '#FFF8E1',
+  },
+  tierText: {
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  verifiedText: {
+    color: '#2E7D32',
+  },
+  premiumText: {
+    color: '#FF8F00',
+  },
+});
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
