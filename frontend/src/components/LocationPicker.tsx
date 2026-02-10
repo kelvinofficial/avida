@@ -229,9 +229,21 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     setSelectedCountry(country);
     setSelectedRegion(null);
     setRegions([]);
+    setSearchQuery(''); // Clear search when changing country
     setCurrentStep('region');
     loadRegions(country.code);
   };
+
+  // Filter regions by search query
+  const getFilteredRegions = useCallback(() => {
+    if (!searchQuery || searchQuery.length < 1) {
+      return regions;
+    }
+    const query = searchQuery.toLowerCase();
+    return regions.filter(region => 
+      region.name.toLowerCase().includes(query)
+    );
+  }, [regions, searchQuery]);
 
   const handleRegionSelect = (region: Region) => {
     // Complete the selection at region level (no district/city selection)
