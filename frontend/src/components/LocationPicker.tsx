@@ -169,7 +169,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       ].slice(0, MAX_RECENT_LOCATIONS);
       
       setRecentLocations(updatedRecent);
-      await AsyncStorage.setItem(RECENT_LOCATIONS_KEY, JSON.stringify(updatedRecent));
+      await Storage.setItem(RECENT_LOCATIONS_KEY, JSON.stringify(updatedRecent));
     } catch (err) {
       console.error('Failed to save recent location:', err);
     }
