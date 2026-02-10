@@ -22,6 +22,7 @@ interface ListingCardProps {
   isFavorited?: boolean;
   compact?: boolean;
   imageHeight?: number;
+  userLocation?: { lat: number; lng: number } | null;
 }
 
 // Boost badge configuration
