@@ -18,7 +18,6 @@ import {
   Tabs,
   Tab,
   Snackbar,
-  Grid,
   Paper,
   Switch,
   FormControlLabel,
@@ -46,6 +45,7 @@ import {
   InputAdornment,
   Avatar,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   Settings,
   Flag,
@@ -614,7 +614,7 @@ export default function ConfigManagerPage() {
 
       {/* Health Status & Pending Approvals */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           {healthCheck && (
             <Alert
               severity={healthCheck.status === 'healthy' ? 'success' : healthCheck.status === 'degraded' ? 'warning' : 'error'}
@@ -631,7 +631,7 @@ export default function ConfigManagerPage() {
             </Alert>
           )}
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           {pendingApprovals.length > 0 && (
             <Alert severity="warning" icon={<Approval />}>
               <Typography variant="body2" fontWeight={600}>
@@ -711,23 +711,23 @@ export default function ConfigManagerPage() {
 
             <Grid container spacing={3}>
               {/* Basic Info */}
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="subtitle2" color="primary" gutterBottom>Basic Info</Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="caption" color="text.secondary">Platform Name</Typography>
                       <Typography variant="body1">{globalSettings.platform_name}</Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="caption" color="text.secondary">Default Currency</Typography>
                       <Typography variant="body1">{globalSettings.default_currency}</Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="caption" color="text.secondary">Support Email</Typography>
                       <Typography variant="body1">{globalSettings.support_email}</Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="caption" color="text.secondary">Support Phone</Typography>
                       <Typography variant="body1">{globalSettings.support_phone || 'Not set'}</Typography>
                     </Grid>
@@ -736,26 +736,26 @@ export default function ConfigManagerPage() {
               </Grid>
 
               {/* Business Rules */}
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper variant="outlined" sx={{ p: 2, borderColor: 'warning.main' }}>
                   <Typography variant="subtitle2" color="warning.main" gutterBottom>
                     <DangerousOutlined sx={{ fontSize: 16, mr: 0.5 }} />
                     Critical Business Rules
                   </Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="caption" color="text.secondary">Commission %</Typography>
                       <Typography variant="h6">{globalSettings.commission_percentage}%</Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="caption" color="text.secondary">Default VAT %</Typography>
                       <Typography variant="h6">{globalSettings.default_vat_percentage}%</Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="caption" color="text.secondary">Escrow Duration</Typography>
                       <Typography variant="h6">{globalSettings.escrow_duration_days} days</Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="caption" color="text.secondary">Listing Expiry</Typography>
                       <Typography variant="h6">{globalSettings.default_listing_expiry_days} days</Typography>
                     </Grid>
@@ -764,20 +764,20 @@ export default function ConfigManagerPage() {
               </Grid>
 
               {/* Rate Limits */}
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="subtitle2" color="primary" gutterBottom>Rate Limits</Typography>
                   <Grid container spacing={1}>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="caption">API/min: {globalSettings.rate_limits?.api_requests_per_minute}</Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="caption">API/hour: {globalSettings.rate_limits?.api_requests_per_hour}</Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="caption">Listings/day: {globalSettings.rate_limits?.listing_creates_per_day}</Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="caption">Messages/min: {globalSettings.rate_limits?.message_sends_per_minute}</Typography>
                     </Grid>
                   </Grid>
@@ -785,7 +785,7 @@ export default function ConfigManagerPage() {
               </Grid>
 
               {/* Notification Defaults */}
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="subtitle2" color="primary" gutterBottom>Notification Defaults</Typography>
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
@@ -1489,7 +1489,7 @@ export default function ConfigManagerPage() {
         <DialogContent>
           {editedGlobal && (
             <Grid container spacing={2} sx={{ pt: 1 }}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Platform Name"
@@ -1497,7 +1497,7 @@ export default function ConfigManagerPage() {
                   onChange={(e) => setEditedGlobal({ ...editedGlobal, platform_name: e.target.value })}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Default Currency"
@@ -1505,12 +1505,12 @@ export default function ConfigManagerPage() {
                   onChange={(e) => setEditedGlobal({ ...editedGlobal, default_currency: e.target.value })}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Alert severity="warning" sx={{ mb: 1 }}>
                   Changes to these fields require approval from another admin
                 </Alert>
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   fullWidth
                   label="Commission %"
@@ -1520,7 +1520,7 @@ export default function ConfigManagerPage() {
                   InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
                 />
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   fullWidth
                   label="Default VAT %"
@@ -1530,7 +1530,7 @@ export default function ConfigManagerPage() {
                   InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
                 />
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   fullWidth
                   label="Escrow Duration"
@@ -1540,7 +1540,7 @@ export default function ConfigManagerPage() {
                   InputProps={{ endAdornment: <InputAdornment position="end">days</InputAdornment> }}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Support Email"
@@ -1548,7 +1548,7 @@ export default function ConfigManagerPage() {
                   onChange={(e) => setEditedGlobal({ ...editedGlobal, support_email: e.target.value })}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Support Phone"
@@ -1572,7 +1572,7 @@ export default function ConfigManagerPage() {
         <DialogTitle>Add API Key</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ pt: 1 }}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControl fullWidth>
                 <InputLabel>Service</InputLabel>
                 <Select
@@ -1590,7 +1590,7 @@ export default function ConfigManagerPage() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControl fullWidth>
                 <InputLabel>Key Type</InputLabel>
                 <Select
@@ -1605,7 +1605,7 @@ export default function ConfigManagerPage() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Key Value"
@@ -1642,7 +1642,7 @@ export default function ConfigManagerPage() {
         <DialogTitle>Simulate User Experience</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ pt: 1 }}>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>Country</InputLabel>
                 <Select label="Country" defaultValue="KE">
@@ -1654,7 +1654,7 @@ export default function ConfigManagerPage() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>User Role</InputLabel>
                 <Select label="User Role" defaultValue="user">
@@ -1665,13 +1665,13 @@ export default function ConfigManagerPage() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Button variant="contained" onClick={() => handleSimulate('KE', 'seller')}>
                 Run Simulation
               </Button>
             </Grid>
             {simulateResult && (
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Paper variant="outlined" sx={{ p: 2, mt: 1 }}>
                   <Typography variant="subtitle2" gutterBottom>Simulation Result</Typography>
                   <pre style={{ fontSize: 11, overflow: 'auto' }}>
@@ -1695,7 +1695,7 @@ export default function ConfigManagerPage() {
             Schedule config changes to deploy automatically at a specific time. Optionally enable auto-rollback if metrics drop.
           </Alert>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={8}>
+            <Grid size={{ xs: 12, sm: 8 }}>
               <TextField
                 fullWidth
                 label="Deployment Name"
@@ -1704,7 +1704,7 @@ export default function ConfigManagerPage() {
                 placeholder="e.g., Black Friday Promotion"
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <FormControl fullWidth>
                 <InputLabel>Config Type</InputLabel>
                 <Select
@@ -1718,7 +1718,7 @@ export default function ConfigManagerPage() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 multiline
@@ -1729,7 +1729,7 @@ export default function ConfigManagerPage() {
                 placeholder="Describe what this deployment will do..."
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label="Scheduled Date & Time"
@@ -1739,7 +1739,7 @@ export default function ConfigManagerPage() {
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -1750,7 +1750,7 @@ export default function ConfigManagerPage() {
               />
             </Grid>
             
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Divider sx={{ my: 1 }} />
               <Typography variant="subtitle2" color="primary" gutterBottom>
                 Feature Flag Changes
@@ -1761,7 +1761,7 @@ export default function ConfigManagerPage() {
             </Grid>
             
             {newDeployment.config_type === 'feature_flag' && (
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Grid container spacing={1}>
                   {featureFlags.slice(0, 12).map((flag) => (
                     <Grid item xs={6} sm={4} md={3} key={flag.feature_id}>
@@ -1793,14 +1793,14 @@ export default function ConfigManagerPage() {
               </Grid>
             )}
             
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Divider sx={{ my: 1 }} />
               <Typography variant="subtitle2" color="warning.main" gutterBottom>
                 Auto-Rollback Settings
               </Typography>
             </Grid>
             
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -1814,7 +1814,7 @@ export default function ConfigManagerPage() {
             
             {newDeployment.enable_auto_rollback && (
               <>
-                <Grid item xs={12} sm={4}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControl fullWidth size="small">
                     <InputLabel>Metric to Monitor</InputLabel>
                     <Select
@@ -1829,7 +1829,7 @@ export default function ConfigManagerPage() {
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <TextField
                     fullWidth
                     size="small"
@@ -1840,7 +1840,7 @@ export default function ConfigManagerPage() {
                     InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <TextField
                     fullWidth
                     size="small"
@@ -1944,17 +1944,17 @@ export default function ConfigManagerPage() {
               <Typography variant="subtitle2" gutterBottom>Template Configuration</Typography>
               <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: 'grey.50' }}>
                 <Grid container spacing={2}>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 6 }}>
                     <Typography variant="caption" color="text.secondary">Config Type</Typography>
                     <Typography variant="body2">{selectedTemplate.config_type.replace(/_/g, ' ')}</Typography>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 6 }}>
                     <Typography variant="caption" color="text.secondary">Default Duration</Typography>
                     <Typography variant="body2">
                       {selectedTemplate.default_duration_hours ? `${selectedTemplate.default_duration_hours} hours` : 'Permanent'}
                     </Typography>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <Typography variant="caption" color="text.secondary">Changes</Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
                       {Object.entries(selectedTemplate.config_changes).map(([key, value]) => (
@@ -1973,7 +1973,7 @@ export default function ConfigManagerPage() {
               
               <Typography variant="subtitle2" gutterBottom>Deployment Details</Typography>
               <Grid container spacing={2}>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     label="Deployment Name (optional)"
@@ -1982,7 +1982,7 @@ export default function ConfigManagerPage() {
                     data-testid="template-deployment-name"
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     fullWidth
                     label="Scheduled Date & Time"
@@ -1994,7 +1994,7 @@ export default function ConfigManagerPage() {
                     id="template-scheduled-at"
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControl fullWidth>
                     <InputLabel>Environment</InputLabel>
                     <Select

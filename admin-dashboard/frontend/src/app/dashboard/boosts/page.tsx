@@ -31,13 +31,13 @@ import {
   FormControlLabel,
   Tabs,
   Tab,
-  Grid,
   Paper,
   Divider,
   InputAdornment,
   Tooltip,
   Snackbar,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   Add,
   Edit,
@@ -415,28 +415,28 @@ export default function BoostsPage() {
       {/* Analytics Summary */}
       {analytics && (
         <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper sx={{ p: 2, textAlign: 'center' }}>
               <RocketLaunch sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
               <Typography variant="h4" fontWeight={600}>{analytics.active_boosts}</Typography>
               <Typography variant="body2" color="text.secondary">Active Boosts</Typography>
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper sx={{ p: 2, textAlign: 'center' }}>
               <AttachMoney sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
               <Typography variant="h4" fontWeight={600}>${analytics.total_revenue.toFixed(2)}</Typography>
               <Typography variant="body2" color="text.secondary">Total Revenue</Typography>
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper sx={{ p: 2, textAlign: 'center' }}>
               <LocalOffer sx={{ fontSize: 40, color: 'warning.main', mb: 1 }} />
               <Typography variant="h4" fontWeight={600}>{analytics.total_purchases}</Typography>
               <Typography variant="body2" color="text.secondary">Total Purchases</Typography>
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper sx={{ p: 2, textAlign: 'center' }}>
               <AccountBalance sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
               <Typography variant="h4" fontWeight={600}>
@@ -660,25 +660,25 @@ export default function BoostsPage() {
                       
                       <Grid container spacing={2}>
                         {method.country && (
-                          <Grid item xs={6}>
+                          <Grid size={{ xs: 6 }}>
                             <Typography variant="caption" color="text.secondary">Country</Typography>
                             <Typography variant="body2">{method.country}</Typography>
                           </Grid>
                         )}
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                           <Typography variant="caption" color="text.secondary">Currency</Typography>
                           <Typography variant="body2">{method.currency || 'USD'}</Typography>
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                           <Typography variant="caption" color="text.secondary">Exchange Rate</Typography>
                           <Typography variant="body2">1 USD = {method.exchange_rate} {method.currency || 'USD'}</Typography>
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                           <Typography variant="caption" color="text.secondary">Limits</Typography>
                           <Typography variant="body2">${method.min_amount} - ${method.max_amount}</Typography>
                         </Grid>
                         {method.networks && method.networks.length > 0 && (
-                          <Grid item xs={12}>
+                          <Grid size={{ xs: 12 }}>
                             <Typography variant="caption" color="text.secondary">Networks</Typography>
                             <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
                               {method.networks.map((network) => (

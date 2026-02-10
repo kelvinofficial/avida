@@ -8,7 +8,6 @@ import {
   Typography,
   Button,
   CircularProgress,
-  Grid,
   Chip,
   Paper,
   Alert,
@@ -42,6 +41,7 @@ import {
   Badge,
   Snackbar,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   Notifications,
   Email,
@@ -538,7 +538,7 @@ export default function SmartNotificationsPage() {
 
       {/* Quick Stats */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={6} sm={3} md={2}>
+        <Grid size={{ xs: 6, sm: 3, md: 2 }}>
           <Card sx={{ bgcolor: '#E8F5E9' }}>
             <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
               <Typography variant="h5" color="#2E7D32" fontWeight="bold">{analytics?.totals.sent || 0}</Typography>
@@ -546,7 +546,7 @@ export default function SmartNotificationsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} sm={3} md={2}>
+        <Grid size={{ xs: 6, sm: 3, md: 2 }}>
           <Card sx={{ bgcolor: '#E3F2FD' }}>
             <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
               <Typography variant="h5" color="#1976D2" fontWeight="bold">{analytics?.totals.delivery_rate?.toFixed(0) || 0}%</Typography>
@@ -554,7 +554,7 @@ export default function SmartNotificationsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} sm={3} md={2}>
+        <Grid size={{ xs: 6, sm: 3, md: 2 }}>
           <Card sx={{ bgcolor: '#FFF3E0' }}>
             <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
               <Typography variant="h5" color="#E65100" fontWeight="bold">{analytics?.totals.open_rate?.toFixed(0) || 0}%</Typography>
@@ -562,7 +562,7 @@ export default function SmartNotificationsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} sm={3} md={2}>
+        <Grid size={{ xs: 6, sm: 3, md: 2 }}>
           <Card sx={{ bgcolor: '#F3E5F5' }}>
             <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
               <Typography variant="h5" color="#7B1FA2" fontWeight="bold">{analytics?.totals.click_rate?.toFixed(0) || 0}%</Typography>
@@ -570,7 +570,7 @@ export default function SmartNotificationsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} sm={3} md={2}>
+        <Grid size={{ xs: 6, sm: 3, md: 2 }}>
           <Card sx={{ bgcolor: '#ECEFF1' }}>
             <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
               <Typography variant="h5" color="#455A64" fontWeight="bold">{abTests.filter(t => t.is_active).length}</Typography>
@@ -578,7 +578,7 @@ export default function SmartNotificationsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} sm={3} md={2}>
+        <Grid size={{ xs: 6, sm: 3, md: 2 }}>
           <Card sx={{ bgcolor: '#FBE9E7' }}>
             <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
               <Typography variant="h5" color="#BF360C" fontWeight="bold">{campaigns.filter(c => c.status === 'scheduled').length}</Typography>
@@ -707,7 +707,7 @@ export default function SmartNotificationsPage() {
 function SettingsTab({ config, updateConfig, saving }: { config: AdminConfig; updateConfig: (u: Partial<AdminConfig>) => void; saving: boolean }) {
   return (
     <Grid container spacing={3}>
-      <Grid item xs={12}>
+      <Grid size={{ xs: 12 }}>
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -724,7 +724,7 @@ function SettingsTab({ config, updateConfig, saving }: { config: AdminConfig; up
         </Card>
       </Grid>
 
-      <Grid item xs={12} md={6}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -738,7 +738,7 @@ function SettingsTab({ config, updateConfig, saving }: { config: AdminConfig; up
         </Card>
       </Grid>
 
-      <Grid item xs={12} md={6}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -752,7 +752,7 @@ function SettingsTab({ config, updateConfig, saving }: { config: AdminConfig; up
         </Card>
       </Grid>
 
-      <Grid item xs={12} md={6}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -767,7 +767,7 @@ function SettingsTab({ config, updateConfig, saving }: { config: AdminConfig; up
         </Card>
       </Grid>
 
-      <Grid item xs={12} md={6}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -839,7 +839,7 @@ function TriggersTab({ triggers, onAdd, onEdit, onDelete, onPreview }: { trigger
 function AnalyticsTab({ analytics }: { analytics: AnalyticsData }) {
   return (
     <Grid container spacing={3}>
-      <Grid item xs={12}>
+      <Grid size={{ xs: 12 }}>
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>Performance Overview</Typography>
@@ -863,7 +863,7 @@ function AnalyticsTab({ analytics }: { analytics: AnalyticsData }) {
         </Card>
       </Grid>
       {analytics.daily.length > 0 && (
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>Daily Breakdown</Typography>
@@ -918,7 +918,7 @@ function PreviewTab({ onPreview }: { onPreview: (title: string, body: string, ty
 
   return (
     <Grid container spacing={3}>
-      <Grid item xs={12} md={6}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>Notification Editor</Typography>
@@ -958,7 +958,7 @@ function PreviewTab({ onPreview }: { onPreview: (title: string, body: string, ty
         </Card>
       </Grid>
 
-      <Grid item xs={12} md={6}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Card sx={{ mb: 2 }}>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -1195,9 +1195,9 @@ function ABTestsTab({ tests, onAdd, onEdit, onEnd, onPreview }: { tests: ABTest[
                             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{body}</Typography>
                             <Divider sx={{ my: 1 }} />
                             <Grid container spacing={1}>
-                              <Grid item xs={6}><Typography variant="caption">Sent: {sent}</Typography></Grid>
-                              <Grid item xs={6}><Typography variant="caption">Conv: {converted}</Typography></Grid>
-                              <Grid item xs={12}>
+                              <Grid size={{ xs: 6 }}><Typography variant="caption">Sent: {sent}</Typography></Grid>
+                              <Grid size={{ xs: 6 }}><Typography variant="caption">Conv: {converted}</Typography></Grid>
+                              <Grid size={{ xs: 12 }}>
                                 <Typography variant="body2" fontWeight="bold" color="primary">
                                   Rate: {calcRate(sent, converted)}%
                                 </Typography>
@@ -1249,10 +1249,10 @@ function TriggerDialog({ open, onClose, trigger, onSave, saving, onPreview }: { 
       <DialogTitle>{trigger ? 'Edit Trigger' : 'Create Trigger'}</DialogTitle>
       <DialogContent>
         <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <TextField fullWidth label="Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <FormControl fullWidth>
               <InputLabel>Trigger Type</InputLabel>
               <Select value={formData.trigger_type} onChange={(e) => setFormData({ ...formData, trigger_type: e.target.value })} label="Trigger Type">
@@ -1262,10 +1262,10 @@ function TriggerDialog({ open, onClose, trigger, onSave, saving, onPreview }: { 
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12}><TextField fullWidth label="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} multiline rows={2} /></Grid>
-          <Grid item xs={12} md={6}><TextField fullWidth label="Title Template" value={formData.title_template} onChange={(e) => setFormData({ ...formData, title_template: e.target.value })} helperText="Use {{variable}}" /></Grid>
-          <Grid item xs={12} md={6}><TextField fullWidth label="Body Template" value={formData.body_template} onChange={(e) => setFormData({ ...formData, body_template: e.target.value })} /></Grid>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}><TextField fullWidth label="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} multiline rows={2} /></Grid>
+          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Title Template" value={formData.title_template} onChange={(e) => setFormData({ ...formData, title_template: e.target.value })} helperText="Use {{variable}}" /></Grid>
+          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Body Template" value={formData.body_template} onChange={(e) => setFormData({ ...formData, body_template: e.target.value })} /></Grid>
+          <Grid size={{ xs: 12 }}>
             <Typography variant="subtitle2" gutterBottom>Channels</Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
               {['push', 'email', 'in_app'].map((ch) => (
@@ -1274,10 +1274,10 @@ function TriggerDialog({ open, onClose, trigger, onSave, saving, onPreview }: { 
               ))}
             </Box>
           </Grid>
-          <Grid item xs={4}><TextField fullWidth type="number" label="Priority (1-10)" value={formData.priority} onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })} inputProps={{ min: 1, max: 10 }} /></Grid>
-          <Grid item xs={4}><TextField fullWidth type="number" label="Min Interval (min)" value={formData.min_interval_minutes} onChange={(e) => setFormData({ ...formData, min_interval_minutes: parseInt(e.target.value) })} /></Grid>
-          <Grid item xs={4}><TextField fullWidth type="number" label="Max Per Day" value={formData.max_per_day} onChange={(e) => setFormData({ ...formData, max_per_day: parseInt(e.target.value) })} /></Grid>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 4 }}><TextField fullWidth type="number" label="Priority (1-10)" value={formData.priority} onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })} inputProps={{ min: 1, max: 10 }} /></Grid>
+          <Grid size={{ xs: 4 }}><TextField fullWidth type="number" label="Min Interval (min)" value={formData.min_interval_minutes} onChange={(e) => setFormData({ ...formData, min_interval_minutes: parseInt(e.target.value) })} /></Grid>
+          <Grid size={{ xs: 4 }}><TextField fullWidth type="number" label="Max Per Day" value={formData.max_per_day} onChange={(e) => setFormData({ ...formData, max_per_day: parseInt(e.target.value) })} /></Grid>
+          <Grid size={{ xs: 12 }}>
             <FormControlLabel control={<Switch checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} />} label="Active" />
             <Button startIcon={<Preview />} onClick={() => onPreview(formData.title_template || '', formData.body_template || '')} sx={{ ml: 2 }}>Preview</Button>
           </Grid>
@@ -1348,8 +1348,8 @@ function TemplateEditorDialog({ open, onClose, template, onSave, saving }: { ope
       <DialogTitle>{template ? 'Edit Template' : 'Create Template'}</DialogTitle>
       <DialogContent>
         <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item xs={12} md={6}><TextField fullWidth label="Template Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} /></Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Template Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} /></Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
             <FormControl fullWidth>
               <InputLabel>Trigger Type</InputLabel>
               <Select value={formData.trigger_type} onChange={(e) => setFormData({ ...formData, trigger_type: e.target.value })} label="Trigger Type">
@@ -1357,12 +1357,12 @@ function TemplateEditorDialog({ open, onClose, template, onSave, saving }: { ope
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12}><TextField fullWidth label="Subject Line" value={formData.subject} onChange={(e) => setFormData({ ...formData, subject: e.target.value })} /></Grid>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}><TextField fullWidth label="Subject Line" value={formData.subject} onChange={(e) => setFormData({ ...formData, subject: e.target.value })} /></Grid>
+          <Grid size={{ xs: 12 }}>
             <TextField fullWidth label="HTML Content" value={formData.html_content} onChange={(e) => setFormData({ ...formData, html_content: e.target.value })} multiline rows={12}
               helperText="Use {{variable}} for dynamic content. Available: user_name, listing_title, price, currency, category_name, etc." />
           </Grid>
-          <Grid item xs={12}><FormControlLabel control={<Switch checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} />} label="Active" /></Grid>
+          <Grid size={{ xs: 12 }}><FormControlLabel control={<Switch checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} />} label="Active" /></Grid>
         </Grid>
       </DialogContent>
       <DialogActions>
@@ -1388,14 +1388,14 @@ function CampaignDialog({ open, onClose, campaign, onSave, saving, onPreview }: 
       <DialogTitle>{campaign ? 'Edit Campaign' : 'Schedule Campaign'}</DialogTitle>
       <DialogContent>
         <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item xs={12} md={6}><TextField fullWidth label="Campaign Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required /></Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Campaign Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required /></Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
             <TextField fullWidth label="Scheduled Time" type="datetime-local" value={formData.scheduled_at?.slice(0, 16)} onChange={(e) => setFormData({ ...formData, scheduled_at: e.target.value })} InputLabelProps={{ shrink: true }} />
           </Grid>
-          <Grid item xs={12}><TextField fullWidth label="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} multiline rows={2} /></Grid>
-          <Grid item xs={12} md={6}><TextField fullWidth label="Notification Title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} /></Grid>
-          <Grid item xs={12} md={6}><TextField fullWidth label="Notification Body" value={formData.body} onChange={(e) => setFormData({ ...formData, body: e.target.value })} /></Grid>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}><TextField fullWidth label="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} multiline rows={2} /></Grid>
+          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Notification Title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} /></Grid>
+          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Notification Body" value={formData.body} onChange={(e) => setFormData({ ...formData, body: e.target.value })} /></Grid>
+          <Grid size={{ xs: 12 }}>
             <Typography variant="subtitle2" gutterBottom>Channels</Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
               {['push', 'email', 'in_app'].map((ch) => (
@@ -1404,7 +1404,7 @@ function CampaignDialog({ open, onClose, campaign, onSave, saving, onPreview }: 
               ))}
             </Box>
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Typography variant="subtitle2" gutterBottom>Target Segments</Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
               {['all_users', 'active_buyers', 'active_sellers', 'inactive_users'].map((seg) => (
@@ -1413,7 +1413,7 @@ function CampaignDialog({ open, onClose, campaign, onSave, saving, onPreview }: 
               ))}
             </Box>
           </Grid>
-          <Grid item xs={12}><Button startIcon={<Preview />} onClick={() => onPreview(formData.title || '', formData.body || '')}>Preview Notification</Button></Grid>
+          <Grid size={{ xs: 12 }}><Button startIcon={<Preview />} onClick={() => onPreview(formData.title || '', formData.body || '')}>Preview Notification</Button></Grid>
         </Grid>
       </DialogContent>
       <DialogActions>
@@ -1440,8 +1440,8 @@ function ABTestDialog({ open, onClose, test, onSave, saving, onPreview }: { open
       <DialogTitle>{test ? 'Edit A/B Test' : 'Create A/B Test'}</DialogTitle>
       <DialogContent>
         <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item xs={12} md={6}><TextField fullWidth label="Test Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required /></Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Test Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required /></Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
             <FormControl fullWidth>
               <InputLabel>Trigger Type</InputLabel>
               <Select value={formData.trigger_type} onChange={(e) => setFormData({ ...formData, trigger_type: e.target.value })} label="Trigger Type">
@@ -1449,28 +1449,28 @@ function ABTestDialog({ open, onClose, test, onSave, saving, onPreview }: { open
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12}><TextField fullWidth label="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} /></Grid>
+          <Grid size={{ xs: 12 }}><TextField fullWidth label="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} /></Grid>
           
           {/* Control */}
-          <Grid item xs={12}><Typography variant="subtitle1" fontWeight="bold">Control (Original)</Typography></Grid>
-          <Grid item xs={12} md={6}><TextField fullWidth label="Control Title" value={formData.control_title} onChange={(e) => setFormData({ ...formData, control_title: e.target.value })} /></Grid>
-          <Grid item xs={12} md={6}><TextField fullWidth label="Control Body" value={formData.control_body} onChange={(e) => setFormData({ ...formData, control_body: e.target.value })} /></Grid>
+          <Grid size={{ xs: 12 }}><Typography variant="subtitle1" fontWeight="bold">Control (Original)</Typography></Grid>
+          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Control Title" value={formData.control_title} onChange={(e) => setFormData({ ...formData, control_title: e.target.value })} /></Grid>
+          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Control Body" value={formData.control_body} onChange={(e) => setFormData({ ...formData, control_body: e.target.value })} /></Grid>
           
           {/* Variant A */}
-          <Grid item xs={12}><Typography variant="subtitle1" fontWeight="bold">Variant A</Typography></Grid>
-          <Grid item xs={12} md={6}><TextField fullWidth label="Variant A Title" value={formData.variant_a_title} onChange={(e) => setFormData({ ...formData, variant_a_title: e.target.value })} /></Grid>
-          <Grid item xs={12} md={6}><TextField fullWidth label="Variant A Body" value={formData.variant_a_body} onChange={(e) => setFormData({ ...formData, variant_a_body: e.target.value })} /></Grid>
+          <Grid size={{ xs: 12 }}><Typography variant="subtitle1" fontWeight="bold">Variant A</Typography></Grid>
+          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Variant A Title" value={formData.variant_a_title} onChange={(e) => setFormData({ ...formData, variant_a_title: e.target.value })} /></Grid>
+          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Variant A Body" value={formData.variant_a_body} onChange={(e) => setFormData({ ...formData, variant_a_body: e.target.value })} /></Grid>
           
           {/* Variant B */}
-          <Grid item xs={12}><Typography variant="subtitle1" fontWeight="bold">Variant B (Optional)</Typography></Grid>
-          <Grid item xs={12} md={6}><TextField fullWidth label="Variant B Title" value={formData.variant_b_title} onChange={(e) => setFormData({ ...formData, variant_b_title: e.target.value })} /></Grid>
-          <Grid item xs={12} md={6}><TextField fullWidth label="Variant B Body" value={formData.variant_b_body} onChange={(e) => setFormData({ ...formData, variant_b_body: e.target.value })} /></Grid>
+          <Grid size={{ xs: 12 }}><Typography variant="subtitle1" fontWeight="bold">Variant B (Optional)</Typography></Grid>
+          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Variant B Title" value={formData.variant_b_title} onChange={(e) => setFormData({ ...formData, variant_b_title: e.target.value })} /></Grid>
+          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Variant B Body" value={formData.variant_b_body} onChange={(e) => setFormData({ ...formData, variant_b_body: e.target.value })} /></Grid>
           
           {/* Traffic Split */}
-          <Grid item xs={12}><Typography variant="subtitle1" fontWeight="bold">Traffic Split (%)</Typography></Grid>
-          <Grid item xs={4}><TextField fullWidth type="number" label="Control %" value={formData.control_percentage} onChange={(e) => setFormData({ ...formData, control_percentage: parseInt(e.target.value) })} /></Grid>
-          <Grid item xs={4}><TextField fullWidth type="number" label="Variant A %" value={formData.variant_a_percentage} onChange={(e) => setFormData({ ...formData, variant_a_percentage: parseInt(e.target.value) })} /></Grid>
-          <Grid item xs={4}><TextField fullWidth type="number" label="Variant B %" value={formData.variant_b_percentage} onChange={(e) => setFormData({ ...formData, variant_b_percentage: parseInt(e.target.value) })} /></Grid>
+          <Grid size={{ xs: 12 }}><Typography variant="subtitle1" fontWeight="bold">Traffic Split (%)</Typography></Grid>
+          <Grid size={{ xs: 4 }}><TextField fullWidth type="number" label="Control %" value={formData.control_percentage} onChange={(e) => setFormData({ ...formData, control_percentage: parseInt(e.target.value) })} /></Grid>
+          <Grid size={{ xs: 4 }}><TextField fullWidth type="number" label="Variant A %" value={formData.variant_a_percentage} onChange={(e) => setFormData({ ...formData, variant_a_percentage: parseInt(e.target.value) })} /></Grid>
+          <Grid size={{ xs: 4 }}><TextField fullWidth type="number" label="Variant B %" value={formData.variant_b_percentage} onChange={(e) => setFormData({ ...formData, variant_b_percentage: parseInt(e.target.value) })} /></Grid>
         </Grid>
       </DialogContent>
       <DialogActions>

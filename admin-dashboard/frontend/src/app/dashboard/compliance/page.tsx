@@ -18,7 +18,6 @@ import {
   Tabs,
   Tab,
   Snackbar,
-  Grid,
   Paper,
   Switch,
   FormControlLabel,
@@ -44,6 +43,7 @@ import {
   InputAdornment,
   TablePagination,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   Security,
   Assignment,
@@ -682,7 +682,7 @@ export default function CompliancePage() {
 
       {/* Dashboard Stats */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={6} sm={4} md={2}>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 2 }}>
               <Typography variant="h4" fontWeight={700} color="warning.main">
@@ -692,7 +692,7 @@ export default function CompliancePage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} sm={4} md={2}>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 2 }}>
               <Typography variant="h4" fontWeight={700} color="info.main">
@@ -702,7 +702,7 @@ export default function CompliancePage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} sm={4} md={2}>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 2 }}>
               <Typography variant="h4" fontWeight={700} color="success.main">
@@ -712,7 +712,7 @@ export default function CompliancePage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} sm={4} md={2}>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 2 }}>
               <Typography variant="h4" fontWeight={700} color="error.main">
@@ -722,7 +722,7 @@ export default function CompliancePage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} sm={4} md={2}>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 2 }}>
               <Typography variant="h4" fontWeight={700} color="error.main">
@@ -732,7 +732,7 @@ export default function CompliancePage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} sm={4} md={2}>
+        <Grid size={{ xs: 6, sm: 4, md: 2 }}>
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 2 }}>
               <Typography variant="h4" fontWeight={700}>
@@ -943,7 +943,7 @@ export default function CompliancePage() {
 
             <Box sx={{ mb: 3 }}>
               <Grid container spacing={2} alignItems="flex-end">
-                <Grid item xs={12} sm={6} md={4}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                   <TextField
                     fullWidth
                     label="User ID or Email"
@@ -1588,7 +1588,7 @@ export default function CompliancePage() {
 
             {sandboxConfig && (
               <Grid container spacing={3}>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Paper variant="outlined" sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                       <Box>
@@ -1612,19 +1612,19 @@ export default function CompliancePage() {
                     <Divider sx={{ my: 2 }} />
                     
                     <Grid container spacing={2}>
-                      <Grid item xs={6} sm={3}>
+                      <Grid size={{ xs: 6, sm: 3 }}>
                         <Typography variant="caption" color="text.secondary">Fake Users</Typography>
                         <Typography variant="h6">{sandboxConfig.fake_users_count}</Typography>
                       </Grid>
-                      <Grid item xs={6} sm={3}>
+                      <Grid size={{ xs: 6, sm: 3 }}>
                         <Typography variant="caption" color="text.secondary">Fake DSARs</Typography>
                         <Typography variant="h6">{sandboxConfig.fake_dsar_count}</Typography>
                       </Grid>
-                      <Grid item xs={6} sm={3}>
+                      <Grid size={{ xs: 6, sm: 3 }}>
                         <Typography variant="caption" color="text.secondary">Fake Incidents</Typography>
                         <Typography variant="h6">{sandboxConfig.fake_incidents_count}</Typography>
                       </Grid>
-                      <Grid item xs={6} sm={3}>
+                      <Grid size={{ xs: 6, sm: 3 }}>
                         <Typography variant="caption" color="text.secondary">PII Samples</Typography>
                         <Typography variant="h6">{sandboxConfig.include_pii_samples ? 'Yes' : 'No'}</Typography>
                       </Grid>
@@ -1711,7 +1711,7 @@ export default function CompliancePage() {
                   </Paper>
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Alert severity="info">
                     <Typography variant="body2">
                       <strong>How Sandbox Mode Works:</strong>
@@ -1737,29 +1737,29 @@ export default function CompliancePage() {
           {selectedDsar && (
             <Box sx={{ pt: 1 }}>
               <Grid container spacing={2}>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="caption" color="text.secondary">Request ID</Typography>
                   <Typography variant="body2" fontFamily="monospace">{selectedDsar.id}</Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="caption" color="text.secondary">Type</Typography>
                   <Typography variant="body2">
                     {REQUEST_TYPE_LABELS[selectedDsar.request_type]}
                   </Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="caption" color="text.secondary">User</Typography>
                   <Typography variant="body2">{selectedDsar.user_name || selectedDsar.user_email}</Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="caption" color="text.secondary">User ID</Typography>
                   <Typography variant="body2" fontFamily="monospace">{selectedDsar.user_id}</Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="caption" color="text.secondary">Regulation</Typography>
                   <Typography variant="body2">{selectedDsar.regulation.toUpperCase()}</Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="caption" color="text.secondary">Status</Typography>
                   <Chip
                     label={selectedDsar.status.replace('_', ' ')}
@@ -1767,15 +1767,15 @@ export default function CompliancePage() {
                     color={STATUS_COLORS[selectedDsar.status]}
                   />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="caption" color="text.secondary">Submitted</Typography>
                   <Typography variant="body2">{formatDate(selectedDsar.submitted_at)}</Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="caption" color="text.secondary">Deadline</Typography>
                   <Typography variant="body2">{formatDate(selectedDsar.deadline)}</Typography>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="caption" color="text.secondary">Data Categories</Typography>
                   <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}>
                     {selectedDsar.data_categories.map((c) => (
@@ -1784,13 +1784,13 @@ export default function CompliancePage() {
                   </Box>
                 </Grid>
                 {selectedDsar.reason && (
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <Typography variant="caption" color="text.secondary">Reason</Typography>
                     <Typography variant="body2">{selectedDsar.reason}</Typography>
                   </Grid>
                 )}
                 {selectedDsar.notes && (
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <Typography variant="caption" color="text.secondary">Notes</Typography>
                     <Typography variant="body2">{selectedDsar.notes}</Typography>
                   </Grid>
@@ -1870,7 +1870,7 @@ export default function CompliancePage() {
           {selectedRetention && (
             <Box sx={{ pt: 1 }}>
               <Grid container spacing={2}>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <FormControl fullWidth size="small">
                     <InputLabel>Data Category</InputLabel>
                     <Select
@@ -1884,7 +1884,7 @@ export default function CompliancePage() {
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <TextField
                     fullWidth
                     size="small"
@@ -1894,7 +1894,7 @@ export default function CompliancePage() {
                     onChange={(e) => setSelectedRetention({ ...selectedRetention, retention_days: parseInt(e.target.value) || 0 })}
                   />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <TextField
                     fullWidth
                     size="small"
@@ -1904,7 +1904,7 @@ export default function CompliancePage() {
                     placeholder="e.g., DE, KE, NG"
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     size="small"
@@ -1915,7 +1915,7 @@ export default function CompliancePage() {
                     rows={2}
                   />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -1926,7 +1926,7 @@ export default function CompliancePage() {
                     label="Auto Purge"
                   />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -1977,15 +1977,15 @@ export default function CompliancePage() {
               </Typography>
               
               <Grid container spacing={2}>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="caption" color="text.secondary">Affected Users</Typography>
                   <Typography variant="body2">{selectedIncident.affected_users.toLocaleString()}</Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="caption" color="text.secondary">Discovered</Typography>
                   <Typography variant="body2">{formatDate(selectedIncident.discovered_at)}</Typography>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="caption" color="text.secondary">Affected Data Types</Typography>
                   <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}>
                     {selectedIncident.affected_data.map((d) => (

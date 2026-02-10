@@ -31,7 +31,6 @@ import {
   Tabs,
   Tab,
   Paper,
-  Grid,
   Tooltip,
   Badge,
   Divider,
@@ -41,6 +40,7 @@ import {
   ListItemAvatar,
   InputAdornment,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   Refresh,
   Search,
@@ -448,7 +448,7 @@ export default function ModerationPage() {
         
         {stats && (
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={6} sm={3} md={2}>
+            <Grid size={{ xs: 6, sm: 3, md: 2 }}>
               <Card sx={{ bgcolor: 'error.light', color: 'error.contrastText' }}>
                 <CardContent sx={{ py: 1.5 }}>
                   <Typography variant="h4" fontWeight="bold">{stats.flags.pending}</Typography>
@@ -456,7 +456,7 @@ export default function ModerationPage() {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={6} sm={3} md={2}>
+            <Grid size={{ xs: 6, sm: 3, md: 2 }}>
               <Card sx={{ bgcolor: 'warning.light', color: 'warning.contrastText' }}>
                 <CardContent sx={{ py: 1.5 }}>
                   <Typography variant="h4" fontWeight="bold">{stats.reports.pending}</Typography>
@@ -464,7 +464,7 @@ export default function ModerationPage() {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={6} sm={3} md={2}>
+            <Grid size={{ xs: 6, sm: 3, md: 2 }}>
               <Card sx={{ bgcolor: 'info.light', color: 'info.contrastText' }}>
                 <CardContent sx={{ py: 1.5 }}>
                   <Typography variant="h4" fontWeight="bold">{stats.users.muted}</Typography>
@@ -472,7 +472,7 @@ export default function ModerationPage() {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={6} sm={3} md={2}>
+            <Grid size={{ xs: 6, sm: 3, md: 2 }}>
               <Card sx={{ bgcolor: 'secondary.light', color: 'secondary.contrastText' }}>
                 <CardContent sx={{ py: 1.5 }}>
                   <Typography variant="h4" fontWeight="bold">{stats.users.banned}</Typography>
@@ -480,7 +480,7 @@ export default function ModerationPage() {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={6} sm={3} md={2}>
+            <Grid size={{ xs: 6, sm: 3, md: 2 }}>
               <Card>
                 <CardContent sx={{ py: 1.5 }}>
                   <Typography variant="h4" fontWeight="bold">{stats.conversations.frozen}</Typography>
@@ -488,7 +488,7 @@ export default function ModerationPage() {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={6} sm={3} md={2}>
+            <Grid size={{ xs: 6, sm: 3, md: 2 }}>
               <Card>
                 <CardContent sx={{ py: 1.5 }}>
                   <Typography variant="h4" fontWeight="bold">{stats.actions_24h}</Typography>
@@ -995,7 +995,7 @@ export default function ModerationPage() {
             <Typography variant="h6" gutterBottom>Moderation Settings</Typography>
             
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper sx={{ p: 2 }}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                     AI Moderation
@@ -1026,7 +1026,7 @@ export default function ModerationPage() {
                 </Paper>
               </Grid>
               
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper sx={{ p: 2 }}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                     Auto-Moderation Rules
@@ -1056,7 +1056,7 @@ export default function ModerationPage() {
                 </Paper>
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Paper sx={{ p: 2 }}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                     Scam Keywords ({config.rules.scam_keywords?.length || 0})
@@ -1093,7 +1093,7 @@ export default function ModerationPage() {
           {selectedConversation && (
             <Grid container spacing={2}>
               {/* Users Info */}
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Paper sx={{ p: 2 }}>
                   <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                     Participants
@@ -1211,7 +1211,7 @@ export default function ModerationPage() {
               </Grid>
               
               {/* Messages */}
-              <Grid item xs={12} md={8}>
+              <Grid size={{ xs: 12, md: 8 }}>
                 <Paper sx={{ p: 2, maxHeight: 500, overflow: 'auto' }}>
                   <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                     Messages ({selectedConversation.messages?.length || 0})

@@ -18,7 +18,6 @@ import {
   Tabs,
   Tab,
   Snackbar,
-  Grid,
   Paper,
   Switch,
   FormControlLabel,
@@ -37,6 +36,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   LineChart,
   Line,
@@ -328,7 +328,7 @@ export default function AIPersonalizationPage() {
       {/* Settings Tab */}
       {tabValue === 0 && config && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -394,7 +394,7 @@ export default function AIPersonalizationPage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -473,7 +473,7 @@ export default function AIPersonalizationPage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>User Context Settings</Typography>
@@ -523,7 +523,7 @@ export default function AIPersonalizationPage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 variant="contained"
@@ -542,7 +542,7 @@ export default function AIPersonalizationPage() {
       {/* Preview & Test Tab */}
       {tabValue === 1 && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={5}>
+          <Grid size={{ xs: 12, md: 5 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -612,7 +612,7 @@ export default function AIPersonalizationPage() {
                   size="small"
                 />
                 <Grid container spacing={2}>
-                  <Grid item xs={4}>
+                  <Grid size={{ xs: 4 }}>
                     <TextField
                       fullWidth
                       label="Currency"
@@ -621,7 +621,7 @@ export default function AIPersonalizationPage() {
                       size="small"
                     />
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={{ xs: 4 }}>
                     <TextField
                       fullWidth
                       label="Price"
@@ -630,7 +630,7 @@ export default function AIPersonalizationPage() {
                       size="small"
                     />
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={{ xs: 4 }}>
                     <TextField
                       fullWidth
                       label="Old Price"
@@ -665,11 +665,11 @@ export default function AIPersonalizationPage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={7}>
+          <Grid size={{ xs: 12, md: 7 }}>
             {previewResult ? (
               <Grid container spacing={2}>
                 {/* Original */}
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
@@ -698,7 +698,7 @@ export default function AIPersonalizationPage() {
                 </Grid>
 
                 {/* Personalized - Push Preview */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Card sx={{ bgcolor: '#1a1a1a', color: 'white' }}>
                     <CardContent>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -752,7 +752,7 @@ export default function AIPersonalizationPage() {
                 </Grid>
 
                 {/* Personalized - Email Preview */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Card>
                     <CardContent>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -777,7 +777,7 @@ export default function AIPersonalizationPage() {
                 </Grid>
 
                 {/* Character counts */}
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Alert severity="info" icon={<Speed />}>
                     Title: {previewResult.personalized.title.length}/{config?.max_title_length} chars |
                     Body: {previewResult.personalized.body.length}/{config?.max_body_length} chars
@@ -860,7 +860,7 @@ export default function AIPersonalizationPage() {
       {tabValue === 3 && analytics && (
         <Grid container spacing={3}>
           {/* Stats Cards */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card sx={{ bgcolor: 'primary.light', color: 'white' }}>
               <CardContent>
                 <Typography variant="overline">Total Personalizations</Typography>
@@ -871,7 +871,7 @@ export default function AIPersonalizationPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography variant="overline" color="text.secondary">AI Status</Typography>
@@ -884,7 +884,7 @@ export default function AIPersonalizationPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography variant="overline" color="text.secondary">Trigger Types Used</Typography>
@@ -896,7 +896,7 @@ export default function AIPersonalizationPage() {
           </Grid>
 
           {/* Chart */}
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -921,7 +921,7 @@ export default function AIPersonalizationPage() {
           </Grid>
 
           {/* Pie Chart */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -953,7 +953,7 @@ export default function AIPersonalizationPage() {
           </Grid>
 
           {/* Table */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>

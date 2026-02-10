@@ -33,12 +33,12 @@ import {
   Tab,
   Switch,
   FormControlLabel,
-  Grid,
   Divider,
   Paper,
   InputAdornment,
   Tooltip,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   LocationOn,
   Link as LinkIcon,
@@ -698,7 +698,7 @@ export default function SettingsPage() {
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -709,7 +709,7 @@ export default function SettingsPage() {
                         label="Allow New Registrations"
                       />
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -720,7 +720,7 @@ export default function SettingsPage() {
                         label="Require Email Verification"
                       />
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -731,7 +731,7 @@ export default function SettingsPage() {
                         label="Require Phone Verification"
                       />
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -751,7 +751,7 @@ export default function SettingsPage() {
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <TextField
                         label="Minimum Password Length"
                         type="number"
@@ -761,7 +761,7 @@ export default function SettingsPage() {
                         size="small"
                       />
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -772,7 +772,7 @@ export default function SettingsPage() {
                         label="Require Uppercase Letter"
                       />
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -783,7 +783,7 @@ export default function SettingsPage() {
                         label="Require Number"
                       />
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -803,7 +803,7 @@ export default function SettingsPage() {
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <TextField
                         label="Session Timeout (minutes)"
                         type="number"
@@ -813,7 +813,7 @@ export default function SettingsPage() {
                         size="small"
                       />
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <TextField
                         label="Max Login Attempts"
                         type="number"
@@ -823,7 +823,7 @@ export default function SettingsPage() {
                         size="small"
                       />
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <TextField
                         label="Lockout Duration (minutes)"
                         type="number"
@@ -833,7 +833,7 @@ export default function SettingsPage() {
                         size="small"
                       />
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <FormControlLabel
                         control={
                           <Switch

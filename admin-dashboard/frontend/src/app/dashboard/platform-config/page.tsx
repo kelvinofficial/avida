@@ -18,7 +18,6 @@ import {
   Tabs,
   Tab,
   Snackbar,
-  Grid,
   Paper,
   Switch,
   FormControlLabel,
@@ -45,6 +44,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   AttachMoney,
   Palette,
@@ -465,7 +465,7 @@ export default function PlatformConfigPage() {
       {/* Currency Tab */}
       {tabValue === 0 && config && (
         <Grid container spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -576,7 +576,7 @@ export default function PlatformConfigPage() {
       {tabValue === 1 && config && (
         <Grid container spacing={3}>
           {/* Logo Upload Cards */}
-          <Grid item xs={12} lg={7}>
+          <Grid size={{ xs: 12, lg: 7 }}>
             <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
               Upload & Manage Logos
             </Typography>
@@ -665,7 +665,7 @@ export default function PlatformConfigPage() {
           </Grid>
 
           {/* Preview Panel */}
-          <Grid item xs={12} lg={5}>
+          <Grid size={{ xs: 12, lg: 5 }}>
             <Card sx={{ position: 'sticky', top: 20 }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -928,7 +928,7 @@ export default function PlatformConfigPage() {
       {/* Legal Pages Tab */}
       {tabValue === 2 && (
         <Grid container spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -1072,7 +1072,7 @@ export default function PlatformConfigPage() {
       {tabValue === 3 && config && (
         <Grid container spacing={3}>
           {/* Social Links */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Social Media Links</Typography>
@@ -1145,7 +1145,7 @@ export default function PlatformConfigPage() {
           </Grid>
 
           {/* App Store Links */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>App Store Links</Typography>
@@ -1218,7 +1218,7 @@ export default function PlatformConfigPage() {
         <DialogTitle>Add Currency</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={4}>
+            <Grid size={{ xs: 4 }}>
               <TextField
                 fullWidth
                 label="Code"
@@ -1228,7 +1228,7 @@ export default function PlatformConfigPage() {
                 inputProps={{ maxLength: 3 }}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={{ xs: 4 }}>
               <TextField
                 fullWidth
                 label="Symbol"
@@ -1237,7 +1237,7 @@ export default function PlatformConfigPage() {
                 onChange={(e) => setNewCurrency({ ...newCurrency, symbol: e.target.value })}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={{ xs: 4 }}>
               <TextField
                 fullWidth
                 label="Precision"
@@ -1247,7 +1247,7 @@ export default function PlatformConfigPage() {
                 inputProps={{ min: 0, max: 4 }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Name"
@@ -1256,7 +1256,7 @@ export default function PlatformConfigPage() {
                 onChange={(e) => setNewCurrency({ ...newCurrency, name: e.target.value })}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField
                 fullWidth
                 label="FX Rate to Base"
@@ -1266,7 +1266,7 @@ export default function PlatformConfigPage() {
                 inputProps={{ step: 0.0001 }}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Rounding Rule</InputLabel>
                 <Select
@@ -1280,7 +1280,7 @@ export default function PlatformConfigPage() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Countries (comma separated)"
@@ -1308,7 +1308,7 @@ export default function PlatformConfigPage() {
         <DialogTitle>{editingLegalPage ? 'Edit Legal Page' : 'Create Legal Page'}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 label="Title"
@@ -1316,7 +1316,7 @@ export default function PlatformConfigPage() {
                 onChange={(e) => setEditingLegalPage({ ...editingLegalPage!, title: e.target.value })}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 label="Slug"
@@ -1325,7 +1325,7 @@ export default function PlatformConfigPage() {
                 helperText="URL-friendly identifier"
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Content (HTML)"
@@ -1336,7 +1336,7 @@ export default function PlatformConfigPage() {
                 helperText="Enter HTML content. A WYSIWYG editor can be integrated for better UX."
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -1347,7 +1347,7 @@ export default function PlatformConfigPage() {
                 label="Requires User Acceptance"
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControlLabel
                 control={
                   <Switch

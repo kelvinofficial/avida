@@ -7,7 +7,6 @@ import {
   CardContent,
   Typography,
   Button,
-  Grid,
   CircularProgress,
   Alert,
   TextField,
@@ -34,6 +33,7 @@ import {
   Tooltip,
   Badge,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   Add,
   Delete,
@@ -458,7 +458,7 @@ function SegmentBuilderDialog({
       </DialogTitle>
       <DialogContent>
         <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <TextField
               fullWidth
               label="Segment Name"
@@ -468,7 +468,7 @@ function SegmentBuilderDialog({
               required
             />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <FormControl fullWidth>
               <InputLabel>Logic</InputLabel>
               <Select value={logic} onChange={(e) => setLogic(e.target.value as 'AND' | 'OR')} label="Logic" disabled={segment?.is_predefined}>
@@ -477,7 +477,7 @@ function SegmentBuilderDialog({
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <TextField
               fullWidth
               label="Description"
@@ -517,7 +517,7 @@ function SegmentBuilderDialog({
                 )}
                 <Paper sx={{ p: 2, bgcolor: '#fafafa' }} variant="outlined">
                   <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={12} sm={4}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                       <FormControl fullWidth size="small">
                         <InputLabel>Field</InputLabel>
                         <Select
@@ -533,7 +533,7 @@ function SegmentBuilderDialog({
                         </Select>
                       </FormControl>
                     </Grid>
-                    <Grid item xs={12} sm={3}>
+                    <Grid size={{ xs: 12, sm: 3 }}>
                       <FormControl fullWidth size="small">
                         <InputLabel>Operator</InputLabel>
                         <Select
@@ -553,7 +553,7 @@ function SegmentBuilderDialog({
                         </Select>
                       </FormControl>
                     </Grid>
-                    <Grid item xs={12} sm={4}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                       {rule.operator === 'exists' || rule.operator === 'not_exists' ? (
                         <Typography color="text.secondary" sx={{ py: 1 }}>No value needed</Typography>
                       ) : rule.operator === 'between' ? (
@@ -593,7 +593,7 @@ function SegmentBuilderDialog({
                       )}
                     </Grid>
                     {!segment?.is_predefined && (
-                      <Grid item xs={12} sm={1}>
+                      <Grid size={{ xs: 12, sm: 1 }}>
                         <IconButton color="error" onClick={() => removeRule(index)} disabled={rules.length <= 1}>
                           <Delete />
                         </IconButton>

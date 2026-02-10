@@ -27,6 +27,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid2';
 import {
   LineChart,
   Line,
@@ -320,7 +321,7 @@ export default function NotificationAnalyticsPage() {
       {/* Tab 0: Trends Chart */}
       {tabValue === 0 && (
         <Grid container spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Notification Trends</Typography>
@@ -340,7 +341,7 @@ export default function NotificationAnalyticsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Daily Performance</Typography>
@@ -358,7 +359,7 @@ export default function NotificationAnalyticsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Engagement Rate Trend</Typography>
@@ -386,7 +387,7 @@ export default function NotificationAnalyticsPage() {
       {/* Tab 1: By Trigger Type */}
       {tabValue === 1 && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Volume by Trigger Type</Typography>
@@ -405,7 +406,7 @@ export default function NotificationAnalyticsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Engagement by Trigger</Typography>
@@ -423,7 +424,7 @@ export default function NotificationAnalyticsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Trigger Performance Table</Typography>
@@ -474,7 +475,7 @@ export default function NotificationAnalyticsPage() {
       {/* Tab 2: By Channel */}
       {tabValue === 2 && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Distribution by Channel</Typography>
@@ -498,7 +499,7 @@ export default function NotificationAnalyticsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Channel Performance</Typography>
@@ -518,7 +519,7 @@ export default function NotificationAnalyticsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Grid container spacing={2}>
               {byChannel.map((channel) => (
                 <Grid item xs={12} md={4} key={channel.channel}>
@@ -531,19 +532,19 @@ export default function NotificationAnalyticsPage() {
                         <Typography variant="h6" textTransform="capitalize">{channel.channel}</Typography>
                       </Box>
                       <Grid container spacing={1}>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                           <Typography variant="body2" color="text.secondary">Sent</Typography>
                           <Typography variant="h6">{channel.sent.toLocaleString()}</Typography>
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                           <Typography variant="body2" color="text.secondary">Delivered</Typography>
                           <Typography variant="h6">{channel.delivered.toLocaleString()}</Typography>
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                           <Typography variant="body2" color="text.secondary">Delivery Rate</Typography>
                           <Typography variant="h6" color="success.main">{channel.delivery_rate}%</Typography>
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                           <Typography variant="body2" color="text.secondary">Open Rate</Typography>
                           <Typography variant="h6" color="warning.main">{channel.open_rate}%</Typography>
                         </Grid>
@@ -560,7 +561,7 @@ export default function NotificationAnalyticsPage() {
       {/* Tab 3: Conversions */}
       {tabValue === 3 && conversions && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Conversion Overview</Typography>
@@ -571,11 +572,11 @@ export default function NotificationAnalyticsPage() {
                   <Typography variant="body1" color="text.secondary">Total Conversions</Typography>
                 </Box>
                 <Grid container spacing={2}>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 6 }}>
                     <Typography variant="body2" color="text.secondary">Total Value</Typography>
                     <Typography variant="h6" color="success.main">€{conversions.total_value.toFixed(2)}</Typography>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 6 }}>
                     <Typography variant="body2" color="text.secondary">Avg Time to Convert</Typography>
                     <Typography variant="h6">{Math.round(conversions.avg_time_to_convert_seconds / 60)} min</Typography>
                   </Grid>
@@ -583,7 +584,7 @@ export default function NotificationAnalyticsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Conversions by Type</Typography>

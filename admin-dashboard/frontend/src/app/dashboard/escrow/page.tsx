@@ -29,7 +29,6 @@ import {
   FormControlLabel,
   Tabs,
   Tab,
-  Grid,
   Alert,
   Snackbar,
   CircularProgress,
@@ -43,6 +42,7 @@ import {
   ListItemText,
   Paper,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   CheckCircle,
   Cancel,
@@ -281,7 +281,7 @@ export default function EscrowPage() {
       
       {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -296,7 +296,7 @@ export default function EscrowPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -311,7 +311,7 @@ export default function EscrowPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -326,7 +326,7 @@ export default function EscrowPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -604,7 +604,7 @@ export default function EscrowPage() {
           <Box sx={{ p: 2 }}>
             <Grid container spacing={3}>
               {/* Commission Settings */}
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="h6" gutterBottom>Commission Settings</Typography>
@@ -632,7 +632,7 @@ export default function EscrowPage() {
               </Grid>
               
               {/* VAT Settings */}
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="h6" gutterBottom>VAT Configuration</Typography>
@@ -673,7 +673,7 @@ export default function EscrowPage() {
               </Grid>
               
               {/* Transport Pricing */}
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="h6" gutterBottom>Transport Pricing</Typography>

@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid,
   Tabs,
   Tab,
   Button,
@@ -40,6 +39,7 @@ import {
   FormControlLabel,
   Slider,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   GroupWork,
   TrendingUp,
@@ -471,7 +471,7 @@ export default function CohortAnalyticsPage() {
 
       {/* Key Metrics Cards */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card data-testid="metric-total-users">
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -486,7 +486,7 @@ export default function CohortAnalyticsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card data-testid="metric-mau">
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -501,7 +501,7 @@ export default function CohortAnalyticsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card data-testid="metric-dau-mau">
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -516,7 +516,7 @@ export default function CohortAnalyticsPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card data-testid="metric-transactions">
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -703,7 +703,7 @@ export default function CohortAnalyticsPage() {
 
             {/* Segment Selection */}
             <Grid container spacing={2} sx={{ mb: 3 }}>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="subtitle2" gutterBottom>Select Segments to Compare</Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   {[
@@ -732,7 +732,7 @@ export default function CohortAnalyticsPage() {
                   ))}
                 </Box>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="subtitle2" gutterBottom>Time Period</Typography>
                 <FormControl fullWidth size="small">
                   <Select
@@ -747,7 +747,7 @@ export default function CohortAnalyticsPage() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="subtitle2" gutterBottom>Selected Segments</Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                   {selectedSegments.map((seg) => (
@@ -856,7 +856,7 @@ export default function CohortAnalyticsPage() {
       {/* Tab 2: Conversion Funnel */}
       {activeTab === 2 && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Conversion Funnel</Typography>
@@ -890,7 +890,7 @@ export default function CohortAnalyticsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Funnel Chart</Typography>
@@ -912,7 +912,7 @@ export default function CohortAnalyticsPage() {
       {/* Tab 3: Revenue & LTV */}
       {activeTab === 3 && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography color="text.secondary" variant="body2">Total Revenue</Typography>
@@ -922,7 +922,7 @@ export default function CohortAnalyticsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography color="text.secondary" variant="body2">Average LTV</Typography>
@@ -932,7 +932,7 @@ export default function CohortAnalyticsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography color="text.secondary" variant="body2">Cohorts Analyzed</Typography>
@@ -942,7 +942,7 @@ export default function CohortAnalyticsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Revenue by Cohort</Typography>
@@ -1130,7 +1130,7 @@ export default function CohortAnalyticsPage() {
       {/* Tab 6: Weekly Reports */}
       {activeTab === 6 && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Generate Weekly Report</Typography>
@@ -1176,26 +1176,26 @@ export default function CohortAnalyticsPage() {
             </Card>
           </Grid>
           
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Latest Report Summary</Typography>
                 {weeklyReport ? (
                   <Box>
                     <Grid container spacing={2}>
-                      <Grid item xs={6}>
+                      <Grid size={{ xs: 6 }}>
                         <Typography variant="body2" color="text.secondary">Total Users</Typography>
                         <Typography variant="h6">{weeklyReport.metrics_summary?.total_users?.toLocaleString()}</Typography>
                       </Grid>
-                      <Grid item xs={6}>
+                      <Grid size={{ xs: 6 }}>
                         <Typography variant="body2" color="text.secondary">MAU</Typography>
                         <Typography variant="h6">{weeklyReport.metrics_summary?.mau?.toLocaleString()}</Typography>
                       </Grid>
-                      <Grid item xs={6}>
+                      <Grid size={{ xs: 6 }}>
                         <Typography variant="body2" color="text.secondary">Avg D7 Retention</Typography>
                         <Typography variant="h6">{weeklyReport.retention_highlights?.avg_d7_retention}%</Typography>
                       </Grid>
-                      <Grid item xs={6}>
+                      <Grid size={{ xs: 6 }}>
                         <Typography variant="body2" color="text.secondary">Conversion Rate</Typography>
                         <Typography variant="h6">{weeklyReport.funnel_summary?.overall_conversion}%</Typography>
                       </Grid>

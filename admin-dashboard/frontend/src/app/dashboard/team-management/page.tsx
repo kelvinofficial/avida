@@ -18,7 +18,6 @@ import {
   Tabs,
   Tab,
   Snackbar,
-  Grid,
   Paper,
   Switch,
   FormControlLabel,
@@ -44,6 +43,7 @@ import {
   ListItemText,
   ListItemSecondaryAction,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   Group,
   Security,
@@ -763,7 +763,7 @@ export default function TeamManagementPage() {
 
       {/* Dashboard Summary Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -776,7 +776,7 @@ export default function TeamManagementPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -789,7 +789,7 @@ export default function TeamManagementPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -802,7 +802,7 @@ export default function TeamManagementPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -840,7 +840,7 @@ export default function TeamManagementPage() {
       {tabValue === 0 && dashboard && (
         <Grid container spacing={3}>
           {/* Tasks by Priority */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Tasks by Priority</Typography>
@@ -862,7 +862,7 @@ export default function TeamManagementPage() {
           </Grid>
 
           {/* Tasks by Team */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Open Tasks by Team</Typography>
@@ -889,7 +889,7 @@ export default function TeamManagementPage() {
           </Grid>
 
           {/* Recent Activity */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Recent Activity</Typography>
@@ -1285,7 +1285,7 @@ export default function TeamManagementPage() {
             </Box>
 
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                     <PhoneCallback sx={{ mr: 1, verticalAlign: 'middle' }} />
@@ -1315,7 +1315,7 @@ export default function TeamManagementPage() {
                 </Paper>
               </Grid>
               
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                     <AccessTime sx={{ mr: 1, verticalAlign: 'middle' }} />
@@ -1333,7 +1333,7 @@ export default function TeamManagementPage() {
                 </Paper>
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Alert severity="info">
                   <Typography variant="body2">
                     <strong>Auto-routing:</strong> Tasks will be automatically assigned to available team members based on their shift schedule and on-call status.
@@ -1366,7 +1366,7 @@ export default function TeamManagementPage() {
             </Alert>
 
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                     <School sx={{ mr: 1, verticalAlign: 'middle' }} />
@@ -1386,7 +1386,7 @@ export default function TeamManagementPage() {
                 </Paper>
               </Grid>
               
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                     Training Progress
@@ -1436,7 +1436,7 @@ export default function TeamManagementPage() {
             </Box>
 
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                     <VpnKey sx={{ mr: 1, verticalAlign: 'middle' }} />
@@ -1479,7 +1479,7 @@ export default function TeamManagementPage() {
                 </Paper>
               </Grid>
               
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                     Security Overview
@@ -1505,7 +1505,7 @@ export default function TeamManagementPage() {
                 </Paper>
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Alert severity="info">
                   <Typography variant="body2">
                     <strong>Recommendation:</strong> Enable 2FA for all admin and finance roles to protect sensitive operations.
@@ -1529,7 +1529,7 @@ export default function TeamManagementPage() {
             <Typography variant="h6" gutterBottom>Team Settings</Typography>
             
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>SLA Timers (minutes)</Typography>
                   {Object.entries(settings.sla_timers || {}).map(([priority, minutes]) => (
@@ -1541,7 +1541,7 @@ export default function TeamManagementPage() {
                 </Paper>
               </Grid>
               
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Approval Thresholds</Typography>
                   <Box sx={{ py: 1 }}>
@@ -1555,7 +1555,7 @@ export default function TeamManagementPage() {
                 </Paper>
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Notifications</Typography>
                   <FormControlLabel
@@ -1630,7 +1630,7 @@ export default function TeamManagementPage() {
         <DialogTitle>Add Team Member</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Name"
@@ -1639,7 +1639,7 @@ export default function TeamManagementPage() {
                 data-testid="member-name-input"
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Email"
@@ -1649,7 +1649,7 @@ export default function TeamManagementPage() {
                 data-testid="member-email-input"
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControl fullWidth>
                 <InputLabel>Role</InputLabel>
                 <Select
@@ -1664,7 +1664,7 @@ export default function TeamManagementPage() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField
                 fullWidth
                 label="Department"
@@ -1672,7 +1672,7 @@ export default function TeamManagementPage() {
                 onChange={(e) => setNewMember({ ...newMember, department: e.target.value })}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField
                 fullWidth
                 label="Phone"
@@ -1695,7 +1695,7 @@ export default function TeamManagementPage() {
         <DialogTitle>Create Task</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Title"
@@ -1704,7 +1704,7 @@ export default function TeamManagementPage() {
                 data-testid="task-title-input"
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 multiline
@@ -1715,7 +1715,7 @@ export default function TeamManagementPage() {
                 data-testid="task-description-input"
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Type</InputLabel>
                 <Select
@@ -1727,7 +1727,7 @@ export default function TeamManagementPage() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Priority</InputLabel>
                 <Select
@@ -1739,7 +1739,7 @@ export default function TeamManagementPage() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Tags (comma-separated)"

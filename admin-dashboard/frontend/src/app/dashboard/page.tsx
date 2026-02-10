@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 import {
   Box,
-  Grid,
   Card,
   CardContent,
   Typography,
   CircularProgress,
   Chip,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   People,
   Inventory,
@@ -130,7 +130,7 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="Total Users"
             value={analytics?.users.total || 0}
@@ -140,7 +140,7 @@ export default function DashboardPage() {
             change={`+${analytics?.users.new_30d || 0}`}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="Active Listings"
             value={analytics?.listings.active || 0}
@@ -150,7 +150,7 @@ export default function DashboardPage() {
             change={`+${analytics?.listings.new_7d || 0}`}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="Pending Reports"
             value={analytics?.reports.pending || 0}
@@ -159,7 +159,7 @@ export default function DashboardPage() {
             color="#FF9800"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="Open Tickets"
             value={analytics?.tickets.open || 0}
@@ -172,7 +172,7 @@ export default function DashboardPage() {
 
       {/* Charts */}
       <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -203,7 +203,7 @@ export default function DashboardPage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -232,7 +232,7 @@ export default function DashboardPage() {
 
       {/* Quick Stats Row */}
       <Grid container spacing={3} sx={{ mt: 2 }}>
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -261,7 +261,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -290,7 +290,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>

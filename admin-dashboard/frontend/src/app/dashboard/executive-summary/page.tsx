@@ -8,7 +8,6 @@ import {
   Typography,
   Button,
   CircularProgress,
-  Grid,
   Chip,
   Paper,
   Alert,
@@ -32,6 +31,7 @@ import {
   FormControlLabel,
   TextField,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   Refresh,
   TrendingUp,
@@ -370,7 +370,7 @@ export default function ExecutiveSummaryPage() {
           {/* Quick Stats Cards */}
           {quickStats && (
             <Grid container spacing={2} sx={{ mb: 3 }}>
-              <Grid item xs={12} sm={6} md={2.4}>
+              <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
                 <Card>
                   <CardContent sx={{ textAlign: 'center' }}>
                     <People color="primary" sx={{ fontSize: 32 }} />
@@ -379,7 +379,7 @@ export default function ExecutiveSummaryPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
+              <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
                 <Card>
                   <CardContent sx={{ textAlign: 'center' }}>
                     <TrendingUp color="success" sx={{ fontSize: 32 }} />
@@ -388,7 +388,7 @@ export default function ExecutiveSummaryPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
+              <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
                 <Card>
                   <CardContent sx={{ textAlign: 'center' }}>
                     <ShoppingCart color="info" sx={{ fontSize: 32 }} />
@@ -397,7 +397,7 @@ export default function ExecutiveSummaryPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
+              <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
                 <Card>
                   <CardContent sx={{ textAlign: 'center' }}>
                     <Warning color={quickStats.pending_disputes > 0 ? 'error' : 'success'} sx={{ fontSize: 32 }} />
@@ -406,7 +406,7 @@ export default function ExecutiveSummaryPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
+              <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
                 <Card>
                   <CardContent sx={{ textAlign: 'center' }}>
                     <AccountBalance color="secondary" sx={{ fontSize: 32 }} />
@@ -438,7 +438,7 @@ export default function ExecutiveSummaryPage() {
 
               {/* Key Highlights & What Changed */}
               <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Card sx={{ height: '100%' }}>
                     <CardContent>
                       <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -457,7 +457,7 @@ export default function ExecutiveSummaryPage() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Card sx={{ height: '100%' }}>
                     <CardContent>
                       <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -476,7 +476,7 @@ export default function ExecutiveSummaryPage() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Card sx={{ height: '100%' }}>
                     <CardContent>
                       <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -504,35 +504,35 @@ export default function ExecutiveSummaryPage() {
                     <People /> Platform Overview
                   </Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6} md={2.4}>
+                    <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
                       <MetricCard 
                         title="Total Users" 
                         metric={summary.platform_overview.total_users} 
                         icon={<People color="primary" />}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={2.4}>
+                    <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
                       <MetricCard 
                         title="Active Users" 
                         metric={summary.platform_overview.active_users} 
                         icon={<People color="success" />}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={2.4}>
+                    <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
                       <MetricCard 
                         title="New Listings" 
                         metric={summary.platform_overview.new_listings} 
                         icon={<ShoppingCart color="info" />}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={2.4}>
+                    <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
                       <MetricCard 
                         title="Transactions" 
                         metric={summary.platform_overview.completed_transactions} 
                         icon={<CheckCircle color="success" />}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={2.4}>
+                    <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
                       <MetricCard 
                         title="Escrow Volume" 
                         metric={summary.platform_overview.escrow_volume} 
@@ -556,7 +556,7 @@ export default function ExecutiveSummaryPage() {
                     <Shield /> Trust & Safety
                   </Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={3}>
+                    <Grid size={{ xs: 12, md: 3 }}>
                       <Card>
                         <CardContent>
                           <Typography variant="body2" color="textSecondary">Overall Risk Rating</Typography>
@@ -570,7 +570,7 @@ export default function ExecutiveSummaryPage() {
                         </CardContent>
                       </Card>
                     </Grid>
-                    <Grid item xs={6} md={2}>
+                    <Grid size={{ xs: 6, md: 2 }}>
                       <Card>
                         <CardContent sx={{ textAlign: 'center' }}>
                           <Typography variant="h4" fontWeight="bold">{summary.trust_safety.disputes_opened}</Typography>
@@ -578,7 +578,7 @@ export default function ExecutiveSummaryPage() {
                         </CardContent>
                       </Card>
                     </Grid>
-                    <Grid item xs={6} md={2}>
+                    <Grid size={{ xs: 6, md: 2 }}>
                       <Card>
                         <CardContent sx={{ textAlign: 'center' }}>
                           <Typography variant="h4" fontWeight="bold" color="success.main">{summary.trust_safety.disputes_resolved}</Typography>
@@ -586,7 +586,7 @@ export default function ExecutiveSummaryPage() {
                         </CardContent>
                       </Card>
                     </Grid>
-                    <Grid item xs={6} md={2}>
+                    <Grid size={{ xs: 6, md: 2 }}>
                       <Card>
                         <CardContent sx={{ textAlign: 'center' }}>
                           <Typography variant="h4" fontWeight="bold" color="error.main">{summary.trust_safety.fraud_flags}</Typography>
@@ -594,7 +594,7 @@ export default function ExecutiveSummaryPage() {
                         </CardContent>
                       </Card>
                     </Grid>
-                    <Grid item xs={6} md={3}>
+                    <Grid size={{ xs: 6, md: 3 }}>
                       <Card>
                         <CardContent sx={{ textAlign: 'center' }}>
                           <Typography variant="h4" fontWeight="bold">{summary.trust_safety.moderation_incidents}</Typography>

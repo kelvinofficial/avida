@@ -31,11 +31,11 @@ import {
   Tab,
   Tooltip,
   Snackbar,
-  Grid,
   Paper,
   Switch,
   FormControlLabel,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   Add,
   Edit,
@@ -648,7 +648,7 @@ export default function SMSNotificationsPage() {
                 </Grid>
               ))}
               {partners.length === 0 && (
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography color="textSecondary" textAlign="center">
                     No transport partners yet. Add your first partner.
                   </Typography>
@@ -664,7 +664,7 @@ export default function SMSNotificationsPage() {
         <DialogTitle>{editingTemplate ? 'Edit Template' : 'Add Template'}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Event</InputLabel>
                 <Select
@@ -680,7 +680,7 @@ export default function SMSNotificationsPage() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Recipient Type</InputLabel>
                 <Select
@@ -696,7 +696,7 @@ export default function SMSNotificationsPage() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Channel</InputLabel>
                 <Select
@@ -710,7 +710,7 @@ export default function SMSNotificationsPage() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Language</InputLabel>
                 <Select
@@ -724,7 +724,7 @@ export default function SMSNotificationsPage() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Message Body"
@@ -735,7 +735,7 @@ export default function SMSNotificationsPage() {
                 helperText="Available variables: {{order_id}}, {{buyer_name}}, {{seller_name}}, {{item_title}}, {{total_amount}}, {{currency}}, {{tracking_url}}, {{otp_code}}, {{driver_name}}, {{driver_phone}}"
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -761,7 +761,7 @@ export default function SMSNotificationsPage() {
         <DialogTitle>{editingPartner ? 'Edit Transport Partner' : 'Add Transport Partner'}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Name"
@@ -769,7 +769,7 @@ export default function SMSNotificationsPage() {
                 onChange={(e) => setPartnerForm((prev) => ({ ...prev, name: e.target.value }))}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label="Phone"
@@ -778,7 +778,7 @@ export default function SMSNotificationsPage() {
                 placeholder="+255712345678"
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label="Email"
@@ -786,7 +786,7 @@ export default function SMSNotificationsPage() {
                 onChange={(e) => setPartnerForm((prev) => ({ ...prev, email: e.target.value }))}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Vehicle Type</InputLabel>
                 <Select
@@ -801,7 +801,7 @@ export default function SMSNotificationsPage() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label="Vehicle Plate"
