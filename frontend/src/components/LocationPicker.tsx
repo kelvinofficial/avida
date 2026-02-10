@@ -716,6 +716,49 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: theme.colors.onSurfaceVariant,
   },
+  // Recent locations styles
+  recentSection: {
+    backgroundColor: theme.colors.surfaceVariant,
+    paddingTop: theme.spacing.md,
+  },
+  recentTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.colors.onSurfaceVariant,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    paddingHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+  },
+  recentItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.md,
+    gap: theme.spacing.md,
+    marginHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.xs,
+    borderRadius: theme.borderRadius.md,
+  },
+  recentItemText: {
+    flex: 1,
+  },
+  recentItemName: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: theme.colors.onSurface,
+  },
+  recentItemSubtext: {
+    fontSize: 12,
+    color: theme.colors.onSurfaceVariant,
+    marginTop: 2,
+  },
+  recentDivider: {
+    height: 1,
+    backgroundColor: theme.colors.outlineVariant,
+    marginTop: theme.spacing.md,
+  },
 });
 
 export default LocationPicker;
