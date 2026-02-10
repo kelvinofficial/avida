@@ -340,6 +340,31 @@ export default function ABTestingPage() {
         </Grid>
       </Grid>
 
+      {/* Scheduler Status */}
+      {schedulerStatus && (
+        <Alert 
+          severity={schedulerStatus.scheduler_running ? "info" : "warning"} 
+          icon={<Schedule />}
+          sx={{ mb: 3 }}
+          action={
+            <Chip 
+              icon={<AccessTime />} 
+              label={`Every ${schedulerStatus.check_interval_hours}h`} 
+              size="small" 
+              color={schedulerStatus.scheduler_running ? "primary" : "default"}
+            />
+          }
+        >
+          <strong>Auto-Check Scheduler:</strong> {schedulerStatus.scheduler_running ? 'Running' : 'Stopped'}
+          {schedulerStatus.last_check && (
+            <Typography variant="caption" display="block">
+              Last check: {new Date(schedulerStatus.last_check.completed_at).toLocaleString()} 
+              ({schedulerStatus.last_check.experiments_checked} experiments, {schedulerStatus.last_check.winners_found} winners)
+            </Typography>
+          )}
+        </Alert>
+      )}
+
       {/* Filter */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
