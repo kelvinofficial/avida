@@ -2623,3 +2623,80 @@ Comprehensive location system upgrade with hierarchical selection (Country → R
 - Modified: `/app/frontend/src/types/index.ts` (LocationData interface)
 - Modified: `/app/frontend/app/post/index.tsx` (LocationPicker integration)
 
+---
+
+## "Near Me" Filter & GPS Location - COMPLETE ✅ (Feb 10, 2026)
+
+### Overview
+Added "Near Me" toggle filter on home page that uses GPS location to show nearby listings with distance badges.
+
+### Features Implemented:
+
+**1. Location Context (`/app/frontend/src/context/LocationContext.tsx`)**
+- LocationProvider wraps entire app in `_layout.tsx`
+- Manages `userLocation` state (lat, lng, timestamp, city, country)
+- `nearMeEnabled` toggle state
+- `requestLocation()` triggers GPS permission prompt
+- 30-minute location caching in AsyncStorage
+- Reverse geocoding for city/country names
+
+**2. Near Me Toggle Button**
+- Home Page: Blue chip button next to "All Locations" dropdown
+- Click triggers GPS permission request (user preference 1b)
+- Active state: Blue background (#1976D2) with white text
+- Loading indicator during location fetch
+- Clear button clears both category and Near Me filters
+
+**3. Distance Badge on Listing Cards**
+- Haversine formula for accurate distance calculation
+- Format: "Xkm away" or "Xm away" (if <1km)
+- Blue badge (#E3F2FD background, #1976D2 text)
+- Only shows when user has granted location permission
+
+**4. userLocation Prop**
+- `ListingCard` component accepts optional `userLocation` prop
+- Home page passes `userLocation` from context to all cards
+- Search page also passes `userLocation` to cards
+
+**5. Nearby Listings API**
+- `GET /api/locations/nearby?lat=&lng=&radius_km=50`
+- Uses MongoDB 2dsphere geospatial index
+- Returns listings sorted by distance within radius
+
+### User Preference Implementation:
+- **1b**: GPS permission requested only when user taps "Near Me" (not on app launch)
+- **2c**: Near Me toggle available on both home page (header) and search page
+
+### Testing: 100% frontend tests passed
+
+---
+
+## Admin Location Manager - COMPLETE ✅ (Feb 10, 2026)
+
+### Overview
+Admin dashboard page for CRUD operations on location data (countries, regions, districts, cities).
+
+### File: `/app/admin-dashboard/frontend/src/app/locations/page.tsx`
+
+### Features:
+- **Stats Cards**: Visual display of counts (13 countries, 55 regions, 79 districts, 130 cities)
+- **Hierarchical Navigation**: Breadcrumbs for Country → Region → District → City
+- **Data Tables**: List view with click-to-drill-down navigation
+- **CRUD Operations**:
+  - Add new country/region/district/city
+  - Edit existing location
+  - Delete location (with confirmation)
+- **Form Dialogs**: 
+  - Country: code, name, flag emoji
+  - Region: region_code, name
+  - District: district_code, name
+  - City: city_code, name, lat, lng
+
+### Admin API Endpoints (to be implemented):
+- `POST /admin/locations/countrys` - Create country
+- `PUT /admin/locations/countrys/{code}` - Update country
+- `DELETE /admin/locations/countrys/{code}` - Delete country
+- Similar endpoints for regions, districts, cities
+
+---
+
