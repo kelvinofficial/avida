@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -13,18 +13,43 @@ export default function AdminRedirectScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.iconContainer}>
           <Ionicons name="shield-checkmark" size={64} color="#2E7D32" />
         </View>
         
         <Text style={styles.title}>Admin Dashboard</Text>
         <Text style={styles.subtitle}>
-          The admin dashboard runs on a separate port for security.
+          Manage users, business profiles, and verifications
         </Text>
 
+        {/* Quick Actions */}
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity 
+            style={styles.actionCard}
+            onPress={() => router.push('/admin/users')}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: '#E8F5E9' }]}>
+              <Ionicons name="people" size={24} color="#2E7D32" />
+            </View>
+            <Text style={styles.actionTitle}>Users & Verification</Text>
+            <Text style={styles.actionDesc}>Manage users, sellers, and business profiles</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.actionCard}
+            onPress={() => router.push('/admin/businessProfiles')}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: '#FFF3E0' }]}>
+              <Ionicons name="storefront" size={24} color="#FF8F00" />
+            </View>
+            <Text style={styles.actionTitle}>Business Profiles</Text>
+            <Text style={styles.actionDesc}>Review and manage business profiles</Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>Access Information</Text>
+          <Text style={styles.infoTitle}>Full Admin Dashboard</Text>
           <View style={styles.infoRow}>
             <Ionicons name="globe-outline" size={20} color="#666" />
             <Text style={styles.infoText}>Admin UI: http://localhost:3001</Text>
@@ -58,7 +83,7 @@ export default function AdminRedirectScreen() {
           <Ionicons name="arrow-back" size={20} color="#fff" />
           <Text style={styles.buttonText}>Back to App</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
