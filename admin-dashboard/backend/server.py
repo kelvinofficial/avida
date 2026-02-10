@@ -6934,6 +6934,19 @@ async def scheduled_winner_check():
                         
                         logger.info(f"Winner found for experiment '{exp['name']}': {eval_result['winner_variant_name']}")
                         
+                        # Send email notification if emails configured
+                        notification_emails = smart_winner.get("notification_emails", [])
+                        if notification_emails:
+                            await send_ab_winner_email(
+                                to_emails=notification_emails,
+                                experiment_name=exp["name"],
+                                winner_variant_name=eval_result["winner_variant_name"],
+                                improvement=eval_result["improvement"],
+                                control_rate=eval_result.get("control_rate", 0),
+                                winner_rate=eval_result.get("winner_rate", 0),
+                                experiment_id=exp["id"]
+                            )
+                        
                         # If strategy is auto_rollout, declare winner
                         if smart_winner.get("strategy") == "auto_rollout":
                             now = datetime.now(timezone.utc)
