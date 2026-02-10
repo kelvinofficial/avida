@@ -384,5 +384,68 @@ export const boostApi = {
   }
 };
 
+// Locations API - Hierarchical location data
+export const locationsApi = {
+  // Get all countries
+  getCountries: async () => {
+    const response = await api.get('/locations/countries');
+    return response.data;
+  },
+  
+  // Get regions for a country
+  getRegions: async (countryCode: string, search?: string) => {
+    const response = await api.get('/locations/regions', { 
+      params: { country_code: countryCode, search } 
+    });
+    return response.data;
+  },
+  
+  // Get districts for a region
+  getDistricts: async (countryCode: string, regionCode: string, search?: string) => {
+    const response = await api.get('/locations/districts', { 
+      params: { country_code: countryCode, region_code: regionCode, search } 
+    });
+    return response.data;
+  },
+  
+  // Get cities for a district
+  getCities: async (countryCode: string, regionCode: string, districtCode: string, search?: string) => {
+    const response = await api.get('/locations/cities', { 
+      params: { country_code: countryCode, region_code: regionCode, district_code: districtCode, search } 
+    });
+    return response.data;
+  },
+  
+  // Search cities by name
+  searchCities: async (countryCode: string, query: string, limit: number = 20) => {
+    const response = await api.get('/locations/cities/search', { 
+      params: { country_code: countryCode, q: query, limit } 
+    });
+    return response.data;
+  },
+  
+  // Get specific city by codes
+  getCity: async (countryCode: string, regionCode: string, districtCode: string, cityCode: string) => {
+    const response = await api.get('/locations/city', { 
+      params: { country_code: countryCode, region_code: regionCode, district_code: districtCode, city_code: cityCode } 
+    });
+    return response.data;
+  },
+  
+  // Get location stats
+  getStats: async () => {
+    const response = await api.get('/locations/stats');
+    return response.data;
+  },
+  
+  // Get nearby listings
+  getNearby: async (lat: number, lng: number, radiusKm: number = 50, limit: number = 20, page: number = 1, categoryId?: string) => {
+    const response = await api.get('/locations/nearby', { 
+      params: { lat, lng, radius_km: radiusKm, limit, page, category_id: categoryId } 
+    });
+    return response.data;
+  }
+};
+
 // Default export for convenience
 export default api;
