@@ -422,7 +422,16 @@ export default function HomeScreen() {
       if (saved) {
         const city = JSON.parse(saved);
         setSelectedCity(city);
-        setCurrentCity(city.city_name);
+        // Use city_name or location_text for display
+        setCurrentCity(city.city_name || city.location_text || 'Selected Location');
+        // Also set the location filter for proper display
+        setSelectedLocationFilter({
+          country_code: city.country_code,
+          region_code: city.region_code,
+          region_name: city.region_name,
+          city_name: city.city_name,
+          location_text: city.location_text,
+        } as LocationData);
       }
       const savedRadius = await Storage.getItem('@search_radius');
       if (savedRadius) setSearchRadius(parseInt(savedRadius, 10));
