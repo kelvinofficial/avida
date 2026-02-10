@@ -39,14 +39,15 @@ class OpeningHours(BaseModel):
 class SocialLinks(BaseModel):
     """Social network links"""
     facebook: Optional[str] = None
-    twitter: Optional[str] = None
-    youtube: Optional[str] = None
-    linkedin: Optional[str] = None
-    vimeo: Optional[str] = None
     instagram: Optional[str] = None
-    pinterest: Optional[str] = None
-    google_plus: Optional[str] = None
+    twitter: Optional[str] = None  # X
+    linkedin: Optional[str] = None
+    youtube: Optional[str] = None
+    tiktok: Optional[str] = None
+    whatsapp: Optional[str] = None  # Phone number with country code
     website: Optional[str] = None
+    vimeo: Optional[str] = None
+    pinterest: Optional[str] = None
 
 
 class BusinessProfileCreate(BaseModel):
