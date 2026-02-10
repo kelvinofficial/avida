@@ -19,11 +19,11 @@ BACKEND_DIRECT_URL = "http://localhost:8001"
 
 
 class TestSEOSitemap:
-    """Test SEO Sitemap endpoints"""
+    """Test SEO Sitemap endpoints - using direct backend URL since sitemap.xml is on root path"""
 
     def test_sitemap_returns_valid_xml(self):
         """GET /sitemap.xml should return valid XML"""
-        response = requests.get(f"{BASE_URL}/sitemap.xml")
+        response = requests.get(f"{BACKEND_DIRECT_URL}/sitemap.xml")
         
         # Status code assertion
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
@@ -45,7 +45,7 @@ class TestSEOSitemap:
 
     def test_sitemap_contains_homepage(self):
         """Sitemap should contain homepage URL"""
-        response = requests.get(f"{BASE_URL}/sitemap.xml")
+        response = requests.get(f"{BACKEND_DIRECT_URL}/sitemap.xml")
         assert response.status_code == 200
         
         # Parse XML
@@ -78,7 +78,7 @@ class TestSEOSitemap:
 
     def test_sitemap_structure_for_business_profiles(self):
         """Sitemap should have proper structure for business profiles"""
-        response = requests.get(f"{BASE_URL}/sitemap.xml")
+        response = requests.get(f"{BACKEND_DIRECT_URL}/sitemap.xml")
         assert response.status_code == 200
         
         root = ET.fromstring(response.text)
