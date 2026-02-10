@@ -973,6 +973,14 @@ When sandbox mode is active, the following pages now show sandbox data:
 
 ### Completed (Feb 10, 2026)
 - [x] Admin Dashboard TypeScript errors fixed (MUI Grid v7, API client types, Pie chart labels, etc.)
+- [x] **Verification System** - Manual admin approval with 4 tiers (unverified, verified_user, verified_seller, premium_verified_seller). Benefits include badge display, commission discount (up to 25%), and search priority boost.
+- [x] **Commission Settings** - Category-based commission rates with verification tier discounts. Configurable via admin dashboard.
+- [x] **Admin Notification Fix** - Notifications now correctly write to BOTH `user_notifications` (admin tracking) AND `notifications` (mobile app) collections.
+- [x] **Boost After Publish** - Success modal updated with boost package selection (Basic $2.99/3days, Standard $4.99/7days, Premium $9.99/14days).
+
+### In Progress Tasks (P1)
+- [ ] Edit Listing with Original Data - Form pre-fill improvements
+- [ ] Push Notification End-to-End Testing
 
 ### Future/Backlog (P2)
 - Notification Template Analytics
