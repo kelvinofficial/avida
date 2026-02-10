@@ -810,6 +810,68 @@ export default function VouchersPage() {
           <Button variant="contained" color="error" onClick={handleDelete}>Delete</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Import CSV Dialog */}
+      <Dialog open={importDialogOpen} onClose={() => { setImportDialogOpen(false); setImportData([]); setImportResult(null); }} maxWidth="md" fullWidth>
+        <DialogTitle>Import Vouchers from CSV</DialogTitle>
+        <DialogContent>
+          {importResult ? (
+            <Box sx={{ mt: 2 }}>
+              <Alert severity={importResult.created > 0 ? 'success' : 'warning'} sx={{ mb: 2 }}>
+                {importResult.message}
+              </Alert>
+              {importResult.errors?.length > 0 && (
+                <Box>
+                  <Typography variant="subtitle2" gutterBottom>Errors:</Typography>
+                  {importResult.errors.map((err: string, idx: number) => (
+                    <Typography key={idx} variant="body2" color="error">{err}</Typography>
+                  ))}
+                </Box>
+              )}
+            </Box>
+          ) : (
+            <Box sx={{ mt: 2 }}>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                {importData.length} vouchers ready to import
+              </Alert>
+              <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 400 }}>
+                <Table size="small" stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Code</TableCell>
+                      <TableCell>Type</TableCell>
+                      <TableCell>Value</TableCell>
+                      <TableCell>Max Uses</TableCell>
+                      <TableCell>Description</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {importData.map((v, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell><Typography fontWeight={600}>{v.code}</Typography></TableCell>
+                        <TableCell>{v.voucher_type || 'amount'}</TableCell>
+                        <TableCell>{v.value}</TableCell>
+                        <TableCell>{v.max_uses || '∞'}</TableCell>
+                        <TableCell>{v.description || '-'}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { setImportDialogOpen(false); setImportData([]); setImportResult(null); }}>
+            {importResult ? 'Close' : 'Cancel'}
+          </Button>
+          {!importResult && (
+            <Button variant="contained" onClick={handleImport} disabled={importing || importData.length === 0}>
+              {importing ? 'Importing...' : `Import ${importData.length} Vouchers`}
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
