@@ -1026,6 +1026,9 @@ export default function HomeScreen() {
         </ScrollView>
       </View>
 
+      {/* FEATURED SELLERS SECTION */}
+      <FeaturedSellersSection />
+
       {/* SECTION TITLE */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>
