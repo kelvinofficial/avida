@@ -92,7 +92,14 @@ export function useNotificationDeepLinking() {
   const handleDeepLink = (data: NotificationData) => {
     if (!data) return;
 
-    const { deep_link, listing_id, conversation_id, user_id, trigger_type } = data;
+    const { deep_link, listing_id, conversation_id, user_id, trigger_type, screen, tab, ticket_id } = data;
+
+    // Priority: explicit screen/tab for support tickets
+    if (screen === '/help' && tab === 'tickets') {
+      // Navigate to help page with tickets tab
+      router.push({ pathname: '/help', params: { tab: 'tickets' } });
+      return;
+    }
 
     // Priority: explicit deep_link > specific IDs
     if (deep_link) {
@@ -108,6 +115,8 @@ export function useNotificationDeepLinking() {
       } else if (path.startsWith('/user/') || path.startsWith('/profile/')) {
         const id = path.replace(/^\/(user|profile)\//, '');
         router.push({ pathname: '/seller/[id]', params: { id } });
+      } else if (path === '/help' || path.startsWith('/help')) {
+        router.push({ pathname: '/help', params: { tab: 'tickets' } });
       } else {
         // Try to navigate to the path directly
         try {
@@ -135,6 +144,12 @@ export function useNotificationDeepLinking() {
       return;
     }
 
+    // Support ticket notification
+    if (ticket_id) {
+      router.push({ pathname: '/help', params: { tab: 'tickets' } });
+      return;
+    }
+
     // Navigate based on trigger type
     switch (trigger_type) {
       case 'new_listing_in_category':
@@ -147,6 +162,9 @@ export function useNotificationDeepLinking() {
       case 'message_received':
       case 'seller_reply':
         router.push('/(tabs)/inbox');
+        break;
+      case 'support_ticket_reply':
+        router.push({ pathname: '/help', params: { tab: 'tickets' } });
         break;
       case 'weekly_digest':
         router.push('/(tabs)');
