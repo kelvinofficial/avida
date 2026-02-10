@@ -467,6 +467,19 @@ def create_location_router(db: AsyncIOMotorDatabase):
         """Get location statistics"""
         return await service.get_location_stats()
     
+    @router.get("/nearby")
+    async def get_nearby_listings(
+        lat: float = Query(..., description="Latitude"),
+        lng: float = Query(..., description="Longitude"),
+        radius_km: float = Query(50, ge=1, le=500, description="Search radius in km"),
+        limit: int = Query(20, ge=1, le=100),
+        page: int = Query(1, ge=1),
+        category_id: str = Query(None, description="Filter by category")
+    ):
+        """Get listings near a location"""
+        skip = (page - 1) * limit
+        return await service.get_nearby_listings(lat, lng, radius_km, limit, skip, category_id)
+    
     return router, service
 
 
