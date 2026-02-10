@@ -5444,6 +5444,134 @@ if PREMIUM_SUBSCRIPTION_AVAILABLE:
     logger.info("Premium Subscription System routes registered")
 
 # =============================================================================
+# SUBSCRIPTION SERVICES (Email, Auto-Renewal, Invoices)
+# =============================================================================
+if SUBSCRIPTION_SERVICES_AVAILABLE:
+    # Initialize SendGrid client if available
+    _sendgrid_client = None
+    if SENDGRID_AVAILABLE:
+        sendgrid_api_key = os.environ.get("SENDGRID_API_KEY")
+        if sendgrid_api_key:
+            _sendgrid_client = SendGridAPIClient(sendgrid_api_key)
+            logger.info("SendGrid client initialized for subscription emails")
+    
+    # Initialize services
+    _email_service = SubscriptionEmailService(db, _sendgrid_client)
+    _auto_renewal_service = AutoRenewalService(db, _email_service)
+    _invoice_service = InvoiceService(db)
+    
+    # Store services on app.state for access in routes
+    app.state.email_service = _email_service
+    app.state.auto_renewal_service = _auto_renewal_service
+    app.state.invoice_service = _invoice_service
+    
+    # =========================================================================
+    # INVOICE API ENDPOINTS
+    # =========================================================================
+    
+    @app.get("/api/invoices")
+    async def get_user_invoices(request: Request, limit: int = 20):
+        """Get all invoices for the current user"""
+        user = await require_auth(request)
+        invoices = await _invoice_service.get_user_invoices(user.user_id, limit)
+        return {"invoices": invoices}
+    
+    @app.get("/api/invoices/{invoice_id}")
+    async def get_invoice(invoice_id: str, request: Request):
+        """Get a specific invoice"""
+        user = await require_auth(request)
+        invoice = await _invoice_service.get_invoice(invoice_id)
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+        if invoice.get("user_id") != user.user_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+        return invoice
+    
+    @app.get("/api/invoices/{invoice_id}/html")
+    async def get_invoice_html(invoice_id: str, request: Request):
+        """Get invoice as HTML for display/printing"""
+        user = await require_auth(request)
+        invoice = await _invoice_service.get_invoice(invoice_id)
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+        if invoice.get("user_id") != user.user_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        from fastapi.responses import HTMLResponse
+        html = _invoice_service.generate_invoice_html(invoice)
+        return HTMLResponse(content=html)
+    
+    @app.post("/api/invoices/create/{transaction_id}")
+    async def create_invoice_for_transaction(transaction_id: str, request: Request):
+        """Create an invoice for a completed transaction"""
+        user = await require_auth(request)
+        
+        # Verify transaction belongs to user
+        transaction = await db.payment_transactions.find_one({"id": transaction_id})
+        if not transaction:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+        if transaction.get("user_id") != user.user_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+        if transaction.get("payment_status") != "paid":
+            raise HTTPException(status_code=400, detail="Invoice can only be created for paid transactions")
+        
+        # Check if invoice already exists
+        existing = await db.invoices.find_one({"transaction_id": transaction_id})
+        if existing:
+            return {"invoice": {k: v for k, v in existing.items() if k != "_id"}, "already_exists": True}
+        
+        # Create invoice
+        invoice = await _invoice_service.create_invoice(transaction_id)
+        if not invoice:
+            raise HTTPException(status_code=500, detail="Failed to create invoice")
+        
+        return {"invoice": {k: v for k, v in invoice.items() if k != "_id"}, "already_exists": False}
+    
+    # =========================================================================
+    # SUBSCRIPTION RENEWAL CHECK - Background Task
+    # =========================================================================
+    
+    async def subscription_renewal_checker():
+        """Background task to check for expiring subscriptions"""
+        while True:
+            try:
+                # Run checks
+                expiring_result = await _auto_renewal_service.check_expiring_subscriptions()
+                expired_result = await _auto_renewal_service.process_expired_subscriptions()
+                
+                logger.info(f"Subscription check: {expiring_result}, Expired: {expired_result}")
+            except Exception as e:
+                logger.error(f"Subscription renewal check error: {e}")
+            
+            # Run every 6 hours
+            await asyncio.sleep(6 * 60 * 60)
+    
+    @app.on_event("startup")
+    async def start_subscription_checker():
+        """Start subscription renewal background task"""
+        asyncio.create_task(subscription_renewal_checker())
+        logger.info("Started subscription renewal checker background task")
+    
+    # Admin endpoint to manually trigger subscription checks
+    @app.post("/api/admin/subscriptions/check-renewals")
+    async def admin_check_renewals(request: Request):
+        """Admin endpoint to manually trigger subscription renewal checks"""
+        user = await require_auth(request)
+        admin_emails = ["admin@marketplace.com", "admin@example.com"]
+        if user.email not in admin_emails:
+            raise HTTPException(status_code=403, detail="Admin access required")
+        
+        expiring_result = await _auto_renewal_service.check_expiring_subscriptions()
+        expired_result = await _auto_renewal_service.process_expired_subscriptions()
+        
+        return {
+            "expiring_reminders": expiring_result,
+            "expired_processed": expired_result
+        }
+    
+    logger.info("Subscription Services initialized (Email, Auto-Renewal, Invoices)")
+
+# =============================================================================
 # ADMIN API PROXY - Forward /api/admin/* to admin backend on port 8002
 # =============================================================================
 
