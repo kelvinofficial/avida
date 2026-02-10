@@ -1118,7 +1118,7 @@ export default function HomeScreen() {
                     onPress={() => router.push(`/listing/${item.id}`)}
                     onFavorite={() => toggleFavorite(item.id)}
                     isFavorited={favorites.has(item.id)}
-                    userLocation={selectedCity ? { lat: selectedCity.lat, lng: selectedCity.lng } : null}
+                    userLocation={selectedCity?.lat && selectedCity?.lng && !isNaN(selectedCity.lat) && !isNaN(selectedCity.lng) ? { lat: selectedCity.lat, lng: selectedCity.lng } : null}
                   />
                 </View>
               ))}
