@@ -73,6 +73,33 @@ def create_users_router(db, get_current_user, require_auth, online_users: Set[st
         )
         return updated_user
     
+    @router.put("/me/location")
+    async def update_user_location(request: Request):
+        """Update user's default location for posting listings"""
+        user = await require_auth(request)
+        
+        body = await request.json()
+        default_location = body.get("default_location")
+        
+        await db.users.update_one(
+            {"user_id": user.user_id},
+            {"$set": {"default_location": default_location, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        return {"message": "Default location updated", "default_location": default_location}
+    
+    @router.get("/me/location")
+    async def get_user_location(request: Request):
+        """Get user's default location"""
+        user = await require_auth(request)
+        
+        user_data = await db.users.find_one(
+            {"user_id": user.user_id}, 
+            {"_id": 0, "default_location": 1}
+        )
+        
+        return {"default_location": user_data.get("default_location") if user_data else None}
+    
     @router.get("/{user_id}")
     async def get_user(user_id: str):
         """Get public user profile"""
