@@ -10,7 +10,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Pressable,
+  TouchableHighlight,
   Modal,
   FlatList,
   ScrollView,
