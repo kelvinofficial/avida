@@ -27,7 +27,6 @@ import {
   Tooltip,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import Grid from '@mui/material/Grid';
 import {
   LineChart,
   Line,
