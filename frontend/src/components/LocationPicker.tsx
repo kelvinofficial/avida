@@ -156,11 +156,9 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   };
 
   const saveRecentLocation = async (location: LocationData) => {
-    console.log('[LocationPicker] saveRecentLocation called with:', JSON.stringify(location));
     try {
       // Create a unique key for this location
       const locationKey = `${location.country_code}-${location.region_code}-${location.district_code}-${location.city_code}`;
-      console.log('[LocationPicker] locationKey:', locationKey);
       
       // Filter out duplicate and add new location at the start
       const updatedRecent = [
@@ -170,10 +168,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         )
       ].slice(0, MAX_RECENT_LOCATIONS);
       
-      console.log('[LocationPicker] updatedRecent:', JSON.stringify(updatedRecent));
       setRecentLocations(updatedRecent);
       await Storage.setItem(RECENT_LOCATIONS_KEY, JSON.stringify(updatedRecent));
-      console.log('[LocationPicker] Storage.setItem completed');
     } catch (err) {
       console.error('Failed to save recent location:', err);
     }
