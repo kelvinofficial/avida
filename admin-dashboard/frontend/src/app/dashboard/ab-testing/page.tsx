@@ -121,7 +121,16 @@ export default function ABTestingPage() {
         return;
       }
       
-      await api.createExperiment(formData);
+      // Parse notification emails from comma-separated string to array
+      const notificationEmails = formData.notification_emails
+        .split(',')
+        .map(email => email.trim())
+        .filter(email => email.length > 0);
+      
+      await api.createExperiment({
+        ...formData,
+        notification_emails: notificationEmails
+      });
       setSuccess('Experiment created');
       setCreateDialogOpen(false);
       resetForm();
