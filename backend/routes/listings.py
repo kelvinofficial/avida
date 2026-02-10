@@ -393,6 +393,188 @@ def create_listings_router(
             "pages": (total + limit - 1) // limit
         }
     
+    @router.get("/by-location")
+    async def get_listings_by_location(
+        city_code: str = Query(..., description="Selected city code"),
+        city_lat: float = Query(..., description="Selected city latitude"),
+        city_lng: float = Query(..., description="Selected city longitude"),
+        include_nearby: bool = Query(True, description="Include nearby cities if no results"),
+        radius: int = Query(50, description="Search radius in km"),
+        category: Optional[str] = None,
+        subcategory: Optional[str] = None,
+        page: int = 1,
+        limit: int = 50,
+        only_my_city: bool = Query(False, description="Only show listings in selected city")
+    ):
+        """
+        Smart listing search by location.
+        
+        1. First searches in the selected city
+        2. If no results and include_nearby=True, expands to nearby cities
+        3. Returns listings sorted by distance from selected city
+        """
+        import math
+        
+        def haversine_distance(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+            """Calculate distance between two points in km"""
+            R = 6371  # Earth's radius in km
+            
+            lat1_rad = math.radians(lat1)
+            lat2_rad = math.radians(lat2)
+            delta_lat = math.radians(lat2 - lat1)
+            delta_lng = math.radians(lng2 - lng1)
+            
+            a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lng / 2) ** 2
+            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+            
+            return R * c
+        
+        # Map legacy category
+        mapped_category = legacy_category_map.get(category, category) if category else None
+        
+        # Build base query
+        base_query = {"status": "active"}
+        if mapped_category:
+            base_query["category_id"] = mapped_category
+        if subcategory:
+            base_query["subcategory"] = subcategory
+        
+        # Step 1: Search in selected city
+        city_query = {**base_query, "location_data.city_code": city_code.upper()}
+        city_listings = await db.listings.find(city_query, {"_id": 0}).to_list(limit)
+        
+        # Calculate distance for each listing (will be 0 or very small for same city)
+        for listing in city_listings:
+            loc_data = listing.get("location_data", {})
+            if loc_data.get("lat") and loc_data.get("lng"):
+                listing["distance_km"] = haversine_distance(
+                    city_lat, city_lng,
+                    loc_data["lat"], loc_data["lng"]
+                )
+            else:
+                listing["distance_km"] = 0
+        
+        # If we have results or only_my_city is True, return city results
+        if city_listings or only_my_city:
+            total = await db.listings.count_documents(city_query)
+            return {
+                "listings": city_listings,
+                "total": total,
+                "page": page,
+                "pages": (total + limit - 1) // limit,
+                "search_mode": "exact_city",
+                "selected_city": city_code,
+                "expanded_search": False,
+                "message": None
+            }
+        
+        # Step 2: No results in city, expand to nearby cities if allowed
+        if not include_nearby:
+            return {
+                "listings": [],
+                "total": 0,
+                "page": 1,
+                "pages": 0,
+                "search_mode": "exact_city",
+                "selected_city": city_code,
+                "expanded_search": False,
+                "message": f"No listings in this city."
+            }
+        
+        # Find all listings with coordinates and calculate distances
+        # Using MongoDB aggregation for better performance
+        nearby_pipeline = [
+            {"$match": {
+                **base_query,
+                "location_data.lat": {"$exists": True},
+                "location_data.lng": {"$exists": True}
+            }},
+            {"$addFields": {
+                # Calculate approximate distance using spherical distance
+                "distance_km": {
+                    "$multiply": [
+                        6371,  # Earth radius in km
+                        {
+                            "$acos": {
+                                "$add": [
+                                    {"$multiply": [
+                                        {"$sin": {"$degreesToRadians": city_lat}},
+                                        {"$sin": {"$degreesToRadians": "$location_data.lat"}}
+                                    ]},
+                                    {"$multiply": [
+                                        {"$cos": {"$degreesToRadians": city_lat}},
+                                        {"$cos": {"$degreesToRadians": "$location_data.lat"}},
+                                        {"$cos": {
+                                            "$subtract": [
+                                                {"$degreesToRadians": "$location_data.lng"},
+                                                {"$degreesToRadians": city_lng}
+                                            ]
+                                        }}
+                                    ]}
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }},
+            {"$match": {"distance_km": {"$lte": radius}}},
+            {"$sort": {"distance_km": 1}},
+            {"$skip": (page - 1) * limit},
+            {"$limit": limit},
+            {"$project": {"_id": 0}}
+        ]
+        
+        nearby_listings = await db.listings.aggregate(nearby_pipeline).to_list(limit)
+        
+        # Count total nearby listings
+        count_pipeline = [
+            {"$match": {
+                **base_query,
+                "location_data.lat": {"$exists": True},
+                "location_data.lng": {"$exists": True}
+            }},
+            {"$addFields": {
+                "distance_km": {
+                    "$multiply": [
+                        6371,
+                        {"$acos": {
+                            "$add": [
+                                {"$multiply": [
+                                    {"$sin": {"$degreesToRadians": city_lat}},
+                                    {"$sin": {"$degreesToRadians": "$location_data.lat"}}
+                                ]},
+                                {"$multiply": [
+                                    {"$cos": {"$degreesToRadians": city_lat}},
+                                    {"$cos": {"$degreesToRadians": "$location_data.lat"}},
+                                    {"$cos": {"$subtract": [
+                                        {"$degreesToRadians": "$location_data.lng"},
+                                        {"$degreesToRadians": city_lng}
+                                    ]}}
+                                ]}
+                            ]
+                        }}
+                    ]
+                }
+            }},
+            {"$match": {"distance_km": {"$lte": radius}}},
+            {"$count": "total"}
+        ]
+        
+        count_result = await db.listings.aggregate(count_pipeline).to_list(1)
+        total = count_result[0]["total"] if count_result else 0
+        
+        return {
+            "listings": nearby_listings,
+            "total": total,
+            "page": page,
+            "pages": (total + limit - 1) // limit,
+            "search_mode": "nearby_cities",
+            "selected_city": city_code,
+            "expanded_search": True,
+            "search_radius_km": radius,
+            "message": f"No listings in selected city. Showing {total} listings within {radius}km."
+        }
+    
     @router.get("/my")
     async def get_my_listings(request: Request, status: Optional[str] = None):
         """Get current user's listings"""
