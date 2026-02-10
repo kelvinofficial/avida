@@ -5668,6 +5668,61 @@ async def get_sitemap_stats():
         "robots_url": "/robots.txt"
     }
 
+# OG Meta Tags endpoint for social media sharing
+@app.get("/api/business-profiles/{slug}/og-meta")
+async def get_business_profile_og_meta(slug: str):
+    """Get OG meta tags for a business profile for social media sharing"""
+    from fastapi.responses import HTMLResponse
+    
+    base_url = os.environ.get("SITE_URL", "https://verified-sellers-hub.preview.emergentagent.com")
+    
+    # Find profile by slug or identifier
+    profile = await db.business_profiles.find_one(
+        {"$or": [{"slug": slug}, {"identifier": slug}], "is_active": True},
+        {"_id": 0}
+    )
+    
+    if not profile:
+        raise HTTPException(status_code=404, detail="Business profile not found")
+    
+    business_name = profile.get("business_name", "Business Profile")
+    description = profile.get("description", f"Check out {business_name} on Avida Marketplace")[:160]
+    logo_url = profile.get("logo_url") or f"{base_url}/default-business-logo.png"
+    cover_url = profile.get("cover_url") or logo_url
+    profile_url = f"{base_url}/business/{slug}"
+    categories = ", ".join(profile.get("primary_categories", [])[:3]) or "Business"
+    
+    # Build verification badge text
+    badges = []
+    if profile.get("is_premium"):
+        badges.append("Premium Verified")
+    elif profile.get("is_verified"):
+        badges.append("Verified")
+    badge_text = f" ({', '.join(badges)})" if badges else ""
+    
+    return {
+        "title": f"{business_name}{badge_text} | Avida",
+        "description": description,
+        "url": profile_url,
+        "image": cover_url or logo_url,
+        "site_name": "Avida Marketplace",
+        "type": "business.business",
+        "og_tags": {
+            "og:title": f"{business_name}{badge_text} | Avida",
+            "og:description": description,
+            "og:url": profile_url,
+            "og:image": cover_url or logo_url,
+            "og:type": "business.business",
+            "og:site_name": "Avida Marketplace",
+            "twitter:card": "summary_large_image",
+            "twitter:title": f"{business_name}{badge_text}",
+            "twitter:description": description,
+            "twitter:image": cover_url or logo_url,
+        },
+        "share_text": f"Check out {business_name} on Avida Marketplace! {categories}",
+        "share_url": profile_url
+    }
+
 logger.info("SEO Sitemap endpoints registered (/sitemap.xml, /robots.txt)")
 
 # =============================================================================
