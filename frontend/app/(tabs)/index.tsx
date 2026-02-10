@@ -671,10 +671,16 @@ export default function HomeScreen() {
     }
   };
 
-  const handleLocationSelect = (city: string) => {
-    setCurrentCity(city);
+  const handleLocationSelect = (location: LocationData) => {
+    setSelectedLocationFilter(location);
+    setCurrentCity(location.city_name || location.location_text || 'Selected Location');
     setShowLocationModal(false);
     setLocationSearch('');
+  };
+
+  const handleClearLocationFilter = () => {
+    setSelectedLocationFilter(null);
+    setCurrentCity('All Locations');
   };
 
   // ============ HEADER COMPONENT ============
