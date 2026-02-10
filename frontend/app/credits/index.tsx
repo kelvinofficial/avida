@@ -374,6 +374,8 @@ export default function CreditsPage() {
           {packages.map((pkg) => {
             const savings = calculateSavings(pkg, packages);
             const isSelected = selectedPackage === pkg.id;
+            const isBestDeal = findBestDealPackage(packages) === pkg.id;
+            const isHovered = hoveredPackage === pkg.id;
             
             return (
               <Animated.View
@@ -387,15 +389,27 @@ export default function CreditsPage() {
                     styles.packageCard,
                     isDesktop && styles.packageCardDesktop,
                     pkg.is_popular && styles.popularPackage,
-                    isSelected && styles.selectedPackage
+                    isSelected && styles.selectedPackage,
+                    isBestDeal && styles.bestDealPackage,
+                    isDesktop && isHovered && !isSelected && styles.packageCardHovered
                   ]}
                   onPress={() => handlePackageSelect(pkg.id)}
+                  onMouseEnter={() => isDesktop && setHoveredPackage(pkg.id)}
+                  onMouseLeave={() => isDesktop && setHoveredPackage(null)}
                   disabled={purchasing !== null}
                   data-testid={`package-card-${pkg.id}`}
                   activeOpacity={0.8}
                 >
+                  {/* Best Deal Badge */}
+                  {isBestDeal && (
+                    <View style={styles.bestDealBadge}>
+                      <Ionicons name="star" size={12} color="#fff" />
+                      <Text style={styles.bestDealText}>BEST VALUE</Text>
+                    </View>
+                  )}
+                  
                   {/* Savings Badge */}
-                  {savings && (
+                  {savings && !isBestDeal && (
                     <View style={styles.savingsBadge}>
                       <Ionicons name="trending-down" size={12} color="#fff" />
                       <Text style={styles.savingsText}>SAVE {savings.percent}%</Text>
@@ -418,7 +432,7 @@ export default function CreditsPage() {
                   <Text style={styles.packageDescription}>{pkg.description}</Text>
                   
                   <View style={styles.packageCredits}>
-                    <Text style={styles.creditsValue}>{pkg.credits}</Text>
+                    <Text style={[styles.creditsValue, isBestDeal && styles.bestDealCreditsValue]}>{pkg.credits}</Text>
                     <Text style={styles.creditsLabel}>credits</Text>
                     {pkg.bonus_credits > 0 && (
                       <View style={styles.bonusBadge}>
@@ -430,7 +444,9 @@ export default function CreditsPage() {
                   <View style={styles.packagePrice}>
                     <Text style={styles.priceValue}>${pkg.price}</Text>
                     {savings && (
-                      <Text style={styles.savingsAmount}>Save ${savings.amount.toFixed(2)}</Text>
+                      <Text style={[styles.savingsAmount, isBestDeal && styles.bestDealSavingsAmount]}>
+                        Save ${savings.amount.toFixed(2)} ({savings.percent}% off)
+                      </Text>
                     )}
                   </View>
                   
@@ -443,10 +459,18 @@ export default function CreditsPage() {
                     <ActivityIndicator color="#4CAF50" />
                   ) : (
                     <TouchableOpacity 
-                      style={[styles.buyButton, isSelected && styles.buyButtonSelected]}
+                      style={[
+                        styles.buyButton, 
+                        isSelected && styles.buyButtonSelected,
+                        isBestDeal && !isSelected && styles.buyButtonBestDeal
+                      ]}
                       onPress={() => handlePurchase(pkg.id)}
                     >
-                      <Text style={[styles.buyButtonText, !isSelected && styles.buyButtonTextUnselected]}>
+                      <Text style={[
+                        styles.buyButtonText, 
+                        !isSelected && !isBestDeal && styles.buyButtonTextUnselected,
+                        isBestDeal && !isSelected && styles.buyButtonTextBestDeal
+                      ]}>
                         {isSelected ? 'Purchase Now' : 'Select'}
                       </Text>
                     </TouchableOpacity>
