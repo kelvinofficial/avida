@@ -118,12 +118,24 @@ export default function RegisterScreen() {
         await setToken(result.session_token);
         setUser(result.user);
         await saveUserData(result.user);
-        router.replace('/');
+        
+        // Check if location onboarding has been shown before
+        const alreadyShown = await checkLocationOnboardingShown();
+        if (!alreadyShown) {
+          setShowLocationOnboarding(true);
+        } else {
+          router.replace('/');
+        }
       }
     } catch (err) {
       console.error('Session exchange error:', err);
       setError('Authentication failed. Please try again.');
     }
+  };
+
+  const handleLocationOnboardingComplete = () => {
+    setShowLocationOnboarding(false);
+    router.replace('/');
   };
 
   return (
