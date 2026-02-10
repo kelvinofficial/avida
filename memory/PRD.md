@@ -987,6 +987,9 @@ When sandbox mode is active, the following pages now show sandbox data:
 - Push service updated to support Expo Push (mobile app's native format)
 - Admin notifications now create records in both `user_notifications` AND `notifications` collections
 - User tokens retrieved from both `users.push_token` and `user_device_tokens` collection
+- **Login Redirect**: Created `useLoginRedirect` hook - users redirected back to previous page after login
+- **Support Ticket Notifications**: When admin replies to a ticket, user gets in-app + push notification with deep link to tickets list
+- **Help page deep link**: `/help?tab=tickets` opens tickets tab directly (for notification navigation)
 
 ### Future/Backlog (P2)
 - Notification Template Analytics
