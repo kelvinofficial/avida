@@ -26,8 +26,8 @@ def session():
 @pytest.fixture(scope="module")
 def auth_token(session):
     """Create a test user and get auth token"""
-    # Register user
-    reg_response = session.post(f"{BASE_URL}/api/auth/signup", json={
+    # Register user (endpoint is /api/auth/register)
+    reg_response = session.post(f"{BASE_URL}/api/auth/register", json={
         "email": TEST_USER_EMAIL,
         "password": TEST_USER_PASSWORD,
         "name": TEST_USER_NAME
