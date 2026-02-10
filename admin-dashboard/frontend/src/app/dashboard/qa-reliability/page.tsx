@@ -450,7 +450,7 @@ export default function QAReliabilityPage() {
       {/* KPI Cards */}
       {kpis && (
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <Card data-testid="kpi-uptime">
               <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -472,7 +472,7 @@ export default function QAReliabilityPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <Card data-testid="kpi-latency">
               <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -494,7 +494,7 @@ export default function QAReliabilityPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <Card data-testid="kpi-checkout">
               <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -544,7 +544,7 @@ export default function QAReliabilityPage() {
       {activeTab === 0 && health && (
         <Grid container spacing={3}>
           {Object.entries(health.services || {}).map(([name, service]: [string, any]) => (
-            <Grid item xs={12} sm={6} md={4} key={name}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={name}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -833,7 +833,7 @@ export default function QAReliabilityPage() {
 
             <Grid container spacing={2} sx={{ mb: 3 }}>
               {flowTests?.results?.map((result: any) => (
-                <Grid item xs={12} sm={6} md={4} key={result.flow}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={result.flow}>
                   <Card variant="outlined">
                     <CardContent>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
@@ -917,25 +917,25 @@ export default function QAReliabilityPage() {
             <Typography variant="h6" gutterBottom>Session Replay Summary</Typography>
             <Grid container spacing={2} sx={{ mb: 3 }}>
               {sessionReplaySummary && Object.entries(sessionReplaySummary).map(([flowType, data]: [string, any]) => (
-                <Grid item xs={12} sm={6} md={4} key={flowType}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={flowType}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="subtitle1" fontWeight="bold" textTransform="capitalize">
                         {flowType.replace('_', ' ')}
                       </Typography>
                       <Grid container spacing={1} sx={{ mt: 1 }}>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                           <Typography variant="caption" color="text.secondary">Total</Typography>
                           <Typography variant="h6">{data.total_recordings}</Typography>
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                           <Typography variant="caption" color="text.secondary">Success Rate</Typography>
                           <Typography variant="h6">{data.success_rate?.toFixed(1)}%</Typography>
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                           <Chip label={`${data.completed} completed`} size="small" color="success" variant="outlined" />
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                           <Chip label={`${data.failed} failed`} size="small" color="error" variant="outlined" />
                         </Grid>
                       </Grid>
@@ -981,7 +981,7 @@ export default function QAReliabilityPage() {
 
             <Grid container spacing={2} sx={{ mb: 3 }}>
               {integrityResults?.results?.map((result: any) => (
-                <Grid item xs={12} sm={6} key={result.check}>
+                <Grid size={{ xs: 12, sm: 6 }} key={result.check}>
                   <Card variant="outlined">
                     <CardContent>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1054,7 +1054,7 @@ export default function QAReliabilityPage() {
             <Typography variant="h6" gutterBottom>Real-Time Metrics</Typography>
             {currentMetrics && (
               <Grid container spacing={2} sx={{ mb: 3 }}>
-                <Grid item xs={6} sm={4} md={3}>
+                <Grid size={{ xs: 6, sm: 4, md: 3 }}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="caption" color="text.secondary">Error Rate (hourly)</Typography>
@@ -1062,7 +1062,7 @@ export default function QAReliabilityPage() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={6} sm={4} md={3}>
+                <Grid size={{ xs: 6, sm: 4, md: 3 }}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="caption" color="text.secondary">API Latency</Typography>
@@ -1070,7 +1070,7 @@ export default function QAReliabilityPage() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={6} sm={4} md={3}>
+                <Grid size={{ xs: 6, sm: 4, md: 3 }}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="caption" color="text.secondary">Payment Success</Typography>
@@ -1078,7 +1078,7 @@ export default function QAReliabilityPage() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={6} sm={4} md={3}>
+                <Grid size={{ xs: 6, sm: 4, md: 3 }}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="caption" color="text.secondary">Pending Escrows</Typography>
@@ -1086,7 +1086,7 @@ export default function QAReliabilityPage() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={6} sm={4} md={3}>
+                <Grid size={{ xs: 6, sm: 4, md: 3 }}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="caption" color="text.secondary">Notification Queue</Typography>
@@ -1094,7 +1094,7 @@ export default function QAReliabilityPage() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={6} sm={4} md={3}>
+                <Grid size={{ xs: 6, sm: 4, md: 3 }}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="caption" color="text.secondary">Signup Rate (hourly)</Typography>
@@ -1102,7 +1102,7 @@ export default function QAReliabilityPage() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={6} sm={4} md={3}>
+                <Grid size={{ xs: 6, sm: 4, md: 3 }}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="caption" color="text.secondary">Active Alerts</Typography>
@@ -1175,13 +1175,13 @@ export default function QAReliabilityPage() {
             <Typography variant="h6" gutterBottom>Fail-Safe Status</Typography>
             {failsafeStatus && (
               <Grid container spacing={2}>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Alert severity={failsafeStatus.overall_status === 'operational' ? 'success' : 'warning'}>
                     Overall System: {failsafeStatus.overall_status?.toUpperCase()}
                   </Alert>
                 </Grid>
                 {failsafeStatus.operations && Object.entries(failsafeStatus.operations).map(([op, status]: [string, any]) => (
-                  <Grid item xs={6} sm={4} key={op}>
+                  <Grid size={{ xs: 6, sm: 4 }} key={op}>
                     <Card variant="outlined">
                       <CardContent>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1397,11 +1397,11 @@ export default function QAReliabilityPage() {
           {selectedTrace && (
             <Box>
               <Grid container spacing={2} sx={{ mb: 2 }}>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="body2" color="text.secondary">User ID</Typography>
                   <Typography>{selectedTrace.user_id}</Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="body2" color="text.secondary">Status</Typography>
                   <Chip label={selectedTrace.status} color={selectedTrace.status === 'completed' ? 'success' : 'error'} size="small" />
                 </Grid>
@@ -1447,20 +1447,20 @@ export default function QAReliabilityPage() {
           {selectedError && (
             <Box>
               <Grid container spacing={2}>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="body2" color="text.secondary">Severity</Typography>
                   {getSeverityChip(selectedError.severity)}
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="body2" color="text.secondary">Category</Typography>
                   <Typography>{selectedError.category}</Typography>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="body2" color="text.secondary">Message</Typography>
                   <Typography>{selectedError.message}</Typography>
                 </Grid>
                 {selectedError.stack_trace && (
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <Typography variant="body2" color="text.secondary">Stack Trace</Typography>
                     <Paper variant="outlined" sx={{ p: 1, bgcolor: 'grey.100', maxHeight: 200, overflow: 'auto' }}>
                       <Typography variant="caption" component="pre" sx={{ whiteSpace: 'pre-wrap' }}>
@@ -1470,7 +1470,7 @@ export default function QAReliabilityPage() {
                   </Grid>
                 )}
                 {selectedError.endpoint && (
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <Typography variant="body2" color="text.secondary">Endpoint</Typography>
                     <Typography>{selectedError.endpoint}</Typography>
                   </Grid>
