@@ -113,11 +113,11 @@ class TestSEOSitemap:
 
 
 class TestRobotsTxt:
-    """Test robots.txt endpoint"""
+    """Test robots.txt endpoint - using direct backend URL"""
 
     def test_robots_txt_returns_valid_content(self):
         """GET /robots.txt should return valid robots.txt"""
-        response = requests.get(f"{BASE_URL}/robots.txt")
+        response = requests.get(f"{BACKEND_DIRECT_URL}/robots.txt")
         
         # Status code assertion
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
@@ -132,7 +132,7 @@ class TestRobotsTxt:
 
     def test_robots_txt_contains_required_directives(self):
         """robots.txt should contain required directives"""
-        response = requests.get(f"{BASE_URL}/robots.txt")
+        response = requests.get(f"{BACKEND_DIRECT_URL}/robots.txt")
         assert response.status_code == 200
         
         content = response.text.lower()
@@ -150,7 +150,7 @@ class TestRobotsTxt:
 
     def test_robots_txt_disallows_sensitive_paths(self):
         """robots.txt should disallow sensitive paths"""
-        response = requests.get(f"{BASE_URL}/robots.txt")
+        response = requests.get(f"{BACKEND_DIRECT_URL}/robots.txt")
         assert response.status_code == 200
         
         content = response.text.lower()
