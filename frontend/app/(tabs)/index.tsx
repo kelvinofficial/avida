@@ -743,16 +743,41 @@ export default function HomeScreen() {
     }
   };
 
-  const handleLocationSelect = (location: LocationData) => {
+  const handleLocationSelect = async (location: LocationData) => {
     setSelectedLocationFilter(location);
     setCurrentCity(location.city_name || location.location_text || 'Selected Location');
     setShowLocationModal(false);
     setLocationSearch('');
+    
+    // Also update selectedCity for the smart search functionality
+    if (location.lat && location.lng && location.city_code) {
+      const cityData = {
+        country_code: location.country_code || '',
+        country_name: '', // Will be populated from API if needed
+        region_code: location.region_code || '',
+        region_name: location.region_name || '',
+        district_code: location.district_code,
+        district_name: location.district_name,
+        city_code: location.city_code,
+        city_name: location.city_name || '',
+        lat: location.lat,
+        lng: location.lng,
+      };
+      await saveSelectedCity(cityData);
+    }
   };
 
-  const handleClearLocationFilter = () => {
+  const handleClearLocationFilter = async () => {
     setSelectedLocationFilter(null);
     setCurrentCity('All Locations');
+    setSelectedCity(null);
+    setExpandedSearch(false);
+    setExpandedSearchMessage(null);
+    try {
+      await AsyncStorage.removeItem('@selected_city');
+    } catch (err) {
+      console.error('Failed to clear saved city:', err);
+    }
   };
 
   // ============ HEADER COMPONENT ============
