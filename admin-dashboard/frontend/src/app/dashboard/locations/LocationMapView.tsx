@@ -36,6 +36,7 @@ const createCustomIcon = (color: string = '#2563eb') => {
 
 const districtIcon = createCustomIcon('#f59e0b'); // Orange for districts
 const cityIcon = createCustomIcon('#2563eb'); // Blue for cities
+const heatmapCityIcon = createCustomIcon('#ef4444'); // Red for cities with listings
 
 interface City {
   country_code: string;
@@ -68,6 +69,14 @@ interface Region {
   name: string;
 }
 
+interface HeatmapCity {
+  city_code: string;
+  city_name: string;
+  lat: number;
+  lng: number;
+  listing_count: number;
+}
+
 interface LocationMapViewProps {
   cities: City[];
   districts?: District[];
@@ -80,6 +89,9 @@ interface LocationMapViewProps {
   onCityDelete: (city: City) => void;
   onDistrictClick?: (district: District) => void;
   onDistrictEdit?: (district: District) => void;
+  showHeatmap?: boolean;
+  heatmapData?: number[][];
+  heatmapCities?: HeatmapCity[];
 }
 
 // Component to handle map click events
@@ -101,12 +113,10 @@ function FitBounds({ cities, districts }: { cities: City[]; districts?: District
   useEffect(() => {
     const allPoints: [number, number][] = [];
     
-    // Add city coordinates
     cities.filter(c => c.lat && c.lng).forEach(c => {
       allPoints.push([c.lat, c.lng]);
     });
     
-    // Add district coordinates
     districts?.filter(d => d.lat && d.lng).forEach(d => {
       allPoints.push([d.lat!, d.lng!]);
     });
@@ -120,17 +130,77 @@ function FitBounds({ cities, districts }: { cities: City[]; districts?: District
   return null;
 }
 
+// Heatmap Layer Component
+function HeatmapLayer({ data }: { data: number[][] }) {
+  const map = useMap();
+  const heatLayerRef = useRef<any>(null);
+  
+  useEffect(() => {
+    if (data.length === 0) {
+      // Remove heatmap if no data
+      if (heatLayerRef.current) {
+        map.removeLayer(heatLayerRef.current);
+        heatLayerRef.current = null;
+      }
+      return;
+    }
+    
+    // Dynamically import leaflet.heat
+    const loadHeatmap = async () => {
+      try {
+        // @ts-ignore
+        await import('leaflet.heat');
+        
+        // Remove existing layer
+        if (heatLayerRef.current) {
+          map.removeLayer(heatLayerRef.current);
+        }
+        
+        // Create new heatmap layer
+        // @ts-ignore
+        heatLayerRef.current = L.heatLayer(data, {
+          radius: 25,
+          blur: 15,
+          maxZoom: 17,
+          max: 1.0,
+          gradient: {
+            0.0: 'blue',
+            0.3: 'cyan',
+            0.5: 'lime',
+            0.7: 'yellow',
+            1.0: 'red'
+          }
+        }).addTo(map);
+      } catch (err) {
+        console.error('Failed to load heatmap:', err);
+      }
+    };
+    
+    loadHeatmap();
+    
+    return () => {
+      if (heatLayerRef.current) {
+        map.removeLayer(heatLayerRef.current);
+      }
+    };
+  }, [data, map]);
+  
+  return null;
+}
+
 // Draggable city marker component
 function DraggableCityMarker({ 
   city, 
   onDragEnd, 
   onEdit, 
-  onDelete 
+  onDelete,
+  listingCount
 }: { 
   city: City; 
   onDragEnd: (lat: number, lng: number) => void;
   onEdit: () => void;
   onDelete: () => void;
+  listingCount?: number;
 }) {
   const markerRef = useRef<L.Marker>(null);
   
@@ -147,17 +217,19 @@ function DraggableCityMarker({
     [onDragEnd],
   );
 
+  const icon = listingCount && listingCount > 0 ? heatmapCityIcon : cityIcon;
+
   return (
     <Marker
       draggable={true}
       eventHandlers={eventHandlers}
       position={[city.lat, city.lng]}
       ref={markerRef}
-      icon={cityIcon}
+      icon={icon}
     >
       <Popup>
         <Box sx={{ minWidth: 150 }}>
-          <Chip label="City" size="small" color="primary" sx={{ mb: 1 }} />
+          <Chip label="City" size="small" color={listingCount ? "error" : "primary"} sx={{ mb: 1 }} />
           <Typography variant="subtitle2" fontWeight="bold">
             {city.name}
           </Typography>
@@ -170,6 +242,11 @@ function DraggableCityMarker({
           <Typography variant="caption" display="block" color="text.secondary">
             Lng: {city.lng.toFixed(4)}
           </Typography>
+          {listingCount !== undefined && (
+            <Typography variant="caption" display="block" color="error.main" fontWeight="bold">
+              Listings: {listingCount}
+            </Typography>
+          )}
           <Box sx={{ mt: 1, display: 'flex', gap: 0.5 }}>
             <Tooltip title="Edit City">
               <IconButton size="small" onClick={onEdit}>
@@ -191,7 +268,7 @@ function DraggableCityMarker({
   );
 }
 
-// District marker component (clickable to drill down)
+// District marker component
 function DistrictMarker({ 
   district, 
   onClick,
@@ -257,6 +334,9 @@ export default function LocationMapView({
   onCityDelete,
   onDistrictClick,
   onDistrictEdit,
+  showHeatmap = false,
+  heatmapData = [],
+  heatmapCities = [],
 }: LocationMapViewProps) {
   // Filter cities with valid coordinates
   const validCities = useMemo(() => 
@@ -270,12 +350,25 @@ export default function LocationMapView({
     [districts]
   );
 
-  // Calculate center based on markers or default to world center
+  // Create a map of city code to listing count
+  const listingCountMap = useMemo(() => {
+    const map = new Map<string, number>();
+    heatmapCities.forEach(hc => {
+      map.set(hc.city_code, hc.listing_count);
+    });
+    return map;
+  }, [heatmapCities]);
+
+  // Calculate center
   const center = useMemo(() => {
     const allPoints: [number, number][] = [];
     
     validCities.forEach(c => allPoints.push([c.lat, c.lng]));
     validDistricts.forEach(d => allPoints.push([d.lat!, d.lng!]));
+    
+    if (showHeatmap && heatmapData.length > 0) {
+      heatmapData.forEach(h => allPoints.push([h[0], h[1]]));
+    }
     
     if (allPoints.length > 0) {
       const avgLat = allPoints.reduce((sum, p) => sum + p[0], 0) / allPoints.length;
@@ -283,19 +376,23 @@ export default function LocationMapView({
       return [avgLat, avgLng] as [number, number];
     }
     
-    // Default centers for common regions
     if (selectedCountry?.code === 'TZ') return [-6.7924, 39.2083] as [number, number];
     if (selectedCountry?.code === 'KE') return [-1.2921, 36.8219] as [number, number];
     if (selectedCountry?.code === 'US') return [39.8283, -98.5795] as [number, number];
     if (selectedCountry?.code === 'DE') return [51.1657, 10.4515] as [number, number];
     return [0, 20] as [number, number];
-  }, [validCities, validDistricts, selectedCountry]);
+  }, [validCities, validDistricts, selectedCountry, showHeatmap, heatmapData]);
 
   const zoom = (validCities.length + validDistricts.length) > 0 ? 6 : 3;
   
-  // Check if we can add items
   const canAddCity = !!selectedDistrict;
   const canAddDistrict = !!selectedRegion && !selectedDistrict;
+
+  // Calculate total listings
+  const totalListings = useMemo(() => 
+    heatmapCities.reduce((sum, c) => sum + c.listing_count, 0),
+    [heatmapCities]
+  );
 
   return (
     <Box sx={{ position: 'relative' }}>
@@ -315,6 +412,41 @@ export default function LocationMapView({
         >
           <Typography variant="body2" color="primary">
             Click anywhere on the map to add a new {canAddCity ? 'city' : 'district'}
+          </Typography>
+        </Paper>
+      )}
+      
+      {/* Heatmap legend */}
+      {showHeatmap && heatmapData.length > 0 && (
+        <Paper 
+          elevation={3}
+          sx={{ 
+            position: 'absolute', 
+            top: 10, 
+            right: 10, 
+            zIndex: 1000, 
+            p: 1.5, 
+            bgcolor: 'rgba(255,255,255,0.95)',
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1 }}>
+            Listing Density
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ 
+              width: 100, 
+              height: 10, 
+              background: 'linear-gradient(to right, blue, cyan, lime, yellow, red)',
+              borderRadius: 1,
+            }} />
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+            <Typography variant="caption">Low</Typography>
+            <Typography variant="caption">High</Typography>
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+            {heatmapCities.length} cities, {totalListings} listings
           </Typography>
         </Paper>
       )}
@@ -345,13 +477,13 @@ export default function LocationMapView({
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           
-          {/* Click handler for adding new items */}
           <MapClickHandler onClick={onMapClick} enabled={canAddCity || canAddDistrict} />
-          
-          {/* Auto-fit bounds when markers change */}
           <FitBounds cities={validCities} districts={validDistricts} />
           
-          {/* District markers (shown when viewing a region) */}
+          {/* Heatmap layer */}
+          {showHeatmap && <HeatmapLayer data={heatmapData} />}
+          
+          {/* District markers */}
           {validDistricts.map((district) => (
             <DistrictMarker
               key={`${district.country_code}-${district.region_code}-${district.district_code}`}
@@ -369,6 +501,7 @@ export default function LocationMapView({
               onDragEnd={(lat, lng) => onMarkerDrag(city, lat, lng)}
               onEdit={() => onCityEdit(city)}
               onDelete={() => onCityDelete(city)}
+              listingCount={showHeatmap ? listingCountMap.get(city.city_code) : undefined}
             />
           ))}
         </MapContainer>
@@ -409,6 +542,24 @@ export default function LocationMapView({
             />
             <Typography variant="caption" color="text.secondary">
               City ({validCities.length})
+            </Typography>
+          </Box>
+        )}
+        {showHeatmap && heatmapCities.length > 0 && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box 
+              sx={{ 
+                width: 16, 
+                height: 16, 
+                bgcolor: '#ef4444', 
+                borderRadius: '50% 50% 50% 0',
+                transform: 'rotate(-45deg)',
+                border: '2px solid white',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+              }} 
+            />
+            <Typography variant="caption" color="text.secondary">
+              Has Listings
             </Typography>
           </Box>
         )}
