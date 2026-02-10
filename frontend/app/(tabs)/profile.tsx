@@ -1778,6 +1778,41 @@ const desktopStyles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 20,
   },
+  // Credits & Boosts Section Styles
+  creditsBoostsGrid: {
+    gap: 12,
+  },
+  creditsBoostItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    padding: 16,
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  creditsBoostIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  creditsBoostContent: {
+    flex: 1,
+  },
+  creditsBoostTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  creditsBoostDesc: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
+  },
   // Unauthenticated Desktop Styles
   unauthContent: {
     flex: 1,
