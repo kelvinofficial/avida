@@ -1,167 +1,178 @@
-<analysis>**original_problem_statement:**
-The user wants to completely overhaul the location-based features of the application.
+<analysis>**original_problem_statement**: The user wants to implement a comprehensive Business Profile feature.
 
-**PRODUCT REQUIREMENTS:**
-
-1.  **Remove Near Me Feature:** Completely eliminate the Near Me button, GPS permissions, and any automatic location detection.
-2.  **Mandatory Location Selection:** Users must manually and explicitly select their location by Country, then Region/State, then City/Town. This selection should be saved.
-3.  **Smart Listing Fetch Logic:**
-    *   Initially, fetch listings that exactly match the user's selected city ().
-    *   **Fallback on Zero Results:** If no listings are found in the selected city, automatically expand the search to nearby cities. Do not require extra user action.
-    *   **Sort by Distance:** When showing fallback results, sort them by distance from the user's *selected city's coordinates*, not the user's GPS location.
-    *   **Fallback Search Priority:**
-        1.  Cities in the same district.
-        2.  Nearby cities within a configurable radius (e.g., 50km -> 100km).
-        3.  Cities in the same region.
-        4.  Cities in the same country.
-4.  **UI Requirements:**
-    *   **Listing Card:** Must display Title, Price, City Name, and Distance from the selected city (e.g., 65 km away).
-    *   **Empty State:** If fallback is triggered, show a message like No listings in {Selected City}. Showing nearby cities.
-    *   **Filter Controls:** Provide toggles: Only show listings in my city and Include nearby cities (default ON).
-5.  **Backend & Performance:**
-    *   Use Haversine formula for distance calculations between city coordinates.
-    *   Index listing tables by , , , , and .
-    *   Limit results to 50 per request.
+The project is divided into several phases:
+- **Phase 1 (MVP):** Implement core functionality for creating, editing, and publicly viewing business profiles, along with basic admin management.
+- **Phase 2:** Introduce Verified Business and Premium Verified Business tiers, add a Featured Sellers section to the homepage, add latitude/longitude to regions, and fix UI bugs.
+- **Phase 3:** Integrate payment gateways (Stripe, PayPal, M-Pesa) for the Premium Business subscriptions. Add social media links (TikTok, WhatsApp) and an image/video gallery to profiles.
+- **Phase 4:** Build the frontend UI for all new features, including a dedicated admin page for business profile management and a subscription success page.
+- **Phase 5:** Conduct an end-to-end test of the user flow (creation -> verification -> premium upgrade). Fully implement payment features like PayPal/M-Pesa buttons, subscription auto-renewal, invoicing, and email notifications.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The agent has successfully built and tested a comprehensive Location Manager within the admin dashboard. This includes full CRUD functionality for locations (countries, regions, districts, cities), an interactive map view using Leaflet for visualizing and editing locations, geocoding/reverse-geocoding capabilities, GeoJSON import/export, and a listing density heatmap. An issue with external API calls to Nominatim (for geocoding) was discovered and handled by implementing database fallbacks.
+A full-stack application featuring a FastAPI backend and a React Native (Expo) frontend. The Business Profile feature is substantially implemented on both the backend and frontend.
 
-The agent has just begun tackling the new user request to overhaul the public-facing location and listing search functionality. It has added a new smart search API endpoint to the backend but is currently in the middle of refactoring the complex frontend homepage to remove the old Near Me feature.
+- **Backend**: Endpoints for profile CRUD, verification tiers (Verified/Premium), image/video galleries, and social links are in place. An initial Stripe integration for payments exists, along with a system for featured sellers. Region data has been populated with coordinates.
+- **Frontend**: Pages for profile creation/editing (), public viewing (), and admin management () are created. The homepage displays a Featured Sellers section. The UI includes placeholders for cover images, social links, and galleries.
+- **Payments**: The  library is installed, and a  file is set up with initial Stripe checkout and webhook logic.
 
 **Last working item**:
-- **Last item agent was working:** The agent was performing a major refactor of the main application's homepage (). The goal was to remove all existing Near Me and GPS-based location functionality and begin implementing the new mandatory, user-selected location system. The agent was struggling with the file's large size and complexity and was in the process of removing UI elements and state management related to the old feature.
-- **Status:** IN PROGRESS
-- **Agent Testing Done:** N
-- **Which testing method agent to use?** Frontend testing agent and screenshot tool for the homepage UI changes. Backend testing agent or  for the new  API endpoint.
-- **User Testing Done:** N
+- **Last item agent was working**: The agent was setting up an enhanced subscription management system to handle auto-renewals, invoicing, and email notifications. A new file, , was created with placeholder logic for these features after fixing a critical routing issue with the admin UI page.
+- **Status**: IN PROGRESS
+- **Agent Testing Done**: N
+- **Which testing method agent to use?**: both
+- **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1:** The primary task of overhauling the location system on the main site is unfinished. The agent is stuck mid-way through refactoring the complex homepage.
-    -   **Attempted fixes:** The agent first tried creating a new, simplified homepage file but found it unfeasible. It then switched to making targeted edits on the existing file (), identifying and attempting to remove old code sections.
-    -   **Next debug checklist:**
-        1.  Continue editing .
-        2.  Completely remove the  hook, the  component, the Near Me button, and all associated state and logic.
-        3.  Update the  () to remove GPS logic and only store the user's manually selected location (country, region, city).
-        4.  Implement the new UI for the mandatory location picker and the filter toggles (Only show listings in my city, Include nearby cities).
-        5.  Modify the data fetching logic to use the new backend endpoint () with the selected city.
-        6.  Update the  component to display distance information.
-        7.  Add the empty-state message for when nearby results are shown.
-    -   **Why fix this issue and what will be achieved with the fix?** This is the core user requirement. Completing it will align the application with the new product direction, removing GPS dependency and improving the user experience for finding listings.
-    -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** Both
-    -   **Blocked on other issue:** None
+- **Issue 1**: Region search bar in LocationPicker may not be visible
+- **Issue 2**: Admin UI page routing may be unstable
+
+**Issues Detail**:
+- **Issue 1**:
+  - **Description (P2)**: A user-reported issue where the search bar within the region selection part of the  component doesn't render visually.
+  - **Attempted fixes**: The agent investigated , confirmed the code seems correct, and added a fixed height to the search container as a potential fix, but did not verify the result.
+  - **Next debug checklist**:
+    1.  Add  in  to inspect the  and  state variables when the modal is open.
+    2.  Check the conditional rendering logic: .
+    3.  Use the screenshot tool to visually inspect the location picker and confirm if the search bar is present and styled correctly.
+  - **Why fix this issue and what will be achieved with the fix?**: This will improve the user experience when selecting a location by allowing users to search for regions.
+  - **Status**: NOT STARTED
+  - **Is recurring issue?**: N
+  - **Should Test frontend/backend/both after fix?**: frontend
+  - **Blocked on other issue**: None
+
+- **Issue 2**:
+  - **Description (P1)**: The admin UI page at  was failing to load due to a routing issue in Expo Router. While it was resolved by restarting the Expo server, the fix may not be permanent as the underlying cause was not definitively identified.
+  - **Attempted fixes**: The agent tried adding a  file and renaming the component file, but only a server restart worked.
+  - **Next debug checklist**:
+    1.  Verify if the page loads correctly after a fresh startup without manual intervention.
+    2.  If it fails, investigate Expo Router's handling of grouped and nested routes within the  directory.
+    3.  Ensure the  file in  is correctly configured to handle the route stack.
+  - **Why fix this issue and what will be achieved with the fix?**: Ensures administrators can reliably access the business profile management page.
+  - **Status**: USER VERIFICATION PENDING
+  - **Is recurring issue?**: Y
+  - **Should Test frontend/backend/both after fix?**: frontend
+  - **Blocked on other issue**: None
 
 **In progress Task List**:
-- **Task 1:** Overhaul user-facing location selection and listing search logic.
-    - **Where to resume:** Resume editing the homepage file  to remove the remaining Near Me code and implement the new location selection flow.
-    - **What will be achieved with this?** The application will meet the user's new requirements for a mandatory, manual location selection system with a smart fallback for listing searches.
-    - **Status:** IN PROGRESS
-    - **Should Test frontend/backend/both after fix?** Both
-    - **Blocked on something:** The complexity of the  file. A potential strategy is to first stub out the new functionality and then incrementally remove the old code, or break the large file into smaller components.
+- **Task 1**: Implement Enhanced Subscription and Payment Features
+
+**Task Detail**:
+- **Task 1**:
+  - **Where to resume**: The agent created  with placeholder logic. The next step is to replace the placeholders with a full implementation for:
+    - PayPal and M-Pesa payment processing.
+    - A background job/scheduler for handling subscription auto-renewals.
+    - Invoice/receipt generation logic (e.g., using a PDF library or a payment provider's service).
+    - Integration with SendGrid for sending emails for payments, upcoming renewals, and cancellations.
+  - **What will be achieved with this?**: This will create a fully automated lifecycle for premium subscriptions, from payment to renewal and notifications.
+  - **Status**: IN PROGRESS
+  - **Should Test frontend/backend/both after fix?**: both
+  - **Blocked on something**: None
 
 **Upcoming and Future Tasks**
-**Upcoming Tasks:**
--   **(P0) Implement Mandatory Location Picker:** Create the UI flow where users must select Country > Region > City.
--   **(P0) Update Listing Card UI:** Modify the listing card to display the distance from the user's selected city, as per the format: .
--   **(P0) Implement Filter Toggles:** Add the Only show listings in my city and Include nearby cities toggles above the listing results.
--   **(P0) Implement Empty-State Message:** Display the No listings in {Selected City}. Showing nearby cities. message when the search fallback is triggered.
 
-**Future Tasks:**
--   **(P1) Verify Backend Fallback Logic:** Thoroughly test the search priority logic (district -> nearby cities -> region -> country) in the  function in .
--   **(P1) Verify Database Performance:** Confirm that the necessary indexes (, , , , ) are correctly applied to the listings table to ensure fast queries.
+**Upcoming Tasks**:
+- **P1: Frontend for Premium Subscription Purchase**: Implement the UI in  to allow users to upgrade to Premium. This includes adding payment buttons (Stripe, PayPal) and handling the client-side payment flow.
+- **P1: Frontend for Gallery Management**: Wire up the UI in  to the existing backend endpoints, enabling users to add, view, and delete images and videos in their profile gallery.
+- **P1: End-to-End User Flow Test**: Perform a complete test cycle as requested by the user: 1. Create a user account and a business profile. 2. Log in as an admin and approve the verification request. 3. Log back in as the user and upgrade the profile to Premium by making a payment.
+
+**Future Tasks**:
+- **P2: M-Pesa Callback Handling**: Implement the backend logic in  to securely handle payment confirmation callbacks from M-Pesa.
+- **P2: Cover Image & Brand Color Customization**: Fully implement the UI on the profile edit page () and public page () for uploading a cover image and selecting a brand color.
 
 **Completed work in this session**
-- **Recently completed:**
-    - A full-featured **Location Manager** was built in the admin dashboard.
-    - **Admin Features Implemented:**
-        - Full CRUD for Countries, Regions, Districts, and Cities.
-        - Interactive Map View (Leaflet) for visualizing and editing locations.
-        - Added Latitude/Longitude fields to Districts.
-        - Implemented Location Search (Geocoding) to find coordinates.
-        - Added Batch Import/Export of locations via GeoJSON.
-        - Created a Listing Density Heatmap overlay.
-        - Implemented Reverse Geocoding and Polygon Boundaries for districts.
-    - Fixed a bug in the GeoJSON export filter.
-    - Implemented graceful error handling and database fallbacks for external geocoding APIs that are blocked in the environment.
-
-**Earlier issues found/mentioned but not fixed**
-- None. The previously mentioned minor export filter issue was resolved.
-
-**Known issue recurrence from previous fork**
-- Not applicable.
+- **Backend**:
+  - Registered all business profile routes in  and resolved a critical routing order conflict with an admin proxy.
+  - Implemented a verification tier system (Verified, Premium) with expiration logic.
+  - Created endpoints for featured sellers, image/video galleries, and social links (TikTok, WhatsApp).
+  - Added latitude and longitude to the  model and seeded the database.
+  - Established initial Stripe integration for creating checkout sessions and handling webhooks.
+- **Frontend**:
+  - Built the Business Profile creation/edit page, public profile page, and admin management page.
+  - Added a Featured Sellers section to the homepage.
+  - Fixed a NaNkm away display bug on listing cards.
+  - Updated UI to display Verified and Premium badges.
+  - Added a link to the business profile section from the user's settings page.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Frontend:** Next.js, React, TypeScript, Tailwind CSS, Axios, Leaflet.js, react-leaflet
--   **Backend:** Python, FastAPI, Pydantic, SQLAlchemy
--   **Architecture:** A service-oriented architecture with separate frontends for the main app and admin dashboard, powered by a Python/FastAPI backend. A reverse proxy in the main backend handles routing to the admin service.
--   **Geospatial:** Haversine distance calculations, Geocoding/Reverse-Geocoding (with Nominatim), GeoJSON format, Map tiles (from OpenStreetMap).
+- **Backend**: FastAPI, Pydantic, SQLAlchemy, REST APIs.
+- **Frontend**: React Native, Expo, TypeScript, Expo Router for file-based routing.
+- **Database**: PostgreSQL.
+- **Architecture**: Monorepo with a decoupled  and . An API proxy in  forwards some  requests, which required careful route ordering.
 
 **key DB schema**
--   **countries**: 
--   **regions**: 
--   **districts**: 
--   **cities**: 
--   **listings**: 
+- **BusinessProfile**: 
+- **BusinessProfileGalleryItem**: 
+- **Region**: 
 
 **changes in tech stack**
--   **Leaflet.js** and **react-leaflet** were introduced to build the map-based features in the admin dashboard.
+- The  library was installed to support various payment gateways.
 
 **All files of reference**
--   : **(CRITICAL)** The main homepage file currently undergoing a major, incomplete refactor.
--   : Contains the new  endpoint for the fallback listing logic.
--   : Manages location state; needs to be updated to remove GPS logic.
--   : The primary file for the completed Location Manager feature.
--   : Contains the numerous admin APIs created for location management.
--   : Main backend routing file, which includes complex proxy logic for the admin panel.
+- : Main backend entrypoint. Critical for route registration order.
+- : Contains all core logic for business profiles.
+- : New file for handling payments and subscriptions.
+- : The primary UI for users to manage their profile.
+- : The UI for administrators to manage profiles.
+- : The product requirements document.
 
-**Areas that need refactoring**
--   : This file is over 1900 lines long and is very difficult to manage. It should be broken down into smaller, single-responsibility components to simplify development and maintenance.
+**Areas that need refactoring**:
+- The newly created  should replace or be merged with the existing  and correctly integrated into  to avoid confusion and redundant code.
 
 **key api endpoints**
--   : The new primary endpoint for fetching listings based on the selected city, with nearby fallback logic.
--   : A full suite of RESTful endpoints for location CRUD operations.
--   : Searches for coordinates based on a location name.
--   : Finds a location name based on coordinates.
--   : A batch job to populate coordinates for all districts.
--   : Exports location data to a GeoJSON file.
+- : Create a business profile.
+- : Retrieve featured profiles for the homepage.
+- : Retrieve a public business profile.
+- : Add an item to a profile's gallery.
+- : Initiate a Stripe payment.
+- : Handle Stripe payment confirmation.
+- : [Admin] List all business profiles.
+- : [Admin] Approve a business verification.
 
 **Critical Info for New Agent**
--   **New Core Objective:** The project's direction has completely changed. Your **only priority** is to implement the new mandatory location selection system as described in the problem statement. Do not work on enhancing the admin map view or other previous tasks.
--   **Homepage Complexity:** The main homepage file () is extremely large and is in a broken, half-refactored state. Proceed with a clear strategy, such as breaking it into smaller components before implementing the new features.
--   **Geocoding is Blocked:** The container environment blocks outgoing requests to . The backend features that rely on it have been updated with graceful error handling and fallbacks that use the local database. This is a known limitation.
+- **Admin Routing Is Fragile**: Be aware of two major routing complexities.
+  1.  **Backend Proxy**: An API proxy at  (line ~5385) catches  requests. Any new admin routes for the main backend must be registered *before* this proxy to avoid being incorrectly forwarded.
+  2.  **Frontend Expo Router**: The admin UI page at  only rendered correctly after an Expo server restart. This indicates a potential instability in Expo's nested routing. If the page 404s, restart the frontend server first.
+- **Incomplete Payment System**: The backend file  contains only initial Stripe integration. It requires significant work to implement the full subscription lifecycle (renewals, invoicing, notifications) and add support for PayPal and M-Pesa.
 
 **documents and test reports created in this job**
--   : Contains the product requirements and has been updated throughout the session.
+- 
+- Test reports in , which were instrumental in finding the admin routing bug.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Provided a detailed new problem statement to completely remove Near Me, enforce manual location selection, and implement a smart search fallback to nearby cities. (COMPLETED - New work started)
-2.  **User:** Confirmed to proceed with the bulk update task. (COMPLETED)
-3.  **User:** Requested Reverse Geocoding, fixing the export filter, adding polygon boundaries for districts, and running the bulk update. (COMPLETED)
-4.  **User:** Requested bulk coordinate updates for districts, GeoJSON export, a listing density heatmap, and auto-suggested coordinates. (COMPLETED)
-5.  **User:** Requested adding latitude/longitude for districts, a location search feature on the map, and batch import of cities from GeoJSON. (COMPLETED)
-6.  **User:** Requested a Map View for the Location Manager with draggable markers. (COMPLETED)
-7.  **User:** Confirmed the agent's plan to fix the admin sidebar, update the radius slider, and build the Location Manager UI. (COMPLETED)
+1. : User agrees to test the full flow and requests M-Pesa callback implementation. (Pending)
+2. : User requests an end-to-end test and implementation of renewal, invoicing, and notification features. (In Progress)
+3. : User instruction to continue. (Done)
+4. : User provides priorities for new frontend tasks. (In Progress)
+5. : User provides priorities for backend and homepage features. (Done)
+6. : User requests business tiers and a Featured Sellers section. (Done)
+7. : A duplicate priority message. (Done)
+8. : Initial user instruction for the MVP. (Done)
+9. : Initial agent instruction. (Done)
+10. : User request to add payment integrations and other features. (In Progress)
 
 **Project Health Check:**
--   **Broken:** The main application homepage () is non-functional due to an in-progress refactor.
--   **Mocked:** Geocoding and reverse geocoding features are effectively mocked/stubbed with database fallbacks because the live external API (Nominatim) is inaccessible from the environment.
+- **Broken**: The premium subscription system is non-functional; it lacks both backend logic and frontend UI for making payments and managing subscriptions. The visibility of the region search bar is unconfirmed.
+- **Mocked**: The  file contains placeholder logic for subscription renewals, invoicing, and email notifications.
 
 **3rd Party Integrations**
--   **OpenStreetMap:** Used via Leaflet.js for map tiles in the admin dashboard.
--   **Nominatim:** Used for geocoding and reverse geocoding. The connection is **BLOCKED** in the current environment, and the system relies on database fallbacks.
--   **Leaflet.js:** A JavaScript library for interactive maps, used heavily in the admin dashboard's Location Manager.
+- **Stripe (Payments)**: Requires User API Key. Initial backend setup is complete.
+- **PayPal (Payments)**: Requires User API Key. Planned for integration.
+- **M-Pesa (Payments)**: Requires User API Key. Planned for integration.
+- **SendGrid (Emails)**: Requires User API Key. Available for use.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES (for the Location Manager features)
--   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** Yes, the testing agent created and executed tests, but specific paths were not retained.
--   **Known regressions:** None.
+- **Testing agent used after significant changes**: YES
+- **Troubleshoot agent used after agent stuck in loop**: NO
+- **Test files created**: []
+- **Known regressions**: None confirmed, but the admin UI routing is a high-risk area for regression.
 
 **Credentials to test flow:**
-No specific credentials were provided. Accessing the admin dashboard at  may require admin login.</analysis>
+New user accounts can be created via the application's sign-up page. Admin access is required to test the verification flow.
+
+**What agent forgot to execute**
+- The agent did not verify if the fix for the non-rendering region search bar in the  component was successful.
+- The agent created a new  file but did not integrate it into  or clarify its relationship with the existing .</analysis>

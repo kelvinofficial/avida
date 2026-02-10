@@ -29,7 +29,7 @@
     "backend": "100% (40/40 tests passed)"
   },
   "test_credentials": {
-    "api_base": "https://vendor-portal-90.preview.emergentagent.com"
+    "api_base": "https://verified-sellers-hub.preview.emergentagent.com"
   },
   "seed_data_creation": "Test integrations, webhooks, and routing rules created in staging environment during testing. Cleaned up after tests.",
   "retest_needed": false,

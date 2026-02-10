@@ -180,7 +180,7 @@ class SubscriptionEmailService:
         self.sg = sendgrid_client
         self.from_email = os.environ.get("SENDGRID_FROM_EMAIL", "noreply@marketplace.com")
         self.from_name = os.environ.get("SENDGRID_FROM_NAME", "Avida Marketplace")
-        self.base_url = os.environ.get("FRONTEND_URL", "https://vendor-portal-90.preview.emergentagent.com")
+        self.base_url = os.environ.get("FRONTEND_URL", "https://verified-sellers-hub.preview.emergentagent.com")
     
     async def send_email(self, to_email: str, template_name: str, context: Dict) -> bool:
         """Send an email using a template"""
