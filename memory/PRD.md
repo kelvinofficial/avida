@@ -3043,3 +3043,72 @@ Added interactive Map View to the Location Manager in admin dashboard using Leaf
 5. To update coordinates: Drag a marker and drop it at new location
 
 ---
+
+## Location Manager Enhanced Features - COMPLETE ✅ (Feb 10, 2026)
+
+### Overview
+Enhanced the Location Manager with district coordinates, location search, and batch import capabilities.
+
+### Features Implemented:
+
+**1. Districts with Latitude/Longitude**
+- Added optional `lat` and `lng` fields to District model
+- Districts table now shows Latitude and Longitude columns
+- Edit District dialog includes coordinate fields
+- Added `PUT /api/admin/locations/districts` endpoint for updates
+
+**2. Location Search (OpenStreetMap Nominatim)**
+- Added search field in Edit District and Edit City dialogs
+- Uses OpenStreetMap Nominatim geocoding API (free, no API key)
+- Search results show address, lat/lng
+- Click result to auto-fill coordinates
+- API endpoint: `GET /api/admin/locations/geocode?query=...`
+
+**3. Batch Import from GeoJSON**
+- "Import GeoJSON" button in Location Manager header
+- Dialog with instructions and large textarea for JSON
+- Accepts GeoJSON FeatureCollection with Point features
+- Required properties: country_code, region_code, district_code, city_code/code, name
+- Returns import stats: imported count, errors
+- API endpoint: `POST /api/admin/locations/batch-import`
+
+### API Endpoints Added:
+- `GET /api/admin/locations/geocode?query=&limit=5` - Search places via Nominatim
+- `PUT /api/admin/locations/districts` - Update district with coordinates
+- `POST /api/admin/locations/batch-import` - Bulk import cities from GeoJSON
+
+### Files Updated:
+- `/app/backend/location_system.py` - District model with lat/lng, update_district method
+- `/app/backend/server.py` - New geocode, district update, batch-import endpoints
+- `/app/admin-dashboard/frontend/src/app/dashboard/locations/page.tsx` - UI updates
+- `/app/admin-dashboard/frontend/src/app/dashboard/locations/LocationMapView.tsx` - District markers
+
+### Testing: 100% (11 backend tests, 7 frontend features verified)
+- Districts lat/lng columns: PASSED
+- Edit District location search: PASSED  
+- Edit City location search: PASSED
+- Import GeoJSON button/dialog: PASSED
+- Geocoding API: PASSED
+- Batch import API: PASSED
+
+### GeoJSON Import Format Example:
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [39.2083, -6.7924] },
+      "properties": {
+        "country_code": "TZ",
+        "region_code": "DSM",
+        "district_code": "KIN",
+        "city_code": "NEW",
+        "name": "New City Name"
+      }
+    }
+  ]
+}
+```
+
+---
