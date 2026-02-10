@@ -194,6 +194,8 @@ export default function SettingsScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeSection, setActiveSection] = useState('notifications');
+  const [defaultLocation, setDefaultLocation] = useState<LocationData | null>(null);
+  const [locationSaving, setLocationSaving] = useState(false);
 
   const fetchSettings = useCallback(async () => {
     try {
