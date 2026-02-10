@@ -16,7 +16,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 # Base URL from environment
-BASE_URL = os.environ.get("EXPO_PUBLIC_BACKEND_URL", "https://user-csv-import.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("EXPO_PUBLIC_BACKEND_URL", "https://hierarchical-picker.preview.emergentagent.com").rstrip("/")
 
 
 @pytest.fixture(scope="module")
