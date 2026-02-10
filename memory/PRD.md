@@ -167,12 +167,23 @@ Payment success page with:
 - [x] Email notifications for admin-initiated verification and premium upgrade
 - [x] Notification preferences page with opt-in/out for email types
 - [x] Push notification support with Firebase Cloud Messaging (FCM)
+- [x] Voucher/Discount System (Amount, Percent, Credit types with rich restrictions)
+- [x] Listing Moderation System (Validate/Reject/Remove with queue)
+- [x] User Listing Limits (Tier-based with custom overrides)
+- [x] Advanced SEO Meta Tags Management
+- [x] URL Masking/Shortening with analytics
+- [x] Polls, Surveys & Feedback System
+- [x] Cookie Consent Management (GDPR)
+- [x] reCAPTCHA Configuration (v2/v3/invisible)
+- [x] WebP Image Conversion
+- [x] Invoice PDF Generation
 
 ### Future/Backlog
 - [ ] PayPal SDK button integration on native platforms
 - [ ] M-Pesa callback handling in production (Safaricom API)
 - [ ] End-to-end user flow test (create -> verify -> premium upgrade)
 - [ ] Region search bar visibility fix in LocationPicker
+- [ ] Admin UI pages for new features (Marketing tab, Settings tab)
 
 ## Testing Status
 - Backend: 100% (All tests passed)
