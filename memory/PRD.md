@@ -2,161 +2,160 @@
 
 ## Original Problem Statement
 Build a local marketplace application (Avida) with:
-1. Location-based filtering (Country > Region selection instead of GPS "Near Me")
+1. Location-based filtering (Country > Region selection)
 2. Business Profile feature for verified sellers
+3. Premium subscription tiers with payment integration
 
 ## What's Been Implemented
 
-### 2026-02-10: Business Profile Verification Tiers & Featured Sellers
-**COMPLETED**
-- **Verification Tiers System**
-  - "Verified Business" - Standard verified tier with green checkmark badge
-  - "Premium Verified Business" - Premium tier (paid + admin approval) with gold diamond badge
-  - New fields: `is_premium`, `verification_tier` (none/verified/premium), `premium_expires_at`
-  - Admin endpoints: `/upgrade-premium`, `/revoke-premium`
+### 2026-02-10: Payment Integration & Enhanced Features
+**COMPLETED - Backend**
+- **Stripe Payment Integration**
+  - Checkout session creation for Premium subscriptions
+  - Payment status verification
+  - Webhook handling for automatic premium activation
+  - Packages: Monthly ($29.99), Quarterly ($79.99), Yearly ($249.99)
 
-- **Featured Sellers Section on Homepage**
-  - Displays verified sellers (Premium first, then Verified)
-  - Shows logo, business name, location, listing count, tier badge
-  - Horizontal scrolling carousel design
-  - Hides automatically when no verified sellers exist
+- **PayPal Payment Integration**
+  - Order creation and capture
+  - Frontend SDK configuration endpoint
+  - Automatic premium activation on capture
 
-- **Region Coordinates Support**
-  - Added `lat` and `lng` fields to Region model
-  - Admin endpoint to update region coordinates
-  - Enables distance calculations for region-based filtering
+- **M-Pesa Payment Integration**
+  - STK Push initiation for Kenya/Tanzania
+  - Local currency packages (KES 3,500 / TZS 75,000)
+  - Phone number normalization
 
-- **Bug Fixes**
-  - Fixed "NaNkm away" display bug - now validates lat/lng before distance calculation
-  - Region search bar visibility confirmed working
+- **Gallery System**
+  - Image gallery upload (max 20 images, 5MB each)
+  - Video gallery (YouTube/Vimeo links, max 10)
+  - Auto-thumbnail extraction for YouTube videos
+  - Delete functionality for both
 
-### 2026-02-10 (Earlier): Business Profile MVP
-**COMPLETED**
-- Business Profile edit form with all fields
-- Public profile page with verification badges
-- Backend CRUD APIs
-- Admin verification endpoints
-- Navigation integration in profile menu
+- **Social Network Links**
+  - Facebook, Instagram, Twitter/X, LinkedIn
+  - YouTube, TikTok, WhatsApp, Website
+  - Vimeo, Pinterest
 
-### Earlier: Location System Refactor
-**COMPLETED**
-- Removed GPS-based "Near Me" functionality
-- Simplified to Country > Region selection
-- localStorage persistence for web
+- **Region Coordinates**
+  - Pre-populated 14 major regions (Germany, Tanzania, Kenya)
+  - Berlin, Bavaria, NRW, Hesse, Baden-Württemberg, Hamburg
+  - Dar es Salaam, Arusha, Mwanza, Dodoma
+  - Nairobi, Mombasa, Kisumu, Nakuru
 
-## API Endpoints
+### API Endpoints Added
 
-### Business Profiles (User)
-- `POST /api/business-profiles/` - Create profile
-- `GET /api/business-profiles/me` - Get user's profile
-- `PUT /api/business-profiles/me` - Update profile
-- `DELETE /api/business-profiles/me` - Delete profile
-- `POST /api/business-profiles/me/logo` - Upload logo
-- `POST /api/business-profiles/me/request-verification` - Request verification
-- `GET /api/business-profiles/public/{identifier}` - Public profile
-- `GET /api/business-profiles/public/{identifier}/listings` - Profile listings
-- `GET /api/business-profiles/directory` - Browse all profiles
-- `GET /api/business-profiles/featured` - **NEW** Featured sellers for homepage
+#### Premium Subscription (`/api/premium-subscription`)
+- `GET /packages` - Get available subscription packages
+- `POST /stripe/checkout` - Create Stripe checkout session
+- `GET /stripe/status/{session_id}` - Check payment status
+- `POST /paypal/checkout` - Create PayPal order
+- `POST /paypal/capture/{transaction_id}` - Capture PayPal payment
+- `POST /mpesa/stk-push` - Initiate M-Pesa payment
+- `GET /my-subscription` - Get current subscription status
 
-### Business Profiles (Admin)
-- `GET /api/admin/business-profiles/` - List all profiles
-- `GET /api/admin/business-profiles/verification-requests` - Pending verifications
-- `GET /api/admin/business-profiles/stats/overview` - Statistics
-- `POST /api/admin/business-profiles/{id}/verify` - Approve/reject standard verification
-- `POST /api/admin/business-profiles/{id}/upgrade-premium` - **NEW** Upgrade to Premium
-- `POST /api/admin/business-profiles/{id}/revoke-premium` - **NEW** Revoke Premium
-- `POST /api/admin/business-profiles/{id}/toggle-verified` - Toggle status
-- `POST /api/admin/business-profiles/{id}/toggle-active` - Activate/deactivate
+#### Gallery (`/api/business-profiles`)
+- `GET /me/gallery` - Get gallery images and videos
+- `POST /me/gallery/image` - Add image to gallery
+- `DELETE /me/gallery/image/{image_id}` - Delete image
+- `POST /me/gallery/video` - Add video link
+- `DELETE /me/gallery/video/{video_id}` - Delete video
 
-### Location System (Admin)
-- `PUT /api/admin/locations/regions/coordinates` - **NEW** Update region lat/lng
+#### Webhooks
+- `POST /api/webhook/stripe` - Stripe payment webhook
 
-## Database Schema
+### Earlier Implementations (Same Session)
+- Business Profile verification tiers (Verified/Premium)
+- Featured Sellers section on homepage
+- NaNkm display bug fix
+- Region search bar visibility fix
 
-### business_profiles Collection
+## Database Schema Updates
+
+### payment_transactions Collection
 ```json
 {
   "id": "uuid",
+  "session_id": "string (Stripe)",
+  "payment_method": "stripe|paypal|mpesa",
   "user_id": "string",
-  "business_name": "string",
-  "identifier": "string (unique slug)",
-  "description": "string",
-  "logo_url": "string",
-  "cover_url": "string",
-  "brand_color": "string (#hex)",
-  "primary_categories": ["string"],
-  "phone": "string",
-  "email": "string",
-  "address": "string",
-  "city": "string",
-  "country": "string",
-  "is_verified": "boolean",
-  "is_premium": "boolean",
-  "verification_tier": "none|verified|premium",
-  "verification_status": "none|pending|approved|rejected",
-  "premium_expires_at": "datetime",
-  "is_active": "boolean",
-  "total_views": "number",
-  "created_at": "datetime",
-  "updated_at": "datetime"
-}
-```
-
-### location_regions Collection
-```json
-{
-  "country_code": "string",
-  "region_code": "string",
-  "name": "string",
-  "lat": "float (optional)",
-  "lng": "float (optional)",
+  "business_profile_id": "string",
+  "package_id": "string",
+  "amount": "float",
+  "currency": "string",
+  "duration_days": "int",
+  "status": "pending|success|failed",
+  "payment_status": "initiated|paid|failed",
+  "paid_at": "datetime",
   "created_at": "datetime"
 }
 ```
 
-## Tech Stack
-- **Frontend**: React Native + Expo (web), TypeScript
-- **Backend**: Python FastAPI, MongoDB
-- **Persistence**: localStorage (web) / AsyncStorage (native)
+### business_profiles Collection (Updated)
+```json
+{
+  ...existing fields,
+  "gallery_images": [
+    {"id": "string", "url": "string", "caption": "string", "order": "int"}
+  ],
+  "gallery_videos": [
+    {"id": "string", "url": "string", "title": "string", "thumbnail": "string"}
+  ],
+  "social_links": {
+    "facebook": "string",
+    "instagram": "string",
+    "twitter": "string",
+    "linkedin": "string",
+    "youtube": "string",
+    "tiktok": "string",
+    "whatsapp": "string"
+  }
+}
+```
 
-## P0/P1/P2 Features Remaining
+## P0/P1/P2 Features Status
 
-### P0 (Critical) - Done
-- [x] Business Profile creation
-- [x] Public profile page
-- [x] Admin verification endpoints
-- [x] Verification tiers (Verified/Premium)
+### P0 (Critical) - Done ✅
+- [x] Payment integration (Stripe, PayPal, M-Pesa)
+- [x] Business Profile verification tiers
 - [x] Featured Sellers section
 - [x] Region coordinates support
-- [x] NaNkm bug fix
+- [x] Gallery system (backend)
+- [x] Social links (backend)
 
-### P1 (High Priority)
-- [ ] Add data-testid attributes for better test coverage
-- [ ] Pre-populate some regions with lat/lng coordinates
+### P1 (High Priority) - Pending
+- [ ] Frontend UI for galleries (add/delete images/videos)
+- [ ] Frontend UI for social links editing
+- [ ] Cover image upload UI (1200x400)
+- [ ] Premium subscription purchase flow UI
+- [ ] Admin UI for managing business profiles
 
-### P2 (Medium Priority)
-- [ ] Cover image upload for business profiles
-- [ ] Brand color customization
-- [ ] Social network links
-- [ ] Admin UI page for managing business profiles
+### P2 (Medium Priority) - Pending
+- [ ] Brand color picker UI
+- [ ] Opening hours editor UI
 
 ### Future/Backlog
-- [ ] Admin-defined "Features" and "Accepted Payments"
-- [ ] Image gallery for profiles
-- [ ] Video gallery (YouTube links)
-- [ ] Sitemap generation for SEO
-- [ ] Profile picture plugin integration
-- [ ] Business directory with advanced search/filters
-- [ ] Premium subscription payment integration
+- [ ] Subscription auto-renewal
+- [ ] Invoice generation
+- [ ] Email notifications for subscription events
+- [ ] SEO sitemap generation
 
 ## Key Files Reference
-- `/app/frontend/app/(tabs)/index.tsx` - Homepage with Featured Sellers & NaNkm fix
-- `/app/frontend/app/business/edit.tsx` - Business profile edit form
-- `/app/frontend/app/business/[slug].tsx` - Public profile with tier badges
-- `/app/backend/business_profile_system.py` - Complete backend logic
-- `/app/backend/location_system.py` - Location system with region coordinates
-- `/app/backend/server.py` - Route registration
+- `/app/backend/premium_subscription_system.py` - Payment integration
+- `/app/backend/business_profile_system.py` - Gallery & social links
+- `/app/backend/location_system.py` - Region coordinates
+- `/app/frontend/app/(tabs)/index.tsx` - Featured Sellers section
+- `/app/frontend/app/business/edit.tsx` - Business profile form
+- `/app/frontend/app/business/[slug].tsx` - Public profile page
+
+## Environment Variables Required
+```
+STRIPE_API_KEY=sk_test_xxx (already configured)
+PAYPAL_CLIENT_ID=xxx (optional)
+MPESA_CONSUMER_KEY=xxx (optional)
+MPESA_CONSUMER_SECRET=xxx (optional)
+```
 
 ## Test Reports
-- `/app/test_reports/iteration_62.json` - Initial Business Profile MVP tests
-- `/app/test_reports/iteration_63.json` - Verification tiers & Featured Sellers tests
+- `/app/test_reports/iteration_62.json` - Business Profile MVP
+- `/app/test_reports/iteration_63.json` - Verification tiers & Featured Sellers
