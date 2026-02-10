@@ -5124,6 +5124,456 @@ async def proxy_clear_ai_cache(admin = Depends(get_current_admin)):
     return {"success": True, "deleted": result.deleted_count}
 
 # =============================================================================
+# VOUCHER MANAGEMENT (Direct DB access since we share the same DB)
+# =============================================================================
+
+@app.get("/api/admin/vouchers/list")
+async def list_vouchers(
+    status: Optional[str] = None,
+    voucher_type: Optional[str] = None,
+    limit: int = 50,
+    skip: int = 0,
+    admin: dict = Depends(get_current_admin)
+):
+    """List all vouchers"""
+    query = {}
+    if status:
+        query["status"] = status
+    if voucher_type:
+        query["voucher_type"] = voucher_type
+    
+    cursor = db.vouchers.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit)
+    vouchers = await cursor.to_list(length=limit)
+    total = await db.vouchers.count_documents(query)
+    
+    # Calculate status for each voucher
+    now = datetime.now(timezone.utc)
+    for v in vouchers:
+        if not v.get("is_active"):
+            v["status"] = "disabled"
+        elif v.get("valid_until") and v["valid_until"] < now:
+            v["status"] = "expired"
+        elif v.get("max_uses") and v.get("total_uses", 0) >= v["max_uses"]:
+            v["status"] = "depleted"
+        else:
+            v["status"] = "active"
+    
+    return {"vouchers": vouchers, "total": total}
+
+@app.get("/api/admin/vouchers/stats")
+async def get_voucher_stats(admin: dict = Depends(get_current_admin)):
+    """Get voucher statistics"""
+    now = datetime.now(timezone.utc)
+    
+    total = await db.vouchers.count_documents({})
+    active = await db.vouchers.count_documents({
+        "is_active": True,
+        "$or": [{"valid_until": None}, {"valid_until": {"$gt": now}}]
+    })
+    
+    total_redemptions = await db.voucher_usage.count_documents({})
+    
+    pipeline = [{"$group": {"_id": None, "total": {"$sum": "$discount_amount"}}}]
+    result = await db.voucher_usage.aggregate(pipeline).to_list(length=1)
+    total_discount = result[0]["total"] if result else 0
+    
+    type_stats = await db.vouchers.aggregate([
+        {"$group": {"_id": "$voucher_type", "count": {"$sum": 1}}}
+    ]).to_list(length=10)
+    
+    return {
+        "total_vouchers": total,
+        "active_vouchers": active,
+        "total_redemptions": total_redemptions,
+        "total_discount_given": total_discount,
+        "by_type": {t["_id"]: t["count"] for t in type_stats}
+    }
+
+@app.get("/api/admin/vouchers/{voucher_id}")
+async def get_voucher(voucher_id: str, admin: dict = Depends(get_current_admin)):
+    """Get voucher details"""
+    voucher = await db.vouchers.find_one({"id": voucher_id}, {"_id": 0})
+    if not voucher:
+        raise HTTPException(status_code=404, detail="Voucher not found")
+    
+    usage_cursor = db.voucher_usage.find({"voucher_id": voucher_id}, {"_id": 0}).sort("used_at", -1).limit(50)
+    usage = await usage_cursor.to_list(length=50)
+    
+    now = datetime.now(timezone.utc)
+    if not voucher.get("is_active"):
+        voucher["status"] = "disabled"
+    elif voucher.get("valid_until") and voucher["valid_until"] < now:
+        voucher["status"] = "expired"
+    elif voucher.get("max_uses") and voucher.get("total_uses", 0) >= voucher["max_uses"]:
+        voucher["status"] = "depleted"
+    else:
+        voucher["status"] = "active"
+    
+    voucher["usage_history"] = usage
+    return voucher
+
+@app.post("/api/admin/vouchers/create")
+async def create_voucher(request: Request, admin: dict = Depends(get_current_admin)):
+    """Create a new voucher"""
+    data = await request.json()
+    
+    existing = await db.vouchers.find_one({"code": data.get("code", "").upper()})
+    if existing:
+        raise HTTPException(status_code=400, detail="Voucher code already exists")
+    
+    now = datetime.now(timezone.utc)
+    voucher = {
+        "id": str(uuid.uuid4()),
+        "code": data.get("code", "").upper(),
+        "voucher_type": data.get("voucher_type", "amount"),
+        "value": data.get("value", 0),
+        "description": data.get("description"),
+        "max_uses": data.get("max_uses"),
+        "max_uses_per_user": data.get("max_uses_per_user", 1),
+        "min_order_amount": data.get("min_order_amount"),
+        "max_discount_amount": data.get("max_discount_amount"),
+        "valid_from": data.get("valid_from") or now.isoformat(),
+        "valid_until": data.get("valid_until"),
+        "allowed_user_ids": data.get("allowed_user_ids"),
+        "new_users_only": data.get("new_users_only", False),
+        "verified_users_only": data.get("verified_users_only", False),
+        "premium_users_only": data.get("premium_users_only", False),
+        "allowed_categories": data.get("allowed_categories"),
+        "excluded_categories": data.get("excluded_categories"),
+        "stackable": data.get("stackable", False),
+        "is_active": data.get("is_active", True),
+        "total_uses": 0,
+        "created_by": admin.get("id"),
+        "created_at": now,
+        "updated_at": now
+    }
+    
+    await db.vouchers.insert_one(voucher)
+    logger.info(f"Voucher created: {voucher['code']} by {admin.get('email')}")
+    
+    return {"message": "Voucher created successfully", "voucher_id": voucher["id"], "code": voucher["code"]}
+
+@app.put("/api/admin/vouchers/{voucher_id}")
+async def update_voucher(voucher_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    """Update voucher"""
+    voucher = await db.vouchers.find_one({"id": voucher_id})
+    if not voucher:
+        raise HTTPException(status_code=404, detail="Voucher not found")
+    
+    data = await request.json()
+    allowed_fields = [
+        "description", "max_uses", "max_uses_per_user", "min_order_amount",
+        "max_discount_amount", "valid_until", "allowed_user_ids", "new_users_only",
+        "verified_users_only", "premium_users_only", "allowed_categories",
+        "excluded_categories", "stackable", "is_active"
+    ]
+    
+    update_data = {k: v for k, v in data.items() if k in allowed_fields}
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    
+    await db.vouchers.update_one({"id": voucher_id}, {"$set": update_data})
+    return {"message": "Voucher updated successfully"}
+
+@app.delete("/api/admin/vouchers/{voucher_id}")
+async def delete_voucher(voucher_id: str, admin: dict = Depends(get_current_admin)):
+    """Delete voucher"""
+    result = await db.vouchers.delete_one({"id": voucher_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Voucher not found")
+    return {"message": "Voucher deleted successfully"}
+
+# =============================================================================
+# LISTING MODERATION (Direct DB access since we share the same DB)
+# =============================================================================
+
+@app.get("/api/admin/listing-moderation/queue")
+async def get_moderation_queue(
+    status: Optional[str] = "pending",
+    category: Optional[str] = None,
+    limit: int = 50,
+    skip: int = 0,
+    admin: dict = Depends(get_current_admin)
+):
+    """Get listings pending moderation"""
+    query = {}
+    
+    if status == "pending":
+        query["moderation_status"] = {"$in": [None, "pending"]}
+        query["is_active"] = False
+    elif status == "approved":
+        query["moderation_status"] = "approved"
+    elif status == "rejected":
+        query["moderation_status"] = "rejected"
+    
+    if category:
+        query["category"] = category
+    
+    cursor = db.listings.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit)
+    listings = await cursor.to_list(length=limit)
+    
+    for listing in listings:
+        user = await db.users.find_one({"user_id": listing.get("user_id")}, {"_id": 0, "name": 1, "email": 1})
+        listing["user"] = user
+    
+    total = await db.listings.count_documents(query)
+    pending_count = await db.listings.count_documents({"moderation_status": {"$in": [None, "pending"]}, "is_active": False})
+    
+    return {"listings": listings, "total": total, "pending_count": pending_count}
+
+@app.post("/api/admin/listing-moderation/decide/{listing_id}")
+async def moderate_listing(listing_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    """Make a moderation decision on a listing"""
+    listing = await db.listings.find_one({"id": listing_id})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    
+    data = await request.json()
+    action = data.get("action")
+    reason = data.get("reason")
+    notify_user = data.get("notify_user", True)
+    
+    now = datetime.now(timezone.utc)
+    
+    if action == "validate":
+        await db.listings.update_one(
+            {"id": listing_id},
+            {"$set": {
+                "is_active": True,
+                "moderation_status": "approved",
+                "moderated_at": now,
+                "moderated_by": admin.get("id"),
+                "moderation_reason": reason
+            }}
+        )
+        message = "Listing approved and now visible"
+        
+    elif action == "reject":
+        await db.listings.update_one(
+            {"id": listing_id},
+            {"$set": {
+                "is_active": False,
+                "moderation_status": "rejected",
+                "moderated_at": now,
+                "moderated_by": admin.get("id"),
+                "moderation_reason": reason
+            }}
+        )
+        message = "Listing rejected"
+        
+    elif action == "remove":
+        await db.listings.delete_one({"id": listing_id})
+        message = "Listing removed"
+    else:
+        raise HTTPException(status_code=400, detail="Invalid action")
+    
+    if notify_user and action != "remove":
+        notification_title = "Listing Update"
+        if action == "validate":
+            notification_msg = f"Your listing '{listing.get('title', '')}' has been approved and is now live!"
+        else:
+            notification_msg = f"Your listing '{listing.get('title', '')}' was not approved. Reason: {reason or 'Does not meet guidelines'}"
+        
+        await db.notifications.insert_one({
+            "id": str(uuid.uuid4()),
+            "user_id": listing["user_id"],
+            "type": "listing_moderation",
+            "title": notification_title,
+            "message": notification_msg,
+            "listing_id": listing_id,
+            "is_read": False,
+            "created_at": now
+        })
+    
+    await db.moderation_log.insert_one({
+        "id": str(uuid.uuid4()),
+        "listing_id": listing_id,
+        "listing_title": listing.get("title"),
+        "user_id": listing["user_id"],
+        "admin_id": admin.get("id"),
+        "admin_email": admin.get("email"),
+        "action": action,
+        "reason": reason,
+        "created_at": now
+    })
+    
+    logger.info(f"Listing {listing_id} moderated: {action} by {admin.get('email')}")
+    
+    return {"message": message, "action": action}
+
+@app.post("/api/admin/listing-moderation/bulk-decide")
+async def bulk_moderate(request: Request, admin: dict = Depends(get_current_admin)):
+    """Bulk moderation decision"""
+    data = await request.json()
+    listing_ids = data.get("listing_ids", [])
+    action = data.get("action")
+    reason = data.get("reason")
+    notify_users = data.get("notify_users", True)
+    
+    if not listing_ids or not action:
+        raise HTTPException(status_code=400, detail="listing_ids and action required")
+    
+    results = {"success": 0, "failed": 0}
+    
+    for listing_id in listing_ids:
+        try:
+            listing = await db.listings.find_one({"id": listing_id})
+            if not listing:
+                results["failed"] += 1
+                continue
+            
+            now = datetime.now(timezone.utc)
+            
+            if action == "validate":
+                await db.listings.update_one(
+                    {"id": listing_id},
+                    {"$set": {"is_active": True, "moderation_status": "approved", "moderated_at": now}}
+                )
+            elif action == "reject":
+                await db.listings.update_one(
+                    {"id": listing_id},
+                    {"$set": {"is_active": False, "moderation_status": "rejected", "moderated_at": now}}
+                )
+            elif action == "remove":
+                await db.listings.delete_one({"id": listing_id})
+            
+            await db.moderation_log.insert_one({
+                "id": str(uuid.uuid4()),
+                "listing_id": listing_id,
+                "admin_id": admin.get("id"),
+                "action": action,
+                "reason": reason,
+                "created_at": now
+            })
+            
+            results["success"] += 1
+        except Exception as e:
+            logger.error(f"Bulk moderation error for {listing_id}: {e}")
+            results["failed"] += 1
+    
+    return results
+
+@app.get("/api/admin/listing-moderation/log")
+async def get_moderation_log(
+    listing_id: Optional[str] = None,
+    admin_id: Optional[str] = None,
+    action: Optional[str] = None,
+    limit: int = 100,
+    admin: dict = Depends(get_current_admin)
+):
+    """Get moderation history"""
+    query = {}
+    if listing_id:
+        query["listing_id"] = listing_id
+    if admin_id:
+        query["admin_id"] = admin_id
+    if action:
+        query["action"] = action
+    
+    cursor = db.moderation_log.find(query, {"_id": 0}).sort("created_at", -1).limit(limit)
+    logs = await cursor.to_list(length=limit)
+    
+    return {"logs": logs}
+
+@app.get("/api/admin/listing-moderation/limits/settings")
+async def get_limit_settings(admin: dict = Depends(get_current_admin)):
+    """Get global listing limit settings"""
+    settings = await db.app_settings.find_one({"key": "listing_limits"})
+    
+    if not settings:
+        return {
+            "require_moderation": True,
+            "auto_approve_verified_users": True,
+            "auto_approve_premium_users": True,
+            "default_tier": "free",
+            "tier_limits": {"free": 5, "basic": 20, "premium": 100, "unlimited": None},
+            "moderation_enabled": True
+        }
+    
+    return settings.get("value", {})
+
+@app.put("/api/admin/listing-moderation/limits/settings")
+async def update_limit_settings(request: Request, admin: dict = Depends(get_current_admin)):
+    """Update global listing limit settings"""
+    data = await request.json()
+    
+    await db.app_settings.update_one(
+        {"key": "listing_limits"},
+        {"$set": {"key": "listing_limits", "value": data, "updated_at": datetime.now(timezone.utc)}},
+        upsert=True
+    )
+    
+    return {"message": "Settings updated"}
+
+@app.get("/api/admin/listing-moderation/limits/user/{user_id}")
+async def get_user_limits(user_id: str, admin: dict = Depends(get_current_admin)):
+    """Get user's listing limits and usage"""
+    user = await db.users.find_one({"user_id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user_limits = await db.user_listing_limits.find_one({"user_id": user_id})
+    active_listings = await db.listings.count_documents({"user_id": user_id, "is_active": True})
+    total_listings = await db.listings.count_documents({"user_id": user_id})
+    
+    settings = await db.app_settings.find_one({"key": "listing_limits"})
+    settings_value = settings.get("value", {}) if settings else {}
+    
+    tier_limits = {"free": 5, "basic": 20, "premium": 100, "unlimited": None}
+    
+    if user_limits and user_limits.get("is_unlimited"):
+        effective_limit = None
+    elif user_limits and user_limits.get("custom_limit") is not None:
+        effective_limit = user_limits["custom_limit"]
+    else:
+        tier = user_limits.get("tier") if user_limits else settings_value.get("default_tier", "free")
+        effective_limit = tier_limits.get(tier, 5)
+    
+    return {
+        "user_id": user_id,
+        "user_name": user.get("name"),
+        "tier": user_limits.get("tier") if user_limits else "free",
+        "custom_limit": user_limits.get("custom_limit") if user_limits else None,
+        "is_unlimited": user_limits.get("is_unlimited", False) if user_limits else False,
+        "effective_limit": effective_limit,
+        "active_listings": active_listings,
+        "total_listings": total_listings,
+        "remaining": (effective_limit - active_listings) if effective_limit else None,
+        "can_post": effective_limit is None or active_listings < effective_limit
+    }
+
+@app.put("/api/admin/listing-moderation/limits/user/{user_id}")
+async def set_user_limits(user_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    """Set custom limits for a user"""
+    data = await request.json()
+    
+    user = await db.users.find_one({"user_id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    update_data = {
+        "user_id": user_id,
+        "updated_at": datetime.now(timezone.utc),
+        "updated_by": admin.get("id")
+    }
+    
+    if "tier" in data:
+        update_data["tier"] = data["tier"]
+    if "custom_limit" in data:
+        update_data["custom_limit"] = data["custom_limit"]
+    if "is_unlimited" in data:
+        update_data["is_unlimited"] = data["is_unlimited"]
+    
+    await db.user_listing_limits.update_one(
+        {"user_id": user_id},
+        {"$set": update_data, "$setOnInsert": {"created_at": datetime.now(timezone.utc)}},
+        upsert=True
+    )
+    
+    logger.info(f"User {user_id} limits updated by {admin.get('email')}")
+    
+    return {"message": "User limits updated"}
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
