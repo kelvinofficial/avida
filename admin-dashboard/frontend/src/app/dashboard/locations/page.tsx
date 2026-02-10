@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -21,14 +21,14 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Tabs,
-  Tab,
   Chip,
   Alert,
   CircularProgress,
   Breadcrumbs,
   Link,
   Tooltip,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -40,23 +40,21 @@ import {
   Place as PlaceIcon,
   Refresh as RefreshIcon,
   ArrowForward as ArrowIcon,
+  TableChart as TableIcon,
+  Map as MapIcon,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
+import dynamic from 'next/dynamic';
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div role="tabpanel" hidden={value !== index} {...other}>
-      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
-    </div>
-  );
-}
+// Dynamically import the map component to avoid SSR issues
+const LocationMapView = dynamic(() => import('./LocationMapView'), {
+  ssr: false,
+  loading: () => (
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 500 }}>
+      <CircularProgress />
+    </Box>
+  ),
+});
 
 interface Country {
   code: string;
@@ -95,7 +93,7 @@ interface LocationStats {
 }
 
 export default function LocationsPage() {
-  const [tabValue, setTabValue] = useState(0);
+  const [viewMode, setViewMode] = useState<'table' | 'map'>('table');
   const [stats, setStats] = useState<LocationStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -105,6 +103,7 @@ export default function LocationsPage() {
   const [regions, setRegions] = useState<Region[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
   const [cities, setCities] = useState<City[]>([]);
+  const [allCities, setAllCities] = useState<City[]>([]);
 
   // Selection states for drilling down
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
@@ -117,9 +116,13 @@ export default function LocationsPage() {
   const [editItem, setEditItem] = useState<any>(null);
   const [formData, setFormData] = useState<any>({});
 
+  // Map click coordinates for new city
+  const [mapClickCoords, setMapClickCoords] = useState<{ lat: number; lng: number } | null>(null);
+
   useEffect(() => {
     loadStats();
     loadCountries();
+    loadAllCities();
   }, []);
 
   const loadStats = async () => {
@@ -141,6 +144,36 @@ export default function LocationsPage() {
       setError(err.message || 'Failed to load countries');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAllCities = async () => {
+    try {
+      // Load all cities for map view - we'll get them from each country
+      const countriesResponse = await api.get('/locations/countries');
+      let allCitiesData: City[] = [];
+      
+      // For each country, get all regions, districts, and cities
+      for (const country of countriesResponse.slice(0, 5)) { // Limit to first 5 countries for performance
+        try {
+          const regionsResp = await api.get(`/locations/regions?country_code=${country.code}`);
+          for (const region of regionsResp.slice(0, 3)) {
+            try {
+              const districtsResp = await api.get(`/locations/districts?country_code=${country.code}&region_code=${region.region_code}`);
+              for (const district of districtsResp.slice(0, 3)) {
+                try {
+                  const citiesResp = await api.get(`/locations/cities?country_code=${country.code}&region_code=${region.region_code}&district_code=${district.district_code}`);
+                  allCitiesData = [...allCitiesData, ...citiesResp];
+                } catch (e) {}
+              }
+            } catch (e) {}
+          }
+        } catch (e) {}
+      }
+      
+      setAllCities(allCitiesData);
+    } catch (err) {
+      console.error('Failed to load all cities:', err);
     }
   };
 
@@ -184,20 +217,17 @@ export default function LocationsPage() {
     setSelectedCountry(country);
     setSelectedRegion(null);
     setSelectedDistrict(null);
-    setTabValue(1);
     loadRegions(country.code);
   };
 
   const handleRegionClick = (region: Region) => {
     setSelectedRegion(region);
     setSelectedDistrict(null);
-    setTabValue(2);
     loadDistricts(region.country_code, region.region_code);
   };
 
   const handleDistrictClick = (district: District) => {
     setSelectedDistrict(district);
-    setTabValue(3);
     loadCities(district.country_code, district.region_code, district.district_code);
   };
 
@@ -206,21 +236,23 @@ export default function LocationsPage() {
       setSelectedCountry(null);
       setSelectedRegion(null);
       setSelectedDistrict(null);
-      setTabValue(0);
     } else if (level === 1) {
       setSelectedRegion(null);
       setSelectedDistrict(null);
-      setTabValue(1);
     } else if (level === 2) {
       setSelectedDistrict(null);
-      setTabValue(2);
     }
   };
 
-  const openAddDialog = (type: 'country' | 'region' | 'district' | 'city') => {
+  const openAddDialog = (type: 'country' | 'region' | 'district' | 'city', coords?: { lat: number; lng: number }) => {
     setDialogType(type);
     setEditItem(null);
-    setFormData({});
+    if (type === 'city' && coords) {
+      setFormData({ lat: coords.lat, lng: coords.lng });
+    } else {
+      setFormData({});
+    }
+    setMapClickCoords(null);
     setDialogOpen(true);
   };
 
@@ -234,24 +266,25 @@ export default function LocationsPage() {
   const handleSave = async () => {
     try {
       const endpoint = editItem 
-        ? `/admin/locations/${dialogType}s/${editItem.code || editItem.city_code}`
-        : `/admin/locations/${dialogType}s`;
+        ? `/locations/${dialogType === 'country' ? 'countries' : dialogType + 's'}/${editItem.code || editItem[dialogType + '_code']}`
+        : `/locations/${dialogType === 'country' ? 'countries' : dialogType + 's'}`;
       
       const method = editItem ? 'put' : 'post';
       
       // Add parent codes for nested items
+      const dataToSend = { ...formData };
       if (dialogType === 'region') {
-        formData.country_code = selectedCountry?.code;
+        dataToSend.country_code = selectedCountry?.code;
       } else if (dialogType === 'district') {
-        formData.country_code = selectedCountry?.code;
-        formData.region_code = selectedRegion?.region_code;
+        dataToSend.country_code = selectedCountry?.code;
+        dataToSend.region_code = selectedRegion?.region_code;
       } else if (dialogType === 'city') {
-        formData.country_code = selectedCountry?.code;
-        formData.region_code = selectedRegion?.region_code;
-        formData.district_code = selectedDistrict?.district_code;
+        dataToSend.country_code = selectedCountry?.code;
+        dataToSend.region_code = selectedRegion?.region_code;
+        dataToSend.district_code = selectedDistrict?.district_code;
       }
 
-      await api[method](endpoint, formData);
+      await api[method](endpoint, dataToSend);
       setDialogOpen(false);
       
       // Refresh data
@@ -263,6 +296,7 @@ export default function LocationsPage() {
         loadCities(selectedCountry.code, selectedRegion.region_code, selectedDistrict.district_code);
       
       loadStats();
+      loadAllCities();
     } catch (err: any) {
       setError(err.message || 'Failed to save');
     }
@@ -272,8 +306,19 @@ export default function LocationsPage() {
     if (!confirm(`Are you sure you want to delete this ${type}?`)) return;
     
     try {
-      const code = item.code || item.region_code || item.district_code || item.city_code;
-      await api.delete(`/admin/locations/${type}s/${code}`);
+      let endpoint = `/locations/${type === 'country' ? 'countries' : type + 's'}`;
+      
+      if (type === 'country') {
+        endpoint += `/${item.code}`;
+      } else if (type === 'region') {
+        endpoint += `?country_code=${item.country_code}&region_code=${item.region_code}`;
+      } else if (type === 'district') {
+        endpoint += `?country_code=${item.country_code}&region_code=${item.region_code}&district_code=${item.district_code}`;
+      } else if (type === 'city') {
+        endpoint += `?country_code=${item.country_code}&region_code=${item.region_code}&district_code=${item.district_code}&city_code=${item.city_code}`;
+      }
+      
+      await api.delete(endpoint);
       
       // Refresh data
       if (type === 'country') loadCountries();
@@ -284,8 +329,35 @@ export default function LocationsPage() {
         loadCities(selectedCountry.code, selectedRegion.region_code, selectedDistrict.district_code);
       
       loadStats();
+      loadAllCities();
     } catch (err: any) {
       setError(err.message || 'Failed to delete');
+    }
+  };
+
+  // Handle city marker drag on map
+  const handleMarkerDrag = async (city: City, newLat: number, newLng: number) => {
+    try {
+      await api.put(`/locations/cities/${city.city_code}`, {
+        ...city,
+        lat: newLat,
+        lng: newLng,
+      });
+      
+      // Refresh cities
+      if (selectedDistrict) {
+        loadCities(selectedDistrict.country_code, selectedDistrict.region_code, selectedDistrict.district_code);
+      }
+      loadAllCities();
+    } catch (err: any) {
+      setError(err.message || 'Failed to update city coordinates');
+    }
+  };
+
+  // Handle map click to add new city
+  const handleMapClick = (lat: number, lng: number) => {
+    if (selectedDistrict) {
+      openAddDialog('city', { lat, lng });
     }
   };
 
@@ -328,15 +400,37 @@ export default function LocationsPage() {
     </Breadcrumbs>
   );
 
+  // Get current cities for display
+  const currentCities = selectedDistrict ? cities : allCities;
+
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
           Location Manager
         </Typography>
-        <Button startIcon={<RefreshIcon />} onClick={() => { loadStats(); loadCountries(); }}>
-          Refresh
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={(_, value) => value && setViewMode(value)}
+            size="small"
+          >
+            <ToggleButton value="table" data-testid="view-table-btn">
+              <Tooltip title="Table View">
+                <TableIcon />
+              </Tooltip>
+            </ToggleButton>
+            <ToggleButton value="map" data-testid="view-map-btn">
+              <Tooltip title="Map View">
+                <MapIcon />
+              </Tooltip>
+            </ToggleButton>
+          </ToggleButtonGroup>
+          <Button startIcon={<RefreshIcon />} onClick={() => { loadStats(); loadCountries(); loadAllCities(); }}>
+            Refresh
+          </Button>
+        </Box>
       </Box>
 
       {error && (
@@ -390,203 +484,238 @@ export default function LocationsPage() {
       {/* Navigation Breadcrumbs */}
       {renderBreadcrumbs()}
 
-      {/* Data Tables */}
-      <Paper sx={{ p: 2 }}>
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <>
-            {/* Countries Tab */}
-            {!selectedCountry && (
-              <>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6">Countries ({countries.length})</Typography>
-                  <Button startIcon={<AddIcon />} variant="contained" onClick={() => openAddDialog('country')}>
-                    Add Country
-                  </Button>
-                </Box>
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Flag</TableCell>
-                        <TableCell>Code</TableCell>
-                        <TableCell>Name</TableCell>
-                        <TableCell align="right">Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {countries.map((country) => (
-                        <TableRow key={country.code} hover sx={{ cursor: 'pointer' }}>
-                          <TableCell onClick={() => handleCountryClick(country)}>
-                            <Typography fontSize={24}>{country.flag}</Typography>
-                          </TableCell>
-                          <TableCell onClick={() => handleCountryClick(country)}>
-                            <Chip label={country.code} size="small" />
-                          </TableCell>
-                          <TableCell onClick={() => handleCountryClick(country)}>{country.name}</TableCell>
-                          <TableCell align="right">
-                            <Tooltip title="View Regions">
-                              <IconButton onClick={() => handleCountryClick(country)}>
-                                <ArrowIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <IconButton onClick={() => openEditDialog('country', country)}>
-                              <EditIcon />
-                            </IconButton>
-                            <IconButton color="error" onClick={() => handleDelete('country', country)}>
-                              <DeleteIcon />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </>
-            )}
-
-            {/* Regions Tab */}
-            {selectedCountry && !selectedRegion && (
-              <>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6">Regions in {selectedCountry.name} ({regions.length})</Typography>
-                  <Button startIcon={<AddIcon />} variant="contained" onClick={() => openAddDialog('region')}>
-                    Add Region
-                  </Button>
-                </Box>
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Code</TableCell>
-                        <TableCell>Name</TableCell>
-                        <TableCell align="right">Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {regions.map((region) => (
-                        <TableRow key={region.region_code} hover sx={{ cursor: 'pointer' }}>
-                          <TableCell onClick={() => handleRegionClick(region)}>
-                            <Chip label={region.region_code} size="small" />
-                          </TableCell>
-                          <TableCell onClick={() => handleRegionClick(region)}>{region.name}</TableCell>
-                          <TableCell align="right">
-                            <Tooltip title="View Districts">
-                              <IconButton onClick={() => handleRegionClick(region)}>
-                                <ArrowIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <IconButton onClick={() => openEditDialog('region', region)}>
-                              <EditIcon />
-                            </IconButton>
-                            <IconButton color="error" onClick={() => handleDelete('region', region)}>
-                              <DeleteIcon />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </>
-            )}
-
-            {/* Districts Tab */}
-            {selectedRegion && !selectedDistrict && (
-              <>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6">Districts in {selectedRegion.name} ({districts.length})</Typography>
-                  <Button startIcon={<AddIcon />} variant="contained" onClick={() => openAddDialog('district')}>
-                    Add District
-                  </Button>
-                </Box>
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Code</TableCell>
-                        <TableCell>Name</TableCell>
-                        <TableCell align="right">Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {districts.map((district) => (
-                        <TableRow key={district.district_code} hover sx={{ cursor: 'pointer' }}>
-                          <TableCell onClick={() => handleDistrictClick(district)}>
-                            <Chip label={district.district_code} size="small" />
-                          </TableCell>
-                          <TableCell onClick={() => handleDistrictClick(district)}>{district.name}</TableCell>
-                          <TableCell align="right">
-                            <Tooltip title="View Cities">
-                              <IconButton onClick={() => handleDistrictClick(district)}>
-                                <ArrowIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <IconButton onClick={() => openEditDialog('district', district)}>
-                              <EditIcon />
-                            </IconButton>
-                            <IconButton color="error" onClick={() => handleDelete('district', district)}>
-                              <DeleteIcon />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </>
-            )}
-
-            {/* Cities Tab */}
+      {/* Map View */}
+      {viewMode === 'map' && (
+        <Paper sx={{ p: 2, mb: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6">
+              {selectedDistrict 
+                ? `Cities in ${selectedDistrict.name}` 
+                : selectedRegion 
+                  ? `Districts in ${selectedRegion.name}` 
+                  : selectedCountry 
+                    ? `Regions in ${selectedCountry.name}` 
+                    : 'All Cities (Map View)'
+              }
+            </Typography>
             {selectedDistrict && (
-              <>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6">Cities in {selectedDistrict.name} ({cities.length})</Typography>
-                  <Button startIcon={<AddIcon />} variant="contained" onClick={() => openAddDialog('city')}>
-                    Add City
-                  </Button>
-                </Box>
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Code</TableCell>
-                        <TableCell>Name</TableCell>
-                        <TableCell>Latitude</TableCell>
-                        <TableCell>Longitude</TableCell>
-                        <TableCell align="right">Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {cities.map((city) => (
-                        <TableRow key={city.city_code} hover>
-                          <TableCell>
-                            <Chip label={city.city_code} size="small" />
-                          </TableCell>
-                          <TableCell>{city.name}</TableCell>
-                          <TableCell>{city.lat.toFixed(4)}</TableCell>
-                          <TableCell>{city.lng.toFixed(4)}</TableCell>
-                          <TableCell align="right">
-                            <IconButton onClick={() => openEditDialog('city', city)}>
-                              <EditIcon />
-                            </IconButton>
-                            <IconButton color="error" onClick={() => handleDelete('city', city)}>
-                              <DeleteIcon />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </>
+              <Typography variant="body2" color="text.secondary">
+                Click on map to add new city • Drag markers to update coordinates
+              </Typography>
             )}
-          </>
-        )}
-      </Paper>
+          </Box>
+          <LocationMapView
+            cities={currentCities}
+            selectedCountry={selectedCountry}
+            selectedRegion={selectedRegion}
+            selectedDistrict={selectedDistrict}
+            onMarkerDrag={handleMarkerDrag}
+            onMapClick={handleMapClick}
+            onCityEdit={(city) => openEditDialog('city', city)}
+            onCityDelete={(city) => handleDelete('city', city)}
+          />
+        </Paper>
+      )}
+
+      {/* Table View */}
+      {viewMode === 'table' && (
+        <Paper sx={{ p: 2 }}>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+              {/* Countries Tab */}
+              {!selectedCountry && (
+                <>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6">Countries ({countries.length})</Typography>
+                    <Button startIcon={<AddIcon />} variant="contained" onClick={() => openAddDialog('country')}>
+                      Add Country
+                    </Button>
+                  </Box>
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Flag</TableCell>
+                          <TableCell>Code</TableCell>
+                          <TableCell>Name</TableCell>
+                          <TableCell align="right">Actions</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {countries.map((country) => (
+                          <TableRow key={country.code} hover sx={{ cursor: 'pointer' }}>
+                            <TableCell onClick={() => handleCountryClick(country)}>
+                              <Typography fontSize={24}>{country.flag}</Typography>
+                            </TableCell>
+                            <TableCell onClick={() => handleCountryClick(country)}>
+                              <Chip label={country.code} size="small" />
+                            </TableCell>
+                            <TableCell onClick={() => handleCountryClick(country)}>{country.name}</TableCell>
+                            <TableCell align="right">
+                              <Tooltip title="View Regions">
+                                <IconButton onClick={() => handleCountryClick(country)}>
+                                  <ArrowIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <IconButton onClick={() => openEditDialog('country', country)}>
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton color="error" onClick={() => handleDelete('country', country)}>
+                                <DeleteIcon />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </>
+              )}
+
+              {/* Regions Tab */}
+              {selectedCountry && !selectedRegion && (
+                <>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6">Regions in {selectedCountry.name} ({regions.length})</Typography>
+                    <Button startIcon={<AddIcon />} variant="contained" onClick={() => openAddDialog('region')}>
+                      Add Region
+                    </Button>
+                  </Box>
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Code</TableCell>
+                          <TableCell>Name</TableCell>
+                          <TableCell align="right">Actions</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {regions.map((region) => (
+                          <TableRow key={region.region_code} hover sx={{ cursor: 'pointer' }}>
+                            <TableCell onClick={() => handleRegionClick(region)}>
+                              <Chip label={region.region_code} size="small" />
+                            </TableCell>
+                            <TableCell onClick={() => handleRegionClick(region)}>{region.name}</TableCell>
+                            <TableCell align="right">
+                              <Tooltip title="View Districts">
+                                <IconButton onClick={() => handleRegionClick(region)}>
+                                  <ArrowIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <IconButton onClick={() => openEditDialog('region', region)}>
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton color="error" onClick={() => handleDelete('region', region)}>
+                                <DeleteIcon />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </>
+              )}
+
+              {/* Districts Tab */}
+              {selectedRegion && !selectedDistrict && (
+                <>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6">Districts in {selectedRegion.name} ({districts.length})</Typography>
+                    <Button startIcon={<AddIcon />} variant="contained" onClick={() => openAddDialog('district')}>
+                      Add District
+                    </Button>
+                  </Box>
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Code</TableCell>
+                          <TableCell>Name</TableCell>
+                          <TableCell align="right">Actions</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {districts.map((district) => (
+                          <TableRow key={district.district_code} hover sx={{ cursor: 'pointer' }}>
+                            <TableCell onClick={() => handleDistrictClick(district)}>
+                              <Chip label={district.district_code} size="small" />
+                            </TableCell>
+                            <TableCell onClick={() => handleDistrictClick(district)}>{district.name}</TableCell>
+                            <TableCell align="right">
+                              <Tooltip title="View Cities">
+                                <IconButton onClick={() => handleDistrictClick(district)}>
+                                  <ArrowIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <IconButton onClick={() => openEditDialog('district', district)}>
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton color="error" onClick={() => handleDelete('district', district)}>
+                                <DeleteIcon />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </>
+              )}
+
+              {/* Cities Tab */}
+              {selectedDistrict && (
+                <>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6">Cities in {selectedDistrict.name} ({cities.length})</Typography>
+                    <Button startIcon={<AddIcon />} variant="contained" onClick={() => openAddDialog('city')}>
+                      Add City
+                    </Button>
+                  </Box>
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Code</TableCell>
+                          <TableCell>Name</TableCell>
+                          <TableCell>Latitude</TableCell>
+                          <TableCell>Longitude</TableCell>
+                          <TableCell align="right">Actions</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {cities.map((city) => (
+                          <TableRow key={city.city_code} hover>
+                            <TableCell>
+                              <Chip label={city.city_code} size="small" />
+                            </TableCell>
+                            <TableCell>{city.name}</TableCell>
+                            <TableCell>{city.lat?.toFixed(4)}</TableCell>
+                            <TableCell>{city.lng?.toFixed(4)}</TableCell>
+                            <TableCell align="right">
+                              <IconButton onClick={() => openEditDialog('city', city)}>
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton color="error" onClick={() => handleDelete('city', city)}>
+                                <DeleteIcon />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </>
+              )}
+            </>
+          )}
+        </Paper>
+      )}
 
       {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
@@ -614,7 +743,7 @@ export default function LocationsPage() {
                   label="Flag Emoji"
                   value={formData.flag || ''}
                   onChange={(e) => setFormData({ ...formData, flag: e.target.value })}
-                  helperText="e.g., 🇺🇸"
+                  helperText="e.g., flags emoji"
                 />
               </>
             )}
@@ -670,6 +799,7 @@ export default function LocationsPage() {
                   value={formData.lat || ''}
                   onChange={(e) => setFormData({ ...formData, lat: parseFloat(e.target.value) })}
                   inputProps={{ step: 0.0001 }}
+                  helperText={mapClickCoords ? "Set from map click" : "Enter latitude or click on map"}
                 />
                 <TextField
                   label="Longitude"
@@ -677,7 +807,13 @@ export default function LocationsPage() {
                   value={formData.lng || ''}
                   onChange={(e) => setFormData({ ...formData, lng: parseFloat(e.target.value) })}
                   inputProps={{ step: 0.0001 }}
+                  helperText={mapClickCoords ? "Set from map click" : "Enter longitude or click on map"}
                 />
+                {formData.lat && formData.lng && (
+                  <Alert severity="info" sx={{ mt: 1 }}>
+                    Preview: {formData.lat.toFixed(4)}, {formData.lng.toFixed(4)}
+                  </Alert>
+                )}
               </>
             )}
           </Box>
