@@ -200,7 +200,7 @@ export default function AIAnalyzerPage() {
       {tabValue === 0 && settings && (
         <Grid container spacing={3}>
           {/* Global Toggle */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -222,7 +222,7 @@ export default function AIAnalyzerPage() {
           </Grid>
 
           {/* Usage Limits */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -285,7 +285,7 @@ export default function AIAnalyzerPage() {
           </Grid>
 
           {/* Access Control */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -345,14 +345,14 @@ export default function AIAnalyzerPage() {
           </Grid>
 
           {/* Safety Settings */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   Safety & Moderation
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <FormControlLabel
                       control={
                         <Switch
@@ -372,7 +372,7 @@ export default function AIAnalyzerPage() {
                       label="Policy Compliance Filter"
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                       fullWidth
                       label="Blocked Terms (comma-separated)"
@@ -395,7 +395,7 @@ export default function AIAnalyzerPage() {
           </Grid>
 
           {/* Save Button */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Box display="flex" justifyContent="flex-end" gap={2}>
               <Button variant="outlined" onClick={fetchSettings} startIcon={<Refresh />}>
                 Reset
@@ -417,7 +417,7 @@ export default function AIAnalyzerPage() {
       {tabValue === 1 && analytics && (
         <Grid container spacing={3}>
           {/* Stats Cards */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper sx={{ p: 2, textAlign: 'center' }}>
               <ImageSearch sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
               <Typography variant="h4" fontWeight="bold">
@@ -428,7 +428,7 @@ export default function AIAnalyzerPage() {
               </Typography>
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper sx={{ p: 2, textAlign: 'center' }}>
               <CheckCircle sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
               <Typography variant="h4" fontWeight="bold">
@@ -439,7 +439,7 @@ export default function AIAnalyzerPage() {
               </Typography>
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper sx={{ p: 2, textAlign: 'center' }}>
               <Edit sx={{ fontSize: 40, color: 'warning.main', mb: 1 }} />
               <Typography variant="h4" fontWeight="bold">
@@ -450,7 +450,7 @@ export default function AIAnalyzerPage() {
               </Typography>
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper sx={{ p: 2, textAlign: 'center' }}>
               <Cached sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
               <Typography variant="h4" fontWeight="bold">
@@ -463,7 +463,7 @@ export default function AIAnalyzerPage() {
           </Grid>
 
           {/* Daily Breakdown */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -522,7 +522,7 @@ export default function AIAnalyzerPage() {
           </Grid>
 
           {/* Additional Stats */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -548,7 +548,7 @@ export default function AIAnalyzerPage() {
       {/* System Prompts Tab */}
       {tabValue === 2 && settings && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -569,7 +569,7 @@ export default function AIAnalyzerPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -590,7 +590,7 @@ export default function AIAnalyzerPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Alert severity="info">
               The Vision Prompt instructs GPT-4o how to analyze images. The Text Prompt instructs Claude Sonnet 4.5 how to
               generate titles and descriptions from the analysis.
