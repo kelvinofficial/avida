@@ -420,6 +420,7 @@ export default function CreditsPage() {
         <View style={{ height: 40 }} />
       </View>
     </ScrollView>
+    </View>
   );
 }
 
