@@ -5418,18 +5418,9 @@ if BUSINESS_PROFILE_AVAILABLE:
 
 ADMIN_BACKEND_URL = "http://localhost:8002"
 
-# List of admin paths that are handled internally (not proxied to admin backend)
-INTERNAL_ADMIN_PATHS = ["business-profiles"]
-
 @app.api_route("/api/admin/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 async def admin_proxy(request: Request, path: str):
-    """Proxy all admin requests to the admin backend (except internal admin paths)"""
-    # Check if this path should be handled internally
-    first_segment = path.split("/")[0] if path else ""
-    if first_segment in INTERNAL_ADMIN_PATHS:
-        # This should be handled by internal routes, return 404 if not found
-        raise HTTPException(status_code=404, detail="Not Found")
-    
+    """Proxy all admin requests to the admin backend"""
     async with httpx.AsyncClient(timeout=30.0) as client:
         # Build the target URL
         url = f"{ADMIN_BACKEND_URL}/api/admin/{path}"
