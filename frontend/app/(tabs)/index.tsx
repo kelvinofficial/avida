@@ -13,6 +13,7 @@ import {
   TextInput,
   Platform,
   ActivityIndicator,
+  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,8 +32,6 @@ import { getSubcategories, SubcategoryConfig, getMainCategory } from '../../src/
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { ResponsiveLayout, Footer } from '../../src/components/layout';
 import { FeedBanner, HeaderBanner } from '../../src/components/BannerSlot';
-import { useUserLocation } from '../../src/context/LocationContext';
-import { RadiusSelector } from '../../src/components/RadiusSelector';
 import { LocationPicker, LocationData } from '../../src/components/LocationPicker';
 
 const { width } = Dimensions.get('window');
