@@ -589,7 +589,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                         pressed && { backgroundColor: theme.colors.surfaceVariant }
                       ]}
                       onPress={() => handleCitySelect(city)}
-                      data-testid={`city-${city.city_code}`}
+                      testID={`city-${city.city_code}`}
+                      accessibilityRole="button"
                     >
                       <View style={styles.iconContainer}>
                         <Ionicons name="location" size={20} color={theme.colors.primary} />
