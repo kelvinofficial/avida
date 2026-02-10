@@ -339,6 +339,8 @@ const cardStyles = StyleSheet.create({
   time: { fontSize: 10, color: '#999' },
   viewsRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   views: { fontSize: 10, color: '#999' },
+  distanceBadge: { backgroundColor: '#E3F2FD', paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4, marginLeft: 4 },
+  distanceText: { fontSize: 9, color: '#1976D2', fontWeight: '500' },
 });
 
 // ============ MAIN HOME SCREEN ============
