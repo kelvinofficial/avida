@@ -1708,6 +1708,83 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
+  // NEW LOCATION PICKER MODAL
+  locationPickerModal: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  locationPickerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EBEBEB',
+  },
+  locationPickerTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#333',
+  },
+  currentLocationBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  currentLocationText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#2E7D32',
+    fontWeight: '500',
+  },
+  clearFilterBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#fff',
+    borderRadius: 6,
+  },
+  clearFilterBtnText: {
+    fontSize: 13,
+    color: '#2E7D32',
+    fontWeight: '600',
+  },
+  locationPickerContent: {
+    flex: 1,
+    padding: 20,
+  },
+  locationPickerHint: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  allLocationsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: 16,
+    gap: 12,
+  },
+  allLocationsBtnActive: {
+    backgroundColor: '#E8F5E9',
+  },
+  allLocationsBtnText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#666',
+  },
+  allLocationsBtnTextActive: {
+    color: '#2E7D32',
+    fontWeight: '600',
+  },
+
   // SUBCATEGORY MODAL
   subcategoryModalContent: {
     backgroundColor: '#fff',
