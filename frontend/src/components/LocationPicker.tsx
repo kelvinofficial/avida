@@ -251,25 +251,10 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     }
   }, [selectedCountry]);
 
-  // Debounced search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchQuery && currentStep === 'city' && selectedCountry) {
-        searchCities(searchQuery);
-      }
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery, currentStep, selectedCountry, searchCities]);
-
   const handleCountrySelect = (country: Country) => {
     setSelectedCountry(country);
     setSelectedRegion(null);
-    setSelectedDistrict(null);
     setRegions([]);
-    setDistricts([]);
-    setCities([]);
-    setSearchQuery('');
     setCurrentStep('region');
     loadRegions(country.code);
   };
@@ -289,25 +274,6 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     onChange(locationData);
     closeModal();
   };
-
-  const handleDistrictSelect = (district: District) => {
-    setSelectedDistrict(district);
-    setCities([]);
-    setSearchQuery('');
-    setCurrentStep('city');
-    loadCities(district.country_code, district.region_code, district.district_code);
-  };
-
-  const handleCitySelect = (city: City) => {
-    const locationData: LocationData = {
-      country_code: city.country_code,
-      region_code: city.region_code,
-      district_code: city.district_code,
-      city_code: city.city_code,
-      city_name: city.name,
-      region_name: city.region_name || selectedRegion?.name,
-      district_name: city.district_name || selectedDistrict?.name,
-      lat: city.lat,
       lng: city.lng,
       location_text: city.location_text || `${city.name}, ${selectedDistrict?.name || ''}, ${selectedRegion?.name || ''}`,
     };
