@@ -215,11 +215,11 @@ export default function UsersManagementPage() {
     try {
       // Fetch stats
       const [usersRes, businessRes] = await Promise.all([
-        api.get('/users?limit=100'),
-        api.get('/business-profiles/admin/all?limit=100').catch(() => ({ data: { profiles: [] } })),
+        api.get('/admin/verification/users').catch(() => ({ data: [] })),
+        api.get('/admin/business-profiles/').catch(() => ({ data: { profiles: [] } })),
       ]);
       
-      const allUsers = usersRes.data.users || usersRes.data || [];
+      const allUsers = usersRes.data || [];
       const allProfiles = businessRes.data.profiles || businessRes.data || [];
       
       setUsers(allUsers);
