@@ -1521,6 +1521,27 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: '500',
   },
+  nearMeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3F2FD',
+    borderRadius: 22,
+    height: 44,
+    paddingHorizontal: 14,
+    gap: 6,
+    marginLeft: 8,
+  },
+  nearMeChipActive: {
+    backgroundColor: '#1976D2',
+  },
+  nearMeText: {
+    fontSize: 14,
+    color: '#1976D2',
+    fontWeight: '600',
+  },
+  nearMeTextActive: {
+    color: '#fff',
+  },
 
   // DIVIDER - Full width
   divider: {
