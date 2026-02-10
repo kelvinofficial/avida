@@ -169,6 +169,7 @@ export default function SavedItemsScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
   const { isDesktop, isTablet, isReady } = useResponsive();
+  const { goToLogin } = useLoginRedirect();
   const isLargeScreen = isDesktop || isTablet;
   
   const [items, setItems] = useState<any[]>([]);
