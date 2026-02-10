@@ -853,7 +853,7 @@ export default function TeamManagementPage() {
                     <LinearProgress 
                       variant="determinate" 
                       value={Math.min(((count as number) / Math.max(...Object.values(dashboard.priority_stats || { x: 1 }) as number[])) * 100, 100)} 
-                      color={PRIORITY_COLORS[priority]}
+                      color={PRIORITY_COLORS[priority] || 'info'}
                     />
                   </Box>
                 ))}
