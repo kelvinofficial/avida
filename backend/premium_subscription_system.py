@@ -603,3 +603,57 @@ async def handle_stripe_webhook(request: Request, db):
     except Exception as e:
         logger.error(f"Webhook error: {e}")
         return {"status": "error"}
+
+
+# ============================================================================
+# HELPER: SEND EMAIL AND CREATE INVOICE ON SUCCESSFUL PAYMENT
+# ============================================================================
+
+async def _send_premium_activation_email_and_invoice(db, transaction: dict, expires_at, package: dict):
+    """
+    Helper function to send premium activation email and create invoice.
+    Called after successful payment (Stripe, PayPal, or M-Pesa).
+    """
+    try:
+        # Import services (may not be available during standalone testing)
+        from subscription_services import SubscriptionEmailService, InvoiceService
+        from sendgrid import SendGridAPIClient
+        
+        # Get user and profile info
+        user = await db.users.find_one({"user_id": transaction["user_id"]})
+        profile = await db.business_profiles.find_one({"id": transaction["business_profile_id"]})
+        
+        if not user or not profile:
+            logger.warning(f"Could not find user/profile for transaction {transaction.get('id')}")
+            return
+        
+        # Initialize SendGrid client
+        sendgrid_api_key = os.environ.get("SENDGRID_API_KEY")
+        sg_client = SendGridAPIClient(sendgrid_api_key) if sendgrid_api_key else None
+        
+        # Send confirmation email
+        email_service = SubscriptionEmailService(db, sg_client)
+        package_name = package.get("name", "Premium Monthly") if package else "Premium Monthly"
+        amount = transaction.get("amount", 29.99)
+        
+        if user.get("email"):
+            await email_service.send_premium_activated(
+                user["email"],
+                profile.get("business_name", "Your Business"),
+                package_name,
+                amount,
+                expires_at.strftime("%B %d, %Y")
+            )
+            logger.info(f"Sent premium activation email to {user['email']}")
+        
+        # Create invoice
+        invoice_service = InvoiceService(db)
+        invoice = await invoice_service.create_invoice(transaction["id"])
+        if invoice:
+            logger.info(f"Created invoice {invoice.get('invoice_number')} for transaction {transaction['id']}")
+        
+    except ImportError as e:
+        logger.warning(f"Subscription services not available for email/invoice: {e}")
+    except Exception as e:
+        logger.error(f"Error sending email/creating invoice: {e}")
+
