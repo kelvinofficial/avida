@@ -63,7 +63,8 @@ class ListingUpdate(BaseModel):
     subcategory: Optional[str] = None
     condition: Optional[str] = None
     images: Optional[List[str]] = None
-    location: Optional[str] = None
+    location: Optional[str] = None  # Legacy text location
+    location_data: Optional[LocationData] = None  # New structured location
     status: Optional[str] = None
     attributes: Optional[Dict[str, Any]] = None
     accepts_offers: Optional[bool] = None
