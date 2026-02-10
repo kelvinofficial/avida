@@ -5290,7 +5290,7 @@ async def admin_get_district_boundary(
     
     try:
         # Get district info
-        districts = await service.get_districts(country_code, region_code, district_code)
+        districts = await service.get_districts(country_code, region_code)
         district = next((d for d in districts if d['district_code'] == district_code), None)
         
         if not district:
@@ -5306,43 +5306,62 @@ async def admin_get_district_boundary(
         # Search for boundary using Nominatim
         search_query = f"{district['name']}, {region['name'] if region else ''}, {country['name'] if country else ''}"
         
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            response = await client.get(
-                "https://nominatim.openstreetmap.org/search",
-                params={
-                    "q": search_query,
-                    "format": "json",
-                    "polygon_geojson": 1,
-                    "limit": 1
-                },
-                headers={
-                    "User-Agent": "AvidaMarketplace/1.0 (admin location manager)"
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                response = await client.get(
+                    "https://nominatim.openstreetmap.org/search",
+                    params={
+                        "q": search_query,
+                        "format": "json",
+                        "polygon_geojson": 1,
+                        "limit": 1
+                    },
+                    headers={
+                        "User-Agent": "AvidaMarketplace/1.0 (admin location manager)"
+                    }
+                )
+                results = response.json()
+                
+                if not results:
+                    return {
+                        "found": False,
+                        "district": district['name'],
+                        "message": "No boundary found for this district"
+                    }
+                
+                result = results[0]
+                geojson = result.get("geojson")
+                
+                return {
+                    "found": True,
+                    "district": district['name'],
+                    "osm_id": result.get("osm_id"),
+                    "osm_type": result.get("osm_type"),
+                    "display_name": result.get("display_name"),
+                    "bounding_box": result.get("boundingbox"),
+                    "geojson": geojson,
+                    "center": {
+                        "lat": float(result.get("lat", 0)),
+                        "lng": float(result.get("lon", 0))
+                    }
                 }
-            )
-            results = response.json()
-            
-            if not results:
+        except Exception as e:
+            # Nominatim failed, return district center if available
+            if district.get('lat') and district.get('lng'):
                 return {
                     "found": False,
                     "district": district['name'],
-                    "message": "No boundary found for this district"
+                    "center": {
+                        "lat": district['lat'],
+                        "lng": district['lng']
+                    },
+                    "message": "Boundary service unavailable, using district center point",
+                    "geojson": None
                 }
-            
-            result = results[0]
-            geojson = result.get("geojson")
-            
             return {
-                "found": True,
+                "found": False,
                 "district": district['name'],
-                "osm_id": result.get("osm_id"),
-                "osm_type": result.get("osm_type"),
-                "display_name": result.get("display_name"),
-                "bounding_box": result.get("boundingbox"),
-                "geojson": geojson,
-                "center": {
-                    "lat": float(result.get("lat", 0)),
-                    "lng": float(result.get("lon", 0))
-                }
+                "message": "Boundary service unavailable and no district coordinates stored"
             }
     except HTTPException:
         raise
