@@ -302,6 +302,7 @@ Payment success page with:
 - Added package selection highlighting with visual feedback (blue border, shadow, checkmark icon)
 - Package cards show "Select" button that changes to "Purchase Now" when selected
 - Improved button styling with gray for unselected, green for selected packages
+- Added spring animation effect when selecting a package (scale bounce)
 
 #### Desktop Layout Improvements
 - Added 1280px max-width constraint for desktop view (viewport >= 768px)
@@ -309,6 +310,18 @@ Payment success page with:
 - Improved payment method grid layout for desktop
 - Packages displayed in a responsive flex row on desktop
 - Info items displayed in a responsive row on desktop
+
+#### Savings Comparison Feature
+- "SAVE X%" badge displayed on larger packages (pink badge with trending-down icon)
+- Save amount shown below price (e.g., "Save $2.00", "Save $10.00")
+- Price per credit displayed for each package (e.g., "$0.100 per credit")
+- Savings calculated by comparing to the base (smallest) package
+
+#### Desktop Profile Enhancements
+- Added "Credits & Boosts" section in Desktop Profile (authenticated users only)
+- "Buy Credits" button with wallet icon - navigates to /credits
+- "Boost Listings" button with rocket icon - navigates to /profile/my-listings
+- Section appears between "Your Activity" and "Trust & Identity" sections
 
 ### Future/Backlog
 - [ ] SMS Notifications for A/B Test Winners (Twilio integration)
