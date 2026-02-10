@@ -159,6 +159,24 @@ def create_listings_router(
         
         # Create listing
         listing_id = str(uuid.uuid4())
+        
+        # Process location data
+        location_text = listing.location
+        location_data = None
+        geo_point = None
+        
+        if listing.location_data:
+            location_data = listing.location_data.model_dump() if hasattr(listing.location_data, 'model_dump') else listing.location_data.dict()
+            # Use location_text from structured data if available
+            if location_data.get('location_text'):
+                location_text = location_data['location_text']
+            # Create GeoJSON point for geospatial queries
+            if location_data.get('lat') and location_data.get('lng'):
+                geo_point = {
+                    "type": "Point",
+                    "coordinates": [location_data['lng'], location_data['lat']]  # GeoJSON is [lng, lat]
+                }
+        
         new_listing = {
             "id": listing_id,
             "user_id": user.user_id,
@@ -171,7 +189,9 @@ def create_listings_router(
             "subcategory": listing.subcategory,
             "condition": listing.condition,
             "images": listing.images[:10],  # Max 10 images
-            "location": listing.location,
+            "location": location_text,  # Legacy text location
+            "location_data": location_data,  # Structured location
+            "geo_point": geo_point,  # GeoJSON for spatial queries
             "attributes": listing.attributes,
             # Seller preferences
             "accepts_offers": listing.accepts_offers,
