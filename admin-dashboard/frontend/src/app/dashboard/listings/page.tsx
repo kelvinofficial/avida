@@ -218,7 +218,7 @@ export default function ListingsPage() {
       listing.currency || 'EUR',
       listing.status || 'active',
       listing.category_id || '',
-      listing.location?.city || '',
+      typeof listing.location === 'string' ? listing.location : listing.location?.city || '',
       listing.created_at,
       listing.user_id || '',
     ]);
