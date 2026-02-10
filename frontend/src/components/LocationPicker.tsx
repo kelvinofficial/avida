@@ -653,6 +653,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.md,
     gap: theme.spacing.sm,
+    minHeight: 48,
   },
   searchInput: {
     flex: 1,
