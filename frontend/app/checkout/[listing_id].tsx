@@ -255,7 +255,7 @@ export default function CheckoutScreen() {
         });
         
         const order = orderResponse.data.order;
-        const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://admin-control-panel-10.preview.emergentagent.com';
+        const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://experiment-hub-4.preview.emergentagent.com';
         
         // Create payment
         let paymentResponse;

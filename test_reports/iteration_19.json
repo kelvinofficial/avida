@@ -31,7 +31,7 @@
     "frontend": "N/A (backend-only testing requested)"
   },
   "test_credentials": {
-    "api_base": "https://admin-control-panel-10.preview.emergentagent.com",
+    "api_base": "https://experiment-hub-4.preview.emergentagent.com",
     "test_user": "testrefactor@test.com / test123456"
   },
   "seed_data_creation": "Multiple test users created during test execution with pattern test_*@test.com",
