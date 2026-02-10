@@ -5050,6 +5050,213 @@ async def admin_suggest_coordinates(
             "error": str(e)
         }
 
+@app.get("/api/admin/locations/reverse-geocode")
+async def admin_reverse_geocode(
+    request: Request,
+    lat: float = Query(..., description="Latitude"),
+    lng: float = Query(..., description="Longitude")
+):
+    """Reverse geocode coordinates to get place name using Nominatim"""
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            response = await client.get(
+                "https://nominatim.openstreetmap.org/reverse",
+                params={
+                    "lat": lat,
+                    "lon": lng,
+                    "format": "json",
+                    "addressdetails": 1,
+                    "zoom": 14
+                },
+                headers={
+                    "User-Agent": "AvidaMarketplace/1.0 (admin location manager)"
+                }
+            )
+            result = response.json()
+            
+            address = result.get("address", {})
+            
+            return {
+                "display_name": result.get("display_name"),
+                "suggested_name": address.get("city") or address.get("town") or address.get("village") or address.get("suburb") or address.get("neighbourhood"),
+                "district": address.get("city_district") or address.get("county") or address.get("district"),
+                "region": address.get("state") or address.get("region") or address.get("province"),
+                "country": address.get("country"),
+                "country_code": address.get("country_code", "").upper(),
+                "address_details": address,
+                "lat": lat,
+                "lng": lng,
+                "osm_type": result.get("osm_type"),
+                "osm_id": result.get("osm_id")
+            }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Reverse geocoding failed: {str(e)}")
+
+@app.get("/api/admin/locations/auto-detect")
+async def admin_auto_detect_location(
+    request: Request,
+    lat: float = Query(..., description="Latitude"),
+    lng: float = Query(..., description="Longitude")
+):
+    """Auto-detect country, region, district from coordinates"""
+    from location_system import LocationService
+    service = LocationService(db)
+    
+    # First, reverse geocode to get location info
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            response = await client.get(
+                "https://nominatim.openstreetmap.org/reverse",
+                params={
+                    "lat": lat,
+                    "lon": lng,
+                    "format": "json",
+                    "addressdetails": 1,
+                    "zoom": 10
+                },
+                headers={
+                    "User-Agent": "AvidaMarketplace/1.0 (admin location manager)"
+                }
+            )
+            result = response.json()
+            address = result.get("address", {})
+            
+            nominatim_country_code = address.get("country_code", "").upper()
+            nominatim_state = address.get("state") or address.get("region") or address.get("province")
+            nominatim_district = address.get("city_district") or address.get("county") or address.get("district")
+            nominatim_city = address.get("city") or address.get("town") or address.get("village")
+            
+        except Exception as e:
+            return {
+                "detected": False,
+                "error": f"Reverse geocoding failed: {str(e)}"
+            }
+    
+    # Now try to match with our database
+    detected = {
+        "country": None,
+        "region": None,
+        "district": None,
+        "nominatim_data": {
+            "country_code": nominatim_country_code,
+            "state": nominatim_state,
+            "district": nominatim_district,
+            "city": nominatim_city
+        }
+    }
+    
+    # Try to find matching country
+    countries = await service.get_countries()
+    for country in countries:
+        if country['code'] == nominatim_country_code:
+            detected['country'] = country
+            break
+    
+    # If country found, try to find matching region
+    if detected['country'] and nominatim_state:
+        try:
+            regions = await service.get_regions(detected['country']['code'])
+            for region in regions:
+                # Try fuzzy match on name
+                if nominatim_state.lower() in region['name'].lower() or region['name'].lower() in nominatim_state.lower():
+                    detected['region'] = region
+                    break
+        except:
+            pass
+    
+    # If region found, try to find matching district
+    if detected['region'] and nominatim_district:
+        try:
+            districts = await service.get_districts(detected['country']['code'], detected['region']['region_code'])
+            for district in districts:
+                if nominatim_district.lower() in district['name'].lower() or district['name'].lower() in nominatim_district.lower():
+                    detected['district'] = district
+                    break
+        except:
+            pass
+    
+    return {
+        "detected": True,
+        "country": detected['country'],
+        "region": detected['region'],
+        "district": detected['district'],
+        "nominatim_data": detected['nominatim_data'],
+        "suggested_city_name": nominatim_city,
+        "coordinates": {"lat": lat, "lng": lng}
+    }
+
+@app.get("/api/admin/locations/district-boundary")
+async def admin_get_district_boundary(
+    request: Request,
+    country_code: str = Query(...),
+    region_code: str = Query(...),
+    district_code: str = Query(...)
+):
+    """Get polygon boundary for a district from OSM via Nominatim"""
+    from location_system import LocationService
+    service = LocationService(db)
+    
+    try:
+        # Get district info
+        districts = await service.get_districts(country_code, region_code, district_code)
+        district = next((d for d in districts if d['district_code'] == district_code), None)
+        
+        if not district:
+            raise HTTPException(status_code=404, detail="District not found")
+        
+        # Get country and region for full name
+        countries = await service.get_countries()
+        country = next((c for c in countries if c['code'] == country_code), None)
+        
+        regions = await service.get_regions(country_code)
+        region = next((r for r in regions if r['region_code'] == region_code), None)
+        
+        # Search for boundary using Nominatim
+        search_query = f"{district['name']}, {region['name'] if region else ''}, {country['name'] if country else ''}"
+        
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.get(
+                "https://nominatim.openstreetmap.org/search",
+                params={
+                    "q": search_query,
+                    "format": "json",
+                    "polygon_geojson": 1,
+                    "limit": 1
+                },
+                headers={
+                    "User-Agent": "AvidaMarketplace/1.0 (admin location manager)"
+                }
+            )
+            results = response.json()
+            
+            if not results:
+                return {
+                    "found": False,
+                    "district": district['name'],
+                    "message": "No boundary found for this district"
+                }
+            
+            result = results[0]
+            geojson = result.get("geojson")
+            
+            return {
+                "found": True,
+                "district": district['name'],
+                "osm_id": result.get("osm_id"),
+                "osm_type": result.get("osm_type"),
+                "display_name": result.get("display_name"),
+                "bounding_box": result.get("boundingbox"),
+                "geojson": geojson,
+                "center": {
+                    "lat": float(result.get("lat", 0)),
+                    "lng": float(result.get("lon", 0))
+                }
+            }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get boundary: {str(e)}")
+
 # =============================================================================
 # ADMIN API PROXY - Forward /api/admin/* to admin backend on port 8002
 # =============================================================================
