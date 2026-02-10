@@ -74,9 +74,13 @@ interface LocationPickerProps {
   error?: string;
   disabled?: boolean;
   showGpsOption?: boolean;
+  showRecentLocations?: boolean;
 }
 
 type SelectionStep = 'country' | 'region' | 'district' | 'city';
+
+const RECENT_LOCATIONS_KEY = '@recent_locations';
+const MAX_RECENT_LOCATIONS = 5;
 
 export const LocationPicker: React.FC<LocationPickerProps> = ({
   value,
@@ -85,6 +89,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   error,
   disabled = false,
   showGpsOption = true,
+  showRecentLocations = true,
 }) => {
   // Modal state
   const [modalVisible, setModalVisible] = useState(false);
@@ -99,15 +104,50 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   const [cities, setCities] = useState<City[]>([]);
   const [searchResults, setSearchResults] = useState<City[]>([]);
 
+  // Recent locations
+  const [recentLocations, setRecentLocations] = useState<LocationData[]>([]);
+
   // Current selections
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
   const [selectedDistrict, setSelectedDistrict] = useState<District | null>(null);
 
-  // Load countries on mount
+  // Load countries and recent locations on mount
   useEffect(() => {
     loadCountries();
+    loadRecentLocations();
   }, []);
+
+  const loadRecentLocations = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(RECENT_LOCATIONS_KEY);
+      if (stored) {
+        setRecentLocations(JSON.parse(stored));
+      }
+    } catch (err) {
+      console.error('Failed to load recent locations:', err);
+    }
+  };
+
+  const saveRecentLocation = async (location: LocationData) => {
+    try {
+      // Create a unique key for this location
+      const locationKey = `${location.country_code}-${location.region_code}-${location.district_code}-${location.city_code}`;
+      
+      // Filter out duplicate and add new location at the start
+      const updatedRecent = [
+        location,
+        ...recentLocations.filter(loc => 
+          `${loc.country_code}-${loc.region_code}-${loc.district_code}-${loc.city_code}` !== locationKey
+        )
+      ].slice(0, MAX_RECENT_LOCATIONS);
+      
+      setRecentLocations(updatedRecent);
+      await AsyncStorage.setItem(RECENT_LOCATIONS_KEY, JSON.stringify(updatedRecent));
+    } catch (err) {
+      console.error('Failed to save recent location:', err);
+    }
+  };
 
   const loadCountries = async () => {
     try {
