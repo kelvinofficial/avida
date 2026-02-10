@@ -12,7 +12,7 @@ import Grid from '@mui/material/Grid';
 import {
   Add, Delete, Refresh, PlayArrow, Pause, Stop, Science,
   Visibility, EmojiEvents, TrendingUp, People, TouchApp,
-  RemoveCircle, AddCircle, CheckCircle, Cancel,
+  RemoveCircle, AddCircle, CheckCircle, Cancel, Schedule, AccessTime,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 
@@ -42,6 +42,13 @@ interface Experiment {
   started_at?: string;
   ended_at?: string;
   winner_variant_id?: string;
+}
+
+interface SchedulerStatus {
+  scheduler_running: boolean;
+  check_interval_hours: number;
+  last_check: any;
+  next_check_approx: string | null;
 }
 
 export default function ABTestingPage() {
