@@ -366,6 +366,14 @@ export default function HomeScreen() {
   const [currentCity, setCurrentCity] = useState('All Locations');
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [locationSearch, setLocationSearch] = useState('');
+  const [selectedLocationFilter, setSelectedLocationFilter] = useState<{
+    country_code?: string;
+    region_code?: string;
+    district_code?: string;
+    city_code?: string;
+    city_name?: string;
+    location_text?: string;
+  } | null>(null);
   
   // Subcategory Modal State
   const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
