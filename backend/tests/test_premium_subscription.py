@@ -297,17 +297,16 @@ class TestPaymentIntegrations:
         
         print(f"PASSED: M-Pesa packages configured for currencies: {currencies}")
     
-    def test_paypal_client_id_available_in_checkout(self, session):
-        """Verify PayPal client ID would be returned in checkout response"""
-        # Note: This would need auth + business profile to fully test
-        # We can verify the endpoint structure exists
+    def test_paypal_checkout_endpoint_exists(self, session):
+        """Verify PayPal checkout endpoint exists and requires auth"""
+        # Verify the endpoint exists (returns auth error, not 404 Not Found)
         response = session.post(f"{BASE_URL}/api/premium-subscription/paypal/checkout", json={
             "package_id": "monthly",
             "origin_url": "https://example.com",
             "business_profile_id": "test"
         })
         
-        # Should return 401 (auth required), not 404 (endpoint not found)
+        # Endpoint should exist - returns 401 (auth required)
         assert response.status_code == 401
         print("PASSED: PayPal checkout endpoint exists and requires auth")
 
