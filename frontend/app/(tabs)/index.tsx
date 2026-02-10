@@ -175,9 +175,10 @@ interface ListingCardProps {
   onPress: () => void;
   onFavorite?: () => void;
   isFavorited?: boolean;
+  userLocation?: { lat: number; lng: number } | null;
 }
 
-const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFavorited = false }) => {
+const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFavorited = false, userLocation = null }) => {
   const formatPrice = (price: number) => 
     new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
 
@@ -193,6 +194,38 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
     const diffInHours = diffInMs / (1000 * 60 * 60);
     return diffInHours < 24;
   };
+
+  // Haversine distance calculation
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 6371; // Earth's radius in km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLng = ((lng2 - lng1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Get distance from user if location data available
+  const getDistance = (): string | null => {
+    if (!userLocation) return null;
+    const listingLat = listing.location_data?.lat;
+    const listingLng = listing.location_data?.lng;
+    if (!listingLat || !listingLng) return null;
+    const distance = calculateDistance(userLocation.lat, userLocation.lng, listingLat, listingLng);
+    if (distance < 1) return `${Math.round(distance * 1000)}m`;
+    return `${Math.round(distance)}km`;
+  };
+
+  // Get display location (city name or text location)
+  const getDisplayLocation = (): string => {
+    if (listing.location_data?.city_name) return listing.location_data.city_name;
+    return listing.location || 'Unknown';
+  };
+
+  const distance = getDistance();
 
   const getImageSource = () => {
     const img = listing.images?.[0];
