@@ -2539,3 +2539,87 @@ US, GB, KE, NG, ZA, **GH**, **TZ**, **UG**, **ZM**, **ZW**
 - Config Manager: Config diff viewer for version comparison
 - Config Manager: Background scheduler for automatic deployment execution
 
+---
+
+## Hierarchical Location System - COMPLETE ✅ (Feb 10, 2026)
+
+### Overview
+Comprehensive location system upgrade with hierarchical selection (Country → Region → District → City), structured location data storage, and client-side distance calculation for listing cards.
+
+### Features Implemented:
+
+**1. Location Data Seeding**
+- Pre-seeded data for 13 countries:
+  - Africa: Tanzania, Kenya, Uganda, South Africa, Nigeria, Ghana, Zambia, Zimbabwe
+  - Europe: Germany, Netherlands
+  - Americas: United States, Canada
+  - Oceania: Australia
+- Total: 13 countries, 55 regions, 79 districts, 130 cities
+- Each city includes lat/lng coordinates for distance calculations
+- Seed script: `/app/backend/seed_locations.py`
+
+**2. Backend System (`/app/backend/location_system.py`)**
+- MongoDB Collections:
+  - `location_countries`: Country code, name, flag emoji
+  - `location_regions`: Region data per country
+  - `location_districts`: District data per region
+  - `location_cities`: City data with lat/lng coordinates
+- 2dsphere geospatial index on listings for nearby queries
+- API Endpoints:
+  - `GET /api/locations/countries` - All countries with flags
+  - `GET /api/locations/regions?country_code=` - Regions for country
+  - `GET /api/locations/districts?country_code=&region_code=` - Districts
+  - `GET /api/locations/cities?country_code=&region_code=&district_code=` - Cities
+  - `GET /api/locations/cities/search?country_code=&q=` - Search cities by name
+  - `GET /api/locations/stats` - Statistics (13/55/79/130)
+  - `GET /api/locations/nearby?lat=&lng=&radius_km=` - Nearby listings
+
+**3. Listing Model Updates (`/app/backend/routes/listings.py`)**
+- New `LocationData` model with structured fields:
+  - country_code, region_code, district_code, city_code
+  - city_name, region_name, district_name
+  - lat, lng (coordinates)
+  - location_text (formatted: "City, District, Region")
+- `ListingCreate` and `ListingUpdate` updated with `location_data` field
+- GeoJSON point creation for geospatial queries
+
+**4. Frontend LocationPicker Component (`/app/frontend/src/components/LocationPicker.tsx`)**
+- Modal-based hierarchical selection
+- Step-by-step: Country → Region → District → City
+- Search functionality for cities (min 2 characters)
+- Breadcrumb navigation showing selection path
+- Flag emojis for countries
+- data-testid attributes for testing
+- Props: value, onChange, placeholder, error, disabled, showGpsOption
+
+**5. ListingCard Distance Display (`/app/frontend/src/components/ListingCard.tsx`)**
+- Haversine formula for accurate distance calculation
+- Distance badge showing "Xkm away" or "Xm away" (if <1km)
+- Uses listing.location_data.lat/lng and userLocation prop
+- Displays city name from location_data or falls back to text location
+
+**6. Post Listing Integration (`/app/frontend/app/post/index.tsx`)**
+- LocationPicker replaces text input for location field
+- locationData state for structured location storage
+- location_data included in listing submission
+- Pre-fill support for edit mode
+
+**7. Frontend API Client (`/app/frontend/src/utils/api.ts`)**
+- `locationsApi` object with methods:
+  - getCountries(), getRegions(), getDistricts(), getCities()
+  - searchCities(countryCode, query, limit)
+  - getCity(), getStats(), getNearby()
+
+### Testing Results: 17/17 backend tests passed (100%)
+
+### Files Created/Modified:
+- Created: `/app/backend/location_system.py`
+- Created: `/app/backend/seed_locations.py`
+- Created: `/app/frontend/src/components/LocationPicker.tsx`
+- Modified: `/app/backend/routes/listings.py` (LocationData model)
+- Modified: `/app/backend/server.py` (location router integration)
+- Modified: `/app/frontend/src/utils/api.ts` (locationsApi)
+- Modified: `/app/frontend/src/components/ListingCard.tsx` (distance display)
+- Modified: `/app/frontend/src/types/index.ts` (LocationData interface)
+- Modified: `/app/frontend/app/post/index.tsx` (LocationPicker integration)
+
