@@ -260,7 +260,7 @@ export default function UserCSVImportDialog({
     setError('');
     onClose();
     
-    if (jobStatus?.status === 'completed' && jobStatus?.result?.imported > 0) {
+    if (jobStatus?.status === 'completed' && (jobStatus?.result?.imported ?? 0) > 0) {
       onComplete();
     }
   };
