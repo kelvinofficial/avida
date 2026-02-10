@@ -295,6 +295,21 @@ Payment success page with:
 - Increased JWT_ACCESS_TOKEN_EXPIRE_MINUTES from 30 to 480 (8 hours)
 - Prevents frequent re-authentication during admin sessions
 
+### 2026-02-10: Credits Page Design Improvements
+**COMPLETED**
+
+#### Mobile App Improvements
+- Added package selection highlighting with visual feedback (blue border, shadow, checkmark icon)
+- Package cards show "Select" button that changes to "Purchase Now" when selected
+- Improved button styling with gray for unselected, green for selected packages
+
+#### Desktop Layout Improvements
+- Added 1280px max-width constraint for desktop view (viewport >= 768px)
+- Content is now centered on wide screens
+- Improved payment method grid layout for desktop
+- Packages displayed in a responsive flex row on desktop
+- Info items displayed in a responsive row on desktop
+
 ### Future/Backlog
 - [ ] SMS Notifications for A/B Test Winners (Twilio integration)
 - [ ] PayPal SDK button integration on native platforms
