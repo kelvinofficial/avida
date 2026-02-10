@@ -1326,6 +1326,27 @@ const desktopStyles = StyleSheet.create({
     color: '#333',
     fontWeight: '500',
   },
+  nearMeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3F2FD',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 20,
+    gap: 6,
+    marginLeft: 8,
+  },
+  nearMeChipActive: {
+    backgroundColor: '#1976D2',
+  },
+  nearMeText: {
+    fontSize: 12,
+    color: '#1976D2',
+    fontWeight: '600',
+  },
+  nearMeTextActive: {
+    color: '#fff',
+  },
   // Row 3: Category Icons
   categoryRowWrapper: {
     alignItems: 'center',
