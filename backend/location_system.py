@@ -668,10 +668,29 @@ def create_admin_location_router(db: AsyncIOMotorDatabase, require_admin):
         country_code: str = Body(...),
         region_code: str = Body(...),
         name: str = Body(...),
+        lat: Optional[float] = Body(None),
+        lng: Optional[float] = Body(None),
         admin = Depends(require_admin)
     ):
         """Add a new region"""
-        return await service.add_region(country_code, region_code, name)
+        return await service.add_region(country_code, region_code, name, lat, lng)
+    
+    @router.put("/regions/coordinates")
+    async def update_region_coordinates(
+        country_code: str = Body(...),
+        region_code: str = Body(...),
+        lat: float = Body(...),
+        lng: float = Body(...),
+        admin = Depends(require_admin)
+    ):
+        """Update region coordinates"""
+        result = await service.regions.update_one(
+            {"country_code": country_code.upper(), "region_code": region_code.upper()},
+            {"$set": {"lat": lat, "lng": lng}}
+        )
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Region not found")
+        return {"success": True}
     
     @router.post("/districts")
     async def add_district(
