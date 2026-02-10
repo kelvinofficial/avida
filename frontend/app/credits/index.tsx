@@ -175,13 +175,14 @@ export default function CreditsPage() {
   }
 
   return (
-    <ScrollView 
-      style={styles.container}
-      contentContainerStyle={isDesktop ? styles.scrollContentDesktop : undefined}
-    >
-      <View style={[styles.contentWrapper, isDesktop && styles.desktopWrapper]}>
-        {/* Header */}
-        <View style={styles.header}>
+    <View style={styles.outerContainer}>
+      <ScrollView 
+        style={[styles.container, isDesktop && { maxWidth: 1280, alignSelf: 'center' as const }]}
+        contentContainerStyle={isDesktop ? styles.scrollContentDesktop : undefined}
+      >
+        <View style={styles.contentWrapper}>
+          {/* Header */}
+          <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#333" />
           </TouchableOpacity>
