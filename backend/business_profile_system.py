@@ -787,6 +787,104 @@ def create_business_profile_admin_router(db, require_admin):
         
         return {"message": message}
     
+    @router.post("/{profile_id}/upgrade-premium")
+    async def upgrade_to_premium(
+        profile_id: str,
+        request: Request,
+        admin: dict = Depends(require_admin),
+        duration_days: int = 30
+    ):
+        """Upgrade a verified profile to Premium tier (requires admin approval + payment)"""
+        profile = await db.business_profiles.find_one({"id": profile_id})
+        
+        if not profile:
+            raise HTTPException(status_code=404, detail="Profile not found")
+        
+        if not profile.get("is_verified"):
+            raise HTTPException(status_code=400, detail="Profile must be verified first before upgrading to Premium")
+        
+        now = datetime.now(timezone.utc)
+        expires_at = now + timedelta(days=duration_days)
+        
+        update_data = {
+            "is_premium": True,
+            "verification_tier": "premium",
+            "premium_expires_at": expires_at,
+            "premium_upgraded_at": now,
+            "premium_upgraded_by": admin.get("user_id") or admin.get("email"),
+            "updated_at": now
+        }
+        
+        await db.business_profiles.update_one(
+            {"id": profile_id},
+            {"$set": update_data}
+        )
+        
+        # Notify user
+        await db.notifications.insert_one({
+            "id": str(uuid.uuid4()),
+            "user_id": profile["user_id"],
+            "type": "premium_upgrade",
+            "title": "Premium Business Activated",
+            "message": f"Congratulations! Your business profile has been upgraded to Premium Verified Business. Your premium status is valid until {expires_at.strftime('%Y-%m-%d')}.",
+            "is_read": False,
+            "created_at": now
+        })
+        
+        logger.info(f"Profile {profile_id} upgraded to premium by {admin.get('email')}, expires {expires_at}")
+        
+        return {
+            "message": "Profile upgraded to Premium successfully",
+            "premium_expires_at": expires_at.isoformat(),
+            "verification_tier": "premium"
+        }
+    
+    @router.post("/{profile_id}/revoke-premium")
+    async def revoke_premium(
+        profile_id: str,
+        request: Request,
+        admin: dict = Depends(require_admin)
+    ):
+        """Revoke Premium status (downgrades to regular verified)"""
+        profile = await db.business_profiles.find_one({"id": profile_id})
+        
+        if not profile:
+            raise HTTPException(status_code=404, detail="Profile not found")
+        
+        now = datetime.now(timezone.utc)
+        
+        update_data = {
+            "is_premium": False,
+            "verification_tier": "verified" if profile.get("is_verified") else "none",
+            "premium_expires_at": None,
+            "premium_revoked_at": now,
+            "premium_revoked_by": admin.get("user_id") or admin.get("email"),
+            "updated_at": now
+        }
+        
+        await db.business_profiles.update_one(
+            {"id": profile_id},
+            {"$set": update_data}
+        )
+        
+        # Notify user
+        await db.notifications.insert_one({
+            "id": str(uuid.uuid4()),
+            "user_id": profile["user_id"],
+            "type": "premium_revoked",
+            "title": "Premium Status Changed",
+            "message": "Your Premium Business status has ended. You still have a Verified Business badge.",
+            "is_read": False,
+            "created_at": now
+        })
+        
+        logger.info(f"Profile {profile_id} premium revoked by {admin.get('email')}")
+        
+        return {
+            "message": "Premium status revoked",
+            "verification_tier": update_data["verification_tier"]
+        }
+    
     @router.post("/{profile_id}/toggle-verified")
     async def toggle_verified(
         profile_id: str,
