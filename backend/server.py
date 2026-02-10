@@ -5377,6 +5377,42 @@ async def admin_get_district_boundary(
         raise HTTPException(status_code=500, detail=f"Failed to get boundary: {str(e)}")
 
 # =============================================================================
+# BUSINESS PROFILE SYSTEM - Register before admin proxy to ensure routes match first
+# =============================================================================
+if BUSINESS_PROFILE_AVAILABLE:
+    # Create auth wrapper for business profile system (expects dict)
+    async def require_auth_for_bp(request: Request):
+        user = await require_auth(request)
+        return {
+            "user_id": user.user_id,
+            "email": user.email,
+            "name": user.name
+        }
+    
+    async def require_admin_for_bp(request: Request):
+        user = await get_current_user(request)
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        admin_emails = ["admin@marketplace.com", "admin@example.com"]
+        if user.email not in admin_emails:
+            raise HTTPException(status_code=403, detail="Admin access required")
+        return {
+            "user_id": user.user_id,
+            "email": user.email,
+            "name": user.name
+        }
+    
+    # Create routers
+    bp_router = create_business_profile_router(db, get_current_user, require_auth_for_bp)
+    bp_admin_router = create_business_profile_admin_router(db, require_admin_for_bp)
+    
+    # Register directly on app (BEFORE the admin proxy catch-all)
+    app.include_router(bp_router, prefix="/api")
+    app.include_router(bp_admin_router, prefix="/api")
+    
+    logger.info("Business Profile System routes registered (before admin proxy)")
+
+# =============================================================================
 # ADMIN API PROXY - Forward /api/admin/* to admin backend on port 8002
 # =============================================================================
 
