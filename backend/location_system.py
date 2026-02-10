@@ -563,4 +563,99 @@ def create_admin_location_router(db: AsyncIOMotorDatabase, require_admin):
             raise HTTPException(status_code=404, detail="City not found")
         return {"success": True}
     
+    # Update endpoints
+    @router.put("/countries/{code}")
+    async def update_country(
+        code: str,
+        name: str = Body(None),
+        flag: str = Body(None),
+        admin = Depends(require_admin)
+    ):
+        """Update a country"""
+        success = await service.update_country(code, name, flag)
+        if not success:
+            raise HTTPException(status_code=404, detail="Country not found")
+        return {"success": True}
+    
+    @router.put("/regions/{country_code}/{region_code}")
+    async def update_region(
+        country_code: str,
+        region_code: str,
+        name: str = Body(...),
+        admin = Depends(require_admin)
+    ):
+        """Update a region"""
+        success = await service.update_region(country_code, region_code, name)
+        if not success:
+            raise HTTPException(status_code=404, detail="Region not found")
+        return {"success": True}
+    
+    @router.put("/districts/{country_code}/{region_code}/{district_code}")
+    async def update_district(
+        country_code: str,
+        region_code: str,
+        district_code: str,
+        name: str = Body(...),
+        admin = Depends(require_admin)
+    ):
+        """Update a district"""
+        success = await service.update_district(country_code, region_code, district_code, name)
+        if not success:
+            raise HTTPException(status_code=404, detail="District not found")
+        return {"success": True}
+    
+    @router.put("/cities/{country_code}/{region_code}/{district_code}/{city_code}")
+    async def update_city(
+        country_code: str,
+        region_code: str,
+        district_code: str,
+        city_code: str,
+        name: str = Body(None),
+        lat: float = Body(None),
+        lng: float = Body(None),
+        admin = Depends(require_admin)
+    ):
+        """Update a city"""
+        success = await service.update_city(country_code, region_code, district_code, city_code, name, lat, lng)
+        if not success:
+            raise HTTPException(status_code=404, detail="City not found")
+        return {"success": True}
+    
+    # Delete endpoints
+    @router.delete("/countries/{code}")
+    async def delete_country(
+        code: str,
+        admin = Depends(require_admin)
+    ):
+        """Delete a country and all its regions, districts, cities"""
+        success = await service.delete_country(code)
+        if not success:
+            raise HTTPException(status_code=404, detail="Country not found")
+        return {"success": True}
+    
+    @router.delete("/regions/{country_code}/{region_code}")
+    async def delete_region(
+        country_code: str,
+        region_code: str,
+        admin = Depends(require_admin)
+    ):
+        """Delete a region and all its districts, cities"""
+        success = await service.delete_region(country_code, region_code)
+        if not success:
+            raise HTTPException(status_code=404, detail="Region not found")
+        return {"success": True}
+    
+    @router.delete("/districts/{country_code}/{region_code}/{district_code}")
+    async def delete_district(
+        country_code: str,
+        region_code: str,
+        district_code: str,
+        admin = Depends(require_admin)
+    ):
+        """Delete a district and all its cities"""
+        success = await service.delete_district(country_code, region_code, district_code)
+        if not success:
+            raise HTTPException(status_code=404, detail="District not found")
+        return {"success": True}
+    
     return router, service
