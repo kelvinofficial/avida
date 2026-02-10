@@ -157,19 +157,20 @@ Payment success page with:
 - [x] Subscription auto-renewal background task
 - [x] Email notifications for payment events (SendGrid)
 - [x] My Invoices page in user profile section
+- [x] SEO sitemap for business profiles (/api/sitemap.xml, /api/robots.txt)
+- [x] Premium badge on invoices page for premium users
 
 ### Future/Backlog
 - [ ] PayPal SDK button integration on native platforms
 - [ ] M-Pesa callback handling in production (Safaricom API)
 - [ ] End-to-end user flow test (create -> verify -> premium upgrade)
-- [ ] SEO sitemap generation for business profiles
 - [ ] Region search bar visibility fix in LocationPicker
 
 ## Testing Status
-- Backend: 100% (26/26 tests passed across iterations 65 and 66)
+- Backend: 100% (35/35 tests passed across iterations 65, 66, 67)
 - Frontend: 100% (All UI flows verified)
-- Test files: `/app/backend/tests/test_premium_subscription.py`, `/app/backend/tests/test_invoices_page.py`
-- Test reports: `/app/test_reports/iteration_65.json`, `/app/test_reports/iteration_66.json`
+- Test files: `/app/backend/tests/test_premium_subscription.py`, `/app/backend/tests/test_invoices_page.py`, `/app/backend/tests/test_seo_sitemap_premium_badge.py`
+- Test reports: `/app/test_reports/iteration_65.json`, `/app/test_reports/iteration_66.json`, `/app/test_reports/iteration_67.json`
 
 ## Key Files Reference
 - `/app/frontend/app/business/edit.tsx` - Full business profile editor with payment buttons
