@@ -2878,3 +2878,41 @@ Enhanced the listings API to support filtering by hierarchical location codes fo
 
 ---
 
+
+
+## Test Listings Seed Script - COMPLETE ✅ (Feb 10, 2026)
+
+### Overview
+Created a seed script to populate test listings with complete location_data across all 13 countries.
+
+### Script: `/app/backend/seed_test_listings.py`
+
+### Features:
+- **21 sample listings** with full location_data
+- **13 countries covered**: TZ (3), KE (2), US (2), DE (2), CA (2), ZA (2), AU (2), NG (2), GH (1), ZM (1), NL (1), UG (1), ZW (1)
+- **Various categories**: properties, auto, electronics, home, fashion, sports
+- **Complete location_data**: country_code, region_code, district_code, city_code, city_name, lat, lng, location_text
+- **GeoJSON geo_point** for geospatial queries
+- **Duplicate detection**: Skips existing listings based on title + city_code
+- **Default seller**: Creates `seed_seller_001` user if not exists
+
+### Sample Listings Include:
+- Apartments (Mikocheni, Karen)
+- Cars (Msasani, Pretoria)
+- Phones (Westlands, Victoria Island)
+- Furniture (Berlin Mitte, Vancouver)
+- Sports equipment (Bondi, Toronto)
+- Electronics (Manhattan, Sandton)
+- And more...
+
+### Usage:
+```bash
+cd /app/backend && python seed_test_listings.py
+```
+
+### Verification:
+- `GET /api/listings?country_code=KE` → 2 Kenya listings
+- `GET /api/listings?country_code=DE` → 2 Germany listings
+- `GET /api/listings?country_code=ZA&region_code=GT` → 2 Gauteng listings
+
+---
