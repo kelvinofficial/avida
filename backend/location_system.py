@@ -34,6 +34,8 @@ class Region(BaseModel):
     country_code: str
     region_code: str
     name: str
+    lat: Optional[float] = None  # Center point latitude for region
+    lng: Optional[float] = None  # Center point longitude for region
 
 
 class District(BaseModel):
