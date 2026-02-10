@@ -177,6 +177,15 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     }
   };
 
+  const clearRecentLocations = async () => {
+    try {
+      setRecentLocations([]);
+      await Storage.setItem(RECENT_LOCATIONS_KEY, JSON.stringify([]));
+    } catch (err) {
+      console.error('Failed to clear recent locations:', err);
+    }
+  };
+
   const loadCountries = async () => {
     try {
       setLoading(true);
