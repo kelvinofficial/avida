@@ -7158,12 +7158,14 @@ async def trigger_manual_check(admin: dict = Depends(get_current_admin)):
         "triggered_by": admin.get("email"),
         "experiments_checked": len(running),
         "winners_found": winners_found,
+        "emails_sent": emails_sent,
         "completed_at": datetime.now(timezone.utc)
     })
     
     return {
         "checked": len(running),
         "winners_found": winners_found,
+        "emails_sent": emails_sent,
         "results": results
     }
 
