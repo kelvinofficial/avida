@@ -86,6 +86,7 @@ const menuItems = [
   { text: 'Cohort Analytics', icon: <GroupWork />, path: '/dashboard/cohort-analytics' },
   { text: 'Categories', icon: <Category />, path: '/dashboard/categories' },
   { text: 'Attributes', icon: <Tune />, path: '/dashboard/attributes' },
+  { text: 'Location Manager', icon: <Place />, path: '/dashboard/locations' },
   { text: 'Users', icon: <People />, path: '/dashboard/users' },
   { text: 'Verification', icon: <VerifiedUser />, path: '/dashboard/verification' },
   { text: 'Listings', icon: <Inventory />, path: '/dashboard/listings' },
