@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Linking, TextInput, Platform, useWindowDimensions } from 'react-native';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Linking, TextInput, Platform, useWindowDimensions, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { boostApi } from '../../src/utils/api';
@@ -42,6 +42,28 @@ interface PaymentProvider {
   networks?: string[];
 }
 
+// Calculate savings compared to base package (per credit price)
+const calculateSavings = (pkg: CreditPackage, packages: CreditPackage[]): { percent: number; amount: number } | null => {
+  if (packages.length === 0) return null;
+  
+  // Find the base (smallest) package
+  const basePackage = packages.reduce((min, p) => 
+    (p.credits + p.bonus_credits) < (min.credits + min.bonus_credits) ? p : min
+  );
+  
+  const basePricePerCredit = basePackage.price / (basePackage.credits + basePackage.bonus_credits);
+  const currentPricePerCredit = pkg.price / (pkg.credits + pkg.bonus_credits);
+  
+  if (pkg.id === basePackage.id) return null;
+  
+  const percentSaved = Math.round((1 - currentPricePerCredit / basePricePerCredit) * 100);
+  const totalCredits = pkg.credits + pkg.bonus_credits;
+  const wouldCost = totalCredits * basePricePerCredit;
+  const amountSaved = Math.round((wouldCost - pkg.price) * 100) / 100;
+  
+  return percentSaved > 0 ? { percent: percentSaved, amount: amountSaved } : null;
+};
+
 export default function CreditsPage() {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -59,6 +81,10 @@ export default function CreditsPage() {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [mobileNetwork, setMobileNetwork] = useState<string>('MTN');
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
+  
+  // Animation values for selected package
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
 
   const loadData = useCallback(async () => {
     try {
