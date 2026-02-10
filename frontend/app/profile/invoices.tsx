@@ -89,10 +89,11 @@ export default function InvoicesPage() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchInvoices();
+      fetchUserProfile();
     } else {
       setLoading(false);
     }
-  }, [isAuthenticated, fetchInvoices]);
+  }, [isAuthenticated, fetchInvoices, fetchUserProfile]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
