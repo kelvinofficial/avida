@@ -953,7 +953,7 @@ export default function CompliancePage() {
                     size="small"
                   />
                 </Grid>
-                <Grid item>
+                <Grid>
                   <Button
                     variant="contained"
                     onClick={handleViewUserConsents}
