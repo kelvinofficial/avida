@@ -1011,6 +1011,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 2,
   },
+  bestDealSavingsAmount: {
+    color: '#FF6B00',
+  },
+  bestDealCreditsValue: {
+    color: '#FF6B00',
+  },
   pricePerCredit: {
     fontSize: 12,
     color: '#888',
@@ -1045,6 +1051,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#4CAF50',
     borderColor: '#4CAF50',
   },
+  buyButtonBestDeal: {
+    backgroundColor: '#FFF0E0',
+    borderColor: '#FF6B00',
+  },
   buyButtonText: {
     color: '#fff',
     fontSize: 16,
@@ -1052,6 +1062,9 @@ const styles = StyleSheet.create({
   },
   buyButtonTextUnselected: {
     color: '#333',
+  },
+  buyButtonTextBestDeal: {
+    color: '#FF6B00',
   },
   infoCard: {
     backgroundColor: '#fff',
