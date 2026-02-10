@@ -2765,6 +2765,42 @@ Users can save a default location in settings that automatically pre-fills when 
 4. When creating new listing, location is auto-filled
 5. User can change or keep the default location
 
+
+## All Locations Button Integration - COMPLETE ✅ (Feb 10, 2026)
+
+### Overview
+Connected the "All Locations" header button to the new hierarchical LocationPicker instead of the old simple city dropdown.
+
+### Changes Made:
+
+**1. Home Page Modal (`/app/frontend/app/(tabs)/index.tsx`)**
+- Replaced old city list modal with new LocationPicker-based modal
+- Modal uses `presentationStyle="pageSheet"` for full-page experience
+- Shows hint text explaining hierarchical selection flow
+- "All Locations" option with checkmark to reset filter
+- `selectedLocationFilter` state tracks hierarchical selection
+
+**2. Location Filter Integration**
+- `handleLocationSelect(location: LocationData)` - Sets filter and updates button text
+- `handleClearLocationFilter()` - Resets to "All Locations"
+- `fetchData()` updated to filter listings by selected location
+- Dependencies updated: `selectedLocationFilter` triggers data refresh
+
+**3. User Flow**
+1. Click "All Locations" in header
+2. Modal opens with "Browse locations..." picker
+3. Select Country → Region → District → City
+4. Modal closes, header shows selected city name
+5. Listings are filtered by selected location
+6. Click "All Locations" in modal to reset
+
+### Testing: 100% (6/6 frontend features verified)
+- All 13 countries with flags
+- Hierarchical drill-down (Germany→Bavaria→Munich, Kenya→Nairobi→Westlands)
+- Header button updates after selection
+
+---
+
 ### Testing: 100% (7/7 backend tests passed)
 
 ---
