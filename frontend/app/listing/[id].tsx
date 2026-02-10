@@ -710,7 +710,7 @@ export default function ListingDetailScreen() {
 
   const handleChat = async () => {
     if (!isAuthenticated) {
-      router.push('/login');
+      router.push(`/login?redirect=${encodeURIComponent(`/listing/${id}`)}`);
       return;
     }
 
@@ -729,7 +729,7 @@ export default function ListingDetailScreen() {
 
   const handleReport = async (reason: string) => {
     if (!isAuthenticated) {
-      router.push('/login');
+      router.push(`/login?redirect=${encodeURIComponent(`/listing/${id}`)}`);
       return;
     }
     
