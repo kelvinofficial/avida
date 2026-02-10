@@ -475,6 +475,33 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             </TouchableOpacity>
           </View>
 
+          {/* Recent Locations - Only show on country step */}
+          {showRecentLocations && currentStep === 'country' && recentLocations.length > 0 && (
+            <View style={styles.recentSection}>
+              <Text style={styles.recentTitle}>Recent Locations</Text>
+              {recentLocations.map((loc, index) => (
+                <TouchableOpacity
+                  key={`recent-${index}`}
+                  style={styles.recentItem}
+                  onPress={() => handleRecentLocationSelect(loc)}
+                  data-testid={`recent-location-${index}`}
+                >
+                  <Ionicons name="time-outline" size={18} color={theme.colors.primary} />
+                  <View style={styles.recentItemText}>
+                    <Text style={styles.recentItemName}>{loc.city_name || loc.location_text}</Text>
+                    {loc.location_text && loc.city_name && (
+                      <Text style={styles.recentItemSubtext} numberOfLines={1}>
+                        {loc.location_text}
+                      </Text>
+                    )}
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={theme.colors.outline} />
+                </TouchableOpacity>
+              ))}
+              <View style={styles.recentDivider} />
+            </View>
+          )}
+
           {/* Breadcrumb */}
           {selectedCountry && (
             <View style={styles.breadcrumb}>
