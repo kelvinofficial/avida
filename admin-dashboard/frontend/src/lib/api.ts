@@ -1270,6 +1270,16 @@ class ApiClient {
     const { data } = await this.client.put(`/ab-testing/notifications/${notificationId}/read`);
     return data;
   }
+
+  async getSchedulerStatus() {
+    const { data } = await this.client.get('/ab-testing/scheduler-status');
+    return data;
+  }
+
+  async triggerWinnerCheck() {
+    const { data } = await this.client.post('/ab-testing/trigger-check');
+    return data;
+  }
 }
 
 export const api = new ApiClient();
