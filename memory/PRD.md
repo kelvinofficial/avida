@@ -165,6 +165,7 @@ Payment success page with:
 - [x] QR code generation in success modal for business profile sharing
 - [x] Admin Users tab with sections: All Users, Verified Sellers, Verified Business, Premium Business
 - [x] Email notifications for admin-initiated verification and premium upgrade
+- [x] Notification preferences page with opt-in/out for email types
 
 ### Future/Backlog
 - [ ] PayPal SDK button integration on native platforms
@@ -173,7 +174,7 @@ Payment success page with:
 - [ ] Region search bar visibility fix in LocationPicker
 
 ## Testing Status
-- Backend: 100% (57/57 tests passed across iterations 65-69)
+- Backend: 100% (All tests passed)
 - Frontend: 100% (All UI flows verified)
 - Test reports: `/app/test_reports/iteration_65.json` through `/app/test_reports/iteration_69.json`
 
@@ -185,6 +186,14 @@ The system now sends the following emails (via SendGrid):
 - **premium_activated**: When user pays for premium subscription
 - **renewal_reminder**: 7 days and 1 day before premium expiration
 - **subscription_expired**: When premium subscription expires
+
+**Note:** All non-transactional emails respect user notification preferences. Users can opt-out via `/profile/notifications`.
+
+## Notification Preferences API
+- `GET /api/notification-preferences`: Get user's preferences
+- `PUT /api/notification-preferences`: Update preferences
+- `POST /api/notification-preferences/unsubscribe-all`: Unsubscribe from marketing
+- `GET /api/notification-preferences/categories`: Get preference categories with descriptions
 
 ## Key Files Reference
 - `/app/frontend/app/business/edit.tsx` - Full business profile editor with payment buttons
