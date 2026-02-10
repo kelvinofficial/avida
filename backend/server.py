@@ -5789,6 +5789,115 @@ async def get_notification_categories():
 logger.info("Notification Preferences endpoints registered")
 
 # =============================================================================
+# PUSH NOTIFICATION ENDPOINTS
+# =============================================================================
+if PUSH_SERVICE_AVAILABLE:
+    _push_service = PushNotificationService(db)
+    app.state.push_service = _push_service
+    
+    @app.post("/api/push/register-token")
+    async def register_push_token(request: Request):
+        """Register a device push token for the current user"""
+        user = await require_auth(request)
+        data = await request.json()
+        
+        token = data.get("token")
+        platform = data.get("platform", "unknown")  # ios, android, web
+        
+        if not token:
+            raise HTTPException(status_code=400, detail="Token is required")
+        
+        success = await _push_service.register_device_token(user.user_id, token, platform)
+        
+        if success:
+            return {"message": "Token registered successfully"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to register token")
+    
+    @app.delete("/api/push/unregister-token")
+    async def unregister_push_token(request: Request):
+        """Unregister a device push token"""
+        user = await require_auth(request)
+        data = await request.json()
+        
+        token = data.get("token")
+        if not token:
+            raise HTTPException(status_code=400, detail="Token is required")
+        
+        success = await _push_service.unregister_device_token(user.user_id, token)
+        
+        return {"message": "Token unregistered" if success else "Token not found"}
+    
+    @app.get("/api/push/status")
+    async def get_push_status(request: Request):
+        """Get push notification status for the current user"""
+        user = await require_auth(request)
+        
+        tokens = await _push_service.get_user_tokens(user.user_id)
+        prefs = await db.notification_preferences.find_one({"user_id": user.user_id})
+        
+        return {
+            "enabled": _push_service.enabled,
+            "registered_devices": len(tokens),
+            "preferences": {
+                "push_messages": prefs.get("push_messages", True) if prefs else True,
+                "push_listings": prefs.get("push_listings", True) if prefs else True,
+                "push_promotions": prefs.get("push_promotions", False) if prefs else False,
+            }
+        }
+    
+    @app.post("/api/push/test")
+    async def send_test_push(request: Request):
+        """Send a test push notification to the current user"""
+        user = await require_auth(request)
+        
+        result = await _push_service.send_notification(
+            user_id=user.user_id,
+            title="Test Notification",
+            body="Push notifications are working! 🎉",
+            notification_type="message"
+        )
+        
+        return result
+    
+    @app.get("/api/push/templates")
+    async def get_push_templates():
+        """Get available push notification templates"""
+        return {"templates": list(PUSH_TEMPLATES.keys())}
+    
+    # Admin endpoint to send push to specific users
+    @app.post("/api/admin/push/send")
+    async def admin_send_push(request: Request):
+        """Admin endpoint to send push notifications"""
+        user = await require_auth(request)
+        admin_emails = ["admin@marketplace.com", "admin@example.com"]
+        if user.email not in admin_emails:
+            raise HTTPException(status_code=403, detail="Admin access required")
+        
+        data = await request.json()
+        
+        user_ids = data.get("user_ids", [])
+        title = data.get("title", "Notification")
+        body = data.get("body", "")
+        notification_type = data.get("type", "promotion")
+        
+        if not user_ids:
+            raise HTTPException(status_code=400, detail="user_ids required")
+        
+        result = await _push_service.send_bulk_notification(
+            user_ids=user_ids,
+            title=title,
+            body=body,
+            notification_type=notification_type
+        )
+        
+        return result
+    
+    logger.info("Push Notification endpoints registered")
+else:
+    logger.warning("Push Notification endpoints not available (Firebase not configured)")
+
+# =============================================================================
 # SEO SITEMAP FOR BUSINESS PROFILES
 # =============================================================================
 
