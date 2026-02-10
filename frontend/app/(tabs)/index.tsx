@@ -745,9 +745,9 @@ export default function HomeScreen() {
       {/* SECTION TITLE */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>
-          {selectedCategory ? FULL_CATEGORIES.find(c => c.id === selectedCategory)?.name || 'Listings' : 'Recent Listings'}
+          {nearMeEnabled ? 'Near Me' : (selectedCategory ? FULL_CATEGORIES.find(c => c.id === selectedCategory)?.name || 'Listings' : 'Recent Listings')}
         </Text>
-        {selectedCategory && (
+        {(selectedCategory || nearMeEnabled) && (
           <TouchableOpacity onPress={() => setSelectedCategory(null)}>
             <Text style={styles.clearFilter}>Clear</Text>
           </TouchableOpacity>
