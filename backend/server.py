@@ -4616,6 +4616,105 @@ async def admin_update_city(
         raise HTTPException(status_code=404, detail="City not found")
     return {"success": True}
 
+@app.get("/api/admin/locations/geocode")
+async def admin_geocode_search(
+    request: Request,
+    query: str = Query(..., description="Address or place name to search"),
+    limit: int = Query(5, description="Max results to return")
+):
+    """Search for places using OpenStreetMap Nominatim geocoding"""
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            response = await client.get(
+                "https://nominatim.openstreetmap.org/search",
+                params={
+                    "q": query,
+                    "format": "json",
+                    "limit": limit,
+                    "addressdetails": 1
+                },
+                headers={
+                    "User-Agent": "AvidaMarketplace/1.0 (admin location manager)"
+                }
+            )
+            results = response.json()
+            return [
+                {
+                    "display_name": r.get("display_name"),
+                    "lat": float(r.get("lat", 0)),
+                    "lng": float(r.get("lon", 0)),
+                    "type": r.get("type"),
+                    "address": r.get("address", {})
+                }
+                for r in results
+            ]
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Geocoding failed: {str(e)}")
+
+@app.post("/api/admin/locations/batch-import")
+async def admin_batch_import_locations(
+    request: Request,
+    geojson: dict = Body(..., description="GeoJSON FeatureCollection to import")
+):
+    """Batch import cities from GeoJSON format"""
+    from location_system import LocationService
+    service = LocationService(db)
+    
+    if geojson.get("type") != "FeatureCollection":
+        raise HTTPException(status_code=400, detail="Invalid GeoJSON: must be FeatureCollection")
+    
+    features = geojson.get("features", [])
+    imported = []
+    errors = []
+    
+    for i, feature in enumerate(features):
+        try:
+            if feature.get("type") != "Feature":
+                errors.append({"index": i, "error": "Not a Feature"})
+                continue
+            
+            geometry = feature.get("geometry", {})
+            properties = feature.get("properties", {})
+            
+            if geometry.get("type") != "Point":
+                errors.append({"index": i, "error": "Only Point geometries supported"})
+                continue
+            
+            coords = geometry.get("coordinates", [])
+            if len(coords) < 2:
+                errors.append({"index": i, "error": "Invalid coordinates"})
+                continue
+            
+            lng, lat = coords[0], coords[1]  # GeoJSON is [lng, lat]
+            
+            # Required properties
+            country_code = properties.get("country_code")
+            region_code = properties.get("region_code")
+            district_code = properties.get("district_code")
+            city_code = properties.get("city_code") or properties.get("code")
+            name = properties.get("name")
+            
+            if not all([country_code, region_code, district_code, city_code, name]):
+                errors.append({
+                    "index": i, 
+                    "error": "Missing required properties: country_code, region_code, district_code, city_code/code, name"
+                })
+                continue
+            
+            await service.add_city(country_code, region_code, district_code, city_code, name, lat, lng)
+            imported.append({"city_code": city_code, "name": name, "lat": lat, "lng": lng})
+            
+        except Exception as e:
+            errors.append({"index": i, "error": str(e)})
+    
+    return {
+        "success": True,
+        "imported_count": len(imported),
+        "error_count": len(errors),
+        "imported": imported,
+        "errors": errors
+    }
+
 # =============================================================================
 # ADMIN API PROXY - Forward /api/admin/* to admin backend on port 8002
 # =============================================================================
