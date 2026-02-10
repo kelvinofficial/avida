@@ -185,6 +185,8 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         clearLocation,
         nearMeEnabled,
         setNearMeEnabled,
+        searchRadius,
+        setSearchRadius,
       }}
     >
       {children}
