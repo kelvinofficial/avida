@@ -911,10 +911,36 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
+  bestDealPackage: {
+    borderColor: '#FF6B00',
+    backgroundColor: '#FFF8F0',
+  },
+  packageCardHovered: {
+    borderColor: '#999',
+    backgroundColor: '#fafafa',
+    transform: [{ scale: 1.02 }],
+  },
   selectedBadge: {
     position: 'absolute',
     top: 12,
     left: 12,
+  },
+  bestDealBadge: {
+    position: 'absolute',
+    top: -10,
+    left: 16,
+    backgroundColor: '#FF6B00',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  bestDealText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
   },
   popularBadge: {
     position: 'absolute',
