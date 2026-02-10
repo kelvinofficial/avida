@@ -22,7 +22,7 @@ interface RadiusSelectorProps {
   disabled?: boolean;
 }
 
-const PRESET_RADII = [5, 10, 25, 50, 100];
+const PRESET_RADII = [5, 10, 25, 50, 100, 150, 250];
 
 export const RadiusSelector: React.FC<RadiusSelectorProps> = ({
   value,
