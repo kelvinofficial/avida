@@ -742,13 +742,14 @@ def create_csv_import_router(db: AsyncIOMotorDatabase, notify_callback: Optional
         else:
             # Fallback to asyncio task if BackgroundTasks not available
             asyncio.create_task(
-                service.import_users_background(rows, admin_id, job["id"])
+                service.import_users_background(rows, admin_id, job["id"], send_emails)
             )
         
         return {
             "success": True,
             "job_id": job["id"],
-            "message": "Import started. You will receive a notification when complete.",
+            "message": "Import started. You will receive a notification when complete." + (" Welcome emails will be sent to each user." if send_emails else ""),
+            "send_emails": send_emails,
             "status_url": f"/api/csv-import/job/{job['id']}"
         }
     
