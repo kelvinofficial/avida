@@ -32,6 +32,7 @@ import { useResponsive } from '../../src/hooks/useResponsive';
 import { ResponsiveLayout, Footer } from '../../src/components/layout';
 import { FeedBanner, HeaderBanner } from '../../src/components/BannerSlot';
 import { useUserLocation } from '../../src/context/LocationContext';
+import { RadiusSelector } from '../../src/components/RadiusSelector';
 
 const { width } = Dimensions.get('window');
 
