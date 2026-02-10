@@ -156,6 +156,7 @@ Payment success page with:
 - [x] Invoice API endpoints
 - [x] Subscription auto-renewal background task
 - [x] Email notifications for payment events (SendGrid)
+- [x] My Invoices page in user profile section
 
 ### Future/Backlog
 - [ ] PayPal SDK button integration on native platforms
@@ -165,15 +166,16 @@ Payment success page with:
 - [ ] Region search bar visibility fix in LocationPicker
 
 ## Testing Status
-- Backend: 100% (20/20 tests passed)
-- Frontend: 100% (Business Profile Edit page loads correctly)
-- Test file: `/app/backend/tests/test_premium_subscription.py`
-- Test report: `/app/test_reports/iteration_65.json`
+- Backend: 100% (26/26 tests passed across iterations 65 and 66)
+- Frontend: 100% (All UI flows verified)
+- Test files: `/app/backend/tests/test_premium_subscription.py`, `/app/backend/tests/test_invoices_page.py`
+- Test reports: `/app/test_reports/iteration_65.json`, `/app/test_reports/iteration_66.json`
 
 ## Key Files Reference
 - `/app/frontend/app/business/edit.tsx` - Full business profile editor with payment buttons
 - `/app/frontend/app/admin/business-profiles.tsx` - Admin management
 - `/app/frontend/app/premium/success.tsx` - Payment success page
+- `/app/frontend/app/profile/invoices.tsx` - My Invoices page
 - `/app/backend/premium_subscription_system.py` - Payment integration
 - `/app/backend/subscription_services.py` - Email, Auto-Renewal, Invoices
 - `/app/backend/business_profile_system.py` - Gallery & profiles
