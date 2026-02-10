@@ -181,8 +181,8 @@ const ROLE_ICONS: Record<string, React.ReactNode> = {
   analyst: <Analytics />,
 };
 
-const PRIORITY_COLORS: Record<string, 'default' | 'info' | 'warning' | 'error'> = {
-  low: 'default',
+const PRIORITY_COLORS: Record<string, 'primary' | 'secondary' | 'info' | 'warning' | 'error'> = {
+  low: 'info',
   medium: 'info',
   high: 'warning',
   critical: 'error',
