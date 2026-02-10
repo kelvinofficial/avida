@@ -469,7 +469,9 @@ export default function IntegrationsPage() {
                               </Typography>
                             </Box>
                             <Tooltip title={integration.status.replace('_', ' ')}>
-                              {STATUS_ICONS[integration.status] || <HelpOutline />}
+                              <Box component="span" sx={{ display: 'inline-flex' }}>
+                                {STATUS_ICONS[integration.status] || <HelpOutline />}
+                              </Box>
                             </Tooltip>
                           </Box>
                           
