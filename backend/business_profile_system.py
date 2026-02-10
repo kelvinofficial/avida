@@ -733,7 +733,7 @@ def create_business_profile_admin_router(db, require_admin):
         request: Request,
         admin: dict = Depends(require_admin)
     ):
-        """Approve or reject verification request"""
+        """Approve or reject verification request (standard verification)"""
         profile = await db.business_profiles.find_one({"id": profile_id})
         
         if not profile:
@@ -744,15 +744,18 @@ def create_business_profile_admin_router(db, require_admin):
         if data.action == "approve":
             update_data = {
                 "is_verified": True,
+                "verification_tier": "verified",
                 "verification_status": "approved",
                 "verified_at": now,
                 "verified_by": admin.get("user_id") or admin.get("email"),
                 "updated_at": now
             }
             message = "Profile verified successfully"
+            notification_msg = "Your business profile has been verified! You now have a Verified Business badge."
         elif data.action == "reject":
             update_data = {
                 "is_verified": False,
+                "verification_tier": "none",
                 "verification_status": "rejected",
                 "rejection_reason": data.reason,
                 "rejected_at": now,
@@ -760,6 +763,7 @@ def create_business_profile_admin_router(db, require_admin):
                 "updated_at": now
             }
             message = "Verification rejected"
+            notification_msg = f"Your business profile verification was rejected. Reason: {data.reason or 'Not specified'}"
         else:
             raise HTTPException(status_code=400, detail="Invalid action")
         
@@ -774,7 +778,7 @@ def create_business_profile_admin_router(db, require_admin):
             "user_id": profile["user_id"],
             "type": "verification_update",
             "title": "Verification Update",
-            "message": f"Your business profile has been {'verified' if data.action == 'approve' else 'rejected'}",
+            "message": notification_msg,
             "is_read": False,
             "created_at": now
         })
