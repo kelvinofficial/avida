@@ -72,9 +72,7 @@ interface Listing {
 
 // ============ LISTING CARD ============
 const ListingCard = ({ item, onPress }: { item: Listing; onPress: () => void }) => {
-  const imageSource = item.images?.[0] 
-    ? { uri: item.images[0] } 
-    : require('../../assets/images/placeholder.png');
+  const hasImage = item.images && item.images.length > 0 && item.images[0];
 
   return (
     <TouchableOpacity 
