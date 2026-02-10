@@ -400,7 +400,7 @@ export default function SettingsPage() {
     if (!authSettings) return;
     setAuthSaving(true);
     try {
-      await api.updateAuthSettings(authSettings);
+      await api.updateAuthSettings(authSettings as unknown as Record<string, unknown>);
       setSnackbar({ open: true, message: 'Auth settings saved successfully', severity: 'success' });
     } catch (err) {
       setSnackbar({ open: true, message: 'Failed to save auth settings', severity: 'error' });
