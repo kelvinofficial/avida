@@ -3786,15 +3786,16 @@ async def send_notification(
         user_ids = []
         segments = None
     
-    # Get FCM tokens for users
-    fcm_tokens = await get_user_tokens(db, user_ids) if user_ids else []
+    # Get push tokens for users (now returns both expo and fcm tokens)
+    tokens_data = await get_user_tokens(db, user_ids) if user_ids else {"expo_tokens": [], "fcm_tokens": []}
     
     # Send push notification
     push_result = await send_push_notification(
         title=existing.get("title", ""),
         body=existing.get("message", ""),
         user_ids=user_ids,
-        fcm_tokens=fcm_tokens,
+        expo_tokens=tokens_data.get("expo_tokens", []),
+        fcm_tokens=tokens_data.get("fcm_tokens", []),
         segments=segments,
         data={
             "notification_id": notif_id,
