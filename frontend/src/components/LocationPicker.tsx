@@ -146,7 +146,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
   const loadRecentLocations = async () => {
     try {
-      const stored = await AsyncStorage.getItem(RECENT_LOCATIONS_KEY);
+      const stored = await Storage.getItem(RECENT_LOCATIONS_KEY);
       if (stored) {
         setRecentLocations(JSON.parse(stored));
       }
