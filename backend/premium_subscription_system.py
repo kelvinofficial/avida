@@ -428,6 +428,11 @@ def create_premium_subscription_router(db, get_current_user):
             "created_at": now
         })
         
+        # Send confirmation email and create invoice
+        await _send_premium_activation_email_and_invoice(
+            db, transaction, expires_at, PREMIUM_PACKAGES.get(transaction.get("package_id"))
+        )
+        
         logger.info(f"PayPal premium activated for profile {transaction['business_profile_id']}")
         
         return {
