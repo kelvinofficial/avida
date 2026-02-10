@@ -442,11 +442,89 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             </View>
           )}
 
+          {/* Search (for region step) */}
+          {currentStep === 'region' && selectedCountry && (
+            <View style={styles.searchContainer}>
+              <Ionicons name="search" size={20} color={theme.colors.onSurfaceVariant} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search regions..."
+                placeholderTextColor={theme.colors.onSurfaceVariant}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoCapitalize="none"
+                data-testid="region-search-input"
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchQuery('')}>
+                  <Ionicons name="close-circle" size={20} color={theme.colors.onSurfaceVariant} />
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
           {/* List */}
           {loading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
+          ) : currentStep === 'region' ? (
+            /* Use ScrollView for region list with web-compatible click handling */
+            <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.listContent}>
+              {getFilteredRegions().length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <Ionicons name="location-outline" size={48} color={theme.colors.outline} />
+                  <Text style={styles.emptyText}>
+                    {searchQuery.length > 0 ? 'No regions found' : 'No regions available'}
+                  </Text>
+                </View>
+              ) : (
+                getFilteredRegions().map((region, index) => (
+                  <React.Fragment key={`${region.country_code}-${region.region_code}`}>
+                    {Platform.OS === 'web' ? (
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          padding: '16px',
+                          gap: '12px',
+                          cursor: 'pointer',
+                          backgroundColor: 'transparent',
+                        }}
+                        onClick={() => handleRegionSelect(region)}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLElement).style.backgroundColor = theme.colors.surfaceVariant;
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                        }}
+                        data-testid={`region-${region.region_code}`}
+                      >
+                        <View style={styles.iconContainer}>
+                          <Ionicons name="map-outline" size={20} color={theme.colors.primary} />
+                        </View>
+                        <Text style={[styles.itemText, { flex: 1 }]}>{region.name}</Text>
+                      </div>
+                    ) : (
+                      <TouchableOpacity
+                        style={styles.listItem}
+                        onPress={() => handleRegionSelect(region)}
+                        data-testid={`region-${region.region_code}`}
+                      >
+                        <View style={styles.iconContainer}>
+                          <Ionicons name="map-outline" size={20} color={theme.colors.primary} />
+                        </View>
+                        <Text style={[styles.itemText, { flex: 1 }]}>{region.name}</Text>
+                      </TouchableOpacity>
+                    )}
+                    {index < getFilteredRegions().length - 1 && (
+                      <View style={styles.separator} />
+                    )}
+                  </React.Fragment>
+                ))
+              )}
+            </ScrollView>
           ) : (
             <FlatList
               key={`list-${currentStep}`}
