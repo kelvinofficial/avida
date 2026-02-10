@@ -279,9 +279,24 @@ Payment success page with:
   - **Scheduled Auto-Checking**: Background job runs every 6 hours (configurable via `AB_CHECK_INTERVAL_HOURS` env var)
   - Scheduler status indicator shows last check time and next check
   - Logs all checks to `scheduled_jobs_log` collection
+  - **Email Notifications**: Configurable recipient email list per experiment for winner alerts via SendGrid
 - **Public APIs**: `/api/ab/assign` for variant assignment, `/api/ab/track` for event tracking
 
+### 2026-02-10: A/B Testing Email Notifications & Session Fix
+**COMPLETED**
+
+#### A/B Test Winner Email Notifications
+- Added notification emails input field in the A/B test creation dialog (Smart Winner section)
+- Admins can specify comma-separated email addresses to receive alerts when a winner is found
+- Emails are parsed and stored as an array in the experiment's smart_winner.notification_emails config
+- Backend sends emails via SendGrid when winner is detected (manual trigger or scheduled check)
+
+#### Admin Session Timeout Fix
+- Increased JWT_ACCESS_TOKEN_EXPIRE_MINUTES from 30 to 480 (8 hours)
+- Prevents frequent re-authentication during admin sessions
+
 ### Future/Backlog
+- [ ] SMS Notifications for A/B Test Winners (Twilio integration)
 - [ ] PayPal SDK button integration on native platforms
 - [ ] M-Pesa callback handling in production (Safaricom API)
 - [ ] End-to-end user flow test (create -> verify -> premium upgrade)
