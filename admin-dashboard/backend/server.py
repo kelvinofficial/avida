@@ -5574,6 +5574,592 @@ async def set_user_limits(user_id: str, request: Request, admin: dict = Depends(
     return {"message": "User limits updated"}
 
 # =============================================================================
+# SEO TOOLS
+# =============================================================================
+
+@app.get("/api/admin/seo/meta")
+async def list_seo_meta(admin: dict = Depends(get_current_admin)):
+    """List all SEO meta tag configurations"""
+    cursor = db.seo_meta.find({}, {"_id": 0})
+    metas = await cursor.to_list(length=100)
+    return {"meta_tags": metas}
+
+@app.get("/api/admin/seo/global-settings")
+async def get_seo_global_settings(admin: dict = Depends(get_current_admin)):
+    """Get global SEO settings"""
+    settings = await db.app_settings.find_one({"key": "seo_global"})
+    return settings.get("value", {}) if settings else {
+        "site_name": "Avida Marketplace",
+        "site_description": "Your local marketplace for buying and selling",
+        "default_og_image": None,
+        "google_analytics_id": None,
+        "google_tag_manager_id": None,
+        "facebook_pixel_id": None,
+        "twitter_handle": None
+    }
+
+@app.put("/api/admin/seo/global-settings")
+async def update_seo_global_settings(request: Request, admin: dict = Depends(get_current_admin)):
+    """Update global SEO settings"""
+    data = await request.json()
+    await db.app_settings.update_one(
+        {"key": "seo_global"},
+        {"$set": {"key": "seo_global", "value": data, "updated_at": datetime.now(timezone.utc)}},
+        upsert=True
+    )
+    return {"message": "Settings updated"}
+
+@app.post("/api/admin/seo/meta")
+async def create_seo_meta(request: Request, admin: dict = Depends(get_current_admin)):
+    """Create SEO meta tags for a page"""
+    data = await request.json()
+    existing = await db.seo_meta.find_one({"page_path": data.get("page_path")})
+    if existing:
+        raise HTTPException(status_code=400, detail="Meta tags already exist for this page")
+    
+    meta_doc = {
+        "id": str(uuid.uuid4()),
+        "page_path": data.get("page_path"),
+        "title": data.get("title"),
+        "description": data.get("description"),
+        "keywords": data.get("keywords", []),
+        "og_title": data.get("og_title"),
+        "og_description": data.get("og_description"),
+        "og_image": data.get("og_image"),
+        "og_type": data.get("og_type", "website"),
+        "twitter_card": data.get("twitter_card", "summary_large_image"),
+        "robots": data.get("robots", "index, follow"),
+        "canonical_url": data.get("canonical_url"),
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc)
+    }
+    
+    await db.seo_meta.insert_one(meta_doc)
+    return {"message": "Meta tags created", "id": meta_doc["id"]}
+
+@app.put("/api/admin/seo/meta/{meta_id}")
+async def update_seo_meta(meta_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    """Update SEO meta tags"""
+    data = await request.json()
+    data["updated_at"] = datetime.now(timezone.utc)
+    
+    result = await db.seo_meta.update_one({"id": meta_id}, {"$set": data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Meta tags not found")
+    return {"message": "Meta tags updated"}
+
+@app.delete("/api/admin/seo/meta/{meta_id}")
+async def delete_seo_meta(meta_id: str, admin: dict = Depends(get_current_admin)):
+    """Delete SEO meta tags"""
+    await db.seo_meta.delete_one({"id": meta_id})
+    return {"message": "Meta tags deleted"}
+
+@app.get("/api/admin/seo/sitemap-config")
+async def get_sitemap_config(admin: dict = Depends(get_current_admin)):
+    """Get sitemap configuration"""
+    settings = await db.app_settings.find_one({"key": "sitemap_config"})
+    return settings.get("value", {}) if settings else {
+        "auto_generate": True,
+        "include_listings": True,
+        "include_categories": True,
+        "include_profiles": True,
+        "change_frequency": "weekly",
+        "priority_home": 1.0,
+        "priority_categories": 0.8,
+        "priority_listings": 0.6,
+        "last_generated": None
+    }
+
+@app.put("/api/admin/seo/sitemap-config")
+async def update_sitemap_config(request: Request, admin: dict = Depends(get_current_admin)):
+    """Update sitemap configuration"""
+    data = await request.json()
+    await db.app_settings.update_one(
+        {"key": "sitemap_config"},
+        {"$set": {"key": "sitemap_config", "value": data, "updated_at": datetime.now(timezone.utc)}},
+        upsert=True
+    )
+    return {"message": "Sitemap config updated"}
+
+@app.post("/api/admin/seo/regenerate-sitemap")
+async def regenerate_sitemap(admin: dict = Depends(get_current_admin)):
+    """Regenerate sitemap"""
+    # Count entries
+    listings_count = await db.listings.count_documents({"is_active": True})
+    categories_count = await db.categories.count_documents({})
+    profiles_count = await db.business_profiles.count_documents({"status": "verified"})
+    
+    # Update last generated time
+    await db.app_settings.update_one(
+        {"key": "sitemap_config"},
+        {"$set": {"value.last_generated": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    
+    return {
+        "message": "Sitemap regenerated",
+        "entries": {
+            "listings": listings_count,
+            "categories": categories_count,
+            "profiles": profiles_count,
+            "total": listings_count + categories_count + profiles_count + 1  # +1 for home
+        }
+    }
+
+# =============================================================================
+# POLLS & SURVEYS
+# =============================================================================
+
+@app.get("/api/admin/polls/list")
+async def list_polls(
+    poll_type: Optional[str] = None,
+    is_active: Optional[bool] = None,
+    admin: dict = Depends(get_current_admin)
+):
+    """List all polls/surveys"""
+    query = {}
+    if poll_type:
+        query["type"] = poll_type
+    if is_active is not None:
+        query["is_active"] = is_active
+    
+    cursor = db.polls.find(query, {"_id": 0}).sort("created_at", -1)
+    polls = await cursor.to_list(length=100)
+    
+    # Get response counts
+    for poll in polls:
+        poll["response_count"] = await db.poll_responses.count_documents({"poll_id": poll["id"]})
+    
+    return {"polls": polls}
+
+@app.get("/api/admin/polls/{poll_id}")
+async def get_poll(poll_id: str, admin: dict = Depends(get_current_admin)):
+    """Get poll details with results"""
+    poll = await db.polls.find_one({"id": poll_id}, {"_id": 0})
+    if not poll:
+        raise HTTPException(status_code=404, detail="Poll not found")
+    
+    # Get responses
+    responses = await db.poll_responses.find({"poll_id": poll_id}, {"_id": 0}).to_list(length=1000)
+    
+    # Aggregate results
+    if poll.get("type") == "poll":
+        vote_counts = {}
+        for response in responses:
+            for option in response.get("selected_options", []):
+                vote_counts[option] = vote_counts.get(option, 0) + 1
+        poll["results"] = vote_counts
+    else:
+        poll["responses"] = responses
+    
+    poll["total_responses"] = len(responses)
+    return poll
+
+@app.post("/api/admin/polls/create")
+async def create_poll(request: Request, admin: dict = Depends(get_current_admin)):
+    """Create a new poll/survey"""
+    data = await request.json()
+    
+    now = datetime.now(timezone.utc)
+    poll = {
+        "id": str(uuid.uuid4()),
+        "title": data.get("title"),
+        "description": data.get("description"),
+        "type": data.get("type", "feedback"),  # poll, survey, feedback
+        "questions": data.get("questions", []),
+        "options": data.get("options", []),
+        "allow_multiple": data.get("allow_multiple", False),
+        "require_auth": data.get("require_auth", True),
+        "show_results": data.get("show_results", True),
+        "is_active": data.get("is_active", True),
+        "starts_at": data.get("starts_at"),
+        "ends_at": data.get("ends_at"),
+        "target_audience": data.get("target_audience", "all"),  # all, verified, premium
+        "created_by": admin.get("id"),
+        "created_at": now,
+        "updated_at": now
+    }
+    
+    await db.polls.insert_one(poll)
+    logger.info(f"Poll created: {poll['title']} by {admin.get('email')}")
+    
+    return {"message": "Poll created", "poll_id": poll["id"]}
+
+@app.put("/api/admin/polls/{poll_id}")
+async def update_poll(poll_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    """Update a poll"""
+    data = await request.json()
+    data["updated_at"] = datetime.now(timezone.utc)
+    
+    result = await db.polls.update_one({"id": poll_id}, {"$set": data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Poll not found")
+    return {"message": "Poll updated"}
+
+@app.delete("/api/admin/polls/{poll_id}")
+async def delete_poll(poll_id: str, admin: dict = Depends(get_current_admin)):
+    """Delete a poll and its responses"""
+    await db.polls.delete_one({"id": poll_id})
+    await db.poll_responses.delete_many({"poll_id": poll_id})
+    return {"message": "Poll deleted"}
+
+@app.get("/api/admin/polls/{poll_id}/export")
+async def export_poll_responses(poll_id: str, admin: dict = Depends(get_current_admin)):
+    """Export poll responses as CSV data"""
+    poll = await db.polls.find_one({"id": poll_id}, {"_id": 0})
+    if not poll:
+        raise HTTPException(status_code=404, detail="Poll not found")
+    
+    responses = await db.poll_responses.find({"poll_id": poll_id}, {"_id": 0}).to_list(length=10000)
+    
+    return {
+        "poll": poll,
+        "responses": responses,
+        "export_format": "json"
+    }
+
+# =============================================================================
+# COOKIE CONSENT
+# =============================================================================
+
+@app.get("/api/admin/cookies/settings")
+async def get_cookie_settings(admin: dict = Depends(get_current_admin)):
+    """Get cookie consent settings"""
+    settings = await db.app_settings.find_one({"key": "cookie_consent"})
+    return settings.get("value", {}) if settings else {
+        "enabled": True,
+        "banner_text": "We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies.",
+        "privacy_policy_url": "/privacy",
+        "cookie_policy_url": "/cookies",
+        "position": "bottom",
+        "theme": "dark",
+        "show_preferences": True,
+        "categories": [
+            {"id": "necessary", "name": "Necessary", "description": "Essential for the website to function properly", "required": True, "enabled": True},
+            {"id": "analytics", "name": "Analytics", "description": "Help us understand how visitors interact with the website", "required": False, "enabled": True},
+            {"id": "marketing", "name": "Marketing", "description": "Used to deliver relevant advertisements", "required": False, "enabled": False},
+            {"id": "preferences", "name": "Preferences", "description": "Remember your settings and preferences", "required": False, "enabled": True}
+        ],
+        "button_text": {
+            "accept_all": "Accept All",
+            "reject_all": "Reject All",
+            "customize": "Customize",
+            "save": "Save Preferences"
+        }
+    }
+
+@app.put("/api/admin/cookies/settings")
+async def update_cookie_settings(request: Request, admin: dict = Depends(get_current_admin)):
+    """Update cookie consent settings"""
+    data = await request.json()
+    await db.app_settings.update_one(
+        {"key": "cookie_consent"},
+        {"$set": {"key": "cookie_consent", "value": data, "updated_at": datetime.now(timezone.utc)}},
+        upsert=True
+    )
+    logger.info(f"Cookie settings updated by {admin.get('email')}")
+    return {"message": "Settings updated"}
+
+@app.get("/api/admin/cookies/stats")
+async def get_cookie_stats(admin: dict = Depends(get_current_admin)):
+    """Get cookie consent statistics"""
+    total = await db.cookie_consents.count_documents({})
+    
+    # Get category breakdown
+    pipeline = [
+        {"$unwind": "$consented_categories"},
+        {"$group": {"_id": "$consented_categories", "count": {"$sum": 1}}}
+    ]
+    category_stats = await db.cookie_consents.aggregate(pipeline).to_list(length=10)
+    
+    return {
+        "total_consents": total,
+        "by_category": {s["_id"]: s["count"] for s in category_stats}
+    }
+
+# =============================================================================
+# RECAPTCHA CONFIGURATION
+# =============================================================================
+
+@app.get("/api/admin/recaptcha/settings")
+async def get_recaptcha_settings(admin: dict = Depends(get_current_admin)):
+    """Get reCAPTCHA settings"""
+    settings = await db.app_settings.find_one({"key": "recaptcha"})
+    result = settings.get("value", {}) if settings else {
+        "enabled": False,
+        "site_key": "",
+        "type": "v2_invisible",
+        "threshold": 0.5,
+        "protected_forms": []
+    }
+    # Don't return secret key
+    result.pop("secret_key", None)
+    return result
+
+@app.put("/api/admin/recaptcha/settings")
+async def update_recaptcha_settings(request: Request, admin: dict = Depends(get_current_admin)):
+    """Update reCAPTCHA settings"""
+    data = await request.json()
+    
+    # Get existing settings to preserve secret key if not updating
+    existing = await db.app_settings.find_one({"key": "recaptcha"})
+    if existing and not data.get("secret_key"):
+        data["secret_key"] = existing.get("value", {}).get("secret_key")
+    
+    await db.app_settings.update_one(
+        {"key": "recaptcha"},
+        {"$set": {"key": "recaptcha", "value": data, "updated_at": datetime.now(timezone.utc)}},
+        upsert=True
+    )
+    logger.info(f"reCAPTCHA settings updated by {admin.get('email')}")
+    return {"message": "Settings updated"}
+
+# =============================================================================
+# WEBP IMAGE CONVERSION
+# =============================================================================
+
+@app.get("/api/admin/images/settings")
+async def get_image_settings(admin: dict = Depends(get_current_admin)):
+    """Get image processing settings"""
+    settings = await db.app_settings.find_one({"key": "image_processing"})
+    return settings.get("value", {}) if settings else {
+        "auto_convert_webp": True,
+        "webp_quality": 80,
+        "max_width": 1920,
+        "max_height": 1080,
+        "thumbnail_size": 300,
+        "allowed_formats": ["jpg", "jpeg", "png", "gif", "webp"],
+        "max_file_size_mb": 5
+    }
+
+@app.put("/api/admin/images/settings")
+async def update_image_settings(request: Request, admin: dict = Depends(get_current_admin)):
+    """Update image processing settings"""
+    data = await request.json()
+    await db.app_settings.update_one(
+        {"key": "image_processing"},
+        {"$set": {"key": "image_processing", "value": data, "updated_at": datetime.now(timezone.utc)}},
+        upsert=True
+    )
+    return {"message": "Settings updated"}
+
+@app.post("/api/admin/images/convert-batch")
+async def convert_images_batch(request: Request, admin: dict = Depends(get_current_admin)):
+    """Queue batch WebP conversion for existing images"""
+    data = await request.json()
+    target = data.get("target", "listings")  # listings, profiles, all
+    
+    # Count images to convert
+    count = 0
+    if target in ["listings", "all"]:
+        listings = await db.listings.count_documents({"images": {"$exists": True, "$ne": []}})
+        count += listings
+    if target in ["profiles", "all"]:
+        profiles = await db.business_profiles.count_documents({"logo": {"$exists": True}})
+        count += profiles
+    
+    # Create batch job record
+    job = {
+        "id": str(uuid.uuid4()),
+        "type": "webp_conversion",
+        "target": target,
+        "status": "queued",
+        "total_items": count,
+        "processed_items": 0,
+        "created_by": admin.get("id"),
+        "created_at": datetime.now(timezone.utc)
+    }
+    await db.batch_jobs.insert_one(job)
+    
+    return {"message": f"Batch conversion queued for {count} items", "job_id": job["id"]}
+
+@app.get("/api/admin/images/stats")
+async def get_image_stats(admin: dict = Depends(get_current_admin)):
+    """Get image statistics"""
+    # Count images by format (simplified)
+    total_listings_with_images = await db.listings.count_documents({"images": {"$exists": True, "$ne": []}})
+    total_profiles_with_logo = await db.business_profiles.count_documents({"logo": {"$exists": True}})
+    
+    return {
+        "listings_with_images": total_listings_with_images,
+        "profiles_with_logo": total_profiles_with_logo,
+        "webp_converted": 0,  # Would need to track this
+        "pending_conversion": 0
+    }
+
+# =============================================================================
+# URL SHORTENER
+# =============================================================================
+
+@app.get("/api/admin/urls/list")
+async def list_short_urls(admin: dict = Depends(get_current_admin)):
+    """List all short URLs"""
+    cursor = db.short_urls.find({}, {"_id": 0}).sort("created_at", -1)
+    urls = await cursor.to_list(length=100)
+    return {"urls": urls}
+
+@app.post("/api/admin/urls/create")
+async def create_short_url(request: Request, admin: dict = Depends(get_current_admin)):
+    """Create a short URL"""
+    import random
+    import string
+    
+    data = await request.json()
+    target_url = data.get("target_url")
+    custom_code = data.get("custom_code")
+    expires_at = data.get("expires_at")
+    
+    if not target_url:
+        raise HTTPException(status_code=400, detail="target_url required")
+    
+    # Generate or use custom code
+    if custom_code:
+        code = custom_code
+    else:
+        code = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+    
+    # Check if code exists
+    existing = await db.short_urls.find_one({"code": code})
+    if existing:
+        raise HTTPException(status_code=400, detail="This short code already exists")
+    
+    now = datetime.now(timezone.utc)
+    short_url = {
+        "id": str(uuid.uuid4()),
+        "code": code,
+        "target_url": target_url,
+        "title": data.get("title"),
+        "clicks": 0,
+        "created_by": admin.get("id"),
+        "created_at": now,
+        "expires_at": expires_at,
+        "is_active": True
+    }
+    
+    await db.short_urls.insert_one(short_url)
+    
+    return {
+        "message": "Short URL created",
+        "short_url": f"/s/{code}",
+        "code": code
+    }
+
+@app.get("/api/admin/urls/{code}/stats")
+async def get_url_stats(code: str, admin: dict = Depends(get_current_admin)):
+    """Get statistics for a short URL"""
+    url = await db.short_urls.find_one({"code": code}, {"_id": 0})
+    if not url:
+        raise HTTPException(status_code=404, detail="Short URL not found")
+    
+    # Get click history
+    clicks = await db.short_url_clicks.find({"code": code}, {"_id": 0}).sort("clicked_at", -1).limit(100).to_list(length=100)
+    url["click_history"] = clicks
+    
+    return url
+
+@app.delete("/api/admin/urls/{code}")
+async def delete_short_url(code: str, admin: dict = Depends(get_current_admin)):
+    """Delete a short URL"""
+    await db.short_urls.delete_one({"code": code})
+    return {"message": "Short URL deleted"}
+
+# =============================================================================
+# BULK VOUCHER IMPORT
+# =============================================================================
+
+@app.post("/api/admin/vouchers/bulk-import")
+async def bulk_import_vouchers(request: Request, admin: dict = Depends(get_current_admin)):
+    """Bulk import vouchers from CSV data"""
+    data = await request.json()
+    vouchers_data = data.get("vouchers", [])
+    
+    if not vouchers_data:
+        raise HTTPException(status_code=400, detail="No vouchers provided")
+    
+    now = datetime.now(timezone.utc)
+    created = 0
+    skipped = 0
+    errors = []
+    
+    for idx, v in enumerate(vouchers_data):
+        try:
+            code = v.get("code", "").upper().strip()
+            if not code:
+                errors.append(f"Row {idx + 1}: Missing code")
+                skipped += 1
+                continue
+            
+            # Check if exists
+            existing = await db.vouchers.find_one({"code": code})
+            if existing:
+                errors.append(f"Row {idx + 1}: Code {code} already exists")
+                skipped += 1
+                continue
+            
+            voucher = {
+                "id": str(uuid.uuid4()),
+                "code": code,
+                "voucher_type": v.get("voucher_type", "amount"),
+                "value": float(v.get("value", 0)),
+                "description": v.get("description"),
+                "max_uses": int(v.get("max_uses")) if v.get("max_uses") else None,
+                "max_uses_per_user": int(v.get("max_uses_per_user", 1)),
+                "min_order_amount": float(v.get("min_order_amount")) if v.get("min_order_amount") else None,
+                "max_discount_amount": float(v.get("max_discount_amount")) if v.get("max_discount_amount") else None,
+                "valid_until": v.get("valid_until"),
+                "new_users_only": v.get("new_users_only", False),
+                "verified_users_only": v.get("verified_users_only", False),
+                "premium_users_only": v.get("premium_users_only", False),
+                "stackable": v.get("stackable", False),
+                "is_active": v.get("is_active", True),
+                "total_uses": 0,
+                "created_by": admin.get("id"),
+                "created_at": now,
+                "updated_at": now,
+                "import_batch": data.get("batch_name", "import")
+            }
+            
+            await db.vouchers.insert_one(voucher)
+            created += 1
+            
+        except Exception as e:
+            errors.append(f"Row {idx + 1}: {str(e)}")
+            skipped += 1
+    
+    logger.info(f"Bulk voucher import by {admin.get('email')}: {created} created, {skipped} skipped")
+    
+    return {
+        "message": f"Import complete: {created} created, {skipped} skipped",
+        "created": created,
+        "skipped": skipped,
+        "errors": errors[:20]  # Limit error messages
+    }
+
+@app.get("/api/admin/vouchers/template")
+async def get_voucher_template(admin: dict = Depends(get_current_admin)):
+    """Get CSV template for voucher import"""
+    return {
+        "columns": [
+            {"name": "code", "required": True, "description": "Unique voucher code"},
+            {"name": "voucher_type", "required": True, "description": "amount, percent, or credit"},
+            {"name": "value", "required": True, "description": "Discount value"},
+            {"name": "description", "required": False, "description": "Voucher description"},
+            {"name": "max_uses", "required": False, "description": "Total usage limit"},
+            {"name": "max_uses_per_user", "required": False, "description": "Per-user limit (default: 1)"},
+            {"name": "min_order_amount", "required": False, "description": "Minimum order amount"},
+            {"name": "max_discount_amount", "required": False, "description": "Maximum discount (for percent type)"},
+            {"name": "valid_until", "required": False, "description": "Expiration date (ISO format)"},
+            {"name": "new_users_only", "required": False, "description": "true/false"},
+            {"name": "verified_users_only", "required": False, "description": "true/false"},
+            {"name": "premium_users_only", "required": False, "description": "true/false"}
+        ],
+        "example": [
+            {"code": "SUMMER20", "voucher_type": "percent", "value": 20, "description": "Summer sale", "max_uses": 100},
+            {"code": "FLAT10", "voucher_type": "amount", "value": 10, "description": "Flat $10 off", "min_order_amount": 50}
+        ]
+    }
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
