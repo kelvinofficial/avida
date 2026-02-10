@@ -4548,6 +4548,24 @@ async def admin_delete_region(
         raise HTTPException(status_code=404, detail="Region not found")
     return {"success": True}
 
+@app.put("/api/admin/locations/districts")
+async def admin_update_district(
+    request: Request,
+    country_code: str = Body(...),
+    region_code: str = Body(...),
+    district_code: str = Body(...),
+    name: str = Body(None),
+    lat: float = Body(None),
+    lng: float = Body(None)
+):
+    """Update a district's name or coordinates"""
+    from location_system import LocationService
+    service = LocationService(db)
+    success = await service.update_district(country_code, region_code, district_code, name, lat, lng)
+    if not success:
+        raise HTTPException(status_code=404, detail="District not found")
+    return {"success": True}
+
 @app.delete("/api/admin/locations/districts")
 async def admin_delete_district(
     request: Request,
