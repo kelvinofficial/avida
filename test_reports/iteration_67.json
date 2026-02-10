@@ -1,0 +1,99 @@
+{
+  "summary": "Tested SEO sitemap endpoints and Premium badge on invoices page. Backend: 9/9 tests passed (100%). Frontend: Unable to fully test via Playwright due to React Native Web auth store architecture, but code review confirms correct implementation.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "/sitemap.xml and /robots.txt",
+        "issue": "These endpoints are registered on the root app (not /api prefix) so they are not accessible via the public Kubernetes ingress which only routes /api/* paths to backend. Only accessible via direct backend port.",
+        "priority": "MEDIUM"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Playwright login automation",
+        "issue": "React Native Web's auth store (Zustand) doesn't use browser localStorage/cookies in the traditional way, making automated Playwright login difficult. Manual testing recommended.",
+        "affected_selectors": ["input[type='email']", "input[type='password']", "button:has-text('Sign In')"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_seo_sitemap_premium_badge.py",
+    "/app/test_reports/pytest/seo_sitemap_premium_results.xml"
+  ],
+  "action_items": [
+    "IMPORTANT: Add Kubernetes ingress rule to route /sitemap.xml and /robots.txt to backend for SEO crawler access",
+    "Manual verification recommended: Login as premium_tester_2@example.com to verify Premium badge and banner on /profile/invoices page"
+  ],
+  "critical_code_review_comments": [
+    "BUG FIX APPLIED: Added GET /api/users/me endpoint to return user profile with is_premium and premium_expires_at fields from business_profiles collection",
+    "invoices.tsx correctly fetches /users/me to get premium status and conditionally renders Premium badge and banner",
+    "SEO sitemap correctly includes homepage and verified/premium business profiles with proper priorities (0.9 for premium, 0.7 for verified)",
+    "robots.txt correctly disallows sensitive paths (/api/, /admin/, /profile/, /login, /register) and references sitemap.xml"
+  ],
+  "updated_files": [
+    "/app/backend/routes/users.py",
+    "/app/backend/tests/test_seo_sitemap_premium_badge.py"
+  ],
+  "success_rate": {
+    "backend": "100% (9/9 tests passed)",
+    "frontend": "Code review passed, Playwright automation blocked by RN Web auth"
+  },
+  "test_credentials": {
+    "test_user": "premium_tester_2@example.com",
+    "password": "testpass123",
+    "is_premium": true,
+    "premium_expires_at": "2026-03-12T19:58:19.259Z"
+  },
+  "seed_data_creation": "Created premium business profile for user_50b6b6384b6f with is_premium=true and verification_status=verified",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "GET /api/users/me endpoint was added to return user profile with premium status. The endpoint queries business_profiles collection to get is_premium and premium_expires_at. SEO endpoints work correctly on localhost:8001 but need ingress routing for public access.",
+  "verified_features": {
+    "sitemap_xml": {
+      "status": "PASSED",
+      "details": "GET /sitemap.xml returns valid XML with homepage (priority 1.0) and verified business profiles"
+    },
+    "robots_txt": {
+      "status": "PASSED",
+      "details": "GET /robots.txt returns valid robots.txt with sitemap reference and disallowed paths"
+    },
+    "sitemap_stats_api": {
+      "status": "PASSED",
+      "details": "GET /api/seo/sitemap-stats returns correct statistics"
+    },
+    "users_me_premium_status": {
+      "status": "PASSED",
+      "details": "GET /api/users/me now returns is_premium and premium_expires_at fields"
+    },
+    "invoices_api": {
+      "status": "PASSED",
+      "details": "GET /api/invoices returns user invoices for authenticated users"
+    },
+    "premium_badge_code_review": {
+      "status": "PASSED",
+      "details": "invoices.tsx correctly shows Premium badge when userProfile.is_premium is true"
+    },
+    "premium_banner_code_review": {
+      "status": "PASSED",
+      "details": "invoices.tsx correctly shows user name and expiration date in banner"
+    },
+    "upgrade_button_hidden_code_review": {
+      "status": "PASSED",
+      "details": "invoices.tsx correctly hides 'Upgrade to Premium' button when user is premium (!userProfile?.is_premium)"
+    }
+  },
+  "routing_issue": {
+    "description": "SEO endpoints /sitemap.xml and /robots.txt are registered on @app.get() not @api_router.get() so they work on root path",
+    "current_behavior": "Public URL routes all non-/api paths to frontend, so /sitemap.xml returns 404 from frontend",
+    "fix_needed": "Add Kubernetes ingress rules: /sitemap.xml -> backend:8001, /robots.txt -> backend:8001"
+  },
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}
