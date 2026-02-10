@@ -2799,6 +2799,43 @@ Connected the "All Locations" header button to the new hierarchical LocationPick
 - Hierarchical drill-down (Germany→Bavaria→Munich, Kenya→Nairobi→Westlands)
 - Header button updates after selection
 
+
+## Recent Locations Feature - COMPLETE ✅ (Feb 10, 2026)
+
+### Overview
+Added "Recent Locations" section in LocationPicker showing the last 5 selected locations for quick access.
+
+### Features Implemented:
+
+**1. Storage Layer (`/app/frontend/src/components/LocationPicker.tsx` lines 24-47)**
+- Cross-platform Storage helper for web/native compatibility
+- Uses localStorage on web, AsyncStorage on native
+- Key: `@recent_locations`
+
+**2. Recent Locations Logic (lines 82-148)**
+- `loadRecentLocations()` - Loads from storage on mount
+- `saveRecentLocation()` - Saves to storage, removes duplicates, limits to 5
+- `handleRecentLocationSelect()` - Quick-select from recent list
+- Newest locations appear first
+- Duplicates are removed based on unique location key
+
+**3. Recent Locations UI (lines 500-530)**
+- Gray background section at top of country selection step
+- "RECENT LOCATIONS" title with uppercase styling
+- Each item shows:
+  - Clock icon (time-outline)
+  - City name + location_text subtitle
+  - Chevron forward icon
+- Divider below section
+
+### Bug Fix Applied
+- **Issue**: AsyncStorage not working on Expo Web (SSR environment)
+- **Solution**: Platform-aware Storage helper that uses localStorage for web
+
+### Testing: 100% (5/5 features verified)
+
+---
+
 ---
 
 ### Testing: 100% (7/7 backend tests passed)
