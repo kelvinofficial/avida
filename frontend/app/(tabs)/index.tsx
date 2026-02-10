@@ -495,7 +495,10 @@ export default function HomeScreen() {
   const fetchData = useCallback(async (refresh = false) => {
     try {
       if (refresh) { setPage(1); setHasMore(true); }
-      const locationFilter = currentCity !== 'All Locations' ? currentCity : undefined;
+      
+      // Build location filter from hierarchical selection
+      const locationFilter = selectedLocationFilter?.city_name || 
+        (currentCity !== 'All Locations' ? currentCity : undefined);
       
       // Check if sandbox mode is active and use sandbox-aware API
       const sandboxActive = await sandboxUtils.isActive();
