@@ -244,15 +244,94 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
             <Text style={styles.emoji}>🎉</Text>
           </View>
 
-          {/* Action button */}
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleClose}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.buttonText}>{buttonText}</Text>
-            <Ionicons name="arrow-forward" size={20} color="#fff" />
-          </TouchableOpacity>
+          {/* Boost Section */}
+          {showBoostOption && !showBoost && (
+            <View style={styles.boostSection}>
+              <View style={styles.boostDivider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.boostDividerText}>Want more visibility?</Text>
+                <View style={styles.dividerLine} />
+              </View>
+              <TouchableOpacity
+                style={styles.boostButton}
+                onPress={() => setShowBoost(true)}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="rocket" size={20} color="#fff" />
+                <Text style={styles.boostButtonText}>Boost Your Listing</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Boost Packages */}
+          {showBoost && (
+            <View style={styles.boostPackages}>
+              <Text style={styles.boostTitle}>Choose a Boost Package</Text>
+              {packages.map((pkg) => (
+                <TouchableOpacity
+                  key={pkg.id}
+                  style={[
+                    styles.packageCard,
+                    selectedPackage === pkg.id && styles.packageCardSelected,
+                  ]}
+                  onPress={() => setSelectedPackage(pkg.id)}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.packageHeader}>
+                    <Text style={styles.packageName}>{pkg.name}</Text>
+                    <Text style={styles.packagePrice}>${pkg.price}</Text>
+                  </View>
+                  <Text style={styles.packageDuration}>{pkg.duration_days} days</Text>
+                  <View style={styles.packageFeatures}>
+                    {pkg.features.map((feature, i) => (
+                      <View key={i} style={styles.featureRow}>
+                        <Ionicons name="checkmark-circle" size={14} color="#4CAF50" />
+                        <Text style={styles.featureText}>{feature}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </TouchableOpacity>
+              ))}
+              
+              <View style={styles.boostActions}>
+                <TouchableOpacity
+                  style={styles.skipButton}
+                  onPress={handleClose}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.skipButtonText}>Skip for now</Text>
+                </TouchableOpacity>
+                
+                {selectedPackage && (
+                  <TouchableOpacity
+                    style={styles.purchaseButton}
+                    onPress={() => {
+                      if (onBoostSelect) {
+                        onBoostSelect(selectedPackage);
+                      }
+                      handleClose();
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.purchaseButtonText}>Purchase Boost</Text>
+                    <Ionicons name="arrow-forward" size={18} color="#fff" />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )}
+
+          {/* Action button - only show when not showing boost options */}
+          {!showBoost && (
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleClose}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.buttonText}>{buttonText}</Text>
+              <Ionicons name="arrow-forward" size={20} color="#fff" />
+            </TouchableOpacity>
+          )}
         </Animated.View>
       </View>
     </Modal>
