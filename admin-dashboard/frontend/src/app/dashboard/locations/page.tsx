@@ -29,6 +29,15 @@ import {
   Tooltip,
   ToggleButton,
   ToggleButtonGroup,
+  Autocomplete,
+  Tabs,
+  Tab,
+  InputAdornment,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemButton,
+  Divider,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -42,6 +51,9 @@ import {
   ArrowForward as ArrowIcon,
   TableChart as TableIcon,
   Map as MapIcon,
+  Search as SearchIcon,
+  Upload as UploadIcon,
+  MyLocation as MyLocationIcon,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import dynamic from 'next/dynamic';
@@ -73,6 +85,8 @@ interface District {
   region_code: string;
   district_code: string;
   name: string;
+  lat?: number;
+  lng?: number;
 }
 
 interface City {
@@ -92,11 +106,20 @@ interface LocationStats {
   cities: number;
 }
 
+interface GeocodingResult {
+  display_name: string;
+  lat: number;
+  lng: number;
+  type: string;
+  address: Record<string, string>;
+}
+
 export default function LocationsPage() {
   const [viewMode, setViewMode] = useState<'table' | 'map'>('table');
   const [stats, setStats] = useState<LocationStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Data states
   const [countries, setCountries] = useState<Country[]>([]);
@@ -116,8 +139,16 @@ export default function LocationsPage() {
   const [editItem, setEditItem] = useState<any>(null);
   const [formData, setFormData] = useState<any>({});
 
-  // Map click coordinates for new city
-  const [mapClickCoords, setMapClickCoords] = useState<{ lat: number; lng: number } | null>(null);
+  // Geocoding search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<GeocodingResult[]>([]);
+  const [searching, setSearching] = useState(false);
+
+  // Batch import dialog
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importJson, setImportJson] = useState('');
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<any>(null);
 
   useEffect(() => {
     loadStats();
@@ -149,12 +180,10 @@ export default function LocationsPage() {
 
   const loadAllCities = async () => {
     try {
-      // Load all cities for map view - we'll get them from each country
       const countriesResponse = await api.get('/locations/countries');
       let allCitiesData: City[] = [];
       
-      // For each country, get all regions, districts, and cities
-      for (const country of countriesResponse.slice(0, 5)) { // Limit to first 5 countries for performance
+      for (const country of countriesResponse.slice(0, 5)) {
         try {
           const regionsResp = await api.get(`/locations/regions?country_code=${country.code}`);
           for (const region of regionsResp.slice(0, 3)) {
@@ -244,15 +273,39 @@ export default function LocationsPage() {
     }
   };
 
+  // Geocoding search
+  const handleGeoSearch = async () => {
+    if (!searchQuery.trim()) return;
+    
+    setSearching(true);
+    try {
+      const results = await api.get(`/locations/geocode?query=${encodeURIComponent(searchQuery)}`);
+      setSearchResults(results);
+    } catch (err: any) {
+      setError(err.message || 'Geocoding search failed');
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleSelectGeoResult = (result: GeocodingResult) => {
+    setFormData({ ...formData, lat: result.lat, lng: result.lng });
+    setSearchResults([]);
+    setSearchQuery('');
+    setSuccessMessage(`Coordinates set: ${result.lat.toFixed(4)}, ${result.lng.toFixed(4)}`);
+    setTimeout(() => setSuccessMessage(null), 3000);
+  };
+
   const openAddDialog = (type: 'country' | 'region' | 'district' | 'city', coords?: { lat: number; lng: number }) => {
     setDialogType(type);
     setEditItem(null);
-    if (type === 'city' && coords) {
+    if ((type === 'city' || type === 'district') && coords) {
       setFormData({ lat: coords.lat, lng: coords.lng });
     } else {
       setFormData({});
     }
-    setMapClickCoords(null);
+    setSearchQuery('');
+    setSearchResults([]);
     setDialogOpen(true);
   };
 
@@ -260,32 +313,43 @@ export default function LocationsPage() {
     setDialogType(type);
     setEditItem(item);
     setFormData(item);
+    setSearchQuery('');
+    setSearchResults([]);
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
     try {
-      const endpoint = editItem 
-        ? `/locations/${dialogType === 'country' ? 'countries' : dialogType + 's'}/${editItem.code || editItem[dialogType + '_code']}`
-        : `/locations/${dialogType === 'country' ? 'countries' : dialogType + 's'}`;
-      
-      const method = editItem ? 'put' : 'post';
-      
-      // Add parent codes for nested items
+      let endpoint: string;
+      let method: 'post' | 'put';
       const dataToSend = { ...formData };
-      if (dialogType === 'region') {
+      
+      if (dialogType === 'country') {
+        endpoint = editItem ? `/locations/countries/${editItem.code}` : '/locations/countries';
+        method = editItem ? 'put' : 'post';
+      } else if (dialogType === 'region') {
         dataToSend.country_code = selectedCountry?.code;
+        endpoint = '/locations/regions';
+        method = 'post';
       } else if (dialogType === 'district') {
         dataToSend.country_code = selectedCountry?.code;
         dataToSend.region_code = selectedRegion?.region_code;
+        endpoint = editItem ? '/locations/districts' : '/locations/districts';
+        method = editItem ? 'put' : 'post';
       } else if (dialogType === 'city') {
         dataToSend.country_code = selectedCountry?.code;
         dataToSend.region_code = selectedRegion?.region_code;
         dataToSend.district_code = selectedDistrict?.district_code;
+        endpoint = editItem ? `/locations/cities/${editItem.city_code}` : '/locations/cities';
+        method = editItem ? 'put' : 'post';
+      } else {
+        return;
       }
 
       await api[method](endpoint, dataToSend);
       setDialogOpen(false);
+      setSuccessMessage(`${dialogType} ${editItem ? 'updated' : 'created'} successfully`);
+      setTimeout(() => setSuccessMessage(null), 3000);
       
       // Refresh data
       if (dialogType === 'country') loadCountries();
@@ -319,8 +383,9 @@ export default function LocationsPage() {
       }
       
       await api.delete(endpoint);
+      setSuccessMessage(`${type} deleted successfully`);
+      setTimeout(() => setSuccessMessage(null), 3000);
       
-      // Refresh data
       if (type === 'country') loadCountries();
       else if (type === 'region' && selectedCountry) loadRegions(selectedCountry.code);
       else if (type === 'district' && selectedCountry && selectedRegion)
@@ -335,7 +400,7 @@ export default function LocationsPage() {
     }
   };
 
-  // Handle city marker drag on map
+  // Handle city/district marker drag on map
   const handleMarkerDrag = async (city: City, newLat: number, newLng: number) => {
     try {
       await api.put(`/locations/cities/${city.city_code}`, {
@@ -344,20 +409,45 @@ export default function LocationsPage() {
         lng: newLng,
       });
       
-      // Refresh cities
       if (selectedDistrict) {
         loadCities(selectedDistrict.country_code, selectedDistrict.region_code, selectedDistrict.district_code);
       }
       loadAllCities();
+      setSuccessMessage('City coordinates updated');
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: any) {
       setError(err.message || 'Failed to update city coordinates');
     }
   };
 
-  // Handle map click to add new city
+  // Handle map click to add new city/district
   const handleMapClick = (lat: number, lng: number) => {
     if (selectedDistrict) {
       openAddDialog('city', { lat, lng });
+    } else if (selectedRegion) {
+      openAddDialog('district', { lat, lng });
+    }
+  };
+
+  // Batch import
+  const handleBatchImport = async () => {
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const geojson = JSON.parse(importJson);
+      const result = await api.post('/locations/batch-import', { geojson });
+      setImportResult(result);
+      if (result.imported_count > 0) {
+        loadStats();
+        loadAllCities();
+        if (selectedDistrict) {
+          loadCities(selectedDistrict.country_code, selectedDistrict.region_code, selectedDistrict.district_code);
+        }
+      }
+    } catch (err: any) {
+      setError(err.message || 'Batch import failed. Check JSON format.');
+    } finally {
+      setImporting(false);
     }
   };
 
@@ -400,8 +490,54 @@ export default function LocationsPage() {
     </Breadcrumbs>
   );
 
-  // Get current cities for display
   const currentCities = selectedDistrict ? cities : allCities;
+
+  // Render location search field for dialogs
+  const renderLocationSearch = () => (
+    <Box sx={{ mt: 2, mb: 1 }}>
+      <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+        Search Location (OpenStreetMap)
+      </Typography>
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="Search address or place name..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleGeoSearch()}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <Button 
+          variant="outlined" 
+          onClick={handleGeoSearch}
+          disabled={searching || !searchQuery.trim()}
+        >
+          {searching ? <CircularProgress size={20} /> : 'Search'}
+        </Button>
+      </Box>
+      {searchResults.length > 0 && (
+        <Paper elevation={3} sx={{ mt: 1, maxHeight: 200, overflow: 'auto' }}>
+          <List dense>
+            {searchResults.map((result, idx) => (
+              <ListItemButton key={idx} onClick={() => handleSelectGeoResult(result)}>
+                <ListItemText
+                  primary={result.display_name}
+                  secondary={`${result.lat.toFixed(4)}, ${result.lng.toFixed(4)}`}
+                />
+              </ListItemButton>
+            ))}
+          </List>
+        </Paper>
+      )}
+    </Box>
+  );
 
   return (
     <Box sx={{ p: 3 }}>
@@ -410,6 +546,13 @@ export default function LocationsPage() {
           Location Manager
         </Typography>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <Button 
+            startIcon={<UploadIcon />} 
+            variant="outlined"
+            onClick={() => setImportDialogOpen(true)}
+          >
+            Import GeoJSON
+          </Button>
           <ToggleButtonGroup
             value={viewMode}
             exclusive
@@ -436,6 +579,12 @@ export default function LocationsPage() {
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
           {error}
+        </Alert>
+      )}
+      
+      {successMessage && (
+        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccessMessage(null)}>
+          {successMessage}
         </Alert>
       )}
 
@@ -492,20 +641,21 @@ export default function LocationsPage() {
               {selectedDistrict 
                 ? `Cities in ${selectedDistrict.name}` 
                 : selectedRegion 
-                  ? `Districts in ${selectedRegion.name}` 
+                  ? `Districts in ${selectedRegion.name} (click to add district)` 
                   : selectedCountry 
                     ? `Regions in ${selectedCountry.name}` 
                     : 'All Cities (Map View)'
               }
             </Typography>
-            {selectedDistrict && (
+            {(selectedDistrict || selectedRegion) && (
               <Typography variant="body2" color="text.secondary">
-                Click on map to add new city • Drag markers to update coordinates
+                Click on map to add • Drag markers to update coordinates
               </Typography>
             )}
           </Box>
           <LocationMapView
             cities={currentCities}
+            districts={selectedRegion && !selectedDistrict ? districts : []}
             selectedCountry={selectedCountry}
             selectedRegion={selectedRegion}
             selectedDistrict={selectedDistrict}
@@ -513,6 +663,8 @@ export default function LocationsPage() {
             onMapClick={handleMapClick}
             onCityEdit={(city) => openEditDialog('city', city)}
             onCityDelete={(city) => handleDelete('city', city)}
+            onDistrictClick={handleDistrictClick}
+            onDistrictEdit={(district) => openEditDialog('district', district)}
           />
         </Paper>
       )}
@@ -622,7 +774,7 @@ export default function LocationsPage() {
                 </>
               )}
 
-              {/* Districts Tab */}
+              {/* Districts Tab - with lat/lng */}
               {selectedRegion && !selectedDistrict && (
                 <>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -637,6 +789,8 @@ export default function LocationsPage() {
                         <TableRow>
                           <TableCell>Code</TableCell>
                           <TableCell>Name</TableCell>
+                          <TableCell>Latitude</TableCell>
+                          <TableCell>Longitude</TableCell>
                           <TableCell align="right">Actions</TableCell>
                         </TableRow>
                       </TableHead>
@@ -647,6 +801,12 @@ export default function LocationsPage() {
                               <Chip label={district.district_code} size="small" />
                             </TableCell>
                             <TableCell onClick={() => handleDistrictClick(district)}>{district.name}</TableCell>
+                            <TableCell onClick={() => handleDistrictClick(district)}>
+                              {district.lat?.toFixed(4) || '-'}
+                            </TableCell>
+                            <TableCell onClick={() => handleDistrictClick(district)}>
+                              {district.lng?.toFixed(4) || '-'}
+                            </TableCell>
                             <TableCell align="right">
                               <Tooltip title="View Cities">
                                 <IconButton onClick={() => handleDistrictClick(district)}>
@@ -743,7 +903,7 @@ export default function LocationsPage() {
                   label="Flag Emoji"
                   value={formData.flag || ''}
                   onChange={(e) => setFormData({ ...formData, flag: e.target.value })}
-                  helperText="e.g., flags emoji"
+                  helperText="e.g., flag emoji"
                 />
               </>
             )}
@@ -777,6 +937,22 @@ export default function LocationsPage() {
                   value={formData.name || ''}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
+                {renderLocationSearch()}
+                <TextField
+                  label="Latitude"
+                  type="number"
+                  value={formData.lat || ''}
+                  onChange={(e) => setFormData({ ...formData, lat: parseFloat(e.target.value) })}
+                  inputProps={{ step: 0.0001 }}
+                  helperText="Optional: center point for district"
+                />
+                <TextField
+                  label="Longitude"
+                  type="number"
+                  value={formData.lng || ''}
+                  onChange={(e) => setFormData({ ...formData, lng: parseFloat(e.target.value) })}
+                  inputProps={{ step: 0.0001 }}
+                />
               </>
             )}
             {dialogType === 'city' && (
@@ -793,13 +969,14 @@ export default function LocationsPage() {
                   value={formData.name || ''}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
+                {renderLocationSearch()}
                 <TextField
                   label="Latitude"
                   type="number"
                   value={formData.lat || ''}
                   onChange={(e) => setFormData({ ...formData, lat: parseFloat(e.target.value) })}
                   inputProps={{ step: 0.0001 }}
-                  helperText={mapClickCoords ? "Set from map click" : "Enter latitude or click on map"}
+                  helperText="Search above or click on map to set coordinates"
                 />
                 <TextField
                   label="Longitude"
@@ -807,7 +984,6 @@ export default function LocationsPage() {
                   value={formData.lng || ''}
                   onChange={(e) => setFormData({ ...formData, lng: parseFloat(e.target.value) })}
                   inputProps={{ step: 0.0001 }}
-                  helperText={mapClickCoords ? "Set from map click" : "Enter longitude or click on map"}
                 />
                 {formData.lat && formData.lng && (
                   <Alert severity="info" sx={{ mt: 1 }}>
@@ -822,6 +998,64 @@ export default function LocationsPage() {
           <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
           <Button variant="contained" onClick={handleSave}>
             {editItem ? 'Update' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Batch Import Dialog */}
+      <Dialog open={importDialogOpen} onClose={() => setImportDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Import Cities from GeoJSON</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2 }}>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Upload a GeoJSON FeatureCollection with Point features. Each feature needs properties:
+              <br />
+              <code>country_code, region_code, district_code, city_code (or code), name</code>
+            </Alert>
+            <TextField
+              fullWidth
+              multiline
+              rows={12}
+              label="GeoJSON"
+              value={importJson}
+              onChange={(e) => setImportJson(e.target.value)}
+              placeholder={`{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [39.2083, -6.7924] },
+      "properties": {
+        "country_code": "TZ",
+        "region_code": "DSM",
+        "district_code": "KIN",
+        "city_code": "NEW",
+        "name": "New City"
+      }
+    }
+  ]
+}`}
+            />
+            {importResult && (
+              <Alert 
+                severity={importResult.error_count > 0 ? 'warning' : 'success'} 
+                sx={{ mt: 2 }}
+              >
+                Imported: {importResult.imported_count} cities
+                {importResult.error_count > 0 && ` | Errors: ${importResult.error_count}`}
+              </Alert>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setImportDialogOpen(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            onClick={handleBatchImport}
+            disabled={importing || !importJson.trim()}
+            startIcon={importing ? <CircularProgress size={20} /> : <UploadIcon />}
+          >
+            Import
           </Button>
         </DialogActions>
       </Dialog>
