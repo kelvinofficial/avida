@@ -175,7 +175,10 @@ export default function CreditsPage() {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      contentContainerStyle={isDesktop ? styles.scrollContentDesktop : undefined}
+    >
       <View style={[styles.contentWrapper, isDesktop && styles.desktopWrapper]}>
         {/* Header */}
         <View style={styles.header}>
