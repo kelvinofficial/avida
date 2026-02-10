@@ -377,9 +377,12 @@ def create_business_profile_router(db, get_current_user, require_auth):
             "city": data.city,
             "country": data.country,
             "is_verified": False,
+            "is_premium": False,
+            "verification_tier": "none",  # none, verified, premium
             "verification_status": "none",
             "verification_requested_at": None,
             "verified_at": None,
+            "premium_expires_at": None,
             "is_active": True,
             "total_views": 0,
             "created_at": now,
