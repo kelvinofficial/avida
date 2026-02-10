@@ -439,6 +439,57 @@ export default function BusinessProfileEditScreen() {
     }
   };
 
+  const handlePayPalCheckout = async () => {
+    if (!hasProfile || !profileId) { Alert.alert('Error', 'Please save your business profile first'); return; }
+    setProcessingPayment(true);
+    try {
+      const originUrl = Platform.OS === 'web' ? window.location.origin : 'https://verified-sellers-hub.preview.emergentagent.com';
+      const response = await api.post('/premium-subscription/paypal/checkout', {
+        package_id: selectedPackage,
+        origin_url: originUrl,
+        business_profile_id: profileId
+      });
+      
+      if (response.data.paypal_client_id) {
+        // For now, show info about PayPal
+        Alert.alert(
+          'PayPal Payment',
+          `Amount: $${response.data.amount} ${response.data.currency}\n\nPayPal integration requires the PayPal SDK on native platforms. For production, integrate the PayPal SDK.`,
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to start PayPal checkout');
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
+  const handleMpesaCheckout = async () => {
+    if (!hasProfile || !profileId) { Alert.alert('Error', 'Please save your business profile first'); return; }
+    if (!mpesaPhone.trim()) { Alert.alert('Error', 'Please enter your M-Pesa phone number'); return; }
+    
+    setProcessingPayment(true);
+    try {
+      const response = await api.post('/premium-subscription/mpesa/stk-push', {
+        package_id: 'monthly_kes', // Default to Kenya KES
+        phone_number: mpesaPhone.trim(),
+        business_profile_id: profileId
+      });
+      
+      Alert.alert(
+        'M-Pesa Payment Initiated',
+        response.data.message || 'Please check your phone and enter your M-Pesa PIN to complete the payment.',
+        [{ text: 'OK', onPress: () => setShowMpesaModal(false) }]
+      );
+      setMpesaPhone('');
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to initiate M-Pesa payment');
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
   const handleRequestVerification = async () => {
     if (!hasProfile) { Alert.alert('Error', 'Please save your business profile first'); return; }
     Alert.alert('Request Verification', 'Submit your profile for admin review to get a verified badge?', [
