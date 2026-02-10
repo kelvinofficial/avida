@@ -979,8 +979,14 @@ When sandbox mode is active, the following pages now show sandbox data:
 - [x] **Boost After Publish** - Success modal updated with boost package selection (Basic $2.99/3days, Standard $4.99/7days, Premium $9.99/14days).
 
 ### In Progress Tasks (P1)
-- [ ] Edit Listing with Original Data - Form pre-fill improvements
-- [ ] Push Notification End-to-End Testing
+- [x] Edit Listing with Original Data - Form pre-fill implemented with category, images, title, description, price, etc.
+- [x] Push Notifications Fixed - Now supports Expo Push tokens, in-app notifications write to correct collection
+
+### Completed Additional Items (Feb 10, 2026)
+- Edit listing page now loads original data and pre-fills all form fields
+- Push service updated to support Expo Push (mobile app's native format)
+- Admin notifications now create records in both `user_notifications` AND `notifications` collections
+- User tokens retrieved from both `users.push_token` and `user_device_tokens` collection
 
 ### Future/Backlog (P2)
 - Notification Template Analytics
