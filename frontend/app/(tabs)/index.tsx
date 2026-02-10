@@ -19,7 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Storage } from '../../src/utils/storage';
 import { theme } from '../../src/utils/theme';
 import { listingsApi, categoriesApi, favoritesApi, notificationsApi, locationsApi } from '../../src/utils/api';
 import { sandboxAwareListingsApi, sandboxAwareCategoriesApi, sandboxUtils } from '../../src/utils/sandboxAwareApi';
