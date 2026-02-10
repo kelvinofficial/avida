@@ -206,9 +206,9 @@ def create_business_profile_router(db, get_current_user, require_auth):
     
     @router.get("/public/{identifier}")
     async def get_public_profile(identifier: str, request: Request):
-        """Get a public business profile by identifier"""
+        """Get a public business profile by identifier or slug"""
         profile = await db.business_profiles.find_one(
-            {"identifier": identifier, "is_active": True},
+            {"$or": [{"identifier": identifier}, {"slug": identifier}], "is_active": True},
             {"_id": 0}
         )
         
@@ -249,7 +249,7 @@ def create_business_profile_router(db, get_current_user, require_auth):
     ):
         """Get listings for a business profile with filtering"""
         profile = await db.business_profiles.find_one(
-            {"identifier": identifier, "is_active": True},
+            {"$or": [{"identifier": identifier}, {"slug": identifier}], "is_active": True},
             {"_id": 0, "user_id": 1}
         )
         
