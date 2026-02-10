@@ -327,7 +327,36 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.border,
   },
   backBtn: { padding: 8 },
+  headerCenter: { alignItems: 'center' },
   headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
+  
+  // Premium Badge in header
+  premiumBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORS.premium,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    marginTop: 4,
+  },
+  premiumBadgeText: { fontSize: 10, fontWeight: '600', color: '#fff' },
+  
+  // Premium User Banner
+  premiumBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#FFF8E1',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FFE082',
+  },
+  premiumBannerText: { flex: 1 },
+  premiumBannerTitle: { fontSize: 15, fontWeight: '600', color: COLORS.text },
+  premiumBannerSubtitle: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
   content: { flex: 1 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   
