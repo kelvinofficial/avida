@@ -5924,40 +5924,6 @@ if LOCATION_SYSTEM_AVAILABLE:
     
     logger.info("Location System loaded successfully")
 
-# Business Profile System
-if BUSINESS_PROFILE_AVAILABLE:
-    # Create auth wrapper for business profile system (expects dict)
-    async def require_auth_dict(request: Request):
-        user = await require_auth(request)
-        return {
-            "user_id": user.user_id,
-            "email": user.email,
-            "name": user.name
-        }
-    
-    async def require_admin_for_business(request: Request):
-        user = await get_current_user(request)
-        if not user:
-            raise HTTPException(status_code=401, detail="Not authenticated")
-        # Check if user is admin (simplified - you may have a more sophisticated check)
-        admin_emails = ["admin@marketplace.com", "admin@example.com"]
-        if user.email not in admin_emails:
-            raise HTTPException(status_code=403, detail="Admin access required")
-        return {
-            "user_id": user.user_id,
-            "email": user.email,
-            "name": user.name
-        }
-    
-    business_profile_router = create_business_profile_router(db, get_current_user, require_auth_dict)
-    business_profile_admin_router = create_business_profile_admin_router(db, require_admin_for_business)
-    
-    # Register both routers directly on app (avoids router registration order issues)
-    app.include_router(business_profile_router, prefix="/api")
-    app.include_router(business_profile_admin_router, prefix="/api")
-    
-    logger.info("Business Profile System loaded successfully")
-
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
