@@ -290,10 +290,10 @@ export default function SavedItemsScreen() {
               </>
             ) : (
               <>
-                <TouchableOpacity style={desktopStyles.signInHeaderBtn} onPress={() => router.push('/login')}>
+                <TouchableOpacity style={desktopStyles.signInHeaderBtn} onPress={() => goToLogin()}>
                   <Text style={desktopStyles.signInHeaderBtnText}>Sign In</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={desktopStyles.signUpHeaderBtn} onPress={() => router.push('/login')}>
+                <TouchableOpacity style={desktopStyles.signUpHeaderBtn} onPress={() => goToLogin()}>
                   <Text style={desktopStyles.signUpHeaderBtnText}>Sign Up</Text>
                 </TouchableOpacity>
               </>
@@ -346,7 +346,7 @@ export default function SavedItemsScreen() {
             <Text style={desktopStyles.unauthSubtitle}>
               Keep track of your favorite listings and access them anytime
             </Text>
-            <TouchableOpacity style={desktopStyles.unauthSignInBtn} onPress={() => router.push('/login')}>
+            <TouchableOpacity style={desktopStyles.unauthSignInBtn} onPress={() => goToLogin()}>
               <Ionicons name="log-in-outline" size={20} color="#fff" />
               <Text style={desktopStyles.unauthSignInBtnText}>Sign In</Text>
             </TouchableOpacity>
@@ -451,7 +451,7 @@ export default function SavedItemsScreen() {
         <View style={styles.centerContent}>
           <Ionicons name="lock-closed-outline" size={48} color={COLORS.textSecondary} />
           <Text style={styles.loginMessage}>Please sign in to view saved items</Text>
-          <TouchableOpacity style={styles.signInBtn} onPress={() => router.push('/login')}>
+          <TouchableOpacity style={styles.signInBtn} onPress={() => goToLogin()}>
             <Text style={styles.signInBtnText}>Sign In</Text>
           </TouchableOpacity>
         </View>
