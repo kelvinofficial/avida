@@ -179,11 +179,26 @@ export default function ABTestingPage() {
       name: '', description: '', hypothesis: '', experiment_type: 'feature',
       target_page: '', goal_type: 'conversion', goal_event: '',
       assignment_type: 'both', min_sample_size: 100, confidence_level: 95,
+      smart_winner_enabled: false, smart_winner_strategy: 'notify', min_runtime_hours: 48,
       variants: [
         { name: 'Control', description: 'Original', traffic_percent: 50, is_control: true, config: {} },
         { name: 'Variant A', description: 'Test', traffic_percent: 50, is_control: false, config: {} }
       ]
     });
+  };
+
+  const handleCheckWinners = async () => {
+    try {
+      const result = await api.checkAllExperimentsForWinners();
+      if (result.winners_found > 0) {
+        setSuccess(`Found ${result.winners_found} winner(s)! Check notifications.`);
+      } else {
+        setSuccess(`Checked ${result.checked} experiments. No winners yet.`);
+      }
+      loadData();
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to check for winners');
+    }
   };
 
   const addVariant = () => {
