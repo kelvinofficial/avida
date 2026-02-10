@@ -201,12 +201,42 @@ export default function SettingsScreen() {
     try {
       const response = await api.get('/settings');
       setSettings(response.data);
+      // Load default location if exists
+      if (response.data?.default_location) {
+        setDefaultLocation(response.data.default_location);
+      }
     } catch (error) {
       console.error('Error fetching settings:', error);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const saveDefaultLocation = async (location: LocationData) => {
+    setLocationSaving(true);
+    try {
+      await api.put('/users/me/location', { default_location: location });
+      setDefaultLocation(location);
+      Alert.alert('Success', 'Default location saved');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save location');
+    } finally {
+      setLocationSaving(false);
+    }
+  };
+
+  const clearDefaultLocation = async () => {
+    setLocationSaving(true);
+    try {
+      await api.put('/users/me/location', { default_location: null });
+      setDefaultLocation(null);
+      Alert.alert('Success', 'Default location cleared');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to clear location');
+    } finally {
+      setLocationSaving(false);
+    }
+  };
 
   useEffect(() => {
     if (isAuthenticated) {
