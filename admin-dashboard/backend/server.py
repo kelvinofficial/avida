@@ -4495,6 +4495,39 @@ except ImportError as e:
     logger.warning(f"Boost system not loaded: {e}")
 
 # =============================================================================
+# VERIFICATION SYSTEM
+# =============================================================================
+try:
+    import sys
+    sys.path.insert(0, '/app/backend')
+    from verification_system import create_verification_router
+    
+    verification_router, verification_service = create_verification_router(db, get_current_admin)
+    app.include_router(verification_router, prefix="/api/admin")
+    
+    logger.info("Verification system loaded successfully")
+except ImportError as e:
+    logger.warning(f"Verification system not loaded: {e}")
+
+# =============================================================================
+# COMMISSION SETTINGS SYSTEM
+# =============================================================================
+try:
+    from commission_system import create_commission_router, CommissionService
+    
+    commission_router, commission_service = create_commission_router(db, get_current_admin)
+    app.include_router(commission_router, prefix="/api/admin")
+    
+    # Initialize commission config on startup
+    @app.on_event("startup")
+    async def init_commission_system():
+        await commission_service.initialize()
+    
+    logger.info("Commission system loaded successfully")
+except ImportError as e:
+    logger.warning(f"Commission system not loaded: {e}")
+
+# =============================================================================
 # BANNER MANAGEMENT PROXY ENDPOINTS
 # Proxy banner routes from main app backend
 # =============================================================================
