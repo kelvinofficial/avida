@@ -193,6 +193,15 @@ export default function BusinessProfileEditScreen() {
   const [processingPayment, setProcessingPayment] = useState(false);
   const [showMpesaModal, setShowMpesaModal] = useState(false);
   const [mpesaPhone, setMpesaPhone] = useState('');
+  
+  // Success modal
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successProfileUrl, setSuccessProfileUrl] = useState('');
+  const [successProfileSlug, setSuccessProfileSlug] = useState('');
+  
+  // Pending image uploads (selected before profile saved)
+  const [pendingLogoUri, setPendingLogoUri] = useState<string | null>(null);
+  const [pendingCoverUri, setPendingCoverUri] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
