@@ -18,7 +18,7 @@ import uuid
 from datetime import datetime
 
 # API configuration
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://location-admin-4.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://nearby-listings.preview.emergentagent.com')
 if BASE_URL.endswith('/api'):
     BASE_URL = BASE_URL.rstrip('/api')
 API_URL = f"{BASE_URL}/api"
