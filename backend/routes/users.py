@@ -57,6 +57,41 @@ def create_users_router(db, get_current_user, require_auth, online_users: Set[st
     """
     router = APIRouter(prefix="/users", tags=["Users"])
     
+    @router.get("/me")
+    async def get_current_user_profile(request: Request):
+        """Get current authenticated user profile with premium status"""
+        user = await require_auth(request)
+        
+        # Get user data from database
+        user_data = await db.users.find_one(
+            {"user_id": user.user_id}, 
+            {"_id": 0, "password_hash": 0}
+        )
+        
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Check for premium status from business_profiles collection
+        business_profile = await db.business_profiles.find_one(
+            {"user_id": user.user_id},
+            {"_id": 0, "is_premium": 1, "premium_expires_at": 1}
+        )
+        
+        # Add premium status to user data
+        if business_profile:
+            user_data["is_premium"] = business_profile.get("is_premium", False)
+            premium_expires = business_profile.get("premium_expires_at")
+            if premium_expires:
+                if isinstance(premium_expires, datetime):
+                    user_data["premium_expires_at"] = premium_expires.isoformat()
+                else:
+                    user_data["premium_expires_at"] = premium_expires
+        else:
+            user_data["is_premium"] = False
+            user_data["premium_expires_at"] = None
+        
+        return user_data
+    
     @router.put("/me")
     async def update_user(update: UserUpdate, request: Request):
         """Update current user profile"""
