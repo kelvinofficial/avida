@@ -820,6 +820,7 @@ export default function PostListingScreen() {
         condition: condition || undefined,
         images,
         location: location.trim(),
+        location_data: locationData || undefined, // New structured location data
         attributes: {
           ...attributes,
           seller_type: sellerType,
