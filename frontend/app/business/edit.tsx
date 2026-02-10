@@ -827,6 +827,53 @@ export default function BusinessProfileEditScreen() {
           <View style={{ height: 40 }} />
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* M-Pesa Modal */}
+      <Modal
+        visible={showMpesaModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowMpesaModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>M-Pesa Payment</Text>
+            <Text style={styles.modalSubtitle}>
+              Enter your M-Pesa registered phone number to receive a payment prompt
+            </Text>
+            <TextInput
+              style={styles.mpesaInput}
+              value={mpesaPhone}
+              onChangeText={setMpesaPhone}
+              placeholder="+254 712 345 678"
+              placeholderTextColor={COLORS.textSecondary}
+              keyboardType="phone-pad"
+              data-testid="mpesa-phone-input"
+            />
+            <TouchableOpacity
+              style={[styles.mpesaSubmitBtn, processingPayment && styles.checkoutBtnDisabled]}
+              onPress={handleMpesaCheckout}
+              disabled={processingPayment}
+              data-testid="mpesa-submit-button"
+            >
+              {processingPayment ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <>
+                  <Ionicons name="phone-portrait-outline" size={18} color="#fff" />
+                  <Text style={styles.mpesaSubmitText}>Pay KES 3,500</Text>
+                </>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.mpesaCancelBtn}
+              onPress={() => setShowMpesaModal(false)}
+            >
+              <Text style={styles.mpesaCancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
