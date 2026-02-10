@@ -237,6 +237,14 @@ except ImportError as e:
     PREMIUM_SUBSCRIPTION_AVAILABLE = False
     logging.warning(f"Premium Subscription System not available: {e}")
 
+# Subscription Services (Email, Auto-Renewal, Invoices)
+try:
+    from subscription_services import SubscriptionEmailService, AutoRenewalService, InvoiceService
+    SUBSCRIPTION_SERVICES_AVAILABLE = True
+except ImportError as e:
+    SUBSCRIPTION_SERVICES_AVAILABLE = False
+    logging.warning(f"Subscription Services not available: {e}")
+
 # Modular Routes (Refactored from server.py)
 try:
     from routes import (
