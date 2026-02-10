@@ -51,6 +51,7 @@ export default function RegisterScreen() {
   const { setUser, setToken } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showLocationOnboarding, setShowLocationOnboarding] = useState(false);
 
   const handleClose = () => {
     // Always navigate to home - simpler and more reliable
