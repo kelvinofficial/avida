@@ -360,6 +360,11 @@ export default function VouchersPage() {
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button startIcon={<Refresh />} onClick={loadData} disabled={loading}>Refresh</Button>
+          <Button startIcon={<Download />} onClick={downloadTemplate}>Template</Button>
+          <input type="file" accept=".csv" ref={fileInputRef} onChange={handleFileSelect} style={{ display: 'none' }} />
+          <Button variant="outlined" startIcon={<FileUpload />} onClick={() => fileInputRef.current?.click()}>
+            Import CSV
+          </Button>
           <Button variant="contained" startIcon={<Add />} onClick={() => { resetForm(); setCreateDialogOpen(true); }}>
             Create Voucher
           </Button>
