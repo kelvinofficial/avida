@@ -1018,7 +1018,7 @@ def create_business_profile_admin_router(db, require_admin):
             {"$set": update_data}
         )
         
-        # Notify user
+        # Notify user via in-app notification
         await db.notifications.insert_one({
             "id": str(uuid.uuid4()),
             "user_id": profile["user_id"],
@@ -1028,6 +1028,36 @@ def create_business_profile_admin_router(db, require_admin):
             "is_read": False,
             "created_at": now
         })
+        
+        # Send email notification
+        try:
+            from subscription_services import SubscriptionEmailService
+            from sendgrid import SendGridAPIClient
+            import os
+            
+            sendgrid_api_key = os.environ.get("SENDGRID_API_KEY")
+            if sendgrid_api_key:
+                sg_client = SendGridAPIClient(sendgrid_api_key)
+                email_service = SubscriptionEmailService(db, sg_client)
+                
+                user = await db.users.find_one({"user_id": profile["user_id"]})
+                if user and user.get("email"):
+                    if data.action == "approve":
+                        await email_service.send_profile_verified(
+                            user["email"],
+                            profile["business_name"],
+                            profile.get("identifier") or profile.get("slug", profile_id)
+                        )
+                        logger.info(f"Sent verification email to {user['email']}")
+                    elif data.action == "reject":
+                        await email_service.send_profile_verification_rejected(
+                            user["email"],
+                            profile["business_name"],
+                            data.reason
+                        )
+                        logger.info(f"Sent rejection email to {user['email']}")
+        except Exception as e:
+            logger.warning(f"Failed to send verification email: {e}")
         
         logger.info(f"Profile {profile_id} verification: {data.action} by {admin.get('email')}")
         
