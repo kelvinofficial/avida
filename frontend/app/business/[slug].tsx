@@ -290,13 +290,54 @@ export default function BusinessProfileScreen() {
   };
 
   const handleShare = async () => {
-    // Share functionality
-    if (Platform.OS === 'web') {
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        alert('Link copied to clipboard!');
-      } catch (e) {
-        console.error('Failed to copy:', e);
+    if (!profile) return;
+    
+    const baseUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://verified-sellers-hub.preview.emergentagent.com';
+    const profileUrl = `${baseUrl.replace('/api', '')}/business/${slug}`;
+    
+    try {
+      // Fetch OG meta data for rich sharing
+      const ogResponse = await api.get(`/business-profiles/${slug}/og-meta`);
+      const shareData = ogResponse.data;
+      
+      if (Platform.OS === 'web') {
+        // Web: Use native share API if available, otherwise copy to clipboard
+        if (navigator.share) {
+          await navigator.share({
+            title: shareData.title,
+            text: shareData.share_text,
+            url: shareData.share_url,
+          });
+        } else {
+          await navigator.clipboard.writeText(shareData.share_url);
+          Alert.alert('Link Copied!', 'Business profile link has been copied to your clipboard');
+        }
+      } else {
+        // Mobile: Use React Native Share
+        await Share.share({
+          title: shareData.title,
+          message: `${shareData.share_text}\n\n${shareData.share_url}`,
+          url: shareData.share_url,
+        });
+      }
+    } catch (error) {
+      // Fallback if OG meta fetch fails
+      const fallbackUrl = profileUrl;
+      const fallbackText = `Check out ${profile.business_name} on Avida Marketplace!`;
+      
+      if (Platform.OS === 'web') {
+        try {
+          await navigator.clipboard.writeText(fallbackUrl);
+          Alert.alert('Link Copied!', 'Business profile link has been copied to your clipboard');
+        } catch (e) {
+          console.error('Failed to copy:', e);
+        }
+      } else {
+        await Share.share({
+          title: profile.business_name,
+          message: `${fallbackText}\n\n${fallbackUrl}`,
+          url: fallbackUrl,
+        });
       }
     }
   };
