@@ -168,6 +168,124 @@ EMAIL_TEMPLATES = {
 </body>
 </html>
 """
+    },
+    "profile_verified": {
+        "subject": "Congratulations! Your Business Profile is Now Verified ✓",
+        "body": """
+<html>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background: linear-gradient(135deg, #1976D2, #42A5F5); padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 20px;">
+        <h1 style="color: white; margin: 0;">Profile Verified! ✓</h1>
+    </div>
+    
+    <p>Hi {business_name},</p>
+    
+    <p>Great news! Your business profile has been <strong>verified</strong> by our team.</p>
+    
+    <div style="background: #E3F2FD; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3 style="color: #1976D2; margin-top: 0;">Your Verified Benefits:</h3>
+        <ul style="color: #333;">
+            <li>✓ Verified business badge on your profile</li>
+            <li>✓ Increased trust from buyers</li>
+            <li>✓ Better visibility in search results</li>
+            <li>✓ Eligible to upgrade to Premium</li>
+        </ul>
+    </div>
+    
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="{profile_url}" style="background: #1976D2; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold;">View Your Profile</a>
+    </div>
+    
+    <div style="background: #FFF8E1; padding: 16px; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 0; color: #FF8F00;"><strong>💎 Want even more visibility?</strong></p>
+        <p style="margin: 8px 0 0 0; color: #666;">Upgrade to Premium to get priority placement in Featured Sellers, a premium diamond badge, and enhanced visibility!</p>
+    </div>
+    
+    <p>Thank you for being part of Avida Marketplace!</p>
+    
+    <p style="color: #666; font-size: 12px; margin-top: 30px;">
+        This email was sent by Avida Marketplace.
+    </p>
+</body>
+</html>
+"""
+    },
+    "profile_verification_rejected": {
+        "subject": "Business Profile Verification Update",
+        "body": """
+<html>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background: #757575; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px;">
+        <h2 style="color: white; margin: 0;">Verification Update</h2>
+    </div>
+    
+    <p>Hi {business_name},</p>
+    
+    <p>We've reviewed your business profile verification request. Unfortunately, we were unable to approve it at this time.</p>
+    
+    <div style="background: #FFF3E0; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 0;"><strong>Reason:</strong></p>
+        <p style="margin: 10px 0 0 0; color: #666;">{rejection_reason}</p>
+    </div>
+    
+    <p><strong>What you can do:</strong></p>
+    <ul style="color: #666;">
+        <li>Review and update your business profile information</li>
+        <li>Ensure your profile has complete and accurate details</li>
+        <li>Submit a new verification request once updated</li>
+    </ul>
+    
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="{edit_profile_url}" style="background: #2E7D32; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold;">Update Your Profile</a>
+    </div>
+    
+    <p style="color: #666; font-size: 12px; margin-top: 30px;">
+        If you have questions, please contact our support team.
+    </p>
+</body>
+</html>
+"""
+    },
+    "admin_premium_upgrade": {
+        "subject": "🎉 Your Business Has Been Upgraded to Premium!",
+        "body": """
+<html>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background: linear-gradient(135deg, #FF8F00, #FFB300); padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 20px;">
+        <h1 style="color: white; margin: 0;">💎 Premium Business! 💎</h1>
+    </div>
+    
+    <p>Hi {business_name},</p>
+    
+    <p>Exciting news! Your business profile has been upgraded to <strong>Premium Verified Business</strong> by our team!</p>
+    
+    <div style="background: #FFF8E1; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3 style="color: #FF8F00; margin-top: 0;">Your Premium Benefits:</h3>
+        <ul style="color: #333;">
+            <li>💎 Premium diamond badge on your profile</li>
+            <li>📊 Priority placement in Featured Sellers</li>
+            <li>🔍 Maximum visibility in search results</li>
+            <li>💬 Premium customer support</li>
+        </ul>
+    </div>
+    
+    <div style="background: #E8F5E9; padding: 16px; border-radius: 8px; margin: 20px 0; text-align: center;">
+        <p style="margin: 0;"><strong>Premium Valid Until:</strong></p>
+        <p style="margin: 8px 0 0 0; font-size: 20px; color: #2E7D32; font-weight: bold;">{expires_at}</p>
+    </div>
+    
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="{profile_url}" style="background: #FF8F00; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold;">View Your Premium Profile</a>
+    </div>
+    
+    <p>Thank you for being a valued member of Avida Marketplace!</p>
+    
+    <p style="color: #666; font-size: 12px; margin-top: 30px;">
+        This upgrade was provided by our admin team. Enjoy your Premium benefits!
+    </p>
+</body>
+</html>
+"""
     }
 }
 
