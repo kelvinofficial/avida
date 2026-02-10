@@ -89,8 +89,8 @@ class TestGeocodeAPI:
 class TestBatchImportAPI:
     """Test GeoJSON batch import API"""
     
-    def test_batch_import_valid_geojson(self):
-        """Test batch import with valid GeoJSON FeatureCollection"""
+    def test_batch_import_valid_geojson_wrapped(self):
+        """Test batch import with valid GeoJSON wrapped in geojson key (frontend format)"""
         geojson = {
             "type": "FeatureCollection",
             "features": [
@@ -111,12 +111,13 @@ class TestBatchImportAPI:
             ]
         }
         
+        # Frontend sends { geojson: {...} }
         response = requests.post(
             f"{BASE_URL}/api/admin/locations/batch-import",
             json={"geojson": geojson}
         )
         
-        print(f"Batch Import Response: {response.status_code}")
+        print(f"Batch Import (wrapped) Response: {response.status_code}")
         print(f"Response Body: {response.text[:500]}")
         
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
@@ -136,6 +137,53 @@ class TestBatchImportAPI:
                 "region_code": "DSM",
                 "district_code": "ILA",
                 "city_code": "TEST1"
+            }
+        )
+    
+    def test_batch_import_valid_geojson_direct(self):
+        """Test batch import with direct GeoJSON FeatureCollection (alternative format)"""
+        geojson = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [39.2695, -6.8162]  # [lng, lat] format
+                    },
+                    "properties": {
+                        "country_code": "TZ",
+                        "region_code": "DSM",
+                        "district_code": "ILA",
+                        "city_code": "TEST2",
+                        "name": "Test Import City 2"
+                    }
+                }
+            ]
+        }
+        
+        # Direct GeoJSON without wrapper
+        response = requests.post(
+            f"{BASE_URL}/api/admin/locations/batch-import",
+            json=geojson
+        )
+        
+        print(f"Batch Import (direct) Response: {response.status_code}")
+        print(f"Response Body: {response.text[:500]}")
+        
+        assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+        
+        result = response.json()
+        assert result.get("imported_count", 0) >= 0, "Should have imported_count"
+        
+        # Clean up
+        requests.delete(
+            f"{BASE_URL}/api/admin/locations/cities",
+            params={
+                "country_code": "TZ",
+                "region_code": "DSM",
+                "district_code": "ILA",
+                "city_code": "TEST2"
             }
         )
     
