@@ -273,9 +273,12 @@ Payment success page with:
   - Enable per experiment to auto-detect winners
   - Strategies: Notify Only (default), Auto-Rollout, Gradual Rollout
   - Configurable minimum runtime (default 48 hours)
-  - "Check Winners" button to evaluate all running experiments
+  - "Check Winners" button for manual trigger
   - Admin notification when significant winner is found
   - Safeguards: Minimum sample size, minimum runtime
+  - **Scheduled Auto-Checking**: Background job runs every 6 hours (configurable via `AB_CHECK_INTERVAL_HOURS` env var)
+  - Scheduler status indicator shows last check time and next check
+  - Logs all checks to `scheduled_jobs_log` collection
 - **Public APIs**: `/api/ab/assign` for variant assignment, `/api/ab/track` for event tracking
 
 ### Future/Backlog
