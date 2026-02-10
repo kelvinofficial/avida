@@ -182,7 +182,7 @@ export default function AttributesPage() {
     try {
       const [attrsData, catsData, templatesData] = await Promise.all([
         api.getAllAttributes(showInherited),
-        api.getCategories({ flat: true }),
+        api.getCategories(true, true),
         api.getAttributeTemplates(),
       ]);
       setAttributes(attrsData.attributes || []);
