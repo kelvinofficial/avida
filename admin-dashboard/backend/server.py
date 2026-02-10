@@ -6160,6 +6160,396 @@ async def bulk_import_vouchers(request: Request, admin: dict = Depends(get_curre
     }
 
 # =============================================================================
+# A/B TESTING FRAMEWORK
+# =============================================================================
+
+@app.get("/api/admin/experiments/list")
+async def list_experiments(
+    status: Optional[str] = None,
+    admin: dict = Depends(get_current_admin)
+):
+    """List all A/B experiments"""
+    query = {}
+    if status:
+        query["status"] = status
+    
+    cursor = db.ab_experiments.find(query, {"_id": 0}).sort("created_at", -1)
+    experiments = await cursor.to_list(length=100)
+    
+    # Enrich with participant counts
+    for exp in experiments:
+        exp["total_participants"] = await db.ab_assignments.count_documents({"experiment_id": exp["id"]})
+        
+        # Get variant stats
+        variant_stats = []
+        for variant in exp.get("variants", []):
+            participants = await db.ab_assignments.count_documents({
+                "experiment_id": exp["id"],
+                "variant_id": variant["id"]
+            })
+            events = await db.ab_events.count_documents({
+                "experiment_id": exp["id"],
+                "variant_id": variant["id"]
+            })
+            conversions = await db.ab_events.count_documents({
+                "experiment_id": exp["id"],
+                "variant_id": variant["id"],
+                "event_type": "conversion"
+            })
+            variant_stats.append({
+                "variant_id": variant["id"],
+                "participants": participants,
+                "events": events,
+                "conversions": conversions,
+                "conversion_rate": (conversions / participants * 100) if participants > 0 else 0
+            })
+        exp["variant_stats"] = variant_stats
+    
+    return {"experiments": experiments}
+
+@app.get("/api/admin/experiments/{experiment_id}")
+async def get_experiment(experiment_id: str, admin: dict = Depends(get_current_admin)):
+    """Get detailed experiment data with results"""
+    experiment = await db.ab_experiments.find_one({"id": experiment_id}, {"_id": 0})
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    
+    # Get detailed stats for each variant
+    results = []
+    total_participants = 0
+    
+    for variant in experiment.get("variants", []):
+        participants = await db.ab_assignments.count_documents({
+            "experiment_id": experiment_id,
+            "variant_id": variant["id"]
+        })
+        total_participants += participants
+        
+        # Get events by type
+        event_pipeline = [
+            {"$match": {"experiment_id": experiment_id, "variant_id": variant["id"]}},
+            {"$group": {"_id": "$event_type", "count": {"$sum": 1}}}
+        ]
+        event_stats = await db.ab_events.aggregate(event_pipeline).to_list(length=20)
+        events_by_type = {e["_id"]: e["count"] for e in event_stats}
+        
+        clicks = events_by_type.get("click", 0)
+        conversions = events_by_type.get("conversion", 0)
+        consents = events_by_type.get("consent", 0)
+        
+        results.append({
+            "variant_id": variant["id"],
+            "variant_name": variant["name"],
+            "traffic_percent": variant.get("traffic_percent", 0),
+            "participants": participants,
+            "clicks": clicks,
+            "conversions": conversions,
+            "consents": consents,
+            "click_rate": (clicks / participants * 100) if participants > 0 else 0,
+            "conversion_rate": (conversions / participants * 100) if participants > 0 else 0,
+            "consent_rate": (consents / participants * 100) if participants > 0 else 0,
+        })
+    
+    # Calculate statistical significance (simplified chi-square approximation)
+    if len(results) >= 2 and total_participants >= 100:
+        control = results[0]
+        for i, variant in enumerate(results[1:], 1):
+            if control["participants"] > 0 and variant["participants"] > 0:
+                # Simple z-test for proportions
+                p1 = control["conversion_rate"] / 100
+                p2 = variant["conversion_rate"] / 100
+                n1 = control["participants"]
+                n2 = variant["participants"]
+                
+                if p1 + p2 > 0:
+                    p_pooled = (p1 * n1 + p2 * n2) / (n1 + n2)
+                    se = (p_pooled * (1 - p_pooled) * (1/n1 + 1/n2)) ** 0.5
+                    if se > 0:
+                        z = abs(p2 - p1) / se
+                        # Approximate p-value (95% confidence = z > 1.96)
+                        results[i]["significant"] = z > 1.96
+                        results[i]["z_score"] = round(z, 2)
+                        results[i]["improvement"] = round((p2 - p1) / p1 * 100, 1) if p1 > 0 else 0
+    
+    experiment["results"] = results
+    experiment["total_participants"] = total_participants
+    
+    # Get recent events timeline
+    recent_events = await db.ab_events.find(
+        {"experiment_id": experiment_id},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(50).to_list(length=50)
+    experiment["recent_events"] = recent_events
+    
+    return experiment
+
+@app.post("/api/admin/experiments/create")
+async def create_experiment(request: Request, admin: dict = Depends(get_current_admin)):
+    """Create a new A/B experiment"""
+    data = await request.json()
+    
+    now = datetime.now(timezone.utc)
+    
+    # Validate variants total to 100%
+    variants = data.get("variants", [])
+    if not variants:
+        raise HTTPException(status_code=400, detail="At least 2 variants required")
+    
+    total_traffic = sum(v.get("traffic_percent", 0) for v in variants)
+    if abs(total_traffic - 100) > 0.01:
+        raise HTTPException(status_code=400, detail=f"Variant traffic must total 100% (currently {total_traffic}%)")
+    
+    experiment = {
+        "id": str(uuid.uuid4()),
+        "name": data.get("name"),
+        "description": data.get("description"),
+        "hypothesis": data.get("hypothesis"),
+        "experiment_type": data.get("experiment_type", "feature"),  # feature, cookie_banner, poll, cta
+        "target_page": data.get("target_page"),
+        "goal_type": data.get("goal_type", "conversion"),  # conversion, click, consent, custom
+        "goal_event": data.get("goal_event"),
+        "variants": [
+            {
+                "id": str(uuid.uuid4()),
+                "name": v.get("name"),
+                "description": v.get("description"),
+                "traffic_percent": v.get("traffic_percent", 50),
+                "config": v.get("config", {}),
+                "is_control": v.get("is_control", False)
+            }
+            for v in variants
+        ],
+        "assignment_type": data.get("assignment_type", "both"),  # cookie, user, both
+        "min_sample_size": data.get("min_sample_size", 100),
+        "confidence_level": data.get("confidence_level", 95),
+        "status": "draft",
+        "created_by": admin.get("id"),
+        "created_at": now,
+        "updated_at": now,
+        "started_at": None,
+        "ended_at": None,
+        "winner_variant_id": None
+    }
+    
+    await db.ab_experiments.insert_one(experiment)
+    logger.info(f"Experiment created: {experiment['name']} by {admin.get('email')}")
+    
+    return {"message": "Experiment created", "experiment_id": experiment["id"]}
+
+@app.put("/api/admin/experiments/{experiment_id}")
+async def update_experiment(experiment_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    """Update experiment (only allowed when in draft status)"""
+    experiment = await db.ab_experiments.find_one({"id": experiment_id})
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    
+    if experiment.get("status") not in ["draft", "paused"]:
+        raise HTTPException(status_code=400, detail="Can only edit draft or paused experiments")
+    
+    data = await request.json()
+    
+    allowed_fields = ["name", "description", "hypothesis", "target_page", "goal_type", 
+                      "goal_event", "variants", "min_sample_size", "confidence_level"]
+    
+    update_data = {k: v for k, v in data.items() if k in allowed_fields}
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    
+    await db.ab_experiments.update_one({"id": experiment_id}, {"$set": update_data})
+    
+    return {"message": "Experiment updated"}
+
+@app.post("/api/admin/experiments/{experiment_id}/start")
+async def start_experiment(experiment_id: str, admin: dict = Depends(get_current_admin)):
+    """Start an experiment"""
+    experiment = await db.ab_experiments.find_one({"id": experiment_id})
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    
+    if experiment.get("status") not in ["draft", "paused"]:
+        raise HTTPException(status_code=400, detail="Can only start draft or paused experiments")
+    
+    now = datetime.now(timezone.utc)
+    await db.ab_experiments.update_one(
+        {"id": experiment_id},
+        {"$set": {"status": "running", "started_at": now, "updated_at": now}}
+    )
+    
+    logger.info(f"Experiment started: {experiment['name']} by {admin.get('email')}")
+    return {"message": "Experiment started"}
+
+@app.post("/api/admin/experiments/{experiment_id}/pause")
+async def pause_experiment(experiment_id: str, admin: dict = Depends(get_current_admin)):
+    """Pause a running experiment"""
+    experiment = await db.ab_experiments.find_one({"id": experiment_id})
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    
+    if experiment.get("status") != "running":
+        raise HTTPException(status_code=400, detail="Can only pause running experiments")
+    
+    await db.ab_experiments.update_one(
+        {"id": experiment_id},
+        {"$set": {"status": "paused", "updated_at": datetime.now(timezone.utc)}}
+    )
+    
+    return {"message": "Experiment paused"}
+
+@app.post("/api/admin/experiments/{experiment_id}/stop")
+async def stop_experiment(experiment_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    """Stop experiment and optionally declare winner"""
+    experiment = await db.ab_experiments.find_one({"id": experiment_id})
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    
+    data = await request.json()
+    winner_variant_id = data.get("winner_variant_id")
+    
+    now = datetime.now(timezone.utc)
+    update = {
+        "status": "completed",
+        "ended_at": now,
+        "updated_at": now
+    }
+    
+    if winner_variant_id:
+        update["winner_variant_id"] = winner_variant_id
+    
+    await db.ab_experiments.update_one({"id": experiment_id}, {"$set": update})
+    
+    logger.info(f"Experiment stopped: {experiment['name']} by {admin.get('email')}, winner: {winner_variant_id}")
+    return {"message": "Experiment stopped"}
+
+@app.delete("/api/admin/experiments/{experiment_id}")
+async def delete_experiment(experiment_id: str, admin: dict = Depends(get_current_admin)):
+    """Delete an experiment and its data"""
+    experiment = await db.ab_experiments.find_one({"id": experiment_id})
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    
+    if experiment.get("status") == "running":
+        raise HTTPException(status_code=400, detail="Cannot delete running experiments")
+    
+    await db.ab_experiments.delete_one({"id": experiment_id})
+    await db.ab_assignments.delete_many({"experiment_id": experiment_id})
+    await db.ab_events.delete_many({"experiment_id": experiment_id})
+    
+    return {"message": "Experiment deleted"}
+
+@app.get("/api/admin/experiments/stats/overview")
+async def get_experiments_overview(admin: dict = Depends(get_current_admin)):
+    """Get overview stats for all experiments"""
+    total = await db.ab_experiments.count_documents({})
+    running = await db.ab_experiments.count_documents({"status": "running"})
+    completed = await db.ab_experiments.count_documents({"status": "completed"})
+    
+    total_participants = await db.ab_assignments.count_documents({})
+    total_events = await db.ab_events.count_documents({})
+    
+    # Get experiments with significant results
+    significant_winners = await db.ab_experiments.count_documents({"winner_variant_id": {"$ne": None}})
+    
+    return {
+        "total_experiments": total,
+        "running_experiments": running,
+        "completed_experiments": completed,
+        "total_participants": total_participants,
+        "total_events": total_events,
+        "experiments_with_winners": significant_winners
+    }
+
+# Public API for client-side tracking (no admin auth required)
+@app.post("/api/ab/assign")
+async def assign_variant(request: Request):
+    """Assign a user to an experiment variant"""
+    data = await request.json()
+    experiment_id = data.get("experiment_id")
+    user_id = data.get("user_id")  # Optional - for logged-in users
+    visitor_id = data.get("visitor_id")  # Cookie-based ID
+    
+    if not experiment_id or (not user_id and not visitor_id):
+        raise HTTPException(status_code=400, detail="experiment_id and user_id or visitor_id required")
+    
+    # Check if experiment exists and is running
+    experiment = await db.ab_experiments.find_one({"id": experiment_id, "status": "running"}, {"_id": 0})
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found or not running")
+    
+    # Check for existing assignment
+    query = {"experiment_id": experiment_id}
+    if user_id:
+        query["$or"] = [{"user_id": user_id}, {"visitor_id": visitor_id}]
+    else:
+        query["visitor_id"] = visitor_id
+    
+    existing = await db.ab_assignments.find_one(query, {"_id": 0})
+    if existing:
+        return {"variant_id": existing["variant_id"], "variant_config": existing.get("variant_config", {})}
+    
+    # Assign variant based on traffic weights
+    import random
+    variants = experiment.get("variants", [])
+    rand = random.uniform(0, 100)
+    cumulative = 0
+    assigned_variant = variants[0] if variants else None
+    
+    for variant in variants:
+        cumulative += variant.get("traffic_percent", 0)
+        if rand <= cumulative:
+            assigned_variant = variant
+            break
+    
+    if not assigned_variant:
+        raise HTTPException(status_code=500, detail="Failed to assign variant")
+    
+    # Create assignment
+    assignment = {
+        "id": str(uuid.uuid4()),
+        "experiment_id": experiment_id,
+        "variant_id": assigned_variant["id"],
+        "user_id": user_id,
+        "visitor_id": visitor_id,
+        "variant_config": assigned_variant.get("config", {}),
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    await db.ab_assignments.insert_one(assignment)
+    
+    return {
+        "variant_id": assigned_variant["id"],
+        "variant_name": assigned_variant["name"],
+        "variant_config": assigned_variant.get("config", {})
+    }
+
+@app.post("/api/ab/track")
+async def track_event(request: Request):
+    """Track an event for an experiment"""
+    data = await request.json()
+    experiment_id = data.get("experiment_id")
+    variant_id = data.get("variant_id")
+    event_type = data.get("event_type")  # click, conversion, consent, custom
+    user_id = data.get("user_id")
+    visitor_id = data.get("visitor_id")
+    metadata = data.get("metadata", {})
+    
+    if not experiment_id or not variant_id or not event_type:
+        raise HTTPException(status_code=400, detail="experiment_id, variant_id, and event_type required")
+    
+    event = {
+        "id": str(uuid.uuid4()),
+        "experiment_id": experiment_id,
+        "variant_id": variant_id,
+        "event_type": event_type,
+        "user_id": user_id,
+        "visitor_id": visitor_id,
+        "metadata": metadata,
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    await db.ab_events.insert_one(event)
+    
+    return {"message": "Event tracked"}
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
