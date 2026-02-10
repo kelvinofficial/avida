@@ -239,7 +239,7 @@ export default function AnalyticsPage() {
     if (!analyticsSettings) return;
     setSavingSettings(true);
     try {
-      await api.put('/analytics/admin/settings', analyticsSettings);
+      await api.put('/analytics/admin/settings', analyticsSettings as unknown as Record<string, unknown>);
       setSnackbar({ open: true, message: 'Analytics settings saved!', severity: 'success' });
     } catch (error) {
       setSnackbar({ open: true, message: 'Failed to save settings', severity: 'error' });
