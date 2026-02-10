@@ -310,6 +310,33 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   const renderItem = ({ item }: { item: any }) => {
     switch (currentStep) {
       case 'country':
+        if (Platform.OS === 'web') {
+          return (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: '16px',
+                gap: '12px',
+                cursor: 'pointer',
+                backgroundColor: 'transparent',
+              }}
+              onClick={() => handleCountrySelect(item)}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.backgroundColor = theme.colors.surfaceVariant;
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+              }}
+              data-testid={`country-${item.code}`}
+            >
+              <Text style={styles.flagText}>{item.flag || ''}</Text>
+              <Text style={[styles.itemText, { flex: 1 }]}>{item.name}</Text>
+              <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceVariant} />
+            </div>
+          );
+        }
         return (
           <TouchableOpacity
             style={styles.listItem}
@@ -322,18 +349,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
           </TouchableOpacity>
         );
       case 'region':
-        return (
-          <TouchableOpacity
-            style={styles.listItem}
-            onPress={() => handleRegionSelect(item)}
-            data-testid={`region-${item.region_code}`}
-          >
-            <View style={styles.iconContainer}>
-              <Ionicons name="map-outline" size={20} color={theme.colors.primary} />
-            </View>
-            <Text style={[styles.itemText, { flex: 1 }]}>{item.name}</Text>
-          </TouchableOpacity>
-        );
+        // Region rendering is now handled in ScrollView above
+        return null;
     }
   };
 
