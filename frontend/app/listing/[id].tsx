@@ -686,7 +686,7 @@ export default function ListingDetailScreen() {
 
   const handleToggleFavorite = async () => {
     if (!isAuthenticated) {
-      router.push('/login');
+      router.push(`/login?redirect=${encodeURIComponent(`/listing/${id}`)}`);
       return;
     }
 
