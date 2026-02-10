@@ -427,12 +427,10 @@ const styles = StyleSheet.create({
   contentWrapper: {
     flex: 1,
     width: '100%',
+    alignSelf: 'center',
   },
   desktopWrapper: {
     maxWidth: 1280,
-    alignSelf: 'center',
-    width: '100%',
-    paddingHorizontal: 24,
   },
   loadingContainer: {
     flex: 1,
