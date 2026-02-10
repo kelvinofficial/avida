@@ -621,6 +621,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.verified,
   },
+  premiumBadge: {
+    backgroundColor: '#FFF8E1',
+  },
+  premiumText: {
+    color: '#FF8F00',
+  },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
