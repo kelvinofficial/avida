@@ -17,6 +17,7 @@ import { useAuthStore } from '../src/store/authStore';
 import api from '../src/utils/api';
 import { UserSettings } from '../src/types/settings';
 import { useResponsive } from '../src/hooks/useResponsive';
+import { LocationPicker, LocationData } from '../src/components/LocationPicker';
 
 const COLORS = {
   primary: '#2E7D32',
