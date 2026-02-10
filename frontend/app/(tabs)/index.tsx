@@ -1019,31 +1019,22 @@ export default function HomeScreen() {
             <Text style={desktopStyles.locationText} numberOfLines={1}>{currentCity}</Text>
             <Ionicons name="chevron-down" size={16} color="#666" />
           </TouchableOpacity>
-          {/* Near Me Toggle Button */}
-          <TouchableOpacity 
-            style={[desktopStyles.nearMeChip, nearMeEnabled && desktopStyles.nearMeChipActive]}
-            activeOpacity={0.7}
-            onPress={handleNearMeToggle}
-            data-testid="near-me-toggle-desktop"
-          >
-            {locationLoading ? (
-              <ActivityIndicator size="small" color={nearMeEnabled ? "#fff" : "#1976D2"} />
-            ) : (
-              <>
-                <Ionicons name="navigate" size={16} color={nearMeEnabled ? "#fff" : "#1976D2"} />
-                <Text style={[desktopStyles.nearMeText, nearMeEnabled && desktopStyles.nearMeTextActive]}>
-                  Near Me
-                </Text>
-              </>
-            )}
-          </TouchableOpacity>
-          {/* Radius Selector - only visible when Near Me is active */}
-          {nearMeEnabled && (
-            <RadiusSelector 
-              value={searchRadius} 
-              onChange={setSearchRadius}
-              disabled={locationLoading}
-            />
+          {/* Include Nearby Toggle for Desktop */}
+          {selectedCity && (
+            <TouchableOpacity 
+              style={[desktopStyles.nearMeChip, includeNearbyCities && desktopStyles.nearMeChipActive]}
+              activeOpacity={0.7}
+              onPress={() => {
+                setIncludeNearbyCities(!includeNearbyCities);
+                AsyncStorage.setItem('@include_nearby', (!includeNearbyCities).toString());
+              }}
+              data-testid="include-nearby-toggle-desktop"
+            >
+              <Ionicons name="locate" size={16} color={includeNearbyCities ? "#fff" : "#1976D2"} />
+              <Text style={[desktopStyles.nearMeText, includeNearbyCities && desktopStyles.nearMeTextActive]}>
+                {includeNearbyCities ? 'Nearby On' : 'Nearby Off'}
+              </Text>
+            </TouchableOpacity>
           )}
         </View>
       </View>
