@@ -496,9 +496,25 @@ export default function HomeScreen() {
     try {
       if (refresh) { setPage(1); setHasMore(true); }
       
-      // Build location filter from hierarchical selection
-      const locationFilter = selectedLocationFilter?.city_name || 
-        (currentCity !== 'All Locations' ? currentCity : undefined);
+      // Build location filter params - prefer hierarchical codes over text search
+      const locationParams: {
+        location?: string;
+        country_code?: string;
+        region_code?: string;
+        district_code?: string;
+        city_code?: string;
+      } = {};
+      
+      if (selectedLocationFilter) {
+        // Use hierarchical codes for precise filtering
+        if (selectedLocationFilter.country_code) locationParams.country_code = selectedLocationFilter.country_code;
+        if (selectedLocationFilter.region_code) locationParams.region_code = selectedLocationFilter.region_code;
+        if (selectedLocationFilter.district_code) locationParams.district_code = selectedLocationFilter.district_code;
+        if (selectedLocationFilter.city_code) locationParams.city_code = selectedLocationFilter.city_code;
+      } else if (currentCity !== 'All Locations') {
+        // Fallback to text search for legacy compatibility
+        locationParams.location = currentCity;
+      }
       
       // Check if sandbox mode is active and use sandbox-aware API
       const sandboxActive = await sandboxUtils.isActive();
@@ -511,7 +527,7 @@ export default function HomeScreen() {
         [listingsRes, categoriesRes] = await Promise.all([
           sandboxAwareListingsApi.getAll({ 
             category: selectedCategory || undefined, 
-            location: locationFilter,
+            ...locationParams,
             page: refresh ? 1 : page, 
             limit: 20 
           }),
@@ -522,7 +538,7 @@ export default function HomeScreen() {
         [listingsRes, categoriesRes] = await Promise.all([
           listingsApi.getAll({ 
             category: selectedCategory || undefined, 
-            location: locationFilter,
+            ...locationParams,
             page: refresh ? 1 : page, 
             limit: 20 
           }),
@@ -541,7 +557,7 @@ export default function HomeScreen() {
       }
     } catch (error) { console.error('Error fetching data:', error); }
     finally { setLoading(false); setRefreshing(false); setInitialLoadDone(true); }
-  }, [selectedCategory, currentCity, page, isAuthenticated, fetchNotificationCount]);
+  }, [selectedCategory, currentCity, selectedLocationFilter, page, isAuthenticated, fetchNotificationCount]);
 
   useEffect(() => { fetchData(true); }, [selectedCategory, currentCity, selectedLocationFilter]);
 
