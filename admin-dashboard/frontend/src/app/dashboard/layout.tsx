@@ -67,6 +67,8 @@ import {
   GroupWork,
   BugReport,
   Science,
+  VerifiedUser,
+  Percent,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
