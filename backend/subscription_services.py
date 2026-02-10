@@ -380,6 +380,32 @@ class SubscriptionEmailService:
             "renew_url": f"{self.base_url}/business/edit"
         }
         return await self.send_email(user_email, "subscription_expired", context)
+    
+    async def send_profile_verified(self, user_email: str, business_name: str, profile_identifier: str):
+        """Send business profile verified email (admin-initiated)"""
+        context = {
+            "business_name": business_name,
+            "profile_url": f"{self.base_url}/business/{profile_identifier}"
+        }
+        return await self.send_email(user_email, "profile_verified", context)
+    
+    async def send_profile_verification_rejected(self, user_email: str, business_name: str, rejection_reason: str):
+        """Send business profile verification rejected email"""
+        context = {
+            "business_name": business_name,
+            "rejection_reason": rejection_reason or "Please ensure your profile has complete and accurate information.",
+            "edit_profile_url": f"{self.base_url}/business/edit"
+        }
+        return await self.send_email(user_email, "profile_verification_rejected", context)
+    
+    async def send_admin_premium_upgrade(self, user_email: str, business_name: str, profile_identifier: str, expires_at: str):
+        """Send admin-initiated premium upgrade email"""
+        context = {
+            "business_name": business_name,
+            "expires_at": expires_at,
+            "profile_url": f"{self.base_url}/business/{profile_identifier}"
+        }
+        return await self.send_email(user_email, "admin_premium_upgrade", context)
 
 
 class AutoRenewalService:
