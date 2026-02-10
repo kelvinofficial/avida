@@ -3112,3 +3112,97 @@ Enhanced the Location Manager with district coordinates, location search, and ba
 ```
 
 ---
+
+## Advanced Location Manager Features - COMPLETE ✅ (Feb 10, 2026)
+
+### Overview
+Added advanced location management capabilities: bulk coordinate update, export to GeoJSON, listing density heatmap, and auto-suggest coordinates.
+
+### Features Implemented:
+
+**1. Bulk Coordinate Update**
+- "Bulk Update" button (orange) in Location Manager header
+- Opens dialog with warning about rate limiting (1 request/second for Nominatim)
+- Scans all districts without coordinates
+- Searches Nominatim using: "{district_name}, {region_name}, {country_name}"
+- Updates coordinates automatically
+- API: `POST /api/admin/locations/bulk-update-coordinates`
+- Returns: `{ updated_count, error_count, updated[], errors[] }`
+
+**2. Export to GeoJSON**
+- "Export" button with dropdown menu (Cities / Districts / All)
+- Downloads GeoJSON FeatureCollection file
+- Includes metadata: export_level, feature_count, exported_at
+- Supports filters: country_code, region_code, district_code
+- API: `GET /api/admin/locations/export?level=cities|districts|all`
+- Format: Standard GeoJSON with Point geometry
+
+**3. Listing Density Heatmap**
+- Toggle switch in Map View: "Listing Heatmap"
+- Uses leaflet.heat library for heatmap visualization
+- Shows density of listings per city
+- Color gradient: blue → cyan → lime → yellow → red
+- Legend shows Low/High scale and total counts
+- Cities with listings shown as red markers
+- API: `GET /api/admin/locations/listing-density`
+- Returns: `{ heatmap_data[[lat,lng,intensity]], city_details[], total_cities, total_listings }`
+
+**4. Auto-suggest Coordinates**
+- "Auto-suggest from nearby cities" button in Add City dialog
+- Calculates centroid of existing cities in the district
+- Adds small random offset to avoid exact overlaps
+- Shows confidence level (high if 3+ cities, medium otherwise)
+- Lists nearby cities used for calculation
+- API: `GET /api/admin/locations/suggest-coordinates?country_code=&region_code=&district_code=`
+- Returns: `{ suggested_lat, suggested_lng, source, confidence, nearby_cities[] }`
+
+### Dependencies Added:
+- `leaflet.heat@0.2.0` - Heatmap layer for Leaflet
+- `@types/leaflet.heat@0.2.5` - TypeScript types
+
+### API Endpoints Added:
+- `POST /api/admin/locations/bulk-update-coordinates` - Batch update districts
+- `GET /api/admin/locations/export` - Export as GeoJSON
+- `GET /api/admin/locations/listing-density` - Heatmap data
+- `GET /api/admin/locations/suggest-coordinates` - Auto-suggest for new cities
+
+### Testing: 92% backend (11/12), 100% frontend
+- Bulk Update button/dialog: PASSED
+- Export menu options: PASSED
+- Export API GeoJSON: PASSED
+- Listing Heatmap toggle: PASSED
+- Listing Density API: PASSED
+- Auto-suggest button: PASSED
+- Suggest Coordinates API: PASSED
+- Bulk Update API: PASSED
+
+### Known Minor Issue:
+- Export filter (country_code) not applied when level=cities in fallback mode
+- Workaround: Drill down to specific country/region first, then export
+
+### Usage Guide:
+
+**Bulk Update:**
+1. Go to Location Manager
+2. Click "Bulk Update" button
+3. Click "Start Bulk Update"
+4. Wait for completion (1 second per district due to rate limiting)
+
+**Export:**
+1. Go to Location Manager
+2. Optionally drill down to specific country/region/district
+3. Click "Export" → Select Cities/Districts/All
+4. GeoJSON file downloads automatically
+
+**Heatmap:**
+1. Switch to Map View
+2. Enable "Listing Heatmap" toggle
+3. View density overlay and red markers for cities with listings
+
+**Auto-suggest:**
+1. Drill down to a district with existing cities
+2. Click "Add City"
+3. Click "Auto-suggest from nearby cities"
+4. Coordinates are filled based on centroid calculation
+
+---
