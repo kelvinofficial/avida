@@ -80,6 +80,7 @@ export default function ABTestingPage() {
     smart_winner_enabled: false,
     smart_winner_strategy: 'notify',
     min_runtime_hours: 48,
+    notification_emails: '',  // Comma-separated emails for winner notifications
     variants: [
       { name: 'Control', description: 'Original version', traffic_percent: 50, is_control: true, config: {} },
       { name: 'Variant A', description: 'Test version', traffic_percent: 50, is_control: false, config: {} }
