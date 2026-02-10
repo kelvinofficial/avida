@@ -49,6 +49,121 @@ JWT_REFRESH_TOKEN_EXPIRE_DAYS = int(os.environ.get('JWT_REFRESH_TOKEN_EXPIRE_DAY
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# SendGrid Configuration
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
+SENDGRID_FROM_EMAIL = os.environ.get('SENDGRID_FROM_EMAIL', 'noreply@marketplace.com')
+SENDGRID_FROM_NAME = os.environ.get('SENDGRID_FROM_NAME', 'Admin Dashboard')
+
+# =============================================================================
+# EMAIL HELPER FUNCTIONS
+# =============================================================================
+
+async def send_ab_winner_email(
+    to_emails: List[str],
+    experiment_name: str,
+    winner_variant_name: str,
+    improvement: float,
+    control_rate: float,
+    winner_rate: float,
+    experiment_id: str
+) -> bool:
+    """Send email notification when A/B test winner is found"""
+    if not SENDGRID_API_KEY or not to_emails:
+        logger.warning("SendGrid not configured or no emails provided")
+        return False
+    
+    try:
+        subject = f"A/B Test Winner Found: {experiment_name}"
+        
+        html_content = f"""
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, #4CAF50, #45a049); padding: 20px; text-align: center;">
+                <h1 style="color: white; margin: 0;">Winner Found!</h1>
+            </div>
+            <div style="padding: 30px; background: #f9f9f9;">
+                <h2 style="color: #333; margin-top: 0;">Experiment: {experiment_name}</h2>
+                
+                <div style="background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h3 style="color: #4CAF50; margin-top: 0;">Winning Variant: {winner_variant_name}</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Improvement vs Control:</strong></td>
+                            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #4CAF50; font-weight: bold;">+{improvement}%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>Control Rate:</strong></td>
+                            <td style="padding: 10px 0; border-bottom: 1px solid #eee;">{control_rate}%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 0;"><strong>Winner Rate:</strong></td>
+                            <td style="padding: 10px 0; color: #4CAF50; font-weight: bold;">{winner_rate}%</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <p style="color: #666;">Statistical significance has been reached at 95% confidence level.</p>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="#" style="background: #4CAF50; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Results in Dashboard</a>
+                </div>
+            </div>
+            <div style="padding: 15px; background: #333; color: #999; text-align: center; font-size: 12px;">
+                <p style="margin: 0;">This is an automated notification from your A/B Testing system.</p>
+            </div>
+        </div>
+        """
+        
+        text_content = f"""
+A/B Test Winner Found!
+
+Experiment: {experiment_name}
+Winning Variant: {winner_variant_name}
+
+Results:
+- Improvement vs Control: +{improvement}%
+- Control Rate: {control_rate}%
+- Winner Rate: {winner_rate}%
+
+Statistical significance reached at 95% confidence level.
+
+Log in to your admin dashboard to view full results.
+        """
+        
+        # Build SendGrid payload
+        personalizations = [{"to": [{"email": email} for email in to_emails]}]
+        
+        payload = {
+            "personalizations": personalizations,
+            "from": {"email": SENDGRID_FROM_EMAIL, "name": SENDGRID_FROM_NAME},
+            "subject": subject,
+            "content": [
+                {"type": "text/plain", "value": text_content},
+                {"type": "text/html", "value": html_content}
+            ]
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.sendgrid.com/v3/mail/send",
+                json=payload,
+                headers={
+                    "Authorization": f"Bearer {SENDGRID_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                timeout=30.0
+            )
+            
+            if response.status_code in [200, 202]:
+                logger.info(f"A/B winner email sent to {len(to_emails)} recipients for experiment {experiment_name}")
+                return True
+            else:
+                logger.error(f"SendGrid error: {response.status_code} - {response.text}")
+                return False
+                
+    except Exception as e:
+        logger.error(f"Failed to send A/B winner email: {e}")
+        return False
+
 # =============================================================================
 # ENUMS & CONSTANTS
 # =============================================================================
