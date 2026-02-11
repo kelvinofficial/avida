@@ -8149,8 +8149,16 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load notification preferences router: {e}")
     
+    # Create admin locations router
+    try:
+        admin_locations_router = create_admin_locations_router(db, require_auth)
+        api_router.include_router(admin_locations_router)
+        logger.info("Admin locations router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load admin locations router: {e}")
+    
     app.include_router(api_router)  # Re-include to pick up modular routes
-    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs) loaded successfully")
+    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations) loaded successfully")
 
 # Include boost routes if available
 if BOOST_ROUTES_AVAILABLE:
