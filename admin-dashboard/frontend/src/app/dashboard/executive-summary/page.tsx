@@ -238,27 +238,27 @@ export default function ExecutiveSummaryPage() {
     setLoading(true);
     try {
       // Load quick stats first (always available)
-      const statsRes = await fetch('/api/admin/executive-summary/quick-stats', {
-        credentials: 'include',
-      });
-      if (statsRes.ok) {
-        setQuickStats(await statsRes.json());
+      try {
+        const statsRes = await api.get('/executive-summary/quick-stats');
+        setQuickStats(statsRes.data);
+      } catch (e) {
+        console.warn('Quick stats not available:', e);
       }
 
       // Load config
-      const configRes = await fetch('/api/admin/executive-summary/config', {
-        credentials: 'include',
-      });
-      if (configRes.ok) {
-        setConfig(await configRes.json());
+      try {
+        const configRes = await api.get('/executive-summary/config');
+        setConfig(configRes.data);
+      } catch (e) {
+        console.warn('Config not available:', e);
       }
 
       // Try to load latest summary
-      const summaryRes = await fetch(`/api/admin/executive-summary/latest?period=${selectedPeriod}`, {
-        credentials: 'include',
-      });
-      if (summaryRes.ok) {
-        setSummary(await summaryRes.json());
+      try {
+        const summaryRes = await api.get(`/executive-summary/latest?period=${selectedPeriod}`);
+        setSummary(summaryRes.data);
+      } catch (e) {
+        console.warn('Summary not available:', e);
       }
     } catch (err) {
       console.error('Failed to load data:', err);
@@ -271,10 +271,7 @@ export default function ExecutiveSummaryPage() {
     setGenerating(true);
     setError('');
     try {
-      const res = await fetch(`/api/admin/executive-summary/generate?period=${selectedPeriod}&force=${force}`, {
-        method: 'POST',
-        credentials: 'include',
-      });
+      const res = await api.post(`/executive-summary/generate?period=${selectedPeriod}&force=${force}`);
       if (res.ok) {
         const data = await res.json();
         setSummary(data);
