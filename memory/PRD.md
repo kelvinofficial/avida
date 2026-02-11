@@ -123,6 +123,25 @@ Build a local marketplace application (Avida) with:
 - Challenge detail modal with: badge reward info, leaderboard, join button
 - Link to badge leaderboard
 
+### 2026-02-11: Seasonal/Event Challenges
+**COMPLETED**
+
+#### Seasonal Challenges Defined
+- **Valentine's Special** (Feb 1-14): Sell 5 items in Fashion/Home categories → Valentine's Champion badge (+50 pts)
+- **Spring Refresh Sale** (Mar 20-Apr 20): List 15 items in Home/Fashion → Spring Refresh Pro badge (+60 pts)
+- **Summer Deals Festival** (Jun 21-Jul 31): Achieve €300 in sales → Summer Sales Star badge (+80 pts)
+- **Back to School** (Aug 15-Sep 15): Sell 8 items in Electronics/Books → Back to School Hero badge (+70 pts)
+- **Halloween Spooktacular** (Oct 15-31): List 10 items → Spooky Seller badge (+45 pts)
+- **Black Friday Blitz** (Nov 20-30): Sell 10 items → Black Friday Champion badge (+100 pts)
+- **Holiday Gift Giver** (Dec 1-25): Achieve €500 in sales → Holiday Hero badge (+120 pts)
+- **New Year Fresh Start** (Jan 1-15): List 20 items → New Year Achiever badge (+75 pts)
+
+#### Implementation Details
+- Backend: `SEASONAL_CHALLENGES` definitions, `get_seasonal_challenge_period()`, `is_seasonal_challenge_active()`
+- Category-based criteria: `CATEGORY_LISTINGS`, `CATEGORY_SALES` for filtering by product categories
+- Frontend: "Seasonal Events" section at top with pink header and "LIMITED TIME" badge
+- Seasonal challenges sorted first (featured), then weekly, then monthly
+
 ## What's Been Implemented
 
 ### 2026-02-10: Complete Subscription Backend
