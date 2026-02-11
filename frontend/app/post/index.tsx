@@ -906,6 +906,11 @@ export default function PostListingScreen() {
                 points_earned: b.points_value || 10,
               }));
               showMultipleCelebrations(badgesToCelebrate);
+              
+              // Check for milestone achievements after showing badge celebration
+              setTimeout(() => {
+                checkForNewMilestones();
+              }, 3000);
             }
           } catch (e) {
             console.error('Failed to check for new badges:', e);
