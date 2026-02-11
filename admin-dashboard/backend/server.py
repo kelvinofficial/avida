@@ -2787,8 +2787,16 @@ async def update_ticket(
     update_data: TicketUpdate,
     admin: dict = Depends(require_permission(Permission.MANAGE_TICKETS))
 ):
-    """Update ticket"""
+    """Update ticket - checks both admin_tickets and support_tickets collections"""
+    # Try admin_tickets first
     ticket = await db.admin_tickets.find_one({"id": ticket_id})
+    collection = db.admin_tickets
+    
+    # If not found, try support_tickets (user-submitted)
+    if not ticket:
+        ticket = await db.support_tickets.find_one({"id": ticket_id})
+        collection = db.support_tickets
+    
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
     
@@ -2803,10 +2811,10 @@ async def update_ticket(
     if update_data.resolution_notes:
         updates["resolution_notes"] = sanitize_input(update_data.resolution_notes)
     
-    await db.admin_tickets.update_one({"id": ticket_id}, {"$set": updates})
+    await collection.update_one({"id": ticket_id}, {"$set": updates})
     await log_audit(admin["id"], admin["email"], AuditAction.UPDATE, "ticket", ticket_id, updates, request)
     
-    return await db.admin_tickets.find_one({"id": ticket_id}, {"_id": 0})
+    return await collection.find_one({"id": ticket_id}, {"_id": 0})
 
 @api_router.post("/tickets/{ticket_id}/respond")
 async def respond_to_ticket(
@@ -2815,8 +2823,16 @@ async def respond_to_ticket(
     response_data: TicketResponse,
     admin: dict = Depends(require_permission(Permission.MANAGE_TICKETS))
 ):
-    """Add response to ticket"""
+    """Add response to ticket - checks both admin_tickets and support_tickets collections"""
+    # Try admin_tickets first
     ticket = await db.admin_tickets.find_one({"id": ticket_id})
+    collection = db.admin_tickets
+    
+    # If not found, try support_tickets (user-submitted)
+    if not ticket:
+        ticket = await db.support_tickets.find_one({"id": ticket_id})
+        collection = db.support_tickets
+    
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
     
