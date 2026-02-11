@@ -7437,6 +7437,7 @@ async def create_badge(request: Request, admin: dict = Depends(get_current_admin
         "criteria": data.get("criteria"),
         "auto_award": data.get("auto_award", False),
         "points_value": data.get("points_value", 10),
+        "display_priority": data.get("display_priority", 0),
         "is_active": data.get("is_active", True),
         "created_at": datetime.now(timezone.utc),
         "created_by": admin.get("email")
