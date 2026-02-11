@@ -75,21 +75,26 @@ export default function AdminRedirectScreen() {
 
         <View style={styles.infoCard}>
           <Text style={styles.infoTitle}>Full Admin Dashboard</Text>
-          <View style={styles.infoRow}>
-            <Ionicons name="globe-outline" size={20} color="#666" />
-            <Text style={styles.infoText}>Admin UI: http://localhost:3001</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Ionicons name="code-slash" size={20} color="#666" />
-            <Text style={styles.infoText}>API Docs: http://localhost:8002/docs</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Ionicons name="person" size={20} color="#666" />
-            <Text style={styles.infoText}>Email: admin@marketplace.com</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Ionicons name="key" size={20} color="#666" />
-            <Text style={styles.infoText}>Password: Admin@123456</Text>
+          <Text style={styles.infoNote}>
+            For full admin features including settings management, please use the Admin Dashboard:
+          </Text>
+          <TouchableOpacity 
+            style={styles.dashboardButton}
+            onPress={() => Linking.openURL('/api/admin-ui/')}
+          >
+            <Ionicons name="open-outline" size={20} color="#fff" />
+            <Text style={styles.dashboardButtonText}>Open Admin Dashboard</Text>
+          </TouchableOpacity>
+          <View style={styles.credentialsBox}>
+            <Text style={styles.credentialsTitle}>Default Credentials:</Text>
+            <View style={styles.infoRow}>
+              <Ionicons name="person" size={16} color="#666" />
+              <Text style={styles.infoText}>admin@marketplace.com</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Ionicons name="key" size={16} color="#666" />
+              <Text style={styles.infoText}>Admin@123456</Text>
+            </View>
           </View>
         </View>
 
