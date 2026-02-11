@@ -365,8 +365,8 @@ def create_profile_activity_router(db, require_auth, get_current_user):
         auto_listings = await db.auto_listings.find({"id": {"$in": listing_ids}}, {"_id": 0}).to_list(len(listing_ids))
         
         listings_map = {}
-        for listing in listings:
-            listings_map[l["id"]] = {**l, "type": "listing"}
+        for listing_item in listings:
+            listings_map[listing_item["id"]] = {**listing_item, "type": "listing"}
         for p in properties:
             listings_map[p["id"]] = {**p, "type": "property"}
         for a in auto_listings:
