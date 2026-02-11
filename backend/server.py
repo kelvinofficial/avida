@@ -4435,6 +4435,52 @@ async def get_past_seasonal_badges(
         }
     }
 
+@api_router.get("/streaks/leaderboard")
+async def get_streak_leaderboard(
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=50, le=100)
+):
+    """Get streak leaderboard showing top streakers"""
+    skip = (page - 1) * limit
+    
+    # Get users sorted by current streak
+    streaks = await db.user_streaks.find({}, {"_id": 0}).sort([
+        ("current_streak", -1),
+        ("longest_streak", -1),
+        ("total_completions", -1)
+    ]).skip(skip).limit(limit).to_list(limit)
+    
+    total = await db.user_streaks.count_documents({})
+    
+    # Get user details
+    user_ids = [s["user_id"] for s in streaks]
+    users = await db.users.find({"user_id": {"$in": user_ids}}, {"_id": 0, "user_id": 1, "name": 1}).to_list(limit)
+    users_map = {u["user_id"]: u for u in users}
+    
+    leaderboard = []
+    for i, streak in enumerate(streaks):
+        user = users_map.get(streak["user_id"], {})
+        leaderboard.append({
+            "rank": skip + i + 1,
+            "user_id": streak["user_id"],
+            "user_name": user.get("name", "Anonymous"),
+            "current_streak": streak.get("current_streak", 0),
+            "longest_streak": streak.get("longest_streak", 0),
+            "total_completions": streak.get("total_completions", 0),
+            "streak_bonus_points": streak.get("streak_bonus_points", 0),
+            "last_completion": streak.get("last_completion"),
+        })
+    
+    return {
+        "leaderboard": leaderboard,
+        "pagination": {
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "pages": (total + limit - 1) // limit
+        }
+    }
+
 # ==================== BLOCKED USERS ENDPOINTS ====================
 
 @api_router.get("/blocked-users")
