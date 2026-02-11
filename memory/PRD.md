@@ -26,6 +26,23 @@ Build a local marketplace application (Avida) with:
 - Added trigger logic in `post/index.tsx` for listing creation - checks for new badges after async award (2s delay)
 - Celebrations show confetti animation and badge details when users earn new badges
 
+### 2026-02-11: Badge Notification Bell & Header Layout
+**COMPLETED**
+
+#### Badge Notification Feature
+- Added backend endpoints:
+  - `GET /api/badges/unviewed-count` - Returns count of badges user hasn't viewed
+  - `POST /api/badges/mark-viewed` - Marks badges as viewed (all or specific badge_ids)
+- Added `is_viewed` field tracking to user_badges collection
+- Frontend fetches unviewed badge count when authenticated
+- Badge notification icon (medal-outline) displays purple badge count when user has unviewed badges
+- Badges page (`/profile/badges`) automatically marks badges as viewed when loaded
+
+#### Header Layout Update
+- Moved nav links (My Listings, Messages, Saved, Offers) to the right side of the header near the action icons
+- Nav links are now positioned before the Credits/Badge/Notifications group with a vertical divider separator
+- Logo remains on the left side with flexible spacer pushing everything else right
+
 ## What's Been Implemented
 
 ### 2026-02-10: Complete Subscription Backend
