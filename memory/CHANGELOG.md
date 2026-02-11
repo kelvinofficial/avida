@@ -383,3 +383,49 @@
 - After Auto/Motors: 7253 lines (-679)
 - After Property/Offers/Similar: 6240 lines (-1013)
 - **Total reduction: 2641 lines (~30%)**
+
+## 2026-02-11: Server.py Refactoring - Social & Profile Activity Module
+**Status:** COMPLETED
+
+### Changes
+- Extracted ~471 lines from `/app/backend/server.py` into `/app/backend/routes/social.py`
+- `server.py` reduced from 6240 → 5792 lines (448 lines removed)
+- Created two router factory functions:
+  - `create_social_router` - Follow, reviews, user listings
+  - `create_profile_activity_router` - User's listings, purchases, sales, recently viewed
+
+### Files Modified
+- `/app/backend/routes/social.py` (NEW - ~490 lines)
+- `/app/backend/routes/__init__.py` (Updated exports)
+- `/app/backend/server.py` (Removed inline routes)
+
+### Endpoints Migrated
+**Social:**
+- POST/DELETE `/api/users/{id}/follow` - Follow management
+- GET `/api/users/{id}/followers` - Followers list
+- GET `/api/users/{id}/following` - Following list
+- POST/GET `/api/users/{id}/reviews` - Reviews
+- DELETE `/api/reviews/{id}` - Delete review
+- GET `/api/users/{id}/listings` - User listings
+
+**Profile Activity:**
+- GET `/api/profile/activity/listings` - My listings
+- GET `/api/profile/activity/purchases` - My purchases
+- GET `/api/profile/activity/sales` - My sold items
+- GET/POST `/api/profile/activity/recently-viewed` - Recently viewed
+
+### Testing
+- All endpoints require authentication (verified)
+- Profile activity endpoint tested: returns 401 when not authenticated
+
+### Cumulative Progress (4 Extraction Sessions Today)
+| Module | Lines Removed |
+|--------|---------------|
+| Admin Locations | -949 |
+| Auto/Motors | -679 |
+| Property/Offers/Similar | -1013 |
+| Social/ProfileActivity | -448 |
+| **Total** | **-3089 (~35%)** |
+
+- Original: 8881 lines
+- Final: 5792 lines
