@@ -313,6 +313,8 @@ class TestScheduledReportsAPI:
     
     def test_generated_report_engagement_metrics_structure(self):
         """Verify engagement_metrics section structure"""
+        self._ensure_all_sections_enabled()
+        
         response = requests.post(
             f"{BASE_URL}/api/admin/reports/generate",
             headers=self.headers
