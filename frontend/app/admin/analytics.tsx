@@ -720,14 +720,14 @@ export default function AdminAnalyticsScreen() {
 
       {/* Tabs */}
       <View style={styles.tabsContainer}>
-        {(['overview', 'sellers', 'engagement'] as const).map(tab => (
+        {(['overview', 'sellers', 'engagement', 'settings'] as const).map(tab => (
           <TouchableOpacity
             key={tab}
             style={[styles.tab, activeTab === tab && styles.tabActive]}
             onPress={() => setActiveTab(tab)}
           >
             <Ionicons 
-              name={tab === 'overview' ? 'bar-chart' : tab === 'sellers' ? 'storefront' : 'heart'} 
+              name={tab === 'overview' ? 'bar-chart' : tab === 'sellers' ? 'storefront' : tab === 'engagement' ? 'heart' : 'settings'} 
               size={18} 
               color={activeTab === tab ? COLORS.primary : COLORS.textSecondary} 
             />
@@ -751,6 +751,7 @@ export default function AdminAnalyticsScreen() {
         {activeTab === 'overview' && renderOverviewTab()}
         {activeTab === 'sellers' && renderSellersTab()}
         {activeTab === 'engagement' && renderEngagementTab()}
+        {activeTab === 'settings' && renderSettingsTab()}
       </ScrollView>
     </SafeAreaView>
   );
