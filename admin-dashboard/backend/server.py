@@ -7470,6 +7470,7 @@ async def update_badge(badge_id: str, request: Request, admin: dict = Depends(ge
         "criteria": data.get("criteria"),
         "auto_award": data.get("auto_award"),
         "points_value": data.get("points_value"),
+        "display_priority": data.get("display_priority"),
         "is_active": data.get("is_active"),
         "updated_at": datetime.now(timezone.utc),
         "updated_by": admin.get("email")
