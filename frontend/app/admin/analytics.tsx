@@ -141,6 +141,16 @@ export default function AdminAnalyticsScreen() {
     weeklyDigest: true,
   });
   const [savingSettings, setSavingSettings] = useState(false);
+  
+  // Scheduled Reports state
+  const [reportsEnabled, setReportsEnabled] = useState(true);
+  const [reportFrequency, setReportFrequency] = useState('weekly');
+  const [reportDay, setReportDay] = useState(1); // Monday
+  const [reportHour, setReportHour] = useState(9); // 9 AM
+  const [adminEmails, setAdminEmails] = useState('');
+  const [sendingReport, setSendingReport] = useState(false);
+  const [reportHistory, setReportHistory] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   // Check authentication
   useEffect(() => {
