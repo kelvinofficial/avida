@@ -282,10 +282,11 @@ class TestMyProgress:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
-        assert "progress" in data, "Response should contain 'progress'"
+        assert "challenges" in data, "Response should contain 'challenges'"
+        assert "summary" in data, "Response should contain 'summary'"
         
-        progress_list = data["progress"]
-        assert isinstance(progress_list, list), "Progress should be a list"
+        progress_list = data["challenges"]
+        assert isinstance(progress_list, list), "Challenges should be a list"
         assert len(progress_list) > 0, "Should have progress for at least one challenge"
         
         # Verify progress structure
@@ -298,6 +299,13 @@ class TestMyProgress:
             assert "percentage" in p, "Should have 'percentage'"
             assert "completed" in p, "Should have 'completed'"
             assert "badge_earned" in p, "Should have 'badge_earned'"
+        
+        # Verify summary structure
+        summary = data["summary"]
+        assert "total" in summary, "Summary should have 'total'"
+        assert "completed" in summary, "Summary should have 'completed'"
+        assert "in_progress" in summary, "Summary should have 'in_progress'"
+        assert "not_started" in summary, "Summary should have 'not_started'"
         
         print(f"✓ GET /api/challenges/my-progress - {len(progress_list)} challenges tracked")
 
