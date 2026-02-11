@@ -265,6 +265,9 @@ try:
         create_categories_router,
         create_favorites_router,
         create_conversations_router,
+        create_badges_router,
+        create_streaks_router,
+        create_challenges_router,
         DEFAULT_CATEGORIES,
         LEGACY_CATEGORY_MAP,
         validate_category_and_subcategory
