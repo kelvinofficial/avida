@@ -14,6 +14,7 @@ from .streaks import create_streaks_router
 from .challenges import create_challenges_router
 from .admin import create_admin_router
 from .notification_preferences import create_notification_preferences_router
+from .admin_locations import create_admin_locations_router
 
 __all__ = [
     'create_auth_router',
@@ -27,6 +28,7 @@ __all__ = [
     'create_challenges_router',
     'create_admin_router',
     'create_notification_preferences_router',
+    'create_admin_locations_router',
     'DEFAULT_CATEGORIES',
     'LEGACY_CATEGORY_MAP',
     'validate_category_and_subcategory',
