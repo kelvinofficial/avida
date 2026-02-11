@@ -19,6 +19,7 @@ import { useRouter, usePathname } from 'expo-router';
 import api, { favoritesApi } from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
 import { useResponsive } from '../../src/hooks/useResponsive';
+import { DesktopHeader } from '../../src/components/layout';
 import { Footer } from '../../src/components/layout';
 
 const { width } = Dimensions.get('window');
