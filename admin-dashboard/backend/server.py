@@ -5259,6 +5259,176 @@ async def proxy_clear_ai_cache(admin = Depends(get_current_admin)):
     return {"success": True, "deleted": result.deleted_count}
 
 # =============================================================================
+# EXECUTIVE SUMMARY PROXY ENDPOINTS
+# =============================================================================
+# These endpoints proxy requests to the main backend for executive summary
+
+MAIN_BACKEND_URL = os.environ.get('MAIN_BACKEND_URL', 'http://localhost:8001')
+
+@app.get("/api/admin/executive-summary/quick-stats")
+async def proxy_executive_quick_stats(admin: dict = Depends(get_current_admin)):
+    """Get quick KPI stats for executive summary"""
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            # Create admin token for main backend
+            response = await client.get(
+                f"{MAIN_BACKEND_URL}/api/executive-summary/quick-stats",
+                headers={"Authorization": f"Bearer admin-internal-{admin.get('id', 'admin')}"}
+            )
+            if response.status_code == 200:
+                return response.json()
+            else:
+                # Fallback to direct DB query
+                now = datetime.now(timezone.utc)
+                week_ago = now - timedelta(days=7)
+                
+                total_users = await db.users.count_documents({})
+                new_users_week = await db.users.count_documents({"created_at": {"$gte": week_ago}})
+                active_listings = await db.listings.count_documents({"status": "active"})
+                pending_disputes = await db.escrow_disputes.count_documents({"status": "open"})
+                
+                return {
+                    "total_users": total_users,
+                    "new_users_week": new_users_week,
+                    "active_listings": active_listings,
+                    "pending_disputes": pending_disputes,
+                    "revenue_week": 0,
+                    "generated_at": now.isoformat()
+                }
+    except Exception as e:
+        logger.error(f"Executive summary proxy error: {e}")
+        # Fallback to direct DB query
+        now = datetime.now(timezone.utc)
+        week_ago = now - timedelta(days=7)
+        
+        total_users = await db.users.count_documents({})
+        new_users_week = await db.users.count_documents({"created_at": {"$gte": week_ago}})
+        active_listings = await db.listings.count_documents({"status": "active"})
+        pending_disputes = await db.escrow_disputes.count_documents({"status": "open"})
+        
+        return {
+            "total_users": total_users,
+            "new_users_week": new_users_week,
+            "active_listings": active_listings,
+            "pending_disputes": pending_disputes,
+            "revenue_week": 0,
+            "generated_at": now.isoformat()
+        }
+
+@app.get("/api/admin/executive-summary/config")
+async def proxy_executive_config(admin: dict = Depends(get_current_admin)):
+    """Get executive summary config"""
+    config = await db.executive_summary_config.find_one({"id": "executive_summary_config"}, {"_id": 0})
+    if not config:
+        config = {
+            "id": "executive_summary_config",
+            "enabled": True,
+            "frequency": "weekly",
+            "audience": ["super_admin", "admins"],
+            "tone": "concise",
+            "sections_included": ["platform_overview", "revenue_monetization", "growth_retention", "trust_safety", "operations_logistics", "system_health", "recommendations"],
+            "email_digest_enabled": False,
+            "email_recipients": []
+        }
+    return config
+
+@app.put("/api/admin/executive-summary/config")
+async def proxy_update_executive_config(request: Request, admin: dict = Depends(get_current_admin)):
+    """Update executive summary config"""
+    body = await request.json()
+    await db.executive_summary_config.update_one(
+        {"id": "executive_summary_config"},
+        {"$set": body},
+        upsert=True
+    )
+    return {"message": "Configuration updated"}
+
+@app.get("/api/admin/executive-summary/latest")
+async def proxy_executive_latest(
+    period: str = Query("weekly"),
+    admin: dict = Depends(get_current_admin)
+):
+    """Get latest executive summary"""
+    summary = await db.executive_summaries.find_one(
+        {"period_type": period},
+        {"_id": 0}
+    )
+    if summary:
+        return summary
+    
+    # Return empty summary structure if none exists
+    return {
+        "id": None,
+        "period_type": period,
+        "status": "not_generated",
+        "message": "No summary generated yet. Click 'Generate' to create one."
+    }
+
+@app.post("/api/admin/executive-summary/generate")
+async def proxy_executive_generate(
+    period: str = Query("weekly"),
+    force: bool = Query(False),
+    admin: dict = Depends(get_current_admin)
+):
+    """Generate executive summary (simplified version)"""
+    now = datetime.now(timezone.utc)
+    week_ago = now - timedelta(days=7)
+    month_ago = now - timedelta(days=30)
+    
+    period_start = week_ago if period == "weekly" else (month_ago if period == "monthly" else now - timedelta(days=1))
+    
+    # Gather metrics
+    total_users = await db.users.count_documents({})
+    new_users = await db.users.count_documents({"created_at": {"$gte": period_start}})
+    active_listings = await db.listings.count_documents({"status": "active"})
+    new_listings = await db.listings.count_documents({"created_at": {"$gte": period_start}})
+    completed_transactions = await db.escrow_transactions.count_documents({"status": "completed", "completed_at": {"$gte": period_start}})
+    
+    summary = {
+        "id": f"summary_{uuid.uuid4().hex[:12]}",
+        "period_start": period_start.isoformat(),
+        "period_end": now.isoformat(),
+        "period_type": period,
+        "generated_at": now.isoformat(),
+        "status": "completed",
+        "platform_overview": {
+            "total_users": {"current": total_users, "previous": total_users - new_users, "change_percent": (new_users / max(total_users - new_users, 1)) * 100, "change_direction": "up" if new_users > 0 else "flat"},
+            "active_listings": {"current": active_listings, "previous": active_listings - new_listings, "change_percent": 0, "change_direction": "flat"},
+            "completed_transactions": {"current": completed_transactions, "previous": 0, "change_percent": 0, "change_direction": "flat"},
+            "ai_summary": f"The platform has {total_users} users with {new_users} new registrations this period."
+        },
+        "key_highlights": [
+            f"{new_users} new users joined",
+            f"{new_listings} new listings created",
+            f"{completed_transactions} transactions completed"
+        ],
+        "recommendations": []
+    }
+    
+    # Save to DB
+    await db.executive_summaries.update_one(
+        {"period_type": period},
+        {"$set": summary},
+        upsert=True
+    )
+    
+    return summary
+
+@app.get("/api/admin/executive-summary/history")
+async def proxy_executive_history(
+    period: Optional[str] = None,
+    limit: int = Query(10, ge=1, le=50),
+    admin: dict = Depends(get_current_admin)
+):
+    """Get executive summary history"""
+    query = {}
+    if period:
+        query["period_type"] = period
+    
+    summaries = await db.executive_summaries.find(query, {"_id": 0}).sort("generated_at", -1).limit(limit).to_list(limit)
+    return {"summaries": summaries}
+
+# =============================================================================
 # VOUCHER MANAGEMENT (Direct DB access since we share the same DB)
 # =============================================================================
 
