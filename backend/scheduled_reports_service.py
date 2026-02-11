@@ -118,8 +118,13 @@ class ScheduledReportsService:
         async for listing in self.db.listings.find({"status": "sold"}, {"price": 1, "updated_at": 1, "_id": 0}):
             price = listing.get("price", 0)
             total_revenue += price
-            if listing.get("updated_at") and listing["updated_at"] >= week_ago:
-                weekly_revenue += price
+            updated_at = listing.get("updated_at")
+            if updated_at:
+                # Handle both naive and aware datetimes
+                if updated_at.tzinfo is None:
+                    updated_at = updated_at.replace(tzinfo=timezone.utc)
+                if updated_at >= week_ago:
+                    weekly_revenue += price
         
         return {
             "total_users": total_users,
