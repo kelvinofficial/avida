@@ -235,9 +235,9 @@ export default function PublicProfileScreen() {
         setReviews([]);
       }
       
-      // Handle badges
+      // Handle badges - use showcase endpoint for public display
       if (badgesRes.status === 'fulfilled') {
-        setAchievementBadges(badgesRes.value.data.badges || []);
+        setAchievementBadges(badgesRes.value.data.showcase_badges || []);
       } else {
         console.warn('Failed to fetch badges:', badgesRes.reason);
         setAchievementBadges([]);
