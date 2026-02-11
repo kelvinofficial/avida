@@ -7200,8 +7200,16 @@ if MODULAR_ROUTES_AVAILABLE:
     # Create admin locations router - SKIPPED: Already registered before admin proxy
     # (Registered in the "early" block to ensure it takes precedence over proxy catch-all)
     
+    # Create auto/motors router
+    try:
+        auto_motors_router = create_auto_motors_router(db, get_current_user)
+        api_router.include_router(auto_motors_router)
+        logger.info("Auto motors router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load auto motors router: {e}")
+    
     app.include_router(api_router)  # Re-include to pick up modular routes
-    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations) loaded successfully")
+    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors) loaded successfully")
 
 # Include boost routes if available
 if BOOST_ROUTES_AVAILABLE:
