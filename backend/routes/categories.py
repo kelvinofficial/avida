@@ -223,18 +223,40 @@ DEFAULT_CATEGORIES = [
         "name": "Friendship & Dating",
         "icon": "heart-outline",
         "subcategories": [
-            {"id": "looking_for_friends", "name": "Looking for Friends"},
-            {"id": "activity_partners", "name": "Activity Partners"},
-            {"id": "dating_romance", "name": "Dating & Romance"},
-            {"id": "long_term_relationship", "name": "Long-Term Relationship"},
-            {"id": "casual_dating", "name": "Casual Dating"},
-            {"id": "marriage_minded", "name": "Marriage Minded"},
-            {"id": "travel_companions", "name": "Travel Companions"},
-            {"id": "language_exchange", "name": "Language Exchange Partners"},
-            {"id": "professional_networking", "name": "Professional Networking"},
-            {"id": "study_buddies", "name": "Study Buddies"},
-            {"id": "roommate_search", "name": "Roommate Search"},
-            {"id": "gaming_partners", "name": "Gaming Partners"},
+            # Friendship & Social
+            {"id": "friendship_social", "name": "Friendship & Social", "is_group": True},
+            {"id": "looking_for_friends", "name": "Looking for Friends", "group": "friendship_social"},
+            {"id": "professional_networking", "name": "Professional Networking", "group": "friendship_social"},
+            {"id": "roommate_search", "name": "Roommate Search", "group": "friendship_social"},
+            {"id": "study_buddies", "name": "Study Buddies", "group": "friendship_social"},
+            
+            # Dating & Relationships
+            {"id": "dating_relationships", "name": "Dating & Relationships", "is_group": True},
+            {"id": "casual_dating", "name": "Casual Dating", "group": "dating_relationships"},
+            {"id": "dating_romance", "name": "Dating & Romance", "group": "dating_relationships"},
+            {"id": "long_term_relationship", "name": "Long-Term Relationship", "group": "dating_relationships"},
+            
+            # Marriage & Matchmaking
+            {"id": "marriage_matchmaking", "name": "Marriage & Matchmaking", "is_group": True},
+            {"id": "marriage_minded", "name": "Marriage Minded", "group": "marriage_matchmaking"},
+            {"id": "serious_relationship", "name": "Serious Relationship", "group": "marriage_matchmaking"},
+            {"id": "matchmaking_services", "name": "Matchmaking Services", "group": "marriage_matchmaking"},
+            
+            # Activity-Based Meetups
+            {"id": "activity_meetups", "name": "Activity-Based Meetups", "is_group": True},
+            {"id": "activity_partners", "name": "Activity Partners", "group": "activity_meetups"},
+            {"id": "travel_companions", "name": "Travel Companions", "group": "activity_meetups"},
+            {"id": "fitness_buddies", "name": "Fitness Buddies", "group": "activity_meetups"},
+            {"id": "hiking_outdoor", "name": "Hiking & Outdoor Adventures", "group": "activity_meetups"},
+            {"id": "sports_partners", "name": "Sports Partners", "group": "activity_meetups"},
+            {"id": "dining_partners", "name": "Dining & Food Partners", "group": "activity_meetups"},
+            
+            # Online-Only Connections
+            {"id": "online_connections", "name": "Online-Only Connections", "is_group": True},
+            {"id": "gaming_partners", "name": "Gaming Partners", "group": "online_connections"},
+            {"id": "language_exchange", "name": "Language Exchange Partners", "group": "online_connections"},
+            {"id": "virtual_friends", "name": "Virtual Friends", "group": "online_connections"},
+            {"id": "pen_pals", "name": "Pen Pals", "group": "online_connections"},
         ],
         "attributes": {
             "age_range": {
