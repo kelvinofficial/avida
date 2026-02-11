@@ -618,6 +618,26 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: COLORS.text,
+    flex: 1,
+  },
+  seasonalHeader: {
+    backgroundColor: '#FDF2F8',
+    paddingVertical: 12,
+    marginHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  featuredBadge: {
+    backgroundColor: '#EC4899',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  featuredBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#fff',
+    textTransform: 'uppercase',
   },
   challengeCard: {
     backgroundColor: COLORS.surface,
