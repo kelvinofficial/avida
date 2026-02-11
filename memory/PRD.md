@@ -630,6 +630,31 @@ Users can track their progress towards earning badges:
 - `/app/frontend/src/components/listings/ListingCard.tsx` - Removed listing ID
 - `/app/frontend/app/business/edit.tsx` - Mobile permission requests
 
+### 2026-02-11: Desktop Header & Profile Activity Updates
+
+**COMPLETED**
+
+#### Desktop Header - Logged-in User Enhancements
+- Added Credit Balance button with wallet icon (shows "X Credits")
+- Displays My Listings, Messages, Saved, Offers navigation links
+- Notification icon and Profile icon
+- Post Listing button
+- Credit balance fetched from `/api/credits/balance` API
+
+#### Desktop Profile - My Activity Section
+- Streamlined to show only 6 activity items:
+  - My Badges
+  - Business Profile
+  - Invoices & Receipts
+  - Purchases
+  - Sales
+  - Recently Viewed
+- Removed items that are now in header: My Listings, Messages, Saved, Offers
+
+**Key Files:**
+- `/app/frontend/src/components/layout/DesktopHeader.tsx` - Header with credit balance and nav links
+- `/app/frontend/app/(tabs)/profile.tsx` - Updated My Activity section
+
 ## Remaining Backlog
 
 ### P1: None
