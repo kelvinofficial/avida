@@ -6,6 +6,26 @@ Build a local marketplace application (Avida) with:
 2. Business Profile feature for verified sellers
 3. Premium subscription tiers with payment integration
 
+
+### 2026-02-11: Desktop Header Consistency & Badge Celebrations
+**COMPLETED**
+
+#### Desktop Header Standardization (P0)
+- Fixed desktop header for authenticated users across all pages
+- Homepage (`/app/frontend/app/(tabs)/index.tsx`): Now displays nav links (My Listings, Messages, Saved, Offers) and Credit Balance
+- Profile page (`/app/frontend/app/(tabs)/profile.tsx`): Consistent header with same nav links and Credit Balance
+- Fixed credit balance API endpoint from `/api/credits/balance` to `/api/boost/credits/balance`
+- Fixed environment variable usage from `EXPO_PUBLIC_API_URL` to `EXPO_PUBLIC_BACKEND_URL`
+
+#### Desktop Profile "My Activity" Section (P0)
+- Verified correct items displayed: My Badges, Business Profile, Invoices & Receipts, Purchases, Sales, Recently Viewed
+
+#### Badge Celebration Modal (P1)
+- Badge celebration context and modal component already existed
+- Added trigger logic in `my-listings.tsx` for mark-sold action - shows celebration when badges are earned
+- Added trigger logic in `post/index.tsx` for listing creation - checks for new badges after async award (2s delay)
+- Celebrations show confetti animation and badge details when users earn new badges
+
 ## What's Been Implemented
 
 ### 2026-02-10: Complete Subscription Backend
