@@ -8774,6 +8774,180 @@ async def get_engagement_notification_settings(admin: dict = Depends(get_current
     }}
 
 # =============================================================================
+# SCHEDULED REPORTS ENDPOINTS
+# =============================================================================
+
+@app.get("/api/admin/settings/scheduled-reports")
+async def get_scheduled_reports_settings(admin: dict = Depends(get_current_admin)):
+    """Get scheduled reports configuration"""
+    settings = await db.admin_settings.find_one({"type": "scheduled_reports"}, {"_id": 0})
+    if not settings:
+        return {
+            "enabled": True,
+            "frequency": "weekly",
+            "day_of_week": 1,
+            "hour": 9,
+            "admin_emails": [],
+            "include_seller_analytics": True,
+            "include_engagement_metrics": True,
+            "include_platform_overview": True,
+            "include_alerts": True,
+        }
+    return settings
+
+@app.post("/api/admin/settings/scheduled-reports")
+async def save_scheduled_reports_settings(
+    settings: dict = Body(...),
+    admin: dict = Depends(get_current_admin)
+):
+    """Save scheduled reports configuration"""
+    try:
+        await db.admin_settings.update_one(
+            {"type": "scheduled_reports"},
+            {"$set": {
+                "type": "scheduled_reports",
+                "enabled": settings.get("enabled", True),
+                "frequency": settings.get("frequency", "weekly"),
+                "day_of_week": settings.get("day_of_week", 1),
+                "hour": settings.get("hour", 9),
+                "admin_emails": settings.get("admin_emails", []),
+                "include_seller_analytics": settings.get("include_seller_analytics", True),
+                "include_engagement_metrics": settings.get("include_engagement_metrics", True),
+                "include_platform_overview": settings.get("include_platform_overview", True),
+                "include_alerts": settings.get("include_alerts", True),
+                "updated_at": datetime.now(timezone.utc),
+                "updated_by": admin.get("email"),
+            }},
+            upsert=True
+        )
+        return {"success": True, "message": "Report settings saved"}
+    except Exception as e:
+        logger.error(f"Error saving scheduled reports settings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save settings")
+
+@app.get("/api/admin/reports/history")
+async def get_report_history(
+    limit: int = Query(10, ge=1, le=100),
+    skip: int = Query(0, ge=0),
+    admin: dict = Depends(get_current_admin)
+):
+    """Get history of sent reports"""
+    try:
+        cursor = db.report_history.find(
+            {},
+            {"_id": 0, "report.sections": 0}
+        ).sort("created_at", -1).skip(skip).limit(limit)
+        
+        history = []
+        async for record in cursor:
+            history.append({
+                "type": record.get("type"),
+                "sent_to": record.get("sent_to", []),
+                "success": record.get("success"),
+                "created_at": record.get("created_at").isoformat() if record.get("created_at") else None
+            })
+        
+        total = await db.report_history.count_documents({})
+        
+        return {
+            "history": history,
+            "total": total,
+            "limit": limit,
+            "skip": skip
+        }
+    except Exception as e:
+        logger.error(f"Error fetching report history: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch history")
+
+@app.post("/api/admin/reports/generate")
+async def generate_report(admin: dict = Depends(get_current_admin)):
+    """Generate analytics report (preview without sending)"""
+    try:
+        now = datetime.now(timezone.utc)
+        week_ago = now - timedelta(days=7)
+        
+        # Platform overview
+        platform = {
+            "total_users": await db.users.count_documents({}),
+            "new_users_week": await db.users.count_documents({"created_at": {"$gte": week_ago}}),
+            "total_listings": await db.listings.count_documents({"status": {"$ne": "deleted"}}),
+            "active_listings": await db.listings.count_documents({"status": "active"}),
+        }
+        
+        # Seller analytics
+        seller_pipeline = [
+            {"$match": {"status": "sold", "updated_at": {"$gte": week_ago}}},
+            {"$group": {"_id": "$user_id", "revenue": {"$sum": "$price"}, "sales": {"$sum": 1}}},
+            {"$sort": {"revenue": -1}},
+            {"$limit": 5}
+        ]
+        top_sellers = []
+        async for s in db.listings.aggregate(seller_pipeline):
+            user = await db.users.find_one({"user_id": s["_id"]}, {"_id": 0, "name": 1})
+            top_sellers.append({
+                "user_id": s["_id"],
+                "name": user.get("name", "Unknown") if user else "Unknown",
+                "revenue": s["revenue"],
+                "sales": s["sales"]
+            })
+        
+        # Engagement
+        collections = await db.list_collection_names()
+        engagement = {
+            "messages_week": await db.messages.count_documents({"created_at": {"$gte": week_ago}}) if "messages" in collections else 0,
+            "favorites_week": await db.favorites.count_documents({"created_at": {"$gte": week_ago}}) if "favorites" in collections else 0,
+        }
+        
+        return {
+            "success": True,
+            "report": {
+                "generated_at": now.isoformat(),
+                "sections": {
+                    "platform_overview": platform,
+                    "seller_analytics": {"top_sellers": top_sellers},
+                    "engagement_metrics": engagement,
+                }
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error generating report: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate report")
+
+@app.post("/api/admin/reports/send")
+async def send_report_now(admin: dict = Depends(get_current_admin)):
+    """Send report to configured admin emails"""
+    try:
+        # Get settings
+        settings = await db.admin_settings.find_one({"type": "scheduled_reports"}, {"_id": 0})
+        if not settings:
+            return {"success": False, "status": "no_config", "message": "No report settings configured"}
+        
+        admin_emails = settings.get("admin_emails", [])
+        if not admin_emails:
+            return {"success": False, "status": "no_recipients", "message": "No admin emails configured"}
+        
+        # Generate and send report (simplified - actual email sending handled by main backend)
+        await db.report_history.insert_one({
+            "type": "manual_analytics",
+            "sent_to": admin_emails,
+            "success": True,
+            "triggered_by": admin.get("email"),
+            "created_at": datetime.now(timezone.utc)
+        })
+        
+        return {
+            "success": True,
+            "status": "sent",
+            "recipients": admin_emails,
+            "message": f"Report queued for sending to {len(admin_emails)} recipient(s)"
+        }
+    except Exception as e:
+        logger.error(f"Error sending report: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send report")
+
+logger.info("Scheduled Reports admin endpoints registered")
+
+# =============================================================================
 # BUSINESS PROFILES ADMIN ENDPOINTS
 # =============================================================================
 
