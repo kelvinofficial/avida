@@ -206,7 +206,7 @@ export default function PublicProfileScreen() {
       const [listingsRes, reviewsRes, badgesRes] = await Promise.allSettled([
         api.get(`/users/${id}/listings`, { params: { status: 'active', limit: 20 } }),
         api.get(`/users/${id}/reviews`, { params: { limit: 20 } }),
-        api.get(`/profile/public/${id}/badges`)
+        api.get(`/profile/public/${id}/badges/showcase`)
       ]);
       
       // Handle listings
