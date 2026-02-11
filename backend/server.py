@@ -6507,17 +6507,50 @@ if CHAT_MODERATION_AVAILABLE:
 
 # Include Executive Summary System
 if EXECUTIVE_SUMMARY_AVAILABLE:
+    # JWT config for admin token validation (same as admin-dashboard backend)
+    ADMIN_JWT_SECRET = os.environ.get('JWT_SECRET_KEY', 'admin-secret-change-in-production')
+    ADMIN_JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
+    
     async def require_admin_for_exec_summary(request: Request) -> dict:
-        """Admin authentication wrapper for executive summary"""
+        """Admin authentication wrapper for executive summary - supports both user tokens and admin JWT"""
+        # First try regular user auth
         user = await get_current_user(request)
-        if not user:
-            raise HTTPException(status_code=401, detail="Not authenticated")
-        return {
-            "admin_id": user.user_id,
-            "email": user.email,
-            "name": user.name,
-            "is_admin": True
-        }
+        if user:
+            return {
+                "admin_id": user.user_id,
+                "email": user.email,
+                "name": user.name,
+                "is_admin": True
+            }
+        
+        # Try admin JWT token (from admin dashboard)
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+            try:
+                # Try to decode as admin JWT
+                import jwt as pyjwt
+                payload = pyjwt.decode(token, ADMIN_JWT_SECRET, algorithms=[ADMIN_JWT_ALGORITHM])
+                admin_id = payload.get("sub")
+                email = payload.get("email")
+                role = payload.get("role")
+                
+                if admin_id and role in ["super_admin", "admin", "moderator"]:
+                    # Verify admin exists in admin collection
+                    admin_doc = await db.admin_users.find_one({"id": admin_id})
+                    if admin_doc and admin_doc.get("is_active", True):
+                        return {
+                            "admin_id": admin_id,
+                            "email": email,
+                            "name": admin_doc.get("name", "Admin"),
+                            "role": role,
+                            "is_admin": True
+                        }
+            except Exception as jwt_error:
+                logger.debug(f"JWT decode failed: {jwt_error}")
+                pass
+        
+        raise HTTPException(status_code=401, detail="Not authenticated")
     
     exec_summary_router = create_executive_summary_router(db, require_admin_for_exec_summary)
     api_router.include_router(exec_summary_router)
