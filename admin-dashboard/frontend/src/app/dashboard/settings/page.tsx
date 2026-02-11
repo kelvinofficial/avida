@@ -976,6 +976,250 @@ export default function SettingsPage() {
             )}
           </Box>
         </TabPanel>
+
+        {/* Scheduled Reports Tab */}
+        <TabPanel value={tabValue} index={3}>
+          <Box sx={{ px: 2 }}>
+            {reportsLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <Box>
+                <Paper sx={{ p: 3, mb: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                    <Schedule color="primary" />
+                    <Typography variant="h6">Report Schedule</Typography>
+                  </Box>
+                  <Divider sx={{ mb: 2 }} />
+                  
+                  <Grid container spacing={3}>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={reportsSettings.enabled}
+                            onChange={(e) => setReportsSettings(prev => ({ ...prev, enabled: e.target.checked }))}
+                          />
+                        }
+                        label="Enable Scheduled Reports"
+                      />
+                    </Grid>
+                    
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Frequency</InputLabel>
+                        <Select
+                          value={reportsSettings.frequency}
+                          label="Frequency"
+                          onChange={(e) => setReportsSettings(prev => ({ ...prev, frequency: e.target.value }))}
+                        >
+                          <MenuItem value="daily">Daily</MenuItem>
+                          <MenuItem value="weekly">Weekly</MenuItem>
+                          <MenuItem value="monthly">Monthly</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    
+                    {reportsSettings.frequency === 'weekly' && (
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <FormControl fullWidth size="small">
+                          <InputLabel>Day of Week</InputLabel>
+                          <Select
+                            value={reportsSettings.day_of_week}
+                            label="Day of Week"
+                            onChange={(e) => setReportsSettings(prev => ({ ...prev, day_of_week: Number(e.target.value) }))}
+                          >
+                            <MenuItem value={0}>Sunday</MenuItem>
+                            <MenuItem value={1}>Monday</MenuItem>
+                            <MenuItem value={2}>Tuesday</MenuItem>
+                            <MenuItem value={3}>Wednesday</MenuItem>
+                            <MenuItem value={4}>Thursday</MenuItem>
+                            <MenuItem value={5}>Friday</MenuItem>
+                            <MenuItem value={6}>Saturday</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </Grid>
+                    )}
+                    
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <TextField
+                        label="Send Time (Hour UTC)"
+                        type="number"
+                        value={reportsSettings.hour}
+                        onChange={(e) => setReportsSettings(prev => ({ ...prev, hour: Math.min(23, Math.max(0, parseInt(e.target.value) || 0)) }))}
+                        fullWidth
+                        size="small"
+                        inputProps={{ min: 0, max: 23 }}
+                        helperText="0-23 (UTC timezone)"
+                      />
+                    </Grid>
+                  </Grid>
+                </Paper>
+
+                <Paper sx={{ p: 3, mb: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                    <Email color="primary" />
+                    <Typography variant="h6">Admin Email Recipients</Typography>
+                  </Box>
+                  <Divider sx={{ mb: 2 }} />
+                  
+                  <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                    <TextField
+                      label="Add Email"
+                      type="email"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleAddEmail()}
+                      fullWidth
+                      size="small"
+                      placeholder="admin@example.com"
+                    />
+                    <Button
+                      variant="outlined"
+                      onClick={handleAddEmail}
+                      disabled={!emailInput.trim()}
+                    >
+                      <Add />
+                    </Button>
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {reportsSettings.admin_emails.length === 0 ? (
+                      <Typography color="text.secondary" variant="body2">
+                        No recipients configured. Add admin emails to receive reports.
+                      </Typography>
+                    ) : (
+                      reportsSettings.admin_emails.map((email) => (
+                        <Chip
+                          key={email}
+                          label={email}
+                          onDelete={() => handleRemoveEmail(email)}
+                          deleteIcon={<Close />}
+                          variant="outlined"
+                        />
+                      ))
+                    )}
+                  </Box>
+                </Paper>
+
+                <Paper sx={{ p: 3, mb: 3 }}>
+                  <Typography variant="h6" gutterBottom>Report Content</Typography>
+                  <Divider sx={{ mb: 2 }} />
+                  
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={reportsSettings.include_platform_overview}
+                            onChange={(e) => setReportsSettings(prev => ({ ...prev, include_platform_overview: e.target.checked }))}
+                          />
+                        }
+                        label="Platform Overview"
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={reportsSettings.include_seller_analytics}
+                            onChange={(e) => setReportsSettings(prev => ({ ...prev, include_seller_analytics: e.target.checked }))}
+                          />
+                        }
+                        label="Seller Analytics"
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={reportsSettings.include_engagement_metrics}
+                            onChange={(e) => setReportsSettings(prev => ({ ...prev, include_engagement_metrics: e.target.checked }))}
+                          />
+                        }
+                        label="Engagement Metrics"
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={reportsSettings.include_alerts}
+                            onChange={(e) => setReportsSettings(prev => ({ ...prev, include_alerts: e.target.checked }))}
+                          />
+                        }
+                        label="Alerts Summary"
+                      />
+                    </Grid>
+                  </Grid>
+                </Paper>
+
+                {/* Report History */}
+                {reportHistory.length > 0 && (
+                  <Paper sx={{ p: 3, mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                      <History color="primary" />
+                      <Typography variant="h6">Recent Report History</Typography>
+                    </Box>
+                    <Divider sx={{ mb: 2 }} />
+                    
+                    <TableContainer>
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Date</TableCell>
+                            <TableCell>Recipients</TableCell>
+                            <TableCell>Status</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {reportHistory.map((record, idx) => (
+                            <TableRow key={idx}>
+                              <TableCell>
+                                {record.created_at ? new Date(record.created_at).toLocaleString() : 'N/A'}
+                              </TableCell>
+                              <TableCell>
+                                {record.sent_to?.join(', ') || 'N/A'}
+                              </TableCell>
+                              <TableCell>
+                                <Chip
+                                  size="small"
+                                  label={record.success ? 'Sent' : 'Failed'}
+                                  color={record.success ? 'success' : 'error'}
+                                  icon={record.success ? <CheckCircle /> : <Block />}
+                                />
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </Paper>
+                )}
+
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+                  <Button
+                    variant="outlined"
+                    startIcon={sendingReport ? <CircularProgress size={20} /> : <Send />}
+                    onClick={handleSendReportNow}
+                    disabled={sendingReport || reportsSettings.admin_emails.length === 0}
+                  >
+                    Send Report Now
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={saveReportsSettings}
+                    disabled={reportsSaving}
+                    data-testid="save-reports-settings-btn"
+                  >
+                    {reportsSaving ? <CircularProgress size={20} /> : 'Save Settings'}
+                  </Button>
+                </Box>
+              </Box>
+            )}
+          </Box>
+        </TabPanel>
       </Card>
 
       {/* Location Menu */}
