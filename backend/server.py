@@ -3345,6 +3345,11 @@ async def revoke_all_sessions(request: Request):
     
     return {"message": f"Revoked {result.deleted_count} sessions"}
 
+# ==================== ACCOUNT MANAGEMENT & SUPPORT TICKETS ====================
+# Now handled by modular routers (routes/account_support.py)
+# - create_account_router: change password, delete account, cancel deletion
+# - create_support_router: create/list/get support tickets
+
 # ==================== EMAIL SERVICE ====================
 
 SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY")
