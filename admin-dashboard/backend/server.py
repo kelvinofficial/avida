@@ -2685,7 +2685,7 @@ async def list_tickets(
     assigned_to: Optional[str] = None,
     admin: dict = Depends(require_permission(Permission.VIEW_TICKETS))
 ):
-    """List all support tickets"""
+    """List all support tickets from both admin-created and user-submitted"""
     query = {}
     if status:
         query["status"] = status
@@ -2695,11 +2695,55 @@ async def list_tickets(
         query["assigned_to"] = assigned_to
     
     skip = (page - 1) * limit
-    total = await db.admin_tickets.count_documents(query)
-    tickets = await db.admin_tickets.find(query, {"_id": 0}).skip(skip).limit(limit).sort("created_at", -1).to_list(limit)
+    
+    # Get tickets from both collections
+    admin_tickets_count = await db.admin_tickets.count_documents(query)
+    user_tickets_count = await db.support_tickets.count_documents(query)
+    total = admin_tickets_count + user_tickets_count
+    
+    # Fetch from admin_tickets collection
+    admin_tickets = await db.admin_tickets.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    
+    # Fetch from user-submitted support_tickets collection
+    user_tickets_raw = await db.support_tickets.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    
+    # Normalize user tickets to match admin ticket structure
+    user_tickets = []
+    for ticket in user_tickets_raw:
+        # Fetch user info for display
+        user_info = await db.users.find_one({"user_id": ticket.get("user_id")}, {"name": 1, "email": 1, "_id": 0})
+        normalized = {
+            "id": ticket.get("id"),
+            "user_id": ticket.get("user_id"),
+            "user_email": user_info.get("email") if user_info else ticket.get("email"),
+            "user_name": user_info.get("name") if user_info else "Unknown User",
+            "subject": ticket.get("subject"),
+            "description": ticket.get("message", ticket.get("description", "")),
+            "priority": ticket.get("priority", "medium"),
+            "category": ticket.get("category", "general"),
+            "status": ticket.get("status", "open"),
+            "created_by": "user",
+            "assigned_to": ticket.get("assigned_to"),
+            "responses": ticket.get("responses", []),
+            "created_at": ticket.get("created_at"),
+            "updated_at": ticket.get("updated_at", ticket.get("created_at")),
+            "source": "user_submitted"
+        }
+        user_tickets.append(normalized)
+    
+    # Mark admin tickets with source
+    for ticket in admin_tickets:
+        ticket["source"] = "admin_created"
+    
+    # Merge and sort by created_at
+    all_tickets = admin_tickets + user_tickets
+    all_tickets.sort(key=lambda x: x.get("created_at") or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
+    
+    # Apply pagination
+    paginated_tickets = all_tickets[skip:skip + limit]
     
     return {
-        "items": tickets,
+        "items": paginated_tickets,
         "total": total,
         "page": page,
         "limit": limit,
