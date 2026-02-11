@@ -8337,10 +8337,16 @@ async def admin_proxy(request: Request, path: str):
         if request.method in ["POST", "PUT", "PATCH"]:
             body = await request.body()
         
-        # Forward headers
-        headers = dict(request.headers)
-        headers.pop("host", None)
-        headers.pop("content-length", None)
+        # Forward headers (make sure Authorization is properly forwarded)
+        headers = {}
+        for key, value in request.headers.items():
+            key_lower = key.lower()
+            if key_lower not in ["host", "content-length"]:
+                # Preserve the Authorization header properly
+                if key_lower == "authorization":
+                    headers["Authorization"] = value
+                else:
+                    headers[key] = value
         
         # Make the request
         try:
