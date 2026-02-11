@@ -1140,11 +1140,41 @@ export default function ProfileScreen() {
                   </View>
                   <Text style={desktopStyles.activityLabel}>My Badges</Text>
                 </TouchableOpacity>
+                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/business/edit')}>
+                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#E3F2FD' }]}>
+                    <Ionicons name="storefront" size={24} color="#1976D2" />
+                  </View>
+                  <Text style={desktopStyles.activityLabel}>Business Profile</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/invoices')}>
+                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#F3E5F5' }]}>
+                    <Ionicons name="receipt" size={24} color="#9C27B0" />
+                  </View>
+                  <Text style={desktopStyles.activityLabel}>Invoices</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/purchases')}>
+                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#E0F7FA' }]}>
+                    <Ionicons name="bag" size={24} color="#00BCD4" />
+                  </View>
+                  <Text style={desktopStyles.activityLabel}>Purchases</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/sales')}>
+                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#E8F5E9' }]}>
+                    <Ionicons name="cash" size={24} color="#4CAF50" />
+                  </View>
+                  <Text style={desktopStyles.activityLabel}>Sales</Text>
+                </TouchableOpacity>
                 <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/saved')}>
                   <View style={[desktopStyles.activityIcon, { backgroundColor: '#FFEBEE' }]}>
                     <Ionicons name="heart" size={24} color="#E53935" />
                   </View>
                   <Text style={desktopStyles.activityLabel}>Favorites</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/recently-viewed')}>
+                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#FFF3E0' }]}>
+                    <Ionicons name="eye" size={24} color="#FF9800" />
+                  </View>
+                  <Text style={desktopStyles.activityLabel}>Recently Viewed</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/messages')}>
                   <View style={[desktopStyles.activityIcon, { backgroundColor: '#E3F2FD' }]}>
