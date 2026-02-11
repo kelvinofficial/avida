@@ -304,6 +304,7 @@ export default function PostListingScreen() {
   const { isAuthenticated, user } = useAuthStore();
   const { isDesktop, isTablet } = useResponsive();
   const { showCelebration, showMultipleCelebrations } = useBadgeCelebration();
+  const { checkForNewMilestones } = useMilestones();
   const isLargeScreen = isDesktop || isTablet;
   
   // Track user's badges before listing creation
