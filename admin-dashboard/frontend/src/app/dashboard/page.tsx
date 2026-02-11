@@ -368,6 +368,52 @@ export default function DashboardPage() {
           </Card>
         </Grid>
       </Grid>
+
+      {/* Quick Actions Section */}
+      <Typography variant="h5" fontWeight={600} sx={{ mt: 4, mb: 2 }}>
+        Quick Actions
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        Manage users, business profiles, challenges, and view analytics
+      </Typography>
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <QuickActionCard
+            title="Users & Verification"
+            description="Manage users, sellers, and business profiles"
+            icon={<VerifiedUser sx={{ fontSize: 32, color: '#fff' }} />}
+            color="#E8F5E9"
+            href="/dashboard/users"
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <QuickActionCard
+            title="Business Profiles"
+            description="Review and manage business profiles"
+            icon={<Storefront sx={{ fontSize: 32, color: '#fff' }} />}
+            color="#FFF3E0"
+            href="/dashboard/verification"
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <QuickActionCard
+            title="Challenges"
+            description="Create and manage badge challenges"
+            icon={<Flag sx={{ fontSize: 32, color: '#fff' }} />}
+            color="#FCE4EC"
+            href="/dashboard/challenges"
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <QuickActionCard
+            title="Analytics"
+            description="View platform and seller analytics"
+            icon={<BarChartIcon sx={{ fontSize: 32, color: '#fff' }} />}
+            color="#E3F2FD"
+            href="/dashboard/analytics"
+          />
+        </Grid>
+      </Grid>
     </Box>
   );
 }
