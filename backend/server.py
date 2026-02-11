@@ -9089,6 +9089,11 @@ async def startup_event():
     await badge_svc.initialize_badges()
     asyncio.create_task(periodic_badge_check_task())
     logger.info("Started badge awarding service")
+    
+    # Start scheduled reports background task
+    if SCHEDULED_REPORTS_AVAILABLE:
+        asyncio.create_task(scheduled_reports_task())
+        logger.info("Started scheduled reports background task")
 
 
 async def periodic_badge_check_task():
@@ -9102,6 +9107,64 @@ async def periodic_badge_check_task():
                 logger.info(f"Periodic badge check awarded {awarded} badges")
         except Exception as e:
             logger.error(f"Error in periodic badge check: {e}")
+            await asyncio.sleep(60)  # Wait a minute on error
+
+
+async def scheduled_reports_task():
+    """Background task to send scheduled analytics reports (weekly by default)."""
+    reports_service = get_reports_service(db)
+    
+    while True:
+        try:
+            # Get report settings
+            settings = await reports_service.get_report_settings()
+            
+            if not settings.get("enabled", True):
+                # Reports disabled, check again in 1 hour
+                await asyncio.sleep(60 * 60)
+                continue
+            
+            frequency = settings.get("frequency", "weekly")
+            target_day = settings.get("day_of_week", 1)  # Monday
+            target_hour = settings.get("hour", 9)  # 9 AM UTC
+            
+            now = datetime.now(timezone.utc)
+            
+            # Check if it's time to send the report
+            should_send = False
+            
+            if frequency == "daily":
+                # Send at target hour every day
+                should_send = now.hour == target_hour and now.minute < 5
+            elif frequency == "weekly":
+                # Send at target hour on target day
+                should_send = (now.weekday() == target_day and 
+                             now.hour == target_hour and 
+                             now.minute < 5)
+            elif frequency == "monthly":
+                # Send at target hour on the 1st of each month
+                should_send = (now.day == 1 and 
+                             now.hour == target_hour and 
+                             now.minute < 5)
+            
+            if should_send:
+                # Check if we already sent today
+                today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+                already_sent = await db.report_history.find_one({
+                    "type": "weekly_analytics",
+                    "created_at": {"$gte": today_start}
+                })
+                
+                if not already_sent:
+                    logger.info("Running scheduled analytics report...")
+                    result = await reports_service.run_scheduled_report()
+                    logger.info(f"Scheduled report result: {result}")
+            
+            # Check every 5 minutes
+            await asyncio.sleep(5 * 60)
+            
+        except Exception as e:
+            logger.error(f"Error in scheduled reports task: {e}")
             await asyncio.sleep(60)  # Wait a minute on error
 
 
