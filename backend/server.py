@@ -3812,21 +3812,169 @@ async def get_shareable_badge_profile(user_id: str):
     showcase_ids = [s["badge_id"] for s in showcase]
     showcase_badges = [b for b in badges if b["id"] in showcase_ids]
     
+    # Calculate rank for this user
+    pipeline = [
+        {"$group": {"_id": "$user_id", "badge_count": {"$sum": 1}}},
+        {"$sort": {"badge_count": -1}},
+    ]
+    all_rankings = await db.user_badges.aggregate(pipeline).to_list(length=1000)
+    user_rank = next((i + 1 for i, r in enumerate(all_rankings) if r["_id"] == user_id), None)
+    
+    # Generate Open Graph meta data
+    user_name = user.get("name", "User")
+    badge_count = len(badges)
+    og_title = f"{user_name}'s Badge Collection on Avida"
+    og_description = f"{user_name} has earned {badge_count} badge{'s' if badge_count != 1 else ''} on Avida Marketplace!"
+    if user_rank:
+        og_description += f" Ranked #{user_rank} in the community."
+    
     return {
-        "user_name": user.get("name", "User"),
-        "total_badges": len(badges),
+        "user_id": user_id,
+        "user_name": user_name,
+        "avatar_url": user.get("avatar_url"),
+        "total_badges": badge_count,
+        "rank": user_rank,
         "badges": [{
             "name": b["name"],
             "description": b.get("description", ""),
             "icon": b.get("icon", "ribbon"),
             "color": b.get("color", "#4CAF50"),
-        } for b in badges[:10]],  # Limit to 10 for sharing
+        } for b in badges[:10]],
         "showcase_badges": [{
             "name": b["name"],
             "description": b.get("description", ""),
             "icon": b.get("icon", "ribbon"),
             "color": b.get("color", "#4CAF50"),
         } for b in showcase_badges],
+        # Open Graph meta data for social sharing
+        "og_meta": {
+            "title": og_title,
+            "description": og_description,
+            "type": "profile",
+            "url": f"https://seller-connect-15.preview.emergentagent.com/profile/{user_id}/badges",
+        }
+    }
+
+@api_router.get("/badges/leaderboard")
+async def get_badge_leaderboard(
+    limit: int = Query(default=50, le=100),
+    page: int = Query(default=1, ge=1)
+):
+    """Get badge leaderboard with top badge earners"""
+    skip = (page - 1) * limit
+    
+    # Aggregate to get badge counts per user
+    pipeline = [
+        {"$group": {"_id": "$user_id", "badge_count": {"$sum": 1}, "badges": {"$push": "$badge_id"}}},
+        {"$sort": {"badge_count": -1}},
+        {"$skip": skip},
+        {"$limit": limit}
+    ]
+    
+    leaderboard_data = await db.user_badges.aggregate(pipeline).to_list(length=limit)
+    
+    # Get total count for pagination
+    count_pipeline = [
+        {"$group": {"_id": "$user_id"}},
+        {"$count": "total"}
+    ]
+    count_result = await db.user_badges.aggregate(count_pipeline).to_list(length=1)
+    total_users = count_result[0]["total"] if count_result else 0
+    
+    # Get user details and badge details
+    user_ids = [item["_id"] for item in leaderboard_data]
+    users = await db.users.find({"user_id": {"$in": user_ids}}).to_list(length=limit)
+    users_map = {u["user_id"]: u for u in users}
+    
+    # Get all unique badge IDs
+    all_badge_ids = set()
+    for item in leaderboard_data:
+        all_badge_ids.update(item["badges"])
+    
+    badges = await db.badges.find({"id": {"$in": list(all_badge_ids)}}).to_list(length=100)
+    badges_map = {b["id"]: b for b in badges}
+    
+    # Build leaderboard entries
+    leaderboard = []
+    for i, item in enumerate(leaderboard_data):
+        user = users_map.get(item["_id"], {})
+        user_badge_ids = item["badges"][:5]  # Top 5 badges to display
+        user_badges = [badges_map.get(bid) for bid in user_badge_ids if badges_map.get(bid)]
+        
+        leaderboard.append({
+            "rank": skip + i + 1,
+            "user_id": item["_id"],
+            "user_name": user.get("name", "Anonymous"),
+            "avatar_url": user.get("avatar_url"),
+            "is_verified": user.get("is_verified", False),
+            "badge_count": item["badge_count"],
+            "top_badges": [{
+                "name": b["name"],
+                "icon": b.get("icon", "ribbon"),
+                "color": b.get("color", "#4CAF50"),
+            } for b in user_badges],
+        })
+    
+    return {
+        "leaderboard": leaderboard,
+        "pagination": {
+            "page": page,
+            "limit": limit,
+            "total_users": total_users,
+            "total_pages": (total_users + limit - 1) // limit if total_users > 0 else 0
+        }
+    }
+
+@api_router.get("/badges/leaderboard/my-rank")
+async def get_my_leaderboard_rank(request: Request):
+    """Get current user's rank on the badge leaderboard"""
+    current_user = await require_auth(request)
+    
+    # Get all rankings
+    pipeline = [
+        {"$group": {"_id": "$user_id", "badge_count": {"$sum": 1}}},
+        {"$sort": {"badge_count": -1}},
+    ]
+    all_rankings = await db.user_badges.aggregate(pipeline).to_list(length=10000)
+    
+    # Find user's position
+    user_rank = None
+    user_count = 0
+    total_participants = len(all_rankings)
+    
+    for i, r in enumerate(all_rankings):
+        if r["_id"] == current_user.user_id:
+            user_rank = i + 1
+            user_count = r["badge_count"]
+            break
+    
+    # Get users above and below
+    nearby_users = []
+    if user_rank:
+        start_idx = max(0, user_rank - 3)
+        end_idx = min(len(all_rankings), user_rank + 2)
+        nearby_rankings = all_rankings[start_idx:end_idx]
+        
+        user_ids = [r["_id"] for r in nearby_rankings]
+        users = await db.users.find({"user_id": {"$in": user_ids}}).to_list(length=10)
+        users_map = {u["user_id"]: u for u in users}
+        
+        for i, r in enumerate(nearby_rankings):
+            user = users_map.get(r["_id"], {})
+            nearby_users.append({
+                "rank": start_idx + i + 1,
+                "user_id": r["_id"],
+                "user_name": user.get("name", "Anonymous"),
+                "badge_count": r["badge_count"],
+                "is_current_user": r["_id"] == current_user.user_id,
+            })
+    
+    return {
+        "rank": user_rank,
+        "badge_count": user_count,
+        "total_participants": total_participants,
+        "percentile": round((1 - (user_rank / total_participants)) * 100, 1) if user_rank and total_participants > 0 else None,
+        "nearby_users": nearby_users,
     }
 
 # ==================== FOLLOW SYSTEM ====================
