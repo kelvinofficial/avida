@@ -6840,6 +6840,27 @@ async def startup_event():
     """Start background tasks on server startup"""
     asyncio.create_task(expire_boosts_task())
     logger.info("Started boost expiration background task")
+    
+    # Initialize badge service and predefined badges
+    badge_svc = get_badge_service(db)
+    await badge_svc.initialize_badges()
+    asyncio.create_task(periodic_badge_check_task())
+    logger.info("Started badge awarding service")
+
+
+async def periodic_badge_check_task():
+    """Background task to check time-based badges periodically (every 6 hours)"""
+    badge_svc = get_badge_service(db)
+    while True:
+        try:
+            await asyncio.sleep(6 * 60 * 60)  # 6 hours
+            awarded = await badge_svc.run_periodic_badge_check(batch_size=500)
+            if awarded > 0:
+                logger.info(f"Periodic badge check awarded {awarded} badges")
+        except Exception as e:
+            logger.error(f"Error in periodic badge check: {e}")
+            await asyncio.sleep(60)  # Wait a minute on error
+
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
