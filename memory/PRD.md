@@ -1495,3 +1495,55 @@ Extracted ~471 lines of social and profile activity routes from `server.py` into
 - `/app/backend/routes/social.py` (NEW - ~490 lines)
 - `/app/backend/routes/__init__.py` (Updated exports)
 - `/app/backend/server.py` (Removed inline routes)
+
+### 2026-02-11: Server.py Refactoring - Notifications & Account/Support Modules
+**COMPLETED**
+
+#### Refactoring Summary
+Extracted ~400 lines of notification and account/support routes from `server.py` into modular routers.
+
+#### New Routers Created
+1. **create_notifications_router** (`routes/notifications.py`) - Notification CRUD and seeding
+2. **create_account_router** (`routes/account_support.py`) - Password change, account deletion
+3. **create_support_router** (`routes/account_support.py`) - Support tickets
+
+#### Routes Extracted
+
+**Notifications Router (`/api/notifications/`):**
+- `GET /` - List notifications with filtering
+- `GET /unread-count` - Unread count
+- `PUT /{id}/read` - Mark as read
+- `PUT /mark-all-read` - Mark all read
+- `DELETE /{id}` - Delete notification
+- `DELETE /` - Clear all
+- `POST /seed` - Seed sample notifications
+
+**Account Router (`/api/account/`):**
+- `POST /change-password` - Change password
+- `POST /delete` - Delete account (30-day cool-off)
+- `POST /cancel-deletion` - Cancel deletion
+
+**Support Router (`/api/support/`):**
+- `POST /tickets` - Create ticket
+- `GET /tickets` - List tickets
+- `GET /tickets/{id}` - Get ticket
+
+#### Result
+- `server.py` reduced from 5792 lines to 5409 lines (383 lines removed)
+- All endpoints verified working (401 for auth-required, as expected)
+- Lint checks passing
+
+#### Cumulative Refactoring Progress
+- Original server.py: ~8881 lines
+- After Admin Locations: 7932 lines (-949)
+- After Auto/Motors: 7253 lines (-679)
+- After Property/Offers/Similar: 6240 lines (-1013)
+- After Social/ProfileActivity: 5792 lines (-448)
+- After Notifications/Account/Support: 5409 lines (-383)
+- **Total reduction: 3472 lines (~39%)**
+
+**Key Files Modified:**
+- `/app/backend/routes/notifications.py` (NEW - ~230 lines)
+- `/app/backend/routes/account_support.py` (NEW - ~175 lines)
+- `/app/backend/routes/__init__.py` (Updated exports)
+- `/app/backend/server.py` (Removed inline routes)
