@@ -8193,7 +8193,7 @@ ADMIN_LOCAL_PATHS = [
     "analytics/engagement",
     "settings/seller-analytics",
     "settings/engagement-notifications",
-    "challenges",
+    # Note: challenges is handled by admin-dashboard backend
 ]
 
 def is_local_admin_path(path: str) -> bool:
