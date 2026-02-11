@@ -54,6 +54,7 @@ import {
   ArrowUpward,
   ArrowDownward,
 } from '@mui/icons-material';
+import { api } from '@/lib/api';
 
 interface MetricChange {
   current: number;
