@@ -471,6 +471,20 @@ export default function ChallengesScreen() {
           </Text>
         </View>
 
+        {/* Seasonal Challenges - Featured Section */}
+        {seasonalChallenges.length > 0 && (
+          <View style={styles.section}>
+            <View style={[styles.sectionHeader, styles.seasonalHeader]}>
+              <Ionicons name="sparkles" size={20} color="#EC4899" />
+              <Text style={[styles.sectionTitleMain, { color: '#EC4899' }]}>Seasonal Events</Text>
+              <View style={styles.featuredBadge}>
+                <Text style={styles.featuredBadgeText}>Limited Time</Text>
+              </View>
+            </View>
+            {seasonalChallenges.map(renderChallengeCard)}
+          </View>
+        )}
+
         {/* Weekly Challenges */}
         {weeklyChallenges.length > 0 && (
           <View style={styles.section}>
