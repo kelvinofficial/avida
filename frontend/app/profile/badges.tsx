@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/store/authStore';
-import api from '../../src/services/api';
+import api from '../../src/utils/api';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { DesktopHeader } from '../../src/components/layout';
 
