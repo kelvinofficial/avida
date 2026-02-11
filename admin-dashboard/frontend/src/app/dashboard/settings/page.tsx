@@ -154,6 +154,24 @@ export default function SettingsPage() {
   const [authLoading, setAuthLoading] = useState(true);
   const [authSaving, setAuthSaving] = useState(false);
 
+  // Scheduled Reports State
+  const [reportsSettings, setReportsSettings] = useState({
+    enabled: true,
+    frequency: 'weekly',
+    day_of_week: 1,
+    hour: 9,
+    admin_emails: [] as string[],
+    include_seller_analytics: true,
+    include_engagement_metrics: true,
+    include_platform_overview: true,
+    include_alerts: true,
+  });
+  const [reportsLoading, setReportsLoading] = useState(true);
+  const [reportsSaving, setReportsSaving] = useState(false);
+  const [reportHistory, setReportHistory] = useState<any[]>([]);
+  const [sendingReport, setSendingReport] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+
   // Form States
   const [locationForm, setLocationForm] = useState({
     name: '',
