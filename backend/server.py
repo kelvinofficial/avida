@@ -6276,6 +6276,10 @@ async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
 # =============================================================================
+# ADMIN LOCATION ROUTES - Now handled by modular router (routes/admin_locations.py)
+# =============================================================================
+
+# =============================================================================
 # BUSINESS PROFILE SYSTEM - Register before admin proxy to ensure routes match first
 # =============================================================================
 if BUSINESS_PROFILE_AVAILABLE:
