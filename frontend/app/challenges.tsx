@@ -30,13 +30,14 @@ const COLORS = {
   border: '#E0E0E0',
   success: '#22C55E',
   warning: '#F59E0B',
+  seasonal: '#EC4899',
 };
 
 interface Challenge {
   id: string;
   name: string;
   description: string;
-  type: 'weekly' | 'monthly' | 'special';
+  type: 'weekly' | 'monthly' | 'special' | 'seasonal';
   target: number;
   icon: string;
   color: string;
@@ -55,6 +56,8 @@ interface Challenge {
   completed: boolean;
   joined: boolean;
   badge_earned?: boolean;
+  theme?: string;
+  categories?: string[];
 }
 
 interface ChallengeDetail extends Challenge {
