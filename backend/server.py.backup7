@@ -3480,6 +3480,77 @@ def build_email_template(subject: str, body: str, notification_type: str, data: 
     </html>
     '''
 
+# ==================== ID VERIFICATION ====================
+
+@api_router.post("/profile/verify-id")
+async def submit_id_verification(request: Request):
+    """Submit ID verification documents"""
+    user = await require_auth(request)
+    body = await request.json()
+    
+    required_fields = ["full_name", "dob", "id_type", "id_number", "doc_front_url", "doc_back_url", "selfie_url"]
+    for field in required_fields:
+        if not body.get(field):
+            raise HTTPException(status_code=400, detail=f"{field} is required")
+    
+    # Check if already has pending verification
+    existing = await db.id_verifications.find_one({
+        "user_id": user.user_id,
+        "status": "pending"
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="You already have a pending verification")
+    
+    verification = {
+        "id": str(uuid.uuid4()),
+        "user_id": user.user_id,
+        "full_name": body["full_name"],
+        "dob": body["dob"],
+        "id_type": body["id_type"],
+        "id_number": body["id_number"],
+        "doc_front_url": body["doc_front_url"],
+        "doc_back_url": body["doc_back_url"],
+        "selfie_url": body["selfie_url"],
+        "status": "pending",
+        "submitted_at": datetime.now(timezone.utc),
+        "reviewed_at": None,
+        "reviewer_note": None,
+    }
+    
+    await db.id_verifications.insert_one(verification)
+    
+    # Update user's trust status
+    await db.users.update_one(
+        {"user_id": user.user_id},
+        {"$set": {"id_verification_status": "pending"}}
+    )
+    
+    # Create notification
+    await create_notification(
+        user.user_id,
+        "system",
+        "ID Verification Submitted",
+        "Your ID verification has been submitted and is under review. This typically takes 1-3 business days.",
+        meta={"verification_id": verification["id"]}
+    )
+    
+    return {"message": "Verification submitted", "verification_id": verification["id"]}
+
+@api_router.get("/profile/verify-id/status")
+async def get_id_verification_status(request: Request):
+    """Get ID verification status"""
+    user = await require_auth(request)
+    
+    verification = await db.id_verifications.find_one(
+        {"user_id": user.user_id},
+        {"_id": 0, "doc_front_url": 0, "doc_back_url": 0, "selfie_url": 0}
+    )
+    
+    if not verification:
+        return {"status": "not_started"}
+    
+    return verification
 
 # ==================== EMAIL VERIFICATION ====================
 
