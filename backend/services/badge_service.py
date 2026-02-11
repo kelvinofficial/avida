@@ -368,6 +368,116 @@ class BadgeAwardingService:
         except Exception as e:
             logger.error(f"Error in periodic badge check: {e}")
             return 0
+    
+    async def get_badge_progress(self, user_id: str) -> List[Dict[str, Any]]:
+        """
+        Get progress towards all badges for a user
+        Returns progress info for both earned and unearned badges
+        """
+        # Get user data
+        user = await self.db.users.find_one({"user_id": user_id})
+        if not user:
+            return []
+        
+        # Get user stats
+        stats = await self._get_user_stats(user_id, user)
+        
+        # Get user's existing badges
+        existing_badges = await self.db.user_badges.find({"user_id": user_id}).to_list(length=100)
+        existing_badge_ids = {b["badge_id"] for b in existing_badges}
+        earned_badges_map = {b["badge_id"]: b for b in existing_badges}
+        
+        progress_list = []
+        
+        for badge_def in AUTOMATIC_BADGES:
+            badge_id = badge_def["id"]
+            criteria = badge_def["criteria"]
+            
+            # Calculate progress based on criteria
+            current, target, progress_percent = self._calculate_progress(criteria, stats)
+            
+            is_earned = badge_id in existing_badge_ids
+            earned_info = earned_badges_map.get(badge_id)
+            
+            progress_list.append({
+                "badge_id": badge_id,
+                "name": badge_def["name"],
+                "description": badge_def["description"],
+                "icon": badge_def["icon"],
+                "color": badge_def["color"],
+                "type": badge_def["type"],
+                "display_priority": badge_def["display_priority"],
+                "points_value": badge_def["points_value"],
+                "is_earned": is_earned,
+                "earned_at": earned_info.get("awarded_at") if earned_info else None,
+                "progress": {
+                    "current": current,
+                    "target": target,
+                    "percent": progress_percent,
+                    "label": self._get_progress_label(criteria, current, target)
+                }
+            })
+        
+        # Sort by display_priority (higher first), then by earned status
+        progress_list.sort(key=lambda x: (-x["is_earned"], -x["display_priority"]))
+        
+        return progress_list
+    
+    def _calculate_progress(self, criteria: str, stats: dict) -> tuple[int, int, float]:
+        """Calculate current progress, target, and percentage for a badge criteria"""
+        
+        if criteria == "complete_first_sale":
+            current = min(stats["total_sales"], 1)
+            target = 1
+        elif criteria == "complete_10_sales":
+            current = min(stats["total_sales"], 10)
+            target = 10
+        elif criteria == "complete_50_sales":
+            current = min(stats["total_sales"], 50)
+            target = 50
+        elif criteria == "complete_100_sales":
+            current = min(stats["total_sales"], 100)
+            target = 100
+        elif criteria == "member_1_year":
+            current = min(stats["account_age_days"], 365)
+            target = 365
+        elif criteria == "member_2_years":
+            current = min(stats["account_age_days"], 730)
+            target = 730
+        elif criteria == "5_star_rating":
+            # For rating, show review count progress (need 10 reviews)
+            current = min(stats["review_count"], 10)
+            target = 10
+        elif criteria == "create_first_listing":
+            current = min(stats["total_listings"], 1)
+            target = 1
+        elif criteria == "create_50_listings":
+            current = min(stats["total_listings"], 50)
+            target = 50
+        elif criteria == "id_verified":
+            current = 1 if stats["id_verified"] else 0
+            target = 1
+        else:
+            current, target = 0, 1
+        
+        percent = (current / target * 100) if target > 0 else 0
+        return current, target, min(percent, 100)
+    
+    def _get_progress_label(self, criteria: str, current: int, target: int) -> str:
+        """Get a human-readable progress label"""
+        
+        if criteria in ["complete_first_sale", "complete_10_sales", "complete_50_sales", "complete_100_sales"]:
+            return f"{current}/{target} sales"
+        elif criteria in ["member_1_year", "member_2_years"]:
+            return f"{current}/{target} days"
+        elif criteria == "5_star_rating":
+            return f"{current}/{target} reviews"
+        elif criteria in ["create_first_listing", "create_50_listings"]:
+            return f"{current}/{target} listings"
+        elif criteria == "id_verified":
+            return "Verified" if current >= target else "Not verified"
+        else:
+            return f"{current}/{target}"
 
 
 # Global instance (initialized with db in server.py)
