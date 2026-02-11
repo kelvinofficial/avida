@@ -395,7 +395,9 @@ const safetyStyles = StyleSheet.create({
   tips: { gap: 8 },
   tip: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   tipText: { fontSize: 13, color: COLORS.textSecondary },
-  reportBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: COLORS.error },
+  footerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 16 },
+  listingId: { fontSize: 12, color: COLORS.textSecondary, fontFamily: 'monospace' },
+  reportBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, paddingHorizontal: 16, borderRadius: 8, borderWidth: 1, borderColor: COLORS.error },
   reportText: { fontSize: 14, fontWeight: '600', color: COLORS.error },
 });
 
