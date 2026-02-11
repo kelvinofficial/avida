@@ -278,6 +278,8 @@ try:
         create_social_router,
         create_profile_activity_router,
         create_notifications_router,
+        create_account_router,
+        create_support_router,
         DEFAULT_CATEGORIES,
         LEGACY_CATEGORY_MAP,
         validate_category_and_subcategory
