@@ -302,7 +302,11 @@ export default function PostListingScreen() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
   const { isDesktop, isTablet } = useResponsive();
+  const { showCelebration, showMultipleCelebrations } = useBadgeCelebration();
   const isLargeScreen = isDesktop || isTablet;
+  
+  // Track user's badges before listing creation
+  const previousBadgesRef = useRef<string[]>([]);
 
   // Edit mode state
   const [isEditMode, setIsEditMode] = useState(!!editListingId);
