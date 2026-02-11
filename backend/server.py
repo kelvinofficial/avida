@@ -3334,6 +3334,590 @@ async def check_and_notify_new_milestones(user_id: str) -> List[Dict[str, Any]]:
         logger.error(f"Error checking milestones for push notifications: {e}")
         return []
 
+# ==================== BADGE CHALLENGES ====================
+
+from enum import Enum
+
+class ChallengeType(str, Enum):
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
+    SPECIAL = "special"
+
+class ChallengeCriteria(str, Enum):
+    LISTINGS_CREATED = "listings_created"
+    ITEMS_SOLD = "items_sold"
+    TOTAL_SALES_VALUE = "total_sales_value"
+    MESSAGES_SENT = "messages_sent"
+    PROFILE_VIEWS = "profile_views"
+    FIVE_STAR_REVIEWS = "five_star_reviews"
+
+# Define available challenges
+CHALLENGE_DEFINITIONS = [
+    # Weekly Challenges
+    {
+        "id": "weekend_warrior",
+        "name": "Weekend Warrior",
+        "description": "List 5 items during the weekend (Saturday-Sunday)",
+        "type": ChallengeType.WEEKLY,
+        "criteria": ChallengeCriteria.LISTINGS_CREATED,
+        "target": 5,
+        "weekend_only": True,
+        "badge_reward": {
+            "name": "Weekend Warrior",
+            "description": "Listed 5+ items in a single weekend",
+            "icon": "flash",
+            "color": "#F59E0B",
+            "points_value": 25,
+        },
+        "icon": "flash",
+        "color": "#F59E0B",
+    },
+    {
+        "id": "weekly_seller",
+        "name": "Weekly Sales Star",
+        "description": "Sell 3 items this week",
+        "type": ChallengeType.WEEKLY,
+        "criteria": ChallengeCriteria.ITEMS_SOLD,
+        "target": 3,
+        "badge_reward": {
+            "name": "Weekly Sales Star",
+            "description": "Sold 3+ items in a single week",
+            "icon": "star",
+            "color": "#EF4444",
+            "points_value": 30,
+        },
+        "icon": "star",
+        "color": "#EF4444",
+    },
+    {
+        "id": "listing_sprint",
+        "name": "Listing Sprint",
+        "description": "Create 10 listings this week",
+        "type": ChallengeType.WEEKLY,
+        "criteria": ChallengeCriteria.LISTINGS_CREATED,
+        "target": 10,
+        "badge_reward": {
+            "name": "Listing Sprint Champion",
+            "description": "Created 10+ listings in a single week",
+            "icon": "rocket",
+            "color": "#8B5CF6",
+            "points_value": 35,
+        },
+        "icon": "rocket",
+        "color": "#8B5CF6",
+    },
+    # Monthly Challenges
+    {
+        "id": "monthly_top_seller",
+        "name": "Monthly Top Seller",
+        "description": "Sell 15 items this month",
+        "type": ChallengeType.MONTHLY,
+        "criteria": ChallengeCriteria.ITEMS_SOLD,
+        "target": 15,
+        "badge_reward": {
+            "name": "Monthly Top Seller",
+            "description": "Achieved top seller status for the month",
+            "icon": "trophy",
+            "color": "#FFD700",
+            "points_value": 100,
+        },
+        "icon": "trophy",
+        "color": "#FFD700",
+    },
+    {
+        "id": "inventory_king",
+        "name": "Inventory King",
+        "description": "List 30 items this month",
+        "type": ChallengeType.MONTHLY,
+        "criteria": ChallengeCriteria.LISTINGS_CREATED,
+        "target": 30,
+        "badge_reward": {
+            "name": "Inventory King",
+            "description": "Listed 30+ items in a single month",
+            "icon": "layers",
+            "color": "#10B981",
+            "points_value": 75,
+        },
+        "icon": "layers",
+        "color": "#10B981",
+    },
+    {
+        "id": "high_value_month",
+        "name": "High Roller Month",
+        "description": "Achieve €500 in total sales this month",
+        "type": ChallengeType.MONTHLY,
+        "criteria": ChallengeCriteria.TOTAL_SALES_VALUE,
+        "target": 500,
+        "badge_reward": {
+            "name": "High Roller",
+            "description": "Achieved €500+ in sales in a single month",
+            "icon": "cash",
+            "color": "#059669",
+            "points_value": 150,
+        },
+        "icon": "cash",
+        "color": "#059669",
+    },
+    {
+        "id": "community_connector",
+        "name": "Community Connector",
+        "description": "Send 50 messages to buyers this month",
+        "type": ChallengeType.MONTHLY,
+        "criteria": ChallengeCriteria.MESSAGES_SENT,
+        "target": 50,
+        "badge_reward": {
+            "name": "Community Connector",
+            "description": "Engaged with 50+ buyer messages in a month",
+            "icon": "chatbubbles",
+            "color": "#3B82F6",
+            "points_value": 50,
+        },
+        "icon": "chatbubbles",
+        "color": "#3B82F6",
+    },
+]
+
+def get_challenge_period(challenge_type: ChallengeType) -> tuple:
+    """Get the start and end dates for the current challenge period"""
+    now = datetime.now(timezone.utc)
+    
+    if challenge_type == ChallengeType.WEEKLY:
+        # Week starts on Monday
+        start = now - timedelta(days=now.weekday())
+        start = start.replace(hour=0, minute=0, second=0, microsecond=0)
+        end = start + timedelta(days=7)
+    elif challenge_type == ChallengeType.MONTHLY:
+        # Month starts on the 1st
+        start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        # Get next month
+        if now.month == 12:
+            end = now.replace(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        else:
+            end = now.replace(month=now.month + 1, day=1, hour=0, minute=0, second=0, microsecond=0)
+    else:
+        # Special challenges - default to this week
+        start = now - timedelta(days=now.weekday())
+        start = start.replace(hour=0, minute=0, second=0, microsecond=0)
+        end = start + timedelta(days=7)
+    
+    return start, end
+
+def get_weekend_period() -> tuple:
+    """Get the start and end dates for the current weekend"""
+    now = datetime.now(timezone.utc)
+    days_until_saturday = (5 - now.weekday()) % 7
+    
+    if now.weekday() in [5, 6]:  # Already weekend
+        if now.weekday() == 6:  # Sunday
+            start = now - timedelta(days=1)
+        else:  # Saturday
+            start = now
+    else:
+        start = now + timedelta(days=days_until_saturday)
+    
+    start = start.replace(hour=0, minute=0, second=0, microsecond=0)
+    end = start + timedelta(days=2)  # Saturday + Sunday
+    
+    return start, end
+
+async def get_user_challenge_progress(user_id: str, challenge: dict, start_date: datetime, end_date: datetime) -> int:
+    """Calculate user's progress for a specific challenge"""
+    criteria = challenge.get("criteria")
+    
+    if challenge.get("weekend_only"):
+        start_date, end_date = get_weekend_period()
+    
+    if criteria == ChallengeCriteria.LISTINGS_CREATED:
+        count = await db.listings.count_documents({
+            "seller_id": user_id,
+            "created_at": {"$gte": start_date, "$lt": end_date}
+        })
+        return count
+    
+    elif criteria == ChallengeCriteria.ITEMS_SOLD:
+        count = await db.listings.count_documents({
+            "seller_id": user_id,
+            "status": "sold",
+            "sold_at": {"$gte": start_date, "$lt": end_date}
+        })
+        return count
+    
+    elif criteria == ChallengeCriteria.TOTAL_SALES_VALUE:
+        pipeline = [
+            {
+                "$match": {
+                    "seller_id": user_id,
+                    "status": "sold",
+                    "sold_at": {"$gte": start_date, "$lt": end_date}
+                }
+            },
+            {
+                "$group": {
+                    "_id": None,
+                    "total": {"$sum": "$price"}
+                }
+            }
+        ]
+        result = await db.listings.aggregate(pipeline).to_list(1)
+        return int(result[0]["total"]) if result else 0
+    
+    elif criteria == ChallengeCriteria.MESSAGES_SENT:
+        count = await db.messages.count_documents({
+            "sender_id": user_id,
+            "created_at": {"$gte": start_date, "$lt": end_date}
+        })
+        return count
+    
+    return 0
+
+@api_router.get("/challenges")
+async def get_active_challenges(request: Request):
+    """Get all active challenges with user's progress if authenticated"""
+    user = None
+    try:
+        user = await require_auth(request)
+    except:
+        pass  # Anonymous access allowed
+    
+    now = datetime.now(timezone.utc)
+    challenges = []
+    
+    for challenge_def in CHALLENGE_DEFINITIONS:
+        challenge_type = challenge_def["type"]
+        start_date, end_date = get_challenge_period(challenge_type)
+        
+        # Calculate time remaining
+        time_remaining = end_date - now
+        days_remaining = time_remaining.days
+        hours_remaining = time_remaining.seconds // 3600
+        
+        challenge_data = {
+            "id": challenge_def["id"],
+            "name": challenge_def["name"],
+            "description": challenge_def["description"],
+            "type": challenge_type.value,
+            "target": challenge_def["target"],
+            "icon": challenge_def["icon"],
+            "color": challenge_def["color"],
+            "badge_reward": challenge_def["badge_reward"],
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "days_remaining": max(0, days_remaining),
+            "hours_remaining": hours_remaining if days_remaining == 0 else 0,
+            "progress": 0,
+            "completed": False,
+            "joined": False,
+        }
+        
+        if user:
+            # Get user's progress
+            progress = await get_user_challenge_progress(
+                user.user_id, challenge_def, start_date, end_date
+            )
+            challenge_data["progress"] = progress
+            challenge_data["completed"] = progress >= challenge_def["target"]
+            
+            # Check if user joined this challenge
+            participation = await db.challenge_participants.find_one({
+                "user_id": user.user_id,
+                "challenge_id": challenge_def["id"],
+                "period_start": start_date
+            })
+            challenge_data["joined"] = participation is not None
+            
+            # Check if already earned badge for this period
+            badge_earned = await db.challenge_completions.find_one({
+                "user_id": user.user_id,
+                "challenge_id": challenge_def["id"],
+                "period_start": start_date
+            })
+            challenge_data["badge_earned"] = badge_earned is not None
+        
+        challenges.append(challenge_data)
+    
+    # Sort: weekly first, then monthly
+    challenges.sort(key=lambda x: (0 if x["type"] == "weekly" else 1, -x["progress"]))
+    
+    return {
+        "challenges": challenges,
+        "total_weekly": len([c for c in challenges if c["type"] == "weekly"]),
+        "total_monthly": len([c for c in challenges if c["type"] == "monthly"]),
+    }
+
+@api_router.get("/challenges/{challenge_id}")
+async def get_challenge_details(challenge_id: str, request: Request):
+    """Get details for a specific challenge including leaderboard"""
+    user = None
+    try:
+        user = await require_auth(request)
+    except:
+        pass
+    
+    # Find challenge definition
+    challenge_def = next((c for c in CHALLENGE_DEFINITIONS if c["id"] == challenge_id), None)
+    if not challenge_def:
+        raise HTTPException(status_code=404, detail="Challenge not found")
+    
+    challenge_type = challenge_def["type"]
+    start_date, end_date = get_challenge_period(challenge_type)
+    now = datetime.now(timezone.utc)
+    
+    # Get top participants for this challenge period
+    participants = await db.challenge_participants.find({
+        "challenge_id": challenge_id,
+        "period_start": start_date
+    }).sort("progress", -1).limit(20).to_list(20)
+    
+    # Get user details for participants
+    user_ids = [p["user_id"] for p in participants]
+    users = await db.users.find({"user_id": {"$in": user_ids}}).to_list(20)
+    users_map = {u["user_id"]: u for u in users}
+    
+    leaderboard = []
+    for i, p in enumerate(participants):
+        u = users_map.get(p["user_id"], {})
+        leaderboard.append({
+            "rank": i + 1,
+            "user_id": p["user_id"],
+            "user_name": u.get("name", "Anonymous"),
+            "avatar_url": u.get("avatar_url"),
+            "progress": p["progress"],
+            "completed": p["progress"] >= challenge_def["target"],
+        })
+    
+    time_remaining = end_date - now
+    
+    response = {
+        "id": challenge_def["id"],
+        "name": challenge_def["name"],
+        "description": challenge_def["description"],
+        "type": challenge_type.value,
+        "target": challenge_def["target"],
+        "icon": challenge_def["icon"],
+        "color": challenge_def["color"],
+        "badge_reward": challenge_def["badge_reward"],
+        "start_date": start_date.isoformat(),
+        "end_date": end_date.isoformat(),
+        "days_remaining": max(0, time_remaining.days),
+        "hours_remaining": time_remaining.seconds // 3600 if time_remaining.days == 0 else 0,
+        "leaderboard": leaderboard,
+        "total_participants": len(participants),
+    }
+    
+    if user:
+        progress = await get_user_challenge_progress(
+            user.user_id, challenge_def, start_date, end_date
+        )
+        response["my_progress"] = progress
+        response["my_completed"] = progress >= challenge_def["target"]
+        
+        # Find user's rank
+        user_rank = next((i + 1 for i, p in enumerate(participants) if p["user_id"] == user.user_id), None)
+        response["my_rank"] = user_rank
+    
+    return response
+
+@api_router.post("/challenges/{challenge_id}/join")
+async def join_challenge(challenge_id: str, request: Request):
+    """Join a challenge to track progress and appear on leaderboard"""
+    user = await require_auth(request)
+    
+    # Find challenge definition
+    challenge_def = next((c for c in CHALLENGE_DEFINITIONS if c["id"] == challenge_id), None)
+    if not challenge_def:
+        raise HTTPException(status_code=404, detail="Challenge not found")
+    
+    challenge_type = challenge_def["type"]
+    start_date, end_date = get_challenge_period(challenge_type)
+    
+    # Check if already joined
+    existing = await db.challenge_participants.find_one({
+        "user_id": user.user_id,
+        "challenge_id": challenge_id,
+        "period_start": start_date
+    })
+    
+    if existing:
+        return {"message": "Already joined this challenge", "joined": True}
+    
+    # Get current progress
+    progress = await get_user_challenge_progress(
+        user.user_id, challenge_def, start_date, end_date
+    )
+    
+    # Create participation record
+    await db.challenge_participants.insert_one({
+        "user_id": user.user_id,
+        "challenge_id": challenge_id,
+        "period_start": start_date,
+        "period_end": end_date,
+        "progress": progress,
+        "joined_at": datetime.now(timezone.utc),
+    })
+    
+    return {
+        "message": "Successfully joined challenge",
+        "joined": True,
+        "progress": progress,
+        "target": challenge_def["target"],
+    }
+
+@api_router.get("/challenges/my-progress")
+async def get_my_challenge_progress(request: Request):
+    """Get user's progress on all active challenges"""
+    user = await require_auth(request)
+    
+    now = datetime.now(timezone.utc)
+    challenges_progress = []
+    
+    for challenge_def in CHALLENGE_DEFINITIONS:
+        challenge_type = challenge_def["type"]
+        start_date, end_date = get_challenge_period(challenge_type)
+        
+        progress = await get_user_challenge_progress(
+            user.user_id, challenge_def, start_date, end_date
+        )
+        
+        # Check if already earned badge for this period
+        badge_earned = await db.challenge_completions.find_one({
+            "user_id": user.user_id,
+            "challenge_id": challenge_def["id"],
+            "period_start": start_date
+        })
+        
+        challenges_progress.append({
+            "challenge_id": challenge_def["id"],
+            "name": challenge_def["name"],
+            "type": challenge_type.value,
+            "progress": progress,
+            "target": challenge_def["target"],
+            "percentage": min(100, int((progress / challenge_def["target"]) * 100)),
+            "completed": progress >= challenge_def["target"],
+            "badge_earned": badge_earned is not None,
+            "icon": challenge_def["icon"],
+            "color": challenge_def["color"],
+        })
+    
+    # Count completed and in-progress
+    completed_count = len([c for c in challenges_progress if c["completed"]])
+    in_progress_count = len([c for c in challenges_progress if 0 < c["progress"] < c["target"]])
+    
+    return {
+        "challenges": challenges_progress,
+        "summary": {
+            "total": len(challenges_progress),
+            "completed": completed_count,
+            "in_progress": in_progress_count,
+            "not_started": len(challenges_progress) - completed_count - in_progress_count,
+        }
+    }
+
+async def check_and_award_challenge_badges(user_id: str):
+    """Check if user completed any challenges and award badges"""
+    now = datetime.now(timezone.utc)
+    awarded_badges = []
+    
+    for challenge_def in CHALLENGE_DEFINITIONS:
+        challenge_type = challenge_def["type"]
+        start_date, end_date = get_challenge_period(challenge_type)
+        
+        # Check if already earned badge for this period
+        existing_completion = await db.challenge_completions.find_one({
+            "user_id": user_id,
+            "challenge_id": challenge_def["id"],
+            "period_start": start_date
+        })
+        
+        if existing_completion:
+            continue
+        
+        # Get progress
+        progress = await get_user_challenge_progress(
+            user_id, challenge_def, start_date, end_date
+        )
+        
+        # Update participation record if exists
+        await db.challenge_participants.update_one(
+            {
+                "user_id": user_id,
+                "challenge_id": challenge_def["id"],
+                "period_start": start_date
+            },
+            {"$set": {"progress": progress, "updated_at": now}},
+            upsert=False
+        )
+        
+        if progress >= challenge_def["target"]:
+            # User completed the challenge!
+            badge_reward = challenge_def["badge_reward"]
+            
+            # Create or get badge
+            badge_id = f"challenge_{challenge_def['id']}_{start_date.strftime('%Y%m%d')}"
+            
+            existing_badge = await db.badges.find_one({"id": badge_id})
+            if not existing_badge:
+                await db.badges.insert_one({
+                    "id": badge_id,
+                    "name": badge_reward["name"],
+                    "description": badge_reward["description"],
+                    "icon": badge_reward["icon"],
+                    "color": badge_reward["color"],
+                    "points_value": badge_reward["points_value"],
+                    "category": "challenge",
+                    "challenge_id": challenge_def["id"],
+                    "period_start": start_date,
+                    "is_limited": True,
+                    "created_at": now,
+                })
+            
+            # Award badge to user
+            existing_user_badge = await db.user_badges.find_one({
+                "user_id": user_id,
+                "badge_id": badge_id
+            })
+            
+            if not existing_user_badge:
+                await db.user_badges.insert_one({
+                    "user_id": user_id,
+                    "badge_id": badge_id,
+                    "earned_at": now,
+                    "is_viewed": False,
+                    "source": "challenge",
+                    "challenge_id": challenge_def["id"],
+                })
+                
+                # Record completion
+                await db.challenge_completions.insert_one({
+                    "user_id": user_id,
+                    "challenge_id": challenge_def["id"],
+                    "period_start": start_date,
+                    "period_end": end_date,
+                    "badge_id": badge_id,
+                    "completed_at": now,
+                    "progress": progress,
+                })
+                
+                awarded_badges.append({
+                    "badge_id": badge_id,
+                    "name": badge_reward["name"],
+                    "description": badge_reward["description"],
+                    "icon": badge_reward["icon"],
+                    "color": badge_reward["color"],
+                    "points_value": badge_reward["points_value"],
+                    "challenge_name": challenge_def["name"],
+                })
+                
+                # Send push notification
+                await send_push_notification(
+                    push_token=(await db.users.find_one({"user_id": user_id}) or {}).get("push_token"),
+                    title=f"🏆 Challenge Complete: {challenge_def['name']}!",
+                    body=f"You've earned the {badge_reward['name']} badge!",
+                    data={"type": "challenge_complete", "challenge_id": challenge_def["id"]},
+                    notification_type="challenge"
+                )
+    
+    return awarded_badges
+
 # ==================== BLOCKED USERS ENDPOINTS ====================
 
 @api_router.get("/blocked-users")
