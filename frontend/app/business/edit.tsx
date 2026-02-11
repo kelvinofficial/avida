@@ -443,6 +443,15 @@ export default function BusinessProfileEditScreen() {
     if (!hasProfile) { Alert.alert('Save First', 'Please save your business profile first'); return; }
     if (galleryImages.length >= 20) { Alert.alert('Limit Reached', 'Maximum 20 images allowed'); return; }
 
+    // Request permission on mobile
+    if (Platform.OS !== 'web') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Required', 'Please allow access to your photo library to upload images.');
+        return;
+      }
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.6,
