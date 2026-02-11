@@ -1193,10 +1193,13 @@ export default function ListingDetailScreen() {
                     <Text style={desktopStyles.safetyTipText}>Check the item before paying</Text>
                   </View>
                 </View>
-                <TouchableOpacity style={desktopStyles.reportBtn} onPress={() => setShowReportModal(true)}>
-                  <Ionicons name="flag-outline" size={16} color={COLORS.error} />
-                  <Text style={desktopStyles.reportBtnText}>Report this listing</Text>
-                </TouchableOpacity>
+                <View style={desktopStyles.footerRow}>
+                  <Text style={desktopStyles.listingId}>ID: {listing?.id || 'N/A'}</Text>
+                  <TouchableOpacity style={desktopStyles.reportBtn} onPress={() => setShowReportModal(true)}>
+                    <Ionicons name="flag-outline" size={16} color={COLORS.error} />
+                    <Text style={desktopStyles.reportBtnText}>Report this listing</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </View>
