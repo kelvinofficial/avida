@@ -598,11 +598,30 @@ export default function HomeScreen() {
     }
   }, []);
 
+  // Fetch unviewed badge count when authenticated
+  const fetchUnviewedBadgeCount = useCallback(async () => {
+    try {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/badges/unviewed-count`, {
+        headers: {
+          'Authorization': `Bearer ${await Storage.getItem('authToken')}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUnviewedBadgeCount(data?.unviewed_count ?? 0);
+      }
+    } catch (err) {
+      console.error('Failed to fetch unviewed badge count:', err);
+      setUnviewedBadgeCount(0);
+    }
+  }, []);
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchCreditBalance();
+      fetchUnviewedBadgeCount();
     }
-  }, [isAuthenticated, fetchCreditBalance]);
+  }, [isAuthenticated, fetchCreditBalance, fetchUnviewedBadgeCount]);
 
   // Popular cities list
   const POPULAR_CITIES = [
