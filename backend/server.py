@@ -8316,12 +8316,9 @@ async def admin_proxy(request: Request, path: str):
     
     # Check if this path should be handled locally (not proxied)
     if is_local_admin_path(path):
-        # Let FastAPI find the correct route handler
-        # This works by re-raising the exception to continue routing
-        from fastapi.routing import APIRouter
-        # We return a special response that indicates this should be handled elsewhere
-        # Actually, we need a different approach - we'll skip the proxy
         raise HTTPException(status_code=404, detail="Route not found in proxy")
+    
+    logger.info(f"Admin proxy: forwarding {request.method} /api/admin/{path}")
     
     async with httpx.AsyncClient(timeout=30.0) as client:
         # Build the target URL
@@ -8339,14 +8336,18 @@ async def admin_proxy(request: Request, path: str):
         
         # Forward headers (make sure Authorization is properly forwarded)
         headers = {}
+        auth_header = None
         for key, value in request.headers.items():
             key_lower = key.lower()
             if key_lower not in ["host", "content-length"]:
                 # Preserve the Authorization header properly
                 if key_lower == "authorization":
                     headers["Authorization"] = value
+                    auth_header = value[:50] + "..." if len(value) > 50 else value
                 else:
                     headers[key] = value
+        
+        logger.info(f"Admin proxy: Auth header present: {auth_header is not None}")
         
         # Make the request
         try:
