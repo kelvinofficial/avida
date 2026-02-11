@@ -1291,3 +1291,49 @@ Automated weekly/daily/monthly analytics reports sent via email to configured ad
 - `/app/frontend/app/admin/analytics.tsx` - Settings tab UI and fetchSettings function
 - `/app/backend/routes/admin.py` - Additional admin routes module (not used for settings)
 
+
+### 2026-02-11: Server.py Refactoring - Admin Locations Module
+**COMPLETED**
+
+#### Refactoring Summary
+Extracted ~950 lines of admin location management routes from the monolithic `server.py` into a dedicated modular router file.
+
+#### New File Created
+- `/app/backend/routes/admin_locations.py` - ~880 lines containing all admin location management routes
+
+#### Routes Extracted
+- **CRUD Operations**: GET/POST/PUT/DELETE for countries, regions, districts, cities
+- **Geocoding**: Geocode search, reverse geocode, coordinate suggestions
+- **Batch Operations**: Batch import from GeoJSON, bulk coordinate updates, GeoJSON export
+- **Analytics**: Listing density by location, auto-detect location from coordinates
+- **Boundary Data**: District boundary lookup via OSM Nominatim
+
+#### Key Endpoints (all under `/api/admin/locations/`)
+- `GET /stats` - Location statistics
+- `GET/POST /countries` - Country CRUD
+- `GET/POST /regions` - Region CRUD  
+- `GET/POST /districts` - District CRUD
+- `GET/POST /cities` - City CRUD
+- `GET /geocode` - Forward geocoding
+- `GET /reverse-geocode` - Reverse geocoding
+- `GET /suggest-coordinates` - Coordinate suggestions
+- `POST /batch-import` - GeoJSON batch import
+- `POST /bulk-update-coordinates` - Auto-fill missing coordinates
+- `GET /export` - Export to GeoJSON
+- `GET /listing-density` - Density analytics
+- `GET /auto-detect` - Auto-detect location hierarchy
+- `GET /district-boundary` - District boundary polygon
+
+#### Integration Pattern
+- Router factory function: `create_admin_locations_router(db, require_auth)`
+- Registered BEFORE admin proxy catch-all to ensure route precedence
+- Added `locations` to `ADMIN_LOCAL_PATHS` to prevent proxy interception
+
+#### Result
+- `server.py` reduced from 8881 lines to 7932 lines (949 lines removed)
+- All admin location endpoints verified working via curl tests
+- Lint checks passing
+
+**Key Files Modified:**
+- `/app/backend/routes/__init__.py` - Added `create_admin_locations_router` export
+- `/app/backend/server.py` - Removed inline routes, added early router registration
