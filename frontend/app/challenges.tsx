@@ -1067,4 +1067,24 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     flex: 1,
   },
+  categoriesContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FDF2F8',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginBottom: 10,
+    marginTop: 2,
+  },
+  categoriesLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#EC4899',
+    marginLeft: 4,
+  },
+  categoriesText: {
+    fontSize: 11,
+    color: '#9D174D',
+  },
 });
