@@ -475,3 +475,56 @@
 
 - Original: 8881 lines
 - Final: 5409 lines
+
+## 2026-02-11: Server.py Refactoring - User Settings, Sessions, ID Verification
+**Status:** COMPLETED
+
+### Changes
+- Extracted ~177 lines into `/app/backend/routes/user_settings.py`
+- `server.py` reduced from 5409 → 5232 lines (177 lines removed)
+
+### New Routers Created
+- `create_user_settings_router` - Settings and push token
+- `create_sessions_router` - Active sessions management
+- `create_id_verification_router` - ID verification flow
+
+### Endpoints Migrated
+**User Settings:**
+- GET/PUT `/api/settings`
+- PUT `/api/settings/push-token`
+
+**Sessions:**
+- GET `/api/sessions`
+- DELETE `/api/sessions/{id}`
+- POST `/api/sessions/revoke-all`
+
+**ID Verification:**
+- POST `/api/profile/verify-id`
+- GET `/api/profile/verify-id/status`
+
+### Testing
+- All endpoints verified (401 for auth-required endpoints)
+
+### Final Cumulative Progress (7 Extraction Sessions Today)
+| Module | Lines Removed |
+|--------|---------------|
+| Admin Locations | -949 |
+| Auto/Motors | -679 |
+| Property/Offers/Similar | -1013 |
+| Social/ProfileActivity | -448 |
+| Notifications | -249 |
+| Account/Support | -134 |
+| UserSettings/Sessions/IDVerification | -177 |
+| **Total** | **-3649 (~41%)** |
+
+- Original: 8881 lines
+- Final: 5232 lines
+
+### New Router Files Created Today
+1. `/app/backend/routes/admin_locations.py` - Admin location management
+2. `/app/backend/routes/auto_motors.py` - Auto/Motors marketplace
+3. `/app/backend/routes/property.py` - Property, Offers, Similar listings
+4. `/app/backend/routes/social.py` - Follow, Reviews, Profile activity
+5. `/app/backend/routes/notifications.py` - Notifications CRUD
+6. `/app/backend/routes/account_support.py` - Account & Support tickets
+7. `/app/backend/routes/user_settings.py` - Settings, Sessions, ID Verification
