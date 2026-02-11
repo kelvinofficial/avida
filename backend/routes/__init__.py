@@ -12,6 +12,7 @@ from .conversations import create_conversations_router
 from .badges import create_badges_router
 from .streaks import create_streaks_router
 from .challenges import create_challenges_router
+from .admin import create_admin_router
 
 __all__ = [
     'create_auth_router',
@@ -23,6 +24,7 @@ __all__ = [
     'create_badges_router',
     'create_streaks_router',
     'create_challenges_router',
+    'create_admin_router',
     'DEFAULT_CATEGORIES',
     'LEGACY_CATEGORY_MAP',
     'validate_category_and_subcategory',
