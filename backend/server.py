@@ -4825,8 +4825,24 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load notifications router: {e}")
     
+    # Create account router
+    try:
+        account_router = create_account_router(db, require_auth, create_notification)
+        api_router.include_router(account_router)
+        logger.info("Account router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load account router: {e}")
+    
+    # Create support router
+    try:
+        support_router = create_support_router(db, require_auth, create_notification)
+        api_router.include_router(support_router)
+        logger.info("Support router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load support router: {e}")
+    
     app.include_router(api_router)  # Re-include to pick up modular routes
-    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors, Property, Offers, Similar, Social, ProfileActivity, Notifications) loaded successfully")
+    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors, Property, Offers, Similar, Social, ProfileActivity, Notifications, Account, Support) loaded successfully")
 
 # Include boost routes if available
 if BOOST_ROUTES_AVAILABLE:
