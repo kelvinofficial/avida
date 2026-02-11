@@ -445,7 +445,7 @@ export default function PostListingScreen() {
   // Initialize - check authentication
   useEffect(() => {
     if (!isAuthenticated) {
-      router.replace('/login');
+      router.replace('/login?redirect=/post');
       return;
     }
     // Categories are now loaded from the config file, no need to fetch
