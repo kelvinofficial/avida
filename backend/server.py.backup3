@@ -994,6 +994,1052 @@ app.state.broadcast_qa_alert = broadcast_qa_alert
 # Now handled by modular router (routes/auto_motors.py)
 # Includes: brands, models, listings, conversations, favorites, search
 
+# ==================== PROPERTY ENDPOINTS ====================
+
+# Property Models
+class PropertyLocation(BaseModel):
+    country: str = "Germany"
+    city: str
+    area: str
+    estate: Optional[str] = None
+    address: Optional[str] = None
+    landmark: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+
+class PropertyFacilities(BaseModel):
+    electricity24hr: bool = False
+    waterSupply: bool = False
+    generator: bool = False
+    furnished: bool = False
+    airConditioning: bool = False
+    wardrobe: bool = False
+    kitchenCabinets: bool = False
+    security: bool = False
+    cctv: bool = False
+    gatedEstate: bool = False
+    parking: bool = False
+    balcony: bool = False
+    swimmingPool: bool = False
+    gym: bool = False
+    elevator: bool = False
+    wifi: bool = False
+
+class PropertyVerification(BaseModel):
+    isVerified: bool = False
+    docsChecked: bool = False
+    addressConfirmed: bool = False
+    ownerVerified: bool = False
+    agentVerified: bool = False
+    verifiedAt: Optional[str] = None
+
+class PropertySeller(BaseModel):
+    id: str
+    name: str
+    type: str  # 'owner' or 'agent'
+    phone: Optional[str] = None
+    whatsapp: Optional[str] = None
+    isVerified: bool = False
+    rating: Optional[float] = None
+    listingsCount: Optional[int] = None
+    memberSince: Optional[str] = None
+    responseTime: Optional[str] = None
+
+class PropertyOffer(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    propertyId: str
+    buyerId: str
+    buyerName: str
+    offeredPrice: float
+    message: Optional[str] = None
+    status: str = "pending"  # pending, accepted, rejected, countered
+    counterPrice: Optional[float] = None
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class BookViewing(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    propertyId: str
+    userId: str
+    userName: str
+    userPhone: str
+    preferredDate: str
+    preferredTime: str
+    message: Optional[str] = None
+    status: str = "pending"  # pending, confirmed, cancelled
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+@api_router.get("/property/listings")
+async def get_property_listings(
+    purpose: Optional[str] = None,  # buy, rent
+    property_type: Optional[str] = None,
+    city: Optional[str] = None,
+    area: Optional[str] = None,
+    price_min: Optional[float] = None,
+    price_max: Optional[float] = None,
+    bedrooms_min: Optional[int] = None,
+    bedrooms_max: Optional[int] = None,
+    bathrooms_min: Optional[int] = None,
+    size_min: Optional[float] = None,
+    size_max: Optional[float] = None,
+    furnishing: Optional[str] = None,
+    condition: Optional[str] = None,
+    verified_only: Optional[bool] = None,
+    search: Optional[str] = None,
+    sort: str = "newest",
+    page: int = 1,
+    limit: int = 20
+):
+    """Get property listings with filters"""
+    query = {"status": "active"}
+    
+    if purpose:
+        query["purpose"] = purpose
+    if property_type:
+        query["type"] = property_type
+    if city:
+        query["location.city"] = {"$regex": city, "$options": "i"}
+    if area:
+        query["location.area"] = {"$regex": area, "$options": "i"}
+    if price_min:
+        query["price"] = {"$gte": price_min}
+    if price_max:
+        if "price" in query:
+            query["price"]["$lte"] = price_max
+        else:
+            query["price"] = {"$lte": price_max}
+    if bedrooms_min:
+        query["bedrooms"] = {"$gte": bedrooms_min}
+    if bedrooms_max:
+        if "bedrooms" in query:
+            query["bedrooms"]["$lte"] = bedrooms_max
+        else:
+            query["bedrooms"] = {"$lte": bedrooms_max}
+    if bathrooms_min:
+        query["bathrooms"] = {"$gte": bathrooms_min}
+    if size_min:
+        query["size"] = {"$gte": size_min}
+    if size_max:
+        if "size" in query:
+            query["size"]["$lte"] = size_max
+        else:
+            query["size"] = {"$lte": size_max}
+    if furnishing:
+        query["furnishing"] = furnishing
+    if condition:
+        query["condition"] = condition
+    if verified_only:
+        query["verification.isVerified"] = True
+    if search:
+        query["$or"] = [
+            {"title": {"$regex": search, "$options": "i"}},
+            {"description": {"$regex": search, "$options": "i"}},
+            {"location.area": {"$regex": search, "$options": "i"}},
+            {"location.city": {"$regex": search, "$options": "i"}}
+        ]
+    
+    # Sorting
+    sort_field = "createdAt"
+    sort_order = -1
+    if sort == "price_asc":
+        sort_field = "price"
+        sort_order = 1
+    elif sort == "price_desc":
+        sort_field = "price"
+        sort_order = -1
+    elif sort == "oldest":
+        sort_order = 1
+    elif sort == "popular":
+        sort_field = "views"
+        sort_order = -1
+    
+    skip = (page - 1) * limit
+    total = await db.properties.count_documents(query)
+    listings = await db.properties.find(query, {"_id": 0}).sort(sort_field, sort_order).skip(skip).limit(limit).to_list(limit)
+    
+    return {
+        "listings": listings,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit if total > 0 else 0
+    }
+
+@api_router.get("/property/listings/{property_id}")
+async def get_property_listing(property_id: str):
+    """Get single property listing by ID"""
+    listing = await db.properties.find_one({"id": property_id}, {"_id": 0})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Increment views
+    await db.properties.update_one({"id": property_id}, {"$inc": {"views": 1}})
+    
+    return listing
+
+@api_router.get("/property/featured")
+async def get_featured_properties(limit: int = 10):
+    """Get featured property listings"""
+    query = {"status": "active", "featured": True}
+    listings = await db.properties.find(query, {"_id": 0}).sort("createdAt", -1).limit(limit).to_list(limit)
+    return listings
+
+@api_router.get("/property/type-counts")
+async def get_property_type_counts(purpose: Optional[str] = None):
+    """Get listing counts by property type"""
+    match_stage = {"status": "active"}
+    if purpose:
+        match_stage["purpose"] = purpose
+    
+    pipeline = [
+        {"$match": match_stage},
+        {"$group": {"_id": "$type", "count": {"$sum": 1}}},
+        {"$project": {"type": "$_id", "count": 1, "_id": 0}}
+    ]
+    
+    results = await db.properties.aggregate(pipeline).to_list(100)
+    return {item["type"]: item["count"] for item in results}
+
+# ==================== OFFERS SYSTEM ====================
+
+@api_router.post("/offers")
+async def create_offer(request: Request):
+    """Submit an offer for any listing"""
+    user = await require_auth(request)
+    body = await request.json()
+    
+    listing_id = body.get("listing_id")
+    offered_price = body.get("offered_price")
+    message = body.get("message", "")
+    
+    if not listing_id or not offered_price:
+        raise HTTPException(status_code=400, detail="listing_id and offered_price are required")
+    
+    # Find listing in all collections
+    listing = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        listing = await db.properties.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        listing = await db.auto_listings.find_one({"id": listing_id}, {"_id": 0})
+    
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    
+    listed_price = listing.get("price", 0)
+    
+    # Validate offer is below listed price
+    if offered_price >= listed_price:
+        raise HTTPException(status_code=400, detail="Offer must be below the listed price")
+    
+    # Validate minimum offer (10% of listed price)
+    min_offer = listed_price * 0.1
+    if offered_price < min_offer:
+        raise HTTPException(status_code=400, detail=f"Offer must be at least {min_offer}")
+    
+    seller_id = listing.get("user_id")
+    
+    # Check if user already has a pending offer on this listing
+    existing_offer = await db.offers.find_one({
+        "listing_id": listing_id,
+        "buyer_id": user.user_id,
+        "status": "pending"
+    })
+    if existing_offer:
+        # Update existing offer
+        await db.offers.update_one(
+            {"id": existing_offer["id"]},
+            {"$set": {
+                "offered_price": offered_price,
+                "message": message,
+                "updated_at": datetime.utcnow().isoformat()
+            }}
+        )
+        return {"message": "Offer updated successfully", "offer_id": existing_offer["id"]}
+    
+    # Calculate discount percentage
+    discount_percent = round((1 - offered_price / listed_price) * 100)
+    
+    offer = {
+        "id": f"offer_{uuid.uuid4().hex[:12]}",
+        "listing_id": listing_id,
+        "listing_title": listing.get("title", "Untitled"),
+        "listing_image": listing.get("images", [None])[0],
+        "listed_price": listed_price,
+        "offered_price": offered_price,
+        "discount_percent": discount_percent,
+        "buyer_id": user.user_id,
+        "buyer_name": user.name,
+        "buyer_picture": user.picture,
+        "seller_id": seller_id,
+        "seller_name": listing.get("user_name", "Seller"),
+        "seller_picture": listing.get("user_picture"),
+        "message": message,
+        "status": "pending",  # pending, accepted, rejected, expired, countered
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat(),
+    }
+    
+    await db.offers.insert_one(offer)
+    
+    # Create notification for seller
+    if seller_id:
+        await create_notification(
+            user_id=seller_id,
+            notification_type="offer_received",
+            title="New offer received!",
+            body=f"{user.name} offered €{offered_price:,.0f} for {listing.get('title', 'your listing')} ({discount_percent}% off)",
+            cta_label="VIEW OFFER",
+            cta_route=f"/offers",
+            actor_id=user.user_id,
+            actor_name=user.name,
+            actor_picture=user.picture,
+            listing_id=listing_id,
+            listing_title=listing.get("title"),
+            image_url=listing.get("images", [None])[0],
+            meta={"offer_id": offer["id"], "offered_price": offered_price}
+        )
+    
+    return {"message": "Offer submitted successfully", "offer_id": offer["id"]}
+
+@api_router.get("/offers")
+async def get_my_offers(request: Request, role: str = "seller"):
+    """Get offers - as seller (received) or buyer (sent)"""
+    user = await require_auth(request)
+    
+    if role == "seller":
+        # Get offers on my listings
+        query = {"seller_id": user.user_id}
+    else:
+        # Get offers I've made
+        query = {"buyer_id": user.user_id}
+    
+    offers = await db.offers.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    # Count by status
+    pending_count = len([o for o in offers if o.get("status") == "pending"])
+    
+    return {
+        "offers": offers,
+        "pending_count": pending_count,
+        "total": len(offers)
+    }
+
+@api_router.get("/offers/listing/{listing_id}")
+async def get_listing_offers(request: Request, listing_id: str):
+    """Get all offers for a specific listing (seller only)"""
+    user = await require_auth(request)
+    
+    # Verify user owns this listing
+    listing = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        listing = await db.properties.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        listing = await db.auto_listings.find_one({"id": listing_id}, {"_id": 0})
+    
+    if not listing or listing.get("user_id") != user.user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to view offers for this listing")
+    
+    offers = await db.offers.find({"listing_id": listing_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    return {
+        "offers": offers,
+        "listing": listing,
+        "total": len(offers)
+    }
+
+@api_router.put("/offers/{offer_id}/respond")
+async def respond_to_offer(request: Request, offer_id: str):
+    """Accept or reject an offer (seller only)"""
+    user = await require_auth(request)
+    body = await request.json()
+    
+    action = body.get("action")  # accept, reject, counter
+    counter_price = body.get("counter_price")
+    message = body.get("message", "")
+    
+    if action not in ["accept", "reject", "counter"]:
+        raise HTTPException(status_code=400, detail="Invalid action")
+    
+    offer = await db.offers.find_one({"id": offer_id}, {"_id": 0})
+    if not offer:
+        raise HTTPException(status_code=404, detail="Offer not found")
+    
+    if offer.get("seller_id") != user.user_id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    if offer.get("status") != "pending":
+        raise HTTPException(status_code=400, detail="Offer is no longer pending")
+    
+    # Update offer status
+    update_data = {
+        "status": "accepted" if action == "accept" else ("rejected" if action == "reject" else "countered"),
+        "response_message": message,
+        "responded_at": datetime.utcnow().isoformat(),
+    }
+    
+    if action == "counter" and counter_price:
+        update_data["counter_price"] = counter_price
+    
+    await db.offers.update_one({"id": offer_id}, {"$set": update_data})
+    
+    # Notify buyer
+    buyer_id = offer.get("buyer_id")
+    if buyer_id:
+        if action == "accept":
+            notif_title = "Offer accepted! 🎉"
+            notif_body = f"Your offer of €{offer['offered_price']:,.0f} for {offer['listing_title']} has been accepted!"
+            notif_type = "offer_accepted"
+        elif action == "reject":
+            notif_title = "Offer declined"
+            notif_body = f"Unfortunately, your offer for {offer['listing_title']} was declined."
+            notif_type = "offer_rejected"
+        else:
+            notif_title = "Counter offer received"
+            notif_body = f"The seller countered with €{counter_price:,.0f} for {offer['listing_title']}"
+            notif_type = "offer_received"
+        
+        await create_notification(
+            user_id=buyer_id,
+            notification_type=notif_type,
+            title=notif_title,
+            body=notif_body,
+            cta_label="VIEW",
+            listing_id=offer.get("listing_id"),
+            listing_title=offer.get("listing_title"),
+            image_url=offer.get("listing_image"),
+            meta={"offer_id": offer_id}
+        )
+    
+    return {"message": f"Offer {action}ed successfully"}
+
+@api_router.post("/property/offers")
+async def create_property_offer(request: Request):
+    """Submit an offer for a property"""
+    body = await request.json()
+    property_id = body.get("propertyId")
+    offered_price = body.get("offeredPrice")
+    message = body.get("message", "")
+    
+    if not property_id or not offered_price:
+        raise HTTPException(status_code=400, detail="propertyId and offeredPrice are required")
+    
+    # Verify property exists
+    property_listing = await db.properties.find_one({"id": property_id}, {"_id": 0})
+    if not property_listing:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Get user (or use guest)
+    user = await get_current_user(request)
+    buyer_id = user.user_id if user else f"guest_{uuid.uuid4().hex[:8]}"
+    buyer_name = user.name if user else "Interested Buyer"
+    
+    offer = {
+        "id": f"offer_{uuid.uuid4().hex[:12]}",
+        "propertyId": property_id,
+        "buyerId": buyer_id,
+        "buyerName": buyer_name,
+        "offeredPrice": offered_price,
+        "message": message,
+        "status": "pending",
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+    }
+    
+    await db.property_offers.insert_one(offer)
+    
+    # Update inquiries count
+    await db.properties.update_one({"id": property_id}, {"$inc": {"inquiries": 1}})
+    
+    return {"message": "Offer submitted successfully", "offer": {**offer, "_id": None}}
+
+@api_router.post("/property/book-viewing")
+async def book_property_viewing(request: Request):
+    """Book a viewing for a property"""
+    body = await request.json()
+    property_id = body.get("propertyId")
+    preferred_date = body.get("preferredDate")
+    preferred_time = body.get("preferredTime")
+    user_phone = body.get("userPhone", "")
+    message = body.get("message", "")
+    
+    if not property_id or not preferred_date or not preferred_time:
+        raise HTTPException(status_code=400, detail="propertyId, preferredDate, and preferredTime are required")
+    
+    # Verify property exists
+    property_listing = await db.properties.find_one({"id": property_id}, {"_id": 0})
+    if not property_listing:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Get user (or use guest)
+    user = await get_current_user(request)
+    user_id = user.user_id if user else f"guest_{uuid.uuid4().hex[:8]}"
+    user_name = user.name if user else "Interested Buyer"
+    
+    booking = {
+        "id": f"booking_{uuid.uuid4().hex[:12]}",
+        "propertyId": property_id,
+        "userId": user_id,
+        "userName": user_name,
+        "userPhone": user_phone,
+        "preferredDate": preferred_date,
+        "preferredTime": preferred_time,
+        "message": message,
+        "status": "pending",
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+    }
+    
+    await db.property_bookings.insert_one(booking)
+    
+    # Update inquiries count
+    await db.properties.update_one({"id": property_id}, {"$inc": {"inquiries": 1}})
+    
+    return {"message": "Viewing booked successfully", "booking": {**booking, "_id": None}}
+
+@api_router.post("/property/favorites/{property_id}")
+async def add_property_favorite(property_id: str, request: Request):
+    """Add a property to favorites"""
+    user = await get_current_user(request)
+    user_id = user.user_id if user else "guest"
+    
+    # Check if property exists
+    property_listing = await db.properties.find_one({"id": property_id})
+    if not property_listing:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Check if already favorited
+    existing = await db.property_favorites.find_one({"user_id": user_id, "property_id": property_id})
+    if existing:
+        return {"message": "Already favorited", "favorited": True}
+    
+    await db.property_favorites.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "property_id": property_id,
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Update favorites count
+    await db.properties.update_one({"id": property_id}, {"$inc": {"favorites": 1}})
+    
+    return {"message": "Added to favorites", "favorited": True}
+
+@api_router.delete("/property/favorites/{property_id}")
+async def remove_property_favorite(property_id: str, request: Request):
+    """Remove a property from favorites"""
+    user = await get_current_user(request)
+    user_id = user.user_id if user else "guest"
+    
+    result = await db.property_favorites.delete_one({"user_id": user_id, "property_id": property_id})
+    
+    if result.deleted_count > 0:
+        await db.properties.update_one({"id": property_id}, {"$inc": {"favorites": -1}})
+    
+    return {"message": "Removed from favorites", "favorited": False}
+
+@api_router.get("/property/favorites")
+async def get_property_favorites(request: Request):
+    """Get user's favorite properties"""
+    user = await get_current_user(request)
+    user_id = user.user_id if user else "guest"
+    
+    favorites = await db.property_favorites.find({"user_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    property_ids = [f["property_id"] for f in favorites]
+    
+    listings = await db.properties.find({"id": {"$in": property_ids}, "status": "active"}, {"_id": 0}).to_list(100)
+    
+    return {
+        "favorites": favorites,
+        "listings": listings
+    }
+
+@api_router.get("/property/cities")
+async def get_property_cities():
+    """Get available cities with property counts"""
+    pipeline = [
+        {"$match": {"status": "active"}},
+        {"$group": {"_id": "$location.city", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$project": {"city": "$_id", "count": 1, "_id": 0}}
+    ]
+    results = await db.properties.aggregate(pipeline).to_list(50)
+    return results
+
+@api_router.get("/property/areas/{city}")
+async def get_property_areas(city: str):
+    """Get available areas within a city"""
+    pipeline = [
+        {"$match": {"status": "active", "location.city": {"$regex": city, "$options": "i"}}},
+        {"$group": {"_id": "$location.area", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$project": {"area": "$_id", "count": 1, "_id": 0}}
+    ]
+    results = await db.properties.aggregate(pipeline).to_list(50)
+    return results
+
+# ==================== SIMILAR LISTINGS ENGINE ====================
+
+def calculate_similarity_score(source: dict, target: dict) -> float:
+    """
+    Calculate weighted similarity score between two listings.
+    Returns a score from 0-100 where higher is more similar.
+    """
+    score = 0.0
+    
+    # Primary Signals (High Weight - 70%)
+    # Same type (25 points)
+    if source.get('type') == target.get('type'):
+        score += 25
+    elif source.get('type', '').split('_')[0] == target.get('type', '').split('_')[0]:
+        score += 15  # Same category family
+    
+    # Same purpose (20 points)
+    if source.get('purpose') == target.get('purpose'):
+        score += 20
+    
+    # Price range ±20% (15 points)
+    source_price = source.get('price', 0)
+    target_price = target.get('price', 0)
+    if source_price > 0 and target_price > 0:
+        price_diff = abs(source_price - target_price) / source_price
+        if price_diff <= 0.1:  # Within 10%
+            score += 15
+        elif price_diff <= 0.2:  # Within 20%
+            score += 10
+        elif price_diff <= 0.3:  # Within 30%
+            score += 5
+    
+    # Same condition (10 points)
+    if source.get('condition') == target.get('condition'):
+        score += 10
+    
+    # Secondary Signals (30%)
+    # Same city (10 points)
+    if source.get('location', {}).get('city') == target.get('location', {}).get('city'):
+        score += 10
+        # Same area bonus (5 points)
+        if source.get('location', {}).get('area') == target.get('location', {}).get('area'):
+            score += 5
+    
+    # Similar bedrooms ±1 (5 points)
+    source_beds = source.get('bedrooms', 0) or 0
+    target_beds = target.get('bedrooms', 0) or 0
+    if source_beds > 0 and target_beds > 0:
+        if source_beds == target_beds:
+            score += 5
+        elif abs(source_beds - target_beds) == 1:
+            score += 3
+    
+    # Similar size ±20% (5 points)
+    source_size = source.get('size', 0) or 0
+    target_size = target.get('size', 0) or 0
+    if source_size > 0 and target_size > 0:
+        size_diff = abs(source_size - target_size) / source_size
+        if size_diff <= 0.2:
+            score += 5
+        elif size_diff <= 0.3:
+            score += 3
+    
+    # Same furnishing (3 points)
+    if source.get('furnishing') == target.get('furnishing'):
+        score += 3
+    
+    # Verified seller bonus (2 points)
+    if target.get('verification', {}).get('isVerified'):
+        score += 2
+    
+    return min(score, 100)
+
+
+@api_router.get("/property/similar/{property_id}")
+async def get_similar_properties(
+    property_id: str,
+    limit: int = 10,
+    include_sponsored: bool = True,
+    same_city_only: bool = False,
+    same_price_range: bool = False
+):
+    """
+    Get similar property listings using weighted similarity scoring.
+    Includes organic + sponsored listings mix.
+    """
+    # Get source listing
+    source = await db.properties.find_one({"id": property_id}, {"_id": 0})
+    if not source:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Build query for candidates
+    query = {
+        "status": "active",
+        "id": {"$ne": property_id},  # Exclude current listing
+        "seller.id": {"$ne": source.get('seller', {}).get('id')},  # Exclude same seller
+    }
+    
+    # Apply filters
+    if same_city_only:
+        query["location.city"] = source.get('location', {}).get('city')
+    
+    if same_price_range:
+        source_price = source.get('price', 0)
+        query["price"] = {
+            "$gte": source_price * 0.8,
+            "$lte": source_price * 1.2
+        }
+    
+    # Get candidate listings
+    candidates = await db.properties.find(query, {"_id": 0}).to_list(100)
+    
+    # Calculate similarity scores
+    scored_listings = []
+    for listing in candidates:
+        score = calculate_similarity_score(source, listing)
+        if score > 20:  # Minimum threshold
+            scored_listings.append({
+                **listing,
+                "similarityScore": round(score, 1),
+                "isSponsored": False,
+                "sponsoredRank": None
+            })
+    
+    # Sort by similarity score
+    scored_listings.sort(key=lambda x: x['similarityScore'], reverse=True)
+    
+    # Get sponsored listings
+    sponsored_listings = []
+    if include_sponsored:
+        sponsored_query = {
+            "status": "active",
+            "id": {"$ne": property_id},
+            "$or": [
+                {"sponsored": True},
+                {"boosted": True},
+                {"featured": True}
+            ]
+        }
+        if same_city_only:
+            sponsored_query["location.city"] = source.get('location', {}).get('city')
+        
+        sponsored = await db.properties.find(sponsored_query, {"_id": 0}).limit(3).to_list(3)
+        for i, listing in enumerate(sponsored):
+            if listing['id'] not in [l['id'] for l in scored_listings[:limit]]:
+                sponsored_listings.append({
+                    **listing,
+                    "similarityScore": calculate_similarity_score(source, listing),
+                    "isSponsored": True,
+                    "sponsoredRank": i + 1
+                })
+    
+    # Mix organic + sponsored (max 1 sponsored per 5 organic)
+    final_listings = []
+    organic_count = 0
+    sponsored_inserted = 0
+    sponsored_idx = 0
+    
+    for listing in scored_listings[:limit]:
+        final_listings.append(listing)
+        organic_count += 1
+        
+        # Insert sponsored after every 5 organic
+        if organic_count % 5 == 0 and sponsored_idx < len(sponsored_listings):
+            final_listings.append(sponsored_listings[sponsored_idx])
+            sponsored_inserted += 1
+            sponsored_idx += 1
+    
+    # Fallback: If not enough results, expand criteria
+    if len(final_listings) < 4:
+        # Expand to same type only
+        fallback_query = {
+            "status": "active",
+            "id": {"$nin": [property_id] + [l['id'] for l in final_listings]},
+            "type": source.get('type')
+        }
+        fallback = await db.properties.find(fallback_query, {"_id": 0}).limit(6).to_list(6)
+        for listing in fallback:
+            if len(final_listings) < limit:
+                final_listings.append({
+                    **listing,
+                    "similarityScore": calculate_similarity_score(source, listing),
+                    "isSponsored": False,
+                    "sponsoredRank": None
+                })
+    
+    # Track analytics event
+    await db.similar_analytics.insert_one({
+        "id": str(uuid.uuid4()),
+        "sourceListingId": property_id,
+        "resultCount": len(final_listings),
+        "sponsoredCount": sponsored_inserted,
+        "filters": {
+            "sameCityOnly": same_city_only,
+            "samePriceRange": same_price_range
+        },
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {
+        "sourceId": property_id,
+        "sourceType": source.get('type'),
+        "sourceCity": source.get('location', {}).get('city'),
+        "listings": final_listings[:limit],
+        "total": len(final_listings),
+        "sponsoredCount": sponsored_inserted,
+        "algorithmVersion": "v1.0"
+    }
+
+
+@api_router.post("/property/similar/track")
+async def track_similar_listing_event(request: Request):
+    """Track analytics events for similar listings interactions"""
+    body = await request.json()
+    
+    event = {
+        "id": str(uuid.uuid4()),
+        "eventType": body.get('eventType'),  # impression, click, save, chat, share
+        "sourceListingId": body.get('sourceListingId'),
+        "targetListingId": body.get('targetListingId'),
+        "isSponsored": body.get('isSponsored', False),
+        "position": body.get('position'),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "sessionId": body.get('sessionId'),
+    }
+    
+    await db.similar_events.insert_one(event)
+    
+    return {"message": "Event tracked", "eventId": event['id']}
+
+@api_router.post("/property/listings")
+async def create_property_listing(request: Request):
+    """Create a new property listing"""
+    body = await request.json()
+    
+    # Validate required fields
+    required_fields = ['title', 'purpose', 'type', 'price', 'location']
+    for field in required_fields:
+        if field not in body:
+            raise HTTPException(status_code=400, detail=f"{field} is required")
+    
+    # Get user (or use guest seller)
+    user = await get_current_user(request)
+    seller_id = user.user_id if user else f"seller_{uuid.uuid4().hex[:8]}"
+    seller_name = user.name if user else body.get('sellerName', 'Property Seller')
+    
+    # Create property
+    property_id = f"prop_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc).isoformat()
+    
+    property_data = {
+        "id": property_id,
+        "title": body['title'],
+        "description": body.get('description', ''),
+        "purpose": body['purpose'],  # buy or rent
+        "type": body['type'],
+        "price": body['price'],
+        "currency": body.get('currency', 'EUR'),
+        "priceNegotiable": body.get('priceNegotiable', True),
+        "pricePerMonth": body.get('pricePerMonth', body['purpose'] == 'rent'),
+        "location": body['location'],
+        "bedrooms": body.get('bedrooms'),
+        "bathrooms": body.get('bathrooms'),
+        "toilets": body.get('toilets'),
+        "size": body.get('size'),
+        "sizeUnit": body.get('sizeUnit', 'sqm'),
+        "floorNumber": body.get('floorNumber'),
+        "totalFloors": body.get('totalFloors'),
+        "yearBuilt": body.get('yearBuilt'),
+        "furnishing": body.get('furnishing', 'unfurnished'),
+        "condition": body.get('condition', 'old'),
+        "facilities": body.get('facilities', {}),
+        "images": body.get('images', []),
+        "verification": {
+            "isVerified": False,
+            "docsChecked": False,
+            "addressConfirmed": False,
+            "ownerVerified": False,
+        },
+        "seller": {
+            "id": seller_id,
+            "name": seller_name,
+            "type": body.get('sellerType', 'owner'),
+            "phone": body.get('sellerPhone', ''),
+            "isVerified": False,
+        },
+        "status": "active",
+        "featured": False,
+        "sponsored": False,
+        "boosted": False,
+        "boostExpiry": None,
+        "views": 0,
+        "favorites": 0,
+        "inquiries": 0,
+        "highlights": [],
+        "createdAt": now,
+        "updatedAt": now,
+    }
+    
+    await db.properties.insert_one(property_data)
+    
+    return {"message": "Property listing created successfully", "property": {**property_data, "_id": None}}
+
+@api_router.put("/property/listings/{property_id}")
+async def update_property_listing(property_id: str, request: Request):
+    """Update an existing property listing"""
+    body = await request.json()
+    
+    # Verify property exists
+    existing = await db.properties.find_one({"id": property_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Update allowed fields
+    update_fields = {}
+    allowed_fields = [
+        'title', 'description', 'price', 'priceNegotiable', 'location',
+        'bedrooms', 'bathrooms', 'toilets', 'size', 'furnishing', 'condition',
+        'facilities', 'images'
+    ]
+    
+    for field in allowed_fields:
+        if field in body:
+            update_fields[field] = body[field]
+    
+    update_fields['updatedAt'] = datetime.now(timezone.utc).isoformat()
+    
+    await db.properties.update_one({"id": property_id}, {"$set": update_fields})
+    
+    updated = await db.properties.find_one({"id": property_id}, {"_id": 0})
+    return {"message": "Property updated successfully", "property": updated}
+
+@api_router.delete("/property/listings/{property_id}")
+async def delete_property_listing(property_id: str, request: Request):
+    """Delete (deactivate) a property listing"""
+    existing = await db.properties.find_one({"id": property_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Soft delete - change status to inactive
+    await db.properties.update_one(
+        {"id": property_id},
+        {"$set": {"status": "inactive", "updatedAt": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Property listing deleted successfully"}
+
+# ==================== BOOST & MONETIZATION ====================
+
+@api_router.post("/property/boost/{property_id}")
+async def boost_property_listing(property_id: str, request: Request):
+    """Boost a property listing for increased visibility"""
+    body = await request.json()
+    boost_days = body.get('days', 7)  # Default 7 days
+    
+    existing = await db.properties.find_one({"id": property_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Calculate boost expiry
+    boost_expiry = (datetime.now(timezone.utc) + timedelta(days=boost_days)).isoformat()
+    
+    # Pricing (simulated)
+    boost_prices = {7: 9.99, 14: 14.99, 30: 24.99}
+    price = boost_prices.get(boost_days, 9.99)
+    
+    await db.properties.update_one(
+        {"id": property_id},
+        {"$set": {
+            "boosted": True,
+            "boostExpiry": boost_expiry,
+            "updatedAt": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Record boost purchase
+    boost_record = {
+        "id": f"boost_{uuid.uuid4().hex[:12]}",
+        "propertyId": property_id,
+        "days": boost_days,
+        "price": price,
+        "currency": "EUR",
+        "expiresAt": boost_expiry,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.property_boosts.insert_one(boost_record)
+    
+    return {
+        "message": f"Property boosted for {boost_days} days",
+        "boost": {**boost_record, "_id": None},
+        "price": price
+    }
+
+@api_router.post("/property/feature/{property_id}")
+async def feature_property_listing(property_id: str, request: Request):
+    """Feature a property listing in premium placements"""
+    body = await request.json()
+    feature_days = body.get('days', 7)  # Default 7 days
+    
+    existing = await db.properties.find_one({"id": property_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Calculate feature expiry
+    feature_expiry = (datetime.now(timezone.utc) + timedelta(days=feature_days)).isoformat()
+    
+    # Pricing (simulated)
+    feature_prices = {7: 29.99, 14: 49.99, 30: 79.99}
+    price = feature_prices.get(feature_days, 29.99)
+    
+    await db.properties.update_one(
+        {"id": property_id},
+        {"$set": {
+            "featured": True,
+            "sponsored": True,
+            "featureExpiry": feature_expiry,
+            "updatedAt": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Record feature purchase
+    feature_record = {
+        "id": f"feature_{uuid.uuid4().hex[:12]}",
+        "propertyId": property_id,
+        "days": feature_days,
+        "price": price,
+        "currency": "EUR",
+        "expiresAt": feature_expiry,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.property_features.insert_one(feature_record)
+    
+    return {
+        "message": f"Property featured for {feature_days} days",
+        "feature": {**feature_record, "_id": None},
+        "price": price
+    }
+
+@api_router.get("/property/my-listings")
+async def get_my_property_listings(request: Request):
+    """Get listings created by the current user"""
+    user = await get_current_user(request)
+    user_id = user.user_id if user else "guest"
+    
+    listings = await db.properties.find(
+        {"seller.id": user_id},
+        {"_id": 0}
+    ).sort("createdAt", -1).to_list(100)
+    
+    return {"listings": listings, "total": len(listings)}
+
+@api_router.get("/property/boost-prices")
+async def get_boost_prices():
+    """Get boost pricing options"""
+    return {
+        "boost": [
+            {"days": 7, "price": 9.99, "currency": "EUR", "label": "1 Week Boost"},
+            {"days": 14, "price": 14.99, "currency": "EUR", "label": "2 Week Boost"},
+            {"days": 30, "price": 24.99, "currency": "EUR", "label": "1 Month Boost"},
+        ],
+        "feature": [
+            {"days": 7, "price": 29.99, "currency": "EUR", "label": "1 Week Featured"},
+            {"days": 14, "price": 49.99, "currency": "EUR", "label": "2 Week Featured"},
+            {"days": 30, "price": 79.99, "currency": "EUR", "label": "1 Month Featured"},
+        ]
+    }
+
 # ==================== USER SETTINGS ENDPOINTS ====================
 
 @api_router.get("/settings")
