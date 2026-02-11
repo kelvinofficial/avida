@@ -311,6 +311,7 @@ export default function BadgesPage() {
       criteria: badge.criteria || '',
       auto_award: badge.auto_award,
       points_value: badge.points_value,
+      display_priority: badge.display_priority || 0,
       is_active: badge.is_active,
     });
     setBadgeDialogOpen(true);
