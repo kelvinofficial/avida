@@ -16,6 +16,7 @@ from .admin import create_admin_router
 from .notification_preferences import create_notification_preferences_router
 from .admin_locations import create_admin_locations_router
 from .auto_motors import create_auto_motors_router
+from .property import create_property_router, create_offers_router, create_similar_listings_router
 
 __all__ = [
     'create_auth_router',
@@ -31,6 +32,9 @@ __all__ = [
     'create_notification_preferences_router',
     'create_admin_locations_router',
     'create_auto_motors_router',
+    'create_property_router',
+    'create_offers_router',
+    'create_similar_listings_router',
     'DEFAULT_CATEGORIES',
     'LEGACY_CATEGORY_MAP',
     'validate_category_and_subcategory',
