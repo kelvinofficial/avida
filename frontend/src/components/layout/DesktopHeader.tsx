@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
 import { useAuthStore } from '../../store/authStore';
 import { useLoginRedirect } from '../../hooks/useLoginRedirect';
+import api from '../../services/api';
 
 const COLORS = {
   primary: '#2E7D32',
@@ -14,6 +15,7 @@ const COLORS = {
   textSecondary: '#6B7280',
   textLight: '#9CA3AF',
   border: '#E5E7EB',
+  warning: '#F59E0B',
 };
 
 interface DesktopHeaderProps {
@@ -23,8 +25,26 @@ interface DesktopHeaderProps {
 export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ showNavLinks = true }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const { goToLogin } = useLoginRedirect();
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
+
+  // Fetch credit balance when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCreditBalance();
+    }
+  }, [isAuthenticated]);
+
+  const fetchCreditBalance = async () => {
+    try {
+      const res = await api.get('/credits/balance');
+      setCreditBalance(res.data?.balance ?? 0);
+    } catch (err) {
+      console.error('Failed to fetch credit balance:', err);
+      setCreditBalance(0);
+    }
+  };
 
   return (
     <View style={styles.globalHeader}>
@@ -39,7 +59,7 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ showNavLinks = tru
             <Text style={styles.logoText}>avida</Text>
           </TouchableOpacity>
           
-          {/* Navigation Links - Desktop */}
+          {/* Navigation Links - Desktop (for authenticated users) */}
           {showNavLinks && isAuthenticated && (
             <View style={styles.navLinks}>
               <TouchableOpacity 
