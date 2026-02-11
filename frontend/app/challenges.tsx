@@ -433,6 +433,7 @@ export default function ChallengesScreen() {
     );
   }
 
+  const seasonalChallenges = challenges.filter(c => c.type === 'seasonal');
   const weeklyChallenges = challenges.filter(c => c.type === 'weekly');
   const monthlyChallenges = challenges.filter(c => c.type === 'monthly');
 
