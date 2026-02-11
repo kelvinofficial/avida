@@ -994,6 +994,12 @@ app.state.broadcast_qa_alert = broadcast_qa_alert
 # Now handled by modular router (routes/auto_motors.py)
 # Includes: brands, models, listings, conversations, favorites, search
 
+# ==================== PROPERTY, OFFERS, SIMILAR LISTINGS, BOOST ====================
+# Now handled by modular routers (routes/property.py)
+# - create_property_router: listings CRUD, featured, viewings, analytics, boost/feature
+# - create_offers_router: offer submission, negotiation, counter-offers
+# - create_similar_listings_router: weighted similarity algorithm
+
 # ==================== USER SETTINGS ENDPOINTS ====================
 
 @api_router.get("/settings")
