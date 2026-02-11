@@ -283,6 +283,7 @@ const ActivitySection = ({ onItemPress }: { onItemPress: (route: string) => void
   const activityItems = [
     { id: 'listings', label: 'My Listings', icon: 'list-outline', route: '/profile/my-listings', badge: null },
     { id: 'business', label: 'Business Profile', icon: 'storefront-outline', route: '/business/edit', badge: null },
+    { id: 'badges', label: 'My Badges', icon: 'ribbon-outline', route: '/profile/badges', badge: null },
     { id: 'credits', label: 'Credits & Boosts', icon: 'wallet-outline', route: '/credits', badge: null },
     { id: 'invoices', label: 'Invoices & Receipts', icon: 'receipt-outline', route: '/profile/invoices', badge: null },
     { id: 'purchases', label: 'Purchases', icon: 'bag-outline', route: '/profile/purchases', badge: null },
