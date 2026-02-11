@@ -1273,6 +1273,38 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   badgeText: { fontSize: 11, fontWeight: '500', color: COLORS.success },
+  
+  // Achievement Badges (mobile)
+  achievementBadgesContainer: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  achievementBadgesTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: 8,
+  },
+  achievementBadgesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  achievementBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  achievementBadgeName: {
+    fontSize: 12,
+    fontWeight: '600',
+    maxWidth: 80,
+  },
+  
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
