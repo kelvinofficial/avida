@@ -358,7 +358,7 @@ const sellerStyles = StyleSheet.create({
 });
 
 // ============ SAFETY SECTION ============
-const SafetySection = memo(({ onReport }: { onReport: () => void }) => (
+const SafetySection = memo(({ onReport, listingId }: { onReport: () => void; listingId: string }) => (
   <View style={safetyStyles.container}>
     <View style={safetyStyles.header}>
       <Ionicons name="shield-checkmark" size={20} color={COLORS.primary} />
@@ -379,7 +379,7 @@ const SafetySection = memo(({ onReport }: { onReport: () => void }) => (
       </View>
     </View>
     <View style={safetyStyles.footerRow}>
-      <Text style={safetyStyles.listingId}>ID: {listing?.id || 'N/A'}</Text>
+      <Text style={safetyStyles.listingId}>ID: {listingId || 'N/A'}</Text>
       <TouchableOpacity style={safetyStyles.reportBtn} onPress={onReport}>
         <Ionicons name="flag-outline" size={16} color={COLORS.error} />
         <Text style={safetyStyles.reportText}>Report this listing</Text>
