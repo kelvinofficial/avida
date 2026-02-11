@@ -1603,6 +1603,39 @@ const desktopStyles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  navLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginLeft: 24,
+  },
+  navLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  navLinkText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+  },
+  creditBalanceBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#FEF3C7',
+  },
+  creditBalanceText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#F59E0B',
+  },
   // Main Content Layout
   mainContent: {
     flex: 1,
