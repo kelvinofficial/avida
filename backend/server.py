@@ -6523,8 +6523,32 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load auto motors router: {e}")
     
+    # Create property router
+    try:
+        property_router = create_property_router(db, require_auth, get_current_user)
+        api_router.include_router(property_router)
+        logger.info("Property router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load property router: {e}")
+    
+    # Create offers router
+    try:
+        offers_router = create_offers_router(db, require_auth, get_current_user)
+        api_router.include_router(offers_router)
+        logger.info("Offers router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load offers router: {e}")
+    
+    # Create similar listings router
+    try:
+        similar_router = create_similar_listings_router(db)
+        api_router.include_router(similar_router)
+        logger.info("Similar listings router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load similar listings router: {e}")
+    
     app.include_router(api_router)  # Re-include to pick up modular routes
-    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors) loaded successfully")
+    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors, Property, Offers, Similar) loaded successfully")
 
 # Include boost routes if available
 if BOOST_ROUTES_AVAILABLE:
