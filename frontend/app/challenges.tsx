@@ -221,9 +221,25 @@ export default function ChallengesScreen() {
           <View style={styles.challengeInfo}>
             <View style={styles.challengeTitleRow}>
               <Text style={styles.challengeName}>{challenge.name}</Text>
-              <View style={[styles.typeBadge, { backgroundColor: challenge.type === 'weekly' ? '#EEF2FF' : '#FEF3C7' }]}>
-                <Text style={[styles.typeText, { color: challenge.type === 'weekly' ? '#6366F1' : '#F59E0B' }]}>
-                  {challenge.type === 'weekly' ? 'Weekly' : 'Monthly'}
+              <View style={[
+                styles.typeBadge, 
+                { 
+                  backgroundColor: challenge.type === 'weekly' ? '#EEF2FF' 
+                    : challenge.type === 'seasonal' ? '#FDF2F8' 
+                    : '#FEF3C7' 
+                }
+              ]}>
+                <Text style={[
+                  styles.typeText, 
+                  { 
+                    color: challenge.type === 'weekly' ? '#6366F1' 
+                      : challenge.type === 'seasonal' ? '#EC4899' 
+                      : '#F59E0B' 
+                  }
+                ]}>
+                  {challenge.type === 'weekly' ? 'Weekly' 
+                    : challenge.type === 'seasonal' ? 'Seasonal' 
+                    : 'Monthly'}
                 </Text>
               </View>
             </View>
