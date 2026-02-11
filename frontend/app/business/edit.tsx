@@ -433,11 +433,21 @@ export default function BusinessProfileEditScreen() {
     if (!result.canceled && result.assets[0]) {
       try {
         const formData = new FormData();
-        formData.append('file', { uri: result.assets[0].uri, type: 'image/jpeg', name: 'gallery.jpg' } as any);
-        const response = await api.post('/business-profiles/me/gallery/image', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-        setGalleryImages([...galleryImages, response.data.image]);
+        
+        // Handle web vs native differently
+        if (Platform.OS === 'web') {
+          const response = await fetch(result.assets[0].uri);
+          const blob = await response.blob();
+          formData.append('file', blob, 'gallery.jpg');
+        } else {
+          formData.append('file', { uri: result.assets[0].uri, type: 'image/jpeg', name: 'gallery.jpg' } as any);
+        }
+        
+        const uploadResponse = await api.post('/business-profiles/me/gallery/image', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+        setGalleryImages([...galleryImages, uploadResponse.data.image]);
         Alert.alert('Success', 'Image added to gallery');
       } catch (error: any) {
+        console.error('Gallery upload error:', error);
         Alert.alert('Error', error.response?.data?.detail || 'Failed to upload image');
       }
     }
