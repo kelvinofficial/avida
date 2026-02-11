@@ -21,6 +21,7 @@ import { useLoginRedirect } from '../src/hooks/useLoginRedirect';
 import api from '../src/utils/api';
 import { useAuthStore } from '../src/store/authStore';
 import { useResponsive } from '../src/hooks/useResponsive';
+import { DesktopHeader } from '../src/components/layout';
 
 const COLORS = {
   primary: '#2E7D32',
