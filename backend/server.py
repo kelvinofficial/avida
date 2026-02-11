@@ -7038,6 +7038,16 @@ def is_local_admin_path(path: str) -> bool:
             return True
     return False
 
+# Register admin locations router BEFORE the proxy catch-all
+# This ensures specific routes take precedence over the wildcard path
+if MODULAR_ROUTES_AVAILABLE:
+    try:
+        admin_locations_router_early = create_admin_locations_router(db, require_auth)
+        app.include_router(admin_locations_router_early, prefix="/api")
+        logger.info("Admin locations router (early) loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load admin locations router (early): {e}")
+
 @app.api_route("/api/admin/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 async def admin_proxy(request: Request, path: str):
     """Proxy admin requests to the admin backend, except for locally handled routes"""
