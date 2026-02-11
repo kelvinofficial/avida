@@ -228,6 +228,20 @@ const styles = StyleSheet.create({
   },
   
   globalHeaderActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  creditBalanceBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#FEF3C7',
+  },
+  creditBalanceText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.warning,
+  },
   headerIconBtn: {
     width: 40,
     height: 40,
