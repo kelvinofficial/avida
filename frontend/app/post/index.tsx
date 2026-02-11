@@ -871,8 +871,45 @@ export default function PostListingScreen() {
           { text: 'OK', onPress: () => router.replace('/profile/my-listings') }
         ]);
       } else {
+        // Get current badges before creating
+        let previousBadgeIds: string[] = [];
+        try {
+          const badgesRes = await api.get(`/users/${user?.user_id}/badges`);
+          previousBadgeIds = (badgesRes.data || []).map((b: any) => b.badge_id || b.id);
+        } catch (e) {
+          // Ignore error - user might not have any badges yet
+        }
+        
         // Create new listing
         await listingsApi.create(listingData);
+        
+        // Check for new badges after a short delay (badges are awarded async)
+        setTimeout(async () => {
+          try {
+            const newBadgesRes = await api.get(`/users/${user?.user_id}/badges`);
+            const newBadges = newBadgesRes.data || [];
+            const newBadgeIds = newBadges.map((b: any) => b.badge_id || b.id);
+            
+            // Find newly earned badges
+            const earnedBadges = newBadges.filter((b: any) => 
+              !previousBadgeIds.includes(b.badge_id || b.id)
+            );
+            
+            if (earnedBadges.length > 0) {
+              const badgesToCelebrate = earnedBadges.map((b: any) => ({
+                name: b.name,
+                description: b.description,
+                icon: b.icon,
+                color: b.color || '#4CAF50',
+                points_earned: b.points_value || 10,
+              }));
+              showMultipleCelebrations(badgesToCelebrate);
+            }
+          } catch (e) {
+            console.error('Failed to check for new badges:', e);
+          }
+        }, 2000); // Wait 2 seconds for async badge awarding
+        
         setShowSuccessModal(true);
       }
     } catch (error: any) {
