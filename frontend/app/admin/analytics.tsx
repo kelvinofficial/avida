@@ -107,11 +107,11 @@ const defaultAnalytics: AnalyticsData = {
   categories: [],
 };
 
-type TabType = 'overview' | 'sellers' | 'engagement';
+type TabType = 'overview' | 'sellers' | 'engagement' | 'settings';
 
 export default function AdminAnalyticsScreen() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const { isDesktop, isTablet } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
 
@@ -119,17 +119,58 @@ export default function AdminAnalyticsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [authError, setAuthError] = useState(false);
+  
+  // Settings state
+  const [sellerAlertThreshold, setSellerAlertThreshold] = useState('100');
+  const [lowPerformanceThreshold, setLowPerformanceThreshold] = useState('5');
+  const [engagementMilestones, setEngagementMilestones] = useState({
+    firstSale: true,
+    tenListings: true,
+    hundredMessages: true,
+    badgeMilestone: true,
+  });
+  const [notificationTriggers, setNotificationTriggers] = useState({
+    inactiveSeller: true,
+    lowEngagement: true,
+    challengeReminder: true,
+    weeklyDigest: true,
+  });
+  const [savingSettings, setSavingSettings] = useState(false);
+
+  // Check authentication
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setAuthError(true);
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
 
   const fetchAnalytics = useCallback(async (refresh: boolean = false) => {
+    if (!isAuthenticated) {
+      setAuthError(true);
+      return;
+    }
+    
     try {
       if (refresh) setRefreshing(true);
       else setLoading(true);
+      setAuthError(false);
 
       // Fetch from multiple endpoints
       const [platformRes, sellersRes, engagementRes] = await Promise.all([
-        api.get('/admin/analytics/platform').catch(() => ({ data: defaultAnalytics.platform })),
-        api.get('/admin/analytics/sellers').catch(() => ({ data: defaultAnalytics.sellers })),
-        api.get('/admin/analytics/engagement').catch(() => ({ data: defaultAnalytics.engagement })),
+        api.get('/admin/analytics/platform').catch((err) => {
+          if (err.response?.status === 401) setAuthError(true);
+          return { data: defaultAnalytics.platform };
+        }),
+        api.get('/admin/analytics/sellers').catch((err) => {
+          if (err.response?.status === 401) setAuthError(true);
+          return { data: defaultAnalytics.sellers };
+        }),
+        api.get('/admin/analytics/engagement').catch((err) => {
+          if (err.response?.status === 401) setAuthError(true);
+          return { data: defaultAnalytics.engagement };
+        }),
       ]);
 
       setAnalytics({
@@ -138,13 +179,16 @@ export default function AdminAnalyticsScreen() {
         engagement: engagementRes.data || defaultAnalytics.engagement,
         categories: platformRes.data?.categories || [],
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching analytics:', error);
+      if (error.response?.status === 401) {
+        setAuthError(true);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     fetchAnalytics();
