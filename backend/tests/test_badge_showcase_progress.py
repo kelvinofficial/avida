@@ -315,9 +315,9 @@ class TestBadgeShowcaseAndProgressAPIs:
         
         print("PASSED: Nonexistent user returns empty showcase")
     
-    def test_public_showcase_structure(self, admin_session):
+    def test_public_showcase_structure(self, test_session):
         """Test public showcase response structure"""
-        session, user_id = admin_session
+        session, user_id, email = test_session
         
         response = requests.get(f"{BASE_URL}/api/profile/public/{user_id}/badges/showcase")
         assert response.status_code == 200
@@ -339,9 +339,9 @@ class TestBadgeShowcaseAndProgressAPIs:
         
         print(f"PASSED: Public showcase structure correct - {len(data['showcase_badges'])} badges, custom={data['has_custom_showcase']}")
     
-    def test_showcase_flow_integration(self, admin_session):
+    def test_showcase_flow_integration(self, test_session):
         """Integration test: update showcase then verify public endpoint"""
-        session, user_id = admin_session
+        session, user_id, email = test_session
         
         # Step 1: Get progress to find earned badges
         progress_response = session.get(f"{BASE_URL}/api/badges/progress")
@@ -375,9 +375,9 @@ class TestBadgeShowcaseAndProgressAPIs:
     
     # ==================== Cleanup ====================
     
-    def test_cleanup_showcase(self, admin_session):
+    def test_cleanup_showcase(self, test_session):
         """Cleanup: Reset showcase to empty"""
-        session, user_id = admin_session
+        session, user_id, email = test_session
         
         response = session.put(
             f"{BASE_URL}/api/badges/showcase",
