@@ -78,6 +78,7 @@ const FULL_CATEGORIES = [
   { id: 'pets', name: 'Pets', icon: 'paw-outline' },
   { id: 'sports_hobbies', name: 'Sports & Hobbies', icon: 'football-outline' },
   { id: 'kids_baby', name: 'Kids & Baby', icon: 'people-outline' },
+  { id: 'friendship_dating', name: 'Friendship & Dating', icon: 'heart-outline' },
 ];
 
 // ============ CATEGORY ICON COMPONENT - Match Publishing Page Design ============
