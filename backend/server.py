@@ -280,6 +280,9 @@ try:
         create_notifications_router,
         create_account_router,
         create_support_router,
+        create_user_settings_router,
+        create_sessions_router,
+        create_id_verification_router,
         DEFAULT_CATEGORIES,
         LEGACY_CATEGORY_MAP,
         validate_category_and_subcategory
