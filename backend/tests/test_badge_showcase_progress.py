@@ -59,42 +59,6 @@ class TestBadgeShowcaseAndProgressAPIs:
         
         pytest.skip(f"Failed to create/login test user: {register_response.text}")
     
-    @pytest.fixture(scope="class")
-    def test_user_session(self):
-        """Create and login a test user"""
-        session = requests.Session()
-        session.headers.update({"Content-Type": "application/json"})
-        
-        # Create unique test user
-        test_email = f"test_badge_showcase_{uuid.uuid4().hex[:8]}@test.com"
-        test_password = "TestPass123!"
-        
-        # Register
-        register_response = session.post(f"{BASE_URL}/api/auth/register", json={
-            "email": test_email,
-            "password": test_password,
-            "name": "Badge Test User"
-        })
-        
-        if register_response.status_code not in [200, 201]:
-            # Try login if user already exists
-            login_response = session.post(f"{BASE_URL}/api/auth/login", json={
-                "email": test_email,
-                "password": test_password
-            })
-            if login_response.status_code != 200:
-                pytest.skip(f"Failed to create/login test user: {register_response.text}")
-            data = login_response.json()
-        else:
-            data = register_response.json()
-        
-        token = data.get("session_token") or data.get("token")
-        if token:
-            session.headers.update({"Authorization": f"Bearer {token}"})
-        
-        user_id = data.get("user", {}).get("user_id") or data.get("user_id")
-        return session, user_id, test_email
-    
     # ==================== Badge Progress Tests ====================
     
     def test_badge_progress_unauthenticated(self):
