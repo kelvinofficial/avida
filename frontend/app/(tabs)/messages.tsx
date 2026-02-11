@@ -1704,6 +1704,33 @@ const desktopStyles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.text,
   },
+  // Navigation Links
+  navLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginLeft: 32,
+  },
+  navLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  navLinkActive: {
+    backgroundColor: COLORS.primaryLight,
+  },
+  navLinkText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+  },
+  navLinkTextActive: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
   globalHeaderActions: {
     flexDirection: 'row',
     alignItems: 'center',
