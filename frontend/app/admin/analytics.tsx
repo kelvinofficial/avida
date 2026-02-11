@@ -150,6 +150,51 @@ export default function AdminAnalyticsScreen() {
     }
   }, [isAuthenticated]);
 
+  // Fetch existing settings when settings tab is activated
+  const fetchSettings = useCallback(async () => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const [sellerSettingsRes, engagementSettingsRes] = await Promise.all([
+        api.get('/admin/settings/seller-analytics').catch(() => ({ data: null })),
+        api.get('/admin/settings/engagement-notifications').catch(() => ({ data: null })),
+      ]);
+
+      if (sellerSettingsRes.data) {
+        setSellerAlertThreshold(String(sellerSettingsRes.data.alert_threshold || 100));
+        setLowPerformanceThreshold(String(sellerSettingsRes.data.low_performance_threshold || 5));
+      }
+
+      if (engagementSettingsRes.data) {
+        if (engagementSettingsRes.data.milestones) {
+          setEngagementMilestones({
+            firstSale: engagementSettingsRes.data.milestones.firstSale ?? true,
+            tenListings: engagementSettingsRes.data.milestones.tenListings ?? true,
+            hundredMessages: engagementSettingsRes.data.milestones.hundredMessages ?? true,
+            badgeMilestone: engagementSettingsRes.data.milestones.badgeMilestone ?? true,
+          });
+        }
+        if (engagementSettingsRes.data.triggers) {
+          setNotificationTriggers({
+            inactiveSeller: engagementSettingsRes.data.triggers.inactiveSeller ?? true,
+            lowEngagement: engagementSettingsRes.data.triggers.lowEngagement ?? true,
+            challengeReminder: engagementSettingsRes.data.triggers.challengeReminder ?? true,
+            weeklyDigest: engagementSettingsRes.data.triggers.weeklyDigest ?? true,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    }
+  }, [isAuthenticated]);
+
+  // Fetch settings when switching to settings tab
+  useEffect(() => {
+    if (activeTab === 'settings') {
+      fetchSettings();
+    }
+  }, [activeTab, fetchSettings]);
+
   const fetchAnalytics = useCallback(async (refresh: boolean = false) => {
     if (!isAuthenticated) {
       setAuthError(true);
