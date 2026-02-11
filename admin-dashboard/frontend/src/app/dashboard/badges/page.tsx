@@ -295,6 +295,7 @@ export default function BadgesPage() {
       criteria: '',
       auto_award: false,
       points_value: 10,
+      display_priority: 0,
       is_active: true,
     });
   };
