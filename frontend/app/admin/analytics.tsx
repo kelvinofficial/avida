@@ -1540,4 +1540,129 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  // Scheduled Reports Styles
+  frequencySelector: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  frequencyChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: COLORS.background,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  frequencyChipActive: {
+    backgroundColor: COLORS.purpleLight,
+    borderColor: COLORS.purple,
+  },
+  frequencyChipText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+  frequencyChipTextActive: {
+    color: COLORS.purple,
+  },
+  daySelector: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 8,
+  },
+  dayChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: COLORS.background,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  dayChipActive: {
+    backgroundColor: COLORS.primaryLight,
+    borderColor: COLORS.primary,
+  },
+  dayChipText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+  dayChipTextActive: {
+    color: COLORS.primary,
+  },
+  emailInput: {
+    backgroundColor: COLORS.background,
+    borderRadius: 10,
+    padding: 14,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    fontSize: 14,
+    color: COLORS.text,
+    minHeight: 60,
+    textAlignVertical: 'top',
+  },
+  sendReportButton: {
+    backgroundColor: COLORS.purpleLight,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: COLORS.purple,
+  },
+  sendReportButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.purple,
+  },
+  historyItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  historyInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  historyTextContainer: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  historyDate: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.text,
+  },
+  historyRecipients: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  historyBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  historyBadgeSuccess: {
+    backgroundColor: COLORS.successLight,
+  },
+  historyBadgeFailed: {
+    backgroundColor: COLORS.dangerLight,
+  },
+  historyBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  historyBadgeTextSuccess: {
+    color: COLORS.success,
+  },
+  historyBadgeTextFailed: {
+    color: COLORS.danger,
+  },
 });
