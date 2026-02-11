@@ -1386,3 +1386,66 @@ Extracted ~692 lines of auto/motors marketplace routes from `server.py` into a d
 **Key Files Modified:**
 - `/app/backend/routes/__init__.py` - Added `create_auto_motors_router` export
 - `/app/backend/server.py` - Removed inline routes, added router registration
+
+### 2026-02-11: Server.py Refactoring - Property, Offers, Similar Listings Module
+**COMPLETED**
+
+#### Refactoring Summary
+Extracted ~1046 lines of property-related routes from `server.py` into modular routers in `/app/backend/routes/property.py`.
+
+#### New Routers Created
+1. **create_property_router** - Property listings CRUD, viewings, analytics, boost/feature
+2. **create_offers_router** - Offer submission, negotiation, counter-offers
+3. **create_similar_listings_router** - Cross-collection similarity algorithm
+
+#### Routes Extracted
+
+**Property Router (`/api/property/`)**:
+- `GET/POST/PUT/DELETE /listings` - Property CRUD
+- `GET /listings/{id}` - Single property
+- `GET /listings/{id}/similar` - Similar properties
+- `GET /featured` - Featured properties
+- `POST /book-viewing` - Schedule viewing
+- `GET /viewings` - User's viewing requests
+- `PUT /viewings/{id}` - Update viewing status
+- `GET /cities` - Available cities
+- `GET /areas/{city}` - Areas within city
+- `GET /types-count` - Property type distribution
+- `POST /boost/{id}` - Boost listing
+- `POST /feature/{id}` - Feature listing
+- `GET /boosted` - Boosted listings
+- `GET /boost-prices` - Pricing options
+
+**Offers Router (`/api/offers/`)**:
+- `POST /` - Submit offer
+- `GET /` - User's offers (buyer/seller)
+- `GET /{id}` - Single offer
+- `PUT /{id}/respond` - Accept/reject/counter
+- `PUT /{id}/accept-counter` - Accept counter-offer
+- `DELETE /{id}` - Withdraw offer
+
+**Similar Listings Router (`/api/similar/`)**:
+- `GET /listings/{id}` - Cross-collection similarity
+
+#### Key Features
+- Pydantic models for validation: PropertyLocation, PropertyFacilities, PropertyVerification, etc.
+- `calculate_similarity_score()` function with weighted algorithm
+- Support for property viewings with status tracking
+- Monetization: boost and feature options with pricing tiers
+
+#### Result
+- `server.py` reduced from 7253 lines to 6240 lines (1013 lines removed)
+- All endpoints verified working via curl tests
+- Lint checks passing
+
+#### Cumulative Refactoring Progress
+- Original server.py: ~8881 lines
+- After Admin Locations: 7932 lines (-949)
+- After Auto/Motors: 7253 lines (-679)
+- After Property/Offers/Similar: 6240 lines (-1013)
+- **Total reduction: 2641 lines (~30%)**
+
+**Key Files Modified:**
+- `/app/backend/routes/property.py` (NEW - ~690 lines)
+- `/app/backend/routes/__init__.py` (Updated exports)
+- `/app/backend/server.py` (Removed inline routes)
