@@ -165,9 +165,11 @@ export default function AdminAnalyticsScreen() {
     if (!isAuthenticated) return;
     
     try {
-      const [sellerSettingsRes, engagementSettingsRes] = await Promise.all([
+      const [sellerSettingsRes, engagementSettingsRes, reportsSettingsRes, historyRes] = await Promise.all([
         api.get('/admin/settings/seller-analytics').catch(() => ({ data: null })),
         api.get('/admin/settings/engagement-notifications').catch(() => ({ data: null })),
+        api.get('/admin/settings/scheduled-reports').catch(() => ({ data: null })),
+        api.get('/admin/reports/history?limit=5').catch(() => ({ data: null })),
       ]);
 
       if (sellerSettingsRes.data) {
@@ -192,6 +194,18 @@ export default function AdminAnalyticsScreen() {
             weeklyDigest: engagementSettingsRes.data.triggers.weeklyDigest ?? true,
           });
         }
+      }
+
+      if (reportsSettingsRes.data) {
+        setReportsEnabled(reportsSettingsRes.data.enabled ?? true);
+        setReportFrequency(reportsSettingsRes.data.frequency || 'weekly');
+        setReportDay(reportsSettingsRes.data.day_of_week ?? 1);
+        setReportHour(reportsSettingsRes.data.hour ?? 9);
+        setAdminEmails((reportsSettingsRes.data.admin_emails || []).join(', '));
+      }
+
+      if (historyRes.data?.history) {
+        setReportHistory(historyRes.data.history);
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
