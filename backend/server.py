@@ -4679,8 +4679,32 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load support router: {e}")
     
+    # Create user settings router
+    try:
+        user_settings_router = create_user_settings_router(db, require_auth, UserSettings)
+        api_router.include_router(user_settings_router)
+        logger.info("User settings router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load user settings router: {e}")
+    
+    # Create sessions router
+    try:
+        sessions_router = create_sessions_router(db, require_auth, get_session_token)
+        api_router.include_router(sessions_router)
+        logger.info("Sessions router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load sessions router: {e}")
+    
+    # Create ID verification router
+    try:
+        id_verification_router = create_id_verification_router(db, require_auth, create_notification)
+        api_router.include_router(id_verification_router)
+        logger.info("ID verification router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load ID verification router: {e}")
+    
     app.include_router(api_router)  # Re-include to pick up modular routes
-    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors, Property, Offers, Similar, Social, ProfileActivity, Notifications, Account, Support) loaded successfully")
+    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors, Property, Offers, Similar, Social, ProfileActivity, Notifications, Account, Support, UserSettings, Sessions, IDVerification) loaded successfully")
 
 # Include boost routes if available
 if BOOST_ROUTES_AVAILABLE:
