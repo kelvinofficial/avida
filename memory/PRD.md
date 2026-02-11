@@ -544,6 +544,41 @@ Created a comprehensive automatic badge awarding system that awards badges to us
 - Removed ~100 lines of duplicate `renderGlobalHeader` code from `messages.tsx`
 - Cleaned up unused imports (`usePathname`) from refactored components
 
+### 2026-02-11: Badge Showcase & Progress Indicators
+
+**COMPLETED**
+
+#### Badge Showcase Feature
+Users can now customize which badges appear on their public profile:
+- Choose up to 5 badges to prominently display
+- Showcased badges appear on public profile in user's preferred order
+- If no showcase set, top 5 earned badges by priority are shown by default
+
+#### Badge Progress Indicators
+Users can track their progress towards earning badges:
+- Visual progress bars for each badge criteria
+- Shows current/target values (e.g., "3/10 sales")
+- Earned badges show completion checkmark
+- Total points earned displayed
+
+**New API Endpoints:**
+- `GET /api/badges/progress` - Get progress for all badges with current stats
+- `PUT /api/badges/showcase` - Update which badges to showcase (max 5)
+- `GET /api/profile/public/{user_id}/badges/showcase` - Get user's showcase badges for public display
+
+**New Frontend Page:**
+- `/profile/badges` - "My Badges" page with:
+  - Stats summary (badges earned, total points, showcase count)
+  - Showcase section with star-highlighted badges
+  - Earned badges section with toggle to add/remove from showcase
+  - In Progress section with progress bars
+
+**Key Files:**
+- `/app/backend/services/badge_service.py` - get_badge_progress method
+- `/app/backend/server.py` - Badge showcase endpoints (lines 3493-3585)
+- `/app/frontend/app/profile/badges.tsx` - Badge management page
+- `/app/frontend/app/(tabs)/profile.tsx` - Added "My Badges" link to activity sections
+
 ## Remaining Backlog
 
 ### P1: Optional Cleanup
