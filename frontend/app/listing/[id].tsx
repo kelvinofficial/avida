@@ -768,7 +768,7 @@ export default function ListingDetailScreen() {
 
   const handleSubmitOffer = async () => {
     if (!isAuthenticated) {
-      router.push('/login');
+      router.push(`/login?redirect=${encodeURIComponent(`/listing/${id}`)}`);
       return;
     }
     
