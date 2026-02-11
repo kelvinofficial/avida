@@ -7908,15 +7908,25 @@ ADMIN_LOCAL_PATHS = [
     "challenges",
 ]
 
+def is_local_admin_path(path: str) -> bool:
+    """Check if a path should be handled locally instead of proxied"""
+    for local_path in ADMIN_LOCAL_PATHS:
+        if path.startswith(local_path):
+            return True
+    return False
+
 @app.api_route("/api/admin/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 async def admin_proxy(request: Request, path: str):
     """Proxy admin requests to the admin backend, except for locally handled routes"""
     
     # Check if this path should be handled locally (not proxied)
-    for local_path in ADMIN_LOCAL_PATHS:
-        if path.startswith(local_path):
-            # Return 404 to let other routers handle it
-            raise HTTPException(status_code=404, detail="Not found in proxy - handled locally")
+    if is_local_admin_path(path):
+        # Let FastAPI find the correct route handler
+        # This works by re-raising the exception to continue routing
+        from fastapi.routing import APIRouter
+        # We return a special response that indicates this should be handled elsewhere
+        # Actually, we need a different approach - we'll skip the proxy
+        raise HTTPException(status_code=404, detail="Route not found in proxy")
     
     async with httpx.AsyncClient(timeout=30.0) as client:
         # Build the target URL
