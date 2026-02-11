@@ -432,7 +432,26 @@ export default function HomeScreen() {
       total_ratings?: number;
     };
   }
+  
+  interface FeaturedListing {
+    id: string;
+    title: string;
+    price: number;
+    currency: string;
+    images: string[];
+    location: any;
+    created_at: string;
+    views: number;
+    featured: boolean;
+    seller?: {
+      business_name: string;
+      is_verified: boolean;
+      is_premium: boolean;
+    };
+  }
+  
   const [featuredSellers, setFeaturedSellers] = useState<FeaturedSeller[]>([]);
+  const [featuredListings, setFeaturedListings] = useState<FeaturedListing[]>([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
 
   // Load saved location on mount
@@ -440,26 +459,33 @@ export default function HomeScreen() {
     loadSavedLocation();
   }, []);
 
-  // Fetch featured sellers
-  const fetchFeaturedSellers = useCallback(async () => {
+  // Fetch featured listings from verified sellers
+  const fetchFeaturedListings = useCallback(async () => {
     try {
       setLoadingFeatured(true);
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || ''}/api/business-profiles/featured?limit=8`);
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || ''}/api/listings/featured-verified?limit=12`);
       if (response.ok) {
         const data = await response.json();
-        setFeaturedSellers(data.sellers || []);
+        setFeaturedListings(data.listings || []);
+      } else {
+        // Fallback to featured sellers endpoint
+        const sellersResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL || ''}/api/business-profiles/featured?limit=8`);
+        if (sellersResponse.ok) {
+          const data = await sellersResponse.json();
+          setFeaturedSellers(data.sellers || []);
+        }
       }
     } catch (error) {
-      console.error('Error fetching featured sellers:', error);
+      console.error('Error fetching featured listings:', error);
     } finally {
       setLoadingFeatured(false);
     }
   }, []);
 
-  // Load featured sellers on mount
+  // Load featured listings on mount
   useEffect(() => {
-    fetchFeaturedSellers();
-  }, [fetchFeaturedSellers]);
+    fetchFeaturedListings();
+  }, [fetchFeaturedListings]);
 
   const loadSavedLocation = async () => {
     try {
