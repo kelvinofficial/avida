@@ -50,6 +50,21 @@ const responsiveStyle = `
     box-sizing: border-box;
   }
   
+  /* Fix black rectangle focus outline on input fields */
+  input, textarea, select, button {
+    outline: none !important;
+  }
+  
+  input:focus, textarea:focus, select:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* React Native Web specific - remove default focus ring */
+  [data-focusable="true"]:focus {
+    outline: none !important;
+  }
+  
   /* Full-width footer styles */
   [data-footer="true"] {
     width: 100vw !important;
