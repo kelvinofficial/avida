@@ -740,6 +740,7 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [unviewedBadgeCount, setUnviewedBadgeCount] = useState(0);
 
   const fetchProfile = useCallback(async () => {
     try {
