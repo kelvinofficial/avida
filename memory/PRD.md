@@ -1029,9 +1029,54 @@ Users can track their progress towards earning badges:
 
 ## Remaining Backlog
 
-### P1: None
-- All requested features and fixes implemented
+### P0: None (Seller Analytics Settings COMPLETED)
+
+### P1: Continue server.py refactoring
+- Extract remaining route groups from server.py (user profiles, listings, search, etc.)
 
 ### P2: Optional Cleanup
 - Remove remaining unused `renderGlobalHeader` function definitions
+- Refactor `admin-ui` project into smaller components
+
+### 2026-02-11: Seller Analytics Settings Backend Implementation
+**COMPLETED**
+
+#### Backend Endpoints Implemented
+- `GET /api/admin/settings/seller-analytics` - Retrieves seller analytics settings
+  - Returns: `{ alert_threshold: number, low_performance_threshold: number }`
+  - Default values: alert_threshold=100, low_performance_threshold=5
+- `POST /api/admin/settings/seller-analytics` - Saves seller analytics settings
+  - Accepts: `{ alert_threshold: number, low_performance_threshold: number }`
+  - Persists to `admin_settings` MongoDB collection
+
+- `GET /api/admin/settings/engagement-notifications` - Retrieves engagement notification settings
+  - Returns: `{ milestones: object, triggers: object }`
+  - milestones: firstSale, tenListings, hundredMessages, badgeMilestone
+  - triggers: inactiveSeller, lowEngagement, challengeReminder, weeklyDigest
+- `POST /api/admin/settings/engagement-notifications` - Saves engagement notification settings
+  - Accepts: `{ milestones: object, triggers: object }`
+  - Persists to `admin_settings` MongoDB collection
+
+#### Technical Implementation
+- Routes registered directly on FastAPI app BEFORE the admin proxy catch-all
+- Uses async MongoDB operations (motor.motor_asyncio)
+- All endpoints require authentication via Bearer token (returns 401 without valid token)
+- Settings stored in `admin_settings` collection with `type` field distinguishing settings
+
+#### Frontend Updates
+- Added `fetchSettings()` callback in `/app/frontend/app/admin/analytics.tsx`
+- Settings automatically loaded when user switches to the Settings tab
+- Existing settings populate input fields and toggle states
+- Save button persists settings to backend
+
+#### Test Results
+- All 12 tests passed (100% success rate)
+- Backend test file: `/app/backend/tests/test_seller_analytics_settings.py`
+- Round-trip persistence verified for both settings endpoints
+- Authentication enforcement verified (401 for unauthenticated requests)
+
+**Key Files:**
+- `/app/backend/server.py` (lines 7894-8160) - Local admin analytics routes
+- `/app/frontend/app/admin/analytics.tsx` - Settings tab UI and fetchSettings function
+- `/app/backend/routes/admin.py` - Additional admin routes module (not used for settings)
 
