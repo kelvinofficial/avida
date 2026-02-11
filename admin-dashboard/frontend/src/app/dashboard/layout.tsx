@@ -74,6 +74,7 @@ import {
   Poll,
   Link,
   Image,
+  Receipt,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
