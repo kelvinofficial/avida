@@ -100,21 +100,15 @@ class TestMarkSoldEndpoint:
     
     def test_mark_sold_endpoint_exists(self):
         """Test that mark-sold endpoint exists and requires authentication"""
-        # Note: There's a bug - endpoint might be at /api/listings/listings/{id}/mark-sold
-        # due to doubled path
-        
-        # First try the expected correct path
+        # Test the correct path - should require auth
         response = requests.post(f"{BASE_URL}/api/listings/test123/mark-sold")
-        # Should return 401 (unauthenticated) or 404 (not found), not 404 on route
+        # Should return 401 (unauthenticated) - the endpoint exists but requires auth
         print(f"Response status for /api/listings/test123/mark-sold: {response.status_code}")
+        print(f"Response: {response.text}")
         
-        # Also try the potentially bugged path
-        response2 = requests.post(f"{BASE_URL}/api/listings/listings/test123/mark-sold")
-        print(f"Response status for /api/listings/listings/test123/mark-sold: {response2.status_code}")
-        
-        # One of these should work
-        assert response.status_code in [401, 404] or response2.status_code in [401, 404], \
-            f"Unexpected responses: {response.status_code}, {response2.status_code}"
+        # 401 means endpoint exists but needs auth, 404 means listing not found (also okay after auth)
+        assert response.status_code in [401, 404], \
+            f"Unexpected response: {response.status_code} - {response.text}"
     
     def test_mark_sold_with_authentication(self):
         """Test marking a listing as sold with proper authentication"""
@@ -152,20 +146,13 @@ class TestMarkSoldEndpoint:
         
         print(f"Created listing with ID: {listing_id}")
         
-        # Try to mark as sold - test both potential paths
+        # Try to mark as sold at the correct path
         mark_sold_response = session.post(
             f"{BASE_URL}/api/listings/{listing_id}/mark-sold",
             headers=headers
         )
         
-        if mark_sold_response.status_code == 404:
-            # Try the bugged path
-            mark_sold_response = session.post(
-                f"{BASE_URL}/api/listings/listings/{listing_id}/mark-sold",
-                headers=headers
-            )
-            if mark_sold_response.status_code == 200:
-                print("⚠️ WARNING: Endpoint is at incorrect path /api/listings/listings/{id}/mark-sold")
+        print(f"Mark sold response: {mark_sold_response.status_code} - {mark_sold_response.text}")
         
         if mark_sold_response.status_code == 200:
             result = mark_sold_response.json()
@@ -221,19 +208,13 @@ class TestMarkSoldEndpoint:
         # First mark as sold
         response1 = session.post(f"{BASE_URL}/api/listings/{listing_id}/mark-sold", headers=headers)
         
-        # Try correct path first, then bugged path if needed
-        if response1.status_code == 404:
-            response1 = session.post(f"{BASE_URL}/api/listings/listings/{listing_id}/mark-sold", headers=headers)
-        
         if response1.status_code != 200:
-            pytest.skip(f"Mark sold endpoint not working: {response1.status_code}")
+            pytest.skip(f"Mark sold endpoint not working: {response1.status_code} - {response1.text}")
         
         print(f"First mark sold: {response1.status_code}")
         
         # Try to mark as sold again
         response2 = session.post(f"{BASE_URL}/api/listings/{listing_id}/mark-sold", headers=headers)
-        if response2.status_code == 404:
-            response2 = session.post(f"{BASE_URL}/api/listings/listings/{listing_id}/mark-sold", headers=headers)
         
         print(f"Second mark sold: {response2.status_code}")
         
