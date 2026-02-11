@@ -381,7 +381,6 @@ const OfferCard = ({
 
 export default function OffersScreen() {
   const router = useRouter();
-  const pathname = usePathname();
   const { isAuthenticated } = useAuthStore();
   const { isDesktop, isTablet, isReady } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
