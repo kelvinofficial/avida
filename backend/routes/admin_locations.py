@@ -559,7 +559,7 @@ def create_admin_locations_router(db, require_auth):
                         for c in d_cities:
                             c['district_code'] = d['district_code']
                             cities.append(c)
-                    except:
+                    except Exception:
                         pass
             elif country_code:
                 cities = []
@@ -574,9 +574,9 @@ def create_admin_locations_router(db, require_auth):
                                     c['region_code'] = r['region_code']
                                     c['district_code'] = d['district_code']
                                     cities.append(c)
-                            except:
+                            except Exception:
                                 pass
-                    except:
+                    except Exception:
                         pass
             else:
                 cities = []
@@ -611,7 +611,7 @@ def create_admin_locations_router(db, require_auth):
                         for d in r_districts:
                             d['region_code'] = r['region_code']
                             districts.append(d)
-                    except:
+                    except Exception:
                         pass
             else:
                 districts = []
@@ -729,7 +729,7 @@ def create_admin_locations_router(db, require_auth):
                                     "listing_count": listing_count,
                                     "level": "city"
                                 })
-                    except:
+                    except Exception:
                         pass
         
         density_data.sort(key=lambda x: x['listing_count'], reverse=True)
@@ -791,7 +791,7 @@ def create_admin_locations_router(db, require_auth):
                     nominatim_state = address.get("state") or address.get("province") or address.get("region")
                     nominatim_district = address.get("county") or address.get("state_district")
                     nominatim_city = address.get("city") or address.get("town") or address.get("village")
-        except:
+        except Exception:
             pass
         
         countries = await service.get_countries()
@@ -828,11 +828,11 @@ def create_admin_locations_router(db, require_auth):
                                                     'city': city,
                                                     'distance': distance
                                                 })
-                                    except:
+                                    except Exception:
                                         pass
-                            except:
+                            except Exception:
                                 pass
-                    except:
+                    except Exception:
                         pass
                 
                 if all_cities:
@@ -842,7 +842,7 @@ def create_admin_locations_router(db, require_auth):
                     detected['region'] = nearest['region']
                     detected['district'] = nearest['district']
                     nominatim_city = nearest['city']['name']
-            except:
+            except Exception:
                 pass
         else:
             for country in countries:
@@ -857,7 +857,7 @@ def create_admin_locations_router(db, require_auth):
                         if nominatim_state.lower() in region['name'].lower() or region['name'].lower() in nominatim_state.lower():
                             detected['region'] = region
                             break
-                except:
+                except Exception:
                     pass
             
             if detected['region'] and nominatim_district:
@@ -867,7 +867,7 @@ def create_admin_locations_router(db, require_auth):
                         if nominatim_district.lower() in district['name'].lower() or district['name'].lower() in nominatim_district.lower():
                             detected['district'] = district
                             break
-                except:
+                except Exception:
                     pass
         
         return {
