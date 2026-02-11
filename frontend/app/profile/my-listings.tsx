@@ -382,11 +382,27 @@ export default function MyListingsScreen() {
           text: 'Mark Sold',
           onPress: async () => {
             try {
-              await api.put(`/listings/${item.id}`, { status: 'sold' });
+              // Use the dedicated mark-sold endpoint that returns badge info
+              const response = await api.post(`/listings/${item.id}/mark-sold`);
               fetchListings(1, true);
+              
+              // Check if any badges were earned
+              if (response.data?.badges_earned && response.data.badges_earned.length > 0) {
+                // Show celebration for earned badges
+                const badges = response.data.badges_earned.map((badge: any) => ({
+                  name: badge.name,
+                  description: badge.description,
+                  icon: badge.icon,
+                  color: badge.color,
+                  points_earned: badge.points_value,
+                }));
+                showMultipleCelebrations(badges);
+              }
+              
               Alert.alert('Success', 'Listing marked as sold');
-            } catch (error) {
-              Alert.alert('Error', 'Failed to update listing');
+            } catch (error: any) {
+              const errorMsg = error.response?.data?.detail || 'Failed to update listing';
+              Alert.alert('Error', errorMsg);
             }
           },
         },
