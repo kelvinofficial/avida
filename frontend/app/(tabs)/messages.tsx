@@ -690,10 +690,10 @@ export default function MessagesScreen() {
               </>
             ) : (
               <>
-                <TouchableOpacity style={desktopStyles.signInBtn} onPress={() => router.push('/login')}>
+                <TouchableOpacity style={desktopStyles.signInBtn} onPress={() => router.push('/login?redirect=/messages')}>
                   <Text style={desktopStyles.signInBtnText}>Sign In</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={desktopStyles.signUpBtn} onPress={() => router.push('/login')}>
+                <TouchableOpacity style={desktopStyles.signUpBtn} onPress={() => router.push('/login?redirect=/messages')}>
                   <Text style={desktopStyles.signUpBtnText}>Sign Up</Text>
                 </TouchableOpacity>
               </>
