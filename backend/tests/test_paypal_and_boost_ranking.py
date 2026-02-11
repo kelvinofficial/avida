@@ -13,7 +13,7 @@ import requests
 import os
 import json
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://admin-analytics-pre.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://analytics-ui-2.preview.emergentagent.com')
 
 class TestPaymentProviders:
     """Test GET /api/boost/payment-providers endpoint"""
@@ -211,7 +211,7 @@ class TestCreditsPurchase:
             headers=auth_headers,
             json={
                 "package_id": package_id,
-                "origin_url": "https://admin-analytics-pre.preview.emergentagent.com",
+                "origin_url": "https://analytics-ui-2.preview.emergentagent.com",
                 "provider": "stripe"
             }
         )
@@ -239,7 +239,7 @@ class TestCreditsPurchase:
             headers=auth_headers,
             json={
                 "package_id": package_id,
-                "origin_url": "https://admin-analytics-pre.preview.emergentagent.com",
+                "origin_url": "https://analytics-ui-2.preview.emergentagent.com",
                 "provider": "paypal"
             }
         )
@@ -268,7 +268,7 @@ class TestCreditsPurchase:
             headers=auth_headers,
             json={
                 "package_id": "invalid_package_id_xyz",
-                "origin_url": "https://admin-analytics-pre.preview.emergentagent.com",
+                "origin_url": "https://analytics-ui-2.preview.emergentagent.com",
                 "provider": "stripe"
             }
         )

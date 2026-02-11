@@ -31,7 +31,7 @@
   },
   "test_credentials": {
     "test_phone": "+255712345678",
-    "api_base": "https://admin-analytics-pre.preview.emergentagent.com"
+    "api_base": "https://analytics-ui-2.preview.emergentagent.com"
   },
   "seed_data_creation": "None - Tests create temporary TEST_ prefixed data that doesn't require cleanup",
   "retest_needed": false,
