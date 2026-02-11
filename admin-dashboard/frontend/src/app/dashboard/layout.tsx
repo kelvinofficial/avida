@@ -100,6 +100,7 @@ const menuItems = [
   { text: 'Commission', icon: <Percent />, path: '/dashboard/commission' },
   { text: 'Boosts', icon: <RocketLaunch />, path: '/dashboard/boosts' },
   { text: 'Escrow', icon: <AccountBalance />, path: '/dashboard/escrow' },
+  { text: 'Invoices', icon: <Receipt />, path: '/dashboard/invoices' },
   { text: 'Reports', icon: <Report />, path: '/dashboard/reports' },
   { text: 'Tickets', icon: <SupportAgent />, path: '/dashboard/tickets' },
   { text: 'Analytics', icon: <Analytics />, path: '/dashboard/analytics' },
