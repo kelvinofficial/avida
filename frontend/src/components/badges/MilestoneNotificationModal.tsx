@@ -333,12 +333,13 @@ const MilestoneNotificationModal: React.FC<MilestoneNotificationModalProps> = ({
             <TouchableOpacity
               style={[styles.shareButton, { backgroundColor: milestoneColor }]}
               onPress={handleShare}
+              testID="milestone-share-button"
             >
               <Ionicons name="share-social" size={20} color="#fff" />
               <Text style={styles.shareButtonText}>Share Achievement</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.continueButton} onPress={onClose}>
+            <TouchableOpacity style={styles.continueButton} onPress={onClose} testID="milestone-continue-button">
               <Text style={styles.continueButtonText}>Continue</Text>
             </TouchableOpacity>
           </View>
