@@ -18,20 +18,35 @@ BASE_URL = BASE_URL.rstrip('/')
 class TestBadgeShowcaseAndProgressAPIs:
     """Test badge showcase and progress endpoints"""
     
-    # Test credentials
-    ADMIN_EMAIL = "admin@marketplace.com"
-    ADMIN_PASSWORD = "Admin@123456"
-    
     @pytest.fixture(scope="class")
-    def admin_session(self):
-        """Get authenticated admin session"""
+    def test_session(self):
+        """Create and get authenticated test session"""
         session = requests.Session()
         session.headers.update({"Content-Type": "application/json"})
         
-        # Login as admin
+        # Create unique test user
+        test_email = f"test_badge_showcase_{uuid.uuid4().hex[:8]}@test.com"
+        test_password = "TestPass123!"
+        
+        # Register new user
+        register_response = session.post(f"{BASE_URL}/api/auth/register", json={
+            "email": test_email,
+            "password": test_password,
+            "name": "Badge Showcase Test User"
+        })
+        
+        if register_response.status_code in [200, 201]:
+            data = register_response.json()
+            token = data.get("session_token") or data.get("token")
+            if token:
+                session.headers.update({"Authorization": f"Bearer {token}"})
+            user_id = data.get("user", {}).get("user_id") or data.get("user_id")
+            return session, user_id, test_email
+        
+        # If registration fails, try login
         login_response = session.post(f"{BASE_URL}/api/auth/login", json={
-            "email": self.ADMIN_EMAIL,
-            "password": self.ADMIN_PASSWORD
+            "email": test_email,
+            "password": test_password
         })
         
         if login_response.status_code == 200:
@@ -39,9 +54,10 @@ class TestBadgeShowcaseAndProgressAPIs:
             token = data.get("session_token") or data.get("token")
             if token:
                 session.headers.update({"Authorization": f"Bearer {token}"})
-            return session, data.get("user", {}).get("user_id", data.get("user_id"))
+            user_id = data.get("user", {}).get("user_id") or data.get("user_id")
+            return session, user_id, test_email
         
-        pytest.skip(f"Admin login failed: {login_response.status_code}")
+        pytest.skip(f"Failed to create/login test user: {register_response.text}")
     
     @pytest.fixture(scope="class")
     def test_user_session(self):
