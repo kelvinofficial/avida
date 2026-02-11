@@ -1285,7 +1285,9 @@ export default function HomeScreen() {
                 {/* Credit Balance */}
                 <TouchableOpacity style={desktopStyles.creditBalanceBtn} onPress={() => router.push('/credits')}>
                   <Ionicons name="wallet-outline" size={18} color="#F59E0B" />
-                  <Text style={desktopStyles.creditBalanceText}>Credits</Text>
+                  <Text style={desktopStyles.creditBalanceText}>
+                    {creditBalance !== null ? `${creditBalance} Credits` : '...'}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={desktopStyles.notifBtn} onPress={() => router.push('/notifications')}>
                   <Ionicons name="notifications-outline" size={22} color="#333" />
