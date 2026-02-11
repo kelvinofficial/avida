@@ -68,6 +68,7 @@ interface Badge {
   criteria?: string;
   auto_award: boolean;
   points_value: number;
+  display_priority: number;
   is_active: boolean;
   created_at: string;
 }
