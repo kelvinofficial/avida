@@ -399,6 +399,11 @@ export default function MyListingsScreen() {
                   points_earned: badge.points_value,
                 }));
                 showMultipleCelebrations(badges);
+                
+                // Check for milestone achievements after showing badge celebration
+                setTimeout(() => {
+                  checkForNewMilestones();
+                }, 3000);
               }
               
               Alert.alert('Success', 'Listing marked as sold');
