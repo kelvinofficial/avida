@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Box,
   Card,
@@ -8,6 +9,7 @@ import {
   Typography,
   CircularProgress,
   Chip,
+  CardActionArea,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {
@@ -17,6 +19,10 @@ import {
   TrendingUp,
   Category,
   AttachMoney,
+  Storefront,
+  Flag,
+  BarChart as BarChartIcon,
+  VerifiedUser,
 } from '@mui/icons-material';
 import {
   BarChart,
@@ -81,6 +87,48 @@ function StatCard({ title, value, subtitle, icon, color, change }: StatCardProps
           </Typography>
         )}
       </CardContent>
+    </Card>
+  );
+}
+
+interface QuickActionCardProps {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  color: string;
+  href: string;
+}
+
+function QuickActionCard({ title, description, icon, color, href }: QuickActionCardProps) {
+  const router = useRouter();
+  
+  return (
+    <Card sx={{ height: '100%' }}>
+      <CardActionArea 
+        onClick={() => router.push(href)}
+        sx={{ height: '100%', p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}
+      >
+        <Box
+          sx={{
+            width: 64,
+            height: 64,
+            borderRadius: '50%',
+            bgcolor: color,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mb: 2,
+          }}
+        >
+          {icon}
+        </Box>
+        <Typography variant="h6" fontWeight={600} gutterBottom>
+          {title}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {description}
+        </Typography>
+      </CardActionArea>
     </Card>
   );
 }
