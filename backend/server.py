@@ -7981,8 +7981,32 @@ if MODULAR_ROUTES_AVAILABLE:
     )
     api_router.include_router(conversations_router)
     
+    # Create badges router
+    try:
+        badges_router = create_badges_router(db, require_auth)
+        api_router.include_router(badges_router)
+        logger.info("Badges router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load badges router: {e}")
+    
+    # Create streaks router
+    try:
+        streaks_router = create_streaks_router(db, require_auth)
+        api_router.include_router(streaks_router)
+        logger.info("Streaks router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load streaks router: {e}")
+    
+    # Create challenges router
+    try:
+        challenges_router_modular = create_challenges_router(db, require_auth)
+        api_router.include_router(challenges_router_modular)
+        logger.info("Challenges router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load challenges router: {e}")
+    
     app.include_router(api_router)  # Re-include to pick up modular routes
-    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations) loaded successfully")
+    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges) loaded successfully")
 
 # Include boost routes if available
 if BOOST_ROUTES_AVAILABLE:
