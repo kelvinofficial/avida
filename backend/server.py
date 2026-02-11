@@ -3740,6 +3740,9 @@ async def get_user_challenge_progress(user_id: str, challenge: dict, start_date:
     if challenge.get("weekend_only"):
         start_date, end_date = get_weekend_period()
     
+    # Get category filter if present
+    categories = challenge.get("categories", [])
+    
     if criteria == ChallengeCriteria.LISTINGS_CREATED:
         count = await db.listings.count_documents({
             "seller_id": user_id,
@@ -3781,6 +3784,29 @@ async def get_user_challenge_progress(user_id: str, challenge: dict, start_date:
         })
         return count
     
+    elif criteria == ChallengeCriteria.CATEGORY_LISTINGS:
+        # Listings in specific categories
+        query = {
+            "seller_id": user_id,
+            "created_at": {"$gte": start_date, "$lt": end_date}
+        }
+        if categories:
+            query["category"] = {"$in": categories}
+        count = await db.listings.count_documents(query)
+        return count
+    
+    elif criteria == ChallengeCriteria.CATEGORY_SALES:
+        # Sales in specific categories
+        query = {
+            "seller_id": user_id,
+            "status": "sold",
+            "sold_at": {"$gte": start_date, "$lt": end_date}
+        }
+        if categories:
+            query["category"] = {"$in": categories}
+        count = await db.listings.count_documents(query)
+        return count
+    
     return 0
 
 @api_router.get("/challenges")
@@ -3795,9 +3821,10 @@ async def get_active_challenges(request: Request):
     now = datetime.now(timezone.utc)
     challenges = []
     
+    # Add regular (weekly/monthly) challenges
     for challenge_def in CHALLENGE_DEFINITIONS:
         challenge_type = challenge_def["type"]
-        start_date, end_date = get_challenge_period(challenge_type)
+        start_date, end_date = get_challenge_period(challenge_type, challenge_def)
         
         # Calculate time remaining
         time_remaining = end_date - now
