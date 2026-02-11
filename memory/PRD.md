@@ -336,7 +336,7 @@ Payment success page with:
 - Section appears between "Your Activity" and "Trust & Identity" sections
 
 ### 2026-02-11: Multiple UI Improvements & Admin Invoices
-**IN PROGRESS**
+**COMPLETED**
 
 #### Redirection After Sign-in (Fixed)
 - Fixed redirect for /post (now redirects back after login)
@@ -353,9 +353,19 @@ Payment success page with:
 - Boost page: Added desktop header with credits display
 - Credits page: Already had header (completed earlier)
 
-#### Desktop Navigation (In Progress)
+#### Desktop Navigation Links (Added)
 - Added nav links to Offers page header (My Listings, Messages, Saved, Offers)
-- Need to apply same pattern to other pages
+- Links highlight when active
+
+#### Category Page Sticky Fix (Fixed)
+- Only category title header stays sticky at top
+- Subcategory chips, filters bar, and active filters now scroll with listings content
+- Improved mobile UX by reducing header space consumption
+
+#### My Listings Mobile Responsiveness (Improved)
+- Increased listing image size (90x90)
+- Better spacing and alignment
+- Improved status badges and stats layout
 
 #### Admin Invoices Feature (NEW)
 - Created invoices management page at /dashboard/invoices
