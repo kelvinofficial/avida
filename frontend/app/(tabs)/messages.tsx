@@ -305,6 +305,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({ conversation, onPre
 // Main Messages Screen
 export default function MessagesScreen() {
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated, user } = useAuthStore();
   const { isSandboxMode, sandboxSession } = useSandbox();
   const { isDesktop, isTablet, isReady } = useResponsive();
