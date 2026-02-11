@@ -7269,13 +7269,15 @@ if BUSINESS_PROFILE_AVAILABLE:
     
     # Create routers
     bp_router = create_business_profile_router(db, get_current_user, require_auth_for_bp)
-    bp_admin_router = create_business_profile_admin_router(db, require_admin_for_bp)
+    # Note: Admin business profile management is handled by admin-dashboard backend
+    # bp_admin_router = create_business_profile_admin_router(db, require_admin_for_bp)
     
     # Register directly on app (BEFORE the admin proxy catch-all)
     app.include_router(bp_router, prefix="/api")
-    app.include_router(bp_admin_router, prefix="/api")
+    # Admin routes are proxied to admin-dashboard instead of being handled locally
+    # app.include_router(bp_admin_router, prefix="/api")
     
-    logger.info("Business Profile System routes registered (before admin proxy)")
+    logger.info("Business Profile System routes registered (admin routes proxied to dashboard)")
 
 # =============================================================================
 # PREMIUM SUBSCRIPTION SYSTEM
