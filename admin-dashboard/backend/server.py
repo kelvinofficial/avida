@@ -7170,6 +7170,207 @@ async def trigger_manual_check(admin: dict = Depends(get_current_admin)):
     }
 
 # =============================================================================
+# INVOICES API
+# =============================================================================
+
+@app.get("/api/admin/invoices")
+async def get_invoices(
+    admin: dict = Depends(get_current_admin),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(25, ge=1, le=100),
+    search: Optional[str] = None,
+    status: Optional[str] = None,
+    transaction_type: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+):
+    """Get all invoices with filters and pagination"""
+    query = {}
+    
+    if search:
+        query["$or"] = [
+            {"invoice_number": {"$regex": search, "$options": "i"}},
+            {"user_email": {"$regex": search, "$options": "i"}},
+            {"user_name": {"$regex": search, "$options": "i"}},
+        ]
+    
+    if status:
+        query["status"] = status
+    
+    if transaction_type:
+        query["transaction_type"] = transaction_type
+    
+    if date_from:
+        try:
+            query["created_at"] = {"$gte": datetime.fromisoformat(date_from.replace('Z', '+00:00'))}
+        except:
+            pass
+    
+    if date_to:
+        try:
+            if "created_at" in query:
+                query["created_at"]["$lte"] = datetime.fromisoformat(date_to.replace('Z', '+00:00'))
+            else:
+                query["created_at"] = {"$lte": datetime.fromisoformat(date_to.replace('Z', '+00:00'))}
+        except:
+            pass
+    
+    # Get total count
+    total = await db.invoices.count_documents(query)
+    
+    # Get invoices
+    invoices = await db.invoices.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
+    
+    # Get stats
+    stats_pipeline = [
+        {
+            "$group": {
+                "_id": None,
+                "total_invoices": {"$sum": 1},
+                "total_revenue": {"$sum": {"$cond": [{"$eq": ["$status", "paid"]}, "$amount", 0]}},
+                "paid_count": {"$sum": {"$cond": [{"$eq": ["$status", "paid"]}, 1, 0]}},
+                "pending_count": {"$sum": {"$cond": [{"$eq": ["$status", "pending"]}, 1, 0]}},
+                "refunded_count": {"$sum": {"$cond": [{"$eq": ["$status", "refunded"]}, 1, 0]}},
+            }
+        }
+    ]
+    
+    stats_result = await db.invoices.aggregate(stats_pipeline).to_list(length=1)
+    
+    # Get this month's revenue
+    now = datetime.now(timezone.utc)
+    first_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    month_revenue = await db.invoices.aggregate([
+        {"$match": {"status": "paid", "created_at": {"$gte": first_of_month}}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]).to_list(length=1)
+    
+    stats = {
+        "total_invoices": stats_result[0]["total_invoices"] if stats_result else 0,
+        "total_revenue": stats_result[0]["total_revenue"] if stats_result else 0,
+        "paid_count": stats_result[0]["paid_count"] if stats_result else 0,
+        "pending_count": stats_result[0]["pending_count"] if stats_result else 0,
+        "refunded_count": stats_result[0]["refunded_count"] if stats_result else 0,
+        "this_month_revenue": month_revenue[0]["total"] if month_revenue else 0,
+    }
+    
+    return {
+        "invoices": invoices,
+        "total": total,
+        "stats": stats
+    }
+
+@app.get("/api/admin/invoices/{invoice_id}")
+async def get_invoice(invoice_id: str, admin: dict = Depends(get_current_admin)):
+    """Get a single invoice by ID"""
+    invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    return invoice
+
+@app.get("/api/admin/invoices/{invoice_id}/pdf")
+async def download_invoice_pdf(invoice_id: str, admin: dict = Depends(get_current_admin)):
+    """Generate and download invoice as PDF"""
+    from fastapi.responses import StreamingResponse
+    import io
+    
+    invoice = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    # Generate simple PDF-like content (for real PDF, you'd use reportlab or weasyprint)
+    # For now, we'll generate a simple HTML that browsers can print to PDF
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }}
+            .header {{ text-align: center; margin-bottom: 30px; }}
+            .header h1 {{ color: #4CAF50; margin-bottom: 5px; }}
+            .invoice-info {{ display: flex; justify-content: space-between; margin-bottom: 30px; }}
+            .info-section {{ width: 48%; }}
+            .info-section h3 {{ color: #333; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }}
+            table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+            th, td {{ padding: 12px; text-align: left; border-bottom: 1px solid #eee; }}
+            th {{ background: #f5f5f5; font-weight: 600; }}
+            .total-row {{ font-weight: bold; font-size: 18px; }}
+            .status-paid {{ color: #4CAF50; }}
+            .status-pending {{ color: #FF9800; }}
+            .status-failed {{ color: #F44336; }}
+            .footer {{ text-align: center; margin-top: 40px; color: #666; font-size: 12px; }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>INVOICE</h1>
+            <p>Invoice #{invoice.get('invoice_number', 'N/A')}</p>
+        </div>
+        
+        <div class="invoice-info">
+            <div class="info-section">
+                <h3>Bill To</h3>
+                <p><strong>{invoice.get('user_name', 'Customer')}</strong></p>
+                <p>{invoice.get('user_email', 'N/A')}</p>
+            </div>
+            <div class="info-section" style="text-align: right;">
+                <h3>Invoice Details</h3>
+                <p><strong>Date:</strong> {invoice.get('created_at', 'N/A')[:10] if invoice.get('created_at') else 'N/A'}</p>
+                <p><strong>Status:</strong> <span class="status-{invoice.get('status', 'pending')}">{invoice.get('status', 'N/A').upper()}</span></p>
+                <p><strong>Payment Method:</strong> {invoice.get('payment_method', 'N/A')}</p>
+            </div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th style="text-align: center;">Qty</th>
+                    <th style="text-align: right;">Unit Price</th>
+                    <th style="text-align: right;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+    """
+    
+    items = invoice.get('items', [])
+    for item in items:
+        html_content += f"""
+                <tr>
+                    <td>{item.get('description', 'Item')}</td>
+                    <td style="text-align: center;">{item.get('quantity', 1)}</td>
+                    <td style="text-align: right;">${item.get('unit_price', 0):.2f}</td>
+                    <td style="text-align: right;">${item.get('total', 0):.2f}</td>
+                </tr>
+        """
+    
+    html_content += f"""
+                <tr class="total-row">
+                    <td colspan="3" style="text-align: right;">Total</td>
+                    <td style="text-align: right;">${invoice.get('amount', 0):.2f} {invoice.get('currency', 'USD')}</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="footer">
+            <p>Thank you for your purchase!</p>
+            <p>Avida Marketplace - Your local marketplace</p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    # Return as HTML that can be printed to PDF
+    return Response(
+        content=html_content,
+        media_type="text/html",
+        headers={
+            "Content-Disposition": f"attachment; filename=invoice-{invoice.get('invoice_number', invoice_id)}.html"
+        }
+    )
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
