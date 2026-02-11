@@ -59,9 +59,12 @@ class TestSellerAnalyticsSettings:
         else:
             print("✓ Auth required for seller-analytics settings (401)")
     
-    def test_get_seller_analytics_settings_unauthenticated(self, api_client):
+    def test_get_seller_analytics_settings_unauthenticated(self):
         """Test GET /api/admin/settings/seller-analytics without auth returns 401"""
-        response = api_client.get(f"{BASE_URL}/api/admin/settings/seller-analytics")
+        # Use fresh session without auth
+        fresh_client = requests.Session()
+        fresh_client.headers.update({"Content-Type": "application/json"})
+        response = fresh_client.get(f"{BASE_URL}/api/admin/settings/seller-analytics")
         assert response.status_code == 401, f"Expected 401, got {response.status_code}"
         print("✓ Unauthenticated access correctly returns 401")
     
@@ -129,9 +132,12 @@ class TestSellerAnalyticsSettings:
         else:
             print("✓ Auth required for engagement-notifications settings (401)")
     
-    def test_get_engagement_notifications_unauthenticated(self, api_client):
+    def test_get_engagement_notifications_unauthenticated(self):
         """Test GET /api/admin/settings/engagement-notifications without auth returns 401"""
-        response = api_client.get(f"{BASE_URL}/api/admin/settings/engagement-notifications")
+        # Use fresh session without auth
+        fresh_client = requests.Session()
+        fresh_client.headers.update({"Content-Type": "application/json"})
+        response = fresh_client.get(f"{BASE_URL}/api/admin/settings/engagement-notifications")
         assert response.status_code == 401, f"Expected 401, got {response.status_code}"
         print("✓ Unauthenticated access correctly returns 401")
     
@@ -214,9 +220,12 @@ class TestSellerAnalyticsSettings:
         else:
             print("✓ Auth required for platform analytics (401)")
     
-    def test_get_platform_analytics_unauthenticated(self, api_client):
+    def test_get_platform_analytics_unauthenticated(self):
         """Test GET /api/admin/analytics/platform without auth returns 401"""
-        response = api_client.get(f"{BASE_URL}/api/admin/analytics/platform")
+        # Use fresh session without auth
+        fresh_client = requests.Session()
+        fresh_client.headers.update({"Content-Type": "application/json"})
+        response = fresh_client.get(f"{BASE_URL}/api/admin/analytics/platform")
         assert response.status_code == 401, f"Expected 401, got {response.status_code}"
         print("✓ Unauthenticated access correctly returns 401")
     
