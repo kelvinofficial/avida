@@ -1449,7 +1449,7 @@ export default function ListingDetailScreen() {
         <LocationSection listing={listing} />
 
         {/* Safety */}
-        <SafetySection onReport={() => setShowReportModal(true)} />
+        <SafetySection onReport={() => setShowReportModal(true)} listingId={listing?.id || ''} />
 
         {/* Similar Listings - Two column layout for general listings */}
         <SimilarListings propertyId={id!} category="other" />
