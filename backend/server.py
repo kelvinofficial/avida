@@ -7189,7 +7189,8 @@ if MODULAR_ROUTES_AVAILABLE:
     # Create admin locations router
     try:
         admin_locations_router = create_admin_locations_router(db, require_auth)
-        api_router.include_router(admin_locations_router)
+        # Register directly on app to ensure it's matched before the admin proxy catch-all
+        app.include_router(admin_locations_router, prefix="/api")
         logger.info("Admin locations router loaded successfully")
     except Exception as e:
         logger.warning(f"Failed to load admin locations router: {e}")
