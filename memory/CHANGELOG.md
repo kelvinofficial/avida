@@ -330,3 +330,56 @@
 - After Admin Locations: 7932 lines (-949)
 - After Auto/Motors: 7253 lines (-679)
 - **Total reduction: 1628 lines (~18%)**
+
+## 2026-02-11: Server.py Refactoring - Property, Offers, Similar Listings Module
+**Status:** COMPLETED
+
+### Changes
+- Extracted ~1046 lines of property routes from `/app/backend/server.py` into `/app/backend/routes/property.py`
+- `server.py` reduced from 7253 → 6240 lines (1013 lines removed)
+- Created three router factory functions:
+  - `create_property_router` - Property CRUD, viewings, analytics, monetization
+  - `create_offers_router` - Offer negotiation system
+  - `create_similar_listings_router` - Weighted similarity algorithm
+- Added Pydantic models for property data validation
+
+### Files Modified
+- `/app/backend/routes/property.py` (NEW - ~690 lines)
+- `/app/backend/routes/__init__.py` (Updated exports)
+- `/app/backend/server.py` (Removed inline routes, added router registrations)
+
+### Endpoints Migrated
+**Property:**
+- GET/POST/PUT/DELETE `/api/property/listings`
+- GET `/api/property/featured`
+- POST `/api/property/book-viewing`
+- GET `/api/property/viewings`
+- GET `/api/property/cities`
+- GET `/api/property/areas/{city}`
+- GET `/api/property/types-count`
+- POST `/api/property/boost/{id}`
+- POST `/api/property/feature/{id}`
+- GET `/api/property/boosted`
+- GET `/api/property/boost-prices`
+
+**Offers:**
+- POST/GET `/api/offers`
+- GET/DELETE `/api/offers/{id}`
+- PUT `/api/offers/{id}/respond`
+- PUT `/api/offers/{id}/accept-counter`
+
+**Similar:**
+- GET `/api/similar/listings/{id}`
+
+### Testing
+- All endpoints verified via curl tests (200 OK responses)
+- Property listings returns 17 total
+- Cities returns 8 entries
+- Boost prices returns 3 options each
+
+### Cumulative Progress
+- Original: 8881 lines
+- After Admin Locations: 7932 lines (-949)
+- After Auto/Motors: 7253 lines (-679)
+- After Property/Offers/Similar: 6240 lines (-1013)
+- **Total reduction: 2641 lines (~30%)**
