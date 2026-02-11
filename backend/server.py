@@ -3638,6 +3638,44 @@ async def get_user_showcase_badges(user_id: str):
     
     return {"showcase_badges": showcase_badges, "has_custom_showcase": True}
 
+@api_router.get("/badges/unviewed-count")
+async def get_unviewed_badge_count(request: Request):
+    """Get count of badges that user hasn't viewed yet"""
+    current_user = await require_auth(request)
+    
+    # Count badges where is_viewed is False or doesn't exist
+    count = await db.user_badges.count_documents({
+        "user_id": current_user.user_id,
+        "$or": [
+            {"is_viewed": False},
+            {"is_viewed": {"$exists": False}}
+        ]
+    })
+    
+    return {"unviewed_count": count}
+
+@api_router.post("/badges/mark-viewed")
+async def mark_badges_as_viewed(request: Request, data: dict = Body(...)):
+    """Mark specific badges as viewed, or all badges if no ids provided"""
+    current_user = await require_auth(request)
+    
+    badge_ids = data.get("badge_ids", [])
+    
+    if badge_ids:
+        # Mark specific badges as viewed
+        await db.user_badges.update_many(
+            {"user_id": current_user.user_id, "badge_id": {"$in": badge_ids}},
+            {"$set": {"is_viewed": True, "viewed_at": datetime.now(timezone.utc)}}
+        )
+    else:
+        # Mark all unviewed badges as viewed
+        await db.user_badges.update_many(
+            {"user_id": current_user.user_id, "is_viewed": {"$ne": True}},
+            {"$set": {"is_viewed": True, "viewed_at": datetime.now(timezone.utc)}}
+        )
+    
+    return {"message": "Badges marked as viewed"}
+
 # ==================== FOLLOW SYSTEM ====================
 
 @api_router.post("/users/{user_id}/follow")
