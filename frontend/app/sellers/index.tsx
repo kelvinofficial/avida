@@ -163,9 +163,9 @@ export default function BusinessDirectoryScreen() {
           <Text style={styles.category}>{business.category}</Text>
           
           <View style={styles.ratingRow}>
-            <View style={styles.stars}>{renderStars(business.rating)}</View>
+            <View style={styles.stars}>{renderStars(business.rating || 0)}</View>
             <Text style={styles.ratingText}>
-              {business.rating.toFixed(1)} ({business.review_count} reviews)
+              {(business.rating || 0).toFixed(1)} ({business.review_count || 0} reviews)
             </Text>
           </View>
 
