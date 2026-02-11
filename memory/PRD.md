@@ -335,6 +335,35 @@ Payment success page with:
 - "Boost Listings" button with rocket icon - navigates to /profile/my-listings
 - Section appears between "Your Activity" and "Trust & Identity" sections
 
+### 2026-02-11: Multiple UI Improvements & Admin Invoices
+**IN PROGRESS**
+
+#### Redirection After Sign-in (Fixed)
+- Fixed redirect for /post (now redirects back after login)
+- Fixed redirect for /messages (Sign In and Register buttons)
+- Fixed redirect for /offers (unauthenticated view)
+- Fixed redirect for listing page make offer action
+
+#### Input Field Focus Styling (Fixed)
+- Added global CSS to remove black rectangle focus outline
+- Input/textarea/select fields now have clean focus without black borders
+
+#### Desktop Headers Added
+- Offers page: Added dedicated header with icon and contextual subtitle
+- Boost page: Added desktop header with credits display
+- Credits page: Already had header (completed earlier)
+
+#### Desktop Navigation (In Progress)
+- Added nav links to Offers page header (My Listings, Messages, Saved, Offers)
+- Need to apply same pattern to other pages
+
+#### Admin Invoices Feature (NEW)
+- Created invoices management page at /dashboard/invoices
+- Features: View all invoices, filter by status/type/date, search
+- Stats cards: Total invoices, revenue, paid/pending counts
+- PDF download functionality (generates HTML invoice for printing)
+- Added navigation link in admin sidebar
+
 ### Future/Backlog
 - [ ] SMS Notifications for A/B Test Winners (Twilio integration)
 - [ ] PayPal SDK button integration on native platforms
