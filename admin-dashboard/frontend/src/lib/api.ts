@@ -1302,6 +1302,47 @@ class ApiClient {
     });
     return response.data;
   }
+
+  // Badges API
+  async getBadges() {
+    const { data } = await this.client.get('/badges');
+    return data;
+  }
+
+  async createBadge(badge: Record<string, any>) {
+    const { data } = await this.client.post('/badges', badge);
+    return data;
+  }
+
+  async updateBadge(badgeId: string, badge: Record<string, any>) {
+    const { data } = await this.client.put(`/badges/${badgeId}`, badge);
+    return data;
+  }
+
+  async deleteBadge(badgeId: string) {
+    const { data } = await this.client.delete(`/badges/${badgeId}`);
+    return data;
+  }
+
+  async getUserBadges(params: Record<string, any> = {}) {
+    const { data } = await this.client.get('/badges/users', { params });
+    return data;
+  }
+
+  async awardBadge(award: { user_email: string; badge_id: string; reason?: string }) {
+    const { data } = await this.client.post('/badges/award', award);
+    return data;
+  }
+
+  async revokeBadge(userBadgeId: string) {
+    const { data } = await this.client.delete(`/badges/users/${userBadgeId}`);
+    return data;
+  }
+
+  async searchUsers(query: string) {
+    const { data } = await this.client.get('/users/search', { params: { q: query } });
+    return data;
+  }
 }
 
 export const api = new ApiClient();
