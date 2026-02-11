@@ -1449,3 +1449,49 @@ Extracted ~1046 lines of property-related routes from `server.py` into modular r
 - `/app/backend/routes/property.py` (NEW - ~690 lines)
 - `/app/backend/routes/__init__.py` (Updated exports)
 - `/app/backend/server.py` (Removed inline routes)
+
+### 2026-02-11: Server.py Refactoring - Social & Profile Activity Module
+**COMPLETED**
+
+#### Refactoring Summary
+Extracted ~471 lines of social and profile activity routes from `server.py` into modular routers in `/app/backend/routes/social.py`.
+
+#### New Routers Created
+1. **create_social_router** - Follow system, reviews, user listings
+2. **create_profile_activity_router** - My listings, purchases, sales, recently viewed
+
+#### Routes Extracted
+
+**Social Router:**
+- `POST/DELETE /users/{id}/follow` - Follow/unfollow
+- `GET /users/{id}/followers` - Get followers
+- `GET /users/{id}/following` - Get following
+- `POST /users/{id}/reviews` - Leave review
+- `GET /users/{id}/reviews` - Get user reviews
+- `DELETE /reviews/{id}` - Delete own review
+- `GET /users/{id}/listings` - Get user's listings
+
+**Profile Activity Router (`/api/profile/activity/`):**
+- `GET /listings` - My listings from all collections
+- `GET /purchases` - My purchases
+- `GET /sales` - My sold items
+- `GET /recently-viewed` - Recently viewed listings
+- `POST /recently-viewed/{id}` - Add to recently viewed
+
+#### Result
+- `server.py` reduced from 6240 lines to 5792 lines (448 lines removed)
+- All endpoints require authentication (verified behavior)
+- Lint checks passing
+
+#### Cumulative Refactoring Progress
+- Original server.py: ~8881 lines
+- After Admin Locations: 7932 lines (-949)
+- After Auto/Motors: 7253 lines (-679)
+- After Property/Offers/Similar: 6240 lines (-1013)
+- After Social/ProfileActivity: 5792 lines (-448)
+- **Total reduction: 3089 lines (~35%)**
+
+**Key Files Modified:**
+- `/app/backend/routes/social.py` (NEW - ~490 lines)
+- `/app/backend/routes/__init__.py` (Updated exports)
+- `/app/backend/server.py` (Removed inline routes)
