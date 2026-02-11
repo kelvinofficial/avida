@@ -272,8 +272,56 @@ Build a local marketplace application (Avida) with:
 - **Files Modified:**
   - `/app/frontend/app/challenges.tsx` - Added categoriesContainer JSX and styles
 
-### 2026-02-11: Admin Analytics Auth Flow & Settings
+### 2026-02-11: Backend Refactoring - Models & Routes Extraction
 **COMPLETED**
+
+#### Models Package Created (`/app/backend/models/`)
+- `__init__.py` - Package exports for all models
+- `user.py` - User, UserUpdate, UserSettings, ProfileUpdate, etc.
+- `listing.py` - Listing, Category, CategoryAttribute, ListingCreate/Update
+- `messaging.py` - Message, Conversation, MessageCreate
+- `notification.py` - Notification, NotificationCreate, NotificationType
+- `badge.py` - BadgeDefinition, UserBadge, Challenge, ChallengeProgress, UserStreak, Milestone
+
+#### New Route Files Created (`/app/backend/routes/`)
+- `badges.py` - Badge progress, showcase, unviewed count, milestones, leaderboard
+- `streaks.py` - User streak info, streak leaderboard
+- `challenges.py` - Challenge listing, joining, progress tracking
+
+#### Existing Route Files (Previously Extracted)
+- `auth.py` - Login, register, Google OAuth
+- `users.py` - User profile endpoints
+- `listings.py` - Listing CRUD operations
+- `categories.py` - Category management
+- `favorites.py` - User favorites
+- `conversations.py` - Messaging system
+
+#### Structure After Refactoring
+```
+/app/backend/
+├── server.py          # Main app (still large, but improved organization)
+├── models/            # NEW - Pydantic models
+│   ├── __init__.py
+│   ├── user.py
+│   ├── listing.py
+│   ├── messaging.py
+│   ├── notification.py
+│   └── badge.py
+├── routes/            # Route handlers
+│   ├── __init__.py
+│   ├── auth.py
+│   ├── users.py
+│   ├── listings.py
+│   ├── categories.py
+│   ├── favorites.py
+│   ├── conversations.py
+│   ├── badges.py      # NEW
+│   ├── streaks.py     # NEW
+│   └── challenges.py  # NEW
+└── services/
+    ├── __init__.py
+    └── badge_service.py
+```
 
 #### Admin Analytics Authentication Flow
 - **UI Enhancement:**
