@@ -128,6 +128,13 @@ export default function TabLayout() {
           href: null, // This hides the tab from navigation
         }}
       />
+      {/* Hide the streak leaderboard from bottom navigation */}
+      <Tabs.Screen
+        name="streak-leaderboard"
+        options={{
+          href: null, // This hides the tab from navigation
+        }}
+      />
     </Tabs>
   );
 }
