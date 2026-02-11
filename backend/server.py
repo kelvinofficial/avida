@@ -7027,6 +7027,7 @@ ADMIN_LOCAL_PATHS = [
     "analytics/engagement",
     "settings/seller-analytics",
     "settings/engagement-notifications",
+    "locations",  # Handled by modular router (routes/admin_locations.py)
     # Note: challenges is handled by admin-dashboard backend
 ]
 
