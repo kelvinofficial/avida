@@ -1277,31 +1277,35 @@ export default function HomeScreen() {
             <Text style={desktopStyles.logoText}>avida</Text>
           </TouchableOpacity>
           
-          {/* Navigation Links for Authenticated Users */}
-          {isAuthenticated && (
-            <View style={desktopStyles.navLinks}>
-              <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/profile/my-listings')}>
-                <Ionicons name="pricetags-outline" size={18} color="#6B7280" />
-                <Text style={desktopStyles.navLinkText}>My Listings</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/messages')}>
-                <Ionicons name="chatbubbles-outline" size={18} color="#6B7280" />
-                <Text style={desktopStyles.navLinkText}>Messages</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/profile/saved')}>
-                <Ionicons name="heart-outline" size={18} color="#6B7280" />
-                <Text style={desktopStyles.navLinkText}>Saved</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/offers')}>
-                <Ionicons name="pricetag-outline" size={18} color="#6B7280" />
-                <Text style={desktopStyles.navLinkText}>Offers</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          {/* Spacer to push everything to the right */}
+          <View style={{ flex: 1 }} />
           
           <View style={desktopStyles.headerActions}>
             {isAuthenticated ? (
               <>
+                {/* Navigation Links - Now on the right */}
+                <View style={desktopStyles.navLinks}>
+                  <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/profile/my-listings')}>
+                    <Ionicons name="pricetags-outline" size={18} color="#6B7280" />
+                    <Text style={desktopStyles.navLinkText}>My Listings</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/messages')}>
+                    <Ionicons name="chatbubbles-outline" size={18} color="#6B7280" />
+                    <Text style={desktopStyles.navLinkText}>Messages</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/profile/saved')}>
+                    <Ionicons name="heart-outline" size={18} color="#6B7280" />
+                    <Text style={desktopStyles.navLinkText}>Saved</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/offers')}>
+                    <Ionicons name="pricetag-outline" size={18} color="#6B7280" />
+                    <Text style={desktopStyles.navLinkText}>Offers</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                {/* Divider */}
+                <View style={desktopStyles.headerDivider} />
+                
                 {/* Credit Balance */}
                 <TouchableOpacity style={desktopStyles.creditBalanceBtn} onPress={() => router.push('/credits')}>
                   <Ionicons name="wallet-outline" size={18} color="#F59E0B" />
@@ -1309,6 +1313,18 @@ export default function HomeScreen() {
                     {creditBalance !== null ? `${creditBalance} Credits` : '...'}
                   </Text>
                 </TouchableOpacity>
+                
+                {/* Badge Notification */}
+                <TouchableOpacity style={desktopStyles.notifBtn} onPress={() => router.push('/profile/badges')}>
+                  <Ionicons name="ribbon-outline" size={22} color="#333" />
+                  {unviewedBadgeCount > 0 && (
+                    <View style={[desktopStyles.notifBadge, { backgroundColor: '#9333EA' }]}>
+                      <Text style={desktopStyles.notifBadgeText}>{unviewedBadgeCount > 99 ? '99+' : unviewedBadgeCount}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+                
+                {/* General Notifications */}
                 <TouchableOpacity style={desktopStyles.notifBtn} onPress={() => router.push('/notifications')}>
                   <Ionicons name="notifications-outline" size={22} color="#333" />
                   {notificationCount > 0 && (
@@ -1317,6 +1333,8 @@ export default function HomeScreen() {
                     </View>
                   )}
                 </TouchableOpacity>
+                
+                {/* Profile */}
                 <TouchableOpacity style={desktopStyles.profileBtn} onPress={() => router.push('/profile')}>
                   <Ionicons name="person-circle-outline" size={28} color="#333" />
                 </TouchableOpacity>
