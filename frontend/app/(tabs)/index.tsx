@@ -1928,6 +1928,67 @@ const featuredStyles = StyleSheet.create({
   premiumText: {
     color: '#FF8F00',
   },
+  
+  // Listing Cards (for "From Verified Sellers" section)
+  listingCard: {
+    width: 180,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  listingImageContainer: {
+    position: 'relative',
+    width: '100%',
+    height: 120,
+  },
+  listingImage: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#E5E7EB',
+  },
+  verifiedOverlay: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#2E7D32',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  listingDetails: {
+    padding: 10,
+  },
+  listingPrice: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#2E7D32',
+    marginBottom: 4,
+  },
+  listingTitle: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#1A1A1A',
+    lineHeight: 18,
+    marginBottom: 6,
+  },
+  sellerInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 4,
+  },
+  sellerName: {
+    fontSize: 11,
+    color: '#6B7280',
+    flex: 1,
+  },
+  listingId: {
+    fontSize: 9,
+    color: '#9CA3AF',
+    fontFamily: 'monospace',
+  },
 });
 
 const styles = StyleSheet.create({
