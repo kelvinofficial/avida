@@ -90,6 +90,39 @@ Build a local marketplace application (Avida) with:
   - `check_and_notify_new_milestones()` - Checks for new milestones and triggers push notifications
 - **Note:** Push notifications require Firebase/Expo push token configuration to send actual notifications
 
+### 2026-02-11: Badge Challenges System
+**COMPLETED**
+
+#### Challenge Types
+- **Weekly Challenges (reset every Monday):**
+  - Weekend Warrior - List 5 items during Saturday-Sunday (25 pts)
+  - Weekly Sales Star - Sell 3 items this week (30 pts)
+  - Listing Sprint - Create 10 listings this week (35 pts)
+- **Monthly Challenges (reset on 1st of each month):**
+  - Monthly Top Seller - Sell 15 items this month (100 pts)
+  - Inventory King - List 30 items this month (75 pts)
+  - High Roller Month - Achieve €500 in total sales (150 pts)
+  - Community Connector - Send 50 messages to buyers (50 pts)
+
+#### Backend Implementation
+- **Endpoints:**
+  - `GET /api/challenges` - List all active challenges with user progress
+  - `GET /api/challenges/{id}` - Challenge details with leaderboard
+  - `POST /api/challenges/{id}/join` - Join a challenge (required to appear on leaderboard)
+  - `GET /api/challenges/my-progress` - User's progress on all challenges
+- **Features:**
+  - Auto-calculates progress based on user activity within challenge period
+  - Challenge participants leaderboard
+  - Auto-awards limited-time badge upon completion
+  - Push notification when challenge completed
+
+#### Frontend Implementation (`/challenges`)
+- Hero section with flag icon and competition encouragement
+- Separate sections for weekly and monthly challenges
+- Challenge cards with: name, description, progress bar, time remaining, join button, reward preview
+- Challenge detail modal with: badge reward info, leaderboard, join button
+- Link to badge leaderboard
+
 ## What's Been Implemented
 
 ### 2026-02-10: Complete Subscription Backend
