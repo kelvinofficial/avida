@@ -249,11 +249,100 @@ export default function SettingsPage() {
     }
   }, []);
 
+  // Load Scheduled Reports Settings
+  const loadReportsSettings = useCallback(async () => {
+    setReportsLoading(true);
+    try {
+      const [settings, history] = await Promise.all([
+        api.get('/settings/scheduled-reports'),
+        api.get('/reports/history?limit=5'),
+      ]);
+      setReportsSettings({
+        enabled: settings.enabled ?? true,
+        frequency: settings.frequency || 'weekly',
+        day_of_week: settings.day_of_week ?? 1,
+        hour: settings.hour ?? 9,
+        admin_emails: settings.admin_emails || [],
+        include_seller_analytics: settings.include_seller_analytics ?? true,
+        include_engagement_metrics: settings.include_engagement_metrics ?? true,
+        include_platform_overview: settings.include_platform_overview ?? true,
+        include_alerts: settings.include_alerts ?? true,
+      });
+      setReportHistory(history.history || []);
+    } catch (err) {
+      console.error('Failed to load reports settings:', err);
+      setSnackbar({ open: true, message: 'Failed to load reports settings', severity: 'error' });
+    } finally {
+      setReportsLoading(false);
+    }
+  }, []);
+
+  // Save Scheduled Reports Settings
+  const saveReportsSettings = async () => {
+    setReportsSaving(true);
+    try {
+      await api.post('/settings/scheduled-reports', reportsSettings);
+      setSnackbar({ open: true, message: 'Reports settings saved successfully', severity: 'success' });
+    } catch (err) {
+      console.error('Failed to save reports settings:', err);
+      setSnackbar({ open: true, message: 'Failed to save reports settings', severity: 'error' });
+    } finally {
+      setReportsSaving(false);
+    }
+  };
+
+  // Send Report Now
+  const handleSendReportNow = async () => {
+    if (reportsSettings.admin_emails.length === 0) {
+      setSnackbar({ open: true, message: 'Please add at least one admin email', severity: 'error' });
+      return;
+    }
+    setSendingReport(true);
+    try {
+      // Save settings first
+      await api.post('/settings/scheduled-reports', reportsSettings);
+      // Then send report
+      const result = await api.post('/reports/send');
+      if (result.success) {
+        setSnackbar({ open: true, message: `Report queued for ${result.recipients?.length || 0} recipient(s)`, severity: 'success' });
+        loadReportsSettings(); // Refresh history
+      } else {
+        setSnackbar({ open: true, message: result.message || 'Failed to send report', severity: 'error' });
+      }
+    } catch (err) {
+      console.error('Failed to send report:', err);
+      setSnackbar({ open: true, message: 'Failed to send report', severity: 'error' });
+    } finally {
+      setSendingReport(false);
+    }
+  };
+
+  // Add email to list
+  const handleAddEmail = () => {
+    const email = emailInput.trim();
+    if (email && !reportsSettings.admin_emails.includes(email)) {
+      setReportsSettings(prev => ({
+        ...prev,
+        admin_emails: [...prev.admin_emails, email]
+      }));
+      setEmailInput('');
+    }
+  };
+
+  // Remove email from list
+  const handleRemoveEmail = (email: string) => {
+    setReportsSettings(prev => ({
+      ...prev,
+      admin_emails: prev.admin_emails.filter(e => e !== email)
+    }));
+  };
+
   useEffect(() => {
     if (tabValue === 0) loadLocations();
     else if (tabValue === 1) loadDeeplinks();
     else if (tabValue === 2) loadAuthSettings();
-  }, [tabValue, loadLocations, loadDeeplinks, loadAuthSettings]);
+    else if (tabValue === 3) loadReportsSettings();
+  }, [tabValue, loadLocations, loadDeeplinks, loadAuthSettings, loadReportsSettings]);
 
   // Location Handlers
   const handleLocationSubmit = async () => {
