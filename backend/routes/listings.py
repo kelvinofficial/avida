@@ -848,4 +848,43 @@ def create_listings_router(
         await db.listings.update_one({"id": listing_id}, {"$set": {"status": "deleted"}})
         return {"message": "Listing deleted"}
     
+    @router.post("/listings/{listing_id}/mark-sold")
+    async def mark_listing_sold(listing_id: str, user: dict = Depends(get_current_user)):
+        """Mark a listing as sold and check for badge awards"""
+        listing = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        if listing["user_id"] != user.user_id:
+            raise HTTPException(status_code=403, detail="Not authorized")
+        
+        if listing.get("status") == "sold":
+            raise HTTPException(status_code=400, detail="Listing already marked as sold")
+        
+        # Update listing status
+        await db.listings.update_one(
+            {"id": listing_id}, 
+            {
+                "$set": {
+                    "status": "sold",
+                    "sold_at": datetime.now(timezone.utc)
+                }
+            }
+        )
+        
+        # Check and award badges for this sale
+        awarded_badges = []
+        try:
+            from services.badge_service import get_badge_service
+            badge_service = get_badge_service(db)
+            awarded_badges = await badge_service.check_and_award_badges(user.user_id, trigger="sale")
+        except Exception as e:
+            logging.error(f"Error checking badges after sale: {e}")
+        
+        return {
+            "message": "Listing marked as sold",
+            "listing_id": listing_id,
+            "badges_earned": awarded_badges
+        }
+    
     return router
