@@ -380,14 +380,102 @@ export default function BoostListingPage() {
       )}
 
       <View style={{ height: 40 }} />
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  outerContainer: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  desktopOuterContainer: {
+    alignItems: 'center',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  desktopContainer: {
+    maxWidth: 1280,
+    width: '100%',
+  },
+  contentWrapper: {
+    flex: 1,
+  },
+  desktopContentWrapper: {
+    paddingHorizontal: 24,
+  },
+  // Desktop Header Styles
+  desktopHeader: {
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    width: '100%',
+  },
+  desktopHeaderContent: {
+    maxWidth: 1280,
+    marginHorizontal: 'auto',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  desktopBackButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f5',
+  },
+  desktopBackText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+  desktopHeaderCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  desktopHeaderIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: '#FFF3E0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  desktopHeaderTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#333',
+  },
+  desktopHeaderSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+  },
+  desktopCreditsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#f8fff8',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E8F5E9',
+  },
+  desktopCreditsText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#4CAF50',
   },
   loadingContainer: {
     flex: 1,
