@@ -102,6 +102,10 @@ export default function BadgesScreen() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchBadgeProgress();
+      // Mark all badges as viewed when user visits this page
+      api.post('/badges/mark-viewed', {}).catch(err => {
+        console.error('Failed to mark badges as viewed:', err);
+      });
     }
   }, [isAuthenticated, fetchBadgeProgress]);
 
