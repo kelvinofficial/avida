@@ -169,6 +169,7 @@ const EmptyState = ({ isDesktop }: { isDesktop?: boolean }) => (
 
 export default function SavedScreen() {
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated } = useAuthStore();
   const { isDesktop, isTablet, isReady } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
