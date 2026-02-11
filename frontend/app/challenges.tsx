@@ -86,6 +86,13 @@ const getIconName = (iconName: string): keyof typeof Ionicons.glyphMap => {
     'chatbubbles': 'chatbubbles',
     'ribbon': 'ribbon',
     'medal': 'medal',
+    'heart': 'heart',
+    'flower': 'flower',
+    'sunny': 'sunny',
+    'school': 'school',
+    'moon': 'moon',
+    'gift': 'gift',
+    'sparkles': 'sparkles',
   };
   return iconMap[iconName] || 'ribbon';
 };
