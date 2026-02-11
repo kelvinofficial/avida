@@ -795,7 +795,7 @@ export default function MessagesScreen() {
 
                 <TouchableOpacity 
                   style={desktopStyles.unauthPrimaryBtn} 
-                  onPress={() => router.push('/login')}
+                  onPress={() => router.push('/login?redirect=/messages')}
                 >
                   <Ionicons name="log-in-outline" size={22} color="#fff" />
                   <Text style={desktopStyles.unauthPrimaryBtnText}>Sign In</Text>
@@ -809,7 +809,7 @@ export default function MessagesScreen() {
 
                 <TouchableOpacity 
                   style={desktopStyles.unauthSecondaryBtn} 
-                  onPress={() => router.push('/register')}
+                  onPress={() => router.push('/register?redirect=/messages')}
                 >
                   <Ionicons name="person-add-outline" size={20} color={COLORS.primary} />
                   <Text style={desktopStyles.unauthSecondaryBtnText}>Create New Account</Text>
