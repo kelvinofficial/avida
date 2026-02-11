@@ -945,7 +945,7 @@ def create_admin_locations_router(db, require_auth):
                             "lng": float(result.get("lon", 0))
                         }
                     }
-            except Exception as e:
+            except Exception:
                 if district.get('lat') and district.get('lng'):
                     return {
                         "found": False,
