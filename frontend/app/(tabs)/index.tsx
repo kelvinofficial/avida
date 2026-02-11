@@ -75,9 +75,12 @@ const FULL_CATEGORIES = [
   { id: 'home_furniture', name: 'Home & Furniture', icon: 'home-outline' },
   { id: 'fashion_beauty', name: 'Fashion & Beauty', icon: 'shirt-outline' },
   { id: 'jobs_services', name: 'Jobs & Services', icon: 'briefcase-outline' },
-  { id: 'pets', name: 'Pets', icon: 'paw-outline' },
-  { id: 'sports_hobbies', name: 'Sports & Hobbies', icon: 'football-outline' },
   { id: 'kids_baby', name: 'Kids & Baby', icon: 'people-outline' },
+  { id: 'sports_hobbies', name: 'Sports & Hobbies', icon: 'football-outline' },
+  { id: 'pets', name: 'Pets', icon: 'paw-outline' },
+  { id: 'agriculture', name: 'Agriculture & Food', icon: 'leaf-outline' },
+  { id: 'commercial_equipment', name: 'Commercial Equipment', icon: 'construct-outline' },
+  { id: 'repair_construction', name: 'Repair & Construction', icon: 'hammer-outline' },
   { id: 'friendship_dating', name: 'Friendship & Dating', icon: 'heart-outline' },
 ];
 
