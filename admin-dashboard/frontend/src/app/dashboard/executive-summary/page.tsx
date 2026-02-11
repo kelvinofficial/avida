@@ -291,7 +291,7 @@ export default function ExecutiveSummaryPage() {
 
   const updateConfig = async (updates: Partial<SummaryConfig>) => {
     try {
-      const res = await fetch('/api/executive-summary/config', {
+      const res = await fetch('/api/admin/executive-summary/config', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
