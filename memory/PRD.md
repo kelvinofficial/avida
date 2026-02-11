@@ -484,11 +484,34 @@ SENDGRID_API_KEY=xxx (configured)
 - Created reusable `DesktopHeader` component at `/app/frontend/src/components/layout/DesktopHeader.tsx`
 - Exported from `/app/frontend/src/components/layout/index.ts`
 
+### 2026-02-11: Public Profile Badge Visibility & Code Refactoring
+
+**COMPLETED**
+
+#### Public Profile Badge Visibility
+- Added `GET /api/profile/public/{user_id}/badges` endpoint to main backend
+- Displays user achievement badges on public profile page (both desktop and mobile views)
+- Badges sorted by display_priority (higher priority first)
+- Badge UI shows icon, name, and custom color styling
+- Only shows Achievements section when user has badges
+
+**Key Files:**
+- `/app/backend/server.py` - Public badges endpoint (lines 3432-3490)
+- `/app/frontend/app/profile/public/[id].tsx` - Achievement badges display (desktop: lines 554-574, mobile: lines 935-955)
+
+#### Code Refactoring - DesktopHeader Component
+- Created shared `DesktopHeader` component to reduce code duplication
+- Refactored pages to use shared component:
+  - `offers.tsx` - Removed inline renderGlobalHeader, uses DesktopHeader
+  - `(tabs)/messages.tsx` - Uses DesktopHeader
+  - `profile/saved.tsx` - Uses DesktopHeader  
+  - `(tabs)/saved.tsx` - Uses DesktopHeader
+- Navigation links only appear for authenticated users
+
 ## Remaining Backlog
 
-### P1: Code Refactoring
-- Migrate remaining pages (offers.tsx, messages/index.tsx, saved.tsx) to use shared DesktopHeader component
-- Remove duplicated renderGlobalHeader functions and styles
+### P1: Further Cleanup (Optional)
+- Remove unused renderGlobalHeader function definitions from files that still have them (my-listings.tsx, messages.tsx, saved.tsx)
 
 ### P2: Additional Features
 - No other pending features requested
