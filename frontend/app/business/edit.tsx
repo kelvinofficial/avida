@@ -361,11 +361,22 @@ export default function BusinessProfileEditScreen() {
       }
       try {
         const formData = new FormData();
-        formData.append('file', { uri: result.assets[0].uri, type: 'image/jpeg', name: 'logo.jpg' } as any);
-        const response = await api.post('/business-profiles/me/logo', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-        setLogo(response.data.logo_url);
+        
+        // Handle web vs native differently
+        if (Platform.OS === 'web') {
+          // On web, fetch the blob and append it properly
+          const response = await fetch(result.assets[0].uri);
+          const blob = await response.blob();
+          formData.append('file', blob, 'logo.jpg');
+        } else {
+          formData.append('file', { uri: result.assets[0].uri, type: 'image/jpeg', name: 'logo.jpg' } as any);
+        }
+        
+        const uploadResponse = await api.post('/business-profiles/me/logo', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+        setLogo(uploadResponse.data.logo_url);
         Alert.alert('Success', 'Logo uploaded successfully');
       } catch (error: any) {
+        console.error('Logo upload error:', error);
         Alert.alert('Error', error.response?.data?.detail || 'Failed to upload logo');
       }
     }
@@ -389,11 +400,22 @@ export default function BusinessProfileEditScreen() {
       }
       try {
         const formData = new FormData();
-        formData.append('file', { uri: result.assets[0].uri, type: 'image/jpeg', name: 'cover.jpg' } as any);
-        const response = await api.post('/business-profiles/me/cover', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-        setCover(response.data.cover_url);
+        
+        // Handle web vs native differently
+        if (Platform.OS === 'web') {
+          // On web, fetch the blob and append it properly
+          const response = await fetch(result.assets[0].uri);
+          const blob = await response.blob();
+          formData.append('file', blob, 'cover.jpg');
+        } else {
+          formData.append('file', { uri: result.assets[0].uri, type: 'image/jpeg', name: 'cover.jpg' } as any);
+        }
+        
+        const uploadResponse = await api.post('/business-profiles/me/cover', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+        setCover(uploadResponse.data.cover_url);
         Alert.alert('Success', 'Cover image uploaded successfully');
       } catch (error: any) {
+        console.error('Cover upload error:', error);
         Alert.alert('Error', error.response?.data?.detail || 'Failed to upload cover');
       }
     }
