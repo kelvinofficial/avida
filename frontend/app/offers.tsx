@@ -650,10 +650,10 @@ export default function OffersScreen() {
               </>
             ) : (
               <>
-                <TouchableOpacity style={desktopStyles.signInHeaderBtn} onPress={() => router.push('/login')}>
+                <TouchableOpacity style={desktopStyles.signInHeaderBtn} onPress={() => router.push('/login?redirect=/offers')}>
                   <Text style={desktopStyles.signInHeaderBtnText}>Sign In</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={desktopStyles.signUpHeaderBtn} onPress={() => router.push('/login')}>
+                <TouchableOpacity style={desktopStyles.signUpHeaderBtn} onPress={() => router.push('/login?redirect=/offers')}>
                   <Text style={desktopStyles.signUpHeaderBtnText}>Sign Up</Text>
                 </TouchableOpacity>
               </>
@@ -716,7 +716,7 @@ export default function OffersScreen() {
               <Text style={desktopStyles.unauthSubtitle}>
                 Manage your offers, negotiate prices, and close deals
               </Text>
-              <TouchableOpacity style={desktopStyles.unauthSignInBtn} onPress={() => router.push('/login')}>
+              <TouchableOpacity style={desktopStyles.unauthSignInBtn} onPress={() => router.push('/login?redirect=/offers')}>
                 <Ionicons name="log-in-outline" size={20} color="#fff" />
                 <Text style={desktopStyles.unauthSignInBtnText}>Sign In</Text>
               </TouchableOpacity>
@@ -733,7 +733,7 @@ export default function OffersScreen() {
           <Ionicons name="pricetag-outline" size={64} color={COLORS.textSecondary} />
           <Text style={styles.authTitle}>Sign in required</Text>
           <Text style={styles.authSubtitle}>Sign in to view your offers</Text>
-          <TouchableOpacity style={styles.signInBtn} onPress={() => router.push('/login')}>
+          <TouchableOpacity style={styles.signInBtn} onPress={() => router.push('/login?redirect=/offers')}>
             <Text style={styles.signInBtnText}>Sign In</Text>
           </TouchableOpacity>
         </View>
