@@ -340,6 +340,7 @@ const cardStyles = StyleSheet.create({
   views: { fontSize: 10, color: '#999' },
   distanceBadge: { backgroundColor: '#E3F2FD', paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4, marginLeft: 4 },
   distanceText: { fontSize: 9, color: '#1976D2', fontWeight: '500' },
+  listingId: { fontSize: 9, color: '#999', fontFamily: 'monospace' },
 });
 
 // ============ MAIN HOME SCREEN ============
