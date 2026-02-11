@@ -252,19 +252,9 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     flex: 1,
   },
-  footerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
   timePosted: {
     fontSize: 11,
     color: COLORS.textSecondary,
-  },
-  listingId: {
-    fontSize: 10,
-    color: COLORS.textSecondary,
-    fontFamily: 'monospace',
   },
 });
 
