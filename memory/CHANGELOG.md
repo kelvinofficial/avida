@@ -429,3 +429,49 @@
 
 - Original: 8881 lines
 - Final: 5792 lines
+
+## 2026-02-11: Server.py Refactoring - Notifications & Account/Support Modules
+**Status:** COMPLETED
+
+### Changes
+- Extracted ~400 lines into two new router files
+- `server.py` reduced from 5792 → 5409 lines (383 lines removed)
+
+### New Files Created
+- `/app/backend/routes/notifications.py` (~230 lines)
+- `/app/backend/routes/account_support.py` (~175 lines)
+
+### Endpoints Migrated
+**Notifications:**
+- GET/DELETE `/api/notifications` - List/clear all
+- GET `/api/notifications/unread-count`
+- PUT `/api/notifications/{id}/read`
+- PUT `/api/notifications/mark-all-read`
+- DELETE `/api/notifications/{id}`
+- POST `/api/notifications/seed`
+
+**Account:**
+- POST `/api/account/change-password`
+- POST `/api/account/delete`
+- POST `/api/account/cancel-deletion`
+
+**Support:**
+- POST/GET `/api/support/tickets`
+- GET `/api/support/tickets/{id}`
+
+### Testing
+- All endpoints verified (401 for auth-required endpoints)
+
+### Cumulative Progress (6 Extraction Sessions Today)
+| Module | Lines Removed |
+|--------|---------------|
+| Admin Locations | -949 |
+| Auto/Motors | -679 |
+| Property/Offers/Similar | -1013 |
+| Social/ProfileActivity | -448 |
+| Notifications | -249 |
+| Account/Support | -134 |
+| **Total** | **-3472 (~39%)** |
+
+- Original: 8881 lines
+- Final: 5409 lines
