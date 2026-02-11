@@ -3430,6 +3430,63 @@ async def get_public_profile(user_id: str, request: Request):
         "last_seen": user_data.get("last_seen") if privacy.get("show_last_seen", True) else None
     }
 
+# ==================== USER BADGES (PUBLIC) ====================
+
+@api_router.get("/profile/public/{user_id}/badges")
+async def get_user_public_badges(user_id: str):
+    """Get public badges earned by a user - visible to all visitors"""
+    # Check if user exists
+    user = await db.users.find_one({"user_id": user_id})
+    if not user:
+        # Check if there are listings from this seller
+        listing = await db.listings.find_one({"user_id": user_id})
+        if not listing:
+            listing = await db.auto_listings.find_one({"user_id": user_id})
+        if not listing:
+            listing = await db.properties.find_one({"user_id": user_id})
+        if not listing:
+            raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get user badges
+    user_badges_cursor = db.user_badges.find({"user_id": user_id})
+    user_badges = await user_badges_cursor.to_list(length=100)
+    
+    if not user_badges:
+        return {"badges": []}
+    
+    # Get badge details for each awarded badge
+    badge_ids = [ub.get("badge_id") for ub in user_badges]
+    badges_cursor = db.badges.find({
+        "id": {"$in": badge_ids},
+        "is_active": True
+    })
+    badges = await badges_cursor.to_list(length=100)
+    
+    # Create a map of badge details
+    badge_map = {b["id"]: b for b in badges}
+    
+    # Combine badge info with award info, sorted by display_priority
+    result_badges = []
+    for ub in user_badges:
+        badge = badge_map.get(ub.get("badge_id"))
+        if badge:
+            result_badges.append({
+                "id": badge["id"],
+                "name": badge["name"],
+                "description": badge.get("description", ""),
+                "icon": badge.get("icon", "verified"),
+                "color": badge.get("color", "#4CAF50"),
+                "type": badge.get("type", "achievement"),
+                "display_priority": badge.get("display_priority", 0),
+                "awarded_at": ub.get("awarded_at"),
+                "awarded_reason": ub.get("reason", "")
+            })
+    
+    # Sort by display_priority (higher first)
+    result_badges.sort(key=lambda x: x.get("display_priority", 0), reverse=True)
+    
+    return {"badges": result_badges}
+
 # ==================== FOLLOW SYSTEM ====================
 
 @api_router.post("/users/{user_id}/follow")
