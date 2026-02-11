@@ -1029,7 +1029,7 @@ Users can track their progress towards earning badges:
 
 ## Remaining Backlog
 
-### P0: None (Seller Analytics Settings COMPLETED)
+### P0: None (Scheduled Reports COMPLETED)
 
 ### P1: Continue server.py refactoring
 - Extract remaining route groups from server.py (user profiles, listings, search, etc.)
@@ -1037,6 +1037,67 @@ Users can track their progress towards earning badges:
 ### P2: Optional Cleanup
 - Remove remaining unused `renderGlobalHeader` function definitions
 - Refactor `admin-ui` project into smaller components
+
+### 2026-02-11: Scheduled Analytics Reports Feature
+**COMPLETED**
+
+#### Feature Overview
+Automated weekly/daily/monthly analytics reports sent via email to configured admin recipients. Reports include platform overview, seller performance analysis, engagement metrics, and alerts based on configured thresholds.
+
+#### Backend Service (`/app/backend/scheduled_reports_service.py`)
+- `ScheduledReportsService` class with methods:
+  - `get_report_settings()` / `save_report_settings()` - Configuration management
+  - `generate_platform_overview()` - User stats, listing stats, revenue metrics
+  - `generate_seller_analytics()` - Top sellers, low performers, revenue alerts
+  - `generate_engagement_metrics()` - Messages, favorites, badges, challenges
+  - `generate_full_report()` - Combines all sections
+  - `format_report_html()` - Beautiful HTML email template with styled sections
+  - `send_report_email()` - Sends via SendGrid to configured admins
+  - `run_scheduled_report()` - Main entry point for scheduled job
+
+#### Backend Endpoints
+- `GET /api/admin/settings/scheduled-reports` - Get report configuration
+- `POST /api/admin/settings/scheduled-reports` - Save report configuration
+  - Settings: enabled, frequency (daily/weekly/monthly), day_of_week, hour, admin_emails
+  - Include flags: include_seller_analytics, include_engagement_metrics, include_platform_overview, include_alerts
+- `POST /api/admin/reports/generate` - Generate report without sending
+- `POST /api/admin/reports/send` - Generate and send report to configured admins
+- `GET /api/admin/reports/preview` - Preview HTML email and report data
+- `GET /api/admin/reports/history` - List of sent reports with pagination
+
+#### Background Task
+- Runs every 5 minutes checking if report should be sent
+- Checks frequency, day_of_week, and hour settings
+- Prevents duplicate sends by checking report_history collection
+- Logs all operations for debugging
+
+#### Report Sections
+1. **Platform Overview**: total_users, new_users_week, active_listings, sold_listings_week, weekly_revenue, user_growth_rate
+2. **Seller Analytics**: top_sellers (name, revenue, sales), low_performing_sellers (inactive days), revenue_alerts (below threshold)
+3. **Engagement Metrics**: messages_this_week, favorites_this_week, badges_awarded, challenges_completed
+4. **Alerts**: Compiled from low performers and revenue alerts with severity levels
+
+#### Frontend UI (`/app/frontend/app/admin/analytics.tsx` - Settings tab)
+- Enable/Disable scheduled reports toggle
+- Frequency selector (Daily/Weekly/Monthly chips)
+- Day of week selector (for weekly reports)
+- Send time (hour in UTC)
+- Admin email recipients input (comma-separated)
+- "Send Report Now" button for manual trigger
+- Report history section showing recent sends with success/failed status
+
+#### Test Results
+- All 23 backend tests passed (100% success rate)
+- Round-trip persistence verified for settings
+- Report generation verified with all 4 sections
+- Authentication enforcement verified (401 for unauthenticated requests)
+- Email sending depends on SendGrid configuration
+
+**Key Files:**
+- `/app/backend/scheduled_reports_service.py` - Report generation service
+- `/app/backend/server.py` (lines 8158-8287) - Scheduled reports endpoints
+- `/app/backend/server.py` (lines 8847-8904) - Background task
+- `/app/frontend/app/admin/analytics.tsx` - Settings tab with scheduled reports UI
 
 ### 2026-02-11: Seller Analytics Settings Backend Implementation
 **COMPLETED**
