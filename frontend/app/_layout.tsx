@@ -113,26 +113,28 @@ export default function RootLayout() {
   return (
     <LocationProvider>
       <SandboxProvider>
-        <ErrorBoundary componentName="RootLayout">
-          <SandboxBanner />
-          <StatusBar style="dark" />
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: '#1A1A1A' }, // Dark footer background
-            }}
-          >
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="listing/[id]" options={{ presentation: 'card', contentStyle: { backgroundColor: '#F5F5F5' } }} />
-            <Stack.Screen name="chat/[id]" options={{ presentation: 'card' }} />
-            <Stack.Screen name="post/index" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="post/category" options={{ presentation: 'card' }} />
-            <Stack.Screen name="login" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="auto/index" options={{ presentation: 'card' }} />
-            <Stack.Screen name="auto/[id]" options={{ presentation: 'card' }} />
-          </Stack>
-        </ErrorBoundary>
+        <BadgeCelebrationProvider>
+          <ErrorBoundary componentName="RootLayout">
+            <SandboxBanner />
+            <StatusBar style="dark" />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: '#1A1A1A' }, // Dark footer background
+              }}
+            >
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="listing/[id]" options={{ presentation: 'card', contentStyle: { backgroundColor: '#F5F5F5' } }} />
+              <Stack.Screen name="chat/[id]" options={{ presentation: 'card' }} />
+              <Stack.Screen name="post/index" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="post/category" options={{ presentation: 'card' }} />
+              <Stack.Screen name="login" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="auto/index" options={{ presentation: 'card' }} />
+              <Stack.Screen name="auto/[id]" options={{ presentation: 'card' }} />
+            </Stack>
+          </ErrorBoundary>
+        </BadgeCelebrationProvider>
       </SandboxProvider>
     </LocationProvider>
   );
