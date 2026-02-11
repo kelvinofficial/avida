@@ -1734,6 +1734,38 @@ const desktopStyles = StyleSheet.create({
   },
   badgeText: { fontSize: 12, fontWeight: '500', color: COLORS.success },
 
+  // Achievement Badges (desktop)
+  achievementBadgesContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+    width: '100%',
+  },
+  achievementBadgesTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: 10,
+  },
+  achievementBadgesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  achievementBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  achievementBadgeName: {
+    fontSize: 13,
+    fontWeight: '600',
+    maxWidth: 100,
+  },
+
   // Location
   locationRow: {
     flexDirection: 'row',
