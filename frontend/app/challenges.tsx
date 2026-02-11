@@ -252,6 +252,15 @@ export default function ChallengesScreen() {
         {/* Progress */}
         {renderProgressBar(challenge.progress, challenge.target, challenge.color)}
 
+        {/* Category Requirements */}
+        {challenge.categories && challenge.categories.length > 0 && (
+          <View style={styles.categoriesContainer}>
+            <Ionicons name="pricetag" size={12} color={COLORS.seasonal} />
+            <Text style={styles.categoriesLabel}>Required: </Text>
+            <Text style={styles.categoriesText}>{challenge.categories.join(', ')}</Text>
+          </View>
+        )}
+
         {/* Footer */}
         <View style={styles.challengeFooter}>
           <View style={styles.timeContainer}>
