@@ -5060,8 +5060,16 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load profile activity router: {e}")
     
+    # Create notifications router
+    try:
+        notifications_router = create_notifications_router(db, require_auth)
+        api_router.include_router(notifications_router)
+        logger.info("Notifications router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load notifications router: {e}")
+    
     app.include_router(api_router)  # Re-include to pick up modular routes
-    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors, Property, Offers, Similar, Social, ProfileActivity) loaded successfully")
+    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors, Property, Offers, Similar, Social, ProfileActivity, Notifications) loaded successfully")
 
 # Include boost routes if available
 if BOOST_ROUTES_AVAILABLE:
