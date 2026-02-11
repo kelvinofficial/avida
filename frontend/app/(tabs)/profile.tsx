@@ -1134,6 +1134,12 @@ export default function ProfileScreen() {
                   </View>
                   <Text style={desktopStyles.activityLabel}>My Listings</Text>
                 </TouchableOpacity>
+                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/badges')}>
+                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#FFF8E1' }]}>
+                    <Ionicons name="ribbon" size={24} color="#F9A825" />
+                  </View>
+                  <Text style={desktopStyles.activityLabel}>My Badges</Text>
+                </TouchableOpacity>
                 <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/saved')}>
                   <View style={[desktopStyles.activityIcon, { backgroundColor: '#FFEBEE' }]}>
                     <Ionicons name="heart" size={24} color="#E53935" />
