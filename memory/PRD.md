@@ -353,9 +353,15 @@ Payment success page with:
 - Boost page: Added desktop header with credits display
 - Credits page: Already had header (completed earlier)
 
-#### Desktop Navigation Links (Added)
-- Added nav links to Offers page header (My Listings, Messages, Saved, Offers)
-- Links highlight when active
+#### Desktop Navigation Links (Completed)
+- Added nav links to Offers, Messages, Saved pages (My Listings, Messages, Saved, Offers)
+- Links highlight when active based on pathname
+- Redirects added for unauthenticated users on Sign In/Up buttons
+
+#### Messages Mobile Filter Chips (Fixed)
+- Changed FilterTabs from View to ScrollView for horizontal scrolling
+- Filter chips (All, Unread, Buying, Selling) now scroll horizontally on narrow screens
+- Added proper contentContainerStyle for padding
 
 #### Category Page Sticky Fix (Fixed)
 - Only category title header stays sticky at top
