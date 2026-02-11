@@ -237,7 +237,7 @@ export default function ExecutiveSummaryPage() {
     setLoading(true);
     try {
       // Load quick stats first (always available)
-      const statsRes = await fetch('/api/executive-summary/quick-stats', {
+      const statsRes = await fetch('/api/admin/executive-summary/quick-stats', {
         credentials: 'include',
       });
       if (statsRes.ok) {
@@ -245,7 +245,7 @@ export default function ExecutiveSummaryPage() {
       }
 
       // Load config
-      const configRes = await fetch('/api/executive-summary/config', {
+      const configRes = await fetch('/api/admin/executive-summary/config', {
         credentials: 'include',
       });
       if (configRes.ok) {
@@ -253,7 +253,7 @@ export default function ExecutiveSummaryPage() {
       }
 
       // Try to load latest summary
-      const summaryRes = await fetch(`/api/executive-summary/latest?period=${selectedPeriod}`, {
+      const summaryRes = await fetch(`/api/admin/executive-summary/latest?period=${selectedPeriod}`, {
         credentials: 'include',
       });
       if (summaryRes.ok) {
@@ -270,7 +270,7 @@ export default function ExecutiveSummaryPage() {
     setGenerating(true);
     setError('');
     try {
-      const res = await fetch(`/api/executive-summary/generate?period=${selectedPeriod}&force=${force}`, {
+      const res = await fetch(`/api/admin/executive-summary/generate?period=${selectedPeriod}&force=${force}`, {
         method: 'POST',
         credentials: 'include',
       });
