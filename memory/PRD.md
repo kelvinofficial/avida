@@ -581,10 +581,9 @@ Users can track their progress towards earning badges:
 
 ## Remaining Backlog
 
-### P1: Pending Items
-- Add Listing ID display to listing cards/pages
-- Add badge celebration modal with confetti effect
-- Change homepage featured section to show listings instead of seller profiles
+### P1: Badge Celebration Integration
+- Integrate BadgeCelebrationModal into app flow when badges are awarded
+- Trigger celebration on mark-sold, listing creation, or when receiving badge notification
 
 ### P2: Optional Cleanup
 - Remove remaining unused `renderGlobalHeader` function definitions
