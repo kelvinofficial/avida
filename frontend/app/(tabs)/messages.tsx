@@ -875,7 +875,7 @@ export default function MessagesScreen() {
           {/* Buttons */}
           <TouchableOpacity 
             style={styles.unauthSignInBtn} 
-            onPress={() => router.push('/login')}
+            onPress={() => router.push('/login?redirect=/messages')}
           >
             <Ionicons name="log-in-outline" size={20} color="#fff" />
             <Text style={styles.unauthSignInBtnText}>Sign In</Text>
@@ -883,7 +883,7 @@ export default function MessagesScreen() {
 
           <TouchableOpacity 
             style={styles.unauthSignUpBtn} 
-            onPress={() => router.push('/register')}
+            onPress={() => router.push('/register?redirect=/messages')}
           >
             <Text style={styles.unauthSignUpBtnText}>Create Account</Text>
           </TouchableOpacity>
