@@ -3647,7 +3647,7 @@ CHALLENGE_DEFINITIONS = [
     },
 ]
 
-def get_challenge_period(challenge_type: ChallengeType) -> tuple:
+def get_challenge_period(challenge_type: ChallengeType, challenge_def: dict = None) -> tuple:
     """Get the start and end dates for the current challenge period"""
     now = datetime.now(timezone.utc)
     
@@ -3664,6 +3664,9 @@ def get_challenge_period(challenge_type: ChallengeType) -> tuple:
             end = now.replace(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
         else:
             end = now.replace(month=now.month + 1, day=1, hour=0, minute=0, second=0, microsecond=0)
+    elif challenge_type == ChallengeType.SEASONAL and challenge_def:
+        # Seasonal challenges have specific date ranges
+        start, end = get_seasonal_challenge_period(challenge_def)
     else:
         # Special challenges - default to this week
         start = now - timedelta(days=now.weekday())
@@ -3671,6 +3674,46 @@ def get_challenge_period(challenge_type: ChallengeType) -> tuple:
         end = start + timedelta(days=7)
     
     return start, end
+
+def get_seasonal_challenge_period(challenge_def: dict) -> tuple:
+    """Get the start and end dates for a seasonal challenge"""
+    now = datetime.now(timezone.utc)
+    current_year = now.year
+    
+    start_month = challenge_def.get("start_month", 1)
+    start_day = challenge_def.get("start_day", 1)
+    end_month = challenge_def.get("end_month", 12)
+    end_day = challenge_def.get("end_day", 31)
+    
+    # Create dates for current year
+    try:
+        start = datetime(current_year, start_month, start_day, 0, 0, 0, tzinfo=timezone.utc)
+        end = datetime(current_year, end_month, end_day, 23, 59, 59, tzinfo=timezone.utc)
+        
+        # If end is before start (e.g., challenge spans year boundary), adjust
+        if end < start:
+            if now.month >= start_month:
+                # We're after the start, so end is next year
+                end = datetime(current_year + 1, end_month, end_day, 23, 59, 59, tzinfo=timezone.utc)
+            else:
+                # We're before the start, so start was last year
+                start = datetime(current_year - 1, start_month, start_day, 0, 0, 0, tzinfo=timezone.utc)
+    except ValueError:
+        # Handle invalid dates (e.g., Feb 30)
+        start = now
+        end = now + timedelta(days=7)
+    
+    return start, end
+
+def is_seasonal_challenge_active(challenge_def: dict) -> bool:
+    """Check if a seasonal challenge is currently active"""
+    now = datetime.now(timezone.utc)
+    start, end = get_seasonal_challenge_period(challenge_def)
+    return start <= now <= end
+
+def get_active_seasonal_challenges() -> list:
+    """Get list of currently active seasonal challenges"""
+    return [c for c in SEASONAL_CHALLENGES if is_seasonal_challenge_active(c)]
 
 def get_weekend_period() -> tuple:
     """Get the start and end dates for the current weekend"""
