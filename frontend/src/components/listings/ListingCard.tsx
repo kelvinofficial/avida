@@ -122,13 +122,9 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
           </Text>
         </View>
         {/* Time Posted */}
-        <View style={styles.footerRow}>
-          <Text style={styles.timePosted}>
-            {formatTimeAgo(listing.created_at)}
-          </Text>
-          {/* Listing ID */}
-          <Text style={styles.listingId}>ID: {listing.id?.slice(-8) || 'N/A'}</Text>
-        </View>
+        <Text style={styles.timePosted}>
+          {formatTimeAgo(listing.created_at)}
+        </Text>
       </View>
     </TouchableOpacity>
   );
