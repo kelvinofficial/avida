@@ -272,6 +272,46 @@ Build a local marketplace application (Avida) with:
 - **Files Modified:**
   - `/app/frontend/app/challenges.tsx` - Added categoriesContainer JSX and styles
 
+### 2026-02-11: Admin Analytics Auth Flow & Settings
+**COMPLETED**
+
+#### Admin Analytics Authentication Flow
+- **UI Enhancement:**
+  - Authentication check on page load
+  - "Authentication Required" error screen with:
+    - Lock icon (red)
+    - Explanation text
+    - "Go to Login" button (green)
+    - "Go Back" button
+  - Handles 401 errors from API gracefully
+- **Files Modified:**
+  - `/app/frontend/app/admin/analytics.tsx` - Added auth check and error UI
+
+#### Admin Analytics Settings Tab
+- **New Tab Added:** Settings tab alongside Overview, Sellers, Engagement
+- **Seller Analytics Settings:**
+  - Revenue Alert Threshold (€) - Alert when seller's monthly revenue drops
+  - Low Performance Threshold (days) - Days of inactivity before flagging seller
+- **Engagement Milestone Notifications (toggles):**
+  - First Sale Celebration
+  - 10 Listings Milestone
+  - 100 Messages Milestone
+  - Badge Achievement Alerts
+- **Automated Notification Triggers (toggles):**
+  - Inactive Seller Reminder
+  - Low Engagement Alert
+  - Challenge Deadline Reminder
+  - Weekly Digest Email
+- **Save Settings button** - Saves to `/api/admin/settings/seller-analytics` and `/api/admin/settings/engagement-notifications`
+
+#### Seasonal Gallery Links Added
+- **Leaderboard page** (`/leaderboard`):
+  - "Browse Past Seasonal Badges" link at bottom
+  - Pink styling with sparkles icon
+- **Profile Badges page** (`/profile/badges`):
+  - "Past Seasonal Badges" card with sparkles icon
+  - "Browse limited-time badges from past events" subtitle
+
 ## What's Been Implemented
 
 ### 2026-02-10: Complete Subscription Backend
