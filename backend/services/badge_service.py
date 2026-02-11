@@ -220,9 +220,14 @@ class BadgeAwardingService:
         
         # Calculate account age
         created_at = user.get("created_at")
-        if isinstance(created_at, str):
-            created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
-        account_age_days = (datetime.now(timezone.utc) - created_at).days if created_at else 0
+        account_age_days = 0
+        if created_at:
+            if isinstance(created_at, str):
+                created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+            # Ensure created_at is timezone-aware
+            if created_at.tzinfo is None:
+                created_at = created_at.replace(tzinfo=timezone.utc)
+            account_age_days = (datetime.now(timezone.utc) - created_at).days
         
         return {
             "total_sales": total_sales,
