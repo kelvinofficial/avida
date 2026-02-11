@@ -987,6 +987,10 @@ async def broadcast_qa_alert(alert_data: Dict, target_admin_ids: List[str] = Non
 # Make broadcast function available globally for QA service
 app.state.broadcast_qa_alert = broadcast_qa_alert
 
+# ==================== AUTO/MOTORS ENDPOINTS ====================
+# Now handled by modular router (routes/auto_motors.py)
+# Includes: brands, models, listings, conversations, favorites, search
+
 # ==================== PROPERTY ENDPOINTS ====================
 
 # Property Models
