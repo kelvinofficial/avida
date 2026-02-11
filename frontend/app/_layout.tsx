@@ -13,6 +13,7 @@ import { SandboxProvider } from '../src/utils/sandboxContext';
 import SandboxBanner from '../src/components/SandboxBanner';
 import { LocationProvider } from '../src/context/LocationContext';
 import { BadgeCelebrationProvider } from '../src/context/BadgeCelebrationContext';
+import { MilestoneProvider } from '../src/context/MilestoneContext';
 
 // Initialize global error handler
 if (typeof window !== 'undefined' || Platform.OS !== 'web') {
