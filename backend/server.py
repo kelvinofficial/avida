@@ -5509,8 +5509,24 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load similar listings router: {e}")
     
+    # Create social router (follow, reviews, user listings)
+    try:
+        social_router = create_social_router(db, require_auth, get_current_user, create_notification)
+        api_router.include_router(social_router)
+        logger.info("Social router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load social router: {e}")
+    
+    # Create profile activity router
+    try:
+        profile_activity_router = create_profile_activity_router(db, require_auth, get_current_user)
+        api_router.include_router(profile_activity_router)
+        logger.info("Profile activity router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load profile activity router: {e}")
+    
     app.include_router(api_router)  # Re-include to pick up modular routes
-    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors, Property, Offers, Similar) loaded successfully")
+    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors, Property, Offers, Similar, Social, ProfileActivity) loaded successfully")
 
 # Include boost routes if available
 if BOOST_ROUTES_AVAILABLE:
