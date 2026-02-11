@@ -4003,13 +4003,16 @@ async def get_challenge_details(challenge_id: str, request: Request):
     except:
         pass
     
-    # Find challenge definition
+    # Find challenge definition - check both regular and seasonal challenges
     challenge_def = next((c for c in CHALLENGE_DEFINITIONS if c["id"] == challenge_id), None)
+    if not challenge_def:
+        # Also check seasonal challenges
+        challenge_def = next((c for c in SEASONAL_CHALLENGES if c["id"] == challenge_id), None)
     if not challenge_def:
         raise HTTPException(status_code=404, detail="Challenge not found")
     
     challenge_type = challenge_def["type"]
-    start_date, end_date = get_challenge_period(challenge_type)
+    start_date, end_date = get_challenge_period(challenge_type, challenge_def)
     now = datetime.now(timezone.utc)
     
     # Get top participants for this challenge period
