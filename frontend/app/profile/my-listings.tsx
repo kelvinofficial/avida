@@ -21,6 +21,7 @@ import { useResponsive } from '../../src/hooks/useResponsive';
 import { Footer } from '../../src/components/layout';
 import { useLoginRedirect } from '../../src/hooks/useLoginRedirect';
 import { useBadgeCelebration } from '../../src/context/BadgeCelebrationContext';
+import { useMilestones } from '../../src/context/MilestoneContext';
 
 const COLORS = {
   primary: '#2E7D32',
