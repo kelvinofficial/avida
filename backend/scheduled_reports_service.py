@@ -181,15 +181,20 @@ class ScheduledReportsService:
             user = await self.db.users.find_one({"user_id": user_id}, {"_id": 0, "name": 1, "email": 1, "last_login": 1})
             if user:
                 last_login = user.get("last_login")
-                if last_login and last_login < inactive_threshold:
-                    listing_count = await self.db.listings.count_documents({"user_id": user_id, "status": "active"})
-                    low_performing_sellers.append({
-                        "user_id": user_id,
-                        "name": user.get("name", "Unknown"),
-                        "email": user.get("email", ""),
-                        "days_inactive": (now - last_login).days,
-                        "active_listings": listing_count
-                    })
+                if last_login:
+                    # Handle both naive and aware datetimes
+                    if last_login.tzinfo is None:
+                        last_login = last_login.replace(tzinfo=timezone.utc)
+                    if last_login < inactive_threshold:
+                        listing_count = await self.db.listings.count_documents({"user_id": user_id, "status": "active"})
+                        days_inactive = (now - last_login).days
+                        low_performing_sellers.append({
+                            "user_id": user_id,
+                            "name": user.get("name", "Unknown"),
+                            "email": user.get("email", ""),
+                            "days_inactive": days_inactive,
+                            "active_listings": listing_count
+                        })
         
         # Revenue alerts (sellers whose revenue dropped below threshold)
         revenue_alerts = []
