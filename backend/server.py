@@ -1079,6 +1079,10 @@ async def update_push_token(request: Request):
     
     return {"message": "Push token updated"}
 
+# ==================== NOTIFICATION ENDPOINTS ====================
+# Now handled by modular router (routes/notifications.py)
+# Includes: get/list/read/delete notifications, seed sample notifications
+
 # Internal function to create notifications (merged version)
 async def create_notification(
     user_id: str,
