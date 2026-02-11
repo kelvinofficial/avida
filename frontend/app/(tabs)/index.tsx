@@ -579,6 +579,30 @@ export default function HomeScreen() {
     loadRecentSubcategories();
   }, []);
 
+  // Fetch credit balance when authenticated
+  const fetchCreditBalance = useCallback(async () => {
+    try {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || ''}/api/credits/balance`, {
+        headers: {
+          'Authorization': `Bearer ${await Storage.getItem('authToken')}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCreditBalance(data?.balance ?? 0);
+      }
+    } catch (err) {
+      console.error('Failed to fetch credit balance:', err);
+      setCreditBalance(0);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCreditBalance();
+    }
+  }, [isAuthenticated, fetchCreditBalance]);
+
   // Popular cities list
   const POPULAR_CITIES = [
     { name: 'All Locations', icon: 'globe-outline' },
