@@ -13,7 +13,7 @@ import requests
 import os
 
 # Base URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://seller-connect-15.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://admin-analytics-pre.preview.emergentagent.com')
 if BASE_URL.endswith('/'):
     BASE_URL = BASE_URL.rstrip('/')
 
