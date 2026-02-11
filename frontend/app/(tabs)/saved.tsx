@@ -358,7 +358,7 @@ export default function SavedScreen() {
   // Desktop unauthenticated view
   const renderDesktopUnauthenticated = () => (
     <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
-      {renderGlobalHeader()}
+      <DesktopHeader />
       
       <View style={desktopStyles.splitContainer}>
         {/* Left side - Promo */}
@@ -444,7 +444,7 @@ export default function SavedScreen() {
   // Desktop authenticated view with 3-column grid
   const renderDesktopAuthenticated = () => (
     <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
-      {renderGlobalHeader()}
+      <DesktopHeader />
       
       <View style={desktopStyles.pageWrapper}>
         {/* Page Header */}

@@ -336,7 +336,7 @@ export default function SavedItemsScreen() {
   if (isLargeScreen && !isAuthenticated) {
     return (
       <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
-        {renderGlobalHeader()}
+        <DesktopHeader />
         
         <View style={desktopStyles.pageWrapper}>
           <View style={desktopStyles.unauthContainer}>
@@ -361,7 +361,7 @@ export default function SavedItemsScreen() {
   if (isLargeScreen) {
     return (
       <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
-        {renderGlobalHeader()}
+        <DesktopHeader />
         
         <View style={desktopStyles.pageWrapper}>
           {/* Page Header */}
