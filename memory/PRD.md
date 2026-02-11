@@ -245,6 +245,33 @@ Build a local marketplace application (Avida) with:
 - Added Analytics card with bar-chart icon
 - 2x2 grid layout for navigation cards
 
+### 2026-02-11: Past Seasonal Badges Gallery & Category Requirements Display
+**COMPLETED**
+
+#### Seasonal Badge Gallery (`/badges/seasonal-gallery`)
+- **Frontend Page:**
+  - `/app/frontend/app/badges/seasonal-gallery.tsx`
+  - `/app/frontend/app/badges/_layout.tsx` - Layout file for badges routes
+  - Hero section with sparkles icon
+  - Year filter for browsing by year (chips style)
+  - Stats card showing total/earned/completion percentage (for authenticated users)
+  - Badge cards with icon, name, description, season indicator, points, earned count
+  - Share button for individual badges
+  - Empty state: "No Seasonal Badges Yet" with CTA to view challenges
+  - Link to active challenges
+- **API Integration:**
+  - `GET /api/badges/past-seasonal` - Returns past seasonal badges with year filtering
+  - Supports pagination and user earned status
+
+#### Category Requirements Display on Challenges Page
+- **UI Enhancement:**
+  - Added pink "Required: category1, category2" badge to challenge cards
+  - Shows only when challenge has `categories` array populated
+  - Uses pricetag icon with pink background styling
+  - Positioned between progress bar and footer for visibility
+- **Files Modified:**
+  - `/app/frontend/app/challenges.tsx` - Added categoriesContainer JSX and styles
+
 ## What's Been Implemented
 
 ### 2026-02-10: Complete Subscription Backend
