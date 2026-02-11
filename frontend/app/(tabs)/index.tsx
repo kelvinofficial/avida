@@ -1222,7 +1222,7 @@ export default function HomeScreen() {
   // Desktop header with different layout
   const renderDesktopHeader = () => (
     <View style={desktopStyles.headerWrapper}>
-      {/* Row 1: Logo + Auth + Post Listing */}
+      {/* Row 1: Logo + Nav Links + Auth + Post Listing */}
       <View style={desktopStyles.headerRow1}>
         <View style={desktopStyles.headerRow1Inner}>
           <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
@@ -1232,9 +1232,36 @@ export default function HomeScreen() {
             <Text style={desktopStyles.logoText}>avida</Text>
           </TouchableOpacity>
           
+          {/* Navigation Links for Authenticated Users */}
+          {isAuthenticated && (
+            <View style={desktopStyles.navLinks}>
+              <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/profile/my-listings')}>
+                <Ionicons name="pricetags-outline" size={18} color="#6B7280" />
+                <Text style={desktopStyles.navLinkText}>My Listings</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/messages')}>
+                <Ionicons name="chatbubbles-outline" size={18} color="#6B7280" />
+                <Text style={desktopStyles.navLinkText}>Messages</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/profile/saved')}>
+                <Ionicons name="heart-outline" size={18} color="#6B7280" />
+                <Text style={desktopStyles.navLinkText}>Saved</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/offers')}>
+                <Ionicons name="pricetag-outline" size={18} color="#6B7280" />
+                <Text style={desktopStyles.navLinkText}>Offers</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          
           <View style={desktopStyles.headerActions}>
             {isAuthenticated ? (
               <>
+                {/* Credit Balance */}
+                <TouchableOpacity style={desktopStyles.creditBalanceBtn} onPress={() => router.push('/credits')}>
+                  <Ionicons name="wallet-outline" size={18} color="#F59E0B" />
+                  <Text style={desktopStyles.creditBalanceText}>Credits</Text>
+                </TouchableOpacity>
                 <TouchableOpacity style={desktopStyles.notifBtn} onPress={() => router.push('/notifications')}>
                   <Ionicons name="notifications-outline" size={22} color="#333" />
                   {notificationCount > 0 && (
