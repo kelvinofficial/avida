@@ -272,16 +272,10 @@ export default function ExecutiveSummaryPage() {
     setError('');
     try {
       const res = await api.post(`/executive-summary/generate?period=${selectedPeriod}&force=${force}`);
-      if (res.ok) {
-        const data = await res.json();
-        setSummary(data);
-        setSuccess('Executive summary generated successfully!');
-      } else {
-        const err = await res.json();
-        setError(err.detail || 'Failed to generate summary');
-      }
-    } catch (err) {
-      setError('Failed to generate summary');
+      setSummary(res.data);
+      setSuccess('Executive summary generated successfully!');
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to generate summary');
     } finally {
       setGenerating(false);
     }
@@ -289,16 +283,9 @@ export default function ExecutiveSummaryPage() {
 
   const updateConfig = async (updates: Partial<SummaryConfig>) => {
     try {
-      const res = await fetch('/api/admin/executive-summary/config', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ ...config, ...updates }),
-      });
-      if (res.ok) {
-        setConfig({ ...config!, ...updates });
-        setSuccess('Settings updated');
-      }
+      await api.put('/executive-summary/config', { ...config, ...updates });
+      setConfig({ ...config!, ...updates });
+      setSuccess('Settings updated');
     } catch (err) {
       setError('Failed to update settings');
     }
