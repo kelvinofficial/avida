@@ -2845,7 +2845,8 @@ async def respond_to_ticket(
         "created_at": datetime.now(timezone.utc)
     }
     
-    await db.admin_tickets.update_one(
+    # Update the ticket in the correct collection
+    await collection.update_one(
         {"id": ticket_id},
         {
             "$push": {"responses": response},
