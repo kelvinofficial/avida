@@ -733,6 +733,16 @@ export default function BadgesPage() {
                 onChange={(e) => setBadgeForm({ ...badgeForm, points_value: parseInt(e.target.value) || 0 })}
               />
             </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Display Priority"
+                value={badgeForm.display_priority}
+                onChange={(e) => setBadgeForm({ ...badgeForm, display_priority: parseInt(e.target.value) || 0 })}
+                helperText="Higher priority badges appear first (0 = lowest)"
+              />
+            </Grid>
             <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
