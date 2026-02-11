@@ -739,6 +739,7 @@ export default function ProfileScreen() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -752,13 +753,24 @@ export default function ProfileScreen() {
     }
   }, []);
 
+  const fetchCreditBalance = useCallback(async () => {
+    try {
+      const response = await api.get('/credits/balance');
+      setCreditBalance(response.data?.balance ?? 0);
+    } catch (error) {
+      console.error('Error fetching credit balance:', error);
+      setCreditBalance(0);
+    }
+  }, []);
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchProfile();
+      fetchCreditBalance();
     } else {
       setLoading(false);
     }
-  }, [isAuthenticated, fetchProfile]);
+  }, [isAuthenticated, fetchProfile, fetchCreditBalance]);
 
   const handleRefresh = () => {
     setRefreshing(true);
