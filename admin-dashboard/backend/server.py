@@ -8774,6 +8774,414 @@ async def get_engagement_notification_settings(admin: dict = Depends(get_current
     }}
 
 # =============================================================================
+# BUSINESS PROFILES ADMIN ENDPOINTS
+# =============================================================================
+
+class BusinessProfileStatus(str, Enum):
+    PENDING = "pending"
+    VERIFIED = "verified"
+    REJECTED = "rejected"
+    SUSPENDED = "suspended"
+
+@app.get("/api/admin/business-profiles/list")
+async def admin_list_business_profiles(
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
+    status: Optional[str] = None,
+    search: Optional[str] = None,
+    current_user: dict = Depends(get_current_admin)
+):
+    """List all business profiles with filtering and pagination."""
+    try:
+        # Build query filter
+        query = {}
+        if status and status != "all":
+            query["status"] = status
+        
+        if search:
+            query["$or"] = [
+                {"business_name": {"$regex": search, "$options": "i"}},
+                {"email": {"$regex": search, "$options": "i"}},
+                {"description": {"$regex": search, "$options": "i"}},
+            ]
+        
+        # Get total count
+        total = await db.business_profiles.count_documents(query)
+        
+        # Get stats
+        stats = {
+            "total": await db.business_profiles.count_documents({}),
+            "pending": await db.business_profiles.count_documents({"status": "pending"}),
+            "verified": await db.business_profiles.count_documents({"status": "verified"}),
+            "rejected": await db.business_profiles.count_documents({"status": "rejected"}),
+        }
+        
+        # Fetch profiles with pagination
+        skip = (page - 1) * limit
+        cursor = db.business_profiles.find(query).sort("created_at", -1).skip(skip).limit(limit)
+        
+        profiles = []
+        async for profile in cursor:
+            # Fetch user info
+            user = None
+            if profile.get("user_id"):
+                user_doc = await db.users.find_one(
+                    {"user_id": profile["user_id"]},
+                    {"_id": 0, "name": 1, "email": 1}
+                )
+                if user_doc:
+                    user = user_doc
+            
+            profiles.append({
+                "id": str(profile.get("_id", profile.get("id", ""))),
+                "user_id": profile.get("user_id"),
+                "business_name": profile.get("business_name", profile.get("name", "")),
+                "description": profile.get("description", ""),
+                "logo": profile.get("logo"),
+                "website": profile.get("website"),
+                "phone": profile.get("phone"),
+                "email": profile.get("email"),
+                "address": profile.get("address"),
+                "category": profile.get("category"),
+                "status": profile.get("status", "pending"),
+                "created_at": profile.get("created_at", datetime.now(timezone.utc)).isoformat() if profile.get("created_at") else None,
+                "updated_at": profile.get("updated_at").isoformat() if profile.get("updated_at") else None,
+                "verified_at": profile.get("verified_at").isoformat() if profile.get("verified_at") else None,
+                "user": user,
+            })
+        
+        return {
+            "profiles": profiles,
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "stats": stats,
+        }
+    except Exception as e:
+        logger.error(f"Error listing business profiles: {e}")
+        raise HTTPException(status_code=500, detail="Failed to list business profiles")
+
+@app.get("/api/admin/business-profiles/{profile_id}")
+async def admin_get_business_profile(
+    profile_id: str,
+    current_user: dict = Depends(get_current_admin)
+):
+    """Get a single business profile by ID."""
+    try:
+        from bson import ObjectId
+        
+        # Try to find by ObjectId or string id
+        profile = None
+        try:
+            profile = await db.business_profiles.find_one({"_id": ObjectId(profile_id)})
+        except:
+            profile = await db.business_profiles.find_one({"id": profile_id})
+        
+        if not profile:
+            raise HTTPException(status_code=404, detail="Business profile not found")
+        
+        # Fetch user info
+        user = None
+        if profile.get("user_id"):
+            user_doc = await db.users.find_one(
+                {"user_id": profile["user_id"]},
+                {"_id": 0, "name": 1, "email": 1, "phone": 1}
+            )
+            if user_doc:
+                user = user_doc
+        
+        return {
+            "id": str(profile.get("_id", profile.get("id", ""))),
+            "user_id": profile.get("user_id"),
+            "business_name": profile.get("business_name", profile.get("name", "")),
+            "description": profile.get("description", ""),
+            "logo": profile.get("logo"),
+            "website": profile.get("website"),
+            "phone": profile.get("phone"),
+            "email": profile.get("email"),
+            "address": profile.get("address"),
+            "category": profile.get("category"),
+            "status": profile.get("status", "pending"),
+            "created_at": profile.get("created_at").isoformat() if profile.get("created_at") else None,
+            "updated_at": profile.get("updated_at").isoformat() if profile.get("updated_at") else None,
+            "verified_at": profile.get("verified_at").isoformat() if profile.get("verified_at") else None,
+            "rejected_at": profile.get("rejected_at").isoformat() if profile.get("rejected_at") else None,
+            "rejection_reason": profile.get("rejection_reason"),
+            "user": user,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching business profile: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch business profile")
+
+@app.post("/api/admin/business-profiles/{profile_id}/verify")
+async def admin_verify_business_profile(
+    profile_id: str,
+    current_user: dict = Depends(get_current_admin)
+):
+    """Verify a business profile."""
+    try:
+        from bson import ObjectId
+        
+        # Try to find by ObjectId or string id
+        profile = None
+        query = None
+        try:
+            query = {"_id": ObjectId(profile_id)}
+            profile = await db.business_profiles.find_one(query)
+        except:
+            query = {"id": profile_id}
+            profile = await db.business_profiles.find_one(query)
+        
+        if not profile:
+            raise HTTPException(status_code=404, detail="Business profile not found")
+        
+        if profile.get("status") == "verified":
+            raise HTTPException(status_code=400, detail="Profile is already verified")
+        
+        # Update profile status
+        result = await db.business_profiles.update_one(
+            query,
+            {"$set": {
+                "status": "verified",
+                "verified_at": datetime.now(timezone.utc),
+                "verified_by": current_user.get("user_id", current_user.get("email")),
+                "updated_at": datetime.now(timezone.utc),
+            }}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=500, detail="Failed to update profile")
+        
+        # Log the action
+        await db.admin_audit_logs.insert_one({
+            "action": "business_profile_verified",
+            "profile_id": profile_id,
+            "business_name": profile.get("business_name", profile.get("name", "")),
+            "admin_user": current_user.get("email"),
+            "timestamp": datetime.now(timezone.utc),
+        })
+        
+        logger.info(f"Business profile {profile_id} verified by {current_user.get('email')}")
+        
+        return {
+            "success": True,
+            "message": "Business profile verified successfully",
+            "profile_id": profile_id,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error verifying business profile: {e}")
+        raise HTTPException(status_code=500, detail="Failed to verify business profile")
+
+@app.post("/api/admin/business-profiles/{profile_id}/reject")
+async def admin_reject_business_profile(
+    profile_id: str,
+    reason: Optional[str] = Body(None, embed=True),
+    current_user: dict = Depends(get_current_admin)
+):
+    """Reject a business profile."""
+    try:
+        from bson import ObjectId
+        
+        # Try to find by ObjectId or string id
+        profile = None
+        query = None
+        try:
+            query = {"_id": ObjectId(profile_id)}
+            profile = await db.business_profiles.find_one(query)
+        except:
+            query = {"id": profile_id}
+            profile = await db.business_profiles.find_one(query)
+        
+        if not profile:
+            raise HTTPException(status_code=404, detail="Business profile not found")
+        
+        if profile.get("status") == "rejected":
+            raise HTTPException(status_code=400, detail="Profile is already rejected")
+        
+        # Update profile status
+        update_data = {
+            "status": "rejected",
+            "rejected_at": datetime.now(timezone.utc),
+            "rejected_by": current_user.get("user_id", current_user.get("email")),
+            "updated_at": datetime.now(timezone.utc),
+        }
+        if reason:
+            update_data["rejection_reason"] = reason
+        
+        result = await db.business_profiles.update_one(query, {"$set": update_data})
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=500, detail="Failed to update profile")
+        
+        # Log the action
+        await db.admin_audit_logs.insert_one({
+            "action": "business_profile_rejected",
+            "profile_id": profile_id,
+            "business_name": profile.get("business_name", profile.get("name", "")),
+            "reason": reason,
+            "admin_user": current_user.get("email"),
+            "timestamp": datetime.now(timezone.utc),
+        })
+        
+        logger.info(f"Business profile {profile_id} rejected by {current_user.get('email')}")
+        
+        return {
+            "success": True,
+            "message": "Business profile rejected",
+            "profile_id": profile_id,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error rejecting business profile: {e}")
+        raise HTTPException(status_code=500, detail="Failed to reject business profile")
+
+@app.post("/api/admin/business-profiles/{profile_id}/suspend")
+async def admin_suspend_business_profile(
+    profile_id: str,
+    reason: Optional[str] = Body(None, embed=True),
+    current_user: dict = Depends(get_current_admin)
+):
+    """Suspend a verified business profile."""
+    try:
+        from bson import ObjectId
+        
+        # Try to find by ObjectId or string id
+        profile = None
+        query = None
+        try:
+            query = {"_id": ObjectId(profile_id)}
+            profile = await db.business_profiles.find_one(query)
+        except:
+            query = {"id": profile_id}
+            profile = await db.business_profiles.find_one(query)
+        
+        if not profile:
+            raise HTTPException(status_code=404, detail="Business profile not found")
+        
+        if profile.get("status") == "suspended":
+            raise HTTPException(status_code=400, detail="Profile is already suspended")
+        
+        # Update profile status
+        update_data = {
+            "status": "suspended",
+            "suspended_at": datetime.now(timezone.utc),
+            "suspended_by": current_user.get("user_id", current_user.get("email")),
+            "previous_status": profile.get("status"),
+            "updated_at": datetime.now(timezone.utc),
+        }
+        if reason:
+            update_data["suspension_reason"] = reason
+        
+        result = await db.business_profiles.update_one(query, {"$set": update_data})
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=500, detail="Failed to update profile")
+        
+        # Log the action
+        await db.admin_audit_logs.insert_one({
+            "action": "business_profile_suspended",
+            "profile_id": profile_id,
+            "business_name": profile.get("business_name", profile.get("name", "")),
+            "reason": reason,
+            "admin_user": current_user.get("email"),
+            "timestamp": datetime.now(timezone.utc),
+        })
+        
+        logger.info(f"Business profile {profile_id} suspended by {current_user.get('email')}")
+        
+        return {
+            "success": True,
+            "message": "Business profile suspended",
+            "profile_id": profile_id,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error suspending business profile: {e}")
+        raise HTTPException(status_code=500, detail="Failed to suspend business profile")
+
+@app.post("/api/admin/business-profiles/{profile_id}/reinstate")
+async def admin_reinstate_business_profile(
+    profile_id: str,
+    current_user: dict = Depends(get_current_admin)
+):
+    """Reinstate a suspended or rejected business profile."""
+    try:
+        from bson import ObjectId
+        
+        # Try to find by ObjectId or string id
+        profile = None
+        query = None
+        try:
+            query = {"_id": ObjectId(profile_id)}
+            profile = await db.business_profiles.find_one(query)
+        except:
+            query = {"id": profile_id}
+            profile = await db.business_profiles.find_one(query)
+        
+        if not profile:
+            raise HTTPException(status_code=404, detail="Business profile not found")
+        
+        current_status = profile.get("status")
+        if current_status not in ["suspended", "rejected"]:
+            raise HTTPException(status_code=400, detail="Profile is not suspended or rejected")
+        
+        # Determine new status
+        new_status = profile.get("previous_status", "pending")
+        if new_status == "suspended":
+            new_status = "verified"
+        
+        # Update profile status
+        result = await db.business_profiles.update_one(
+            query,
+            {"$set": {
+                "status": new_status,
+                "reinstated_at": datetime.now(timezone.utc),
+                "reinstated_by": current_user.get("user_id", current_user.get("email")),
+                "updated_at": datetime.now(timezone.utc),
+            },
+            "$unset": {
+                "suspension_reason": "",
+                "rejection_reason": "",
+            }}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=500, detail="Failed to update profile")
+        
+        # Log the action
+        await db.admin_audit_logs.insert_one({
+            "action": "business_profile_reinstated",
+            "profile_id": profile_id,
+            "business_name": profile.get("business_name", profile.get("name", "")),
+            "previous_status": current_status,
+            "new_status": new_status,
+            "admin_user": current_user.get("email"),
+            "timestamp": datetime.now(timezone.utc),
+        })
+        
+        logger.info(f"Business profile {profile_id} reinstated by {current_user.get('email')}")
+        
+        return {
+            "success": True,
+            "message": f"Business profile reinstated to {new_status}",
+            "profile_id": profile_id,
+            "new_status": new_status,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error reinstating business profile: {e}")
+        raise HTTPException(status_code=500, detail="Failed to reinstate business profile")
+
+logger.info("Business Profiles admin endpoints registered")
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
