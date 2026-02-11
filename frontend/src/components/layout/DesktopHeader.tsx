@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
 import { useAuthStore } from '../../store/authStore';
 import { useLoginRedirect } from '../../hooks/useLoginRedirect';
-import api from '../../services/api';
+import api from '../../utils/api';
 
 const COLORS = {
   primary: '#2E7D32',
