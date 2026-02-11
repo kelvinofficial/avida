@@ -287,3 +287,46 @@
 - Twilio + Africa's Talking providers
 - Delivery OTP and tracking
 - User notification preferences
+
+## 2026-02-11: Server.py Refactoring - Auto/Motors Module
+**Status:** COMPLETED
+
+### Changes
+- Extracted ~692 lines of auto/motors routes from `/app/backend/server.py` into `/app/backend/routes/auto_motors.py`
+- `server.py` reduced from 7932 → 7253 lines (679 lines removed)
+- Added `create_auto_motors_router` factory function
+- Includes static data constants (AUTO_BRANDS, AUTO_MODELS)
+- Helper function for generating conversation message templates
+
+### Files Modified
+- `/app/backend/routes/auto_motors.py` (NEW - ~560 lines)
+- `/app/backend/routes/__init__.py` (Updated exports)
+- `/app/backend/server.py` (Removed inline routes, added registration)
+
+### Endpoints Migrated
+- GET `/api/auto/brands` - Car brands list
+- GET `/api/auto/brands/{id}/models` - Brand models
+- GET `/api/auto/listings` - Filtered listings search
+- GET `/api/auto/listings/{id}` - Single listing
+- GET `/api/auto/featured` - Featured listings
+- GET `/api/auto/recommended` - Recommendations
+- POST `/api/auto/conversations` - Create conversation
+- GET `/api/auto/conversations/{id}` - Get conversation
+- POST `/api/auto/conversations/{id}/messages` - Send message
+- POST/DELETE `/api/auto/favorites/{id}` - Favorites management
+- GET `/api/auto/favorites` - User favorites
+- GET `/api/auto/popular-searches` - Popular searches
+- POST `/api/auto/track-search` - Track searches
+- GET `/api/auto/filter-options` - Filter options
+
+### Testing
+- All endpoints verified via curl tests (200 OK responses)
+- Brands returns 12 brands
+- Listings returns 15 total
+- Popular searches returns 6 entries
+
+### Cumulative Progress
+- Original: 8881 lines
+- After Admin Locations: 7932 lines (-949)
+- After Auto/Motors: 7253 lines (-679)
+- **Total reduction: 1628 lines (~18%)**
