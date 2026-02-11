@@ -609,23 +609,26 @@ Users can track their progress towards earning badges:
 - `/app/frontend/app/(tabs)/index.tsx` - Featured listings section
 - `/app/backend/server.py` - Featured verified listings endpoint (line 1022)
 
-### 2026-02-11: Desktop Profile & Business Profile Fixes
+### 2026-02-11: Listing ID Display & Mobile Business Profile Fixes
 
 **COMPLETED**
 
-#### Desktop Profile Activity Section
-- Added all 10 activity items to desktop profile: My Listings, My Badges, Business Profile, Invoices, Purchases, Sales, Favorites, Recently Viewed, Messages, Offers
-- Updated activity grid to use flexWrap for responsive layout
-- All links navigate to correct pages
+#### Listing ID Display on Detail Page
+- Removed Listing ID from listing cards (homepage, search results)
+- Added Listing ID on listing detail page next to "Report this listing" button
+- Shows on both mobile (SafetySection component) and desktop (right column safety card)
+- ID displayed in monospace font for clear identification
 
-#### Business Profile Image Upload Fix
-- Fixed image upload on web (logo, cover, gallery)
-- Uses fetch + blob approach for FormData on web (Platform-specific handling)
-- All three upload buttons now work correctly on desktop/web
+#### Mobile Business Profile Image Upload Fix
+- Added media library permission requests for mobile (iOS/Android)
+- Uses `ImagePicker.requestMediaLibraryPermissionsAsync()` before launching image picker
+- Shows permission denied alert if user declines
+- Applied to all three upload functions: logo, cover, and gallery
 
 **Key Files:**
-- `/app/frontend/app/(tabs)/profile.tsx` - Desktop activity section
-- `/app/frontend/app/business/edit.tsx` - Image upload fixes
+- `/app/frontend/app/listing/[id].tsx` - Listing ID display (lines 360-400 mobile, lines 1196-1202 desktop)
+- `/app/frontend/src/components/listings/ListingCard.tsx` - Removed listing ID
+- `/app/frontend/app/business/edit.tsx` - Mobile permission requests
 
 ## Remaining Backlog
 
