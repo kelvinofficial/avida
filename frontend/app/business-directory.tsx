@@ -79,8 +79,8 @@ export default function BusinessDirectoryScreen() {
       if (searchQuery) params.search = searchQuery;
       if (selectedCategory && selectedCategory !== 'All') params.category = selectedCategory;
       
-      const res = await api.get('/business/directory', { params });
-      setBusinesses(res.data.businesses || []);
+      const res = await api.get('/business-profiles/directory', { params });
+      setBusinesses(res.data.profiles || res.data.businesses || []);
     } catch (err) {
       console.error('Failed to fetch businesses:', err);
       // Fallback to mock data if API doesn't exist
