@@ -1008,8 +1008,11 @@ app.state.broadcast_qa_alert = broadcast_qa_alert
 # - create_offers_router: offer submission, negotiation, counter-offers
 # - create_similar_listings_router: weighted similarity algorithm
 
-    
-    return {"message": "Push token updated"}
+# ==================== USER SETTINGS ENDPOINTS ====================
+# Now handled by modular router (routes/user_settings.py)
+# - create_user_settings_router: get/update settings, push token
+# - create_sessions_router: active sessions, revoke sessions
+# - create_id_verification_router: submit/status of ID verification
 
 # ==================== NOTIFICATION ENDPOINTS ====================
 # Now handled by modular router (routes/notifications.py)
