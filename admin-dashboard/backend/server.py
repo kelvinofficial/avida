@@ -2124,6 +2124,24 @@ async def delete_attribute_icon(
 # USER MANAGEMENT ENDPOINTS
 # =============================================================================
 
+@api_router.get("/users/search")
+async def search_users_for_badges(
+    admin: dict = Depends(get_current_admin),
+    q: str = Query(..., min_length=2)
+):
+    """Search users by email or name for badge assignment"""
+    users = await db.users.find(
+        {
+            "$or": [
+                {"email": {"$regex": q, "$options": "i"}},
+                {"name": {"$regex": q, "$options": "i"}}
+            ]
+        },
+        {"_id": 0, "user_id": 1, "email": 1, "name": 1}
+    ).limit(10).to_list(length=10)
+    
+    return {"users": users}
+
 @api_router.get("/users")
 async def list_users(
     page: int = Query(1, ge=1),
