@@ -582,7 +582,7 @@ export default function HomeScreen() {
   // Fetch credit balance when authenticated
   const fetchCreditBalance = useCallback(async () => {
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || ''}/api/boost/credits/balance`, {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/boost/credits/balance`, {
         headers: {
           'Authorization': `Bearer ${await Storage.getItem('authToken')}`,
         },
