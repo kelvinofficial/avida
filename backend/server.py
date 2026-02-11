@@ -3676,6 +3676,159 @@ async def mark_badges_as_viewed(request: Request, data: dict = Body(...)):
     
     return {"message": "Badges marked as viewed"}
 
+# ==================== BADGE MILESTONES ====================
+
+# Define milestone thresholds
+BADGE_MILESTONES = [
+    {"count": 1, "name": "First Badge!", "message": "You earned your first badge! You're on your way to becoming a top seller.", "icon": "ribbon"},
+    {"count": 5, "name": "Badge Collector", "message": "5 badges earned! You're building an impressive reputation.", "icon": "medal"},
+    {"count": 10, "name": "Achievement Hunter", "message": "10 badges! You're a dedicated member of our community.", "icon": "trophy"},
+    {"count": 25, "name": "Badge Master", "message": "25 badges! You're among our most accomplished sellers.", "icon": "star"},
+    {"count": 50, "name": "Legend Status", "message": "50 badges! You've achieved legendary status!", "icon": "diamond"},
+]
+
+# Special badge milestones (triggered by specific badge names)
+SPECIAL_BADGE_MILESTONES = {
+    "First Listing": {"name": "First Listing Unlocked!", "message": "You've created your first listing! Your journey as a seller begins.", "icon": "pricetag"},
+    "First Sale": {"name": "First Sale Celebration!", "message": "Congratulations on your first sale! You're officially a seller.", "icon": "cash"},
+    "Active Seller": {"name": "Active Seller Status!", "message": "You've reached Active Seller status with 5+ sales!", "icon": "trending-up"},
+    "Top Seller": {"name": "Top Seller Achieved!", "message": "You're now a Top Seller! Your hard work has paid off.", "icon": "trophy"},
+    "Trusted Member": {"name": "Trusted Member!", "message": "You've earned the trust of our community. Thank you!", "icon": "shield-checkmark"},
+    "Veteran": {"name": "Veteran Status!", "message": "A year of excellence! You're a veteran member.", "icon": "time"},
+}
+
+@api_router.get("/badges/milestones")
+async def get_badge_milestones(request: Request):
+    """Get user's achieved and pending milestones"""
+    current_user = await require_auth(request)
+    
+    # Get total badge count
+    total_badges = await db.user_badges.count_documents({"user_id": current_user.user_id})
+    
+    # Get user's badges with names
+    user_badges = await db.user_badges.find({"user_id": current_user.user_id}).to_list(length=100)
+    badge_ids = [b["badge_id"] for b in user_badges]
+    badges = await db.badges.find({"id": {"$in": badge_ids}}).to_list(length=100)
+    badge_names = {b["id"]: b["name"] for b in badges}
+    
+    # Get acknowledged milestones
+    user_milestones = await db.user_milestones.find({"user_id": current_user.user_id}).to_list(length=100)
+    acknowledged_ids = {m["milestone_id"] for m in user_milestones}
+    
+    achieved_milestones = []
+    pending_milestones = []
+    new_milestones = []
+    
+    # Check count-based milestones
+    for milestone in BADGE_MILESTONES:
+        milestone_id = f"count_{milestone['count']}"
+        milestone_data = {
+            "id": milestone_id,
+            "type": "count",
+            "name": milestone["name"],
+            "message": milestone["message"],
+            "icon": milestone["icon"],
+            "threshold": milestone["count"],
+            "achieved": total_badges >= milestone["count"],
+            "acknowledged": milestone_id in acknowledged_ids,
+        }
+        
+        if total_badges >= milestone["count"]:
+            achieved_milestones.append(milestone_data)
+            if milestone_id not in acknowledged_ids:
+                new_milestones.append(milestone_data)
+        else:
+            pending_milestones.append(milestone_data)
+    
+    # Check special badge milestones
+    for badge_name, milestone in SPECIAL_BADGE_MILESTONES.items():
+        milestone_id = f"special_{badge_name.replace(' ', '_').lower()}"
+        earned = any(badge_names.get(b["badge_id"]) == badge_name for b in user_badges)
+        
+        milestone_data = {
+            "id": milestone_id,
+            "type": "special",
+            "badge_name": badge_name,
+            "name": milestone["name"],
+            "message": milestone["message"],
+            "icon": milestone["icon"],
+            "achieved": earned,
+            "acknowledged": milestone_id in acknowledged_ids,
+        }
+        
+        if earned:
+            achieved_milestones.append(milestone_data)
+            if milestone_id not in acknowledged_ids:
+                new_milestones.append(milestone_data)
+    
+    return {
+        "total_badges": total_badges,
+        "achieved_milestones": achieved_milestones,
+        "pending_milestones": pending_milestones,
+        "new_milestones": new_milestones,  # Unacknowledged milestones to show
+    }
+
+@api_router.post("/badges/milestones/acknowledge")
+async def acknowledge_milestone(request: Request, data: dict = Body(...)):
+    """Mark a milestone as acknowledged/seen"""
+    current_user = await require_auth(request)
+    
+    milestone_id = data.get("milestone_id")
+    if not milestone_id:
+        raise HTTPException(status_code=400, detail="milestone_id is required")
+    
+    # Check if already acknowledged
+    existing = await db.user_milestones.find_one({
+        "user_id": current_user.user_id,
+        "milestone_id": milestone_id
+    })
+    
+    if not existing:
+        await db.user_milestones.insert_one({
+            "user_id": current_user.user_id,
+            "milestone_id": milestone_id,
+            "acknowledged_at": datetime.now(timezone.utc)
+        })
+    
+    return {"message": "Milestone acknowledged", "milestone_id": milestone_id}
+
+@api_router.get("/badges/share/{user_id}")
+async def get_shareable_badge_profile(user_id: str):
+    """Get a shareable badge profile for a user (public endpoint)"""
+    user = await db.users.find_one({"user_id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get user's badges
+    user_badges = await db.user_badges.find({"user_id": user_id}).to_list(length=100)
+    badge_ids = [b["badge_id"] for b in user_badges]
+    badges = await db.badges.find({"id": {"$in": badge_ids}}).to_list(length=100)
+    
+    # Get showcase badges
+    showcase = await db.user_badges.find({
+        "user_id": user_id, 
+        "is_showcased": True
+    }).to_list(length=5)
+    showcase_ids = [s["badge_id"] for s in showcase]
+    showcase_badges = [b for b in badges if b["id"] in showcase_ids]
+    
+    return {
+        "user_name": user.get("name", "User"),
+        "total_badges": len(badges),
+        "badges": [{
+            "name": b["name"],
+            "description": b.get("description", ""),
+            "icon": b.get("icon", "ribbon"),
+            "color": b.get("color", "#4CAF50"),
+        } for b in badges[:10]],  # Limit to 10 for sharing
+        "showcase_badges": [{
+            "name": b["name"],
+            "description": b.get("description", ""),
+            "icon": b.get("icon", "ribbon"),
+            "color": b.get("color", "#4CAF50"),
+        } for b in showcase_badges],
+    }
+
 # ==================== FOLLOW SYSTEM ====================
 
 @api_router.post("/users/{user_id}/follow")
