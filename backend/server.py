@@ -277,6 +277,7 @@ try:
         create_similar_listings_router,
         create_social_router,
         create_profile_activity_router,
+        create_notifications_router,
         DEFAULT_CATEGORIES,
         LEGACY_CATEGORY_MAP,
         validate_category_and_subcategory
