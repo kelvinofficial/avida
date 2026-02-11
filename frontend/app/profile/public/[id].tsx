@@ -35,6 +35,28 @@ const COLORS = {
   star: '#FFB800',
 };
 
+// Helper to map badge icon names to Ionicons
+const getBadgeIcon = (iconName: string): any => {
+  const iconMap: Record<string, any> = {
+    'verified': 'checkmark-circle',
+    'trophy': 'trophy',
+    'star': 'star',
+    'medal': 'medal',
+    'diamond': 'diamond',
+    'heart': 'heart',
+    'flame': 'flame',
+    'shield': 'shield-checkmark',
+    'crown': 'ribbon',
+    'rocket': 'rocket',
+    'flash': 'flash',
+    'sparkles': 'sparkles',
+    'thumbs-up': 'thumbs-up',
+    'gift': 'gift',
+    'cart': 'cart',
+  };
+  return iconMap[iconName] || 'ribbon';
+};
+
 // Helper function to format time ago
 const formatTimeAgo = (dateString: string): string => {
   const date = new Date(dateString);
