@@ -1054,72 +1054,7 @@ export default function ProfileScreen() {
     return (
       <View style={desktopStyles.container}>
         {/* Desktop Header */}
-        <View style={desktopStyles.header}>
-          <View style={desktopStyles.headerInner}>
-            <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
-              <View style={desktopStyles.logoIcon}>
-                <Ionicons name="storefront" size={22} color="#fff" />
-              </View>
-              <Text style={desktopStyles.logoText}>avida</Text>
-            </TouchableOpacity>
-            
-            {/* Spacer to push everything to the right */}
-            <View style={{ flex: 1 }} />
-            
-            <View style={desktopStyles.headerActions}>
-              {/* Navigation Links */}
-              <View style={desktopStyles.navLinks}>
-                <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/profile/my-listings')}>
-                  <Ionicons name="pricetags-outline" size={18} color={COLORS.textSecondary} />
-                  <Text style={desktopStyles.navLinkText}>My Listings</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/messages')}>
-                  <Ionicons name="chatbubbles-outline" size={18} color={COLORS.textSecondary} />
-                  <Text style={desktopStyles.navLinkText}>Messages</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/profile/saved')}>
-                  <Ionicons name="heart-outline" size={18} color={COLORS.textSecondary} />
-                  <Text style={desktopStyles.navLinkText}>Saved</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/offers')}>
-                  <Ionicons name="pricetag-outline" size={18} color={COLORS.textSecondary} />
-                  <Text style={desktopStyles.navLinkText}>Offers</Text>
-                </TouchableOpacity>
-              </View>
-              
-              {/* Divider */}
-              <View style={desktopStyles.headerDivider} />
-              
-              {/* Credit Balance */}
-              <TouchableOpacity style={desktopStyles.creditBalanceBtn} onPress={() => router.push('/credits')}>
-                <Ionicons name="wallet-outline" size={18} color="#F59E0B" />
-                <Text style={desktopStyles.creditBalanceText}>
-                  {creditBalance !== null ? `${creditBalance} Credits` : '...'}
-                </Text>
-              </TouchableOpacity>
-              
-              {/* Badge Notification */}
-              <TouchableOpacity style={desktopStyles.headerBtn} onPress={() => router.push('/profile/badges')}>
-                <Ionicons name="medal-outline" size={22} color={COLORS.text} />
-                {unviewedBadgeCount > 0 && (
-                  <View style={[desktopStyles.notifBadge, { backgroundColor: '#9333EA' }]}>
-                    <Text style={desktopStyles.notifBadgeText}>{unviewedBadgeCount > 99 ? '99+' : unviewedBadgeCount}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-              
-              {/* General Notifications */}
-              <TouchableOpacity style={desktopStyles.headerBtn} onPress={() => router.push('/notifications')}>
-                <Ionicons name="notifications-outline" size={22} color={COLORS.text} />
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={desktopStyles.postBtn} onPress={() => router.push('/post')}>
-                <Ionicons name="add" size={18} color="#fff" />
-                <Text style={desktopStyles.postBtnText}>Post Listing</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
+        <DesktopHeader showSearch={false} />
 
         <View style={desktopStyles.mainContent}>
           {/* Left Sidebar - Profile Card */}
