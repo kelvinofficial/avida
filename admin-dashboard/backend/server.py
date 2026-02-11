@@ -7371,6 +7371,270 @@ async def download_invoice_pdf(invoice_id: str, admin: dict = Depends(get_curren
     )
 
 # =============================================================================
+# BADGES API
+# =============================================================================
+
+@app.get("/api/admin/badges")
+async def get_badges(admin: dict = Depends(get_current_admin)):
+    """Get all badge definitions with stats"""
+    badges = await db.badges.find({}, {"_id": 0}).sort("created_at", -1).to_list(length=100)
+    
+    # Get stats
+    total_badges = len(badges)
+    active_badges = len([b for b in badges if b.get("is_active", True)])
+    
+    # Count total awards
+    total_awards = await db.user_badges.count_documents({})
+    
+    # Count unique users with badges
+    users_pipeline = [
+        {"$group": {"_id": "$user_id"}},
+        {"$count": "total"}
+    ]
+    users_result = await db.user_badges.aggregate(users_pipeline).to_list(length=1)
+    users_with_badges = users_result[0]["total"] if users_result else 0
+    
+    # Get most awarded badge
+    most_awarded_pipeline = [
+        {"$group": {"_id": "$badge_id", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 1}
+    ]
+    most_awarded_result = await db.user_badges.aggregate(most_awarded_pipeline).to_list(length=1)
+    most_awarded_badge = ""
+    if most_awarded_result:
+        badge = await db.badges.find_one({"id": most_awarded_result[0]["_id"]}, {"_id": 0, "name": 1})
+        most_awarded_badge = badge.get("name", "") if badge else ""
+    
+    # Get recent awards (last 7 days)
+    seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    recent_awards = await db.user_badges.count_documents({"awarded_at": {"$gte": seven_days_ago}})
+    
+    return {
+        "badges": badges,
+        "stats": {
+            "total_badges": total_badges,
+            "active_badges": active_badges,
+            "total_awards": total_awards,
+            "users_with_badges": users_with_badges,
+            "most_awarded_badge": most_awarded_badge,
+            "recent_awards": recent_awards
+        }
+    }
+
+@app.post("/api/admin/badges")
+async def create_badge(request: Request, admin: dict = Depends(get_current_admin)):
+    """Create a new badge"""
+    data = await request.json()
+    
+    badge = {
+        "id": str(uuid.uuid4()),
+        "name": data.get("name"),
+        "description": data.get("description", ""),
+        "icon": data.get("icon", "verified"),
+        "color": data.get("color", "#4CAF50"),
+        "type": data.get("type", "achievement"),
+        "criteria": data.get("criteria"),
+        "auto_award": data.get("auto_award", False),
+        "points_value": data.get("points_value", 10),
+        "is_active": data.get("is_active", True),
+        "created_at": datetime.now(timezone.utc),
+        "created_by": admin.get("email")
+    }
+    
+    await db.badges.insert_one(badge)
+    
+    # Log the action
+    await db.admin_audit_log.insert_one({
+        "action": "badge_created",
+        "admin_email": admin.get("email"),
+        "badge_id": badge["id"],
+        "badge_name": badge["name"],
+        "timestamp": datetime.now(timezone.utc)
+    })
+    
+    return {"success": True, "badge": {k: v for k, v in badge.items() if k != "_id"}}
+
+@app.put("/api/admin/badges/{badge_id}")
+async def update_badge(badge_id: str, request: Request, admin: dict = Depends(get_current_admin)):
+    """Update a badge"""
+    data = await request.json()
+    
+    update_data = {
+        "name": data.get("name"),
+        "description": data.get("description"),
+        "icon": data.get("icon"),
+        "color": data.get("color"),
+        "type": data.get("type"),
+        "criteria": data.get("criteria"),
+        "auto_award": data.get("auto_award"),
+        "points_value": data.get("points_value"),
+        "is_active": data.get("is_active"),
+        "updated_at": datetime.now(timezone.utc),
+        "updated_by": admin.get("email")
+    }
+    
+    # Remove None values
+    update_data = {k: v for k, v in update_data.items() if v is not None}
+    
+    result = await db.badges.update_one({"id": badge_id}, {"$set": update_data})
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Badge not found")
+    
+    return {"success": True}
+
+@app.delete("/api/admin/badges/{badge_id}")
+async def delete_badge(badge_id: str, admin: dict = Depends(get_current_admin)):
+    """Delete a badge and revoke from all users"""
+    # Delete badge definition
+    result = await db.badges.delete_one({"id": badge_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Badge not found")
+    
+    # Remove from all users
+    await db.user_badges.delete_many({"badge_id": badge_id})
+    
+    # Log the action
+    await db.admin_audit_log.insert_one({
+        "action": "badge_deleted",
+        "admin_email": admin.get("email"),
+        "badge_id": badge_id,
+        "timestamp": datetime.now(timezone.utc)
+    })
+    
+    return {"success": True}
+
+@app.get("/api/admin/badges/users")
+async def get_user_badges(
+    admin: dict = Depends(get_current_admin),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(25, ge=1, le=100),
+    search: Optional[str] = None
+):
+    """Get all user badges with pagination"""
+    query = {}
+    
+    if search:
+        query["$or"] = [
+            {"user_email": {"$regex": search, "$options": "i"}},
+            {"user_name": {"$regex": search, "$options": "i"}}
+        ]
+    
+    total = await db.user_badges.count_documents(query)
+    user_badges = await db.user_badges.find(query, {"_id": 0}).sort("awarded_at", -1).skip(skip).limit(limit).to_list(length=limit)
+    
+    return {
+        "user_badges": user_badges,
+        "total": total
+    }
+
+@app.post("/api/admin/badges/award")
+async def award_badge(request: Request, admin: dict = Depends(get_current_admin)):
+    """Award a badge to a user"""
+    data = await request.json()
+    
+    user_email = data.get("user_email")
+    badge_id = data.get("badge_id")
+    reason = data.get("reason", "")
+    
+    # Verify badge exists
+    badge = await db.badges.find_one({"id": badge_id}, {"_id": 0})
+    if not badge:
+        raise HTTPException(status_code=404, detail="Badge not found")
+    
+    # Get user info
+    user = await db.users.find_one({"email": user_email}, {"_id": 0, "user_id": 1, "name": 1, "email": 1})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if user already has this badge
+    existing = await db.user_badges.find_one({"user_id": user.get("user_id"), "badge_id": badge_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="User already has this badge")
+    
+    # Award the badge
+    user_badge = {
+        "id": str(uuid.uuid4()),
+        "user_id": user.get("user_id"),
+        "user_email": user_email,
+        "user_name": user.get("name", "Unknown"),
+        "badge_id": badge_id,
+        "badge_name": badge.get("name"),
+        "badge_icon": badge.get("icon"),
+        "badge_color": badge.get("color"),
+        "awarded_at": datetime.now(timezone.utc),
+        "awarded_by": admin.get("email"),
+        "reason": reason,
+        "is_visible": True
+    }
+    
+    await db.user_badges.insert_one(user_badge)
+    
+    # Update user's badges array
+    await db.users.update_one(
+        {"user_id": user.get("user_id")},
+        {"$addToSet": {"badges": badge_id}}
+    )
+    
+    # Log the action
+    await db.admin_audit_log.insert_one({
+        "action": "badge_awarded",
+        "admin_email": admin.get("email"),
+        "user_email": user_email,
+        "badge_id": badge_id,
+        "badge_name": badge.get("name"),
+        "reason": reason,
+        "timestamp": datetime.now(timezone.utc)
+    })
+    
+    return {"success": True, "user_badge": {k: v for k, v in user_badge.items() if k != "_id"}}
+
+@app.delete("/api/admin/badges/users/{user_badge_id}")
+async def revoke_badge(user_badge_id: str, admin: dict = Depends(get_current_admin)):
+    """Revoke a badge from a user"""
+    user_badge = await db.user_badges.find_one({"id": user_badge_id}, {"_id": 0})
+    if not user_badge:
+        raise HTTPException(status_code=404, detail="User badge not found")
+    
+    # Remove the badge
+    await db.user_badges.delete_one({"id": user_badge_id})
+    
+    # Update user's badges array
+    await db.users.update_one(
+        {"user_id": user_badge.get("user_id")},
+        {"$pull": {"badges": user_badge.get("badge_id")}}
+    )
+    
+    # Log the action
+    await db.admin_audit_log.insert_one({
+        "action": "badge_revoked",
+        "admin_email": admin.get("email"),
+        "user_email": user_badge.get("user_email"),
+        "badge_id": user_badge.get("badge_id"),
+        "badge_name": user_badge.get("badge_name"),
+        "timestamp": datetime.now(timezone.utc)
+    })
+    
+    return {"success": True}
+
+@app.get("/api/admin/users/search")
+async def search_users(admin: dict = Depends(get_current_admin), q: str = Query(..., min_length=2)):
+    """Search users by email or name"""
+    users = await db.users.find(
+        {
+            "$or": [
+                {"email": {"$regex": q, "$options": "i"}},
+                {"name": {"$regex": q, "$options": "i"}}
+            ]
+        },
+        {"_id": 0, "user_id": 1, "email": 1, "name": 1}
+    ).limit(10).to_list(length=10)
+    
+    return {"users": users}
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
