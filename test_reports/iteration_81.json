@@ -1,0 +1,93 @@
+{
+  "summary": "Frontend testing of Listing ID display and business profile image upload buttons. Found CRITICAL bugs: 1) Listing ID still shows on listing cards (home page inline rendering not fixed), 2) Listing ID NOT showing on listing detail page (SafetySection doesn't receive listing prop).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Home page listing cards",
+        "issue": "Listing ID still displayed on listing cards in /app/frontend/app/(tabs)/index.tsx lines 307 and 928",
+        "selector": "cardStyles.listingId, featuredStyles.listingId",
+        "priority": "HIGH",
+        "fix_required": "Remove <Text style={cardStyles.listingId}>ID: {listing.id?.slice(-8) || 'N/A'}</Text> from both line 307 and line 928"
+      },
+      {
+        "component": "SafetySection (mobile)",
+        "issue": "Listing ID shows 'N/A' because listing prop is not passed to SafetySection component",
+        "selector": "safetyStyles.listingId",
+        "priority": "CRITICAL",
+        "fix_required": "Line 361: Change from ({ onReport }) to ({ onReport, listing }) and pass listing prop where SafetySection is used (line 1452)"
+      },
+      {
+        "component": "Desktop listing detail safety section",
+        "issue": "Listing ID may not be rendering properly - code exists at line 1197 but not visible in screenshots",
+        "selector": "desktopStyles.listingId",
+        "priority": "HIGH",
+        "fix_required": "Verify desktopStyles.footerRow and desktopStyles.listingId are properly defined and rendering"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "CRITICAL: Remove Listing ID from home page listing cards - /app/frontend/app/(tabs)/index.tsx line 307 and line 928",
+    "CRITICAL: Fix SafetySection component to receive listing prop - /app/frontend/app/listing/[id].tsx line 361",
+    "CRITICAL: Pass listing prop to SafetySection component - /app/frontend/app/listing/[id].tsx line 1452",
+    "Verify desktop listing detail page shows Listing ID in Safety Tips section"
+  ],
+  "critical_code_review_comments": [
+    "SafetySection component at line 361 declares ({ onReport }: { onReport: () => void }) but uses listing?.id at line 382 - listing variable is undefined in component scope",
+    "Home page has inline listing card rendering that duplicates ListingCard component and includes ID display that wasn't removed",
+    "ListingCard.tsx component correctly does NOT show Listing ID - only the home page inline cards need fixing"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A",
+    "frontend": "40%"
+  },
+  "test_credentials": {},
+  "seed_data_creation": "",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Main agent needs to: 1) Remove ID display from home page listing cards at /app/frontend/app/(tabs)/index.tsx lines 307 and 928, 2) Fix SafetySection component to receive listing prop and pass it when rendering. Business profile image upload buttons are working correctly on mobile.",
+  "features_verified": {
+    "listing_card_id_removal": {
+      "status": "FAILED",
+      "details": "ListingCard.tsx is correct but home page inline cards at /app/frontend/app/(tabs)/index.tsx still show ID"
+    },
+    "listing_detail_id_display": {
+      "status": "FAILED",
+      "details": "SafetySection component doesn't receive listing prop - shows 'N/A'"
+    },
+    "business_profile_upload_buttons": {
+      "status": "WORKING",
+      "buttons_tested": ["Upload Cover", "Upload Logo"],
+      "mobile_permissions": "ImagePicker.requestMediaLibraryPermissionsAsync() calls present"
+    }
+  },
+  "bugs_to_fix": {
+    "bug1": {
+      "file": "/app/frontend/app/(tabs)/index.tsx",
+      "line": 307,
+      "remove": "<Text style={cardStyles.listingId}>ID: {listing.id?.slice(-8) || 'N/A'}</Text>"
+    },
+    "bug2": {
+      "file": "/app/frontend/app/(tabs)/index.tsx", 
+      "line": 928,
+      "remove": "<Text style={featuredStyles.listingId}>ID: {listing.id?.slice(-8)}</Text>"
+    },
+    "bug3": {
+      "file": "/app/frontend/app/listing/[id].tsx",
+      "line": 361,
+      "change": "({ onReport }: { onReport: () => void }) => to ({ onReport, listing }: { onReport: () => void; listing: Listing | null })"
+    },
+    "bug4": {
+      "file": "/app/frontend/app/listing/[id].tsx",
+      "line": 1452,
+      "change": "<SafetySection onReport={() => setShowReportModal(true)} /> to <SafetySection onReport={() => setShowReportModal(true)} listing={listing} />"
+    }
+  }
+}
