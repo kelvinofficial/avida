@@ -7871,6 +7871,909 @@ async def revoke_badge(user_badge_id: str, admin: dict = Depends(get_current_adm
     return {"success": True}
 
 # =============================================================================
+# CHALLENGES MANAGEMENT
+# =============================================================================
+
+class ChallengeCreate(BaseModel):
+    name: str
+    description: str
+    type: str = "seasonal"  # weekly, monthly, seasonal
+    criteria: str  # listings_created, items_sold, total_sales_value, category_listings, category_sales
+    target: int
+    categories: List[str] = []
+    start_date: datetime
+    end_date: datetime
+    badge_name: str
+    badge_description: str
+    badge_icon: str = "ribbon"
+    badge_color: str = "#4CAF50"
+    badge_points: int = 50
+    theme: str = "default"
+    is_active: bool = True
+
+class ChallengeUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    target: Optional[int] = None
+    categories: Optional[List[str]] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    badge_name: Optional[str] = None
+    badge_description: Optional[str] = None
+    badge_icon: Optional[str] = None
+    badge_color: Optional[str] = None
+    badge_points: Optional[int] = None
+    theme: Optional[str] = None
+    is_active: Optional[bool] = None
+
+@app.get("/api/admin/challenges")
+async def get_admin_challenges(
+    type: Optional[str] = None,
+    is_active: Optional[bool] = None,
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=20, le=100),
+    admin: dict = Depends(get_current_admin)
+):
+    """Get all challenges with filtering options"""
+    query = {"is_custom": True}  # Only show admin-created challenges
+    if type:
+        query["type"] = type
+    if is_active is not None:
+        query["is_active"] = is_active
+    
+    skip = (page - 1) * limit
+    total = await db.custom_challenges.count_documents(query)
+    
+    challenges = await db.custom_challenges.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Get participation stats for each challenge
+    for challenge in challenges:
+        challenge_id = challenge.get("id")
+        participants = await db.challenge_participants.count_documents({"challenge_id": challenge_id})
+        completions = await db.challenge_completions.count_documents({"challenge_id": challenge_id})
+        challenge["stats"] = {
+            "participants": participants,
+            "completions": completions,
+            "completion_rate": round((completions / participants * 100) if participants > 0 else 0, 1)
+        }
+    
+    return {
+        "challenges": challenges,
+        "pagination": {
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "pages": (total + limit - 1) // limit
+        }
+    }
+
+@app.post("/api/admin/challenges")
+async def create_admin_challenge(
+    challenge: ChallengeCreate,
+    admin: dict = Depends(get_current_admin)
+):
+    """Create a new custom challenge"""
+    challenge_id = f"custom_{uuid.uuid4().hex[:8]}"
+    
+    challenge_doc = {
+        "id": challenge_id,
+        "name": challenge.name,
+        "description": challenge.description,
+        "type": challenge.type,
+        "criteria": challenge.criteria,
+        "target": challenge.target,
+        "categories": challenge.categories,
+        "start_date": challenge.start_date,
+        "end_date": challenge.end_date,
+        "badge_reward": {
+            "name": challenge.badge_name,
+            "description": challenge.badge_description,
+            "icon": challenge.badge_icon,
+            "color": challenge.badge_color,
+            "points_value": challenge.badge_points,
+        },
+        "icon": challenge.badge_icon,
+        "color": challenge.badge_color,
+        "theme": challenge.theme,
+        "is_active": challenge.is_active,
+        "is_custom": True,
+        "created_by": admin.get("email"),
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc),
+    }
+    
+    await db.custom_challenges.insert_one(challenge_doc)
+    
+    # Log the action
+    await db.admin_audit_log.insert_one({
+        "action": "challenge_created",
+        "admin_email": admin.get("email"),
+        "challenge_id": challenge_id,
+        "challenge_name": challenge.name,
+        "timestamp": datetime.now(timezone.utc)
+    })
+    
+    return {"success": True, "challenge_id": challenge_id, "challenge": {**challenge_doc, "_id": None}}
+
+@app.put("/api/admin/challenges/{challenge_id}")
+async def update_admin_challenge(
+    challenge_id: str,
+    update: ChallengeUpdate,
+    admin: dict = Depends(get_current_admin)
+):
+    """Update an existing custom challenge"""
+    existing = await db.custom_challenges.find_one({"id": challenge_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Challenge not found")
+    
+    update_data = {k: v for k, v in update.dict().items() if v is not None}
+    
+    # Handle badge reward updates
+    if any(k.startswith("badge_") for k in update_data):
+        badge_reward = existing.get("badge_reward", {})
+        if "badge_name" in update_data:
+            badge_reward["name"] = update_data.pop("badge_name")
+        if "badge_description" in update_data:
+            badge_reward["description"] = update_data.pop("badge_description")
+        if "badge_icon" in update_data:
+            badge_reward["icon"] = update_data.pop("badge_icon")
+            update_data["icon"] = badge_reward["icon"]
+        if "badge_color" in update_data:
+            badge_reward["color"] = update_data.pop("badge_color")
+            update_data["color"] = badge_reward["color"]
+        if "badge_points" in update_data:
+            badge_reward["points_value"] = update_data.pop("badge_points")
+        update_data["badge_reward"] = badge_reward
+    
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    
+    await db.custom_challenges.update_one({"id": challenge_id}, {"$set": update_data})
+    
+    # Log the action
+    await db.admin_audit_log.insert_one({
+        "action": "challenge_updated",
+        "admin_email": admin.get("email"),
+        "challenge_id": challenge_id,
+        "updates": list(update_data.keys()),
+        "timestamp": datetime.now(timezone.utc)
+    })
+    
+    updated = await db.custom_challenges.find_one({"id": challenge_id}, {"_id": 0})
+    return {"success": True, "challenge": updated}
+
+@app.delete("/api/admin/challenges/{challenge_id}")
+async def delete_admin_challenge(
+    challenge_id: str,
+    admin: dict = Depends(get_current_admin)
+):
+    """Delete a custom challenge"""
+    existing = await db.custom_challenges.find_one({"id": challenge_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Challenge not found")
+    
+    # Soft delete by setting is_active to False
+    await db.custom_challenges.update_one(
+        {"id": challenge_id},
+        {"$set": {"is_active": False, "deleted_at": datetime.now(timezone.utc), "deleted_by": admin.get("email")}}
+    )
+    
+    # Log the action
+    await db.admin_audit_log.insert_one({
+        "action": "challenge_deleted",
+        "admin_email": admin.get("email"),
+        "challenge_id": challenge_id,
+        "challenge_name": existing.get("name"),
+        "timestamp": datetime.now(timezone.utc)
+    })
+    
+    return {"success": True}
+
+@app.get("/api/admin/challenges/{challenge_id}/leaderboard")
+async def get_challenge_leaderboard(
+    challenge_id: str,
+    limit: int = Query(default=50, le=100),
+    admin: dict = Depends(get_current_admin)
+):
+    """Get leaderboard for a specific challenge"""
+    participants = await db.challenge_participants.find(
+        {"challenge_id": challenge_id}
+    ).sort("progress", -1).limit(limit).to_list(limit)
+    
+    user_ids = [p["user_id"] for p in participants]
+    users = await db.users.find({"user_id": {"$in": user_ids}}, {"_id": 0, "user_id": 1, "name": 1, "email": 1}).to_list(limit)
+    users_map = {u["user_id"]: u for u in users}
+    
+    # Get challenge target
+    challenge = await db.custom_challenges.find_one({"id": challenge_id}) or {}
+    target = challenge.get("target", 100)
+    
+    leaderboard = []
+    for i, p in enumerate(participants):
+        user = users_map.get(p["user_id"], {})
+        leaderboard.append({
+            "rank": i + 1,
+            "user_id": p["user_id"],
+            "user_name": user.get("name", "Unknown"),
+            "user_email": user.get("email", ""),
+            "progress": p.get("progress", 0),
+            "target": target,
+            "completed": p.get("progress", 0) >= target,
+            "joined_at": p.get("joined_at"),
+        })
+    
+    return {"leaderboard": leaderboard, "total": len(leaderboard)}
+
+@app.get("/api/admin/challenges/stats/overview")
+async def get_challenges_stats_overview(admin: dict = Depends(get_current_admin)):
+    """Get overview stats for all challenges"""
+    now = datetime.now(timezone.utc)
+    
+    # Custom challenges stats
+    total_custom = await db.custom_challenges.count_documents({"is_custom": True})
+    active_custom = await db.custom_challenges.count_documents({"is_custom": True, "is_active": True})
+    
+    # Active challenges (within date range)
+    active_by_date = await db.custom_challenges.count_documents({
+        "is_custom": True,
+        "is_active": True,
+        "start_date": {"$lte": now},
+        "end_date": {"$gte": now}
+    })
+    
+    # Total participants and completions
+    total_participants = await db.challenge_participants.count_documents({})
+    total_completions = await db.challenge_completions.count_documents({})
+    
+    # Recent activity
+    recent_joins = await db.challenge_participants.count_documents({
+        "joined_at": {"$gte": now - timedelta(days=7)}
+    })
+    recent_completions = await db.challenge_completions.count_documents({
+        "completed_at": {"$gte": now - timedelta(days=7)}
+    })
+    
+    # Top challenges by participation
+    pipeline = [
+        {"$group": {"_id": "$challenge_id", "participants": {"$sum": 1}}},
+        {"$sort": {"participants": -1}},
+        {"$limit": 5}
+    ]
+    top_challenges = await db.challenge_participants.aggregate(pipeline).to_list(5)
+    
+    # Get challenge names
+    challenge_ids = [c["_id"] for c in top_challenges]
+    challenges = await db.custom_challenges.find({"id": {"$in": challenge_ids}}, {"_id": 0, "id": 1, "name": 1}).to_list(10)
+    challenges_map = {c["id"]: c["name"] for c in challenges}
+    
+    for tc in top_challenges:
+        tc["name"] = challenges_map.get(tc["_id"], tc["_id"])
+    
+    return {
+        "total_custom_challenges": total_custom,
+        "active_challenges": active_custom,
+        "currently_running": active_by_date,
+        "total_participants": total_participants,
+        "total_completions": total_completions,
+        "completion_rate": round((total_completions / total_participants * 100) if total_participants > 0 else 0, 1),
+        "recent_activity": {
+            "joins_last_7_days": recent_joins,
+            "completions_last_7_days": recent_completions
+        },
+        "top_challenges": top_challenges
+    }
+
+# =============================================================================
+# LEADERBOARD MANAGEMENT
+# =============================================================================
+
+@app.get("/api/admin/leaderboard")
+async def get_admin_leaderboard(
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=50, le=100),
+    admin: dict = Depends(get_current_admin)
+):
+    """Get badge leaderboard with admin controls"""
+    skip = (page - 1) * limit
+    
+    pipeline = [
+        {"$group": {"_id": "$user_id", "badge_count": {"$sum": 1}}},
+        {"$sort": {"badge_count": -1}},
+        {"$skip": skip},
+        {"$limit": limit}
+    ]
+    
+    leaderboard_data = await db.user_badges.aggregate(pipeline).to_list(limit)
+    
+    # Get total count
+    count_pipeline = [
+        {"$group": {"_id": "$user_id"}},
+        {"$count": "total"}
+    ]
+    count_result = await db.user_badges.aggregate(count_pipeline).to_list(1)
+    total = count_result[0]["total"] if count_result else 0
+    
+    # Get user details
+    user_ids = [item["_id"] for item in leaderboard_data]
+    users = await db.users.find({"user_id": {"$in": user_ids}}, {"_id": 0}).to_list(limit)
+    users_map = {u["user_id"]: u for u in users}
+    
+    leaderboard = []
+    for i, item in enumerate(leaderboard_data):
+        user = users_map.get(item["_id"], {})
+        leaderboard.append({
+            "rank": skip + i + 1,
+            "user_id": item["_id"],
+            "user_name": user.get("name", "Unknown"),
+            "email": user.get("email", ""),
+            "badge_count": item["badge_count"],
+            "is_verified": user.get("is_verified", False),
+            "created_at": user.get("created_at"),
+            "last_active": user.get("last_seen"),
+        })
+    
+    return {
+        "leaderboard": leaderboard,
+        "pagination": {
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "pages": (total + limit - 1) // limit
+        }
+    }
+
+@app.get("/api/admin/leaderboard/user/{user_id}")
+async def get_user_badge_details(user_id: str, admin: dict = Depends(get_current_admin)):
+    """Get detailed badge info for a specific user"""
+    user = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get all badges
+    user_badges = await db.user_badges.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+    badge_ids = [b["badge_id"] for b in user_badges]
+    badges = await db.badges.find({"id": {"$in": badge_ids}}, {"_id": 0}).to_list(100)
+    badges_map = {b["id"]: b for b in badges}
+    
+    # Get challenge completions
+    completions = await db.challenge_completions.find({"user_id": user_id}, {"_id": 0}).to_list(50)
+    
+    # Get milestones
+    milestones = await db.user_milestones.find({"user_id": user_id}, {"_id": 0}).to_list(50)
+    
+    # Calculate rank
+    pipeline = [
+        {"$group": {"_id": "$user_id", "badge_count": {"$sum": 1}}},
+        {"$sort": {"badge_count": -1}}
+    ]
+    all_rankings = await db.user_badges.aggregate(pipeline).to_list(10000)
+    user_rank = next((i + 1 for i, r in enumerate(all_rankings) if r["_id"] == user_id), None)
+    
+    return {
+        "user": {
+            "user_id": user.get("user_id"),
+            "name": user.get("name"),
+            "email": user.get("email"),
+            "is_verified": user.get("is_verified", False),
+        },
+        "rank": user_rank,
+        "total_badges": len(user_badges),
+        "badges": [{
+            "id": ub.get("badge_id"),
+            "name": badges_map.get(ub.get("badge_id"), {}).get("name", "Unknown"),
+            "earned_at": ub.get("earned_at"),
+            "is_showcased": ub.get("is_showcased", False),
+        } for ub in user_badges],
+        "challenge_completions": completions,
+        "milestones_achieved": len(milestones),
+    }
+
+# =============================================================================
+# STREAK BONUSES
+# =============================================================================
+
+@app.get("/api/admin/streaks")
+async def get_user_streaks(
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=50, le=100),
+    admin: dict = Depends(get_current_admin)
+):
+    """Get users with challenge completion streaks"""
+    skip = (page - 1) * limit
+    
+    streaks = await db.user_streaks.find({}, {"_id": 0}).sort("current_streak", -1).skip(skip).limit(limit).to_list(limit)
+    total = await db.user_streaks.count_documents({})
+    
+    user_ids = [s["user_id"] for s in streaks]
+    users = await db.users.find({"user_id": {"$in": user_ids}}, {"_id": 0, "user_id": 1, "name": 1, "email": 1}).to_list(limit)
+    users_map = {u["user_id"]: u for u in users}
+    
+    for streak in streaks:
+        user = users_map.get(streak["user_id"], {})
+        streak["user_name"] = user.get("name", "Unknown")
+        streak["user_email"] = user.get("email", "")
+    
+    return {
+        "streaks": streaks,
+        "pagination": {
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "pages": (total + limit - 1) // limit
+        }
+    }
+
+# =============================================================================
+# CHALLENGE EMAIL REMINDERS
+# =============================================================================
+
+@app.get("/api/admin/challenges/reminders")
+async def get_challenge_reminders(admin: dict = Depends(get_current_admin)):
+    """Get pending challenge reminder emails"""
+    now = datetime.now(timezone.utc)
+    
+    # Find challenges ending in 1-3 days
+    ending_soon = await db.custom_challenges.find({
+        "is_active": True,
+        "end_date": {
+            "$gte": now,
+            "$lte": now + timedelta(days=3)
+        }
+    }, {"_id": 0}).to_list(50)
+    
+    reminders = []
+    for challenge in ending_soon:
+        # Get participants who haven't completed
+        participants = await db.challenge_participants.find({
+            "challenge_id": challenge["id"]
+        }).to_list(1000)
+        
+        completions = await db.challenge_completions.find({
+            "challenge_id": challenge["id"]
+        }).to_list(1000)
+        completed_user_ids = {c["user_id"] for c in completions}
+        
+        incomplete_users = [p for p in participants if p["user_id"] not in completed_user_ids]
+        
+        time_left = challenge["end_date"] - now
+        
+        reminders.append({
+            "challenge_id": challenge["id"],
+            "challenge_name": challenge["name"],
+            "end_date": challenge["end_date"],
+            "days_remaining": time_left.days,
+            "hours_remaining": time_left.seconds // 3600 if time_left.days == 0 else 0,
+            "total_participants": len(participants),
+            "incomplete_count": len(incomplete_users),
+            "reminder_sent": challenge.get("reminder_sent", False),
+        })
+    
+    return {"reminders": reminders}
+
+@app.post("/api/admin/challenges/{challenge_id}/send-reminder")
+async def send_challenge_reminder(
+    challenge_id: str,
+    admin: dict = Depends(get_current_admin)
+):
+    """Send reminder emails to users who haven't completed the challenge"""
+    challenge = await db.custom_challenges.find_one({"id": challenge_id})
+    if not challenge:
+        raise HTTPException(status_code=404, detail="Challenge not found")
+    
+    # Get participants who haven't completed
+    participants = await db.challenge_participants.find({"challenge_id": challenge_id}).to_list(1000)
+    completions = await db.challenge_completions.find({"challenge_id": challenge_id}).to_list(1000)
+    completed_user_ids = {c["user_id"] for c in completions}
+    
+    incomplete_user_ids = [p["user_id"] for p in participants if p["user_id"] not in completed_user_ids]
+    
+    # Get user emails
+    users = await db.users.find(
+        {"user_id": {"$in": incomplete_user_ids}},
+        {"_id": 0, "user_id": 1, "email": 1, "name": 1}
+    ).to_list(1000)
+    
+    # Calculate time remaining
+    now = datetime.now(timezone.utc)
+    time_left = challenge["end_date"] - now
+    days_left = time_left.days
+    
+    # Send emails (using SendGrid if configured)
+    sent_count = 0
+    for user in users:
+        if SENDGRID_API_KEY:
+            try:
+                async with httpx.AsyncClient() as client:
+                    await client.post(
+                        "https://api.sendgrid.com/v3/mail/send",
+                        headers={
+                            "Authorization": f"Bearer {SENDGRID_API_KEY}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "personalizations": [{"to": [{"email": user["email"]}]}],
+                            "from": {"email": SENDGRID_FROM_EMAIL, "name": SENDGRID_FROM_NAME},
+                            "subject": f"⏰ Only {days_left} days left: {challenge['name']}",
+                            "content": [{
+                                "type": "text/html",
+                                "value": f"""
+                                <h2>Don't miss out, {user.get('name', 'there')}!</h2>
+                                <p>Your challenge <strong>{challenge['name']}</strong> ends in just {days_left} day{'s' if days_left != 1 else ''}!</p>
+                                <p>{challenge['description']}</p>
+                                <p>Complete the challenge to earn the exclusive <strong>{challenge['badge_reward']['name']}</strong> badge!</p>
+                                <a href="https://seller-connect-15.preview.emergentagent.com/challenges" style="display:inline-block;padding:12px 24px;background:#2E7D32;color:white;text-decoration:none;border-radius:8px;">View Challenge</a>
+                                """
+                            }]
+                        }
+                    )
+                sent_count += 1
+            except Exception as e:
+                logger.error(f"Failed to send reminder to {user['email']}: {e}")
+    
+    # Mark reminder as sent
+    await db.custom_challenges.update_one(
+        {"id": challenge_id},
+        {"$set": {"reminder_sent": True, "reminder_sent_at": now}}
+    )
+    
+    # Log the action
+    await db.admin_audit_log.insert_one({
+        "action": "challenge_reminder_sent",
+        "admin_email": admin.get("email"),
+        "challenge_id": challenge_id,
+        "recipients_count": sent_count,
+        "timestamp": now
+    })
+    
+    return {"success": True, "emails_sent": sent_count, "total_recipients": len(users)}
+
+# =============================================================================
+# PAST BADGES GALLERY
+# =============================================================================
+
+@app.get("/api/admin/badges/gallery")
+async def get_past_badges_gallery(
+    category: Optional[str] = None,
+    year: Optional[int] = None,
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=50, le=100),
+    admin: dict = Depends(get_current_admin)
+):
+    """Get gallery of past seasonal/challenge badges"""
+    query = {"category": "challenge"}
+    
+    if year:
+        # Filter by year using the period_start field
+        start_of_year = datetime(year, 1, 1, tzinfo=timezone.utc)
+        end_of_year = datetime(year + 1, 1, 1, tzinfo=timezone.utc)
+        query["period_start"] = {"$gte": start_of_year, "$lt": end_of_year}
+    
+    skip = (page - 1) * limit
+    total = await db.badges.count_documents(query)
+    
+    badges = await db.badges.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Get earn counts for each badge
+    for badge in badges:
+        badge_id = badge.get("id")
+        earned_count = await db.user_badges.count_documents({"badge_id": badge_id})
+        badge["earned_count"] = earned_count
+    
+    # Get available years
+    years_pipeline = [
+        {"$match": {"category": "challenge", "period_start": {"$exists": True}}},
+        {"$project": {"year": {"$year": "$period_start"}}},
+        {"$group": {"_id": "$year"}},
+        {"$sort": {"_id": -1}}
+    ]
+    years_result = await db.badges.aggregate(years_pipeline).to_list(20)
+    available_years = [y["_id"] for y in years_result if y["_id"]]
+    
+    return {
+        "badges": badges,
+        "available_years": available_years,
+        "pagination": {
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "pages": (total + limit - 1) // limit
+        }
+    }
+
+# =============================================================================
+# ENHANCED ANALYTICS
+# =============================================================================
+
+@app.get("/api/admin/analytics/sellers")
+async def get_seller_analytics(
+    days: int = Query(default=30, le=365),
+    admin: dict = Depends(get_current_admin)
+):
+    """Get comprehensive seller analytics"""
+    now = datetime.now(timezone.utc)
+    start_date = now - timedelta(days=days)
+    
+    # Top sellers by revenue
+    revenue_pipeline = [
+        {
+            "$match": {
+                "status": "sold",
+                "sold_at": {"$gte": start_date}
+            }
+        },
+        {
+            "$group": {
+                "_id": "$seller_id",
+                "total_revenue": {"$sum": "$price"},
+                "items_sold": {"$sum": 1}
+            }
+        },
+        {"$sort": {"total_revenue": -1}},
+        {"$limit": 20}
+    ]
+    top_sellers = await db.listings.aggregate(revenue_pipeline).to_list(20)
+    
+    # Get seller details
+    seller_ids = [s["_id"] for s in top_sellers]
+    sellers = await db.users.find({"user_id": {"$in": seller_ids}}, {"_id": 0, "user_id": 1, "name": 1, "email": 1, "is_verified": 1}).to_list(20)
+    sellers_map = {s["user_id"]: s for s in sellers}
+    
+    for seller in top_sellers:
+        user = sellers_map.get(seller["_id"], {})
+        seller["name"] = user.get("name", "Unknown")
+        seller["email"] = user.get("email", "")
+        seller["is_verified"] = user.get("is_verified", False)
+    
+    # Active sellers (with listings in period)
+    active_sellers_pipeline = [
+        {"$match": {"created_at": {"$gte": start_date}}},
+        {"$group": {"_id": "$seller_id"}},
+        {"$count": "total"}
+    ]
+    active_result = await db.listings.aggregate(active_sellers_pipeline).to_list(1)
+    active_sellers = active_result[0]["total"] if active_result else 0
+    
+    # New sellers
+    new_sellers = await db.users.count_documents({
+        "created_at": {"$gte": start_date},
+        "is_seller": True
+    })
+    
+    # Seller growth over time
+    growth_pipeline = [
+        {"$match": {"created_at": {"$gte": start_date}, "is_seller": True}},
+        {"$group": {
+            "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$created_at"}},
+            "count": {"$sum": 1}
+        }},
+        {"$sort": {"_id": 1}}
+    ]
+    seller_growth = await db.users.aggregate(growth_pipeline).to_list(days)
+    
+    # Average metrics
+    avg_pipeline = [
+        {"$match": {"status": "sold", "sold_at": {"$gte": start_date}}},
+        {"$group": {
+            "_id": None,
+            "avg_price": {"$avg": "$price"},
+            "total_transactions": {"$sum": 1},
+            "total_volume": {"$sum": "$price"}
+        }}
+    ]
+    avg_result = await db.listings.aggregate(avg_pipeline).to_list(1)
+    avg_metrics = avg_result[0] if avg_result else {"avg_price": 0, "total_transactions": 0, "total_volume": 0}
+    
+    return {
+        "top_sellers": top_sellers,
+        "active_sellers": active_sellers,
+        "new_sellers": new_sellers,
+        "seller_growth": seller_growth,
+        "metrics": {
+            "average_sale_price": round(avg_metrics.get("avg_price", 0), 2),
+            "total_transactions": avg_metrics.get("total_transactions", 0),
+            "total_volume": round(avg_metrics.get("total_volume", 0), 2),
+        }
+    }
+
+@app.get("/api/admin/analytics/engagement")
+async def get_engagement_analytics(
+    days: int = Query(default=30, le=365),
+    admin: dict = Depends(get_current_admin)
+):
+    """Get user engagement analytics"""
+    now = datetime.now(timezone.utc)
+    start_date = now - timedelta(days=days)
+    
+    # Messages sent
+    messages_pipeline = [
+        {"$match": {"created_at": {"$gte": start_date}}},
+        {"$group": {
+            "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$created_at"}},
+            "count": {"$sum": 1}
+        }},
+        {"$sort": {"_id": 1}}
+    ]
+    messages_trend = await db.messages.aggregate(messages_pipeline).to_list(days)
+    total_messages = sum(m["count"] for m in messages_trend)
+    
+    # Favorites/saves
+    favorites_count = await db.favorites.count_documents({"created_at": {"$gte": start_date}})
+    
+    # User sessions/logins
+    active_users_pipeline = [
+        {"$match": {"last_seen": {"$gte": start_date}}},
+        {"$count": "total"}
+    ]
+    active_result = await db.users.aggregate(active_users_pipeline).to_list(1)
+    active_users = active_result[0]["total"] if active_result else 0
+    
+    # Badge engagement
+    badges_earned = await db.user_badges.count_documents({"earned_at": {"$gte": start_date}})
+    challenges_joined = await db.challenge_participants.count_documents({"joined_at": {"$gte": start_date}})
+    challenges_completed = await db.challenge_completions.count_documents({"completed_at": {"$gte": start_date}})
+    
+    # Notification engagement
+    notifications_sent = await db.notifications.count_documents({"created_at": {"$gte": start_date}})
+    notifications_read = await db.notifications.count_documents({"created_at": {"$gte": start_date}, "read": True})
+    
+    return {
+        "messages": {
+            "total": total_messages,
+            "trend": messages_trend,
+        },
+        "favorites": favorites_count,
+        "active_users": active_users,
+        "badges": {
+            "earned": badges_earned,
+            "challenges_joined": challenges_joined,
+            "challenges_completed": challenges_completed,
+        },
+        "notifications": {
+            "sent": notifications_sent,
+            "read": notifications_read,
+            "read_rate": round((notifications_read / notifications_sent * 100) if notifications_sent > 0 else 0, 1)
+        }
+    }
+
+@app.get("/api/admin/analytics/platform")
+async def get_platform_analytics(
+    days: int = Query(default=30, le=365),
+    admin: dict = Depends(get_current_admin)
+):
+    """Get comprehensive platform analytics"""
+    now = datetime.now(timezone.utc)
+    start_date = now - timedelta(days=days)
+    
+    # User stats
+    total_users = await db.users.count_documents({})
+    new_users = await db.users.count_documents({"created_at": {"$gte": start_date}})
+    verified_users = await db.users.count_documents({"is_verified": True})
+    
+    # Listing stats
+    total_listings = await db.listings.count_documents({})
+    active_listings = await db.listings.count_documents({"status": "active"})
+    new_listings = await db.listings.count_documents({"created_at": {"$gte": start_date}})
+    sold_listings = await db.listings.count_documents({"status": "sold", "sold_at": {"$gte": start_date}})
+    
+    # Revenue stats
+    revenue_pipeline = [
+        {"$match": {"status": "sold", "sold_at": {"$gte": start_date}}},
+        {"$group": {"_id": None, "total": {"$sum": "$price"}}}
+    ]
+    revenue_result = await db.listings.aggregate(revenue_pipeline).to_list(1)
+    total_revenue = revenue_result[0]["total"] if revenue_result else 0
+    
+    # Category breakdown
+    category_pipeline = [
+        {"$match": {"status": "active"}},
+        {"$group": {"_id": "$category", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ]
+    category_breakdown = await db.listings.aggregate(category_pipeline).to_list(10)
+    
+    # Daily activity trend
+    activity_pipeline = [
+        {"$match": {"created_at": {"$gte": start_date}}},
+        {"$group": {
+            "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$created_at"}},
+            "listings": {"$sum": 1}
+        }},
+        {"$sort": {"_id": 1}}
+    ]
+    listing_trend = await db.listings.aggregate(activity_pipeline).to_list(days)
+    
+    # Support tickets
+    open_tickets = await db.support_tickets.count_documents({"status": {"$in": ["open", "pending"]}})
+    
+    # Reports/flags
+    pending_reports = await db.reports.count_documents({"status": "pending"})
+    
+    return {
+        "users": {
+            "total": total_users,
+            "new": new_users,
+            "verified": verified_users,
+            "verification_rate": round((verified_users / total_users * 100) if total_users > 0 else 0, 1)
+        },
+        "listings": {
+            "total": total_listings,
+            "active": active_listings,
+            "new": new_listings,
+            "sold": sold_listings,
+            "sell_through_rate": round((sold_listings / new_listings * 100) if new_listings > 0 else 0, 1),
+            "trend": listing_trend,
+            "by_category": category_breakdown,
+        },
+        "revenue": {
+            "total": round(total_revenue, 2),
+            "average_per_sale": round((total_revenue / sold_listings) if sold_listings > 0 else 0, 2),
+        },
+        "support": {
+            "open_tickets": open_tickets,
+            "pending_reports": pending_reports,
+        }
+    }
+
+@app.put("/api/admin/settings/seller-analytics")
+async def update_seller_analytics_settings(
+    settings: dict = Body(...),
+    admin: dict = Depends(get_current_admin)
+):
+    """Update seller analytics settings"""
+    await db.admin_settings.update_one(
+        {"type": "seller_analytics"},
+        {"$set": {
+            "settings": settings,
+            "updated_by": admin.get("email"),
+            "updated_at": datetime.now(timezone.utc)
+        }},
+        upsert=True
+    )
+    
+    return {"success": True, "settings": settings}
+
+@app.get("/api/admin/settings/seller-analytics")
+async def get_seller_analytics_settings(admin: dict = Depends(get_current_admin)):
+    """Get seller analytics settings"""
+    settings = await db.admin_settings.find_one({"type": "seller_analytics"}, {"_id": 0})
+    return settings or {"settings": {
+        "show_revenue": True,
+        "show_rankings": True,
+        "min_sales_for_ranking": 1,
+        "enable_seller_dashboard": True,
+    }}
+
+@app.put("/api/admin/settings/engagement-notifications")
+async def update_engagement_notification_settings(
+    settings: dict = Body(...),
+    admin: dict = Depends(get_current_admin)
+):
+    """Update engagement notification settings"""
+    await db.admin_settings.update_one(
+        {"type": "engagement_notifications"},
+        {"$set": {
+            "settings": settings,
+            "updated_by": admin.get("email"),
+            "updated_at": datetime.now(timezone.utc)
+        }},
+        upsert=True
+    )
+    
+    return {"success": True, "settings": settings}
+
+@app.get("/api/admin/settings/engagement-notifications")
+async def get_engagement_notification_settings(admin: dict = Depends(get_current_admin)):
+    """Get engagement notification settings"""
+    settings = await db.admin_settings.find_one({"type": "engagement_notifications"}, {"_id": 0})
+    return settings or {"settings": {
+        "enable_badge_notifications": True,
+        "enable_challenge_reminders": True,
+        "reminder_days_before": 3,
+        "enable_streak_notifications": True,
+        "enable_leaderboard_notifications": True,
+    }}
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
