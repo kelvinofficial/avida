@@ -239,6 +239,15 @@ def create_listings_router(
         except Exception as e:
             logger.debug(f"Smart notification trigger failed: {e}")
         
+        # Check and award badges for listing creation (async, non-blocking)
+        try:
+            from services.badge_service import get_badge_service
+            badge_service = get_badge_service(db)
+            import asyncio
+            asyncio.create_task(badge_service.check_and_award_badges(user.user_id, trigger="listing"))
+        except Exception as e:
+            logger.debug(f"Badge check failed: {e}")
+        
         return created_listing
     
     @router.get("")
