@@ -758,25 +758,35 @@ export default function OffersScreen() {
       <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
         {renderGlobalHeader()}
         
-        <View style={desktopStyles.pageWrapper}>
-          {/* Page Header */}
-          <View style={desktopStyles.pageHeader}>
-            <View style={desktopStyles.pageHeaderLeft}>
-              <TouchableOpacity 
-                style={desktopStyles.backBtn} 
-                onPress={handleGoBack}
-              >
-                <Ionicons name="arrow-back" size={20} color={COLORS.text} />
-              </TouchableOpacity>
-              <Text style={desktopStyles.pageTitle}>Offers</Text>
+        {/* Dedicated Offers Page Header */}
+        <View style={desktopStyles.dedicatedHeader}>
+          <View style={desktopStyles.dedicatedHeaderContent}>
+            <TouchableOpacity onPress={handleGoBack} style={desktopStyles.dedicatedBackButton}>
+              <Ionicons name="arrow-back" size={20} color="#333" />
+              <Text style={desktopStyles.dedicatedBackText}>Back</Text>
+            </TouchableOpacity>
+            <View style={desktopStyles.dedicatedHeaderCenter}>
+              <View style={desktopStyles.dedicatedHeaderIcon}>
+                <Ionicons name="pricetag" size={28} color={COLORS.primary} />
+              </View>
+              <View>
+                <Text style={desktopStyles.dedicatedHeaderTitle}>Offers</Text>
+                <Text style={desktopStyles.dedicatedHeaderSubtitle}>
+                  {role === 'seller' ? 'Manage offers received on your listings' : 'Track offers you\'ve made'}
+                </Text>
+              </View>
+            </View>
+            <View style={desktopStyles.dedicatedHeaderRight}>
               {pendingCount > 0 && role === 'seller' && (
-                <View style={desktopStyles.pendingBadge}>
-                  <Text style={desktopStyles.pendingBadgeText}>{pendingCount} pending</Text>
+                <View style={desktopStyles.pendingHeaderBadge}>
+                  <Text style={desktopStyles.pendingHeaderBadgeText}>{pendingCount} pending</Text>
                 </View>
               )}
             </View>
           </View>
-
+        </View>
+        
+        <View style={desktopStyles.pageWrapper}>
           {/* Role Toggle */}
           <View style={desktopStyles.roleToggleContainer}>
             <TouchableOpacity
