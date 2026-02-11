@@ -155,7 +155,7 @@ export default function BusinessProfilesPage() {
 
   const handleVerify = async (profileId: string) => {
     try {
-      await api.post(`/business-profiles/admin/${profileId}/verify`);
+      await api.post(`/business-profiles/${profileId}/verify`);
       fetchProfiles();
     } catch (err: any) {
       setError(err?.response?.data?.detail || 'Failed to verify profile');
@@ -164,7 +164,7 @@ export default function BusinessProfilesPage() {
 
   const handleReject = async (profileId: string) => {
     try {
-      await api.post(`/business-profiles/admin/${profileId}/reject`);
+      await api.post(`/business-profiles/${profileId}/reject`);
       fetchProfiles();
     } catch (err: any) {
       setError(err?.response?.data?.detail || 'Failed to reject profile');
