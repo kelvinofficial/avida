@@ -755,7 +755,7 @@ export default function ProfileScreen() {
 
   const fetchCreditBalance = useCallback(async () => {
     try {
-      const response = await api.get('/credits/balance');
+      const response = await api.get('/boost/credits/balance');
       setCreditBalance(response.data?.balance ?? 0);
     } catch (error) {
       console.error('Error fetching credit balance:', error);
