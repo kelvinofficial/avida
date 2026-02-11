@@ -448,3 +448,47 @@ MPESA_CONSUMER_KEY=xxx (optional)
 MPESA_CONSUMER_SECRET=xxx (optional)
 SENDGRID_API_KEY=xxx (configured)
 ```
+
+
+
+### 2026-02-11: Admin Badge Management & Desktop Navigation
+
+**COMPLETED**
+
+#### Admin Badge Management System
+- Full CRUD for badges with fields: name, description, icon, color, type, criteria, auto_award, points_value, **display_priority** (user-requested), is_active
+- Badge types: achievement, verification, premium, trust, special
+- Award/Revoke badges from users
+- User badges list with search and pagination
+- Admin dashboard page at `/dashboard/badges`
+- Navigation link added to admin sidebar
+
+**API Endpoints:**
+- `GET /api/admin/badges`: List all badges with stats
+- `POST /api/admin/badges`: Create new badge
+- `PUT /api/admin/badges/{id}`: Update badge
+- `DELETE /api/admin/badges/{id}`: Delete badge
+- `GET /api/admin/badges/users`: List user badges
+- `POST /api/admin/badges/award`: Award badge to user
+- `DELETE /api/admin/badges/users/{id}`: Revoke user badge
+- `GET /api/admin/users/search`: Search users by email/name
+
+**Key Files:**
+- `/app/admin-dashboard/backend/server.py` - Badge API endpoints (lines 7377-7636)
+- `/app/admin-dashboard/frontend/src/app/dashboard/badges/page.tsx` - Admin UI
+- `/app/admin-dashboard/frontend/src/app/dashboard/layout.tsx` - Sidebar with Badges link
+
+#### Desktop Navigation Pattern
+- Applied consistent top-bar navigation to `profile/my-listings.tsx`
+- Navigation links: My Listings, Messages, Saved, Offers
+- Created reusable `DesktopHeader` component at `/app/frontend/src/components/layout/DesktopHeader.tsx`
+- Exported from `/app/frontend/src/components/layout/index.ts`
+
+## Remaining Backlog
+
+### P1: Code Refactoring
+- Migrate remaining pages (offers.tsx, messages/index.tsx, saved.tsx) to use shared DesktopHeader component
+- Remove duplicated renderGlobalHeader functions and styles
+
+### P2: Additional Features
+- No other pending features requested
