@@ -113,7 +113,7 @@ export default function BusinessProfilesPage() {
     setError(null);
     try {
       const status = tabValue === 0 ? 'all' : tabValue === 1 ? 'pending' : tabValue === 2 ? 'verified' : 'rejected';
-      const response = await api.get(`/business-profiles/admin/list`, {
+      const response = await api.get(`/business-profiles/list`, {
         params: {
           page: page + 1,
           limit: rowsPerPage,
