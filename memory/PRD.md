@@ -1547,3 +1547,50 @@ Extracted ~400 lines of notification and account/support routes from `server.py`
 - `/app/backend/routes/account_support.py` (NEW - ~175 lines)
 - `/app/backend/routes/__init__.py` (Updated exports)
 - `/app/backend/server.py` (Removed inline routes)
+
+### 2026-02-11: Server.py Refactoring - User Settings, Sessions, ID Verification Modules
+**COMPLETED**
+
+#### Refactoring Summary
+Extracted ~177 lines of user settings, sessions, and ID verification routes from `server.py` into modular routers in `/app/backend/routes/user_settings.py`.
+
+#### New Routers Created
+1. **create_user_settings_router** - Get/update user settings, push token
+2. **create_sessions_router** - Active sessions management, revoke sessions
+3. **create_id_verification_router** - Submit/check ID verification status
+
+#### Routes Extracted
+
+**User Settings Router:**
+- `GET /settings` - Get user settings
+- `PUT /settings` - Update user settings
+- `PUT /settings/push-token` - Update push notification token
+
+**Sessions Router (`/api/sessions/`):**
+- `GET /` - List active sessions
+- `DELETE /{session_id}` - Revoke specific session
+- `POST /revoke-all` - Revoke all sessions except current
+
+**ID Verification Router (`/api/profile/`):**
+- `POST /verify-id` - Submit ID verification documents
+- `GET /verify-id/status` - Get verification status
+
+#### Result
+- `server.py` reduced from 5409 lines to 5232 lines (177 lines removed)
+- All endpoints require authentication (verified)
+- Lint checks passing
+
+#### Final Cumulative Refactoring Progress
+- Original server.py: ~8881 lines
+- After Admin Locations: 7932 lines (-949)
+- After Auto/Motors: 7253 lines (-679)
+- After Property/Offers/Similar: 6240 lines (-1013)
+- After Social/ProfileActivity: 5792 lines (-448)
+- After Notifications/Account/Support: 5409 lines (-383)
+- After UserSettings/Sessions/IDVerification: 5232 lines (-177)
+- **Total reduction: 3649 lines (~41%)**
+
+**Key Files Modified:**
+- `/app/backend/routes/user_settings.py` (NEW - ~220 lines)
+- `/app/backend/routes/__init__.py` (Updated exports)
+- `/app/backend/server.py` (Removed inline routes)
