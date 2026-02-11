@@ -332,6 +332,8 @@ class TestScheduledReportsAPI:
     
     def test_generated_report_alerts_structure(self):
         """Verify alerts section structure"""
+        self._ensure_all_sections_enabled()
+        
         response = requests.post(
             f"{BASE_URL}/api/admin/reports/generate",
             headers=self.headers
