@@ -7898,9 +7898,26 @@ logger.info("SEO Sitemap endpoints registered (/sitemap.xml, /robots.txt)")
 
 ADMIN_BACKEND_URL = "http://localhost:8002"
 
+# Paths that should NOT be proxied (handled by local routes)
+ADMIN_LOCAL_PATHS = [
+    "analytics/platform",
+    "analytics/sellers", 
+    "analytics/engagement",
+    "settings/seller-analytics",
+    "settings/engagement-notifications",
+    "challenges",
+]
+
 @app.api_route("/api/admin/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 async def admin_proxy(request: Request, path: str):
-    """Proxy all admin requests to the admin backend"""
+    """Proxy admin requests to the admin backend, except for locally handled routes"""
+    
+    # Check if this path should be handled locally (not proxied)
+    for local_path in ADMIN_LOCAL_PATHS:
+        if path.startswith(local_path):
+            # Return 404 to let other routers handle it
+            raise HTTPException(status_code=404, detail="Not found in proxy - handled locally")
+    
     async with httpx.AsyncClient(timeout=30.0) as client:
         # Build the target URL
         url = f"{ADMIN_BACKEND_URL}/api/admin/{path}"
