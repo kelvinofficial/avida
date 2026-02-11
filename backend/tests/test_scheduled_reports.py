@@ -208,8 +208,28 @@ class TestScheduledReportsAPI:
     
     # ===== POST Generate Report Tests =====
     
+    def _ensure_all_sections_enabled(self):
+        """Helper to enable all report sections before testing"""
+        requests.post(
+            f"{BASE_URL}/api/admin/settings/scheduled-reports",
+            headers=self.headers,
+            json={
+                "enabled": True,
+                "frequency": "weekly",
+                "day_of_week": 1,
+                "hour": 9,
+                "admin_emails": [],
+                "include_seller_analytics": True,
+                "include_engagement_metrics": True,
+                "include_platform_overview": True,
+                "include_alerts": True
+            }
+        )
+    
     def test_generate_report(self):
         """POST /admin/reports/generate should generate a full report"""
+        self._ensure_all_sections_enabled()
+        
         response = requests.post(
             f"{BASE_URL}/api/admin/reports/generate",
             headers=self.headers
