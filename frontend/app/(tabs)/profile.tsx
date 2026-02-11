@@ -1126,14 +1126,8 @@ export default function ProfileScreen() {
           >
             {/* Activity Section */}
             <View style={desktopStyles.sectionCard}>
-              <Text style={desktopStyles.sectionTitle}>Your Activity</Text>
+              <Text style={desktopStyles.sectionTitle}>My Activity</Text>
               <View style={desktopStyles.activityGrid}>
-                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/my-listings')}>
-                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#E8F5E9' }]}>
-                    <Ionicons name="pricetags" size={24} color={COLORS.primary} />
-                  </View>
-                  <Text style={desktopStyles.activityLabel}>My Listings</Text>
-                </TouchableOpacity>
                 <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/badges')}>
                   <View style={[desktopStyles.activityIcon, { backgroundColor: '#FFF8E1' }]}>
                     <Ionicons name="ribbon" size={24} color="#F9A825" />
@@ -1150,7 +1144,7 @@ export default function ProfileScreen() {
                   <View style={[desktopStyles.activityIcon, { backgroundColor: '#F3E5F5' }]}>
                     <Ionicons name="receipt" size={24} color="#9C27B0" />
                   </View>
-                  <Text style={desktopStyles.activityLabel}>Invoices</Text>
+                  <Text style={desktopStyles.activityLabel}>Invoices & Receipts</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/purchases')}>
                   <View style={[desktopStyles.activityIcon, { backgroundColor: '#E0F7FA' }]}>
@@ -1164,29 +1158,11 @@ export default function ProfileScreen() {
                   </View>
                   <Text style={desktopStyles.activityLabel}>Sales</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/saved')}>
-                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#FFEBEE' }]}>
-                    <Ionicons name="heart" size={24} color="#E53935" />
-                  </View>
-                  <Text style={desktopStyles.activityLabel}>Favorites</Text>
-                </TouchableOpacity>
                 <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/recently-viewed')}>
                   <View style={[desktopStyles.activityIcon, { backgroundColor: '#FFF3E0' }]}>
                     <Ionicons name="eye" size={24} color="#FF9800" />
                   </View>
                   <Text style={desktopStyles.activityLabel}>Recently Viewed</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/messages')}>
-                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#E3F2FD' }]}>
-                    <Ionicons name="chatbubbles" size={24} color="#1976D2" />
-                  </View>
-                  <Text style={desktopStyles.activityLabel}>Messages</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/offers')}>
-                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#FFF3E0' }]}>
-                    <Ionicons name="pricetag" size={24} color="#F57C00" />
-                  </View>
-                  <Text style={desktopStyles.activityLabel}>Offers</Text>
                 </TouchableOpacity>
               </View>
             </View>
