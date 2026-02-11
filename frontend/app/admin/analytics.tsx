@@ -780,6 +780,194 @@ export default function AdminAnalyticsScreen() {
         </View>
       </View>
 
+      {/* Scheduled Reports Settings */}
+      <Text style={styles.sectionTitle}>Scheduled Analytics Reports</Text>
+      <View style={styles.settingsCard}>
+        <View style={styles.toggleItem}>
+          <View style={styles.toggleInfo}>
+            <Ionicons name="calendar" size={20} color={COLORS.purple} />
+            <Text style={styles.toggleLabel}>Enable Scheduled Reports</Text>
+          </View>
+          <Switch
+            value={reportsEnabled}
+            onValueChange={setReportsEnabled}
+            trackColor={{ false: COLORS.border, true: COLORS.purpleLight }}
+            thumbColor={reportsEnabled ? COLORS.purple : '#f4f3f4'}
+          />
+        </View>
+
+        <View style={styles.settingDivider} />
+
+        <View style={styles.settingItem}>
+          <View style={styles.settingInfo}>
+            <Ionicons name="repeat" size={20} color={COLORS.blue} />
+            <View style={styles.settingTextContainer}>
+              <Text style={styles.settingLabel}>Report Frequency</Text>
+              <Text style={styles.settingDescription}>
+                How often to send analytics reports
+              </Text>
+            </View>
+          </View>
+          <View style={styles.frequencySelector}>
+            {['daily', 'weekly', 'monthly'].map((freq) => (
+              <TouchableOpacity
+                key={freq}
+                style={[
+                  styles.frequencyChip,
+                  reportFrequency === freq && styles.frequencyChipActive,
+                ]}
+                onPress={() => setReportFrequency(freq)}
+              >
+                <Text style={[
+                  styles.frequencyChipText,
+                  reportFrequency === freq && styles.frequencyChipTextActive,
+                ]}>
+                  {freq.charAt(0).toUpperCase() + freq.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {reportFrequency === 'weekly' && (
+          <>
+            <View style={styles.settingDivider} />
+            <View style={styles.settingItem}>
+              <View style={styles.settingInfo}>
+                <Ionicons name="today" size={20} color={COLORS.primary} />
+                <View style={styles.settingTextContainer}>
+                  <Text style={styles.settingLabel}>Day of Week</Text>
+                  <Text style={styles.settingDescription}>
+                    Which day to send the weekly report
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.daySelector}>
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, idx) => (
+                  <TouchableOpacity
+                    key={day}
+                    style={[
+                      styles.dayChip,
+                      reportDay === idx && styles.dayChipActive,
+                    ]}
+                    onPress={() => setReportDay(idx)}
+                  >
+                    <Text style={[
+                      styles.dayChipText,
+                      reportDay === idx && styles.dayChipTextActive,
+                    ]}>
+                      {day}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </>
+        )}
+
+        <View style={styles.settingDivider} />
+
+        <View style={styles.settingItem}>
+          <View style={styles.settingInfo}>
+            <Ionicons name="time" size={20} color={COLORS.warning} />
+            <View style={styles.settingTextContainer}>
+              <Text style={styles.settingLabel}>Send Time (UTC)</Text>
+              <Text style={styles.settingDescription}>
+                Hour of the day to send reports (0-23)
+              </Text>
+            </View>
+          </View>
+          <TextInput
+            style={styles.settingInput}
+            value={String(reportHour)}
+            onChangeText={(val) => setReportHour(parseInt(val) || 0)}
+            keyboardType="numeric"
+            placeholder="9"
+            maxLength={2}
+          />
+        </View>
+
+        <View style={styles.settingDivider} />
+
+        <View style={styles.settingItem}>
+          <View style={styles.settingInfo}>
+            <Ionicons name="people" size={20} color={COLORS.primary} />
+            <View style={styles.settingTextContainer}>
+              <Text style={styles.settingLabel}>Admin Email Recipients</Text>
+              <Text style={styles.settingDescription}>
+                Comma-separated list of email addresses
+              </Text>
+            </View>
+          </View>
+        </View>
+        <TextInput
+          style={styles.emailInput}
+          value={adminEmails}
+          onChangeText={setAdminEmails}
+          placeholder="admin@example.com, team@example.com"
+          multiline
+          numberOfLines={2}
+        />
+      </View>
+
+      {/* Send Report Now Button */}
+      <TouchableOpacity
+        style={[styles.sendReportButton, sendingReport && styles.saveButtonDisabled]}
+        onPress={handleSendReportNow}
+        disabled={sendingReport}
+      >
+        {sendingReport ? (
+          <ActivityIndicator size="small" color={COLORS.purple} />
+        ) : (
+          <>
+            <Ionicons name="send" size={20} color={COLORS.purple} />
+            <Text style={styles.sendReportButtonText}>Send Report Now</Text>
+          </>
+        )}
+      </TouchableOpacity>
+
+      {/* Report History */}
+      {reportHistory.length > 0 && (
+        <>
+          <Text style={styles.sectionTitle}>Recent Report History</Text>
+          <View style={styles.settingsCard}>
+            {reportHistory.map((record, idx) => (
+              <View key={idx}>
+                {idx > 0 && <View style={styles.settingDivider} />}
+                <View style={styles.historyItem}>
+                  <View style={styles.historyInfo}>
+                    <Ionicons 
+                      name={record.success ? "checkmark-circle" : "close-circle"} 
+                      size={20} 
+                      color={record.success ? COLORS.success : COLORS.danger} 
+                    />
+                    <View style={styles.historyTextContainer}>
+                      <Text style={styles.historyDate}>
+                        {record.created_at ? new Date(record.created_at).toLocaleString() : 'Unknown'}
+                      </Text>
+                      <Text style={styles.historyRecipients}>
+                        To: {record.sent_to?.join(', ') || 'N/A'}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={[
+                    styles.historyBadge,
+                    record.success ? styles.historyBadgeSuccess : styles.historyBadgeFailed
+                  ]}>
+                    <Text style={[
+                      styles.historyBadgeText,
+                      record.success ? styles.historyBadgeTextSuccess : styles.historyBadgeTextFailed
+                    ]}>
+                      {record.success ? 'Sent' : 'Failed'}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+        </>
+      )}
+
       {/* Save Button */}
       <TouchableOpacity
         style={[styles.saveButton, savingSettings && styles.saveButtonDisabled]}
