@@ -1460,11 +1460,7 @@ export default function HomeScreen() {
       {/* Content wrapper with light background */}
       <View style={(isDesktop || isTablet) ? { backgroundColor: '#F5F5F5' } : undefined}>
         {isDesktop || isTablet ? (
-          <DesktopHeader 
-            showSearch={true}
-            currentCity={selectedCity || 'All Locations'}
-            onLocationPress={() => setShowLocationModal(true)}
-          />
+          renderDesktopHeader()
         ) : renderHeader()}
         <View style={[styles.listContent, (isDesktop || isTablet) && { paddingHorizontal: 0, alignItems: 'center' }]}>
           {renderGrid()}
