@@ -922,9 +922,6 @@ export default function HomeScreen() {
                       )}
                     </View>
                   )}
-                  
-                  {/* Listing ID */}
-                  <Text style={featuredStyles.listingId}>ID: {listing.id?.slice(-8)}</Text>
                 </View>
               </TouchableOpacity>
             ))}
