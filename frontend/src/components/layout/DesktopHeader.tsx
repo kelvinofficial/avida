@@ -16,23 +16,37 @@ const COLORS = {
   textLight: '#9CA3AF',
   border: '#E5E7EB',
   warning: '#F59E0B',
+  purple: '#9333EA',
+  red: '#EF4444',
 };
 
 interface DesktopHeaderProps {
   showNavLinks?: boolean;
+  showSearch?: boolean;
+  currentCity?: string;
+  onLocationPress?: () => void;
 }
 
-export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ showNavLinks = true }) => {
+export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ 
+  showNavLinks = true,
+  showSearch = true,
+  currentCity = 'All Locations',
+  onLocationPress,
+}) => {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, user } = useAuthStore();
   const { goToLogin } = useLoginRedirect();
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [unviewedBadgeCount, setUnviewedBadgeCount] = useState(0);
+  const [notificationCount, setNotificationCount] = useState(0);
 
-  // Fetch credit balance when authenticated
+  // Fetch credit balance, badge count, and notifications when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       fetchCreditBalance();
+      fetchUnviewedBadgeCount();
+      fetchNotificationCount();
     }
   }, [isAuthenticated]);
 
@@ -43,6 +57,24 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ showNavLinks = tru
     } catch (err) {
       console.error('Failed to fetch credit balance:', err);
       setCreditBalance(0);
+    }
+  };
+
+  const fetchUnviewedBadgeCount = async () => {
+    try {
+      const res = await api.get('/badges/unviewed-count');
+      setUnviewedBadgeCount(res.data?.unviewed_count ?? 0);
+    } catch (err) {
+      console.error('Failed to fetch badge count:', err);
+    }
+  };
+
+  const fetchNotificationCount = async () => {
+    try {
+      const res = await api.get('/notifications/unread-count');
+      setNotificationCount(res.data?.count ?? 0);
+    } catch (err) {
+      console.error('Failed to fetch notification count:', err);
     }
   };
 
@@ -59,44 +91,49 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ showNavLinks = tru
             <Text style={styles.logoText}>avida</Text>
           </TouchableOpacity>
           
-          {/* Navigation Links - Desktop (for authenticated users) */}
-          {showNavLinks && isAuthenticated && (
-            <View style={styles.navLinks}>
-              <TouchableOpacity 
-                style={[styles.navLink, pathname === '/profile/my-listings' && styles.navLinkActive]}
-                onPress={() => router.push('/profile/my-listings')}
-              >
-                <Ionicons name="pricetags-outline" size={18} color={pathname === '/profile/my-listings' ? COLORS.primary : COLORS.textSecondary} />
-                <Text style={[styles.navLinkText, pathname === '/profile/my-listings' && styles.navLinkTextActive]}>My Listings</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.navLink, pathname === '/messages' && styles.navLinkActive]}
-                onPress={() => router.push('/messages')}
-              >
-                <Ionicons name="chatbubbles-outline" size={18} color={pathname === '/messages' ? COLORS.primary : COLORS.textSecondary} />
-                <Text style={[styles.navLinkText, pathname === '/messages' && styles.navLinkTextActive]}>Messages</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.navLink, (pathname === '/saved' || pathname === '/profile/saved') && styles.navLinkActive]}
-                onPress={() => router.push('/profile/saved')}
-              >
-                <Ionicons name="heart-outline" size={18} color={(pathname === '/saved' || pathname === '/profile/saved') ? COLORS.primary : COLORS.textSecondary} />
-                <Text style={[styles.navLinkText, (pathname === '/saved' || pathname === '/profile/saved') && styles.navLinkTextActive]}>Saved</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.navLink, pathname === '/offers' && styles.navLinkActive]}
-                onPress={() => router.push('/offers')}
-              >
-                <Ionicons name="pricetag-outline" size={18} color={pathname === '/offers' ? COLORS.primary : COLORS.textSecondary} />
-                <Text style={[styles.navLinkText, pathname === '/offers' && styles.navLinkTextActive]}>Offers</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          {/* Spacer to push everything to the right */}
+          <View style={{ flex: 1 }} />
           
           {/* Header Actions */}
           <View style={styles.globalHeaderActions}>
             {isAuthenticated ? (
               <>
+                {/* Navigation Links - Desktop (for authenticated users) */}
+                {showNavLinks && (
+                  <View style={styles.navLinks}>
+                    <TouchableOpacity 
+                      style={[styles.navLink, pathname === '/profile/my-listings' && styles.navLinkActive]}
+                      onPress={() => router.push('/profile/my-listings')}
+                    >
+                      <Ionicons name="pricetags-outline" size={18} color={pathname === '/profile/my-listings' ? COLORS.primary : COLORS.textSecondary} />
+                      <Text style={[styles.navLinkText, pathname === '/profile/my-listings' && styles.navLinkTextActive]}>My Listings</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={[styles.navLink, pathname === '/messages' && styles.navLinkActive]}
+                      onPress={() => router.push('/messages')}
+                    >
+                      <Ionicons name="chatbubbles-outline" size={18} color={pathname === '/messages' ? COLORS.primary : COLORS.textSecondary} />
+                      <Text style={[styles.navLinkText, pathname === '/messages' && styles.navLinkTextActive]}>Messages</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={[styles.navLink, (pathname === '/saved' || pathname === '/profile/saved') && styles.navLinkActive]}
+                      onPress={() => router.push('/profile/saved')}
+                    >
+                      <Ionicons name="heart-outline" size={18} color={(pathname === '/saved' || pathname === '/profile/saved') ? COLORS.primary : COLORS.textSecondary} />
+                      <Text style={[styles.navLinkText, (pathname === '/saved' || pathname === '/profile/saved') && styles.navLinkTextActive]}>Saved</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={[styles.navLink, pathname === '/offers' && styles.navLinkActive]}
+                      onPress={() => router.push('/offers')}
+                    >
+                      <Ionicons name="pricetag-outline" size={18} color={pathname === '/offers' ? COLORS.primary : COLORS.textSecondary} />
+                      <Text style={[styles.navLinkText, pathname === '/offers' && styles.navLinkTextActive]}>Offers</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                
+                {showNavLinks && <View style={styles.headerDivider} />}
+                
                 {/* Credit Balance */}
                 <TouchableOpacity 
                   style={styles.creditBalanceBtn} 
@@ -107,12 +144,34 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ showNavLinks = tru
                     {creditBalance !== null ? `${creditBalance} Credits` : '...'}
                   </Text>
                 </TouchableOpacity>
+                
+                {/* Badge Notification */}
+                <TouchableOpacity 
+                  style={styles.headerIconBtn} 
+                  onPress={() => router.push('/profile/badges')}
+                >
+                  <Ionicons name="medal-outline" size={22} color={COLORS.text} />
+                  {unviewedBadgeCount > 0 && (
+                    <View style={[styles.notifBadge, { backgroundColor: COLORS.purple }]}>
+                      <Text style={styles.notifBadgeText}>{unviewedBadgeCount > 99 ? '99+' : unviewedBadgeCount}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+                
+                {/* General Notifications */}
                 <TouchableOpacity 
                   style={styles.headerIconBtn} 
                   onPress={() => router.push('/notifications')}
                 >
                   <Ionicons name="notifications-outline" size={22} color={COLORS.text} />
+                  {notificationCount > 0 && (
+                    <View style={styles.notifBadge}>
+                      <Text style={styles.notifBadgeText}>{notificationCount > 99 ? '99+' : notificationCount}</Text>
+                    </View>
+                  )}
                 </TouchableOpacity>
+                
+                {/* Profile */}
                 <TouchableOpacity 
                   style={styles.headerIconBtn} 
                   onPress={() => router.push('/profile')}
@@ -130,7 +189,16 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ showNavLinks = tru
                 </TouchableOpacity>
               </>
             )}
-            <TouchableOpacity style={styles.postListingBtn} onPress={() => router.push('/post')}>
+            <TouchableOpacity 
+              style={styles.postListingBtn} 
+              onPress={() => {
+                if (!isAuthenticated) {
+                  router.push('/login?redirect=/post');
+                } else {
+                  router.push('/post');
+                }
+              }}
+            >
               <Ionicons name="add" size={18} color="#fff" />
               <Text style={styles.postListingBtnText}>Post Listing</Text>
             </TouchableOpacity>
@@ -139,27 +207,29 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ showNavLinks = tru
       </View>
       
       {/* Row 2: Search + Location */}
-      <View style={styles.globalHeaderRow2}>
-        <View style={styles.globalHeaderInner}>
-          <TouchableOpacity 
-            style={styles.searchField} 
-            onPress={() => router.push('/search')} 
-            activeOpacity={0.8}
-          >
-            <Ionicons name="search" size={20} color={COLORS.textSecondary} />
-            <Text style={styles.searchPlaceholder}>Search for anything...</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.locationChip} 
-            activeOpacity={0.7} 
-            onPress={() => router.push('/')}
-          >
-            <Ionicons name="location" size={18} color={COLORS.primary} />
-            <Text style={styles.locationText} numberOfLines={1}>All Locations</Text>
-            <Ionicons name="chevron-down" size={16} color={COLORS.textSecondary} />
-          </TouchableOpacity>
+      {showSearch && (
+        <View style={styles.globalHeaderRow2}>
+          <View style={styles.globalHeaderInner}>
+            <TouchableOpacity 
+              style={styles.searchField} 
+              onPress={() => router.push('/search')} 
+              activeOpacity={0.8}
+            >
+              <Ionicons name="search" size={20} color={COLORS.textSecondary} />
+              <Text style={styles.searchPlaceholder}>Search for anything...</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.locationChip} 
+              activeOpacity={0.7} 
+              onPress={onLocationPress || (() => router.push('/'))}
+            >
+              <Ionicons name="location" size={18} color={COLORS.primary} />
+              <Text style={styles.locationText} numberOfLines={1}>{currentCity}</Text>
+              <Ionicons name="chevron-down" size={16} color={COLORS.textSecondary} />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      )}
     </View>
   );
 };
@@ -204,7 +274,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginLeft: 32,
+    marginRight: 8,
   },
   navLink: {
     flexDirection: 'row',
@@ -225,6 +295,13 @@ const styles = StyleSheet.create({
   navLinkTextActive: {
     color: COLORS.primary,
     fontWeight: '600',
+  },
+  
+  headerDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: COLORS.border,
+    marginHorizontal: 8,
   },
   
   globalHeaderActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -249,6 +326,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: COLORS.background,
+    position: 'relative',
+  },
+  notifBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: COLORS.red,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  notifBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#fff',
   },
   signInHeaderBtn: {
     paddingHorizontal: 16,
