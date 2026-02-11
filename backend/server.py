@@ -3519,6 +3519,11 @@ async def get_my_leaderboard_rank(request: Request):
         "nearby_users": nearby_users,
     }
 
+# ==================== FOLLOW, REVIEWS, PROFILE ACTIVITY ====================
+# Now handled by modular routers (routes/social.py)
+# - create_social_router: follow/unfollow, reviews, user listings
+# - create_profile_activity_router: my listings, purchases, sales, recently viewed
+
 # ==================== ACTIVE SESSIONS ENDPOINTS ====================
 
 @api_router.get("/sessions")
