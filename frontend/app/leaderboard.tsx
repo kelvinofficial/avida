@@ -723,4 +723,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  seasonalGalleryLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#FDF2F8',
+    marginHorizontal: 16,
+    marginBottom: 32,
+    borderRadius: 12,
+    padding: 16,
+  },
+  seasonalGalleryLinkText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#EC4899',
+    flex: 1,
+  },
 });
