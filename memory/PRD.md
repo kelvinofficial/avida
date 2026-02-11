@@ -6,6 +6,24 @@ Build a local marketplace application (Avida) with:
 2. Business Profile feature for verified sellers
 3. Premium subscription tiers with payment integration
 
+### 2026-02-11: Modular Routes Wired into Server
+**COMPLETED**
+
+#### Route Integration
+- Wired new modular route files (`badges.py`, `streaks.py`, `challenges.py`) into `server.py`
+- Routes are now loaded via factory functions with proper dependency injection:
+  - `create_badges_router(db, require_auth)` - Badge progress, showcase, unviewed count, milestones, leaderboard
+  - `create_streaks_router(db, require_auth)` - User streak info, streak leaderboard
+  - `create_challenges_router(db, require_auth)` - Challenge listing, joining, progress tracking
+- All routes verified working via API tests
+
+#### DesktopHeader Component Enhanced
+- Enhanced `/app/frontend/src/components/layout/DesktopHeader.tsx` with:
+  - Badge notification icon with unviewed count (purple badge)
+  - General notification icon with unread count (red badge)
+  - Auto-fetching of credit balance, badge count, and notification count
+  - `showSearch`, `currentCity`, `onLocationPress` props for customization
+  - Navigation links with active state highlighting
 
 ### 2026-02-11: Desktop Header Consistency & Badge Celebrations
 **COMPLETED**
