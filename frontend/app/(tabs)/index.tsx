@@ -378,6 +378,7 @@ export default function HomeScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [notificationCount, setNotificationCount] = useState(0);
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [unviewedBadgeCount, setUnviewedBadgeCount] = useState(0);
   const [currentCity, setCurrentCity] = useState('Select Location');
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [locationSearch, setLocationSearch] = useState('');
