@@ -4221,8 +4221,219 @@ async def check_and_award_challenge_badges(user_id: str):
                     data={"type": "challenge_complete", "challenge_id": challenge_def["id"]},
                     notification_type="challenge"
                 )
+                
+                # Update streak tracking
+                await update_challenge_streak(user_id)
     
     return awarded_badges
+
+async def update_challenge_streak(user_id: str):
+    """Update user's challenge completion streak"""
+    now = datetime.now(timezone.utc)
+    
+    # Get user's streak record
+    streak = await db.user_streaks.find_one({"user_id": user_id})
+    
+    if not streak:
+        # First challenge completion
+        await db.user_streaks.insert_one({
+            "user_id": user_id,
+            "current_streak": 1,
+            "longest_streak": 1,
+            "last_completion": now,
+            "total_completions": 1,
+            "streak_bonus_points": 0,
+            "created_at": now,
+            "updated_at": now,
+        })
+        return
+    
+    # Calculate if this continues a streak (completed within the week)
+    last_completion = streak.get("last_completion")
+    days_since_last = (now - last_completion).days if last_completion else 999
+    
+    if days_since_last <= 7:
+        # Continue streak
+        new_streak = streak.get("current_streak", 0) + 1
+        longest = max(new_streak, streak.get("longest_streak", 0))
+        
+        # Calculate streak bonus (10 points per streak level, max 100)
+        streak_bonus = min(new_streak * 10, 100)
+        
+        await db.user_streaks.update_one(
+            {"user_id": user_id},
+            {"$set": {
+                "current_streak": new_streak,
+                "longest_streak": longest,
+                "last_completion": now,
+                "streak_bonus_points": streak_bonus,
+                "updated_at": now,
+            }, "$inc": {"total_completions": 1}}
+        )
+        
+        # Award streak badges
+        await check_and_award_streak_badges(user_id, new_streak)
+    else:
+        # Streak broken, reset to 1
+        await db.user_streaks.update_one(
+            {"user_id": user_id},
+            {"$set": {
+                "current_streak": 1,
+                "last_completion": now,
+                "streak_bonus_points": 10,
+                "updated_at": now,
+            }, "$inc": {"total_completions": 1}}
+        )
+
+async def check_and_award_streak_badges(user_id: str, streak_count: int):
+    """Award badges for reaching streak milestones"""
+    now = datetime.now(timezone.utc)
+    
+    streak_badges = [
+        {"threshold": 3, "id": "streak_3", "name": "Hot Streak", "description": "Completed 3 challenges in a row!", "icon": "flame", "color": "#F97316", "points": 25},
+        {"threshold": 5, "id": "streak_5", "name": "On Fire", "description": "Completed 5 challenges in a row!", "icon": "bonfire", "color": "#EF4444", "points": 50},
+        {"threshold": 10, "id": "streak_10", "name": "Unstoppable", "description": "Completed 10 challenges in a row!", "icon": "rocket", "color": "#8B5CF6", "points": 100},
+    ]
+    
+    for badge_def in streak_badges:
+        if streak_count >= badge_def["threshold"]:
+            badge_id = f"streak_{badge_def['id']}"
+            
+            # Check if already has this badge
+            existing = await db.user_badges.find_one({
+                "user_id": user_id,
+                "badge_id": badge_id
+            })
+            
+            if not existing:
+                # Create badge if not exists
+                await db.badges.update_one(
+                    {"id": badge_id},
+                    {"$setOnInsert": {
+                        "id": badge_id,
+                        "name": badge_def["name"],
+                        "description": badge_def["description"],
+                        "icon": badge_def["icon"],
+                        "color": badge_def["color"],
+                        "points_value": badge_def["points"],
+                        "category": "streak",
+                        "created_at": now,
+                    }},
+                    upsert=True
+                )
+                
+                # Award to user
+                await db.user_badges.insert_one({
+                    "user_id": user_id,
+                    "badge_id": badge_id,
+                    "earned_at": now,
+                    "is_viewed": False,
+                    "source": "streak",
+                })
+                
+                # Send push notification
+                user = await db.users.find_one({"user_id": user_id})
+                if user and user.get("push_token"):
+                    await send_push_notification(
+                        push_token=user["push_token"],
+                        title=f"🔥 {badge_def['name']}!",
+                        body=badge_def["description"],
+                        data={"type": "streak_badge", "badge_id": badge_id},
+                        notification_type="streak"
+                    )
+
+@api_router.get("/streaks/my-streak")
+async def get_my_streak(request: Request):
+    """Get current user's challenge completion streak"""
+    user = await require_auth(request)
+    
+    streak = await db.user_streaks.find_one({"user_id": user.user_id}, {"_id": 0})
+    
+    if not streak:
+        return {
+            "current_streak": 0,
+            "longest_streak": 0,
+            "total_completions": 0,
+            "streak_bonus_points": 0,
+            "next_streak_badge": {"threshold": 3, "name": "Hot Streak"},
+        }
+    
+    # Calculate next streak badge
+    next_badge = None
+    streak_thresholds = [3, 5, 10]
+    current = streak.get("current_streak", 0)
+    for threshold in streak_thresholds:
+        if current < threshold:
+            next_badge = {"threshold": threshold, "name": ["Hot Streak", "On Fire", "Unstoppable"][streak_thresholds.index(threshold)]}
+            break
+    
+    return {
+        "current_streak": streak.get("current_streak", 0),
+        "longest_streak": streak.get("longest_streak", 0),
+        "total_completions": streak.get("total_completions", 0),
+        "streak_bonus_points": streak.get("streak_bonus_points", 0),
+        "last_completion": streak.get("last_completion"),
+        "next_streak_badge": next_badge,
+    }
+
+@api_router.get("/badges/past-seasonal")
+async def get_past_seasonal_badges(
+    year: int = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=20, le=50),
+    request: Request = None
+):
+    """Get gallery of past seasonal badges"""
+    query = {"category": "challenge", "is_limited": True}
+    
+    if year:
+        start_of_year = datetime(year, 1, 1, tzinfo=timezone.utc)
+        end_of_year = datetime(year + 1, 1, 1, tzinfo=timezone.utc)
+        query["period_start"] = {"$gte": start_of_year, "$lt": end_of_year}
+    
+    skip = (page - 1) * limit
+    total = await db.badges.count_documents(query)
+    
+    badges = await db.badges.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Get earn counts
+    for badge in badges:
+        badge_id = badge.get("id")
+        earned_count = await db.user_badges.count_documents({"badge_id": badge_id})
+        badge["earned_count"] = earned_count
+        
+        # Check if current user has it (if authenticated)
+        if request:
+            try:
+                user = await require_auth(request)
+                user_has = await db.user_badges.find_one({
+                    "user_id": user.user_id,
+                    "badge_id": badge_id
+                })
+                badge["user_earned"] = user_has is not None
+            except:
+                badge["user_earned"] = False
+    
+    # Get available years
+    years_pipeline = [
+        {"$match": {"category": "challenge", "is_limited": True, "period_start": {"$exists": True}}},
+        {"$project": {"year": {"$year": "$period_start"}}},
+        {"$group": {"_id": "$year"}},
+        {"$sort": {"_id": -1}}
+    ]
+    years_result = await db.badges.aggregate(years_pipeline).to_list(20)
+    available_years = [y["_id"] for y in years_result if y["_id"]]
+    
+    return {
+        "badges": badges,
+        "available_years": available_years,
+        "pagination": {
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "pages": (total + limit - 1) // limit
+        }
+    }
 
 # ==================== BLOCKED USERS ENDPOINTS ====================
 
