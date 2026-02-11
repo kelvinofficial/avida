@@ -20,6 +20,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { Footer } from '../../src/components/layout';
 import { useLoginRedirect } from '../../src/hooks/useLoginRedirect';
+import { useBadgeCelebration } from '../../src/context/BadgeCelebrationContext';
 
 const COLORS = {
   primary: '#2E7D32',
