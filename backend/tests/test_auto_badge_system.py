@@ -68,6 +68,7 @@ class TestBadgeServiceInitialization:
             "description": "A test item to trigger badge check",
             "price": 99.99,
             "category_id": "electronics",
+            "subcategory": "laptops_computers",
             "condition": "new",
             "location": "Test City"
         })
@@ -140,6 +141,7 @@ class TestMarkSoldEndpoint:
             "description": "This will be marked as sold",
             "price": 150.00,
             "category_id": "electronics",
+            "subcategory": "laptops_computers",
             "condition": "used",
             "location": "Test City"
         })
@@ -208,6 +210,7 @@ class TestMarkSoldEndpoint:
             "description": "Testing double sell prevention",
             "price": 50.00,
             "category_id": "electronics",
+            "subcategory": "laptops_computers",
             "condition": "used",
             "location": "Test City"
         })
@@ -270,6 +273,7 @@ class TestBadgeCriteria:
                 "description": f"Testing stats calculation {i+1}",
                 "price": 10.00 * (i + 1),
                 "category_id": "electronics",
+                "subcategory": "laptops_computers",
                 "condition": "new",
                 "location": "Test City"
             })
@@ -309,6 +313,7 @@ class TestBadgeCriteria:
             "description": "Testing public badges endpoint",
             "price": 25.00,
             "category_id": "electronics",
+            "subcategory": "laptops_computers",
             "condition": "new",
             "location": "Test City"
         })
