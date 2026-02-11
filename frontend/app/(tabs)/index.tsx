@@ -1709,8 +1709,7 @@ const desktopStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginLeft: 32,
-    flex: 1,
+    marginRight: 8,
   },
   navLink: {
     flexDirection: 'row',
@@ -1724,6 +1723,12 @@ const desktopStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#6B7280',
+  },
+  headerDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: '#E5E7EB',
+    marginHorizontal: 8,
   },
   headerActions: {
     flexDirection: 'row',
