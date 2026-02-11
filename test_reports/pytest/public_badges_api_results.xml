@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="8" skipped="0" tests="10" time="7.116" timestamp="2026-02-11T01:04:11.231768+00:00" hostname="agent-env-acd8da38-d400-447a-a328-205a469a10e0"><testcase classname="backend.tests.test_public_badges_api.TestPublicBadgesAPI" name="test_health_check" time="6.618" /><testcase classname="backend.tests.test_public_badges_api.TestPublicBadgesAPI" name="test_login_admin" time="0.060"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_public_badges_api.py:33: in test_login_admin
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_public_badges_api.TestPublicBadgesAPI" name="test_public_badges_endpoint_exists" time="0.042"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_public_badges_api.py:43: in test_public_badges_endpoint_exists
+    token, user_id = self.test_login_admin()
+                     ^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_public_badges_api.py:33: in test_login_admin
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_public_badges_api.TestPublicBadgesAPI" name="test_public_badges_no_auth_required" time="0.038"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_public_badges_api.py:56: in test_public_badges_no_auth_required
+    token, user_id = self.test_login_admin()
+                     ^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_public_badges_api.py:33: in test_login_admin
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_public_badges_api.TestPublicBadgesAPI" name="test_public_badges_invalid_user" time="0.040" /><testcase classname="backend.tests.test_public_badges_api.TestPublicBadgesAPI" name="test_badge_response_structure" time="0.036"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_public_badges_api.py:74: in test_badge_response_structure
+    token, user_id = self.test_login_admin()
+                     ^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_public_badges_api.py:33: in test_login_admin
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_public_badges_api.TestPublicBadgesAPI" name="test_badges_sorted_by_priority" time="0.036"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_public_badges_api.py:95: in test_badges_sorted_by_priority
+    token, user_id = self.test_login_admin()
+                     ^^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_public_badges_api.py:33: in test_login_admin
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_public_badges_api.TestPublicProfileEndpoint" name="test_public_profile_endpoint" time="0.049"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_public_badges_api.py:126: in test_public_profile_endpoint
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_public_badges_api.TestBadgesCRUD" name="test_list_badges" time="0.035"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_public_badges_api.py:162: in test_list_badges
+    token, _ = self.get_admin_token()
+               ^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_public_badges_api.py:156: in get_admin_token
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_public_badges_api.TestBadgesCRUD" name="test_list_user_badges" time="0.037"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_public_badges_api.py:174: in test_list_user_badges
+    token, _ = self.get_admin_token()
+               ^^^^^^^^^^^^^^^^^^^^^^
+backend/tests/test_public_badges_api.py:156: in get_admin_token
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase></testsuite></testsuites>
