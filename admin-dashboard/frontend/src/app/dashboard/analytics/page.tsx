@@ -220,9 +220,9 @@ export default function AnalyticsPage() {
     setSettingsLoading(true);
     try {
       const [settings, engagement, platform] = await Promise.all([
-        api.get('/analytics/admin/settings'),
-        api.get('/analytics/admin/engagement-notification-config'),
-        api.get('/analytics/admin/platform-analytics'),
+        api.get('/seller-analytics/settings'),
+        api.get('/seller-analytics/engagement-config'),
+        api.get('/seller-analytics/platform-analytics'),
       ]);
       setAnalyticsSettings(settings);
       setEngagementConfig(engagement);
