@@ -1337,3 +1337,52 @@ Extracted ~950 lines of admin location management routes from the monolithic `se
 **Key Files Modified:**
 - `/app/backend/routes/__init__.py` - Added `create_admin_locations_router` export
 - `/app/backend/server.py` - Removed inline routes, added early router registration
+
+### 2026-02-11: Server.py Refactoring - Auto/Motors Module
+**COMPLETED**
+
+#### Refactoring Summary
+Extracted ~692 lines of auto/motors marketplace routes from `server.py` into a dedicated modular router file.
+
+#### New File Created
+- `/app/backend/routes/auto_motors.py` - ~560 lines containing all auto/motors endpoints
+
+#### Routes Extracted
+- **Brands & Models**: GET /auto/brands, /auto/brands/{id}/models
+- **Listings**: GET /auto/listings (with advanced filters), /auto/listings/{id}, /auto/featured, /auto/recommended
+- **Conversations**: POST /auto/conversations, GET /auto/conversations/{id}, POST /auto/conversations/{id}/messages
+- **Favorites**: POST/DELETE /auto/favorites/{listing_id}, GET /auto/favorites
+- **Search**: GET /auto/popular-searches, POST /auto/track-search, GET /auto/filter-options
+
+#### Key Endpoints (all under `/api/auto/`)
+- `GET /brands` - List all car brands with listing counts
+- `GET /brands/{id}/models` - Get models for a brand
+- `GET /listings` - Search with filters (make, model, year, price, etc.)
+- `GET /listings/{id}` - Single listing details
+- `GET /featured` - Featured auto listings
+- `GET /recommended` - Personalized recommendations
+- `POST /conversations` - Start a conversation with dummy messages
+- `GET /conversations/{id}` - Get conversation
+- `POST /conversations/{id}/messages` - Send message with auto-reply
+- `POST/DELETE /favorites/{id}` - Manage favorites
+- `GET /favorites` - User's favorites
+
+#### Integration Pattern
+- Router factory function: `create_auto_motors_router(db, get_current_user)`
+- Includes static data: AUTO_BRANDS, AUTO_MODELS dictionaries
+- Helper function `_generate_dummy_messages()` for conversation templates
+
+#### Result
+- `server.py` reduced from 7932 lines to 7253 lines (679 lines removed)
+- All auto endpoints verified working via curl tests
+- Lint checks passing
+
+#### Cumulative Refactoring Progress
+- Original server.py: ~8881 lines
+- After Admin Locations extraction: 7932 lines (-949 lines)
+- After Auto/Motors extraction: 7253 lines (-679 lines)
+- **Total reduction: 1628 lines (~18%)**
+
+**Key Files Modified:**
+- `/app/backend/routes/__init__.py` - Added `create_auto_motors_router` export
+- `/app/backend/server.py` - Removed inline routes, added router registration
