@@ -378,10 +378,13 @@ const SafetySection = memo(({ onReport }: { onReport: () => void }) => (
         <Text style={safetyStyles.tipText}>Check the item thoroughly before paying</Text>
       </View>
     </View>
-    <TouchableOpacity style={safetyStyles.reportBtn} onPress={onReport}>
-      <Ionicons name="flag-outline" size={16} color={COLORS.error} />
-      <Text style={safetyStyles.reportText}>Report this listing</Text>
-    </TouchableOpacity>
+    <View style={safetyStyles.footerRow}>
+      <Text style={safetyStyles.listingId}>ID: {listing?.id || 'N/A'}</Text>
+      <TouchableOpacity style={safetyStyles.reportBtn} onPress={onReport}>
+        <Ionicons name="flag-outline" size={16} color={COLORS.error} />
+        <Text style={safetyStyles.reportText}>Report this listing</Text>
+      </TouchableOpacity>
+    </View>
   </View>
 ));
 
