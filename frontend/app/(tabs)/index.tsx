@@ -1606,7 +1606,7 @@ const desktopStyles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E8E8E8',
   },
-  // Row 1: Logo + Auth + Post Listing
+  // Row 1: Logo + Nav Links + Auth + Post Listing
   headerRow1: {
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
@@ -1639,10 +1639,45 @@ const desktopStyles = StyleSheet.create({
     fontWeight: '700',
     color: '#1A1A1A',
   },
+  // Navigation Links
+  navLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginLeft: 32,
+    flex: 1,
+  },
+  navLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  navLinkText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  creditBalanceBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#FEF3C7',
+  },
+  creditBalanceText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#F59E0B',
   },
   signInBtn: {
     paddingHorizontal: 16,
