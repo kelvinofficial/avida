@@ -292,6 +292,8 @@ class TestScheduledReportsAPI:
     
     def test_generated_report_seller_analytics_structure(self):
         """Verify seller_analytics section structure"""
+        self._ensure_all_sections_enabled()
+        
         response = requests.post(
             f"{BASE_URL}/api/admin/reports/generate",
             headers=self.headers
