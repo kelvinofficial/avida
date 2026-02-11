@@ -1029,14 +1029,49 @@ Users can track their progress towards earning badges:
 
 ## Remaining Backlog
 
-### P0: None (Business Profiles Admin API COMPLETED)
+### P0: None (All Settings Moved to Admin Dashboard)
 
 ### P1: Continue server.py refactoring
 - Extract remaining route groups from server.py (user profiles, listings, search, etc.)
 
 ### P2: Optional Cleanup
 - Remove remaining unused `renderGlobalHeader` function definitions
-- Refactor `admin-ui` project into smaller components
+- Remove duplicate settings code from Expo frontend
+
+### 2026-02-11: Move All Settings to Admin Dashboard
+**COMPLETED**
+
+#### Backend Changes
+1. **Disabled Local Endpoints** - Removed local scheduled reports endpoints from main backend
+2. **Added Admin Dashboard Endpoints**:
+   - `GET/POST /api/admin/settings/scheduled-reports` - Report configuration
+   - `GET /api/admin/reports/history` - Report history
+   - `POST /api/admin/reports/generate` - Generate report preview
+   - `POST /api/admin/reports/send` - Send report to configured admins
+3. **Fixed Proxy Routing** - Removed "challenges" from ADMIN_LOCAL_PATHS to allow proxy to admin-dashboard
+
+#### Frontend Changes
+1. **Added Scheduled Reports Tab** to Settings page (`/app/admin-dashboard/frontend/src/app/dashboard/settings/page.tsx`):
+   - Report Schedule section (enable/disable, frequency, day of week, send time)
+   - Admin Email Recipients section (add/remove emails)
+   - Report Content toggles (platform overview, seller analytics, engagement metrics, alerts)
+   - Report History table showing recent sends
+   - Send Report Now button
+
+#### All Admin Endpoints Verified Working ✅
+1. ✅ Seller Analytics Settings (`/api/admin/seller-analytics/settings`)
+2. ✅ Engagement Config (`/api/admin/seller-analytics/engagement-config`)
+3. ✅ Platform Analytics (`/api/admin/seller-analytics/platform-analytics`)
+4. ✅ Scheduled Reports (`/api/admin/settings/scheduled-reports`)
+5. ✅ Reports History (`/api/admin/reports/history`)
+6. ✅ Business Profiles (`/api/admin/business-profiles/list`)
+7. ✅ Users List (`/api/admin/users`)
+8. ✅ Challenges (`/api/admin/challenges`)
+
+**Key Files Modified:**
+- `/app/backend/server.py` - Disabled local scheduled reports endpoints, removed challenges from ADMIN_LOCAL_PATHS
+- `/app/admin-dashboard/backend/server.py` - Added scheduled reports endpoints
+- `/app/admin-dashboard/frontend/src/app/dashboard/settings/page.tsx` - Added Scheduled Reports tab
 
 ### 2026-02-11: Business Profiles Admin API
 **COMPLETED**
