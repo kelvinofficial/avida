@@ -315,6 +315,7 @@ export default function MyListingsScreen() {
   const { isAuthenticated } = useAuthStore();
   const { isDesktop, isTablet, isReady } = useResponsive();
   const { goToLogin } = useLoginRedirect();
+  const { showCelebration, showMultipleCelebrations } = useBadgeCelebration();
   const isLargeScreen = isDesktop || isTablet;
   
   const [activeTab, setActiveTab] = useState(params.tab as string || 'all');
