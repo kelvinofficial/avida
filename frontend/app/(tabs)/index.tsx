@@ -867,6 +867,76 @@ export default function HomeScreen() {
       return null; // Don't show loading state to avoid layout shift
     }
     
+    // Show featured listings by verified sellers
+    if (featuredListings.length > 0) {
+      return (
+        <View style={featuredStyles.container}>
+          <View style={featuredStyles.header}>
+            <View style={featuredStyles.titleRow}>
+              <Ionicons name="shield-checkmark" size={20} color="#2E7D32" />
+              <Text style={featuredStyles.title}>From Verified Sellers</Text>
+            </View>
+            <TouchableOpacity onPress={() => router.push('/business-directory')}>
+              <Text style={featuredStyles.seeAll}>See All</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={featuredStyles.scrollContent}
+          >
+            {featuredListings.map((listing) => (
+              <TouchableOpacity
+                key={listing.id}
+                style={featuredStyles.listingCard}
+                onPress={() => router.push(`/listing/${listing.id}`)}
+                data-testid={`featured-listing-${listing.id}`}
+              >
+                {/* Image */}
+                <View style={featuredStyles.listingImageContainer}>
+                  <Image 
+                    source={{ uri: listing.images?.[0] || 'https://via.placeholder.com/150' }} 
+                    style={featuredStyles.listingImage} 
+                  />
+                  {/* Verified Badge */}
+                  <View style={featuredStyles.verifiedOverlay}>
+                    <Ionicons name="shield-checkmark" size={12} color="#fff" />
+                  </View>
+                </View>
+                
+                {/* Details */}
+                <View style={featuredStyles.listingDetails}>
+                  <Text style={featuredStyles.listingPrice}>
+                    {listing.currency || '$'}{listing.price?.toLocaleString()}
+                  </Text>
+                  <Text style={featuredStyles.listingTitle} numberOfLines={2}>
+                    {listing.title}
+                  </Text>
+                  
+                  {/* Seller Info */}
+                  {listing.seller && (
+                    <View style={featuredStyles.sellerInfo}>
+                      <Ionicons name="storefront-outline" size={12} color="#6B7280" />
+                      <Text style={featuredStyles.sellerName} numberOfLines={1}>
+                        {listing.seller.business_name}
+                      </Text>
+                      {listing.seller.is_premium && (
+                        <Ionicons name="diamond" size={10} color="#9C27B0" />
+                      )}
+                    </View>
+                  )}
+                  
+                  {/* Listing ID */}
+                  <Text style={featuredStyles.listingId}>ID: {listing.id?.slice(-8)}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      );
+    }
+    
+    // Fallback to showing seller profiles if no featured listings
     if (featuredSellers.length === 0) {
       return null; // Don't show section if no verified sellers
     }
