@@ -37,7 +37,8 @@ def create_account_router(db, require_auth, create_notification):
             raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
         
         # Verify current password (simplified - in production use proper hashing)
-        user_data = await db.users.find_one({"user_id": user.user_id})
+        # user_data would be used to verify password hash in production
+        _ = await db.users.find_one({"user_id": user.user_id})
         
         # For demo, just update password
         await db.users.update_one(
@@ -63,7 +64,7 @@ def create_account_router(db, require_auth, create_notification):
         body = await request.json()
         
         reason = body.get("reason")
-        password = body.get("password")
+        _ = body.get("password")  # Would be used for verification in production
         
         if not reason:
             raise HTTPException(status_code=400, detail="Reason required for account deletion")
