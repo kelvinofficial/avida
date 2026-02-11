@@ -7893,6 +7893,271 @@ async def get_business_profile_og_meta(slug: str):
 logger.info("SEO Sitemap endpoints registered (/sitemap.xml, /robots.txt)")
 
 # =============================================================================
+# LOCAL ADMIN ANALYTICS & SETTINGS ROUTES (must be before proxy catch-all)
+# =============================================================================
+
+@app.get("/api/admin/analytics/platform")
+async def get_platform_analytics_direct(request: Request):
+    """Get platform-wide analytics - local handler"""
+    user = await require_auth(request)
+    try:
+        # User stats
+        total_users = await db.users.count_documents({})
+        now = datetime.now(timezone.utc)
+        week_ago = now - timedelta(days=7)
+        day_ago = now - timedelta(days=1)
+        
+        new_users_week = await db.users.count_documents({
+            "created_at": {"$gte": week_ago}
+        })
+        new_users_today = await db.users.count_documents({
+            "created_at": {"$gte": day_ago}
+        })
+        
+        # Listing stats
+        total_listings = await db.listings.count_documents({"status": {"$ne": "deleted"}})
+        active_listings = await db.listings.count_documents({"status": "active"})
+        
+        # Transaction stats
+        collection_names = await db.list_collection_names()
+        total_transactions = await db.transactions.count_documents({}) if "transactions" in collection_names else 0
+        
+        # Revenue (estimated from sold listings)
+        total_revenue = 0
+        sold_listings_cursor = db.listings.find({"status": "sold"}, {"price": 1, "_id": 0})
+        async for listing in sold_listings_cursor:
+            total_revenue += listing.get("price", 0)
+        
+        # Category breakdown
+        categories = []
+        category_pipeline = [
+            {"$match": {"status": {"$ne": "deleted"}}},
+            {"$group": {
+                "_id": "$category_id",
+                "listing_count": {"$sum": 1},
+                "revenue": {"$sum": {"$cond": [{"$eq": ["$status", "sold"]}, "$price", 0]}}
+            }},
+            {"$sort": {"listing_count": -1}},
+            {"$limit": 10}
+        ]
+        async for cat in db.listings.aggregate(category_pipeline):
+            categories.append({
+                "name": cat["_id"] or "Uncategorized",
+                "listing_count": cat["listing_count"],
+                "sales_count": 0,
+                "revenue": cat.get("revenue", 0)
+            })
+        
+        return {
+            "total_users": total_users,
+            "new_users_today": new_users_today,
+            "new_users_week": new_users_week,
+            "active_users": total_users,
+            "total_listings": total_listings,
+            "active_listings": active_listings,
+            "total_transactions": total_transactions,
+            "total_revenue": total_revenue,
+            "categories": categories
+        }
+    except Exception as e:
+        logger.error(f"Error fetching platform analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch analytics")
+
+@app.get("/api/admin/analytics/sellers")
+async def get_seller_analytics_direct(request: Request):
+    """Get seller-specific analytics - local handler"""
+    user = await require_auth(request)
+    try:
+        # Find users with listings
+        seller_pipeline = [
+            {"$group": {
+                "_id": "$user_id",
+                "listing_count": {"$sum": 1},
+                "revenue": {"$sum": {"$cond": [{"$eq": ["$status", "sold"]}, "$price", 0]}},
+                "sales_count": {"$sum": {"$cond": [{"$eq": ["$status", "sold"]}, 1, 0]}}
+            }},
+            {"$sort": {"revenue": -1}},
+            {"$limit": 10}
+        ]
+        
+        top_sellers = []
+        async for seller in db.listings.aggregate(seller_pipeline):
+            user_doc = await db.users.find_one({"user_id": seller["_id"]}, {"_id": 0, "name": 1})
+            top_sellers.append({
+                "user_id": seller["_id"],
+                "name": user_doc.get("name", "Unknown") if user_doc else "Unknown",
+                "revenue": seller.get("revenue", 0),
+                "sales_count": seller.get("sales_count", 0),
+                "listing_count": seller.get("listing_count", 0)
+            })
+        
+        # Active sellers (with at least 1 active listing)
+        active_user_ids = await db.listings.distinct("user_id", {"status": "active"})
+        active_sellers = len(active_user_ids)
+        
+        # New sellers this week
+        week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+        new_sellers = await db.users.count_documents({
+            "created_at": {"$gte": week_ago}
+        })
+        
+        # Calculate averages
+        total_revenue = sum(s.get("revenue", 0) for s in top_sellers)
+        total_listings = sum(s.get("listing_count", 0) for s in top_sellers)
+        seller_count = len(top_sellers) or 1
+        
+        return {
+            "top_sellers": top_sellers,
+            "active_sellers_count": active_sellers,
+            "new_sellers_week": new_sellers,
+            "avg_seller_revenue": total_revenue / seller_count,
+            "avg_listings_per_seller": total_listings / seller_count
+        }
+    except Exception as e:
+        logger.error(f"Error fetching seller analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch seller analytics")
+
+@app.get("/api/admin/analytics/engagement")
+async def get_engagement_analytics_direct(request: Request):
+    """Get engagement analytics - local handler"""
+    user = await require_auth(request)
+    try:
+        collection_names = await db.list_collection_names()
+        
+        # Message stats
+        total_messages = await db.messages.count_documents({}) if "messages" in collection_names else 0
+        day_ago = datetime.now(timezone.utc) - timedelta(days=1)
+        messages_today = await db.messages.count_documents({
+            "created_at": {"$gte": day_ago}
+        }) if "messages" in collection_names else 0
+        
+        # Favorites
+        total_favorites = await db.favorites.count_documents({}) if "favorites" in collection_names else 0
+        
+        # Badge stats
+        badge_awards = await db.user_badges.count_documents({}) if "user_badges" in collection_names else 0
+        
+        # Challenge completions
+        challenge_completions = await db.user_challenge_progress.count_documents({
+            "completed": True
+        }) if "user_challenge_progress" in collection_names else 0
+        
+        # Notification read rate (simplified)
+        notification_read_rate = 0.75
+        
+        return {
+            "total_messages": total_messages,
+            "messages_today": messages_today,
+            "total_favorites": total_favorites,
+            "badge_awards_count": badge_awards,
+            "challenge_completions": challenge_completions,
+            "notification_read_rate": notification_read_rate
+        }
+    except Exception as e:
+        logger.error(f"Error fetching engagement analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch engagement analytics")
+
+@app.get("/api/admin/settings/seller-analytics")
+async def get_seller_analytics_settings_direct(request: Request):
+    """Get seller analytics settings - local handler"""
+    user = await require_auth(request)
+    try:
+        settings = await db.admin_settings.find_one(
+            {"type": "seller_analytics"},
+            {"_id": 0}
+        )
+        if not settings:
+            return {
+                "alert_threshold": 100,
+                "low_performance_threshold": 5
+            }
+        return {
+            "alert_threshold": settings.get("alert_threshold", 100),
+            "low_performance_threshold": settings.get("low_performance_threshold", 5)
+        }
+    except Exception as e:
+        logger.error(f"Error fetching seller analytics settings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch settings")
+
+@app.post("/api/admin/settings/seller-analytics")
+async def save_seller_analytics_settings_direct(request: Request):
+    """Save seller analytics settings - local handler"""
+    user = await require_auth(request)
+    try:
+        settings = await request.json()
+        await db.admin_settings.update_one(
+            {"type": "seller_analytics"},
+            {"$set": {
+                "type": "seller_analytics",
+                "alert_threshold": settings.get("alert_threshold", 100),
+                "low_performance_threshold": settings.get("low_performance_threshold", 5),
+                "updated_at": datetime.now(timezone.utc),
+                "updated_by": user.user_id
+            }},
+            upsert=True
+        )
+        return {"success": True, "message": "Settings saved"}
+    except Exception as e:
+        logger.error(f"Error saving seller analytics settings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save settings")
+
+@app.get("/api/admin/settings/engagement-notifications")
+async def get_engagement_notification_settings_direct(request: Request):
+    """Get engagement notification settings - local handler"""
+    user = await require_auth(request)
+    try:
+        settings = await db.admin_settings.find_one(
+            {"type": "engagement_notifications"},
+            {"_id": 0}
+        )
+        if not settings:
+            return {
+                "milestones": {
+                    "firstSale": True,
+                    "tenListings": True,
+                    "hundredMessages": True,
+                    "badgeMilestone": True
+                },
+                "triggers": {
+                    "inactiveSeller": True,
+                    "lowEngagement": True,
+                    "challengeReminder": True,
+                    "weeklyDigest": True
+                }
+            }
+        return {
+            "milestones": settings.get("milestones", {}),
+            "triggers": settings.get("triggers", {})
+        }
+    except Exception as e:
+        logger.error(f"Error fetching engagement notification settings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch settings")
+
+@app.post("/api/admin/settings/engagement-notifications")
+async def save_engagement_notification_settings_direct(request: Request):
+    """Save engagement notification settings - local handler"""
+    user = await require_auth(request)
+    try:
+        settings = await request.json()
+        await db.admin_settings.update_one(
+            {"type": "engagement_notifications"},
+            {"$set": {
+                "type": "engagement_notifications",
+                "milestones": settings.get("milestones", {}),
+                "triggers": settings.get("triggers", {}),
+                "updated_at": datetime.now(timezone.utc),
+                "updated_by": user.user_id
+            }},
+            upsert=True
+        )
+        return {"success": True, "message": "Settings saved"}
+    except Exception as e:
+        logger.error(f"Error saving engagement notification settings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save settings")
+
+logger.info("Local admin analytics and settings routes registered")
+
+# =============================================================================
 # ADMIN API PROXY - Forward /api/admin/* to admin backend on port 8002
 # =============================================================================
 
