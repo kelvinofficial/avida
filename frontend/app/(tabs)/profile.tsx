@@ -1752,27 +1752,30 @@ const desktopStyles = StyleSheet.create({
   // Activity Grid
   activityGrid: {
     flexDirection: 'row',
-    gap: 16,
+    flexWrap: 'wrap',
+    gap: 12,
   },
   activityItem: {
-    flex: 1,
+    width: 'calc(20% - 10px)',
+    minWidth: 100,
     alignItems: 'center',
-    padding: 20,
+    padding: 16,
     backgroundColor: COLORS.background,
     borderRadius: 12,
   },
   activityIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   activityLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: COLORS.text,
+    textAlign: 'center',
   },
   // Trust Grid
   trustGrid: {
