@@ -269,6 +269,8 @@ class TestScheduledReportsAPI:
     
     def test_generated_report_platform_overview_structure(self):
         """Verify platform_overview section structure"""
+        self._ensure_all_sections_enabled()
+        
         response = requests.post(
             f"{BASE_URL}/api/admin/reports/generate",
             headers=self.headers
