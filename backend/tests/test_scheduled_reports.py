@@ -247,7 +247,9 @@ class TestScheduledReportsAPI:
         print(f"✓ POST /admin/reports/generate successfully generates report with timestamp: {report.get('generated_at')}")
     
     def test_generated_report_contains_required_sections(self):
-        """Verify generated report contains all required sections"""
+        """Verify generated report contains all required sections when enabled"""
+        self._ensure_all_sections_enabled()
+        
         response = requests.post(
             f"{BASE_URL}/api/admin/reports/generate",
             headers=self.headers
@@ -257,7 +259,7 @@ class TestScheduledReportsAPI:
         report = response.json().get("report", {})
         sections = report.get("sections", {})
         
-        # Check for required sections
+        # Check for required sections (when all are enabled)
         required_sections = ["platform_overview", "seller_analytics", "engagement_metrics", "alerts"]
         
         for section in required_sections:
