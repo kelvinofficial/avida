@@ -461,13 +461,13 @@ export default function HomeScreen() {
   const fetchFeaturedListings = useCallback(async () => {
     try {
       setLoadingFeatured(true);
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || ''}/api/listings/featured-verified?limit=12`);
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/listings/featured-verified?limit=12`);
       if (response.ok) {
         const data = await response.json();
         setFeaturedListings(data.listings || []);
       } else {
         // Fallback to featured sellers endpoint
-        const sellersResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL || ''}/api/business-profiles/featured?limit=8`);
+        const sellersResponse = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/business-profiles/featured?limit=8`);
         if (sellersResponse.ok) {
           const data = await sellersResponse.json();
           setFeaturedSellers(data.sellers || []);
