@@ -3342,6 +3342,7 @@ class ChallengeType(str, Enum):
     WEEKLY = "weekly"
     MONTHLY = "monthly"
     SPECIAL = "special"
+    SEASONAL = "seasonal"
 
 class ChallengeCriteria(str, Enum):
     LISTINGS_CREATED = "listings_created"
@@ -3350,6 +3351,175 @@ class ChallengeCriteria(str, Enum):
     MESSAGES_SENT = "messages_sent"
     PROFILE_VIEWS = "profile_views"
     FIVE_STAR_REVIEWS = "five_star_reviews"
+    CATEGORY_LISTINGS = "category_listings"
+    CATEGORY_SALES = "category_sales"
+
+# Seasonal challenge configurations with date ranges
+SEASONAL_CHALLENGES = [
+    {
+        "id": "valentines_special",
+        "name": "Valentine's Special",
+        "description": "Sell 5 items in Fashion & Beauty or Home & Furniture categories",
+        "type": ChallengeType.SEASONAL,
+        "criteria": ChallengeCriteria.CATEGORY_SALES,
+        "target": 5,
+        "categories": ["fashion_beauty", "home_furniture"],
+        "start_month": 2, "start_day": 1,
+        "end_month": 2, "end_day": 14,
+        "badge_reward": {
+            "name": "Valentine's Champion",
+            "description": "Spread the love with 5+ gift sales",
+            "icon": "heart",
+            "color": "#EC4899",
+            "points_value": 50,
+        },
+        "icon": "heart",
+        "color": "#EC4899",
+        "theme": "valentine",
+    },
+    {
+        "id": "spring_refresh",
+        "name": "Spring Refresh Sale",
+        "description": "List 15 items in Home & Furniture or Fashion categories",
+        "type": ChallengeType.SEASONAL,
+        "criteria": ChallengeCriteria.CATEGORY_LISTINGS,
+        "target": 15,
+        "categories": ["home_furniture", "fashion_beauty"],
+        "start_month": 3, "start_day": 20,
+        "end_month": 4, "end_day": 20,
+        "badge_reward": {
+            "name": "Spring Refresh Pro",
+            "description": "Helped buyers refresh their style for spring",
+            "icon": "flower",
+            "color": "#10B981",
+            "points_value": 60,
+        },
+        "icon": "flower",
+        "color": "#10B981",
+        "theme": "spring",
+    },
+    {
+        "id": "summer_deals",
+        "name": "Summer Deals Festival",
+        "description": "Achieve €300 in total sales during summer",
+        "type": ChallengeType.SEASONAL,
+        "criteria": ChallengeCriteria.TOTAL_SALES_VALUE,
+        "target": 300,
+        "start_month": 6, "start_day": 21,
+        "end_month": 7, "end_day": 31,
+        "badge_reward": {
+            "name": "Summer Sales Star",
+            "description": "Made €300+ in summer sales",
+            "icon": "sunny",
+            "color": "#F59E0B",
+            "points_value": 80,
+        },
+        "icon": "sunny",
+        "color": "#F59E0B",
+        "theme": "summer",
+    },
+    {
+        "id": "back_to_school",
+        "name": "Back to School",
+        "description": "Sell 8 items in Electronics or Books & Media categories",
+        "type": ChallengeType.SEASONAL,
+        "criteria": ChallengeCriteria.CATEGORY_SALES,
+        "target": 8,
+        "categories": ["electronics", "phones_tablets", "books_media"],
+        "start_month": 8, "start_day": 15,
+        "end_month": 9, "end_day": 15,
+        "badge_reward": {
+            "name": "Back to School Hero",
+            "description": "Helped students gear up for school",
+            "icon": "school",
+            "color": "#3B82F6",
+            "points_value": 70,
+        },
+        "icon": "school",
+        "color": "#3B82F6",
+        "theme": "school",
+    },
+    {
+        "id": "halloween_spooktacular",
+        "name": "Halloween Spooktacular",
+        "description": "List 10 items during the Halloween season",
+        "type": ChallengeType.SEASONAL,
+        "criteria": ChallengeCriteria.LISTINGS_CREATED,
+        "target": 10,
+        "start_month": 10, "start_day": 15,
+        "end_month": 10, "end_day": 31,
+        "badge_reward": {
+            "name": "Spooky Seller",
+            "description": "Haunted the marketplace with 10+ listings",
+            "icon": "moon",
+            "color": "#7C3AED",
+            "points_value": 45,
+        },
+        "icon": "moon",
+        "color": "#7C3AED",
+        "theme": "halloween",
+    },
+    {
+        "id": "black_friday_blitz",
+        "name": "Black Friday Blitz",
+        "description": "Sell 10 items during Black Friday week",
+        "type": ChallengeType.SEASONAL,
+        "criteria": ChallengeCriteria.ITEMS_SOLD,
+        "target": 10,
+        "start_month": 11, "start_day": 20,
+        "end_month": 11, "end_day": 30,
+        "badge_reward": {
+            "name": "Black Friday Champion",
+            "description": "Dominated Black Friday with 10+ sales",
+            "icon": "flash",
+            "color": "#1F2937",
+            "points_value": 100,
+        },
+        "icon": "flash",
+        "color": "#1F2937",
+        "theme": "blackfriday",
+    },
+    {
+        "id": "holiday_gift_giver",
+        "name": "Holiday Gift Giver",
+        "description": "Achieve €500 in sales during the holiday season",
+        "type": ChallengeType.SEASONAL,
+        "criteria": ChallengeCriteria.TOTAL_SALES_VALUE,
+        "target": 500,
+        "start_month": 12, "start_day": 1,
+        "end_month": 12, "end_day": 25,
+        "badge_reward": {
+            "name": "Holiday Hero",
+            "description": "Spread holiday joy with €500+ in sales",
+            "icon": "gift",
+            "color": "#DC2626",
+            "points_value": 120,
+        },
+        "icon": "gift",
+        "color": "#DC2626",
+        "theme": "holiday",
+    },
+    {
+        "id": "new_year_fresh_start",
+        "name": "New Year Fresh Start",
+        "description": "List 20 new items in the first two weeks of the year",
+        "type": ChallengeType.SEASONAL,
+        "criteria": ChallengeCriteria.LISTINGS_CREATED,
+        "target": 20,
+        "start_month": 1, "start_day": 1,
+        "end_month": 1, "end_day": 15,
+        "badge_reward": {
+            "name": "New Year Achiever",
+            "description": "Started the year strong with 20+ listings",
+            "icon": "sparkles",
+            "color": "#8B5CF6",
+            "points_value": 75,
+        },
+        "icon": "sparkles",
+        "color": "#8B5CF6",
+        "theme": "newyear",
+    },
+]
 
 # Define available challenges
 CHALLENGE_DEFINITIONS = [
