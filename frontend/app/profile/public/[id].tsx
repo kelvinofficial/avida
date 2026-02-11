@@ -180,10 +180,11 @@ export default function PublicProfileScreen() {
       setProfile(profileRes.data);
       setIsFollowing(profileRes.data.is_following || false);
       
-      // Fetch listings and reviews in parallel
-      const [listingsRes, reviewsRes] = await Promise.allSettled([
+      // Fetch listings, reviews, and badges in parallel
+      const [listingsRes, reviewsRes, badgesRes] = await Promise.allSettled([
         api.get(`/users/${id}/listings`, { params: { status: 'active', limit: 20 } }),
-        api.get(`/users/${id}/reviews`, { params: { limit: 20 } })
+        api.get(`/users/${id}/reviews`, { params: { limit: 20 } }),
+        api.get(`/profile/public/${id}/badges`)
       ]);
       
       // Handle listings
@@ -210,6 +211,14 @@ export default function PublicProfileScreen() {
       } else {
         console.warn('Failed to fetch reviews:', reviewsRes.reason);
         setReviews([]);
+      }
+      
+      // Handle badges
+      if (badgesRes.status === 'fulfilled') {
+        setAchievementBadges(badgesRes.value.data.badges || []);
+      } else {
+        console.warn('Failed to fetch badges:', badgesRes.reason);
+        setAchievementBadges([]);
       }
     } catch (err: any) {
       console.error('Failed to load profile:', err);
