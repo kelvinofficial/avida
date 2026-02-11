@@ -6508,7 +6508,7 @@ if CHAT_MODERATION_AVAILABLE:
 # Include Executive Summary System
 if EXECUTIVE_SUMMARY_AVAILABLE:
     # JWT config for admin token validation (same as admin-dashboard backend)
-    ADMIN_JWT_SECRET = os.environ.get('JWT_SECRET_KEY', 'admin-secret-change-in-production')
+    ADMIN_JWT_SECRET = os.environ.get('ADMIN_JWT_SECRET_KEY', 'admin-super-secret-key-change-in-production-2024')
     ADMIN_JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
     
     async def require_admin_for_exec_summary(request: Request) -> dict:
