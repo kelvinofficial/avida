@@ -857,8 +857,8 @@ def create_listings_router(
         await db.listings.update_one({"id": listing_id}, {"$set": {"status": "deleted"}})
         return {"message": "Listing deleted"}
     
-    @router.post("/listings/{listing_id}/mark-sold")
-    async def mark_listing_sold(listing_id: str, user: dict = Depends(get_current_user)):
+    @router.post("/{listing_id}/mark-sold")
+    async def mark_listing_sold(listing_id: str, request: Request):
         """Mark a listing as sold and check for badge awards"""
         listing = await db.listings.find_one({"id": listing_id}, {"_id": 0})
         if not listing:
