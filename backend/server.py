@@ -275,6 +275,8 @@ try:
         create_property_router,
         create_offers_router,
         create_similar_listings_router,
+        create_social_router,
+        create_profile_activity_router,
         DEFAULT_CATEGORIES,
         LEGACY_CATEGORY_MAP,
         validate_category_and_subcategory
