@@ -310,6 +310,7 @@ const EmptyState = ({ status, isDesktop }: { status: string; isDesktop?: boolean
 export default function MyListingsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const pathname = usePathname();
   const { isAuthenticated } = useAuthStore();
   const { isDesktop, isTablet, isReady } = useResponsive();
   const { goToLogin } = useLoginRedirect();
