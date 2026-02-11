@@ -268,6 +268,7 @@ try:
         create_badges_router,
         create_streaks_router,
         create_challenges_router,
+        create_admin_router,
         DEFAULT_CATEGORIES,
         LEGACY_CATEGORY_MAP,
         validate_category_and_subcategory
