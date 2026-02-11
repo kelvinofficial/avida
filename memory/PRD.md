@@ -609,10 +609,28 @@ Users can track their progress towards earning badges:
 - `/app/frontend/app/(tabs)/index.tsx` - Featured listings section
 - `/app/backend/server.py` - Featured verified listings endpoint (line 1022)
 
+### 2026-02-11: Desktop Profile & Business Profile Fixes
+
+**COMPLETED**
+
+#### Desktop Profile Activity Section
+- Added all 10 activity items to desktop profile: My Listings, My Badges, Business Profile, Invoices, Purchases, Sales, Favorites, Recently Viewed, Messages, Offers
+- Updated activity grid to use flexWrap for responsive layout
+- All links navigate to correct pages
+
+#### Business Profile Image Upload Fix
+- Fixed image upload on web (logo, cover, gallery)
+- Uses fetch + blob approach for FormData on web (Platform-specific handling)
+- All three upload buttons now work correctly on desktop/web
+
+**Key Files:**
+- `/app/frontend/app/(tabs)/profile.tsx` - Desktop activity section
+- `/app/frontend/app/business/edit.tsx` - Image upload fixes
+
 ## Remaining Backlog
 
 ### P1: None
-- All requested features implemented
+- All requested features and fixes implemented
 
 ### P2: Optional Cleanup
 - Remove remaining unused `renderGlobalHeader` function definitions
