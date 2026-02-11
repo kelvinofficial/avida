@@ -8155,6 +8155,136 @@ async def save_engagement_notification_settings_direct(request: Request):
         logger.error(f"Error saving engagement notification settings: {e}")
         raise HTTPException(status_code=500, detail="Failed to save settings")
 
+# =============================================================================
+# SCHEDULED REPORTS ENDPOINTS
+# =============================================================================
+
+# Import the scheduled reports service
+try:
+    from scheduled_reports_service import get_reports_service, ScheduledReportsService
+    SCHEDULED_REPORTS_AVAILABLE = True
+except ImportError as e:
+    SCHEDULED_REPORTS_AVAILABLE = False
+    logger.warning(f"Scheduled reports service not available: {e}")
+
+@app.get("/api/admin/settings/scheduled-reports")
+async def get_scheduled_reports_settings(request: Request):
+    """Get scheduled reports configuration."""
+    user = await require_auth(request)
+    if not SCHEDULED_REPORTS_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Scheduled reports service not available")
+    
+    try:
+        reports_service = get_reports_service(db)
+        settings = await reports_service.get_report_settings()
+        return settings
+    except Exception as e:
+        logger.error(f"Error fetching scheduled reports settings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch settings")
+
+@app.post("/api/admin/settings/scheduled-reports")
+async def save_scheduled_reports_settings(request: Request):
+    """Save scheduled reports configuration."""
+    user = await require_auth(request)
+    if not SCHEDULED_REPORTS_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Scheduled reports service not available")
+    
+    try:
+        settings = await request.json()
+        reports_service = get_reports_service(db)
+        success = await reports_service.save_report_settings(settings, user.user_id)
+        
+        if success:
+            return {"success": True, "message": "Report settings saved"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to save settings")
+    except Exception as e:
+        logger.error(f"Error saving scheduled reports settings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save settings")
+
+@app.post("/api/admin/reports/generate")
+async def generate_report_now(request: Request):
+    """Manually trigger a report generation."""
+    user = await require_auth(request)
+    if not SCHEDULED_REPORTS_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Scheduled reports service not available")
+    
+    try:
+        reports_service = get_reports_service(db)
+        report = await reports_service.generate_full_report()
+        return {"success": True, "report": report}
+    except Exception as e:
+        logger.error(f"Error generating report: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate report")
+
+@app.post("/api/admin/reports/send")
+async def send_report_now(request: Request):
+    """Manually trigger report generation and send to configured admins."""
+    user = await require_auth(request)
+    if not SCHEDULED_REPORTS_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Scheduled reports service not available")
+    
+    try:
+        reports_service = get_reports_service(db)
+        result = await reports_service.run_scheduled_report()
+        return {"success": result["status"] == "sent", **result}
+    except Exception as e:
+        logger.error(f"Error sending report: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send report")
+
+@app.get("/api/admin/reports/history")
+async def get_report_history(
+    request: Request,
+    limit: int = 10,
+    skip: int = 0
+):
+    """Get history of sent reports."""
+    user = await require_auth(request)
+    
+    try:
+        cursor = db.report_history.find(
+            {},
+            {"_id": 0, "report.sections": 0}  # Exclude large report data
+        ).sort("created_at", -1).skip(skip).limit(limit)
+        
+        history = []
+        async for record in cursor:
+            history.append({
+                "type": record.get("type"),
+                "sent_to": record.get("sent_to", []),
+                "success": record.get("success"),
+                "created_at": record.get("created_at").isoformat() if record.get("created_at") else None
+            })
+        
+        total = await db.report_history.count_documents({})
+        
+        return {
+            "history": history,
+            "total": total,
+            "limit": limit,
+            "skip": skip
+        }
+    except Exception as e:
+        logger.error(f"Error fetching report history: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch history")
+
+@app.get("/api/admin/reports/preview")
+async def preview_report_email(request: Request):
+    """Preview the report email HTML without sending."""
+    user = await require_auth(request)
+    if not SCHEDULED_REPORTS_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Scheduled reports service not available")
+    
+    try:
+        reports_service = get_reports_service(db)
+        report = await reports_service.generate_full_report()
+        html = reports_service.format_report_html(report)
+        return {"success": True, "html": html, "report_data": report}
+    except Exception as e:
+        logger.error(f"Error previewing report: {e}")
+        raise HTTPException(status_code=500, detail="Failed to preview report")
+
+logger.info("Scheduled reports endpoints registered")
 logger.info("Local admin analytics and settings routes registered")
 
 # =============================================================================
