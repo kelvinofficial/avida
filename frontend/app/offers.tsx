@@ -620,7 +620,7 @@ export default function OffersScreen() {
   // Render global desktop header
   const renderGlobalHeader = () => (
     <View style={desktopStyles.globalHeader}>
-      {/* Row 1: Logo + Auth + Post Listing */}
+      {/* Row 1: Logo + Nav + Auth + Post Listing */}
       <View style={desktopStyles.globalHeaderRow1}>
         <View style={desktopStyles.globalHeaderInner}>
           {/* Logo */}
@@ -630,6 +630,40 @@ export default function OffersScreen() {
             </View>
             <Text style={desktopStyles.logoText}>avida</Text>
           </TouchableOpacity>
+          
+          {/* Navigation Links - Desktop */}
+          {isAuthenticated && (
+            <View style={desktopStyles.navLinks}>
+              <TouchableOpacity 
+                style={[desktopStyles.navLink, pathname === '/profile/my-listings' && desktopStyles.navLinkActive]}
+                onPress={() => router.push('/profile/my-listings')}
+              >
+                <Ionicons name="pricetags-outline" size={18} color={pathname === '/profile/my-listings' ? COLORS.primary : COLORS.textSecondary} />
+                <Text style={[desktopStyles.navLinkText, pathname === '/profile/my-listings' && desktopStyles.navLinkTextActive]}>My Listings</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[desktopStyles.navLink, pathname === '/messages' && desktopStyles.navLinkActive]}
+                onPress={() => router.push('/messages')}
+              >
+                <Ionicons name="chatbubbles-outline" size={18} color={pathname === '/messages' ? COLORS.primary : COLORS.textSecondary} />
+                <Text style={[desktopStyles.navLinkText, pathname === '/messages' && desktopStyles.navLinkTextActive]}>Messages</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[desktopStyles.navLink, (pathname === '/saved' || pathname === '/profile/saved') && desktopStyles.navLinkActive]}
+                onPress={() => router.push('/profile/saved')}
+              >
+                <Ionicons name="heart-outline" size={18} color={(pathname === '/saved' || pathname === '/profile/saved') ? COLORS.primary : COLORS.textSecondary} />
+                <Text style={[desktopStyles.navLinkText, (pathname === '/saved' || pathname === '/profile/saved') && desktopStyles.navLinkTextActive]}>Saved</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[desktopStyles.navLink, pathname === '/offers' && desktopStyles.navLinkActive]}
+                onPress={() => router.push('/offers')}
+              >
+                <Ionicons name="pricetag-outline" size={18} color={pathname === '/offers' ? COLORS.primary : COLORS.textSecondary} />
+                <Text style={[desktopStyles.navLinkText, pathname === '/offers' && desktopStyles.navLinkTextActive]}>Offers</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           
           {/* Header Actions */}
           <View style={desktopStyles.globalHeaderActions}>
