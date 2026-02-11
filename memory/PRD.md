@@ -1029,14 +1029,56 @@ Users can track their progress towards earning badges:
 
 ## Remaining Backlog
 
-### P0: None (All Settings Moved to Admin Dashboard)
+### P0: None (Cleanup & Refactoring COMPLETED)
 
 ### P1: Continue server.py refactoring
-- Extract remaining route groups from server.py (user profiles, listings, search, etc.)
+- Extract more route groups: admin locations, support tickets, etc.
+- Current size: 8881 lines (down from 9076)
 
 ### P2: Optional Cleanup
-- Remove remaining unused `renderGlobalHeader` function definitions
-- Remove duplicate settings code from Expo frontend
+- Further modularization opportunities
+- Code deduplication in admin-dashboard
+
+### 2026-02-11: Expo Frontend Cleanup & Server.py Refactoring
+**COMPLETED**
+
+#### Frontend Cleanup
+1. **Simplified `/app/frontend/app/admin/analytics.tsx`**
+   - Reduced from 1668 lines to 572 lines (~65% reduction)
+   - Removed duplicate Settings tab (now handled by admin-dashboard)
+   - Added "Manage Settings" link to admin-dashboard
+   - Kept read-only analytics overview (Overview, Sellers, Engagement tabs)
+
+2. **Updated `/app/frontend/app/admin/index.tsx`**
+   - Added prominent "Open Admin Dashboard" button
+   - Improved UI for admin credentials display
+
+#### Backend Refactoring
+1. **Created `/app/backend/routes/notification_preferences.py`** (~200 lines)
+   - GET `/notification-preferences` - Get user preferences
+   - PUT `/notification-preferences` - Update preferences
+   - POST `/notification-preferences/unsubscribe-all` - Unsubscribe from marketing
+   - GET `/notification-preferences/categories` - Get preference categories
+
+2. **Updated `/app/backend/routes/__init__.py`**
+   - Added `create_notification_preferences_router` export
+
+3. **Cleaned up `/app/backend/server.py`**
+   - Removed inline notification preferences code (~195 lines)
+   - Registered new modular router
+   - Reduced from 9076 to 8881 lines
+
+#### Total Code Reduction
+- Frontend admin: 4754 → 3696 lines (~22% reduction)
+- Backend server.py: 9076 → 8881 lines (~2% reduction)
+- New modular route file created for better organization
+
+**Key Files Modified/Created:**
+- `/app/frontend/app/admin/analytics.tsx` - Simplified
+- `/app/frontend/app/admin/index.tsx` - Updated with dashboard link
+- `/app/backend/routes/notification_preferences.py` - New route module
+- `/app/backend/routes/__init__.py` - Updated exports
+- `/app/backend/server.py` - Cleaned up, registered new router
 
 ### 2026-02-11: Move All Settings to Admin Dashboard
 **COMPLETED**
