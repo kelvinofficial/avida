@@ -528,6 +528,30 @@ export default function PublicProfileScreen() {
                       </View>
                     )}
                   </View>
+                  
+                  {/* Achievement Badges */}
+                  {achievementBadges.length > 0 && (
+                    <View style={desktopStyles.achievementBadgesContainer}>
+                      <Text style={desktopStyles.achievementBadgesTitle}>Achievements</Text>
+                      <View style={desktopStyles.achievementBadgesRow}>
+                        {achievementBadges.slice(0, 5).map((badge) => (
+                          <View 
+                            key={badge.id} 
+                            style={[desktopStyles.achievementBadge, { backgroundColor: badge.color + '20' }]}
+                          >
+                            <Ionicons 
+                              name={getBadgeIcon(badge.icon)} 
+                              size={16} 
+                              color={badge.color} 
+                            />
+                            <Text style={[desktopStyles.achievementBadgeName, { color: badge.color }]}>
+                              {badge.name}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  )}
 
                   {profile?.location && (
                     <View style={desktopStyles.locationRow}>
