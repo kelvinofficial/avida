@@ -7639,21 +7639,6 @@ async def revoke_badge(user_badge_id: str, admin: dict = Depends(get_current_adm
     
     return {"success": True}
 
-@app.get("/api/admin/users/search")
-async def search_users(admin: dict = Depends(get_current_admin), q: str = Query(..., min_length=2)):
-    """Search users by email or name"""
-    users = await db.users.find(
-        {
-            "$or": [
-                {"email": {"$regex": q, "$options": "i"}},
-                {"name": {"$regex": q, "$options": "i"}}
-            ]
-        },
-        {"_id": 0, "user_id": 1, "email": 1, "name": 1}
-    ).limit(10).to_list(length=10)
-    
-    return {"users": users}
-
 # =============================================================================
 # MAIN
 # =============================================================================
