@@ -19,6 +19,7 @@ from .auto_motors import create_auto_motors_router
 from .property import create_property_router, create_offers_router, create_similar_listings_router
 from .social import create_social_router, create_profile_activity_router
 from .notifications import create_notifications_router
+from .account_support import create_account_router, create_support_router
 
 __all__ = [
     'create_auth_router',
@@ -40,6 +41,8 @@ __all__ = [
     'create_social_router',
     'create_profile_activity_router',
     'create_notifications_router',
+    'create_account_router',
+    'create_support_router',
     'DEFAULT_CATEGORIES',
     'LEGACY_CATEGORY_MAP',
     'validate_category_and_subcategory',
