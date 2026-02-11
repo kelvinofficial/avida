@@ -538,6 +538,7 @@ export default function SettingsPage() {
           <Tab icon={<LocationOn />} iconPosition="start" label="Locations" data-testid="tab-locations" />
           <Tab icon={<LinkIcon />} iconPosition="start" label="Deeplinks" data-testid="tab-deeplinks" />
           <Tab icon={<Security />} iconPosition="start" label="Authentication" data-testid="tab-auth" />
+          <Tab icon={<Email />} iconPosition="start" label="Scheduled Reports" data-testid="tab-reports" />
         </Tabs>
 
         {/* Locations Tab */}
