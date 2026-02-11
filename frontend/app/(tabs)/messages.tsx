@@ -85,7 +85,12 @@ const FilterTabs: React.FC<FilterTabsProps> = ({ activeFilter, onFilterChange, u
   ];
 
   return (
-    <View style={filterStyles.container}>
+    <ScrollView 
+      horizontal 
+      showsHorizontalScrollIndicator={false}
+      style={filterStyles.scrollContainer}
+      contentContainerStyle={filterStyles.container}
+    >
       {filters.map((filter) => (
         <TouchableOpacity
           key={filter.id}
@@ -107,11 +112,14 @@ const FilterTabs: React.FC<FilterTabsProps> = ({ activeFilter, onFilterChange, u
           )}
         </TouchableOpacity>
       ))}
-    </View>
+    </ScrollView>
   );
 };
 
 const filterStyles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 0,
+  },
   container: {
     flexDirection: 'row',
     paddingHorizontal: 16,
