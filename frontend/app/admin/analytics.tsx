@@ -531,6 +531,20 @@ export default function AdminAnalyticsScreen() {
         triggers: notificationTriggers,
       });
 
+      // Save scheduled reports settings
+      const emailList = adminEmails.split(',').map(e => e.trim()).filter(e => e.length > 0);
+      await api.post('/admin/settings/scheduled-reports', {
+        enabled: reportsEnabled,
+        frequency: reportFrequency,
+        day_of_week: reportDay,
+        hour: reportHour,
+        admin_emails: emailList,
+        include_seller_analytics: true,
+        include_engagement_metrics: true,
+        include_platform_overview: true,
+        include_alerts: true,
+      });
+
       if (Platform.OS === 'web') {
         alert('Settings saved successfully!');
       } else {
@@ -545,6 +559,54 @@ export default function AdminAnalyticsScreen() {
       }
     } finally {
       setSavingSettings(false);
+    }
+  };
+
+  const handleSendReportNow = async () => {
+    const emailList = adminEmails.split(',').map(e => e.trim()).filter(e => e.length > 0);
+    if (emailList.length === 0) {
+      if (Platform.OS === 'web') {
+        alert('Please add at least one admin email to receive reports.');
+      } else {
+        Alert.alert('Error', 'Please add at least one admin email to receive reports.');
+      }
+      return;
+    }
+
+    setSendingReport(true);
+    try {
+      // First save the email list
+      await api.post('/admin/settings/scheduled-reports', {
+        enabled: reportsEnabled,
+        frequency: reportFrequency,
+        day_of_week: reportDay,
+        hour: reportHour,
+        admin_emails: emailList,
+      });
+
+      // Then send the report
+      const response = await api.post('/admin/reports/send');
+      
+      if (response.data?.success) {
+        if (Platform.OS === 'web') {
+          alert('Report sent successfully to: ' + emailList.join(', '));
+        } else {
+          Alert.alert('Success', 'Report sent successfully to: ' + emailList.join(', '));
+        }
+        // Refresh history
+        fetchSettings();
+      } else {
+        throw new Error(response.data?.status || 'Failed to send');
+      }
+    } catch (error: any) {
+      console.error('Error sending report:', error);
+      if (Platform.OS === 'web') {
+        alert('Failed to send report: ' + (error?.response?.data?.detail || error.message));
+      } else {
+        Alert.alert('Error', 'Failed to send report: ' + (error?.response?.data?.detail || error.message));
+      }
+    } finally {
+      setSendingReport(false);
     }
   };
 
