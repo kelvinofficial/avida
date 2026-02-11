@@ -860,6 +860,8 @@ def create_listings_router(
     @router.post("/{listing_id}/mark-sold")
     async def mark_listing_sold(listing_id: str, request: Request):
         """Mark a listing as sold and check for badge awards"""
+        user = await require_auth(request)
+        
         listing = await db.listings.find_one({"id": listing_id}, {"_id": 0})
         if not listing:
             raise HTTPException(status_code=404, detail="Listing not found")
@@ -888,7 +890,7 @@ def create_listings_router(
             badge_service = get_badge_service(db)
             awarded_badges = await badge_service.check_and_award_badges(user.user_id, trigger="sale")
         except Exception as e:
-            logging.error(f"Error checking badges after sale: {e}")
+            logger.error(f"Error checking badges after sale: {e}")
         
         return {
             "message": "Listing marked as sold",
