@@ -764,14 +764,25 @@ export default function ProfileScreen() {
     }
   }, []);
 
+  const fetchUnviewedBadgeCount = useCallback(async () => {
+    try {
+      const response = await api.get('/badges/unviewed-count');
+      setUnviewedBadgeCount(response.data?.unviewed_count ?? 0);
+    } catch (error) {
+      console.error('Error fetching unviewed badge count:', error);
+      setUnviewedBadgeCount(0);
+    }
+  }, []);
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchProfile();
       fetchCreditBalance();
+      fetchUnviewedBadgeCount();
     } else {
       setLoading(false);
     }
-  }, [isAuthenticated, fetchProfile, fetchCreditBalance]);
+  }, [isAuthenticated, fetchProfile, fetchCreditBalance, fetchUnviewedBadgeCount]);
 
   const handleRefresh = () => {
     setRefreshing(true);
