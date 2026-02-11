@@ -137,6 +137,7 @@ export default function RootLayout() {
                 <Stack.Screen name="leaderboard" options={{ presentation: 'card', contentStyle: { backgroundColor: '#F5F5F5' } }} />
                 <Stack.Screen name="challenges" options={{ presentation: 'card', contentStyle: { backgroundColor: '#F5F5F5' } }} />
                 <Stack.Screen name="profile/[id]/badges" options={{ presentation: 'card', contentStyle: { backgroundColor: '#F5F5F5' } }} />
+                <Stack.Screen name="badges" options={{ headerShown: false }} />
               </Stack>
             </ErrorBoundary>
           </MilestoneProvider>
