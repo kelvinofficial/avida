@@ -97,6 +97,16 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ showNavLinks = tru
           <View style={styles.globalHeaderActions}>
             {isAuthenticated ? (
               <>
+                {/* Credit Balance */}
+                <TouchableOpacity 
+                  style={styles.creditBalanceBtn} 
+                  onPress={() => router.push('/credits')}
+                >
+                  <Ionicons name="wallet-outline" size={18} color={COLORS.warning} />
+                  <Text style={styles.creditBalanceText}>
+                    {creditBalance !== null ? `${creditBalance} Credits` : '...'}
+                  </Text>
+                </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.headerIconBtn} 
                   onPress={() => router.push('/notifications')}
