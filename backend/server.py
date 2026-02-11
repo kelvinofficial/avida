@@ -272,6 +272,9 @@ try:
         create_notification_preferences_router,
         create_admin_locations_router,
         create_auto_motors_router,
+        create_property_router,
+        create_offers_router,
+        create_similar_listings_router,
         DEFAULT_CATEGORIES,
         LEGACY_CATEGORY_MAP,
         validate_category_and_subcategory
