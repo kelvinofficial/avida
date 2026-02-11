@@ -1029,7 +1029,7 @@ Users can track their progress towards earning badges:
 
 ## Remaining Backlog
 
-### P0: None (Admin Dashboard Updated)
+### P0: None (Business Profiles Admin API COMPLETED)
 
 ### P1: Continue server.py refactoring
 - Extract remaining route groups from server.py (user profiles, listings, search, etc.)
@@ -1037,6 +1037,45 @@ Users can track their progress towards earning badges:
 ### P2: Optional Cleanup
 - Remove remaining unused `renderGlobalHeader` function definitions
 - Refactor `admin-ui` project into smaller components
+
+### 2026-02-11: Business Profiles Admin API
+**COMPLETED**
+
+#### Backend Endpoints Implemented (`/app/admin-dashboard/backend/server.py`)
+1. `GET /api/admin/business-profiles/list` - List profiles with pagination, filtering, search
+   - Query params: page, limit, status, search
+   - Returns: profiles array, total count, stats (total, pending, verified, rejected)
+
+2. `GET /api/admin/business-profiles/{profile_id}` - Get single profile details
+   - Returns: Full profile with user info
+
+3. `POST /api/admin/business-profiles/{profile_id}/verify` - Verify a profile
+   - Updates status to "verified", logs audit trail
+
+4. `POST /api/admin/business-profiles/{profile_id}/reject` - Reject a profile
+   - Accepts optional rejection reason
+   - Updates status to "rejected", logs audit trail
+
+5. `POST /api/admin/business-profiles/{profile_id}/suspend` - Suspend a profile
+   - For verified profiles that need temporary suspension
+   - Preserves previous status for reinstatement
+
+6. `POST /api/admin/business-profiles/{profile_id}/reinstate` - Reinstate suspended/rejected profiles
+
+#### Proxy Fix
+- Disabled local business profile admin router in main backend
+- Requests now properly proxy to admin-dashboard backend via `/api/admin/{path}`
+- Fixed Authorization header forwarding in proxy
+
+#### Test Results
+- API endpoints verified via curl with admin JWT authentication
+- Business Profiles page loads with 27 profiles from database
+- Verify endpoint tested successfully (changed profile from pending to verified)
+
+**Key Files:**
+- `/app/admin-dashboard/backend/server.py` (lines 8773-9051) - Business Profiles admin endpoints
+- `/app/admin-dashboard/frontend/src/app/dashboard/business-profiles/page.tsx` - UI page
+- `/app/backend/server.py` (line 7270-7278) - Disabled local admin router to allow proxy
 
 ### 2026-02-11: Admin Dashboard Navigation & Analytics Fixes
 **COMPLETED**
