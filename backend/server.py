@@ -3875,13 +3875,72 @@ async def get_active_challenges(request: Request):
         
         challenges.append(challenge_data)
     
-    # Sort: weekly first, then monthly
-    challenges.sort(key=lambda x: (0 if x["type"] == "weekly" else 1, -x["progress"]))
+    # Add active seasonal challenges
+    active_seasonal = get_active_seasonal_challenges()
+    for challenge_def in active_seasonal:
+        challenge_type = challenge_def["type"]
+        start_date, end_date = get_challenge_period(challenge_type, challenge_def)
+        
+        # Calculate time remaining
+        time_remaining = end_date - now
+        days_remaining = time_remaining.days
+        hours_remaining = time_remaining.seconds // 3600
+        
+        challenge_data = {
+            "id": challenge_def["id"],
+            "name": challenge_def["name"],
+            "description": challenge_def["description"],
+            "type": "seasonal",
+            "target": challenge_def["target"],
+            "icon": challenge_def["icon"],
+            "color": challenge_def["color"],
+            "badge_reward": challenge_def["badge_reward"],
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "days_remaining": max(0, days_remaining),
+            "hours_remaining": hours_remaining if days_remaining == 0 else 0,
+            "progress": 0,
+            "completed": False,
+            "joined": False,
+            "theme": challenge_def.get("theme", "default"),
+            "categories": challenge_def.get("categories", []),
+        }
+        
+        if user:
+            progress = await get_user_challenge_progress(
+                user.user_id, challenge_def, start_date, end_date
+            )
+            challenge_data["progress"] = progress
+            challenge_data["completed"] = progress >= challenge_def["target"]
+            
+            participation = await db.challenge_participants.find_one({
+                "user_id": user.user_id,
+                "challenge_id": challenge_def["id"],
+                "period_start": start_date
+            })
+            challenge_data["joined"] = participation is not None
+            
+            badge_earned = await db.challenge_completions.find_one({
+                "user_id": user.user_id,
+                "challenge_id": challenge_def["id"],
+                "period_start": start_date
+            })
+            challenge_data["badge_earned"] = badge_earned is not None
+        
+        challenges.append(challenge_data)
+    
+    # Sort: seasonal first (featured), then weekly, then monthly
+    def sort_key(x):
+        type_order = {"seasonal": 0, "weekly": 1, "monthly": 2}
+        return (type_order.get(x["type"], 3), -x["progress"])
+    
+    challenges.sort(key=sort_key)
     
     return {
         "challenges": challenges,
         "total_weekly": len([c for c in challenges if c["type"] == "weekly"]),
         "total_monthly": len([c for c in challenges if c["type"] == "monthly"]),
+        "total_seasonal": len([c for c in challenges if c["type"] == "seasonal"]),
     }
 
 # NOTE: This route MUST be before /challenges/{challenge_id} to avoid route matching issues
