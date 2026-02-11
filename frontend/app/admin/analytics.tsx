@@ -447,6 +447,253 @@ export default function AdminAnalyticsScreen() {
     </View>
   );
 
+  const handleSaveSettings = async () => {
+    setSavingSettings(true);
+    try {
+      // Save seller analytics settings
+      await api.post('/admin/settings/seller-analytics', {
+        alert_threshold: parseInt(sellerAlertThreshold),
+        low_performance_threshold: parseInt(lowPerformanceThreshold),
+      });
+      
+      // Save engagement notification settings
+      await api.post('/admin/settings/engagement-notifications', {
+        milestones: engagementMilestones,
+        triggers: notificationTriggers,
+      });
+
+      if (Platform.OS === 'web') {
+        alert('Settings saved successfully!');
+      } else {
+        Alert.alert('Success', 'Settings saved successfully!');
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      if (Platform.OS === 'web') {
+        alert('Failed to save settings');
+      } else {
+        Alert.alert('Error', 'Failed to save settings');
+      }
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
+  const renderSettingsTab = () => (
+    <View>
+      {/* Seller Analytics Settings */}
+      <Text style={styles.sectionTitle}>Seller Analytics Settings</Text>
+      <View style={styles.settingsCard}>
+        <View style={styles.settingItem}>
+          <View style={styles.settingInfo}>
+            <Ionicons name="trending-up" size={20} color={COLORS.primary} />
+            <View style={styles.settingTextContainer}>
+              <Text style={styles.settingLabel}>Revenue Alert Threshold</Text>
+              <Text style={styles.settingDescription}>
+                Alert when seller's monthly revenue drops below this amount (€)
+              </Text>
+            </View>
+          </View>
+          <TextInput
+            style={styles.settingInput}
+            value={sellerAlertThreshold}
+            onChangeText={setSellerAlertThreshold}
+            keyboardType="numeric"
+            placeholder="100"
+          />
+        </View>
+
+        <View style={styles.settingDivider} />
+
+        <View style={styles.settingItem}>
+          <View style={styles.settingInfo}>
+            <Ionicons name="alert-circle" size={20} color={COLORS.warning} />
+            <View style={styles.settingTextContainer}>
+              <Text style={styles.settingLabel}>Low Performance Threshold</Text>
+              <Text style={styles.settingDescription}>
+                Days of inactivity before flagging a seller as low-performing
+              </Text>
+            </View>
+          </View>
+          <TextInput
+            style={styles.settingInput}
+            value={lowPerformanceThreshold}
+            onChangeText={setLowPerformanceThreshold}
+            keyboardType="numeric"
+            placeholder="5"
+          />
+        </View>
+      </View>
+
+      {/* Engagement Milestones */}
+      <Text style={styles.sectionTitle}>Engagement Milestone Notifications</Text>
+      <View style={styles.settingsCard}>
+        <View style={styles.toggleItem}>
+          <View style={styles.toggleInfo}>
+            <Ionicons name="cart" size={20} color={COLORS.success} />
+            <Text style={styles.toggleLabel}>First Sale Celebration</Text>
+          </View>
+          <Switch
+            value={engagementMilestones.firstSale}
+            onValueChange={(value) => setEngagementMilestones(prev => ({ ...prev, firstSale: value }))}
+            trackColor={{ false: COLORS.border, true: COLORS.primaryLight }}
+            thumbColor={engagementMilestones.firstSale ? COLORS.primary : '#f4f3f4'}
+          />
+        </View>
+
+        <View style={styles.settingDivider} />
+
+        <View style={styles.toggleItem}>
+          <View style={styles.toggleInfo}>
+            <Ionicons name="list" size={20} color={COLORS.blue} />
+            <Text style={styles.toggleLabel}>10 Listings Milestone</Text>
+          </View>
+          <Switch
+            value={engagementMilestones.tenListings}
+            onValueChange={(value) => setEngagementMilestones(prev => ({ ...prev, tenListings: value }))}
+            trackColor={{ false: COLORS.border, true: COLORS.primaryLight }}
+            thumbColor={engagementMilestones.tenListings ? COLORS.primary : '#f4f3f4'}
+          />
+        </View>
+
+        <View style={styles.settingDivider} />
+
+        <View style={styles.toggleItem}>
+          <View style={styles.toggleInfo}>
+            <Ionicons name="chatbubbles" size={20} color={COLORS.purple} />
+            <Text style={styles.toggleLabel}>100 Messages Milestone</Text>
+          </View>
+          <Switch
+            value={engagementMilestones.hundredMessages}
+            onValueChange={(value) => setEngagementMilestones(prev => ({ ...prev, hundredMessages: value }))}
+            trackColor={{ false: COLORS.border, true: COLORS.primaryLight }}
+            thumbColor={engagementMilestones.hundredMessages ? COLORS.primary : '#f4f3f4'}
+          />
+        </View>
+
+        <View style={styles.settingDivider} />
+
+        <View style={styles.toggleItem}>
+          <View style={styles.toggleInfo}>
+            <Ionicons name="medal" size={20} color={COLORS.warning} />
+            <Text style={styles.toggleLabel}>Badge Achievement Alerts</Text>
+          </View>
+          <Switch
+            value={engagementMilestones.badgeMilestone}
+            onValueChange={(value) => setEngagementMilestones(prev => ({ ...prev, badgeMilestone: value }))}
+            trackColor={{ false: COLORS.border, true: COLORS.primaryLight }}
+            thumbColor={engagementMilestones.badgeMilestone ? COLORS.primary : '#f4f3f4'}
+          />
+        </View>
+      </View>
+
+      {/* Notification Triggers */}
+      <Text style={styles.sectionTitle}>Automated Notification Triggers</Text>
+      <View style={styles.settingsCard}>
+        <View style={styles.toggleItem}>
+          <View style={styles.toggleInfo}>
+            <Ionicons name="time" size={20} color={COLORS.danger} />
+            <Text style={styles.toggleLabel}>Inactive Seller Reminder</Text>
+          </View>
+          <Switch
+            value={notificationTriggers.inactiveSeller}
+            onValueChange={(value) => setNotificationTriggers(prev => ({ ...prev, inactiveSeller: value }))}
+            trackColor={{ false: COLORS.border, true: COLORS.primaryLight }}
+            thumbColor={notificationTriggers.inactiveSeller ? COLORS.primary : '#f4f3f4'}
+          />
+        </View>
+
+        <View style={styles.settingDivider} />
+
+        <View style={styles.toggleItem}>
+          <View style={styles.toggleInfo}>
+            <Ionicons name="pulse" size={20} color={COLORS.pink} />
+            <Text style={styles.toggleLabel}>Low Engagement Alert</Text>
+          </View>
+          <Switch
+            value={notificationTriggers.lowEngagement}
+            onValueChange={(value) => setNotificationTriggers(prev => ({ ...prev, lowEngagement: value }))}
+            trackColor={{ false: COLORS.border, true: COLORS.primaryLight }}
+            thumbColor={notificationTriggers.lowEngagement ? COLORS.primary : '#f4f3f4'}
+          />
+        </View>
+
+        <View style={styles.settingDivider} />
+
+        <View style={styles.toggleItem}>
+          <View style={styles.toggleInfo}>
+            <Ionicons name="flag" size={20} color={COLORS.primary} />
+            <Text style={styles.toggleLabel}>Challenge Deadline Reminder</Text>
+          </View>
+          <Switch
+            value={notificationTriggers.challengeReminder}
+            onValueChange={(value) => setNotificationTriggers(prev => ({ ...prev, challengeReminder: value }))}
+            trackColor={{ false: COLORS.border, true: COLORS.primaryLight }}
+            thumbColor={notificationTriggers.challengeReminder ? COLORS.primary : '#f4f3f4'}
+          />
+        </View>
+
+        <View style={styles.settingDivider} />
+
+        <View style={styles.toggleItem}>
+          <View style={styles.toggleInfo}>
+            <Ionicons name="mail" size={20} color={COLORS.blue} />
+            <Text style={styles.toggleLabel}>Weekly Digest Email</Text>
+          </View>
+          <Switch
+            value={notificationTriggers.weeklyDigest}
+            onValueChange={(value) => setNotificationTriggers(prev => ({ ...prev, weeklyDigest: value }))}
+            trackColor={{ false: COLORS.border, true: COLORS.primaryLight }}
+            thumbColor={notificationTriggers.weeklyDigest ? COLORS.primary : '#f4f3f4'}
+          />
+        </View>
+      </View>
+
+      {/* Save Button */}
+      <TouchableOpacity
+        style={[styles.saveButton, savingSettings && styles.saveButtonDisabled]}
+        onPress={handleSaveSettings}
+        disabled={savingSettings}
+      >
+        {savingSettings ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <>
+            <Ionicons name="save" size={20} color="#fff" />
+            <Text style={styles.saveButtonText}>Save Settings</Text>
+          </>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+
+  // Auth error screen
+  if (authError) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.authErrorContainer}>
+          <Ionicons name="lock-closed" size={64} color={COLORS.danger} />
+          <Text style={styles.authErrorTitle}>Authentication Required</Text>
+          <Text style={styles.authErrorText}>
+            You need to be logged in as an admin to access this page.
+          </Text>
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={() => router.push('/login')}
+          >
+            <Text style={styles.loginButtonText}>Go to Login</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
