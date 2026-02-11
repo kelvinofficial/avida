@@ -692,4 +692,38 @@ const styles = StyleSheet.create({
     color: COLORS.textLight,
     marginTop: 4,
   },
+  // Seasonal Gallery Link
+  seasonalGalleryLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 16,
+    marginBottom: 32,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  seasonalGalleryIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FDF2F8',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  seasonalGalleryText: {
+    flex: 1,
+  },
+  seasonalGalleryTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  seasonalGallerySubtitle: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
 });
