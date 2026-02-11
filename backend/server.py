@@ -8344,8 +8344,16 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load admin settings router: {e}")
     
+    # Create notification preferences router
+    try:
+        notification_prefs_router = create_notification_preferences_router(db, require_auth)
+        api_router.include_router(notification_prefs_router)
+        logger.info("Notification preferences router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load notification preferences router: {e}")
+    
     app.include_router(api_router)  # Re-include to pick up modular routes
-    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin) loaded successfully")
+    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs) loaded successfully")
 
 # Include boost routes if available
 if BOOST_ROUTES_AVAILABLE:
