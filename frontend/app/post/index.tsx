@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { listingsApi, categoriesApi } from '../../src/utils/api';
 import api from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
+import { useBadgeCelebration } from '../../src/context/BadgeCelebrationContext';
 import { 
   ALL_CATEGORIES, 
   getMainCategory, 
