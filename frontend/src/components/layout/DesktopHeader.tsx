@@ -38,7 +38,7 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ showNavLinks = tru
 
   const fetchCreditBalance = async () => {
     try {
-      const res = await api.get('/credits/balance');
+      const res = await api.get('/boost/credits/balance');
       setCreditBalance(res.data?.balance ?? 0);
     } catch (err) {
       console.error('Failed to fetch credit balance:', err);
