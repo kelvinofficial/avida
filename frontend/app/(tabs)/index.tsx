@@ -30,7 +30,7 @@ import { useSandbox } from '../../src/utils/sandboxContext';
 import { formatDistanceToNow } from 'date-fns';
 import { getSubcategories, SubcategoryConfig, getMainCategory } from '../../src/config/subcategories';
 import { useResponsive } from '../../src/hooks/useResponsive';
-import { ResponsiveLayout, Footer } from '../../src/components/layout';
+import { ResponsiveLayout, Footer, DesktopHeader } from '../../src/components/layout';
 import { FeedBanner, HeaderBanner } from '../../src/components/BannerSlot';
 import { LocationPicker, LocationData } from '../../src/components/LocationPicker';
 
