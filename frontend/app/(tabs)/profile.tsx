@@ -1099,7 +1099,7 @@ export default function ProfileScreen() {
               
               {/* Badge Notification */}
               <TouchableOpacity style={desktopStyles.headerBtn} onPress={() => router.push('/profile/badges')}>
-                <Ionicons name="ribbon-outline" size={22} color={COLORS.text} />
+                <Ionicons name="medal-outline" size={22} color={COLORS.text} />
                 {unviewedBadgeCount > 0 && (
                   <View style={[desktopStyles.notifBadge, { backgroundColor: '#9333EA' }]}>
                     <Text style={desktopStyles.notifBadgeText}>{unviewedBadgeCount > 99 ? '99+' : unviewedBadgeCount}</Text>
