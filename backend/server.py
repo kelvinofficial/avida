@@ -998,6 +998,61 @@ async def broadcast_qa_alert(alert_data: Dict, target_admin_ids: List[str] = Non
 # Make broadcast function available globally for QA service
 app.state.broadcast_qa_alert = broadcast_qa_alert
 
+# ==================== FEATURED VERIFIED LISTINGS ====================
+# This endpoint returns listings from verified/premium sellers
+
+@api_router.get("/listings/featured-verified")
+async def get_featured_verified_listings(limit: int = Query(12, ge=1, le=50)):
+    """Get featured listings from verified sellers"""
+    
+    # First, get verified/premium business profiles
+    verified_profiles = await db.business_profiles.find({
+        "$or": [{"is_verified": True}, {"is_premium": True}]
+    }, {"user_id": 1, "business_name": 1, "is_verified": 1, "is_premium": 1, "_id": 0}).to_list(length=100)
+    
+    if not verified_profiles:
+        # If no verified sellers, return featured/recent listings as fallback
+        listings_cursor = db.listings.find(
+            {"status": "active"},
+            {"_id": 0}
+        ).sort("created_at", -1).limit(limit)
+        listings = await listings_cursor.to_list(length=limit)
+        return {"listings": listings, "source": "recent"}
+    
+    # Get user_ids of verified sellers
+    verified_user_ids = [p["user_id"] for p in verified_profiles]
+    seller_info = {p["user_id"]: p for p in verified_profiles}
+    
+    # Fetch listings from these sellers
+    listings_cursor = db.listings.find(
+        {"status": "active", "user_id": {"$in": verified_user_ids}},
+        {"_id": 0}
+    ).sort([("featured", -1), ("boost_score", -1), ("created_at", -1)]).limit(limit)
+    
+    listings = await listings_cursor.to_list(length=limit)
+    
+    # If not enough listings from verified sellers, pad with auto_listings
+    if len(listings) < limit:
+        remaining = limit - len(listings)
+        auto_listings_cursor = db.auto_listings.find(
+            {"status": "active", "user_id": {"$in": verified_user_ids}},
+            {"_id": 0}
+        ).sort([("featured", -1), ("boost_score", -1), ("created_at", -1)]).limit(remaining)
+        auto_listings = await auto_listings_cursor.to_list(length=remaining)
+        listings.extend(auto_listings)
+    
+    # Attach seller info to each listing
+    for listing in listings:
+        user_id = listing.get("user_id")
+        if user_id and user_id in seller_info:
+            listing["seller"] = {
+                "business_name": seller_info[user_id].get("business_name", "Verified Seller"),
+                "is_verified": seller_info[user_id].get("is_verified", False),
+                "is_premium": seller_info[user_id].get("is_premium", False)
+            }
+    
+    return {"listings": listings, "source": "verified_sellers"}
+
 # ==================== AUTO/MOTORS ENDPOINTS ====================
 # Now handled by modular router (routes/auto_motors.py)
 # Includes: brands, models, listings, conversations, favorites, search
