@@ -218,6 +218,68 @@ DEFAULT_CATEGORIES = [
             {"id": "windows", "name": "Windows"},
         ]
     },
+    {
+        "id": "friendship_dating",
+        "name": "Friendship & Dating",
+        "icon": "heart-outline",
+        "subcategories": [
+            {"id": "looking_for_friends", "name": "Looking for Friends"},
+            {"id": "activity_partners", "name": "Activity Partners"},
+            {"id": "dating_romance", "name": "Dating & Romance"},
+            {"id": "long_term_relationship", "name": "Long-Term Relationship"},
+            {"id": "casual_dating", "name": "Casual Dating"},
+            {"id": "marriage_minded", "name": "Marriage Minded"},
+            {"id": "travel_companions", "name": "Travel Companions"},
+            {"id": "language_exchange", "name": "Language Exchange Partners"},
+            {"id": "professional_networking", "name": "Professional Networking"},
+            {"id": "study_buddies", "name": "Study Buddies"},
+            {"id": "roommate_search", "name": "Roommate Search"},
+            {"id": "gaming_partners", "name": "Gaming Partners"},
+        ],
+        "attributes": {
+            "age_range": {
+                "label": "Age Range",
+                "type": "range",
+                "min": 18,
+                "max": 99,
+                "required": False
+            },
+            "gender": {
+                "label": "Gender",
+                "type": "select",
+                "options": ["Male", "Female", "Non-binary", "Prefer not to say"],
+                "required": False
+            },
+            "looking_for": {
+                "label": "Looking For",
+                "type": "multi_select",
+                "options": ["Men", "Women", "Everyone"],
+                "required": False
+            },
+            "interests": {
+                "label": "Interests",
+                "type": "multi_select",
+                "options": [
+                    "Sports & Fitness", "Music", "Movies & TV", "Travel", "Food & Cooking",
+                    "Art & Culture", "Technology", "Reading", "Gaming", "Outdoors & Nature",
+                    "Photography", "Dancing", "Yoga & Meditation", "Pets & Animals"
+                ],
+                "required": False
+            },
+            "availability": {
+                "label": "Availability",
+                "type": "multi_select",
+                "options": ["Weekday Mornings", "Weekday Evenings", "Weekends", "Flexible"],
+                "required": False
+            },
+            "communication_preference": {
+                "label": "Preferred Communication",
+                "type": "select",
+                "options": ["In-app messaging", "Video calls", "Phone calls", "Meet in person"],
+                "required": False
+            }
+        }
+    },
 ]
 
 # Legacy category ID mapping
