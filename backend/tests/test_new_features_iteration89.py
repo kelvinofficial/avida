@@ -174,39 +174,17 @@ class TestAdminBackendChallenges:
     @pytest.fixture
     def admin_token(self):
         """Get admin authentication token"""
-        # First, try to create an admin user
-        create_admin_response = requests.post(
-            f"{BASE_URL}/api/admin/auth/bootstrap",
-            json={
-                "email": TEST_ADMIN_EMAIL,
-                "password": TEST_ADMIN_PASSWORD,
-                "name": "Test Admin User"
-            }
-        )
-        
-        # Try to login
+        # Use the known test admin credentials
         login_response = requests.post(
             f"{BASE_URL}/api/admin/auth/login",
             json={
-                "email": TEST_ADMIN_EMAIL,
-                "password": TEST_ADMIN_PASSWORD
+                "email": "testadmin89@test.com",
+                "password": "TestAdmin123!"
             }
         )
         
         if login_response.status_code == 200:
             return login_response.json().get("access_token")
-        
-        # Try with default admin credentials
-        default_login = requests.post(
-            f"{BASE_URL}/api/admin/auth/login",
-            json={
-                "email": "admin@marketplace.com",
-                "password": "Admin123!"
-            }
-        )
-        
-        if default_login.status_code == 200:
-            return default_login.json().get("access_token")
         
         pytest.skip(f"Could not authenticate admin: {login_response.text}")
     
@@ -312,8 +290,8 @@ class TestAdminBackendLeaderboard:
         login_response = requests.post(
             f"{BASE_URL}/api/admin/auth/login",
             json={
-                "email": "admin@marketplace.com",
-                "password": "Admin123!"
+                "email": "testadmin89@test.com",
+                "password": "TestAdmin123!"
             }
         )
         
@@ -369,8 +347,8 @@ class TestAdminBackendAnalytics:
         login_response = requests.post(
             f"{BASE_URL}/api/admin/auth/login",
             json={
-                "email": "admin@marketplace.com",
-                "password": "Admin123!"
+                "email": "testadmin89@test.com",
+                "password": "TestAdmin123!"
             }
         )
         
