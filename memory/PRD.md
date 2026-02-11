@@ -60,6 +60,36 @@ Build a local marketplace application (Avida) with:
   - Share button allows users to copy achievement link or share via native share sheet
   - Auto-triggered after earning badges (listing creation, mark-sold actions)
 
+### 2026-02-11: Badge Leaderboard, Social Sharing & Push Notifications
+**COMPLETED**
+
+#### Badge Leaderboard
+- **Backend Endpoints:**
+  - `GET /api/badges/leaderboard` - Paginated leaderboard showing top badge earners with badge counts and showcase badges
+  - `GET /api/badges/leaderboard/my-rank` - Authenticated endpoint returning user's rank, percentile, and nearby competitors
+- **Frontend Page (`/leaderboard`):**
+  - Hero section with trophy icon and competition encouragement
+  - "Your Ranking" card showing rank, badge count, percentile, and nearby users
+  - Leaderboard list with gold/silver/bronze styling for top 3
+  - Current user highlighting and pagination support
+  - Share button to share leaderboard link
+
+#### Social Sharing with Open Graph
+- **Backend Enhancement:**
+  - `GET /api/badges/share/{user_id}` now returns `og_meta` object with title, description, type, and URL
+  - User rank included in shareable profile
+- **Frontend Page (`/profile/{id}/badges`):**
+  - Shareable badge profile page with Open Graph meta tags via expo-router/head
+  - Profile card showing user's badges, rank, and showcase badges
+  - CTA for non-authenticated users to join
+  - Link to badge leaderboard
+
+#### Push Notifications for Milestones
+- **Backend Functions:**
+  - `send_milestone_push_notification()` - Sends push notification with emoji-based titles based on milestone type
+  - `check_and_notify_new_milestones()` - Checks for new milestones and triggers push notifications
+- **Note:** Push notifications require Firebase/Expo push token configuration to send actual notifications
+
 ## What's Been Implemented
 
 ### 2026-02-10: Complete Subscription Backend
