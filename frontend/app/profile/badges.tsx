@@ -329,6 +329,21 @@ export default function BadgesScreen() {
           {inProgressBadges.map(badge => renderBadgeCard(badge))}
         </View>
       </View>
+
+      {/* Seasonal Gallery Link */}
+      <TouchableOpacity
+        style={styles.seasonalGalleryLink}
+        onPress={() => router.push('/badges/seasonal-gallery')}
+      >
+        <View style={styles.seasonalGalleryIcon}>
+          <Ionicons name="sparkles" size={24} color="#EC4899" />
+        </View>
+        <View style={styles.seasonalGalleryText}>
+          <Text style={styles.seasonalGalleryTitle}>Past Seasonal Badges</Text>
+          <Text style={styles.seasonalGallerySubtitle}>Browse limited-time badges from past events</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={24} color={COLORS.textSecondary} />
+      </TouchableOpacity>
     </ScrollView>
   );
 
