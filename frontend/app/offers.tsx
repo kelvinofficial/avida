@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, usePathname } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useLoginRedirect } from '../src/hooks/useLoginRedirect';
 import api from '../src/utils/api';
 import { useAuthStore } from '../src/store/authStore';
