@@ -353,6 +353,8 @@ class TestScheduledReportsAPI:
     
     def test_report_preview(self):
         """GET /admin/reports/preview should return HTML email preview"""
+        self._ensure_all_sections_enabled()
+        
         response = requests.get(
             f"{BASE_URL}/api/admin/reports/preview",
             headers=self.headers
