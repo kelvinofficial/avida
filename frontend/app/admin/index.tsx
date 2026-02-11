@@ -23,7 +23,7 @@ export default function AdminRedirectScreen() {
           Manage users, business profiles, and verifications
         </Text>
 
-        {/* Quick Actions */}
+        {/* Quick Actions - Row 1 */}
         <View style={styles.actionsContainer}>
           <TouchableOpacity 
             style={styles.actionCard}
@@ -45,6 +45,31 @@ export default function AdminRedirectScreen() {
             </View>
             <Text style={styles.actionTitle}>Business Profiles</Text>
             <Text style={styles.actionDesc}>Review and manage business profiles</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Quick Actions - Row 2 */}
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity 
+            style={styles.actionCard}
+            onPress={() => router.push('/admin/challenges')}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: '#FDF2F8' }]}>
+              <Ionicons name="flag" size={24} color="#EC4899" />
+            </View>
+            <Text style={styles.actionTitle}>Challenges</Text>
+            <Text style={styles.actionDesc}>Create and manage badge challenges</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.actionCard}
+            onPress={() => router.push('/admin/analytics')}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: '#EFF6FF' }]}>
+              <Ionicons name="bar-chart" size={24} color="#3B82F6" />
+            </View>
+            <Text style={styles.actionTitle}>Analytics</Text>
+            <Text style={styles.actionDesc}>View platform and seller analytics</Text>
           </TouchableOpacity>
         </View>
 
