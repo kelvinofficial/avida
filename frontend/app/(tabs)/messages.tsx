@@ -781,7 +781,7 @@ export default function MessagesScreen() {
       return (
         <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
           {/* Global Header */}
-          {renderGlobalHeader()}
+          <DesktopHeader />
           
           <View style={desktopStyles.splitContainer}>
             {/* Left side - Promo illustration */}
@@ -942,7 +942,7 @@ export default function MessagesScreen() {
         {isLargeScreen ? (
           <>
             {/* Global Header */}
-            {renderGlobalHeader()}
+            <DesktopHeader />
             
             <View style={desktopStyles.pageWrapper}>
               <View style={desktopStyles.masterDetailContainer}>
@@ -991,7 +991,7 @@ export default function MessagesScreen() {
         )}
         
         {/* Global Header */}
-        {renderGlobalHeader()}
+        <DesktopHeader />
         
         <View style={desktopStyles.pageWrapper}>
           <View style={desktopStyles.masterDetailContainer}>
