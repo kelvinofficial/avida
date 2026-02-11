@@ -200,6 +200,30 @@ def create_admin_router(db, require_admin):
             logger.error(f"Error saving seller analytics settings: {e}")
             raise HTTPException(status_code=500, detail="Failed to save settings")
 
+    @router.get("/settings/seller-analytics")
+    async def get_seller_analytics_settings(
+        current_user: dict = Depends(require_admin)
+    ):
+        """Get seller analytics settings."""
+        try:
+            settings = db.admin_settings.find_one(
+                {"type": "seller_analytics"},
+                {"_id": 0}
+            )
+            if not settings:
+                # Return default settings if none exist
+                return {
+                    "alert_threshold": 100,
+                    "low_performance_threshold": 5
+                }
+            return {
+                "alert_threshold": settings.get("alert_threshold", 100),
+                "low_performance_threshold": settings.get("low_performance_threshold", 5)
+            }
+        except Exception as e:
+            logger.error(f"Error fetching seller analytics settings: {e}")
+            raise HTTPException(status_code=500, detail="Failed to fetch settings")
+
     @router.post("/settings/engagement-notifications")
     async def save_engagement_notification_settings(
         settings: Dict[str, Any],
@@ -222,6 +246,40 @@ def create_admin_router(db, require_admin):
         except Exception as e:
             logger.error(f"Error saving engagement notification settings: {e}")
             raise HTTPException(status_code=500, detail="Failed to save settings")
+
+    @router.get("/settings/engagement-notifications")
+    async def get_engagement_notification_settings(
+        current_user: dict = Depends(require_admin)
+    ):
+        """Get engagement notification settings."""
+        try:
+            settings = db.admin_settings.find_one(
+                {"type": "engagement_notifications"},
+                {"_id": 0}
+            )
+            if not settings:
+                # Return default settings if none exist
+                return {
+                    "milestones": {
+                        "firstSale": True,
+                        "tenListings": True,
+                        "hundredMessages": True,
+                        "badgeMilestone": True
+                    },
+                    "triggers": {
+                        "inactiveSeller": True,
+                        "lowEngagement": True,
+                        "challengeReminder": True,
+                        "weeklyDigest": True
+                    }
+                }
+            return {
+                "milestones": settings.get("milestones", {}),
+                "triggers": settings.get("triggers", {})
+            }
+        except Exception as e:
+            logger.error(f"Error fetching engagement notification settings: {e}")
+            raise HTTPException(status_code=500, detail="Failed to fetch settings")
 
     @router.get("/challenges")
     async def get_admin_challenges(
