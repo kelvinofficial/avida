@@ -3223,6 +3223,117 @@ async def send_bulk_push_notifications(
     
     return {"sent": sent, "failed": failed}
 
+# ==================== MILESTONE PUSH NOTIFICATIONS ====================
+
+async def send_milestone_push_notification(user_id: str, milestone: Dict[str, Any]) -> bool:
+    """Send push notification when user achieves a milestone"""
+    try:
+        # Get user's push token
+        user = await db.users.find_one({"user_id": user_id})
+        if not user:
+            return False
+        
+        push_token = user.get("push_token")
+        if not push_token:
+            return False
+        
+        # Build notification content
+        title = f"🎉 {milestone.get('name', 'New Achievement!')}"
+        body = milestone.get('message', 'Congratulations on your achievement!')
+        
+        # Add emoji based on milestone type
+        if milestone.get('type') == 'count':
+            threshold = milestone.get('threshold', 1)
+            if threshold >= 50:
+                title = f"🏆 {milestone.get('name', 'Legend Status!')}"
+            elif threshold >= 25:
+                title = f"⭐ {milestone.get('name', 'Badge Master!')}"
+            elif threshold >= 10:
+                title = f"🎯 {milestone.get('name', 'Achievement Hunter!')}"
+        elif milestone.get('type') == 'special':
+            badge_name = milestone.get('badge_name', '')
+            if 'Sale' in badge_name:
+                title = f"💰 {milestone.get('name', 'Sale Milestone!')}"
+            elif 'Seller' in badge_name:
+                title = f"🌟 {milestone.get('name', 'Seller Milestone!')}"
+        
+        data = {
+            "type": "milestone",
+            "milestone_id": milestone.get('id', ''),
+            "milestone_type": milestone.get('type', 'count'),
+            "route": "/profile/badges",
+        }
+        
+        return await send_push_notification(
+            push_token=push_token,
+            title=title,
+            body=body,
+            data=data,
+            notification_type="milestone"
+        )
+    except Exception as e:
+        logger.error(f"Failed to send milestone push notification: {e}")
+        return False
+
+async def check_and_notify_new_milestones(user_id: str) -> List[Dict[str, Any]]:
+    """Check for new milestones and send push notifications for each"""
+    try:
+        # Get total badge count
+        total_badges = await db.user_badges.count_documents({"user_id": user_id})
+        
+        # Get user's badges with names
+        user_badges = await db.user_badges.find({"user_id": user_id}).to_list(length=100)
+        badge_ids = [b["badge_id"] for b in user_badges]
+        badges = await db.badges.find({"id": {"$in": badge_ids}}).to_list(length=100)
+        badge_names = {b["id"]: b["name"] for b in badges}
+        
+        # Get acknowledged milestones
+        user_milestones = await db.user_milestones.find({"user_id": user_id}).to_list(length=100)
+        acknowledged_ids = {m["milestone_id"] for m in user_milestones}
+        
+        new_milestones = []
+        
+        # Check count-based milestones
+        for milestone in BADGE_MILESTONES:
+            milestone_id = f"count_{milestone['count']}"
+            if total_badges >= milestone["count"] and milestone_id not in acknowledged_ids:
+                milestone_data = {
+                    "id": milestone_id,
+                    "type": "count",
+                    "name": milestone["name"],
+                    "message": milestone["message"],
+                    "icon": milestone["icon"],
+                    "threshold": milestone["count"],
+                }
+                new_milestones.append(milestone_data)
+                
+                # Send push notification
+                await send_milestone_push_notification(user_id, milestone_data)
+        
+        # Check special badge milestones
+        for badge_name, milestone in SPECIAL_BADGE_MILESTONES.items():
+            milestone_id = f"special_{badge_name.replace(' ', '_').lower()}"
+            earned = any(badge_names.get(b["badge_id"]) == badge_name for b in user_badges)
+            
+            if earned and milestone_id not in acknowledged_ids:
+                milestone_data = {
+                    "id": milestone_id,
+                    "type": "special",
+                    "badge_name": badge_name,
+                    "name": milestone["name"],
+                    "message": milestone["message"],
+                    "icon": milestone["icon"],
+                }
+                new_milestones.append(milestone_data)
+                
+                # Send push notification
+                await send_milestone_push_notification(user_id, milestone_data)
+        
+        return new_milestones
+    except Exception as e:
+        logger.error(f"Error checking milestones for push notifications: {e}")
+        return []
+
 # ==================== BLOCKED USERS ENDPOINTS ====================
 
 @api_router.get("/blocked-users")
