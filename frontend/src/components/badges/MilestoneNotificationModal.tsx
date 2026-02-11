@@ -265,8 +265,9 @@ const MilestoneNotificationModal: React.FC<MilestoneNotificationModalProps> = ({
       transparent
       animationType="fade"
       onRequestClose={onClose}
+      testID="milestone-notification-modal"
     >
-      <View style={styles.overlay}>
+      <View style={styles.overlay} testID="milestone-modal-overlay">
         {/* Confetti */}
         {showConfetti && (
           <View style={styles.confettiContainer}>
