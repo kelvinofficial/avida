@@ -1029,7 +1029,7 @@ Users can track their progress towards earning badges:
 
 ## Remaining Backlog
 
-### P0: None (Scheduled Reports COMPLETED)
+### P0: None (Admin Dashboard Updated)
 
 ### P1: Continue server.py refactoring
 - Extract remaining route groups from server.py (user profiles, listings, search, etc.)
@@ -1037,6 +1037,40 @@ Users can track their progress towards earning badges:
 ### P2: Optional Cleanup
 - Remove remaining unused `renderGlobalHeader` function definitions
 - Refactor `admin-ui` project into smaller components
+
+### 2026-02-11: Admin Dashboard Navigation & Analytics Fixes
+**COMPLETED**
+
+#### Changes Made
+1. **Fixed Analytics Page API Endpoints** (`/app/admin-dashboard/frontend/src/app/dashboard/analytics/page.tsx`)
+   - Changed API calls from `/analytics/admin/*` to `/seller-analytics/*`
+   - This fixed the "Unable to load settings" error
+
+2. **Added Missing Menu Items** (`/app/admin-dashboard/frontend/src/app/dashboard/layout.tsx`)
+   - Added "Analytics" link to sidebar (was present but hidden below fold)
+   - Added "Challenges" link to sidebar
+   - Added "Business Profiles" link to sidebar
+   - Reordered menu items for better visibility
+
+3. **Created Business Profiles Admin Page** (`/app/admin-dashboard/frontend/src/app/dashboard/business-profiles/page.tsx`)
+   - Stats cards: Total, Pending, Verified, Rejected profiles
+   - Search and filter by status tabs
+   - Table with business details, owner info, category, status
+   - View details dialog with verify/reject actions
+   - Pagination support
+
+#### Admin Dashboard Sidebar Now Includes
+- Overview, Executive Summary, QA & Reliability, Admin Sandbox
+- Cohort Analytics, **Analytics** (with Seller Analytics Settings)
+- Categories, Attributes, Location Manager
+- **Users**, **Verification**, **Challenges**, **Business Profiles**
+- Listings, Listing Moderation, Vouchers, Commission, Boosts
+- And many more...
+
+**Key Files Modified:**
+- `/app/admin-dashboard/frontend/src/app/dashboard/layout.tsx` - Sidebar menu
+- `/app/admin-dashboard/frontend/src/app/dashboard/analytics/page.tsx` - Fixed API endpoints
+- `/app/admin-dashboard/frontend/src/app/dashboard/business-profiles/page.tsx` - New page
 
 ### 2026-02-11: Scheduled Analytics Reports Feature
 **COMPLETED**
