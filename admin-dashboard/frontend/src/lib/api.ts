@@ -1284,6 +1284,24 @@ class ApiClient {
     const { data } = await this.client.post('/ab-testing/trigger-check');
     return data;
   }
+
+  // Invoices API
+  async getInvoices(params: Record<string, any> = {}) {
+    const { data } = await this.client.get('/invoices', { params });
+    return data;
+  }
+
+  async getInvoice(invoiceId: string) {
+    const { data } = await this.client.get(`/invoices/${invoiceId}`);
+    return data;
+  }
+
+  async downloadInvoicePdf(invoiceId: string): Promise<Blob> {
+    const response = await this.client.get(`/invoices/${invoiceId}/pdf`, {
+      responseType: 'blob'
+    });
+    return response.data;
+  }
 }
 
 export const api = new ApiClient();
