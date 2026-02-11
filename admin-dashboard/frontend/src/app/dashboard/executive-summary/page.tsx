@@ -237,26 +237,32 @@ export default function ExecutiveSummaryPage() {
   const loadData = async () => {
     setLoading(true);
     try {
+      // Use main backend API for executive summary (not /admin/)
+      const baseUrl = process.env.NEXT_PUBLIC_MAIN_API_URL || 'https://admin-badges-1.preview.emergentagent.com/api';
+      const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      
       // Load quick stats first (always available)
       try {
-        const statsRes = await api.get('/executive-summary/quick-stats');
-        setQuickStats(statsRes.data);
+        const statsRes = await fetch(`${baseUrl}/executive-summary/quick-stats`, { headers });
+        if (statsRes.ok) setQuickStats(await statsRes.json());
       } catch (e) {
         console.warn('Quick stats not available:', e);
       }
 
       // Load config
       try {
-        const configRes = await api.get('/executive-summary/config');
-        setConfig(configRes.data);
+        const configRes = await fetch(`${baseUrl}/executive-summary/config`, { headers });
+        if (configRes.ok) setConfig(await configRes.json());
       } catch (e) {
         console.warn('Config not available:', e);
       }
 
       // Try to load latest summary
       try {
-        const summaryRes = await api.get(`/executive-summary/latest?period=${selectedPeriod}`);
-        setSummary(summaryRes.data);
+        const summaryRes = await fetch(`${baseUrl}/executive-summary/latest?period=${selectedPeriod}`, { headers });
+        if (summaryRes.ok) setSummary(await summaryRes.json());
       } catch (e) {
         console.warn('Summary not available:', e);
       }
@@ -271,11 +277,24 @@ export default function ExecutiveSummaryPage() {
     setGenerating(true);
     setError('');
     try {
-      const res = await api.post(`/executive-summary/generate?period=${selectedPeriod}&force=${force}`);
-      setSummary(res.data);
-      setSuccess('Executive summary generated successfully!');
+      const baseUrl = process.env.NEXT_PUBLIC_MAIN_API_URL || 'https://admin-badges-1.preview.emergentagent.com/api';
+      const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      
+      const res = await fetch(`${baseUrl}/executive-summary/generate?period=${selectedPeriod}&force=${force}`, {
+        method: 'POST',
+        headers
+      });
+      if (res.ok) {
+        setSummary(await res.json());
+        setSuccess('Executive summary generated successfully!');
+      } else {
+        const err = await res.json();
+        setError(err.detail || 'Failed to generate summary');
+      }
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to generate summary');
+      setError('Failed to generate summary');
     } finally {
       setGenerating(false);
     }
@@ -283,9 +302,20 @@ export default function ExecutiveSummaryPage() {
 
   const updateConfig = async (updates: Partial<SummaryConfig>) => {
     try {
-      await api.put('/executive-summary/config', { ...config, ...updates });
-      setConfig({ ...config!, ...updates });
-      setSuccess('Settings updated');
+      const baseUrl = process.env.NEXT_PUBLIC_MAIN_API_URL || 'https://admin-badges-1.preview.emergentagent.com/api';
+      const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      
+      const res = await fetch(`${baseUrl}/executive-summary/config`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ ...config, ...updates })
+      });
+      if (res.ok) {
+        setConfig({ ...config!, ...updates });
+        setSuccess('Settings updated');
+      }
     } catch (err) {
       setError('Failed to update settings');
     }
