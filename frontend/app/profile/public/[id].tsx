@@ -159,6 +159,9 @@ export default function PublicProfileScreen() {
   const [reviewComment, setReviewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
+  
+  // User achievement badges
+  const [achievementBadges, setAchievementBadges] = useState<any[]>([]);
 
   const handleGoBack = () => {
     if (router.canGoBack()) {
