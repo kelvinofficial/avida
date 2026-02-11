@@ -271,6 +271,7 @@ try:
         create_admin_router,
         create_notification_preferences_router,
         create_admin_locations_router,
+        create_auto_motors_router,
         DEFAULT_CATEGORIES,
         LEGACY_CATEGORY_MAP,
         validate_category_and_subcategory
