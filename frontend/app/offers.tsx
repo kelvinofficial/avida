@@ -1321,7 +1321,74 @@ const desktopStyles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   
-  // Page Header
+  // Dedicated Page Header
+  dedicatedHeader: {
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+  },
+  dedicatedHeaderContent: {
+    maxWidth: 1280,
+    marginHorizontal: 'auto',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  dedicatedBackButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f5',
+  },
+  dedicatedBackText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+  dedicatedHeaderCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  dedicatedHeaderIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dedicatedHeaderTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#333',
+  },
+  dedicatedHeaderSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+  },
+  dedicatedHeaderRight: {
+    alignItems: 'flex-end',
+  },
+  pendingHeaderBadge: {
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  pendingHeaderBadgeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.error,
+  },
+  
+  // Page Header (legacy)
   pageHeader: {
     flexDirection: 'row',
     alignItems: 'center',
