@@ -6276,6 +6276,974 @@ async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
 # =============================================================================
+# ADMIN LOCATION ROUTES - Must be defined before admin proxy catch-all
+# These routes are handled locally by the main backend
+# =============================================================================
+
+@app.get("/api/admin/locations/stats")
+async def admin_location_stats(request: Request):
+    """Get location statistics for admin dashboard"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.get_location_stats()
+
+@app.get("/api/admin/locations/countries")
+async def admin_location_countries(request: Request):
+    """Get all countries for admin dashboard"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.get_countries()
+
+@app.get("/api/admin/locations/regions")
+async def admin_location_regions(
+    request: Request, 
+    country_code: str = Query(...),
+    search: str = Query(None)
+):
+    """Get regions for admin dashboard"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.get_regions(country_code, search)
+
+@app.get("/api/admin/locations/districts")
+async def admin_location_districts(
+    request: Request,
+    country_code: str = Query(...),
+    region_code: str = Query(...),
+    search: str = Query(None)
+):
+    """Get districts for admin dashboard"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.get_districts(country_code, region_code, search)
+
+@app.get("/api/admin/locations/cities")
+async def admin_location_cities(
+    request: Request,
+    country_code: str = Query(...),
+    region_code: str = Query(...),
+    district_code: str = Query(...),
+    search: str = Query(None)
+):
+    """Get cities for admin dashboard"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.get_cities(country_code, region_code, district_code, search)
+
+# Admin location CRUD operations
+@app.post("/api/admin/locations/countries")
+async def admin_add_country(
+    request: Request,
+    code: str = Body(...),
+    name: str = Body(...),
+    flag: str = Body(None)
+):
+    """Add a new country"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.add_country(code, name, flag)
+
+@app.post("/api/admin/locations/regions")
+async def admin_add_region(
+    request: Request,
+    country_code: str = Body(...),
+    region_code: str = Body(...),
+    name: str = Body(...)
+):
+    """Add a new region"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.add_region(country_code, region_code, name)
+
+@app.post("/api/admin/locations/districts")
+async def admin_add_district(
+    request: Request,
+    country_code: str = Body(...),
+    region_code: str = Body(...),
+    district_code: str = Body(...),
+    name: str = Body(...)
+):
+    """Add a new district"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.add_district(country_code, region_code, district_code, name)
+
+@app.post("/api/admin/locations/cities")
+async def admin_add_city(
+    request: Request,
+    country_code: str = Body(...),
+    region_code: str = Body(...),
+    district_code: str = Body(...),
+    city_code: str = Body(...),
+    name: str = Body(...),
+    lat: float = Body(...),
+    lng: float = Body(...)
+):
+    """Add a new city"""
+    from location_system import LocationService
+    service = LocationService(db)
+    return await service.add_city(country_code, region_code, district_code, city_code, name, lat, lng)
+
+@app.put("/api/admin/locations/countries/{code}")
+async def admin_update_country(
+    code: str,
+    request: Request,
+    name: str = Body(None),
+    flag: str = Body(None)
+):
+    """Update a country"""
+    from location_system import LocationService
+    service = LocationService(db)
+    success = await service.update_country(code, name, flag)
+    if not success:
+        raise HTTPException(status_code=404, detail="Country not found")
+    return {"success": True}
+
+@app.delete("/api/admin/locations/countries/{code}")
+async def admin_delete_country(code: str, request: Request):
+    """Delete a country"""
+    from location_system import LocationService
+    service = LocationService(db)
+    success = await service.delete_country(code)
+    if not success:
+        raise HTTPException(status_code=404, detail="Country not found")
+    return {"success": True}
+
+@app.delete("/api/admin/locations/regions")
+async def admin_delete_region(
+    request: Request,
+    country_code: str = Query(...),
+    region_code: str = Query(...)
+):
+    """Delete a region"""
+    from location_system import LocationService
+    service = LocationService(db)
+    success = await service.delete_region(country_code, region_code)
+    if not success:
+        raise HTTPException(status_code=404, detail="Region not found")
+    return {"success": True}
+
+@app.put("/api/admin/locations/districts")
+async def admin_update_district(
+    request: Request,
+    country_code: str = Body(...),
+    region_code: str = Body(...),
+    district_code: str = Body(...),
+    name: str = Body(None),
+    lat: float = Body(None),
+    lng: float = Body(None)
+):
+    """Update a district's name or coordinates"""
+    from location_system import LocationService
+    service = LocationService(db)
+    success = await service.update_district(country_code, region_code, district_code, name, lat, lng)
+    if not success:
+        raise HTTPException(status_code=404, detail="District not found")
+    return {"success": True}
+
+@app.delete("/api/admin/locations/districts")
+async def admin_delete_district(
+    request: Request,
+    country_code: str = Query(...),
+    region_code: str = Query(...),
+    district_code: str = Query(...)
+):
+    """Delete a district"""
+    from location_system import LocationService
+    service = LocationService(db)
+    success = await service.delete_district(country_code, region_code, district_code)
+    if not success:
+        raise HTTPException(status_code=404, detail="District not found")
+    return {"success": True}
+
+@app.delete("/api/admin/locations/cities")
+async def admin_delete_city(
+    request: Request,
+    country_code: str = Query(...),
+    region_code: str = Query(...),
+    district_code: str = Query(...),
+    city_code: str = Query(...)
+):
+    """Delete a city"""
+    from location_system import LocationService
+    service = LocationService(db)
+    success = await service.delete_city(country_code, region_code, district_code, city_code)
+    if not success:
+        raise HTTPException(status_code=404, detail="City not found")
+    return {"success": True}
+
+@app.put("/api/admin/locations/cities/{city_code}")
+async def admin_update_city(
+    city_code: str,
+    request: Request,
+    country_code: str = Body(...),
+    region_code: str = Body(...),
+    district_code: str = Body(...),
+    name: str = Body(None),
+    lat: float = Body(None),
+    lng: float = Body(None)
+):
+    """Update a city's coordinates or name"""
+    from location_system import LocationService
+    service = LocationService(db)
+    success = await service.update_city(country_code, region_code, district_code, city_code, name, lat, lng)
+    if not success:
+        raise HTTPException(status_code=404, detail="City not found")
+    return {"success": True}
+
+@app.get("/api/admin/locations/geocode")
+async def admin_geocode_search(
+    request: Request,
+    query: str = Query(..., description="Address or place name to search"),
+    limit: int = Query(5, description="Max results to return")
+):
+    """Search for places using OpenStreetMap Nominatim geocoding"""
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            response = await client.get(
+                "https://nominatim.openstreetmap.org/search",
+                params={
+                    "q": query,
+                    "format": "json",
+                    "limit": limit,
+                    "addressdetails": 1
+                },
+                headers={
+                    "User-Agent": "AvidaMarketplace/1.0 (admin location manager)"
+                }
+            )
+            results = response.json()
+            return [
+                {
+                    "display_name": r.get("display_name"),
+                    "lat": float(r.get("lat", 0)),
+                    "lng": float(r.get("lon", 0)),
+                    "type": r.get("type"),
+                    "address": r.get("address", {})
+                }
+                for r in results
+            ]
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Geocoding failed: {str(e)}")
+
+@app.post("/api/admin/locations/batch-import")
+async def admin_batch_import_locations(
+    request: Request,
+    body: dict = Body(..., description="GeoJSON FeatureCollection to import")
+):
+    """Batch import cities from GeoJSON format"""
+    from location_system import LocationService
+    service = LocationService(db)
+    
+    # Support both { geojson: {...} } and direct FeatureCollection
+    geojson = body.get("geojson", body)
+    
+    if geojson.get("type") != "FeatureCollection":
+        raise HTTPException(status_code=400, detail="Invalid GeoJSON: must be FeatureCollection")
+    
+    features = geojson.get("features", [])
+    imported = []
+    errors = []
+    
+    for i, feature in enumerate(features):
+        try:
+            if feature.get("type") != "Feature":
+                errors.append({"index": i, "error": "Not a Feature"})
+                continue
+            
+            geometry = feature.get("geometry", {})
+            properties = feature.get("properties", {})
+            
+            if geometry.get("type") != "Point":
+                errors.append({"index": i, "error": "Only Point geometries supported"})
+                continue
+            
+            coords = geometry.get("coordinates", [])
+            if len(coords) < 2:
+                errors.append({"index": i, "error": "Invalid coordinates"})
+                continue
+            
+            lng, lat = coords[0], coords[1]  # GeoJSON is [lng, lat]
+            
+            # Required properties
+            country_code = properties.get("country_code")
+            region_code = properties.get("region_code")
+            district_code = properties.get("district_code")
+            city_code = properties.get("city_code") or properties.get("code")
+            name = properties.get("name")
+            
+            if not all([country_code, region_code, district_code, city_code, name]):
+                errors.append({
+                    "index": i, 
+                    "error": "Missing required properties: country_code, region_code, district_code, city_code/code, name"
+                })
+                continue
+            
+            await service.add_city(country_code, region_code, district_code, city_code, name, lat, lng)
+            imported.append({"city_code": city_code, "name": name, "lat": lat, "lng": lng})
+            
+        except Exception as e:
+            errors.append({"index": i, "error": str(e)})
+    
+    return {
+        "success": True,
+        "imported_count": len(imported),
+        "error_count": len(errors),
+        "imported": imported,
+        "errors": errors
+    }
+
+@app.post("/api/admin/locations/bulk-update-coordinates")
+async def admin_bulk_update_coordinates(request: Request):
+    """Bulk update coordinates for districts/cities without coordinates using Nominatim"""
+    from location_system import LocationService
+    service = LocationService(db)
+    
+    updated = []
+    errors = []
+    
+    # Get all countries for reference
+    countries = await service.get_countries()
+    country_map = {c['code']: c['name'] for c in countries}
+    
+    # Process each country
+    for country in countries:
+        try:
+            regions = await service.get_regions(country['code'])
+            for region in regions:
+                try:
+                    districts = await service.get_districts(country['code'], region['region_code'])
+                    for district in districts:
+                        # Skip if already has coordinates
+                        if district.get('lat') and district.get('lng'):
+                            continue
+                        
+                        # Search for coordinates using Nominatim
+                        search_query = f"{district['name']}, {region['name']}, {country['name']}"
+                        try:
+                            async with httpx.AsyncClient(timeout=10.0) as client:
+                                response = await client.get(
+                                    "https://nominatim.openstreetmap.org/search",
+                                    params={"q": search_query, "format": "json", "limit": 1},
+                                    headers={"User-Agent": "AvidaMarketplace/1.0"}
+                                )
+                                results = response.json()
+                                
+                                if results:
+                                    lat = float(results[0]['lat'])
+                                    lng = float(results[0]['lon'])
+                                    
+                                    # Update district
+                                    await service.update_district(
+                                        country['code'], 
+                                        region['region_code'],
+                                        district['district_code'],
+                                        lat=lat, lng=lng
+                                    )
+                                    updated.append({
+                                        "type": "district",
+                                        "name": district['name'],
+                                        "lat": lat,
+                                        "lng": lng,
+                                        "search_query": search_query
+                                    })
+                                else:
+                                    errors.append({
+                                        "type": "district",
+                                        "name": district['name'],
+                                        "error": "No results found"
+                                    })
+                        except Exception as e:
+                            errors.append({
+                                "type": "district",
+                                "name": district['name'],
+                                "error": str(e)
+                            })
+                        
+                        # Rate limit to avoid Nominatim throttling
+                        import asyncio
+                        await asyncio.sleep(1)
+                        
+                except Exception as e:
+                    errors.append({"region": region['name'], "error": str(e)})
+        except Exception as e:
+            errors.append({"country": country['code'], "error": str(e)})
+    
+    return {
+        "success": True,
+        "updated_count": len(updated),
+        "error_count": len(errors),
+        "updated": updated,
+        "errors": errors[:20]  # Limit errors in response
+    }
+
+@app.get("/api/admin/locations/export")
+async def admin_export_locations(
+    request: Request,
+    level: str = Query("cities", description="Export level: cities, districts, or all"),
+    country_code: str = Query(None, description="Filter by country code"),
+    region_code: str = Query(None, description="Filter by region code"),
+    district_code: str = Query(None, description="Filter by district code")
+):
+    """Export locations as GeoJSON FeatureCollection"""
+    from location_system import LocationService
+    service = LocationService(db)
+    
+    features = []
+    
+    if level in ["cities", "all"]:
+        # Get cities based on filters
+        if country_code and region_code and district_code:
+            cities = await service.get_cities(country_code, region_code, district_code)
+        elif country_code and region_code:
+            # Get all cities in a region
+            cities = []
+            districts = await service.get_districts(country_code, region_code)
+            for district in districts:
+                try:
+                    district_cities = await service.get_cities(country_code, region_code, district['district_code'])
+                    cities.extend(district_cities)
+                except:
+                    pass
+        elif country_code:
+            # Get all cities in a country
+            cities = []
+            regions = await service.get_regions(country_code)
+            for region in regions:
+                try:
+                    districts = await service.get_districts(country_code, region['region_code'])
+                    for district in districts:
+                        try:
+                            district_cities = await service.get_cities(country_code, region['region_code'], district['district_code'])
+                            cities.extend(district_cities)
+                        except:
+                            pass
+                except:
+                    pass
+        else:
+            # Get all cities (limited for performance)
+            countries = await service.get_countries()
+            cities = []
+            for country in countries[:10]:
+                try:
+                    regions = await service.get_regions(country['code'])
+                    for region in regions[:5]:
+                        try:
+                            districts = await service.get_districts(country['code'], region['region_code'])
+                            for district in districts[:5]:
+                                try:
+                                    district_cities = await service.get_cities(
+                                        country['code'], region['region_code'], district['district_code']
+                                    )
+                                    cities.extend(district_cities)
+                                except:
+                                    pass
+                        except:
+                            pass
+                except:
+                    pass
+        
+        for city in cities:
+            if city.get('lat') and city.get('lng'):
+                features.append({
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [city['lng'], city['lat']]  # GeoJSON is [lng, lat]
+                    },
+                    "properties": {
+                        "type": "city",
+                        "name": city['name'],
+                        "city_code": city['city_code'],
+                        "district_code": city['district_code'],
+                        "region_code": city['region_code'],
+                        "country_code": city['country_code']
+                    }
+                })
+    
+    if level in ["districts", "all"]:
+        # Get districts
+        countries = await service.get_countries()
+        for country in countries:
+            if country_code and country['code'] != country_code:
+                continue
+            try:
+                regions = await service.get_regions(country['code'])
+                for region in regions:
+                    if region_code and region['region_code'] != region_code:
+                        continue
+                    try:
+                        districts = await service.get_districts(country['code'], region['region_code'])
+                        for district in districts:
+                            if district.get('lat') and district.get('lng'):
+                                features.append({
+                                    "type": "Feature",
+                                    "geometry": {
+                                        "type": "Point",
+                                        "coordinates": [district['lng'], district['lat']]
+                                    },
+                                    "properties": {
+                                        "type": "district",
+                                        "name": district['name'],
+                                        "district_code": district['district_code'],
+                                        "region_code": district['region_code'],
+                                        "country_code": district['country_code']
+                                    }
+                                })
+                    except:
+                        pass
+            except:
+                pass
+    
+    return {
+        "type": "FeatureCollection",
+        "features": features,
+        "metadata": {
+            "export_level": level,
+            "feature_count": len(features),
+            "exported_at": datetime.now(timezone.utc).isoformat()
+        }
+    }
+
+@app.get("/api/admin/locations/listing-density")
+async def admin_listing_density(request: Request):
+    """Get listing counts per city for heatmap visualization"""
+    # Aggregate listings by city
+    pipeline = [
+        {"$match": {"location_data.city_code": {"$exists": True}}},
+        {"$group": {
+            "_id": {
+                "city_code": "$location_data.city_code",
+                "city_name": "$location_data.city_name",
+                "lat": "$location_data.coordinates.coordinates",
+            },
+            "listing_count": {"$sum": 1}
+        }},
+        {"$project": {
+            "_id": 0,
+            "city_code": "$_id.city_code",
+            "city_name": "$_id.city_name",
+            "coordinates": "$_id.lat",
+            "listing_count": 1
+        }}
+    ]
+    
+    try:
+        results = await db.listings.aggregate(pipeline).to_list(length=1000)
+        
+        # Format for heatmap - [lat, lng, intensity]
+        heatmap_data = []
+        city_details = []
+        
+        for r in results:
+            coords = r.get('coordinates')
+            if coords and len(coords) >= 2:
+                lng, lat = coords[0], coords[1]  # MongoDB stores as [lng, lat]
+                intensity = min(r['listing_count'] / 10, 1.0)  # Normalize intensity
+                heatmap_data.append([lat, lng, intensity])
+                city_details.append({
+                    "city_code": r.get('city_code'),
+                    "city_name": r.get('city_name'),
+                    "lat": lat,
+                    "lng": lng,
+                    "listing_count": r['listing_count']
+                })
+        
+        return {
+            "heatmap_data": heatmap_data,
+            "city_details": city_details,
+            "total_cities": len(city_details),
+            "total_listings": sum(c['listing_count'] for c in city_details)
+        }
+    except Exception as e:
+        return {
+            "heatmap_data": [],
+            "city_details": [],
+            "total_cities": 0,
+            "total_listings": 0,
+            "error": str(e)
+        }
+
+@app.get("/api/admin/locations/suggest-coordinates")
+async def admin_suggest_coordinates(
+    request: Request,
+    country_code: str = Query(...),
+    region_code: str = Query(...),
+    district_code: str = Query(...)
+):
+    """Auto-suggest coordinates based on existing cities in the district"""
+    from location_system import LocationService
+    service = LocationService(db)
+    
+    try:
+        # Get existing cities in the district
+        cities = await service.get_cities(country_code, region_code, district_code)
+        
+        valid_cities = [c for c in cities if c.get('lat') and c.get('lng')]
+        
+        if not valid_cities:
+            # Try to get district center
+            districts = await service.get_districts(country_code, region_code)
+            district = next((d for d in districts if d['district_code'] == district_code), None)
+            
+            if district and district.get('lat') and district.get('lng'):
+                return {
+                    "suggested_lat": district['lat'],
+                    "suggested_lng": district['lng'],
+                    "source": "district_center",
+                    "confidence": "medium"
+                }
+            
+            return {
+                "suggested_lat": None,
+                "suggested_lng": None,
+                "source": "none",
+                "confidence": "low",
+                "message": "No existing cities or district center to base suggestion on"
+            }
+        
+        # Calculate centroid of existing cities
+        avg_lat = sum(c['lat'] for c in valid_cities) / len(valid_cities)
+        avg_lng = sum(c['lng'] for c in valid_cities) / len(valid_cities)
+        
+        # Add small offset to avoid exact overlap
+        import random
+        offset_lat = random.uniform(-0.01, 0.01)
+        offset_lng = random.uniform(-0.01, 0.01)
+        
+        return {
+            "suggested_lat": round(avg_lat + offset_lat, 6),
+            "suggested_lng": round(avg_lng + offset_lng, 6),
+            "source": f"centroid_of_{len(valid_cities)}_cities",
+            "confidence": "high" if len(valid_cities) >= 3 else "medium",
+            "nearby_cities": [{"name": c['name'], "lat": c['lat'], "lng": c['lng']} for c in valid_cities[:5]]
+        }
+    except Exception as e:
+        return {
+            "suggested_lat": None,
+            "suggested_lng": None,
+            "error": str(e)
+        }
+
+@app.get("/api/admin/locations/reverse-geocode")
+async def admin_reverse_geocode(
+    request: Request,
+    lat: float = Query(..., description="Latitude"),
+    lng: float = Query(..., description="Longitude")
+):
+    """Reverse geocode coordinates to get place name using Nominatim"""
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                "https://nominatim.openstreetmap.org/reverse",
+                params={
+                    "lat": lat,
+                    "lon": lng,
+                    "format": "json",
+                    "addressdetails": 1,
+                    "zoom": 14
+                },
+                headers={
+                    "User-Agent": "AvidaMarketplace/1.0 (admin location manager)"
+                }
+            )
+            result = response.json()
+            
+            address = result.get("address", {})
+            
+            return {
+                "success": True,
+                "display_name": result.get("display_name"),
+                "suggested_name": address.get("city") or address.get("town") or address.get("village") or address.get("suburb") or address.get("neighbourhood"),
+                "district": address.get("city_district") or address.get("county") or address.get("district"),
+                "region": address.get("state") or address.get("region") or address.get("province"),
+                "country": address.get("country"),
+                "country_code": address.get("country_code", "").upper(),
+                "address_details": address,
+                "lat": lat,
+                "lng": lng,
+                "osm_type": result.get("osm_type"),
+                "osm_id": result.get("osm_id")
+            }
+    except Exception as e:
+        # Fallback: Try to find nearest city in our database
+        from location_system import LocationService
+        service = LocationService(db)
+        
+        # Find nearest city using haversine formula
+        try:
+            pipeline = [
+                {"$match": {"location_data.coordinates": {"$exists": True}}},
+                {"$addFields": {
+                    "distance": {
+                        "$sqrt": {
+                            "$add": [
+                                {"$pow": [{"$subtract": [{"$arrayElemAt": ["$location_data.coordinates.coordinates", 1]}, lat]}, 2]},
+                                {"$pow": [{"$subtract": [{"$arrayElemAt": ["$location_data.coordinates.coordinates", 0]}, lng]}, 2]}
+                            ]
+                        }
+                    }
+                }},
+                {"$sort": {"distance": 1}},
+                {"$limit": 1}
+            ]
+            nearest = await db.listings.aggregate(pipeline).to_list(length=1)
+            
+            if nearest:
+                loc_data = nearest[0].get("location_data", {})
+                return {
+                    "success": True,
+                    "source": "database_fallback",
+                    "suggested_name": loc_data.get("city_name"),
+                    "district": loc_data.get("district_code"),
+                    "region": loc_data.get("region_code"),
+                    "country_code": loc_data.get("country_code"),
+                    "lat": lat,
+                    "lng": lng,
+                    "note": "Nominatim unavailable, using nearest listing location"
+                }
+        except:
+            pass
+        
+        return {
+            "success": False,
+            "error": "Geocoding service temporarily unavailable",
+            "lat": lat,
+            "lng": lng,
+            "suggested_name": None,
+            "note": "Enter name manually"
+        }
+
+@app.get("/api/admin/locations/auto-detect")
+async def admin_auto_detect_location(
+    request: Request,
+    lat: float = Query(..., description="Latitude"),
+    lng: float = Query(..., description="Longitude")
+):
+    """Auto-detect country, region, district from coordinates"""
+    from location_system import LocationService
+    service = LocationService(db)
+    
+    nominatim_country_code = None
+    nominatim_state = None
+    nominatim_district = None
+    nominatim_city = None
+    
+    # First, try reverse geocode to get location info
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                "https://nominatim.openstreetmap.org/reverse",
+                params={
+                    "lat": lat,
+                    "lon": lng,
+                    "format": "json",
+                    "addressdetails": 1,
+                    "zoom": 10
+                },
+                headers={
+                    "User-Agent": "AvidaMarketplace/1.0 (admin location manager)"
+                }
+            )
+            result = response.json()
+            address = result.get("address", {})
+            
+            nominatim_country_code = address.get("country_code", "").upper()
+            nominatim_state = address.get("state") or address.get("region") or address.get("province")
+            nominatim_district = address.get("city_district") or address.get("county") or address.get("district")
+            nominatim_city = address.get("city") or address.get("town") or address.get("village")
+    except Exception as e:
+        # Nominatim failed, try database-based detection
+        pass
+    
+    # Try to match with our database
+    detected = {
+        "country": None,
+        "region": None,
+        "district": None,
+        "nominatim_data": {
+            "country_code": nominatim_country_code,
+            "state": nominatim_state,
+            "district": nominatim_district,
+            "city": nominatim_city
+        }
+    }
+    
+    # Try to find matching country
+    countries = await service.get_countries()
+    
+    # If no Nominatim data, try to find nearest location from database
+    if not nominatim_country_code:
+        # Find nearest city in our database
+        try:
+            all_cities = []
+            for country in countries[:5]:
+                try:
+                    regions = await service.get_regions(country['code'])
+                    for region in regions[:3]:
+                        try:
+                            districts = await service.get_districts(country['code'], region['region_code'])
+                            for district in districts[:3]:
+                                try:
+                                    cities = await service.get_cities(country['code'], region['region_code'], district['district_code'])
+                                    for city in cities:
+                                        if city.get('lat') and city.get('lng'):
+                                            # Simple distance calculation
+                                            dist = ((city['lat'] - lat) ** 2 + (city['lng'] - lng) ** 2) ** 0.5
+                                            all_cities.append({
+                                                'city': city,
+                                                'district': district,
+                                                'region': region,
+                                                'country': country,
+                                                'distance': dist
+                                            })
+                                except:
+                                    pass
+                        except:
+                            pass
+                except:
+                    pass
+            
+            if all_cities:
+                all_cities.sort(key=lambda x: x['distance'])
+                nearest = all_cities[0]
+                detected['country'] = nearest['country']
+                detected['region'] = nearest['region']
+                detected['district'] = nearest['district']
+                nominatim_city = nearest['city']['name']
+        except:
+            pass
+    else:
+        # Use Nominatim data to match
+        for country in countries:
+            if country['code'] == nominatim_country_code:
+                detected['country'] = country
+                break
+        
+        # If country found, try to find matching region
+        if detected['country'] and nominatim_state:
+            try:
+                regions = await service.get_regions(detected['country']['code'])
+                for region in regions:
+                    if nominatim_state.lower() in region['name'].lower() or region['name'].lower() in nominatim_state.lower():
+                        detected['region'] = region
+                        break
+            except:
+                pass
+        
+        # If region found, try to find matching district
+        if detected['region'] and nominatim_district:
+            try:
+                districts = await service.get_districts(detected['country']['code'], detected['region']['region_code'])
+                for district in districts:
+                    if nominatim_district.lower() in district['name'].lower() or district['name'].lower() in nominatim_district.lower():
+                        detected['district'] = district
+                        break
+            except:
+                pass
+    
+    return {
+        "detected": detected['country'] is not None,
+        "country": detected['country'],
+        "region": detected['region'],
+        "district": detected['district'],
+        "nominatim_data": detected['nominatim_data'],
+        "suggested_city_name": nominatim_city,
+        "coordinates": {"lat": lat, "lng": lng}
+    }
+
+@app.get("/api/admin/locations/district-boundary")
+async def admin_get_district_boundary(
+    request: Request,
+    country_code: str = Query(...),
+    region_code: str = Query(...),
+    district_code: str = Query(...)
+):
+    """Get polygon boundary for a district from OSM via Nominatim"""
+    from location_system import LocationService
+    service = LocationService(db)
+    
+    try:
+        # Get district info
+        districts = await service.get_districts(country_code, region_code)
+        district = next((d for d in districts if d['district_code'] == district_code), None)
+        
+        if not district:
+            raise HTTPException(status_code=404, detail="District not found")
+        
+        # Get country and region for full name
+        countries = await service.get_countries()
+        country = next((c for c in countries if c['code'] == country_code), None)
+        
+        regions = await service.get_regions(country_code)
+        region = next((r for r in regions if r['region_code'] == region_code), None)
+        
+        # Search for boundary using Nominatim
+        search_query = f"{district['name']}, {region['name'] if region else ''}, {country['name'] if country else ''}"
+        
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                response = await client.get(
+                    "https://nominatim.openstreetmap.org/search",
+                    params={
+                        "q": search_query,
+                        "format": "json",
+                        "polygon_geojson": 1,
+                        "limit": 1
+                    },
+                    headers={
+                        "User-Agent": "AvidaMarketplace/1.0 (admin location manager)"
+                    }
+                )
+                results = response.json()
+                
+                if not results:
+                    return {
+                        "found": False,
+                        "district": district['name'],
+                        "message": "No boundary found for this district"
+                    }
+                
+                result = results[0]
+                geojson = result.get("geojson")
+                
+                return {
+                    "found": True,
+                    "district": district['name'],
+                    "osm_id": result.get("osm_id"),
+                    "osm_type": result.get("osm_type"),
+                    "display_name": result.get("display_name"),
+                    "bounding_box": result.get("boundingbox"),
+                    "geojson": geojson,
+                    "center": {
+                        "lat": float(result.get("lat", 0)),
+                        "lng": float(result.get("lon", 0))
+                    }
+                }
+        except Exception as e:
+            # Nominatim failed, return district center if available
+            if district.get('lat') and district.get('lng'):
+                return {
+                    "found": False,
+                    "district": district['name'],
+                    "center": {
+                        "lat": district['lat'],
+                        "lng": district['lng']
+                    },
+                    "message": "Boundary service unavailable, using district center point",
+                    "geojson": None
+                }
+            return {
+                "found": False,
+                "district": district['name'],
+                "message": "Boundary service unavailable and no district coordinates stored"
+            }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get boundary: {str(e)}")
+
+# =============================================================================
 # BUSINESS PROFILE SYSTEM - Register before admin proxy to ensure routes match first
 # =============================================================================
 if BUSINESS_PROFILE_AVAILABLE:
