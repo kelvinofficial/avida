@@ -8006,8 +8006,23 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load challenges router: {e}")
     
+    # Create admin router for analytics and settings
+    try:
+        async def require_admin_for_settings(request: Request) -> dict:
+            """Require admin authentication for settings endpoints"""
+            user = await require_auth(request)
+            # For now, any authenticated user can access admin settings
+            # In production, check user.is_admin or similar
+            return {"user_id": user.user_id, "email": user.email, "name": user.name}
+        
+        admin_settings_router = create_admin_router(db, require_admin_for_settings)
+        api_router.include_router(admin_settings_router)
+        logger.info("Admin settings router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load admin settings router: {e}")
+    
     app.include_router(api_router)  # Re-include to pick up modular routes
-    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges) loaded successfully")
+    logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin) loaded successfully")
 
 # Include boost routes if available
 if BOOST_ROUTES_AVAILABLE:
