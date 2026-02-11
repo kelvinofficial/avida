@@ -9,7 +9,7 @@ import requests
 import os
 import json
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://experiment-hub-4.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://admin-badges-1.preview.emergentagent.com')
 BASE_URL = BASE_URL.rstrip('/')
 
 ADMIN_EMAIL = "admin@marketplace.com"

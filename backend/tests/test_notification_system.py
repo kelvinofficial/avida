@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime
 
 # Base URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://experiment-hub-4.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://admin-badges-1.preview.emergentagent.com').rstrip('/')
 
 
 class TestNotificationTemplates:
