@@ -23,6 +23,7 @@ import { listingsApi, categoriesApi } from '../../src/utils/api';
 import api from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
 import { useBadgeCelebration } from '../../src/context/BadgeCelebrationContext';
+import { useMilestones } from '../../src/context/MilestoneContext';
 import { 
   ALL_CATEGORIES, 
   getMainCategory, 
