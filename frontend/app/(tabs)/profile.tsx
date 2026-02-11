@@ -1049,7 +1049,35 @@ export default function ProfileScreen() {
               </View>
               <Text style={desktopStyles.logoText}>avida</Text>
             </TouchableOpacity>
+            
+            {/* Navigation Links */}
+            <View style={desktopStyles.navLinks}>
+              <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/profile/my-listings')}>
+                <Ionicons name="pricetags-outline" size={18} color={COLORS.textSecondary} />
+                <Text style={desktopStyles.navLinkText}>My Listings</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/messages')}>
+                <Ionicons name="chatbubbles-outline" size={18} color={COLORS.textSecondary} />
+                <Text style={desktopStyles.navLinkText}>Messages</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/profile/saved')}>
+                <Ionicons name="heart-outline" size={18} color={COLORS.textSecondary} />
+                <Text style={desktopStyles.navLinkText}>Saved</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={desktopStyles.navLink} onPress={() => router.push('/offers')}>
+                <Ionicons name="pricetag-outline" size={18} color={COLORS.textSecondary} />
+                <Text style={desktopStyles.navLinkText}>Offers</Text>
+              </TouchableOpacity>
+            </View>
+            
             <View style={desktopStyles.headerActions}>
+              {/* Credit Balance */}
+              <TouchableOpacity style={desktopStyles.creditBalanceBtn} onPress={() => router.push('/credits')}>
+                <Ionicons name="wallet-outline" size={18} color="#F59E0B" />
+                <Text style={desktopStyles.creditBalanceText}>
+                  {creditBalance !== null ? `${creditBalance} Credits` : '...'}
+                </Text>
+              </TouchableOpacity>
               <TouchableOpacity style={desktopStyles.headerBtn} onPress={() => router.push('/notifications')}>
                 <Ionicons name="notifications-outline" size={22} color={COLORS.text} />
               </TouchableOpacity>
