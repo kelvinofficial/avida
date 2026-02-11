@@ -7196,14 +7196,8 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load notification preferences router: {e}")
     
-    # Create admin locations router
-    try:
-        admin_locations_router = create_admin_locations_router(db, require_auth)
-        # Register directly on app to ensure it's matched before the admin proxy catch-all
-        app.include_router(admin_locations_router, prefix="/api")
-        logger.info("Admin locations router loaded successfully")
-    except Exception as e:
-        logger.warning(f"Failed to load admin locations router: {e}")
+    # Create admin locations router - SKIPPED: Already registered before admin proxy
+    # (Registered in the "early" block to ensure it takes precedence over proxy catch-all)
     
     app.include_router(api_router)  # Re-include to pick up modular routes
     logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations) loaded successfully")
