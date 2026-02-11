@@ -3813,56 +3813,6 @@ async def join_challenge(challenge_id: str, request: Request):
         "target": challenge_def["target"],
     }
 
-@api_router.get("/challenges/my-progress")
-async def get_my_challenge_progress(request: Request):
-    """Get user's progress on all active challenges"""
-    user = await require_auth(request)
-    
-    now = datetime.now(timezone.utc)
-    challenges_progress = []
-    
-    for challenge_def in CHALLENGE_DEFINITIONS:
-        challenge_type = challenge_def["type"]
-        start_date, end_date = get_challenge_period(challenge_type)
-        
-        progress = await get_user_challenge_progress(
-            user.user_id, challenge_def, start_date, end_date
-        )
-        
-        # Check if already earned badge for this period
-        badge_earned = await db.challenge_completions.find_one({
-            "user_id": user.user_id,
-            "challenge_id": challenge_def["id"],
-            "period_start": start_date
-        })
-        
-        challenges_progress.append({
-            "challenge_id": challenge_def["id"],
-            "name": challenge_def["name"],
-            "type": challenge_type.value,
-            "progress": progress,
-            "target": challenge_def["target"],
-            "percentage": min(100, int((progress / challenge_def["target"]) * 100)),
-            "completed": progress >= challenge_def["target"],
-            "badge_earned": badge_earned is not None,
-            "icon": challenge_def["icon"],
-            "color": challenge_def["color"],
-        })
-    
-    # Count completed and in-progress
-    completed_count = len([c for c in challenges_progress if c["completed"]])
-    in_progress_count = len([c for c in challenges_progress if 0 < c["progress"] < c["target"]])
-    
-    return {
-        "challenges": challenges_progress,
-        "summary": {
-            "total": len(challenges_progress),
-            "completed": completed_count,
-            "in_progress": in_progress_count,
-            "not_started": len(challenges_progress) - completed_count - in_progress_count,
-        }
-    }
-
 async def check_and_award_challenge_badges(user_id: str):
     """Check if user completed any challenges and award badges"""
     now = datetime.now(timezone.utc)
