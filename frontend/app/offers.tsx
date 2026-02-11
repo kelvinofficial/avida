@@ -742,7 +742,7 @@ export default function OffersScreen() {
     if (isLargeScreen) {
       return (
         <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
-          {renderGlobalHeader()}
+          <DesktopHeader />
           <View style={desktopStyles.pageWrapper}>
             <View style={desktopStyles.unauthContainer}>
               <View style={desktopStyles.unauthIcon}>
@@ -792,7 +792,7 @@ export default function OffersScreen() {
   if (isLargeScreen) {
     return (
       <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
-        {renderGlobalHeader()}
+        <DesktopHeader />
         
         {/* Dedicated Offers Page Header */}
         <View style={desktopStyles.dedicatedHeader}>
