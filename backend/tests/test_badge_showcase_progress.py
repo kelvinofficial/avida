@@ -103,9 +103,9 @@ class TestBadgeShowcaseAndProgressAPIs:
         assert response.status_code == 401, f"Expected 401, got {response.status_code}"
         print("PASSED: Badge progress requires authentication")
     
-    def test_badge_progress_authenticated(self, admin_session):
+    def test_badge_progress_authenticated(self, test_session):
         """Test getting badge progress for authenticated user"""
-        session, user_id = admin_session
+        session, user_id, email = test_session
         
         response = session.get(f"{BASE_URL}/api/badges/progress")
         assert response.status_code == 200, f"Failed to get badge progress: {response.text}"
@@ -142,9 +142,9 @@ class TestBadgeShowcaseAndProgressAPIs:
         
         print(f"PASSED: Badge progress retrieved - {len(progress)} badges, {data['total_badges_earned']} earned, {data['total_points']} points")
     
-    def test_badge_progress_shows_all_10_badges(self, admin_session):
+    def test_badge_progress_shows_all_10_badges(self, test_session):
         """Test that progress shows all 10 automatic badges"""
-        session, user_id = admin_session
+        session, user_id, email = test_session
         
         response = session.get(f"{BASE_URL}/api/badges/progress")
         assert response.status_code == 200
@@ -168,9 +168,9 @@ class TestBadgeShowcaseAndProgressAPIs:
         
         print(f"PASSED: All 10 automatic badges present: {badge_names}")
     
-    def test_badge_progress_calculation(self, admin_session):
+    def test_badge_progress_calculation(self, test_session):
         """Test that badge progress calculation is correct"""
-        session, user_id = admin_session
+        session, user_id, email = test_session
         
         response = session.get(f"{BASE_URL}/api/badges/progress")
         assert response.status_code == 200
@@ -203,9 +203,9 @@ class TestBadgeShowcaseAndProgressAPIs:
         assert response.status_code == 401, f"Expected 401, got {response.status_code}"
         print("PASSED: Update showcase requires authentication")
     
-    def test_update_showcase_empty_list(self, admin_session):
+    def test_update_showcase_empty_list(self, test_session):
         """Test updating showcase with empty list"""
-        session, user_id = admin_session
+        session, user_id, email = test_session
         
         response = session.put(
             f"{BASE_URL}/api/badges/showcase",
@@ -219,9 +219,9 @@ class TestBadgeShowcaseAndProgressAPIs:
         
         print("PASSED: Can set empty showcase")
     
-    def test_update_showcase_max_5_badges(self, admin_session):
+    def test_update_showcase_max_5_badges(self, test_session):
         """Test that max 5 badges can be showcased"""
-        session, user_id = admin_session
+        session, user_id, email = test_session
         
         # Try to add 6 badges (should fail)
         response = session.put(
@@ -235,9 +235,9 @@ class TestBadgeShowcaseAndProgressAPIs:
         
         print("PASSED: Max 5 badges limit enforced")
     
-    def test_update_showcase_unearned_badge(self, test_user_session):
+    def test_update_showcase_unearned_badge(self, test_session):
         """Test that user cannot showcase unearned badges"""
-        session, user_id, email = test_user_session
+        session, user_id, email = test_session
         
         # Try to showcase a badge that likely isn't earned
         response = session.put(
@@ -253,9 +253,9 @@ class TestBadgeShowcaseAndProgressAPIs:
         
         print("PASSED: Cannot showcase unearned badges")
     
-    def test_update_showcase_with_earned_badge(self, admin_session):
+    def test_update_showcase_with_earned_badge(self, test_session):
         """Test showcasing an earned badge"""
-        session, user_id = admin_session
+        session, user_id, email = test_session
         
         # First get badge progress to find earned badges
         progress_response = session.get(f"{BASE_URL}/api/badges/progress")
@@ -265,7 +265,7 @@ class TestBadgeShowcaseAndProgressAPIs:
         earned_badges = [b for b in progress_data["progress"] if b["is_earned"]]
         
         if not earned_badges:
-            # If admin has no earned badges, just verify the empty showcase works
+            # If user has no earned badges, just verify the empty showcase works
             response = session.put(
                 f"{BASE_URL}/api/badges/showcase",
                 json={"badge_ids": []}
@@ -290,9 +290,9 @@ class TestBadgeShowcaseAndProgressAPIs:
     
     # ==================== Public Showcase Tests ====================
     
-    def test_public_showcase_no_auth_required(self, admin_session):
+    def test_public_showcase_no_auth_required(self, test_session):
         """Test that public showcase doesn't require authentication"""
-        session, user_id = admin_session
+        session, user_id, email = test_session
         
         # Use a new session without auth
         response = requests.get(f"{BASE_URL}/api/profile/public/{user_id}/badges/showcase")
