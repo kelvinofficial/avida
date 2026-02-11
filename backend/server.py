@@ -17,6 +17,9 @@ import time
 import base64
 import asyncio
 
+# Badge Awarding Service
+from services.badge_service import get_badge_service, BadgeAwardingService
+
 # Expo Push Notifications
 try:
     from exponent_server_sdk import (
