@@ -383,6 +383,16 @@ export default function LeaderboardScreen() {
             </TouchableOpacity>
           </View>
         )}
+
+        {/* Seasonal Gallery Link */}
+        <TouchableOpacity
+          style={styles.seasonalGalleryLink}
+          onPress={() => router.push('/badges/seasonal-gallery')}
+        >
+          <Ionicons name="sparkles" size={20} color="#EC4899" />
+          <Text style={styles.seasonalGalleryLinkText}>Browse Past Seasonal Badges</Text>
+          <Ionicons name="chevron-forward" size={20} color="#EC4899" />
+        </TouchableOpacity>
       </ScrollView>
 
       {!isLargeScreen && <Footer />}
