@@ -581,9 +581,11 @@ Users can track their progress towards earning badges:
 
 ## Remaining Backlog
 
-### P1: Optional Cleanup
-- Remove remaining unused `renderGlobalHeader` function definitions from `my-listings.tsx`, `profile/saved.tsx`, `(tabs)/saved.tsx`
+### P1: Pending Items
+- Add Listing ID display to listing cards/pages
+- Add badge celebration modal with confetti effect
+- Change homepage featured section to show listings instead of seller profiles
 
-### P2: Additional Features
-- No other pending features requested
+### P2: Optional Cleanup
+- Remove remaining unused `renderGlobalHeader` function definitions
 
