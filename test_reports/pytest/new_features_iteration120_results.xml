@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="8" skipped="0" tests="16" time="5.862" timestamp="2026-02-12T22:53:30.173588+00:00" hostname="agent-env-2e6b905e-26a2-4057-b46c-f0d57680fadc"><testcase classname="backend.tests.test_new_features_iteration120.TestListingsMyEndpoint" name="test_listings_my_requires_auth" time="3.199" /><testcase classname="backend.tests.test_new_features_iteration120.TestListingsMyEndpoint" name="test_listings_my_returns_array" time="0.105"><failure message="AssertionError: Expected 200, got 401&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_new_features_iteration120.py:72: in test_listings_my_returns_array
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+E   AssertionError: Expected 200, got 401
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_new_features_iteration120.TestListingsMyEndpoint" name="test_listings_my_contains_views_field" time="0.032"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_new_features_iteration120.py:81: in test_listings_my_contains_views_field
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_new_features_iteration120.TestOffersSellerEndpoint" name="test_offers_seller_requires_auth" time="0.036" /><testcase classname="backend.tests.test_new_features_iteration120.TestOffersSellerEndpoint" name="test_offers_seller_returns_correct_structure" time="0.034"><failure message="AssertionError: Expected 200, got 401&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_new_features_iteration120.py:107: in test_offers_seller_returns_correct_structure
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+E   AssertionError: Expected 200, got 401
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_new_features_iteration120.TestUserProfile" name="test_get_user_profile" time="0.036"><failure message="AssertionError: Expected 200, got 401&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_new_features_iteration120.py:126: in test_get_user_profile
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+E   AssertionError: Expected 200, got 401
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_new_features_iteration120.TestConversationsEndpoint" name="test_conversations_returns_array" time="0.035"><failure message="AssertionError: Expected 200, got 401&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_new_features_iteration120.py:139: in test_conversations_returns_array
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+E   AssertionError: Expected 200, got 401
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_new_features_iteration120.TestCreditBalanceEndpoint" name="test_credits_balance_returns_balance" time="0.036"><failure message="AssertionError: Expected 200, got 401&#10;assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">backend/tests/test_new_features_iteration120.py:154: in test_credits_balance_returns_balance
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+E   AssertionError: Expected 200, got 401
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_new_features_iteration120.TestPhotographyGuidesPublicAPI" name="test_get_public_guides_default" time="0.360" /><testcase classname="backend.tests.test_new_features_iteration120.TestPhotographyGuidesPublicAPI" name="test_get_public_guides_auto_vehicles" time="0.129" /><testcase classname="backend.tests.test_new_features_iteration120.TestPhotographyGuidesAdminAPI" name="test_admin_guides_list_requires_auth" time="0.055" /><testcase classname="backend.tests.test_new_features_iteration120.TestPhotographyGuidesAdminAPI" name="test_admin_guides_list" time="1.146" /><testcase classname="backend.tests.test_new_features_iteration120.TestPhotographyGuidesAdminAPI" name="test_admin_guides_stats" time="0.078" /><testcase classname="backend.tests.test_new_features_iteration120.TestPhotographyGuidesAdminAPI" name="test_admin_create_guide" time="0.065"><failure message="AssertionError: Guide title should match&#10;assert None == 'TEST_Guide_Iteration120'&#10; +  where None = &lt;built-in method get of dict object at 0xf9b507f4de00&gt;('title')&#10; +    where &lt;built-in method get of dict object at 0xf9b507f4de00&gt; = {'id': '698e59ef48b59d73495b5d7e', 'message': 'Photography guide created successfully'}.get">backend/tests/test_new_features_iteration120.py:226: in test_admin_create_guide
+    assert data.get("title") == "TEST_Guide_Iteration120", "Guide title should match"
+E   AssertionError: Guide title should match
+E   assert None == 'TEST_Guide_Iteration120'
+E    +  where None = &lt;built-in method get of dict object at 0xf9b507f4de00&gt;('title')
+E    +    where &lt;built-in method get of dict object at 0xf9b507f4de00&gt; = {'id': '698e59ef48b59d73495b5d7e', 'message': 'Photography guide created successfully'}.get</failure></testcase><testcase classname="backend.tests.test_new_features_iteration120.TestPhotographyGuidesAdminAPI" name="test_admin_update_guide" time="0.110"><failure message="AssertionError: Title should be updated&#10;assert None == 'TEST_Updated_Guide_Title'&#10; +  where None = &lt;built-in method get of dict object at 0xf9b507f53840&gt;('title')&#10; +    where &lt;built-in method get of dict object at 0xf9b507f53840&gt; = {'message': 'Photography guide updated successfully'}.get">backend/tests/test_new_features_iteration120.py:268: in test_admin_update_guide
+    assert updated.get("title") == "TEST_Updated_Guide_Title", "Title should be updated"
+E   AssertionError: Title should be updated
+E   assert None == 'TEST_Updated_Guide_Title'
+E    +  where None = &lt;built-in method get of dict object at 0xf9b507f53840&gt;('title')
+E    +    where &lt;built-in method get of dict object at 0xf9b507f53840&gt; = {'message': 'Photography guide updated successfully'}.get</failure></testcase><testcase classname="backend.tests.test_new_features_iteration120.TestPhotographyGuidesAdminAPI" name="test_admin_delete_guide" time="0.284" /></testsuite></testsuites>
