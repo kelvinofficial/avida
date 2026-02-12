@@ -694,6 +694,7 @@ export default function PhotographyGuidesPage() {
                           handleOpenDialog={handleOpenDialog}
                           handleDeleteGuide={handleDeleteGuide}
                           handleToggleActive={handleToggleActive}
+                          handleImagePreview={handleImagePreview}
                           isDragging={activeId === guide.id}
                         />
                       ))}
