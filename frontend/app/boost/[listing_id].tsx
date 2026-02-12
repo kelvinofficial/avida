@@ -161,7 +161,7 @@ export default function BoostListingPage() {
     return listing?.boosts?.[boostType]?.is_active;
   };
 
-  if (loading) {
+  if (loading || !isReady) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#4CAF50" />
@@ -181,51 +181,19 @@ export default function BoostListingPage() {
     );
   }
 
-  return (
-    <View style={[styles.outerContainer, isDesktop && styles.desktopOuterContainer]}>
-      {/* Desktop Header */}
-      {isDesktop && (
-        <View style={styles.desktopHeader}>
-          <View style={styles.desktopHeaderContent}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.desktopBackButton}>
-              <Ionicons name="arrow-back" size={20} color="#333" />
-              <Text style={styles.desktopBackText}>Back</Text>
-            </TouchableOpacity>
-            <View style={styles.desktopHeaderCenter}>
-              <View style={styles.desktopHeaderIcon}>
-                <Ionicons name="rocket" size={28} color="#FF9800" />
-              </View>
-              <View>
-                <Text style={styles.desktopHeaderTitle}>Boost Listing</Text>
-                <Text style={styles.desktopHeaderSubtitle}>Increase visibility for your listing</Text>
-              </View>
-            </View>
-            <TouchableOpacity onPress={() => router.push('/credits')} style={styles.desktopCreditsButton}>
-              <Ionicons name="wallet" size={20} color="#4CAF50" />
-              <Text style={styles.desktopCreditsText}>{credits} credits</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-      
-      <ScrollView style={[styles.container, isDesktop && styles.desktopContainer]}>
-        <View style={[styles.contentWrapper, isDesktop && styles.desktopContentWrapper]}>
-          {/* Mobile Header */}
-          {!isDesktop && (
-            <View style={styles.header}>
-              <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                <Ionicons name="arrow-back" size={24} color="#333" />
-              </TouchableOpacity>
-              <Text style={styles.headerTitle}>Boost Listing</Text>
-              <TouchableOpacity onPress={() => router.push('/credits')} style={styles.creditsButton}>
-                <Ionicons name="wallet" size={20} color="#4CAF50" />
-                <Text style={styles.creditsText}>{credits}</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+  // Right action for desktop layout
+  const rightAction = (
+    <TouchableOpacity onPress={() => router.push('/credits')} style={styles.desktopCreditsButton}>
+      <Ionicons name="wallet" size={20} color="#4CAF50" />
+      <Text style={styles.desktopCreditsText}>{credits} credits</Text>
+    </TouchableOpacity>
+  );
 
+  // Boost content (shared between mobile and desktop)
+  const BoostContent = () => (
+    <>
       {/* Listing Preview */}
-      <View style={styles.listingPreview}>
+      <View style={[styles.listingPreview, isLargeScreen && { marginHorizontal: 0 }]}>
         {listing.images?.[0] && (
           <View style={styles.listingImage}>
             <Text style={styles.listingImagePlaceholder}>📷</Text>
@@ -250,8 +218,8 @@ export default function BoostListingPage() {
       </View>
 
       {/* Boost Type Selection */}
-      <Text style={styles.sectionTitle}>Select Boost Type</Text>
-      <View style={styles.boostTypes}>
+      <Text style={[styles.sectionTitle, isLargeScreen && { marginHorizontal: 0 }]}>Select Boost Type</Text>
+      <View style={[styles.boostTypes, isLargeScreen && { paddingHorizontal: 0 }]}>
         {pricing.map((boost) => {
           const isActive = isBoostActive(boost.boost_type);
           const isSelected = selectedBoost === boost.boost_type;
@@ -295,8 +263,8 @@ export default function BoostListingPage() {
       {/* Duration Selection */}
       {selectedBoost && (
         <>
-          <Text style={styles.sectionTitle}>Select Duration</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.durationScroll}>
+          <Text style={[styles.sectionTitle, isLargeScreen && { marginHorizontal: 0 }]}>Select Duration</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={[styles.durationScroll, isLargeScreen && { paddingHorizontal: 0 }]}>
             {DURATION_OPTIONS.map((option) => (
               <TouchableOpacity
                 key={option.hours}
@@ -320,7 +288,7 @@ export default function BoostListingPage() {
 
       {/* Cost Summary */}
       {selectedBoost && (
-        <View style={styles.costSummary}>
+        <View style={[styles.costSummary, isLargeScreen && { marginHorizontal: 0 }]}>
           <Text style={styles.costTitle}>Cost Summary</Text>
           <View style={styles.costRow}>
             <Text style={styles.costLabel}>Boost Type</Text>
@@ -355,6 +323,7 @@ export default function BoostListingPage() {
       <TouchableOpacity
         style={[
           styles.boostButton,
+          isLargeScreen && { marginHorizontal: 0 },
           (!selectedBoost || credits < calculatedCost || creating) && styles.boostButtonDisabled
         ]}
         onPress={handleBoost}
@@ -382,6 +351,41 @@ export default function BoostListingPage() {
       )}
 
       <View style={{ height: 40 }} />
+    </>
+  );
+
+  // Desktop Layout
+  if (isLargeScreen) {
+    return (
+      <DesktopPageLayout
+        title="Boost Listing"
+        subtitle="Increase visibility for your listing"
+        icon="rocket-outline"
+        rightAction={rightAction}
+      >
+        <BoostContent />
+      </DesktopPageLayout>
+    );
+  }
+
+  // Mobile Layout
+  return (
+    <View style={styles.outerContainer}>
+      <ScrollView style={styles.container}>
+        <View style={styles.contentWrapper}>
+          {/* Mobile Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color="#333" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Boost Listing</Text>
+            <TouchableOpacity onPress={() => router.push('/credits')} style={styles.creditsButton}>
+              <Ionicons name="wallet" size={20} color="#4CAF50" />
+              <Text style={styles.creditsText}>{credits}</Text>
+            </TouchableOpacity>
+          </View>
+
+          <BoostContent />
         </View>
       </ScrollView>
     </View>
