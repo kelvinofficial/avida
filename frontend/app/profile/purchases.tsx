@@ -231,9 +231,126 @@ const EmptyState = () => (
   </View>
 );
 
+// Desktop Order Card Component
+const DesktopOrderCard = ({
+  order,
+  onPress,
+  onConfirmDelivery,
+  onOpenDispute,
+  processing,
+}: {
+  order: Order;
+  onPress: () => void;
+  onConfirmDelivery: (orderId: string) => void;
+  onOpenDispute: (orderId: string) => void;
+  processing: string | null;
+}) => {
+  const statusConfig = getStatusConfig(order.status);
+  const escrowInfo = getEscrowInfo(order.status);
+
+  return (
+    <View style={desktopStyles.card} data-testid={`order-card-${order.id}`}>
+      <TouchableOpacity style={desktopStyles.cardContent} onPress={onPress}>
+        <Image
+          source={{ uri: getImageUri(order.item?.image_url) }}
+          style={desktopStyles.cardImage}
+        />
+        <View style={desktopStyles.cardDetails}>
+          <Text style={desktopStyles.cardTitle} numberOfLines={2}>{order.item?.title || 'Item'}</Text>
+          <Text style={desktopStyles.cardPrice}>{formatPrice(order.total_amount, order.currency)}</Text>
+          
+          <View style={[desktopStyles.statusBadge, { backgroundColor: statusConfig.bg }]}>
+            <Ionicons name={statusConfig.icon as any} size={14} color={statusConfig.color} />
+            <Text style={[desktopStyles.statusText, { color: statusConfig.color }]}>
+              {statusConfig.label}
+            </Text>
+          </View>
+          
+          <View style={desktopStyles.cardMeta}>
+            <Ionicons 
+              name={order.delivery_method === 'pickup' ? 'location-outline' : 'car-outline'} 
+              size={14} 
+              color={COLORS.textSecondary} 
+            />
+            <Text style={desktopStyles.cardMetaText}>
+              {order.delivery_method === 'pickup' ? 'Pickup' : 'Delivery'}
+            </Text>
+            <Text style={desktopStyles.cardMetaText}>•</Text>
+            <Text style={desktopStyles.cardMetaText}>
+              {new Date(order.created_at).toLocaleDateString()}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+      
+      {/* Escrow Info Banner */}
+      {escrowInfo && (
+        <View style={desktopStyles.escrowBanner}>
+          <View style={desktopStyles.escrowInfo}>
+            <Ionicons name="shield-checkmark-outline" size={16} color={COLORS.info} />
+            <Text style={desktopStyles.escrowText}>{escrowInfo.message}</Text>
+          </View>
+        </View>
+      )}
+      
+      {/* Action Buttons */}
+      {(order.status === 'shipped' || order.status === 'delivered') && (
+        <View style={desktopStyles.actionButtons}>
+          <TouchableOpacity
+            style={desktopStyles.confirmBtn}
+            onPress={() => onConfirmDelivery(order.id)}
+            disabled={processing === order.id}
+          >
+            {processing === order.id ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <>
+                <Ionicons name="checkmark-circle" size={18} color="#fff" />
+                <Text style={desktopStyles.confirmBtnText}>Confirm Received</Text>
+              </>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={desktopStyles.disputeBtn}
+            onPress={() => onOpenDispute(order.id)}
+          >
+            <Ionicons name="alert-circle-outline" size={18} color={COLORS.error} />
+            <Text style={desktopStyles.disputeBtnText}>Report Issue</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      
+      {/* Shipped Tracking Info */}
+      {order.status === 'shipped' && order.shipped_at && (
+        <View style={desktopStyles.trackingInfo}>
+          <Ionicons name="time-outline" size={14} color={COLORS.warning} />
+          <Text style={desktopStyles.trackingText}>
+            Shipped {new Date(order.shipped_at).toLocaleDateString()}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+};
+
+// Desktop Empty State
+const DesktopEmptyState = () => (
+  <View style={desktopStyles.emptyContainer}>
+    <View style={desktopStyles.emptyIcon}>
+      <Ionicons name="bag-outline" size={64} color={COLORS.textSecondary} />
+    </View>
+    <Text style={desktopStyles.emptyTitle}>No purchases yet</Text>
+    <Text style={desktopStyles.emptySubtitle}>Items you buy with escrow protection will appear here</Text>
+  </View>
+);
+
 export default function PurchasesScreen() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
+  const { isDesktop, isTablet, isReady } = useResponsive();
+  const { goToLogin } = useLoginRedirect();
+  const isLargeScreen = isDesktop || isTablet;
+  
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
