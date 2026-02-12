@@ -2451,3 +2451,39 @@ Added 4 sample illustration images to photography guides:
 - Updated `/app/admin-dashboard/backend/server.py` public endpoint to support both:
   - External URLs via `image_url` field
   - Base64 data URIs via `image_base64` field
+
+### 2026-02-12: Complete Photography Guide Illustrations
+**COMPLETED**
+
+Generated and added illustration images for ALL 60 photography guides across 15 categories:
+
+**Categories with Images (4 guides each):**
+- Auto & Vehicles: Engine Bay, Any Damage
+- Properties: Natural Light, Key Features, Neighborhood
+- Electronics: Good Lighting, Screen On, Box & Accessories
+- Phones & Tablets: Screen Condition, Camera Quality, All Angles, Accessories
+- Home & Furniture: Scale Reference, True Colors, Close-ups, Wear & Tear
+- Fashion & Beauty: Flat Lay/Hanger, Worn Photos, Tags & Labels, Detail Shots
+- Jobs & Services: Professional Photo, Portfolio, Certifications, Equipment
+- Pets: Natural Behavior, Good Lighting, Eye Level, Personality
+- Sports & Hobbies: Full Item View, Size Reference, Working Condition, Accessories
+- Kids & Baby: Clean Items, Safety Labels, Multiple Angles, Wear Signs
+- Health & Medical: Product Details, Expiry Dates, Instructions, Certifications
+- Agriculture: Item Condition, Scale, Working Parts, Environment
+- Friendship & Dating: Genuine Smile, Activity Shots, Quality Photos, Stay Safe
+- Community: Event Details, Location, Past Events, Contact Info
+- Default: Good Lighting, Multiple Angles, Show Details, Be Honest
+
+**Image Generation:**
+- Used Gemini Imagen-4.0 to generate 56 clean minimalist illustration images
+- Images feature category-appropriate photography tips with flat design style
+- Consistent visual language across all categories
+
+**Database Updates:**
+- All images stored as base64 in `image_base64` field
+- `has_image: true` flag set for all guides
+- Total: 60 guides, 60 with images, 0 without images
+
+**API Verification:**
+- Verified via `/api/photography-guides/public/{category_id}` endpoints
+- All categories return guides with `image_url` populated
