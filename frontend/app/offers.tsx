@@ -632,24 +632,25 @@ export default function OffersScreen() {
     // Desktop unauthenticated
     if (isLargeScreen) {
       return (
-        <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
-          <DesktopHeader />
-          <View style={desktopStyles.pageWrapper}>
-            <View style={desktopStyles.unauthContainer}>
-              <View style={desktopStyles.unauthIcon}>
-                <Ionicons name="pricetag-outline" size={64} color={COLORS.primary} />
-              </View>
-              <Text style={desktopStyles.unauthTitle}>Sign in to view your offers</Text>
-              <Text style={desktopStyles.unauthSubtitle}>
-                Manage your offers, negotiate prices, and close deals
-              </Text>
-              <TouchableOpacity style={desktopStyles.unauthSignInBtn} onPress={() => router.push('/login?redirect=/offers')}>
-                <Ionicons name="log-in-outline" size={20} color="#fff" />
-                <Text style={desktopStyles.unauthSignInBtnText}>Sign In</Text>
-              </TouchableOpacity>
+        <DesktopPageLayout
+          title="Offers"
+          subtitle="Sign in to view your offers"
+          icon="pricetag-outline"
+        >
+          <View style={styles.unauthContainerDesktop}>
+            <View style={styles.unauthIconDesktop}>
+              <Ionicons name="pricetag-outline" size={64} color={COLORS.primary} />
             </View>
+            <Text style={styles.unauthTitleDesktop}>Sign in to view your offers</Text>
+            <Text style={styles.unauthSubtitleDesktop}>
+              Manage your offers, negotiate prices, and close deals
+            </Text>
+            <TouchableOpacity style={styles.signInBtnDesktop} onPress={() => router.push('/login?redirect=/offers')}>
+              <Ionicons name="log-in-outline" size={20} color="#fff" />
+              <Text style={styles.signInBtnTextDesktop}>Sign In</Text>
+            </TouchableOpacity>
           </View>
-        </SafeAreaView>
+        </DesktopPageLayout>
       );
     }
     
@@ -679,127 +680,105 @@ export default function OffersScreen() {
     );
   }
 
+  // Right action for desktop
+  const rightAction = pendingCount > 0 && role === 'seller' ? (
+    <View style={styles.pendingBadgeDesktop}>
+      <Text style={styles.pendingBadgeTextDesktop}>{pendingCount} pending</Text>
+    </View>
+  ) : null;
+
+  // Offers content for desktop layout
+  const OffersContent = () => (
+    <>
+      {/* Role Toggle */}
+      <View style={styles.roleToggleDesktop}>
+        <TouchableOpacity
+          style={[styles.roleBtnDesktop, role === 'seller' && styles.roleBtnActiveDesktop]}
+          onPress={() => setRole('seller')}
+        >
+          <Ionicons 
+            name="download-outline" 
+            size={18} 
+            color={role === 'seller' ? COLORS.primary : COLORS.textSecondary} 
+          />
+          <Text style={[styles.roleBtnTextDesktop, role === 'seller' && styles.roleBtnTextActiveDesktop]}>
+            Received
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.roleBtnDesktop, role === 'buyer' && styles.roleBtnActiveDesktop]}
+          onPress={() => setRole('buyer')}
+        >
+          <Ionicons 
+            name="paper-plane-outline" 
+            size={18} 
+            color={role === 'buyer' ? COLORS.primary : COLORS.textSecondary} 
+          />
+          <Text style={[styles.roleBtnTextDesktop, role === 'buyer' && styles.roleBtnTextActiveDesktop]}>
+            Sent
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Content */}
+      {loading ? (
+        <View style={styles.loadingContainerDesktop}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingTextDesktop}>Loading offers...</Text>
+        </View>
+      ) : offers.length === 0 ? (
+        <View style={styles.emptyContainerDesktop}>
+          <View style={styles.emptyIconDesktop}>
+            <Ionicons name="pricetag-outline" size={64} color={COLORS.textLight} />
+          </View>
+          <Text style={styles.emptyTitleDesktop}>
+            {role === 'seller' ? 'No offers received yet' : 'No offers sent yet'}
+          </Text>
+          <Text style={styles.emptySubtitleDesktop}>
+            {role === 'seller' 
+              ? 'When buyers make offers on your listings, they will appear here'
+              : 'Offers you make on listings will appear here'}
+          </Text>
+          <TouchableOpacity style={styles.browseBtnDesktop} onPress={() => router.push('/')}>
+            <Ionicons name="search-outline" size={18} color={COLORS.primary} />
+            <Text style={styles.browseBtnTextDesktop}>Browse Listings</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.offersGridDesktop}>
+          {offers.map((item) => (
+            <View key={item.id} style={styles.offerGridItemDesktop}>
+              <DesktopOfferCard
+                offer={item}
+                isSeller={role === 'seller'}
+                onAccept={() => handleAccept(item)}
+                onReject={() => handleReject(item)}
+                onCounter={() => handleCounter(item)}
+                onViewListing={() => router.push(`/listing/${item.listing_id}`)}
+                onViewChat={() => handleViewChat(item)}
+                isOpeningChat={openingChatForOffer === item.id}
+              />
+            </View>
+          ))}
+        </View>
+      )}
+    </>
+  );
+
   // Desktop authenticated view
   if (isLargeScreen) {
     return (
-      <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
-        <DesktopHeader />
-        
-        {/* Dedicated Offers Page Header */}
-        <View style={desktopStyles.dedicatedHeader}>
-          <View style={desktopStyles.dedicatedHeaderContent}>
-            <TouchableOpacity onPress={handleGoBack} style={desktopStyles.dedicatedBackButton}>
-              <Ionicons name="arrow-back" size={20} color="#333" />
-              <Text style={desktopStyles.dedicatedBackText}>Back</Text>
-            </TouchableOpacity>
-            <View style={desktopStyles.dedicatedHeaderCenter}>
-              <View style={desktopStyles.dedicatedHeaderIcon}>
-                <Ionicons name="pricetag" size={28} color={COLORS.primary} />
-              </View>
-              <View>
-                <Text style={desktopStyles.dedicatedHeaderTitle}>Offers</Text>
-                <Text style={desktopStyles.dedicatedHeaderSubtitle}>
-                  {role === 'seller' ? 'Manage offers received on your listings' : 'Track offers you\'ve made'}
-                </Text>
-              </View>
-            </View>
-            <View style={desktopStyles.dedicatedHeaderRight}>
-              {pendingCount > 0 && role === 'seller' && (
-                <View style={desktopStyles.pendingHeaderBadge}>
-                  <Text style={desktopStyles.pendingHeaderBadgeText}>{pendingCount} pending</Text>
-                </View>
-              )}
-            </View>
-          </View>
-        </View>
-        
-        <View style={desktopStyles.pageWrapper}>
-          {/* Role Toggle */}
-          <View style={desktopStyles.roleToggleContainer}>
-            <TouchableOpacity
-              style={[desktopStyles.roleBtn, role === 'seller' && desktopStyles.roleBtnActive]}
-              onPress={() => setRole('seller')}
-            >
-              <Ionicons 
-                name="download-outline" 
-                size={18} 
-                color={role === 'seller' ? COLORS.primary : COLORS.textSecondary} 
-              />
-              <Text style={[desktopStyles.roleBtnText, role === 'seller' && desktopStyles.roleBtnTextActive]}>
-                Received
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[desktopStyles.roleBtn, role === 'buyer' && desktopStyles.roleBtnActive]}
-              onPress={() => setRole('buyer')}
-            >
-              <Ionicons 
-                name="paper-plane-outline" 
-                size={18} 
-                color={role === 'buyer' ? COLORS.primary : COLORS.textSecondary} 
-              />
-              <Text style={[desktopStyles.roleBtnText, role === 'buyer' && desktopStyles.roleBtnTextActive]}>
-                Sent
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Content */}
-          {loading ? (
-            <View style={desktopStyles.loadingContainer}>
-              <ActivityIndicator size="large" color={COLORS.primary} />
-              <Text style={desktopStyles.loadingText}>Loading offers...</Text>
-            </View>
-          ) : offers.length === 0 ? (
-            <View style={desktopStyles.emptyContainer}>
-              <View style={desktopStyles.emptyIcon}>
-                <Ionicons name="pricetag-outline" size={64} color={COLORS.textLight} />
-              </View>
-              <Text style={desktopStyles.emptyTitle}>
-                {role === 'seller' ? 'No offers received yet' : 'No offers sent yet'}
-              </Text>
-              <Text style={desktopStyles.emptySubtitle}>
-                {role === 'seller' 
-                  ? 'When buyers make offers on your listings, they will appear here'
-                  : 'Offers you make on listings will appear here'}
-              </Text>
-              <TouchableOpacity style={desktopStyles.browseBtn} onPress={() => router.push('/')}>
-                <Ionicons name="search-outline" size={18} color={COLORS.primary} />
-                <Text style={desktopStyles.browseBtnText}>Browse Listings</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <ScrollView 
-              style={desktopStyles.scrollView}
-              contentContainerStyle={desktopStyles.offersContainer}
-              showsVerticalScrollIndicator={false}
-              refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={COLORS.primary} />
-              }
-            >
-              <View style={desktopStyles.offersGrid}>
-                {offers.map((item) => (
-                  <View key={item.id} style={desktopStyles.offerGridItem}>
-                    <DesktopOfferCard
-                      offer={item}
-                      isSeller={role === 'seller'}
-                      onAccept={() => handleAccept(item)}
-                      onReject={() => handleReject(item)}
-                      onCounter={() => handleCounter(item)}
-                      onViewListing={() => router.push(`/listing/${item.listing_id}`)}
-                      onViewChat={() => handleViewChat(item)}
-                      isOpeningChat={openingChatForOffer === item.id}
-                    />
-                  </View>
-                ))}
-              </View>
-            </ScrollView>
-          )}
-        </View>
-
-        {/* Counter Modal */}
+      <>
+        <DesktopPageLayout
+          title="Offers"
+          subtitle={role === 'seller' ? 'Manage offers received on your listings' : 'Track offers you\'ve made'}
+          icon="pricetag-outline"
+          rightAction={rightAction}
+        >
+          <OffersContent />
+        </DesktopPageLayout>
         {renderCounterModal()}
-      </SafeAreaView>
+      </>
     );
   }
 
