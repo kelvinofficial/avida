@@ -1012,7 +1012,7 @@ export default function PostListingScreen() {
     // Desktop-specific category grid
     if (isLargeScreen) {
       return (
-        <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
+        <ScrollView ref={scrollViewRef} style={styles.stepContent} showsVerticalScrollIndicator={false}>
           <Text style={styles.stepTitle}>What are you selling?</Text>
           <Text style={styles.stepSubtitle}>Choose the category and subcategory for your item</Text>
           
