@@ -223,6 +223,11 @@ export default function IconsManagementPage() {
     fetchAvailableIonicons();
   }, [fetchIcons]);
 
+  // Calculate local stats if API stats fail
+  useEffect(() => {
+    calculateLocalStats();
+  }, [calculateLocalStats]);
+
   const handleSeedIcons = async () => {
     try {
       setSeeding(true);
