@@ -40,6 +40,7 @@ import { SuccessModal } from '../../src/components/SuccessModal';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { LocationPicker, LocationData } from '../../src/components/LocationPicker';
 import { useFormConfig } from '../../src/hooks/useFormConfig';
+import { usePhotographyGuides } from '../../src/hooks/usePhotographyGuides';
 import {
   getListingTips,
   CATEGORY_PREFERENCES,
