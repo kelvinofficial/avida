@@ -483,6 +483,63 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   locationText: { fontSize: 14, fontWeight: '500', color: COLORS.text, maxWidth: 120 },
+  // Country Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  countryModalContainer: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    width: 360,
+    maxHeight: 480,
+    overflow: 'hidden',
+  },
+  countryModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  countryModalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  countryModalLoading: {
+    paddingVertical: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  countryList: {
+    paddingVertical: 8,
+  },
+  countryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    gap: 12,
+  },
+  countryFlag: {
+    fontSize: 24,
+  },
+  countryName: {
+    flex: 1,
+    fontSize: 15,
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+  countryDivider: {
+    height: 1,
+    backgroundColor: COLORS.border,
+    marginLeft: 56,
+  },
 });
 
 export default DesktopHeader;
