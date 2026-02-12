@@ -2243,6 +2243,69 @@ const styles = StyleSheet.create({
     padding: 12,
     flexGrow: 1,
   },
+  // Save Filter Modal Styles
+  saveModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  saveModalContent: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+  },
+  saveModalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  saveModalSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 16,
+  },
+  saveModalInput: {
+    backgroundColor: COLORS.background,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: COLORS.text,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginBottom: 20,
+  },
+  saveModalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
+  saveModalCancelBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  saveModalCancelText: {
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+  saveModalSaveBtn: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  saveModalSaveBtnDisabled: {
+    opacity: 0.5,
+  },
+  saveModalSaveText: {
+    color: '#FFF',
+    fontWeight: '600',
+  },
 });
 
 // Desktop Styles
