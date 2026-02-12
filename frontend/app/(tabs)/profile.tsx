@@ -1051,213 +1051,178 @@ export default function ProfileScreen() {
 
   // ============ DESKTOP VIEW - AUTHENTICATED ============
   if (isLargeScreen) {
+    // Build profile info card for right action
+    const profileRightAction = (
+      <TouchableOpacity 
+        style={profileDesktopStyles.editBtn} 
+        onPress={handleEditProfile}
+        data-testid="edit-profile-btn"
+      >
+        <Ionicons name="pencil" size={16} color={COLORS.primary} />
+        <Text style={profileDesktopStyles.editBtnText}>Edit Profile</Text>
+      </TouchableOpacity>
+    );
+
     return (
-      <View style={desktopStyles.container}>
-        {/* Desktop Header */}
-        <DesktopHeader showSearch={false} />
-
-        <View style={desktopStyles.mainContent}>
-          {/* Left Sidebar - Profile Card */}
-          <View style={desktopStyles.sidebar}>
-            <View style={desktopStyles.profileCard}>
-              {profile?.picture ? (
-                <Image source={{ uri: profile.picture }} style={desktopStyles.avatar} />
-              ) : (
-                <View style={desktopStyles.avatarPlaceholder}>
-                  <Text style={desktopStyles.avatarText}>
-                    {profile?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
-                  </Text>
-                </View>
-              )}
-              <Text style={desktopStyles.profileName}>{profile?.name || 'User'}</Text>
-              {profile?.email && <Text style={desktopStyles.profileEmail}>{profile.email}</Text>}
-              {profile?.is_verified && (
-                <View style={desktopStyles.verifiedBadge}>
-                  <Ionicons name="checkmark-circle" size={14} color={COLORS.primary} />
-                  <Text style={desktopStyles.verifiedText}>Verified</Text>
-                </View>
-              )}
-              <TouchableOpacity style={desktopStyles.editProfileBtn} onPress={handleEditProfile}>
-                <Ionicons name="pencil" size={16} color={COLORS.primary} />
-                <Text style={desktopStyles.editProfileText}>Edit Profile</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Stats */}
-            <View style={desktopStyles.statsCard}>
-              <Text style={desktopStyles.statsTitle}>Statistics</Text>
-              <View style={desktopStyles.statsGrid}>
-                <View style={desktopStyles.statItem}>
-                  <Text style={desktopStyles.statValue}>{profile?.stats?.listings || 0}</Text>
-                  <Text style={desktopStyles.statLabel}>Listings</Text>
-                </View>
-                <View style={desktopStyles.statItem}>
-                  <Text style={desktopStyles.statValue}>{profile?.stats?.sales || 0}</Text>
-                  <Text style={desktopStyles.statLabel}>Sales</Text>
-                </View>
-                <View style={desktopStyles.statItem}>
-                  <Text style={desktopStyles.statValue}>{profile?.stats?.reviews || 0}</Text>
-                  <Text style={desktopStyles.statLabel}>Reviews</Text>
-                </View>
-                <View style={desktopStyles.statItem}>
-                  <Text style={desktopStyles.statValue}>{profile?.stats?.followers || 0}</Text>
-                  <Text style={desktopStyles.statLabel}>Followers</Text>
-                </View>
+      <DesktopPageLayout
+        title="My Profile"
+        subtitle={profile?.email || ''}
+        icon="person-circle-outline"
+        rightAction={profileRightAction}
+      >
+        {/* Profile Card */}
+        <View style={profileDesktopStyles.profileSection}>
+          <View style={profileDesktopStyles.profileHeader}>
+            {profile?.picture ? (
+              <Image source={{ uri: profile.picture }} style={profileDesktopStyles.avatar} />
+            ) : (
+              <View style={profileDesktopStyles.avatarPlaceholder}>
+                <Text style={profileDesktopStyles.avatarText}>
+                  {profile?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
+                </Text>
               </View>
-            </View>
-
-            {/* Quick Actions */}
-            <View style={desktopStyles.quickActionsCard}>
-              <TouchableOpacity style={desktopStyles.quickAction} onPress={() => router.push('/settings')}>
-                <Ionicons name="settings-outline" size={20} color={COLORS.textSecondary} />
-                <Text style={desktopStyles.quickActionText}>Settings</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={desktopStyles.quickAction} onPress={() => router.push('/help')}>
-                <Ionicons name="help-circle-outline" size={20} color={COLORS.textSecondary} />
-                <Text style={desktopStyles.quickActionText}>Help & Support</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[desktopStyles.quickAction, desktopStyles.quickActionDanger]} onPress={handleLogout}>
-                <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
-                <Text style={[desktopStyles.quickActionText, { color: COLORS.error }]}>Sign Out</Text>
-              </TouchableOpacity>
+            )}
+            <View style={profileDesktopStyles.profileInfo}>
+              <View style={profileDesktopStyles.nameRow}>
+                <Text style={profileDesktopStyles.profileName}>{profile?.name || 'User'}</Text>
+                {profile?.is_verified && (
+                  <View style={profileDesktopStyles.verifiedBadge}>
+                    <Ionicons name="checkmark-circle" size={18} color={COLORS.primary} />
+                    <Text style={profileDesktopStyles.verifiedText}>Verified</Text>
+                  </View>
+                )}
+              </View>
+              {profile?.email && <Text style={profileDesktopStyles.profileEmail}>{profile.email}</Text>}
+              {profile?.phone && <Text style={profileDesktopStyles.profileEmail}>{profile.phone}</Text>}
+              {profile?.location && (
+                <View style={profileDesktopStyles.locationRow}>
+                  <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
+                  <Text style={profileDesktopStyles.locationText}>{profile.location}</Text>
+                </View>
+              )}
             </View>
           </View>
 
-          {/* Right Content */}
-          <ScrollView 
-            style={desktopStyles.contentArea}
-            contentContainerStyle={desktopStyles.contentInner}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={COLORS.primary} />
-            }
-          >
-            {/* Activity Section */}
-            <View style={desktopStyles.sectionCard}>
-              <Text style={desktopStyles.sectionTitle}>My Activity</Text>
-              <View style={desktopStyles.activityGrid}>
-                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/badges')}>
-                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#FFF8E1' }]}>
-                    <Ionicons name="ribbon" size={24} color="#F9A825" />
-                  </View>
-                  <Text style={desktopStyles.activityLabel}>My Badges</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/business/edit')}>
-                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#E3F2FD' }]}>
-                    <Ionicons name="storefront" size={24} color="#1976D2" />
-                  </View>
-                  <Text style={desktopStyles.activityLabel}>Business Profile</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/invoices')}>
-                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#F3E5F5' }]}>
-                    <Ionicons name="receipt" size={24} color="#9C27B0" />
-                  </View>
-                  <Text style={desktopStyles.activityLabel}>Invoices & Receipts</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/purchases')}>
-                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#E0F7FA' }]}>
-                    <Ionicons name="bag" size={24} color="#00BCD4" />
-                  </View>
-                  <Text style={desktopStyles.activityLabel}>Purchases</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/sales')}>
-                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#E8F5E9' }]}>
-                    <Ionicons name="cash" size={24} color="#4CAF50" />
-                  </View>
-                  <Text style={desktopStyles.activityLabel}>Sales</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={desktopStyles.activityItem} onPress={() => handleActivityPress('/profile/recently-viewed')}>
-                  <View style={[desktopStyles.activityIcon, { backgroundColor: '#FFF3E0' }]}>
-                    <Ionicons name="eye" size={24} color="#FF9800" />
-                  </View>
-                  <Text style={desktopStyles.activityLabel}>Recently Viewed</Text>
-                </TouchableOpacity>
-              </View>
+          {/* Stats Row */}
+          <View style={profileDesktopStyles.statsRow}>
+            <View style={profileDesktopStyles.statItem}>
+              <Text style={profileDesktopStyles.statValue}>{profile?.stats?.listings || 0}</Text>
+              <Text style={profileDesktopStyles.statLabel}>Listings</Text>
             </View>
-
-            {/* Credits & Boosts Section */}
-            <View style={desktopStyles.sectionCard}>
-              <Text style={desktopStyles.sectionTitle}>Credits & Boosts</Text>
-              <Text style={desktopStyles.sectionSubtitle}>Boost your listings to reach more buyers</Text>
-              <View style={desktopStyles.creditsBoostsGrid}>
-                <TouchableOpacity 
-                  style={desktopStyles.creditsBoostItem} 
-                  onPress={() => handleActivityPress('/credits')}
-                  data-testid="desktop-credits-btn"
-                >
-                  <View style={[desktopStyles.creditsBoostIcon, { backgroundColor: '#E8F5E9' }]}>
-                    <Ionicons name="wallet" size={28} color={COLORS.primary} />
-                  </View>
-                  <View style={desktopStyles.creditsBoostContent}>
-                    <Text style={desktopStyles.creditsBoostTitle}>Buy Credits</Text>
-                    <Text style={desktopStyles.creditsBoostDesc}>Purchase credit packages to boost your listings</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={desktopStyles.creditsBoostItem} 
-                  onPress={() => handleActivityPress('/profile/my-listings')}
-                  data-testid="desktop-boosts-btn"
-                >
-                  <View style={[desktopStyles.creditsBoostIcon, { backgroundColor: '#FFF3E0' }]}>
-                    <Ionicons name="rocket" size={28} color="#F57C00" />
-                  </View>
-                  <View style={desktopStyles.creditsBoostContent}>
-                    <Text style={desktopStyles.creditsBoostTitle}>Boost Listings</Text>
-                    <Text style={desktopStyles.creditsBoostDesc}>Feature your listings at the top of search results</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
-                </TouchableOpacity>
-              </View>
+            <View style={profileDesktopStyles.statItem}>
+              <Text style={profileDesktopStyles.statValue}>{profile?.stats?.sales || 0}</Text>
+              <Text style={profileDesktopStyles.statLabel}>Sales</Text>
             </View>
-
-            {/* Trust & Identity */}
-            <View style={desktopStyles.sectionCard}>
-              <Text style={desktopStyles.sectionTitle}>Trust & Identity</Text>
-              <Text style={desktopStyles.sectionSubtitle}>Verify your identity to build trust with buyers</Text>
-              <View style={desktopStyles.trustGrid}>
-                <View style={desktopStyles.trustItem}>
-                  <View style={[desktopStyles.trustIcon, profile?.verifications?.email && desktopStyles.trustIconVerified]}>
-                    <Ionicons name="mail" size={20} color={profile?.verifications?.email ? COLORS.primary : COLORS.textSecondary} />
-                  </View>
-                  <View style={desktopStyles.trustContent}>
-                    <Text style={desktopStyles.trustLabel}>Email</Text>
-                    <Text style={desktopStyles.trustStatus}>{profile?.verifications?.email ? 'Verified' : 'Not verified'}</Text>
-                  </View>
-                  {profile?.verifications?.email && (
-                    <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
-                  )}
-                </View>
-                <View style={desktopStyles.trustItem}>
-                  <View style={[desktopStyles.trustIcon, profile?.verifications?.phone && desktopStyles.trustIconVerified]}>
-                    <Ionicons name="call" size={20} color={profile?.verifications?.phone ? COLORS.primary : COLORS.textSecondary} />
-                  </View>
-                  <View style={desktopStyles.trustContent}>
-                    <Text style={desktopStyles.trustLabel}>Phone</Text>
-                    <Text style={desktopStyles.trustStatus}>{profile?.verifications?.phone ? 'Verified' : 'Not verified'}</Text>
-                  </View>
-                  {profile?.verifications?.phone && (
-                    <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
-                  )}
-                </View>
-                <View style={desktopStyles.trustItem}>
-                  <View style={[desktopStyles.trustIcon, profile?.verifications?.id && desktopStyles.trustIconVerified]}>
-                    <Ionicons name="card" size={20} color={profile?.verifications?.id ? COLORS.primary : COLORS.textSecondary} />
-                  </View>
-                  <View style={desktopStyles.trustContent}>
-                    <Text style={desktopStyles.trustLabel}>ID Document</Text>
-                    <Text style={desktopStyles.trustStatus}>{profile?.verifications?.id ? 'Verified' : 'Not verified'}</Text>
-                  </View>
-                  {profile?.verifications?.id && (
-                    <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
-                  )}
-                </View>
-              </View>
+            <View style={profileDesktopStyles.statItem}>
+              <Text style={profileDesktopStyles.statValue}>{profile?.stats?.reviews || 0}</Text>
+              <Text style={profileDesktopStyles.statLabel}>Reviews</Text>
             </View>
-
-            <Text style={desktopStyles.versionText}>avida v1.0.0</Text>
-          </ScrollView>
+            <View style={profileDesktopStyles.statItem}>
+              <Text style={profileDesktopStyles.statValue}>{profile?.stats?.followers || 0}</Text>
+              <Text style={profileDesktopStyles.statLabel}>Followers</Text>
+            </View>
+          </View>
         </View>
-      </View>
+
+        {/* Activity Grid */}
+        <View style={profileDesktopStyles.sectionCard}>
+          <Text style={profileDesktopStyles.sectionTitle}>My Activity</Text>
+          <View style={profileDesktopStyles.activityGrid}>
+            {[
+              { icon: 'ribbon', color: '#F9A825', bg: '#FFF8E1', label: 'My Badges', route: '/profile/badges' },
+              { icon: 'storefront', color: '#1976D2', bg: '#E3F2FD', label: 'Business Profile', route: '/business/edit' },
+              { icon: 'receipt', color: '#9C27B0', bg: '#F3E5F5', label: 'Invoices', route: '/profile/invoices' },
+              { icon: 'bag', color: '#00BCD4', bg: '#E0F7FA', label: 'Purchases', route: '/profile/purchases' },
+              { icon: 'cash', color: '#4CAF50', bg: '#E8F5E9', label: 'Sales', route: '/profile/sales' },
+              { icon: 'eye', color: '#FF9800', bg: '#FFF3E0', label: 'Recently Viewed', route: '/profile/recently-viewed' },
+            ].map((item) => (
+              <TouchableOpacity 
+                key={item.route}
+                style={profileDesktopStyles.activityItem} 
+                onPress={() => handleActivityPress(item.route)}
+                data-testid={`activity-${item.label.toLowerCase().replace(/\s/g, '-')}`}
+              >
+                <View style={[profileDesktopStyles.activityIcon, { backgroundColor: item.bg }]}>
+                  <Ionicons name={item.icon as any} size={24} color={item.color} />
+                </View>
+                <Text style={profileDesktopStyles.activityLabel}>{item.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Credits & Boosts Section */}
+        <View style={profileDesktopStyles.sectionCard}>
+          <Text style={profileDesktopStyles.sectionTitle}>Credits & Boosts</Text>
+          <Text style={profileDesktopStyles.sectionSubtitle}>Boost your listings to reach more buyers</Text>
+          <View style={profileDesktopStyles.creditsGrid}>
+            <TouchableOpacity 
+              style={profileDesktopStyles.creditItem} 
+              onPress={() => handleActivityPress('/credits')}
+              data-testid="desktop-credits-btn"
+            >
+              <View style={[profileDesktopStyles.creditIcon, { backgroundColor: '#E8F5E9' }]}>
+                <Ionicons name="wallet" size={28} color={COLORS.primary} />
+              </View>
+              <View style={profileDesktopStyles.creditContent}>
+                <Text style={profileDesktopStyles.creditTitle}>Buy Credits</Text>
+                <Text style={profileDesktopStyles.creditDesc}>Purchase credit packages to boost your listings</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={profileDesktopStyles.creditItem} 
+              onPress={() => handleActivityPress('/profile/my-listings')}
+              data-testid="desktop-boosts-btn"
+            >
+              <View style={[profileDesktopStyles.creditIcon, { backgroundColor: '#FFF3E0' }]}>
+                <Ionicons name="rocket" size={28} color="#F57C00" />
+              </View>
+              <View style={profileDesktopStyles.creditContent}>
+                <Text style={profileDesktopStyles.creditTitle}>Boost Listings</Text>
+                <Text style={profileDesktopStyles.creditDesc}>Feature your listings at the top of search results</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Trust & Identity */}
+        <View style={profileDesktopStyles.sectionCard}>
+          <Text style={profileDesktopStyles.sectionTitle}>Trust & Identity</Text>
+          <Text style={profileDesktopStyles.sectionSubtitle}>Verify your identity to build trust with buyers</Text>
+          <View style={profileDesktopStyles.trustGrid}>
+            {[
+              { icon: 'mail', label: 'Email', verified: profile?.verifications?.email },
+              { icon: 'call', label: 'Phone', verified: profile?.verifications?.phone },
+              { icon: 'card', label: 'ID Document', verified: profile?.verifications?.id },
+            ].map((item) => (
+              <View key={item.label} style={profileDesktopStyles.trustItem}>
+                <View style={[profileDesktopStyles.trustIcon, item.verified && profileDesktopStyles.trustIconVerified]}>
+                  <Ionicons name={item.icon as any} size={20} color={item.verified ? COLORS.primary : COLORS.textSecondary} />
+                </View>
+                <View style={profileDesktopStyles.trustContent}>
+                  <Text style={profileDesktopStyles.trustLabel}>{item.label}</Text>
+                  <Text style={profileDesktopStyles.trustStatus}>{item.verified ? 'Verified' : 'Not verified'}</Text>
+                </View>
+                {item.verified && <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />}
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Sign Out Button */}
+        <TouchableOpacity 
+          style={profileDesktopStyles.signOutBtn}
+          onPress={handleLogout}
+          data-testid="sign-out-btn"
+        >
+          <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
+          <Text style={profileDesktopStyles.signOutText}>Sign Out</Text>
+        </TouchableOpacity>
+
+        <Text style={profileDesktopStyles.versionText}>avida v1.0.0</Text>
+      </DesktopPageLayout>
     );
   }
 
