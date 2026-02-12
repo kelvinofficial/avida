@@ -1148,36 +1148,67 @@ export default function CategoryScreen() {
         </View>
       </View>
       
-      {/* Mobile Recent Searches Dropdown */}
-      {showRecentSearches && recentSearches.length > 0 && !searchQuery && (
+      {/* Mobile Recent & Popular Searches */}
+      {showRecentSearches && !searchQuery && (recentSearches.length > 0 || popularSearches.category.length > 0 || popularSearches.global.length > 0) && (
         <View style={styles.mobileRecentSearches}>
-          <View style={styles.recentSearchesHeaderMobile}>
-            <View style={styles.recentSearchesTitleRowMobile}>
-              <Ionicons name="time-outline" size={14} color={COLORS.textSecondary} />
-              <Text style={styles.recentSearchesTitleMobile}>Recent Searches</Text>
-            </View>
-            <TouchableOpacity onPress={clearAllRecentSearches}>
-              <Text style={styles.clearAllBtnMobile}>Clear</Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.recentSearchChipsContainer}>
-            {recentSearches.map((query, index) => (
-              <TouchableOpacity 
-                key={`mobile-${query}-${index}`}
-                style={styles.recentSearchChip}
-                onPress={() => applyRecentSearch(query)}
-              >
-                <Ionicons name="search-outline" size={12} color={COLORS.primary} />
-                <Text style={styles.recentSearchChipText}>{query}</Text>
-                <TouchableOpacity 
-                  onPress={() => removeRecentSearch(query)}
-                  style={styles.removeSearchChipBtn}
-                >
-                  <Ionicons name="close" size={12} color={COLORS.textSecondary} />
+          {/* Recent Searches */}
+          {recentSearches.length > 0 && (
+            <>
+              <View style={styles.recentSearchesHeaderMobile}>
+                <View style={styles.recentSearchesTitleRowMobile}>
+                  <Ionicons name="time-outline" size={14} color={COLORS.textSecondary} />
+                  <Text style={styles.recentSearchesTitleMobile}>Recent</Text>
+                </View>
+                <TouchableOpacity onPress={clearAllRecentSearches}>
+                  <Text style={styles.clearAllBtnMobile}>Clear</Text>
                 </TouchableOpacity>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.recentSearchChipsContainer}>
+                {recentSearches.map((query, index) => (
+                  <TouchableOpacity 
+                    key={`mobile-recent-${query}-${index}`}
+                    style={styles.recentSearchChip}
+                    onPress={() => applyRecentSearch(query)}
+                  >
+                    <Ionicons name="search-outline" size={12} color={COLORS.primary} />
+                    <Text style={styles.recentSearchChipText}>{query}</Text>
+                    <TouchableOpacity 
+                      onPress={() => removeRecentSearch(query)}
+                      style={styles.removeSearchChipBtn}
+                    >
+                      <Ionicons name="close" size={12} color={COLORS.textSecondary} />
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </>
+          )}
+          
+          {/* Popular Searches */}
+          {(popularSearches.category.length > 0 || popularSearches.global.length > 0) && (
+            <>
+              <View style={[styles.recentSearchesHeaderMobile, recentSearches.length > 0 && { marginTop: 8 }]}>
+                <View style={styles.recentSearchesTitleRowMobile}>
+                  <Ionicons name="flame-outline" size={14} color="#FF6B35" />
+                  <Text style={styles.recentSearchesTitleMobile}>
+                    {popularSearches.category.length > 0 ? 'Popular' : 'Trending'}
+                  </Text>
+                </View>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.recentSearchChipsContainer}>
+                {(popularSearches.category.length > 0 ? popularSearches.category : popularSearches.global).slice(0, 5).map((query, index) => (
+                  <TouchableOpacity 
+                    key={`mobile-popular-${query}-${index}`}
+                    style={styles.popularSearchChip}
+                    onPress={() => applyRecentSearch(query)}
+                  >
+                    <Ionicons name="trending-up" size={12} color="#FF6B35" />
+                    <Text style={styles.popularSearchChipText}>{query}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </>
+          )}
         </View>
       )}
 
