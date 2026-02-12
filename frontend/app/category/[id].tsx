@@ -338,10 +338,20 @@ export default function CategoryScreen() {
     const timeoutId = setTimeout(() => {
       if (searchQuery !== undefined) {
         fetchData(true);
+        // Save to recent searches when user actually searches (not empty)
+        if (searchQuery.trim().length >= 2) {
+          saveRecentSearch(searchQuery);
+        }
       }
     }, 500);
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
+  
+  // Apply a recent search
+  const applyRecentSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+    setShowRecentSearches(false);
+  }, []);
 
   const handleRefresh = () => {
     setRefreshing(true);
