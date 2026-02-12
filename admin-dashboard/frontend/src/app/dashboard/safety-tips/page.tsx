@@ -50,6 +50,9 @@ import {
   Category,
   CheckCircle,
   Warning,
+  Preview,
+  ShieldOutlined,
+  Flag,
 } from '@mui/icons-material';
 
 interface SafetyTip {
