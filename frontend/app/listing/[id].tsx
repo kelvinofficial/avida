@@ -1046,20 +1046,35 @@ export default function ListingDetailScreen() {
                   <View style={desktopStyles.detailsGrid}>
                     {category && (
                       <View style={desktopStyles.detailItem}>
-                        <Text style={desktopStyles.detailLabel}>Category</Text>
-                        <Text style={desktopStyles.detailValue}>{category.name}</Text>
+                        <View style={desktopStyles.detailIconBox}>
+                          <Ionicons name={getIconForAttribute('category', listing.category_id) as any} size={16} color={ICON_COLOR} />
+                        </View>
+                        <View style={desktopStyles.detailTextBox}>
+                          <Text style={desktopStyles.detailLabel}>Category</Text>
+                          <Text style={desktopStyles.detailValue}>{category.name}</Text>
+                        </View>
                       </View>
                     )}
                     {listing.condition && (
                       <View style={desktopStyles.detailItem}>
-                        <Text style={desktopStyles.detailLabel}>Condition</Text>
-                        <Text style={desktopStyles.detailValue}>{listing.condition}</Text>
+                        <View style={desktopStyles.detailIconBox}>
+                          <Ionicons name={getIconForAttribute('condition', listing.category_id) as any} size={16} color={ICON_COLOR} />
+                        </View>
+                        <View style={desktopStyles.detailTextBox}>
+                          <Text style={desktopStyles.detailLabel}>Condition</Text>
+                          <Text style={desktopStyles.detailValue}>{listing.condition}</Text>
+                        </View>
                       </View>
                     )}
                     {Object.entries(listing.attributes).map(([key, value]) => (
                       <View key={key} style={desktopStyles.detailItem}>
-                        <Text style={desktopStyles.detailLabel}>{key.replace(/_/g, ' ')}</Text>
-                        <Text style={desktopStyles.detailValue}>{String(value)}</Text>
+                        <View style={desktopStyles.detailIconBox}>
+                          <Ionicons name={getIconForAttribute(key, listing.category_id) as any} size={16} color={ICON_COLOR} />
+                        </View>
+                        <View style={desktopStyles.detailTextBox}>
+                          <Text style={desktopStyles.detailLabel}>{key.replace(/_/g, ' ')}</Text>
+                          <Text style={desktopStyles.detailValue}>{String(value)}</Text>
+                        </View>
                       </View>
                     ))}
                   </View>
