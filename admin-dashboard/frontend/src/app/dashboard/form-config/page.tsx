@@ -644,6 +644,17 @@ export default function FormConfigPage() {
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             variant="outlined"
+            color="info"
+            startIcon={<Preview />}
+            onClick={() => {
+              setPreviewCategory(filterCategory || 'default');
+              setPreviewOpen(true);
+            }}
+          >
+            Preview Mode
+          </Button>
+          <Button
+            variant="outlined"
             startIcon={<Refresh />}
             onClick={() => { fetchConfigs(); fetchStats(); }}
           >
