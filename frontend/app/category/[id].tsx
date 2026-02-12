@@ -706,10 +706,22 @@ export default function CategoryScreen() {
         {/* Row 2: Search + Location */}
         <View style={desktopStyles.headerRow2}>
           <View style={desktopStyles.headerRow2Inner}>
-            <TouchableOpacity style={desktopStyles.searchField} onPress={() => router.push('/search')} activeOpacity={0.8}>
+            <View style={desktopStyles.searchField}>
               <Ionicons name="search" size={20} color="#666" />
-              <Text style={desktopStyles.searchPlaceholder}>Search in {mainCategory?.name}...</Text>
-            </TouchableOpacity>
+              <TextInput
+                style={desktopStyles.searchInput}
+                placeholder={`Search in ${mainCategory?.name}...`}
+                placeholderTextColor="#999"
+                value={searchQuery}
+                onChangeText={handleSearch}
+                data-testid="category-search-input"
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => handleSearch('')} style={{ padding: 4 }}>
+                  <Ionicons name="close-circle" size={18} color="#999" />
+                </TouchableOpacity>
+              )}
+            </View>
             <TouchableOpacity style={desktopStyles.locationChip} activeOpacity={0.7}>
               <Ionicons name="location" size={18} color="#2E7D32" />
               <Text style={desktopStyles.locationText}>All Locations</Text>
