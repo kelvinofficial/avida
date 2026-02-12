@@ -199,9 +199,10 @@ interface KeyDetailsSectionProps {
   listing: Listing;
   category: Category | null;
   getIconForAttribute: (attr: string, catId?: string) => string;
+  getIconColorForAttribute: (attr: string, catId?: string) => string;
 }
 
-const KeyDetailsSection = memo(({ listing, category, getIconForAttribute }: KeyDetailsSectionProps) => {
+const KeyDetailsSection = memo(({ listing, category, getIconForAttribute, getIconColorForAttribute }: KeyDetailsSectionProps) => {
   const attributes = listing.attributes || {};
   const categoryId = listing.category_id || category?.id;
   
@@ -210,6 +211,7 @@ const KeyDetailsSection = memo(({ listing, category, getIconForAttribute }: KeyD
     label: key.replace(/_/g, ' '),
     value: String(value),
     icon: getIconForAttribute(key, categoryId),
+    color: getIconColorForAttribute(key, categoryId),
   }));
 
   if (category) {
@@ -218,6 +220,7 @@ const KeyDetailsSection = memo(({ listing, category, getIconForAttribute }: KeyD
       label: 'Category', 
       value: category.name,
       icon: getIconForAttribute('category', categoryId),
+      color: getIconColorForAttribute('category', categoryId),
     });
   }
   if (listing.condition) {
@@ -226,6 +229,7 @@ const KeyDetailsSection = memo(({ listing, category, getIconForAttribute }: KeyD
       label: 'Condition', 
       value: listing.condition,
       icon: getIconForAttribute('condition', categoryId),
+      color: getIconColorForAttribute('condition', categoryId),
     });
   }
 
@@ -237,7 +241,7 @@ const KeyDetailsSection = memo(({ listing, category, getIconForAttribute }: KeyD
       <View style={detailStyles.grid}>
         {details.map((item, index) => (
           <View key={index} style={detailStyles.item}>
-            <AnimatedIconBox iconName={item.icon} index={index} color={ICON_COLOR} />
+            <AnimatedIconBox iconName={item.icon} index={index} color={item.color} />
             <View style={detailStyles.textBox}>
               <Text style={detailStyles.label}>{item.label}</Text>
               <Text style={detailStyles.value}>{item.value}</Text>
