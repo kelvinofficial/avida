@@ -285,27 +285,22 @@ export default function FormConfigPage() {
 
   const handleSaveConfig = async () => {
     try {
-      const token = localStorage.getItem('admin_token');
       const configData = buildConfigData();
 
       if (editingConfig) {
-        await api.put(`/api/admin/form-config/${editingConfig.id}`, {
+        await api.put(`/form-config/${editingConfig.id}`, {
           config_data: configData,
           is_active: formData.is_active,
           priority: formData.priority,
-        }, {
-          headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await api.post('/api/admin/form-config', {
+        await api.post('/form-config', {
           category_id: formData.category_id,
           subcategory_id: formData.subcategory_id || null,
           config_type: formData.config_type,
           config_data: configData,
           is_active: formData.is_active,
           priority: formData.priority,
-        }, {
-          headers: { Authorization: `Bearer ${token}` },
         });
       }
 
@@ -322,10 +317,7 @@ export default function FormConfigPage() {
     if (!confirm('Are you sure you want to delete this configuration?')) return;
     
     try {
-      const token = localStorage.getItem('admin_token');
-      await api.delete(`/api/admin/form-config/${configId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/form-config/${configId}`);
       fetchConfigs();
       fetchStats();
     } catch (error) {
@@ -336,8 +328,7 @@ export default function FormConfigPage() {
 
   const handleToggleActive = async (config: FormConfig) => {
     try {
-      const token = localStorage.getItem('admin_token');
-      await api.put(`/api/admin/form-config/${config.id}`, {
+      await api.put(`/form-config/${config.id}`, {
         is_active: !config.is_active,
       }, {
         headers: { Authorization: `Bearer ${token}` },
