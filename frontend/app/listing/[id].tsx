@@ -681,6 +681,10 @@ export default function ListingDetailScreen() {
   const [listing, setListing] = useState<Listing | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Safety tips hook - fetch category-specific tips
+  const { tips: safetyTips } = useSafetyTips(listing?.category_id);
+  
   const [isFavorited, setIsFavorited] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
