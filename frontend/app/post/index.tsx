@@ -1763,13 +1763,25 @@ export default function PostListingScreen() {
           />
         </View>
       </View>
+      </>
+      )}
 
       {/* Contact Methods Section */}
       <View style={styles.sectionDivider}>
         <Text style={styles.sectionDividerText}>Contact Methods</Text>
       </View>
 
-      {/* In-App Chat */}
+      {/* Chat Only Notice for certain categories */}
+      {chatOnly && (
+        <View style={styles.chatOnlyNotice}>
+          <Ionicons name="information-circle" size={18} color={COLORS.primary} />
+          <Text style={styles.chatOnlyText}>
+            For your safety, only in-app chat is available for this category
+          </Text>
+        </View>
+      )}
+
+      {/* In-App Chat - Always available */}
       <View style={styles.preferenceCard}>
         <View style={styles.preferenceRow}>
           <View style={styles.preferenceInfo}>
@@ -1782,15 +1794,17 @@ export default function PostListingScreen() {
             </View>
           </View>
           <Switch
-            value={contactPreferences.inAppChat}
-            onValueChange={(val) => setContactPreferences(prev => ({ ...prev, inAppChat: val }))}
+            value={chatOnly ? true : contactPreferences.inAppChat}
+            onValueChange={chatOnly ? undefined : (val) => setContactPreferences(prev => ({ ...prev, inAppChat: val }))}
             trackColor={{ false: COLORS.border, true: COLORS.primaryLight }}
-            thumbColor={contactPreferences.inAppChat ? COLORS.primary : '#f4f4f4'}
+            thumbColor={contactPreferences.inAppChat || chatOnly ? COLORS.primary : '#f4f4f4'}
+            disabled={chatOnly}
           />
         </View>
       </View>
 
-      {/* WhatsApp */}
+      {/* WhatsApp - Hidden for chat-only categories */}
+      {!chatOnly && (
       <View style={styles.preferenceCard}>
         <View style={styles.preferenceRow}>
           <View style={styles.preferenceInfo}>
