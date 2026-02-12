@@ -67,7 +67,6 @@ const COLORS = {
   warningLight: '#FFF3E0',
 };
 
-// SELLER_TYPES moved to listingFormConfig.ts - now dynamic per category
 const CONTACT_METHODS = ['Chat', 'WhatsApp', 'Phone Call', 'All'];
 
 // ============ VALIDATION ERROR COMPONENT ============
