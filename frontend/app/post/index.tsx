@@ -1447,25 +1447,40 @@ export default function PostListingScreen() {
   };
 
   // ============ STEP 5: PRICE & CONTACT ============
-  const renderStep5 = () => (
+  const renderStep5 = () => {
+    // Get dynamic configuration based on category
+    const hidePrice = shouldHidePrice(selectedCategoryId, selectedSubcategoryId);
+    const showSalary = shouldShowSalaryRange(selectedSubcategoryId);
+    const sellerTypeConfig = getSellerTypes(selectedCategoryId);
+    const chatOnly = isChatOnlyCategory(selectedCategoryId);
+    const categoryPrefs = CATEGORY_PREFERENCES[selectedCategoryId];
+    
+    return (
     <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.stepTitle}>Price & Contact</Text>
-      <Text style={styles.stepSubtitle}>Set your price and how buyers can reach you</Text>
+      <Text style={styles.stepTitle}>
+        {hidePrice ? 'Contact & Details' : 'Price & Contact'}
+      </Text>
+      <Text style={styles.stepSubtitle}>
+        {hidePrice 
+          ? 'Let people know how to reach you'
+          : 'Set your price and how buyers can reach you'}
+      </Text>
 
-      {/* Price Section */}
-      <View style={styles.priceSection}>
-        <Text style={styles.fieldLabel}>Price <Text style={styles.required}>*</Text></Text>
-        <View style={styles.priceInputContainer}>
-          <Text style={styles.currencySymbol}>€</Text>
-          <TextInput
-            style={styles.priceInput}
-            placeholder="0"
-            placeholderTextColor={COLORS.textSecondary}
-            value={price}
-            onChangeText={setPrice}
-            keyboardType="numeric"
-          />
-        </View>
+      {/* Price Section - Hidden for certain categories */}
+      {!hidePrice && !showSalary && (
+        <View style={styles.priceSection}>
+          <Text style={styles.fieldLabel}>Price <Text style={styles.required}>*</Text></Text>
+          <View style={styles.priceInputContainer}>
+            <Text style={styles.currencySymbol}>€</Text>
+            <TextInput
+              style={styles.priceInput}
+              placeholder="0"
+              placeholderTextColor={COLORS.textSecondary}
+              value={price}
+              onChangeText={setPrice}
+              keyboardType="numeric"
+            />
+          </View>
         
         {/* Get Price Suggestion Button */}
         <TouchableOpacity
