@@ -674,6 +674,8 @@ export default function BusinessProfileEditScreen() {
   // Business profile form content (shared between mobile and desktop)
   const BusinessFormContent = () => (
     <>
+      {/* VERIFICATION STATUS BANNER */}
+      {hasProfile && (
             <View style={[styles.statusBanner, isPremium ? styles.premiumBanner : isVerified ? styles.verifiedBanner : verificationStatus === 'pending' ? styles.pendingBanner : styles.unverifiedBanner]}>
               <View style={styles.statusRow}>
                 <Ionicons 
