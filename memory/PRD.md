@@ -2128,3 +2128,48 @@ Completed the dynamic listing creation form with category-specific configuration
 - Configuration fixes verified via code review
 
 
+
+
+### 2026-02-12: Category-Specific Photo Tips & Auto-Scroll
+**COMPLETED**
+
+#### Category-Specific Photo Tips
+Added dynamic photo tips that change based on the selected category in Step 2 (Photos):
+
+**New Configuration (listingFormConfig.ts):**
+- Added `CATEGORY_LISTING_TIPS` with tips for 12 categories:
+  - Auto & Vehicles: Exterior shots, dashboard/mileage, engine bay, damage disclosure
+  - Properties: Wide angles, natural light, key features, neighborhood
+  - Electronics: Clean background, good lighting, screen on, box/accessories
+  - Phones & Tablets: Screen condition, camera quality, all angles, accessories
+  - Home & Furniture: Scale reference, true colors, close-ups, wear disclosure
+  - Fashion & Beauty: Flat lay/hanger, worn photos, tags/labels, detail shots
+  - Jobs & Services: Professional photo, portfolio, certifications, equipment
+  - Friendship & Dating: Genuine smile, activity shots, quality photos, safety
+  - Pets: Clear pet photo, health records, living space, personality
+  - Sports & Hobbies: Multiple angles, working condition, all parts, wear signs
+  - Kids & Baby: Safety labels, cleanliness, working parts, all pieces
+  - Community: Clear visual, location, past events, branded graphics
+  - Default fallback tips for unconfigured categories
+
+**Frontend Changes (post/index.tsx):**
+- Added `getListingTips()` function to retrieve category-specific tips
+- Updated renderStep2() to show dynamic tips with icons
+- New tip card design with icon, title, and description
+- Fallback to generic tips if no category selected
+
+#### Auto-Scroll to Subcategories
+- Added `scrollViewRef` and `subcategorySectionRef` refs
+- Added `subcategorySectionY` state to track section position
+- `handleCategorySelect()` function now scrolls to subcategory section after selection
+- Uses `onLayout` to capture Y position for cross-platform compatibility
+
+#### New Styles Added:
+- `tipsHeader`: Flex row with icon and title
+- `tipItem`: Individual tip card layout
+- `tipIcon`: Styled icon container
+- `tipContent`: Title and description container
+- `tipItemTitle`: Bold tip title
+- `tipItemDesc`: Description text
+
+
