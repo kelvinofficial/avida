@@ -432,25 +432,26 @@ const sellerStyles = StyleSheet.create({
 });
 
 // ============ SAFETY SECTION ============
-const SafetySection = memo(({ onReport, listingId }: { onReport: () => void; listingId: string }) => (
+// ============ SAFETY SECTION ============
+interface SafetySectionProps {
+  onReport: () => void;
+  listingId: string;
+  tips: Array<{ tip_text: string; is_default?: boolean }>;
+}
+
+const SafetySection = memo(({ onReport, listingId, tips }: SafetySectionProps) => (
   <View style={safetyStyles.container}>
     <View style={safetyStyles.header}>
       <Ionicons name="shield-checkmark" size={20} color={COLORS.primary} />
       <Text style={safetyStyles.title}>Safety Tips</Text>
     </View>
     <View style={safetyStyles.tips}>
-      <View style={safetyStyles.tip}>
-        <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
-        <Text style={safetyStyles.tipText}>Meet in a public place</Text>
-      </View>
-      <View style={safetyStyles.tip}>
-        <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
-        <Text style={safetyStyles.tipText}>Don't send money before seeing the item</Text>
-      </View>
-      <View style={safetyStyles.tip}>
-        <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
-        <Text style={safetyStyles.tipText}>Check the item thoroughly before paying</Text>
-      </View>
+      {tips.map((tip, index) => (
+        <View key={index} style={safetyStyles.tip}>
+          <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+          <Text style={safetyStyles.tipText}>{tip.tip_text}</Text>
+        </View>
+      ))}
     </View>
     <View style={safetyStyles.footerRow}>
       <Text style={safetyStyles.listingId}>ID: {listingId ? listingId.slice(0, 8).toUpperCase() : 'N/A'}</Text>
