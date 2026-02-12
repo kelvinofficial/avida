@@ -29,7 +29,7 @@ def create_streaks_router(db, get_current_user):
         """Get current user's challenge completion streak."""
         user_id = current_user["user_id"]
         
-        streak = db.user_challenge_streaks.find_one(
+        streak = await db.user_challenge_streaks.find_one(
             {"user_id": user_id},
             {"_id": 0}
         )
@@ -60,19 +60,20 @@ def create_streaks_router(db, get_current_user):
         skip = (page - 1) * limit
         
         # Get all streaks sorted by current streak
-        streaks = list(db.user_challenge_streaks.find(
+        cursor = db.user_challenge_streaks.find(
             {"current_streak": {"$gt": 0}},
             {"_id": 0}
         ).sort([
             ("current_streak", -1),
             ("total_completions", -1),
             ("streak_bonus_points", -1)
-        ]).skip(skip).limit(limit))
+        ]).skip(skip).limit(limit)
+        streaks = await cursor.to_list(length=limit)
         
         # Enrich with user info
         leaderboard = []
         for i, s in enumerate(streaks, start=skip + 1):
-            user = db.users.find_one(
+            user = await db.users.find_one(
                 {"user_id": s["user_id"]},
                 {"_id": 0, "name": 1, "picture": 1}
             )
@@ -89,7 +90,7 @@ def create_streaks_router(db, get_current_user):
                     "last_completion": s.get("last_completion")
                 })
         
-        total = db.user_challenge_streaks.count_documents({"current_streak": {"$gt": 0}})
+        total = await db.user_challenge_streaks.count_documents({"current_streak": {"$gt": 0}})
         
         return {
             "leaderboard": leaderboard,
