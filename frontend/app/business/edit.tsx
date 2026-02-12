@@ -168,9 +168,12 @@ export default function BusinessProfileEditScreen() {
   const [description, setDescription] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [website, setWebsite] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
+  const [region, setRegion] = useState('');
   const [country, setCountry] = useState('');
+  const [operatingHours, setOperatingHours] = useState('');
   const [logo, setLogo] = useState<string | undefined>();
   const [cover, setCover] = useState<string | undefined>();
   const [brandColor, setBrandColor] = useState('#2E7D32');
