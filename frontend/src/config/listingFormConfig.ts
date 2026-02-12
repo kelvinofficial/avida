@@ -152,8 +152,8 @@ export const SHOW_SALARY_SUBCATEGORIES = ['job_listings'];
 export const CHAT_ONLY_CATEGORIES = ['friendship_dating'];
 
 // Categories that should hide condition (new/used)
-export const HIDE_CONDITION_CATEGORIES = ['friendship_dating', 'community'];
-export const HIDE_CONDITION_SUBCATEGORIES = ['job_seekers', 'job_listings', 'services_offered'];
+export const HIDE_CONDITION_CATEGORIES = ['friendship_dating', 'community', 'jobs_services'];
+export const HIDE_CONDITION_SUBCATEGORIES = ['job_listings', 'services_offered'];
 
 // Category-specific preferences
 export interface PreferenceConfig {
