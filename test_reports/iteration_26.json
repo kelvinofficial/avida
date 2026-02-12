@@ -37,7 +37,7 @@
     "frontend": "100% (Admin dashboard and mobile UI verified)"
   },
   "test_credentials": {
-    "api_base": "https://ui-standardization-3.preview.emergentagent.com",
+    "api_base": "https://desktop-profile-hub.preview.emergentagent.com",
     "test_user": "seller@test.com / test1234",
     "admin_user": "admin@marketplace.com / Admin@123456"
   },

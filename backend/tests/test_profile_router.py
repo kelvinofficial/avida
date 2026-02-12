@@ -16,7 +16,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://ui-standardization-3.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://desktop-profile-hub.preview.emergentagent.com')
 
 
 class TestProfileUnauthenticated:
