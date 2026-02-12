@@ -185,6 +185,9 @@ interface ListingCardProps {
 }
 
 const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFavorited = false, userLocation = null }) => {
+  // Determine if this is an auto or property category
+  const isAutoOrProperty = listing.category_id === 'auto_vehicles' || listing.category_id === 'properties';
+  
   const formatPrice = (price: number) => 
     new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
 
