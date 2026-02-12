@@ -92,7 +92,7 @@ def create_challenges_router(db, get_current_user):
             }
             
             if user_id:
-                progress = db.user_challenge_progress.find_one({
+                progress = await db.user_challenge_progress.find_one({
                     "user_id": user_id,
                     "challenge_id": c["id"],
                     "period": challenge["period"]
@@ -118,7 +118,7 @@ def create_challenges_router(db, get_current_user):
             }
             
             if user_id:
-                progress = db.user_challenge_progress.find_one({
+                progress = await db.user_challenge_progress.find_one({
                     "user_id": user_id,
                     "challenge_id": c["id"],
                     "period": challenge["period"]
@@ -146,7 +146,7 @@ def create_challenges_router(db, get_current_user):
                 }
                 
                 if user_id:
-                    progress = db.user_challenge_progress.find_one({
+                    progress = await db.user_challenge_progress.find_one({
                         "user_id": user_id,
                         "challenge_id": c["id"],
                         "period": challenge["period"]
@@ -159,10 +159,12 @@ def create_challenges_router(db, get_current_user):
                 challenges.append(challenge)
         
         # Add custom challenges from database
-        custom_challenges = list(db.challenges.find(
+        custom_cursor = db.challenges.find(
             {"is_active": True, "end_date": {"$gte": now}},
             {"_id": 0}
-        ))
+        )
+        custom_challenges = await custom_cursor.to_list(length=50)
+        
         for c in custom_challenges:
             challenge = {
                 **c,
@@ -173,7 +175,7 @@ def create_challenges_router(db, get_current_user):
             }
             
             if user_id:
-                progress = db.user_challenge_progress.find_one({
+                progress = await db.user_challenge_progress.find_one({
                     "user_id": user_id,
                     "challenge_id": challenge["id"]
                 })
@@ -200,14 +202,14 @@ def create_challenges_router(db, get_current_user):
         
         if not challenge:
             # Check custom challenges
-            challenge = db.challenges.find_one({"id": challenge_id}, {"_id": 0})
+            challenge = await db.challenges.find_one({"id": challenge_id}, {"_id": 0})
             if not challenge:
                 raise HTTPException(status_code=404, detail="Challenge not found")
         
         period = get_period_key(challenge.get("type", "custom"))
         
         # Check if already joined
-        existing = db.user_challenge_progress.find_one({
+        existing = await db.user_challenge_progress.find_one({
             "user_id": user_id,
             "challenge_id": challenge_id,
             "period": period
@@ -217,7 +219,7 @@ def create_challenges_router(db, get_current_user):
             return {"success": True, "message": "Already joined", "progress": existing.get("progress", 0)}
         
         # Join the challenge
-        db.user_challenge_progress.insert_one({
+        await db.user_challenge_progress.insert_one({
             "user_id": user_id,
             "challenge_id": challenge_id,
             "period": period,
@@ -233,10 +235,11 @@ def create_challenges_router(db, get_current_user):
         """Get user's progress on all joined challenges."""
         user_id = current_user["user_id"]
         
-        progress = list(db.user_challenge_progress.find(
+        cursor = db.user_challenge_progress.find(
             {"user_id": user_id},
             {"_id": 0}
-        ).sort("joined_at", -1).limit(20))
+        ).sort("joined_at", -1).limit(20)
+        progress = await cursor.to_list(length=20)
         
         return {"progress": progress}
 
@@ -250,24 +253,29 @@ def create_challenges_router(db, get_current_user):
         challenge = next((c for c in all_challenges if c["id"] == challenge_id), None)
         
         if not challenge:
-            challenge = db.challenges.find_one({"id": challenge_id}, {"_id": 0})
+            challenge = await db.challenges.find_one({"id": challenge_id}, {"_id": 0})
             if not challenge:
                 raise HTTPException(status_code=404, detail="Challenge not found")
         
         # Get leaderboard for this challenge
-        leaderboard = list(db.user_challenge_progress.find(
+        leaderboard_cursor = db.user_challenge_progress.find(
             {"challenge_id": challenge_id, "completed": True}
-        ).sort("completed_at", 1).limit(10))
+        ).sort("completed_at", 1).limit(10)
+        leaderboard = await leaderboard_cursor.to_list(length=10)
         
         # Enrich with user names
         for entry in leaderboard:
-            user = db.users.find_one({"user_id": entry["user_id"]}, {"_id": 0, "name": 1})
+            user = await db.users.find_one({"user_id": entry["user_id"]}, {"_id": 0, "name": 1})
             entry["user_name"] = user.get("name", "Unknown") if user else "Unknown"
+            # Remove _id if present
+            entry.pop("_id", None)
+        
+        participants = await db.user_challenge_progress.count_documents({"challenge_id": challenge_id})
         
         return {
             "challenge": challenge,
             "leaderboard": leaderboard,
-            "participants": db.user_challenge_progress.count_documents({"challenge_id": challenge_id})
+            "participants": participants
         }
 
     return router
