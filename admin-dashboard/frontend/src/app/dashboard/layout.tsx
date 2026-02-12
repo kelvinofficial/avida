@@ -77,7 +77,7 @@ import {
   Receipt,
   EmojiEvents,
   Business,
-  Shapes,
+  InterestsOutlined,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
