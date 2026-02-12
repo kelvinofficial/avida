@@ -637,6 +637,12 @@ export default function SettingsScreen() {
             onChange={(v) => updateSettings('notifications.email', v)}
           />
           <ToggleRow
+            label="Message Sound"
+            description="Play a sound when new messages arrive"
+            value={soundEnabled}
+            onChange={(v) => setSoundEnabled(v)}
+          />
+          <ToggleRow
             label="Message Alerts"
             value={notifications.messages ?? true}
             onChange={(v) => updateSettings('notifications.messages', v)}
