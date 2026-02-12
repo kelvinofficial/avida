@@ -8,7 +8,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = "https://icon-admin-panel.preview.emergentagent.com/api/admin"
+BASE_URL = "https://attr-icons-ui.preview.emergentagent.com/api/admin"
 
 # Test credentials
 ADMIN_EMAIL = "admin@marketplace.com"

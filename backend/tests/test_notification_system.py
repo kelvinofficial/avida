@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime
 
 # Base URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://icon-admin-panel.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://attr-icons-ui.preview.emergentagent.com').rstrip('/')
 
 
 class TestNotificationTemplates:
