@@ -31,13 +31,15 @@ interface DesktopHeaderProps {
   showSearch?: boolean;
   currentCity?: string;
   onLocationPress?: () => void;
+  onCountrySelect?: (country: Country) => void;
 }
 
 export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ 
   showNavLinks = true,
   showSearch = true,
-  currentCity = 'All Locations',
+  currentCity = 'Select Country',
   onLocationPress,
+  onCountrySelect,
 }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -46,6 +48,9 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [unviewedBadgeCount, setUnviewedBadgeCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [showCountryModal, setShowCountryModal] = useState(false);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
 
   // Fetch credit balance, badge count, and notifications when authenticated
   useEffect(() => {
@@ -55,6 +60,40 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
       fetchNotificationCount();
     }
   }, [isAuthenticated]);
+
+  // Fetch countries when modal opens
+  useEffect(() => {
+    if (showCountryModal && countries.length === 0) {
+      fetchCountries();
+    }
+  }, [showCountryModal]);
+
+  const fetchCountries = async () => {
+    try {
+      setLoadingCountries(true);
+      const data = await locationsApi.getCountries();
+      setCountries(data);
+    } catch (err) {
+      console.error('Failed to fetch countries:', err);
+    } finally {
+      setLoadingCountries(false);
+    }
+  };
+
+  const handleCountrySelect = (country: Country) => {
+    setShowCountryModal(false);
+    if (onCountrySelect) {
+      onCountrySelect(country);
+    }
+  };
+
+  const handleLocationPress = () => {
+    if (onLocationPress) {
+      onLocationPress();
+    } else {
+      setShowCountryModal(true);
+    }
+  };
 
   const fetchCreditBalance = async () => {
     try {
