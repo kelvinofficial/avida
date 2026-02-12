@@ -22,6 +22,7 @@ from .notifications import create_notifications_router
 from .account_support import create_account_router, create_support_router
 from .user_settings import create_user_settings_router, create_sessions_router, create_id_verification_router
 from .profile import create_profile_router
+from .badge_challenges import create_badge_challenges_router
 
 __all__ = [
     'create_auth_router',
