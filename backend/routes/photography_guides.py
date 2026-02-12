@@ -105,7 +105,7 @@ def create_photography_guides_router(db, require_auth):
         is_active: Optional[bool] = None,
         page: int = 1,
         limit: int = 50,
-        user: dict = Depends(require_auth)
+        user = Depends(require_auth)
     ):
         """List all photography guides with optional filtering (admin only)"""
         query = {}
