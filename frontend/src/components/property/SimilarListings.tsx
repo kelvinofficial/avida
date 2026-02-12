@@ -55,6 +55,8 @@ interface SimilarListing {
   similarityScore?: number;
   priceNegotiable?: boolean;
   negotiable?: boolean;
+  acceptsOffers?: boolean;
+  exchangePossible?: boolean;
   seller?: {
     id?: string;
     name?: string;
