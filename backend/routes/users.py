@@ -155,22 +155,94 @@ def create_users_router(db, get_current_user, require_auth, online_users: Set[st
             "created_at": user.get("created_at")
         }
     
+    @router.get("/blocked")
+    async def get_blocked_users(request: Request):
+        """Get list of blocked users with details"""
+        current_user = await require_auth(request)
+        
+        # Get blocked user records
+        blocked_cursor = db.blocked_users.find({"user_id": current_user.user_id}, {"_id": 0})
+        blocked = await blocked_cursor.to_list(length=100)
+        
+        # Get user details for blocked users
+        blocked_user_ids = [b["blocked_user_id"] for b in blocked]
+        if not blocked_user_ids:
+            return {"blocked_users": []}
+        
+        users_cursor = db.users.find(
+            {"user_id": {"$in": blocked_user_ids}}, 
+            {"_id": 0, "user_id": 1, "name": 1, "picture": 1}
+        )
+        users = await users_cursor.to_list(length=100)
+        users_map = {u["user_id"]: u for u in users}
+        
+        result = []
+        for b in blocked:
+            user_data = users_map.get(b["blocked_user_id"], {})
+            result.append({
+                "id": b.get("id"),
+                "blocked_user_id": b["blocked_user_id"],
+                "name": user_data.get("name", "Unknown User"),
+                "picture": user_data.get("picture"),
+                "reason": b.get("reason"),
+                "created_at": b.get("created_at")
+            })
+        
+        return {"blocked_users": result}
+    
     @router.post("/block/{user_id}")
     async def block_user(user_id: str, request: Request):
         """Block a user"""
         current_user = await require_auth(request)
         
+        if user_id == current_user.user_id:
+            raise HTTPException(status_code=400, detail="Cannot block yourself")
+        
+        # Check if already blocked
+        existing = await db.blocked_users.find_one({
+            "user_id": current_user.user_id,
+            "blocked_user_id": user_id
+        })
+        if existing:
+            raise HTTPException(status_code=400, detail="User already blocked")
+        
+        # Get reason from body if provided
+        try:
+            body = await request.json()
+            reason = body.get("reason")
+        except:
+            reason = None
+        
+        # Create blocked user record
+        import uuid
+        blocked_record = {
+            "id": str(uuid.uuid4()),
+            "user_id": current_user.user_id,
+            "blocked_user_id": user_id,
+            "reason": reason,
+            "created_at": datetime.now(timezone.utc)
+        }
+        await db.blocked_users.insert_one(blocked_record)
+        
+        # Also add to user's blocked_users array
         await db.users.update_one(
             {"user_id": current_user.user_id},
             {"$addToSet": {"blocked_users": user_id}}
         )
-        return {"message": "User blocked"}
+        return {"message": "User blocked", "id": blocked_record["id"]}
     
     @router.post("/unblock/{user_id}")
     async def unblock_user(user_id: str, request: Request):
         """Unblock a user"""
         current_user = await require_auth(request)
         
+        # Remove from blocked_users collection
+        result = await db.blocked_users.delete_one({
+            "user_id": current_user.user_id,
+            "blocked_user_id": user_id
+        })
+        
+        # Also remove from user's blocked_users array
         await db.users.update_one(
             {"user_id": current_user.user_id},
             {"$pull": {"blocked_users": user_id}}
