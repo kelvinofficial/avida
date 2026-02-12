@@ -14,8 +14,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import api from '../../src/utils/api';
+import { useAuthStore } from '../../src/store/authStore';
 
 // Categories list for dropdown
 const CATEGORIES = [
