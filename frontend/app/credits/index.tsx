@@ -87,8 +87,8 @@ const findBestDealPackage = (packages: CreditPackage[]): string | null => {
 export default function CreditsPage() {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { width: windowWidth } = useWindowDimensions();
-  const isDesktop = windowWidth >= 768;
+  const { isDesktop, isTablet, isReady } = useResponsive();
+  const isLargeScreen = isDesktop || isTablet;
   
   const [loading, setLoading] = useState(true);
   const [packages, setPackages] = useState<CreditPackage[]>([]);

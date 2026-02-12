@@ -59,8 +59,8 @@ export default function BoostListingPage() {
   const router = useRouter();
   const { listing_id } = useLocalSearchParams();
   const { user } = useAuthStore();
-  const { width: windowWidth } = useWindowDimensions();
-  const isDesktop = windowWidth >= 768;
+  const { isDesktop, isTablet, isReady } = useResponsive();
+  const isLargeScreen = isDesktop || isTablet;
   
   const [loading, setLoading] = useState(true);
   const [pricing, setPricing] = useState<BoostPricing[]>([]);
