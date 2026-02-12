@@ -2599,70 +2599,7 @@ async def acknowledge_milestone(request: Request, data: dict = Body(...)):
     
     return {"message": "Milestone acknowledged", "milestone_id": milestone_id}
 
-@api_router.get("/badges/share/{user_id}")
-async def get_shareable_badge_profile(user_id: str):
-    """Get a shareable badge profile for a user (public endpoint)"""
-    user = await db.users.find_one({"user_id": user_id})
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Get user's badges
-    user_badges = await db.user_badges.find({"user_id": user_id}).to_list(length=100)
-    badge_ids = [b["badge_id"] for b in user_badges]
-    badges = await db.badges.find({"id": {"$in": badge_ids}}).to_list(length=100)
-    
-    # Get showcase badges
-    showcase = await db.user_badges.find({
-        "user_id": user_id, 
-        "is_showcased": True
-    }).to_list(length=5)
-    showcase_ids = [s["badge_id"] for s in showcase]
-    showcase_badges = [b for b in badges if b["id"] in showcase_ids]
-    
-    # Calculate rank for this user
-    pipeline = [
-        {"$group": {"_id": "$user_id", "badge_count": {"$sum": 1}}},
-        {"$sort": {"badge_count": -1}},
-    ]
-    all_rankings = await db.user_badges.aggregate(pipeline).to_list(length=1000)
-    user_rank = next((i + 1 for i, r in enumerate(all_rankings) if r["_id"] == user_id), None)
-    
-    # Generate Open Graph meta data
-    user_name = user.get("name", "User")
-    badge_count = len(badges)
-    og_title = f"{user_name}'s Badge Collection on Avida"
-    og_description = f"{user_name} has earned {badge_count} badge{'s' if badge_count != 1 else ''} on Avida Marketplace!"
-    if user_rank:
-        og_description += f" Ranked #{user_rank} in the community."
-    
-    return {
-        "user_id": user_id,
-        "user_name": user_name,
-        "avatar_url": user.get("avatar_url"),
-        "total_badges": badge_count,
-        "rank": user_rank,
-        "badges": [{
-            "name": b["name"],
-            "description": b.get("description", ""),
-            "icon": b.get("icon", "ribbon"),
-            "color": b.get("color", "#4CAF50"),
-        } for b in badges[:10]],
-        "showcase_badges": [{
-            "name": b["name"],
-            "description": b.get("description", ""),
-            "icon": b.get("icon", "ribbon"),
-            "color": b.get("color", "#4CAF50"),
-        } for b in showcase_badges],
-        # Open Graph meta data for social sharing
-        "og_meta": {
-            "title": og_title,
-            "description": og_description,
-            "type": "profile",
-            "url": f"https://code-organization.preview.emergentagent.com/profile/{user_id}/badges",
-        }
-    }
-
-# NOTE: /badges/leaderboard and /badges/leaderboard/my-rank endpoints
+# NOTE: /badges/share/{user_id}, /badges/leaderboard and /badges/leaderboard/my-rank endpoints
 # are now handled by routes/badges.py
 
 # ==================== FOLLOW, REVIEWS, PROFILE ACTIVITY ====================
