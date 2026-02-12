@@ -311,8 +311,12 @@ export default function CategoryScreen() {
       const response = await fetch(`${API_URL}/api/searches/suggestions?q=${encodeURIComponent(query)}&category_id=${categoryId}&limit=5`);
       if (response.ok) {
         const data = await response.json();
-        setSuggestions(data.suggestions || []);
-        setShowSuggestions(data.suggestions && data.suggestions.length > 0);
+        const suggestionsList = data.suggestions || [];
+        console.log('[Autocomplete] Got suggestions:', suggestionsList);
+        setSuggestions(suggestionsList);
+        if (suggestionsList.length > 0) {
+          setShowSuggestions(true);
+        }
       }
     } catch (error) {
       console.log('Error fetching suggestions:', error);
