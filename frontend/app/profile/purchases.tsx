@@ -448,6 +448,121 @@ export default function PurchasesScreen() {
     return true;
   });
 
+  if (!isReady) {
+    return (
+      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  // Desktop Tabs Component
+  const DesktopTabs = () => (
+    <View style={desktopStyles.tabsContainer}>
+      <TouchableOpacity
+        style={[desktopStyles.tab, activeTab === 'all' && desktopStyles.tabActive]}
+        onPress={() => setActiveTab('all')}
+        data-testid="tab-all"
+      >
+        <Text style={[desktopStyles.tabText, activeTab === 'all' && desktopStyles.tabTextActive]}>All</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[desktopStyles.tab, activeTab === 'active' && desktopStyles.tabActive]}
+        onPress={() => setActiveTab('active')}
+        data-testid="tab-active"
+      >
+        <Text style={[desktopStyles.tabText, activeTab === 'active' && desktopStyles.tabTextActive]}>Active</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[desktopStyles.tab, activeTab === 'completed' && desktopStyles.tabActive]}
+        onPress={() => setActiveTab('completed')}
+        data-testid="tab-completed"
+      >
+        <Text style={[desktopStyles.tabText, activeTab === 'completed' && desktopStyles.tabTextActive]}>Completed</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  // Desktop Layout
+  if (isLargeScreen) {
+    // Unauthenticated state
+    if (!isAuthenticated) {
+      return (
+        <DesktopPageLayout
+          title="My Purchases"
+          icon="bag-outline"
+        >
+          <View style={desktopStyles.unauthContainer}>
+            <View style={desktopStyles.unauthIcon}>
+              <Ionicons name="bag-outline" size={64} color={COLORS.info} />
+            </View>
+            <Text style={desktopStyles.unauthTitle}>Sign in to view your purchases</Text>
+            <Text style={desktopStyles.unauthSubtitle}>
+              Track your orders and enjoy buyer protection with escrow
+            </Text>
+            <TouchableOpacity 
+              style={desktopStyles.signInButton} 
+              onPress={() => goToLogin()}
+              data-testid="sign-in-btn"
+            >
+              <Ionicons name="log-in-outline" size={20} color="#fff" />
+              <Text style={desktopStyles.signInButtonText}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        </DesktopPageLayout>
+      );
+    }
+
+    // Authenticated state
+    return (
+      <DesktopPageLayout
+        title="My Purchases"
+        subtitle={`${orders.length} orders`}
+        icon="bag-outline"
+        headerContent={<DesktopTabs />}
+      >
+        {/* Escrow Protection Banner */}
+        <View style={desktopStyles.protectionBanner}>
+          <Ionicons name="shield-checkmark" size={20} color={COLORS.primary} />
+          <Text style={desktopStyles.protectionText}>
+            All purchases are protected by escrow. Funds released only after you confirm delivery.
+          </Text>
+        </View>
+
+        {loading && !refreshing ? (
+          <View style={desktopStyles.listContainer}>
+            {[1, 2, 3].map((i) => (
+              <View key={i} style={desktopStyles.skeletonCard}>
+                <View style={desktopStyles.skeletonImage} />
+                <View style={desktopStyles.skeletonContent}>
+                  <View style={[desktopStyles.skeletonLine, { width: '70%' }]} />
+                  <View style={[desktopStyles.skeletonLine, { width: '40%' }]} />
+                  <View style={[desktopStyles.skeletonLine, { width: '50%' }]} />
+                </View>
+              </View>
+            ))}
+          </View>
+        ) : filteredOrders.length === 0 ? (
+          <DesktopEmptyState />
+        ) : (
+          <View style={desktopStyles.listContainer}>
+            {filteredOrders.map((order) => (
+              <DesktopOrderCard
+                key={order.id}
+                order={order}
+                onPress={() => router.push(`/listing/${order.listing_id}`)}
+                onConfirmDelivery={handleConfirmDelivery}
+                onOpenDispute={handleOpenDispute}
+                processing={processing}
+              />
+            ))}
+          </View>
+        )}
+      </DesktopPageLayout>
+    );
+  }
+
+  // Mobile Layout - Unauthenticated
   if (!isAuthenticated) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
