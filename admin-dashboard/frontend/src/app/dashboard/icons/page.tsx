@@ -738,9 +738,22 @@ export default function IconsManagementPage() {
                 >
                   <ion-icon name={formData.ionicon_name} style={{ fontSize: 32 }}></ion-icon>
                 </Avatar>
-                <Box>
-                  <Typography fontWeight="medium">{formData.ionicon_name}</Typography>
-                  <Typography variant="caption" color="text.secondary">Click to change icon</Typography>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    label="Ionicon Name"
+                    value={formData.ionicon_name}
+                    onChange={(e) => setFormData({ ...formData, ionicon_name: e.target.value })}
+                    onClick={(e) => e.stopPropagation()}
+                    placeholder="e.g., car-outline"
+                    InputProps={{
+                      style: { fontFamily: 'monospace' }
+                    }}
+                  />
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                    Click anywhere else to open icon picker
+                  </Typography>
                 </Box>
               </Box>
             </Grid>
