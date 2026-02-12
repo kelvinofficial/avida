@@ -13,7 +13,8 @@ const playNotificationSound = () => {
   
   try {
     // Create a subtle "ding" sound using Web Audio API
-    const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
+    // @ts-ignore - webkitAudioContext for older browsers
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return;
     
     const audioContext = new AudioContextClass();
