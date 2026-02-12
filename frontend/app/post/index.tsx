@@ -852,13 +852,15 @@ export default function PostListingScreen() {
 
     setFieldErrors(errors);
     
-    // Show summary alert if there are errors
+    // Show error banner at the top instead of Alert
     if (!isValid) {
-      const errorCount = Object.keys(errors).length;
-      Alert.alert(
-        'Please fix the errors',
-        `${errorCount} field${errorCount > 1 ? 's' : ''} need${errorCount > 1 ? '' : 's'} your attention`
-      );
+      setShowErrorBanner(true);
+      // Scroll to top to show error banner
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollTo({ y: 0, animated: true });
+      }
+    } else {
+      setShowErrorBanner(false);
     }
 
     return isValid;
