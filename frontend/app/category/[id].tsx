@@ -1602,6 +1602,22 @@ const styles = StyleSheet.create({
     marginLeft: 2,
     padding: 2,
   },
+  popularSearchChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FFF5F0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#FFD4C4',
+  },
+  popularSearchChipText: {
+    fontSize: 13,
+    color: '#FF6B35',
+    fontWeight: '500',
+  },
   
   // Subcategories Bar
   subcategoriesBar: {
