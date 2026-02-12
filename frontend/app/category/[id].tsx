@@ -1948,6 +1948,70 @@ const desktopStyles = StyleSheet.create({
     color: '#333',
     fontWeight: '500',
   },
+  // Search Field Container for dropdown positioning
+  searchFieldContainer: {
+    flex: 1,
+    position: 'relative',
+  },
+  // Recent Searches Dropdown - Desktop
+  recentSearchesDropdown: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: COLORS.surface,
+    borderRadius: 10,
+    marginTop: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    zIndex: 1000,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  recentSearchesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  recentSearchesTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  recentSearchesTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  clearAllBtn: {
+    fontSize: 13,
+    color: COLORS.primary,
+    fontWeight: '500',
+  },
+  recentSearchItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  recentSearchItemText: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.text,
+  },
+  removeSearchBtn: {
+    padding: 4,
+  },
   // Row 3: Breadcrumb
   breadcrumbRow: {
     backgroundColor: COLORS.surface,
