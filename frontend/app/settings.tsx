@@ -465,6 +465,12 @@ export default function SettingsScreen() {
                   <ToggleRow label="Push Notifications" description="Receive alerts on your device" value={notifications.push ?? true} onChange={(v) => updateSettings('notifications.push', v)} />
                   <ToggleRow label="Email Notifications" description="Get updates via email" value={notifications.email ?? true} onChange={(v) => updateSettings('notifications.email', v)} />
                   <ToggleRow label="SMS Notifications" description="Receive text messages" value={notifications.sms ?? false} onChange={(v) => updateSettings('notifications.sms', v)} />
+                  <ToggleRow 
+                    label="Message Sound" 
+                    description="Play a sound when new messages arrive" 
+                    value={soundEnabled} 
+                    onChange={(v) => setSoundEnabled(v)} 
+                  />
                 </View>
 
                 <Text style={desktopStyles.groupTitle}>Notification Types</Text>
