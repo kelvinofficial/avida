@@ -328,7 +328,7 @@ export default function CategoryScreen() {
     if (!isAuthenticated) return;
     
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await AsyncStorage.getItem('session_token');
       if (!token) return;
       
       const response = await fetch(`${API_URL}/api/saved-filters?category_id=${categoryId}`, {
@@ -355,7 +355,7 @@ export default function CategoryScreen() {
     if (!isAuthenticated || !newFilterName.trim()) return;
     
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await AsyncStorage.getItem('session_token');
       if (!token) return;
       
       const filterConfig = {
@@ -404,7 +404,7 @@ export default function CategoryScreen() {
     if (!isAuthenticated) return;
     
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await AsyncStorage.getItem('session_token');
       if (!token) return;
       
       const response = await fetch(`${API_URL}/api/saved-filters/${filterId}`, {
