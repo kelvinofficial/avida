@@ -16,26 +16,27 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import api from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
-import { safeGoBack } from '../../src/utils/navigation';
+import { useResponsive } from '../../src/hooks/useResponsive';
+import { DesktopPageLayout } from '../../src/components/layout';
+import { useLoginRedirect } from '../../src/hooks/useLoginRedirect';
 
 const COLORS = {
   primary: '#2E7D32',
   primaryLight: '#E8F5E9',
   background: '#F5F5F5',
   surface: '#FFFFFF',
-  text: '#212121',
-  textSecondary: '#757575',
-  border: '#E0E0E0',
-  success: '#388E3C',
-  warning: '#F57C00',
-  premium: '#FFB300',
+  text: '#1A1A1A',
+  textSecondary: '#6B7280',
+  textLight: '#9CA3AF',
+  border: '#E5E7EB',
+  success: '#10B981',
+  warning: '#F59E0B',
+  error: '#EF4444',
 };
 
 interface Invoice {
   id: string;
   invoice_number: string;
-  user_id: string;
-  transaction_id: string;
   amount: number;
   currency: string;
   status: string;
@@ -43,33 +44,81 @@ interface Invoice {
   issued_date: string;
   due_date: string;
   paid_date?: string;
-  business_name?: string;
   package_name?: string;
 }
 
-interface UserProfile {
-  name?: string;
-  email?: string;
-  is_premium?: boolean;
-  premium_expires_at?: string;
-}
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'paid': return COLORS.success;
+    case 'pending': return COLORS.warning;
+    case 'overdue': return COLORS.error;
+    default: return COLORS.textSecondary;
+  }
+};
+
+const InvoiceRow = ({ 
+  invoice, 
+  isDesktop, 
+  onDownload 
+}: { 
+  invoice: Invoice; 
+  isDesktop?: boolean;
+  onDownload: () => void;
+}) => (
+  <View style={[styles.invoiceRow, isDesktop && styles.invoiceRowDesktop]}>
+    <View style={styles.invoiceMain}>
+      <View style={styles.invoiceHeader}>
+        <Text style={styles.invoiceNumber}>{invoice.invoice_number}</Text>
+        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(invoice.status) + '20' }]}>
+          <Text style={[styles.statusText, { color: getStatusColor(invoice.status) }]}>
+            {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+          </Text>
+        </View>
+      </View>
+      <Text style={styles.invoiceDesc}>{invoice.description || invoice.package_name || 'Invoice'}</Text>
+      <Text style={styles.invoiceDate}>
+        Issued: {new Date(invoice.issued_date).toLocaleDateString()}
+      </Text>
+    </View>
+    
+    <View style={styles.invoiceRight}>
+      <Text style={styles.invoiceAmount}>
+        {invoice.currency === 'EUR' ? '€' : invoice.currency}{invoice.amount.toLocaleString()}
+      </Text>
+      <TouchableOpacity 
+        style={styles.downloadBtn} 
+        onPress={onDownload}
+        data-testid={`download-invoice-${invoice.id}`}
+      >
+        <Ionicons name="download-outline" size={18} color={COLORS.primary} />
+        <Text style={styles.downloadBtnText}>Download</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+);
+
+const EmptyState = ({ isDesktop }: { isDesktop?: boolean }) => (
+  <View style={[styles.emptyContainer, isDesktop && styles.emptyContainerDesktop]}>
+    <View style={[styles.emptyIcon, isDesktop && styles.emptyIconDesktop]}>
+      <Ionicons name="receipt-outline" size={isDesktop ? 64 : 48} color={COLORS.textSecondary} />
+    </View>
+    <Text style={[styles.emptyTitle, isDesktop && styles.emptyTitleDesktop]}>No invoices</Text>
+    <Text style={styles.emptySubtitle}>
+      Your invoices will appear here after making purchases.
+    </Text>
+  </View>
+);
 
 export default function InvoicesPage() {
   const router = useRouter();
-  const { isAuthenticated, token, user } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
+  const { isDesktop, isTablet, isReady } = useResponsive();
+  const { goToLogin } = useLoginRedirect();
+  const isLargeScreen = isDesktop || isTablet;
+  
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-
-  const fetchUserProfile = useCallback(async () => {
-    try {
-      const response = await api.get('/users/me');
-      setUserProfile(response.data);
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-    }
-  }, []);
 
   const fetchInvoices = useCallback(async () => {
     try {
@@ -77,9 +126,6 @@ export default function InvoicesPage() {
       setInvoices(response.data.invoices || []);
     } catch (error: any) {
       console.error('Error fetching invoices:', error);
-      if (error.response?.status !== 401) {
-        Alert.alert('Error', 'Failed to load invoices');
-      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -89,438 +135,377 @@ export default function InvoicesPage() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchInvoices();
-      fetchUserProfile();
     } else {
       setLoading(false);
     }
-  }, [isAuthenticated, fetchInvoices, fetchUserProfile]);
+  }, [isAuthenticated, fetchInvoices]);
 
-  const onRefresh = useCallback(() => {
+  const handleRefresh = () => {
     setRefreshing(true);
     fetchInvoices();
-  }, [fetchInvoices]);
+  };
 
-  const viewInvoiceHTML = async (invoiceId: string) => {
+  const handleDownload = async (invoice: Invoice) => {
     try {
-      // For web, open in new tab
-      if (Platform.OS === 'web') {
-        const baseUrl = process.env.EXPO_PUBLIC_BACKEND_URL || '';
-        window.open(`${baseUrl}/api/invoices/${invoiceId}/html`, '_blank');
-      } else {
-        // For native, use Linking
-        const baseUrl = process.env.EXPO_PUBLIC_BACKEND_URL || '';
-        await Linking.openURL(`${baseUrl}/api/invoices/${invoiceId}/html`);
+      const response = await api.get(`/invoices/${invoice.id}/download`);
+      if (response.data.download_url) {
+        if (Platform.OS === 'web') {
+          window.open(response.data.download_url, '_blank');
+        } else {
+          Linking.openURL(response.data.download_url);
+        }
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to open invoice');
+      Alert.alert('Error', 'Failed to download invoice');
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  const formatCurrency = (amount: number, currency: string) => {
-    if (currency === 'KES') return `KES ${amount.toLocaleString()}`;
-    if (currency === 'TZS') return `TZS ${amount.toLocaleString()}`;
-    return `$${amount.toFixed(2)}`;
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'paid': return COLORS.success;
-      case 'pending': return COLORS.warning;
-      default: return COLORS.textSecondary;
-    }
-  };
-
-  // Not authenticated state
-  if (!isAuthenticated) {
+  if (!isReady) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>My Invoices</Text>
-          <View style={{ width: 40 }} />
-        </View>
-        <View style={styles.centerContent}>
-          <Ionicons name="lock-closed-outline" size={48} color={COLORS.textSecondary} />
-          <Text style={styles.loginMessage}>Please sign in to view invoices</Text>
-          <TouchableOpacity style={styles.signInBtn} onPress={() => router.push('/login')}>
-            <Text style={styles.signInBtnText}>Sign In</Text>
-          </TouchableOpacity>
-        </View>
+      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
       </SafeAreaView>
     );
   }
 
-  if (loading) {
+  // Desktop Layout
+  if (isLargeScreen) {
+    if (!isAuthenticated) {
+      return (
+        <DesktopPageLayout title="Invoices" icon="receipt-outline">
+          <View style={styles.unauthContainer}>
+            <View style={styles.unauthIcon}>
+              <Ionicons name="receipt-outline" size={64} color={COLORS.primary} />
+            </View>
+            <Text style={styles.unauthTitle}>Sign in to view invoices</Text>
+            <Text style={styles.unauthSubtitle}>
+              Access and download your transaction invoices
+            </Text>
+            <TouchableOpacity style={styles.signInButton} onPress={() => goToLogin()}>
+              <Text style={styles.signInButtonText}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        </DesktopPageLayout>
+      );
+    }
+
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.backBtn}>
+      <DesktopPageLayout
+        title="Invoices"
+        subtitle={`${invoices.length} invoices`}
+        icon="receipt-outline"
+      >
+        {loading ? (
+          <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
+        ) : invoices.length === 0 ? (
+          <EmptyState isDesktop />
+        ) : (
+          <View style={styles.invoiceList}>
+            {/* Table Header */}
+            <View style={styles.tableHeader}>
+              <Text style={[styles.tableHeaderText, { flex: 2 }]}>Invoice</Text>
+              <Text style={[styles.tableHeaderText, { flex: 1 }]}>Status</Text>
+              <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'right' }]}>Amount</Text>
+              <Text style={[styles.tableHeaderText, { width: 100, textAlign: 'center' }]}>Action</Text>
+            </View>
+            
+            {invoices.map((invoice) => (
+              <InvoiceRow
+                key={invoice.id}
+                invoice={invoice}
+                isDesktop
+                onDownload={() => handleDownload(invoice)}
+              />
+            ))}
+          </View>
+        )}
+      </DesktopPageLayout>
+    );
+  }
+
+  // Mobile Layout
+  if (!isAuthenticated) {
+    return (
+      <SafeAreaView style={styles.mobileContainer} edges={['top']}>
+        <View style={styles.mobileHeader}>
+          <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color={COLORS.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>My Invoices</Text>
-          <View style={{ width: 40 }} />
+          <Text style={styles.mobileHeaderTitle}>Invoices</Text>
+          <View style={{ width: 24 }} />
         </View>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
+        <View style={styles.mobileAuthPrompt}>
+          <Ionicons name="receipt-outline" size={48} color={COLORS.textSecondary} />
+          <Text style={styles.mobileAuthText}>Please sign in to view invoices</Text>
+          <TouchableOpacity style={styles.mobileSignInBtn} onPress={() => goToLogin()}>
+            <Text style={styles.mobileSignInBtnText}>Sign In</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity 
-          onPress={() => safeGoBack(router)} 
-          style={styles.backBtn}
-          data-testid="back-button"
-        >
+    <SafeAreaView style={styles.mobileContainer} edges={['top']}>
+      <View style={styles.mobileHeader}>
+        <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>My Invoices</Text>
-          {userProfile?.is_premium && (
-            <View style={styles.premiumBadge} data-testid="premium-badge">
-              <Ionicons name="diamond" size={12} color="#fff" />
-              <Text style={styles.premiumBadgeText}>Premium</Text>
-            </View>
-          )}
-        </View>
-        <View style={{ width: 40 }} />
+        <Text style={styles.mobileHeaderTitle}>Invoices</Text>
+        <View style={{ width: 24 }} />
       </View>
 
-      {/* Premium User Banner */}
-      {userProfile?.is_premium && (
-        <View style={styles.premiumBanner}>
-          <Ionicons name="shield-checkmark" size={18} color={COLORS.premium} />
-          <View style={styles.premiumBannerText}>
-            <Text style={styles.premiumBannerTitle}>
-              {userProfile?.name || user?.name || 'Premium Member'}
-            </Text>
-            {userProfile?.premium_expires_at && (
-              <Text style={styles.premiumBannerSubtitle}>
-                Valid until {new Date(userProfile.premium_expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              </Text>
-            )}
-          </View>
-        </View>
-      )}
-
       <ScrollView
-        style={styles.content}
+        contentContainerStyle={styles.mobileContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[COLORS.primary]}
+          />
         }
-        showsVerticalScrollIndicator={false}
       >
-        {invoices.length === 0 ? (
-          <View style={styles.emptyState}>
-            <View style={styles.emptyIcon}>
-              <Ionicons name="receipt-outline" size={48} color={COLORS.textSecondary} />
-            </View>
-            <Text style={styles.emptyTitle}>No Invoices Yet</Text>
-            <Text style={styles.emptySubtitle}>
-              Your payment receipts and invoices will appear here after you make a purchase.
-            </Text>
-            {!userProfile?.is_premium && (
-              <TouchableOpacity 
-                style={styles.upgradeBtn}
-                onPress={() => router.push('/business/edit')}
-                data-testid="upgrade-premium-button"
-              >
-                <Ionicons name="diamond-outline" size={18} color="#fff" />
-                <Text style={styles.upgradeBtnText}>Upgrade to Premium</Text>
-              </TouchableOpacity>
-            )}
-          </View>
+        {loading ? (
+          <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
+        ) : invoices.length === 0 ? (
+          <EmptyState />
         ) : (
-          <View style={styles.invoicesList}>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="receipt-outline" size={20} color={COLORS.text} />
-              <Text style={styles.sectionTitle}>Payment History</Text>
-            </View>
-
-            {invoices.map((invoice) => (
-              <TouchableOpacity
-                key={invoice.id}
-                style={styles.invoiceCard}
-                onPress={() => viewInvoiceHTML(invoice.id)}
-                data-testid={`invoice-card-${invoice.id}`}
-              >
-                <View style={styles.invoiceHeader}>
-                  <View style={styles.invoiceInfo}>
-                    <Text style={styles.invoiceNumber}>{invoice.invoice_number}</Text>
-                    <Text style={styles.invoiceDate}>{formatDate(invoice.issued_date)}</Text>
-                  </View>
-                  <View style={[styles.statusBadge, { backgroundColor: getStatusColor(invoice.status) + '20' }]}>
-                    <View style={[styles.statusDot, { backgroundColor: getStatusColor(invoice.status) }]} />
-                    <Text style={[styles.statusText, { color: getStatusColor(invoice.status) }]}>
-                      {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.invoiceBody}>
-                  <View style={styles.invoiceDetail}>
-                    <Ionicons name="document-text-outline" size={16} color={COLORS.textSecondary} />
-                    <Text style={styles.invoiceDescription} numberOfLines={1}>
-                      {invoice.description || invoice.package_name || 'Premium Subscription'}
-                    </Text>
-                  </View>
-                  
-                  {invoice.business_name && (
-                    <View style={styles.invoiceDetail}>
-                      <Ionicons name="storefront-outline" size={16} color={COLORS.textSecondary} />
-                      <Text style={styles.businessName} numberOfLines={1}>{invoice.business_name}</Text>
-                    </View>
-                  )}
-                </View>
-
-                <View style={styles.invoiceFooter}>
-                  <Text style={styles.invoiceAmount}>
-                    {formatCurrency(invoice.amount, invoice.currency)}
-                  </Text>
-                  <View style={styles.viewBtn}>
-                    <Text style={styles.viewBtnText}>View Receipt</Text>
-                    <Ionicons name="open-outline" size={14} color={COLORS.primary} />
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-
-            <View style={styles.footer}>
-              <Ionicons name="information-circle-outline" size={16} color={COLORS.textSecondary} />
-              <Text style={styles.footerText}>
-                Tap any invoice to view or download the full receipt.
-              </Text>
-            </View>
-          </View>
+          invoices.map((invoice) => (
+            <InvoiceRow
+              key={invoice.id}
+              invoice={invoice}
+              onDownload={() => handleDownload(invoice)}
+            />
+          ))
         )}
-
-        <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  header: {
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+  },
+
+  // Invoice List
+  invoiceList: {
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  tableHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: COLORS.surface,
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.background,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  backBtn: { padding: 8 },
-  headerCenter: { alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
-  
-  // Premium Badge in header
-  premiumBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: COLORS.premium,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-    marginTop: 4,
+  tableHeaderText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
   },
-  premiumBadgeText: { fontSize: 10, fontWeight: '600', color: '#fff' },
-  
-  // Premium User Banner
-  premiumBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: '#FFF8E1',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#FFE082',
-  },
-  premiumBannerText: { flex: 1 },
-  premiumBannerTitle: { fontSize: 15, fontWeight: '600', color: COLORS.text },
-  premiumBannerSubtitle: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
-  content: { flex: 1 },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  
-  // Auth required state
-  centerContent: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  loginMessage: { fontSize: 16, color: COLORS.textSecondary, marginTop: 16, marginBottom: 20 },
-  signInBtn: { backgroundColor: COLORS.primary, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 8 },
-  signInBtnText: { fontSize: 15, fontWeight: '600', color: '#fff' },
 
-  // Empty State
-  emptyState: {
+  // Invoice Row
+  invoiceRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 32,
-    paddingTop: 80,
-  },
-  emptyIcon: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: COLORS.primaryLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text,
+    justifyContent: 'space-between',
+    padding: 16,
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    borderRadius: 8,
     marginBottom: 8,
   },
-  emptySubtitle: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 24,
+  invoiceRowDesktop: {
+    borderRadius: 0,
+    marginBottom: 0,
   },
-  upgradeBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: COLORS.premium,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 12,
-  },
-  upgradeBtnText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#fff',
-  },
-
-  // Invoices List
-  invoicesList: { padding: 16 },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-
-  // Invoice Card
-  invoiceCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+  invoiceMain: {
+    flex: 1,
   },
   invoiceHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
   },
-  invoiceInfo: {},
   invoiceNumber: {
     fontSize: 15,
     fontWeight: '600',
     color: COLORS.text,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  invoiceDesc: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
     marginBottom: 2,
   },
   invoiceDate: {
     fontSize: 12,
-    color: COLORS.textSecondary,
+    color: COLORS.textLight,
   },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-
-  invoiceBody: {
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    gap: 6,
-  },
-  invoiceDetail: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  invoiceDescription: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    flex: 1,
-  },
-  businessName: {
-    fontSize: 13,
-    color: COLORS.text,
-    flex: 1,
-  },
-
-  invoiceFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 12,
+  invoiceRight: {
+    alignItems: 'flex-end',
+    marginLeft: 16,
   },
   invoiceAmount: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: COLORS.text,
+    marginBottom: 8,
   },
-  viewBtn: {
+  downloadBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    backgroundColor: COLORS.primaryLight,
   },
-  viewBtnText: {
+  downloadBtnText: {
     fontSize: 13,
     fontWeight: '500',
     color: COLORS.primary,
   },
 
-  footer: {
+  // Empty & Unauth
+  unauthContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 80,
+  },
+  unauthIcon: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: COLORS.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  unauthTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  unauthSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    maxWidth: 300,
+    marginBottom: 24,
+  },
+  signInButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+  },
+  signInButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyContainerDesktop: {
+    paddingVertical: 80,
+  },
+  emptyIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: COLORS.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  emptyIconDesktop: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  emptyTitleDesktop: {
+    fontSize: 20,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    maxWidth: 280,
+  },
+
+  // Mobile
+  mobileContainer: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  mobileHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingTop: 16,
-    paddingHorizontal: 4,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
-  footerText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
+  mobileHeaderTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  mobileContent: {
+    padding: 16,
+  },
+  mobileAuthPrompt: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  mobileAuthText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    marginTop: 16,
+    marginBottom: 24,
+  },
+  mobileSignInBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    backgroundColor: COLORS.primary,
+    borderRadius: 8,
+  },
+  mobileSignInBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
