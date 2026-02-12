@@ -56,6 +56,8 @@ import {
   Work,
   ContentCopy,
   Check,
+  FileUpload,
+  Error as ErrorIcon,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 
