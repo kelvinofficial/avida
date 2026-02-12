@@ -2432,6 +2432,14 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load photography guides router: {e}")
     
+    # Create Saved Filters router
+    try:
+        saved_filters_router = create_saved_filters_router(db, require_auth)
+        api_router.include_router(saved_filters_router)
+        logger.info("Saved filters router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load saved filters router: {e}")
+    
     app.include_router(api_router)  # Re-include to pick up modular routes
     logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors, Property, Offers, Similar, Social, ProfileActivity, Notifications, Account, Support, UserSettings, Sessions, IDVerification) loaded successfully")
 
