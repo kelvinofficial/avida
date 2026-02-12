@@ -2973,11 +2973,24 @@ const styles = StyleSheet.create({
     minHeight: 140,
     textAlignVertical: 'top',
   },
+  charCountRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
+  },
   charCount: {
     fontSize: 11,
     color: COLORS.textSecondary,
     textAlign: 'right',
-    marginTop: 4,
+  },
+  minChars: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+  },
+  minCharsValid: {
+    color: COLORS.primary,
+    fontWeight: '500',
   },
   chipContainer: {
     paddingVertical: 4,
