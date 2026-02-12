@@ -1794,10 +1794,21 @@ Total reduction: from ~8881 to 3085 (~65.3% total reduction achieved)
 - Badge Challenges - Moved to routes/badge_challenges.py ✓ (1075 lines extracted)
 
 **Architecture Notes:**
-- routes/challenges.py disabled - replaced by badge_challenges.py router
+- routes/challenges.py deprecated - replaced by badge_challenges.py router
 - routes/badge_challenges.py contains all challenge logic: seasonal, weekly, monthly challenges, joining, progress tracking, streak management
 - Factory function pattern used: create_badge_challenges_router(db, require_auth, send_push_notification)
 - **65%+ reduction goal achieved!**
+
+**Remaining sections in server.py (stable, not recommended for extraction):**
+- Models & Pydantic schemas (~280 lines) - Core to application
+- Auth helpers & Rate limiting (~50 lines) - Security-critical
+- Media upload endpoint (~65 lines) - File handling
+- Socket.IO events (~75 lines) - Real-time features
+- QA Real-time alerts (~105 lines) - Quality assurance system
+- Admin analytics (~260 lines) - Admin dashboard
+- Admin proxy routes (~40 lines) - Backend proxy
+- SEO/Sitemap generation (~95 lines) - Search optimization
+- Startup/shutdown handlers (~100 lines) - App lifecycle
 
 ### 2026-02-12: Server.py Refactoring - Badge Challenges Extraction
 **COMPLETED**
