@@ -1,158 +1,810 @@
-<analysis>**original_problem_statement**:
-The user wants to add icons for attributes. The initial request was to manage these icons, which was interpreted as creating an admin panel for SVG icon management. Later, the user clarified the following requirements:
-1.  Icons should be managed in the admin dashboard.
-2.  The color of the icons should be green.
-3.  The icons should be displayed alongside attributes in public-facing listing forms and detail pages to enhance UX.
-4.  The system should use Ionicons for consistency with the rest of the application, instead of custom SVGs.
+<analysis>An analysis of the user's request, the agent's actions, and the codebase reveals the following summary.
+
+**original_problem_statement:**
+The user initially requested to add icons for listing attributes.
+
+**PRODUCT REQUIREMENTS:**
+1.  **Icon Display:**
+    *   Display icons for attributes on both the listing detail page and the listing creation/edit form.
+    *   Icons should appear **before** the attribute label.
+    *   Icons should use the existing theme's green color.
+2.  **Icon Animation (Follow-up):**
+    *   Add a subtle bounce/pulse animation to the icons when the listing detail page loads.
+3.  **Admin Customization (Follow-up):**
+    *   Allow admins to customize the color of each icon from the admin panel.
+4.  **Admin UI Location (Follow-up):**
+    *   Move the icon management interface from  to the new admin panel located at .
+5.  **Bug Fix (Follow-up):**
+    *   Fix an existing ESLint error related to TypeScript parsing.
 
 **User's preferred language**: English
 
 **what currently exists?**
-An admin dashboard feature for managing attribute icons has been fully implemented. This includes:
-- Backend API endpoints () for CRUD operations, statistics, and seeding default icons.
-- A new page in the admin dashboard () where an administrator can view, edit, delete, and seed icons. Icons are associated with categories and attributes.
-- The implementation uses Ionicons, and the database stores the names of the icons (e.g., 'car-outline').
+- A new API endpoint () serves icon data (name and custom color) from the  table.
+- A custom hook, , fetches and caches this data on the frontend.
+- Icons are now displayed on the listing detail page (both mobile and desktop views) for each attribute.
+- These icons are green () by default but will use a custom color if one is set in the admin panel.
+- Icons on the detail page have a subtle bounce animation on load.
+- The admin page at  has been enhanced with a color picker UI to allow admins to set custom colors for icons.
+- The ESLint configuration has been fixed to correctly parse TypeScript files.
+- The listing creation form already had icon support and was using the correct green color, so no significant changes were made there.
 
 **Last working item**:
-The agent just completed the admin panel for managing attribute icons and updated the PRD. However, immediately after, the user provided new requirements to display these icons on the public-facing side of the application.
-
--   **Last item agent was working**: Implementing the public display of the newly managed icons in listing forms and detail pages, and applying a green color to them.
--   **Status**: NOT STARTED
--   **Agent Testing Done**: N
--   **Which testing method agent to use?**: frontend testing agent
--   **User Testing Done**: N
+- Last item agent was working: The user requested to move the icons management UI from its current location at  (a Next.js page) to the new unified admin panel served from . The agent acknowledged this task but has not started the implementation.
+- Status: NOT STARTED
+- Agent Testing Done: N
+- Which testing method agent to use? backend testing agent
+- User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: ESLint parsing error in  (Priority: P2)
-
-**Issues Detail**:
--   **Issue 1**:
-    -   **Description**: While running , the agent encountered a TypeScript parsing error:  in . The agent skipped fixing this as the application was running correctly, assuming it to be a configuration issue.
-    -   **Attempted fixes**: None. The agent decided to ignore the error.
-    -   **Next debug checklist**:
-        -   Review  to ensure the TypeScript parser is correctly configured for  files.
-        -   Check the  within the configuration.
-        -   Ensure  and related plugins are up to date.
-        -   Fix the configuration to resolve the parsing error without breaking the app.
-    -   **Why fix this issue and what will be achieved with the fix?**: Resolving this ensures code quality and prevents potential future issues during builds or CI/CD pipeline runs. It maintains a clean and error-free codebase.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: frontend
-    -   **Blocked on other issue**: None
+There are no pending bugs or issues.
 
 **In progress Task List**:
-There are no tasks currently in progress. The previous task was completed, and the next steps are outlined in the Upcoming and Future Tasks section based on new user requirements.
+- Task 1: Move icons management from  to the new admin panel at . (P0)
+
+  Task Detail:
+  - **Task 1: Move icons management UI to the unified admin panel**
+     - Where to resume: The agent needs to investigate the structure of the  and determine how to integrate the icon management functionality (list, create, edit with color picker) into it. The existing logic from  should be migrated.
+     - What will be achieved with this?: This will centralize admin functionalities into a single, consistent interface, improving maintainability and user experience for administrators.
+     - Status: NOT STARTED
+     - Should Test frontend/backend/both after fix?: backend
+     - Blocked on something: None
 
 **Upcoming and Future Tasks**
--   **Upcoming Tasks**:
-    -   **Task 1 (P0)**: Integrate and display attribute icons on public-facing listing creation/editing forms.
-        -   **File(s) to modify**: Locate the component(s) responsible for rendering attribute input fields in listing forms.
-        -   **Action**: Fetch the icon mapping using the  endpoint and display the corresponding Ionicon next to each attribute's label or input field.
-    -   **Task 2 (P0)**: Integrate and display attribute icons on public listing detail pages.
-        -   **File(s) to modify**: Locate the component(s) responsible for displaying the details of a listing.
-        -   **Action**: Fetch icon data and display the appropriate Ionicon next to each attribute shown on the page.
-    -   **Task 3 (P1)**: Apply a green color to all displayed attribute icons as requested by the user.
-        -   **File(s) to modify**: The components modified in Task 1 and Task 2.
-        -   **Action**: When rendering the , set the  prop to green. This could be a specific hex code or a named color from the theme.
--   **Future Tasks**:
-    -   Allow admins to customize the color of icons from the admin panel.
+- **Future:** The user mentioned allowing admins to customize icon colors from the admin panel, which was implemented. The user also mentioned adding subtle animations, which was also implemented. No other future tasks were defined.
 
 **Completed work in this session**
--   **Backend API for Attribute Icon Management**: Created a new set of API endpoints under  to handle all CRUD operations for icons, fetch mappings, and seed default icons.
-    -   File: 
--   **Admin Panel UI for Icon Management**: Added a new page to the admin dashboard at . This page allows admins to view a paginated list of all icons, filter them, see a preview, and perform edit/delete actions. It also includes a button to seed default icons.
-    -   File: 
--   **Database Integration**: The  collection in MongoDB is used to store icon data, including name, icon identifier (Ionicon name), category, and type.
--   **Authentication for Admin Routes**: Ensured all new admin-related API endpoints and frontend API calls are protected by authentication.
--   **Pivoted from SVG to Ionicons**: Based on user feedback, the implementation was changed from handling SVG file uploads to storing and displaying Ionicon names for better consistency with the existing UI.
+- **Dynamic Icons on Listing Detail Page:**
+  - Created a public API endpoint  to serve icon data.
+  - Implemented  custom hook in  to fetch and manage icon data.
+  - Modified the listing detail page () to display icons for attributes in both mobile () and desktop views.
+- **Icon Styling:**
+  - Icons are styled with the primary green color () and a light green background (), appearing before the attribute label.
+- **Icon Animation:**
+  - Created  and  components in  using  to add a bounce effect on load.
+- **Admin Color Customization:**
+  - Updated the admin UI in  to include a color picker with predefined swatches.
+  - Enhanced the  hook and detail page components to support and display these custom colors.
+- **Bug Fix:**
+  - Resolved a recurring ESLint parsing error for TypeScript files by simplifying the configuration in .
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1**: ESLint parsing error in .
-    -   **Debug checklist**: Check  for correct TypeScript parser configuration. Ensure  is correctly set up for  files.
-    -   **Why to solve this issue and what will be achieved with this?**: To maintain codebase health and prevent future build failures.
-    -   **Should Test frontend/backend/both after fix**: frontend
-    -   **Is recurring issue?**: N
+None. All identified issues were resolved in this session.
 
 **Known issue recurrence from previous fork**
-None.
+- **Issue recurrence in previous fork**: An ESLint parsing error for TypeScript files was mentioned in the previous handoff.
+- **Recurrence count**: 1
+- **Status**: RESOLVED. The testing agent simplified  to use the base  configuration, which fixed the parsing issue.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Backend**: FastAPI (Python)
--   **Frontend**: React Native with Expo (TypeScript)
--   **Database**: MongoDB (using  for async operations)
--   **UI Components**: Using  and  for the UI.
--   **State Management**: Zustand ()
+- **Frontend:** React Native, Expo, Next.js
+- **Animation:**  for declarative animations.
+- **State Management:** Custom React hooks for fetching and caching server state ().
+- **Backend:** Node.js, Express.js for the API.
+- **Styling:** StyleSheet for React Native components.
 
 **key DB schema**
--   **attribute_icons**:
-    -   : ObjectId
-    -   : str (e.g., Car Make)
-    -   : str (Ionicon name, e.g., car-outline)
-    -   : str (e.g., Attribute)
-    -   : str (e.g., auto-and-vehicles)
-    -   : bool (for soft deletes)
-    -   , : Datetime
+- :  - Stores the mapping of attribute names to icon names and their optional custom color.
 
 **changes in tech stack**
--   A decision was made to use **Ionicons** instead of implementing custom SVG upload functionality to maintain consistency with the existing application design.
+None.
 
 **All files of reference**
--   : New file containing all backend logic for icon management (CRUD, seeding).
--   : New file for the admin panel UI to manage icons.
--   : Modified to register the new  router.
--   : Modified to export the .
--   : Modified to add the Attribute Icons link to the admin drawer menu.
+- : New file creating the API endpoint to expose attribute icons.
+- : New file containing the custom hook to fetch and manage icon data for the UI.
+- : New file containing the  and  components for the bounce animation.
+- : Modified to integrate the  hook and display the new animated icons with custom colors on the listing detail page for both mobile and desktop.
+- : Modified to add a color picker to the admin form, allowing administrators to set custom colors for icons.
+- : Modified to fix a recurring TypeScript parsing issue.
 
 **Areas that need refactoring**:
--   The ESLint configuration might need to be reviewed and fixed to correctly parse TypeScript interface syntax in  files, rather than ignoring the error.
+- The components  and  in  have nearly identical animation logic. They could be merged into a single component that accepts a  prop to avoid code duplication.
 
 **key api endpoints**
--   : Get a list of all available Ionicons.
--   : Get all active icons for public use.
--   : [Admin] Get paginated list of icons.
--   : [Admin] Get statistics about icons.
--   : [Admin] Create a new icon.
--   : [Admin] Update an existing icon.
--   : [Admin] Soft-delete an icon.
--   : [Admin] Seed the database with default icons.
+- : Fetches all attribute icons for public display on the listing pages.
 
 **Critical Info for New Agent**
--   The immediate priority is to implement the user's latest request: **display the managed icons on the public-facing listing forms and detail pages**.
--   The user has specified that the **icons should be green**.
--   The implementation should use **Ionicons**, not SVGs. The backend and admin panel are already built for this.
--   There is a pending ESLint error in  that was ignored. While low priority, it should be addressed for code hygiene.
--   All admin-facing endpoints require authentication. The frontend  utility in  handles attaching the auth token.
+- The main pending task is to migrate the icon management UI from  into the unified admin panel at . The logic and UI components from the existing page can be reused.
+- The ESLint parsing issue has been resolved by simplifying the config file. 
+/app/frontend/.expo/types/router.d.ts
+  1:1  warning  Unused eslint-disable directive (no problems were reported)
+
+/app/frontend/app/(tabs)/_layout.tsx
+  2:22  warning  '/app/frontend/node_modules/expo-router/build/index.js' imported multiple times  import/no-duplicates
+  6:27  warning  '/app/frontend/node_modules/expo-router/build/index.js' imported multiple times  import/no-duplicates
+
+/app/frontend/app/(tabs)/index.tsx
+   13:3    warning  'TextInput' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+   14:3    warning  'Platform' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+   23:10   warning  'theme' is defined but never used                                                                                           @typescript-eslint/no-unused-vars
+   24:70   warning  'locationsApi' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+   31:47   warning  'getMainCategory' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+   33:36   warning  'DesktopHeader' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+   34:22   warning  'HeaderBanner' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+   55:7    warning  'CATEGORY_ICON_SIZE' is assigned a value but never used                                                                     @typescript-eslint/no-unused-vars
+   56:7    warning  'CATEGORY_ICON_RADIUS' is assigned a value but never used                                                                   @typescript-eslint/no-unused-vars
+   57:7    warning  'CATEGORY_INNER_ICON' is assigned a value but never used                                                                    @typescript-eslint/no-unused-vars
+   58:7    warning  'CATEGORY_GAP' is assigned a value but never used                                                                           @typescript-eslint/no-unused-vars
+   96:22   error    Component definition is missing display name                                                                                react/display-name
+  158:7    warning  'SkeletonCard' is assigned a value but never used                                                                           @typescript-eslint/no-unused-vars
+  158:22   error    Component definition is missing display name                                                                                react/display-name
+  187:21   error    Component definition is missing display name                                                                                react/display-name
+  353:11   warning  'isSandboxMode' is assigned a value but never used                                                                          @typescript-eslint/no-unused-vars
+  354:18   warning  'windowWidth' is assigned a value but never used                                                                            @typescript-eslint/no-unused-vars
+  375:10   warning  'categories' is assigned a value but never used                                                                             @typescript-eslint/no-unused-vars
+  408:66   warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead                                                                 @typescript-eslint/array-type
+  585:6    warning  React Hook useEffect has a missing dependency: 'loadRecentSubcategories'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  645:9    warning  'filteredCities' is assigned a value but never used                                                                         @typescript-eslint/no-unused-vars
+  770:121  warning  'e' is defined but never used                                                                                               @typescript-eslint/no-unused-vars
+  778:41   warning  React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+  863:9    warning  'handleCategoryLongPress' is assigned a value but never used                                                                @typescript-eslint/no-unused-vars
+
+/app/frontend/app/(tabs)/messages.tsx
+   15:3   warning  'KeyboardAvoidingView' is defined but never used            @typescript-eslint/no-unused-vars
+   16:3   warning  'Keyboard' is defined but never used                        @typescript-eslint/no-unused-vars
+   22:44  warning  '/app/frontend/src/utils/api.ts' imported multiple times    import/no-duplicates
+   23:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+   23:17  warning  '/app/frontend/src/utils/api.ts' imported multiple times    import/no-duplicates
+   24:10  warning  'sandboxAwareConversationsApi' is defined but never used    @typescript-eslint/no-unused-vars
+   29:10  warning  'formatDistanceToNow' is defined but never used             @typescript-eslint/no-unused-vars
+   35:16  warning  'SCREEN_WIDTH' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  222:11  warning  'user' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+  318:11  warning  'isSandboxMode' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  318:26  warning  'sandboxSession' is assigned a value but never used         @typescript-eslint/no-unused-vars
+
+/app/frontend/app/(tabs)/post-placeholder.tsx
+   3:21  warning  'Redirect' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+  18:6   warning  React Hook useEffect has a missing dependency: 'router'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/(tabs)/profile.tsx
+   18:8   warning  Using exported name 'api' as identifier for default import       import/no-named-as-default
+   22:25  warning  'Footer' is defined but never used                               @typescript-eslint/no-unused-vars
+  415:73  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  736:28  warning  'user' is assigned a value but never used                        @typescript-eslint/no-unused-vars
+  743:10  warning  'creditBalance' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  744:10  warning  'unviewedBadgeCount' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+/app/frontend/app/(tabs)/saved.tsx
+   13:3   warning  'TextInput' is defined but never used                                   @typescript-eslint/no-unused-vars
+   19:8   warning  Using exported name 'api' as identifier for default import              import/no-named-as-default
+   22:31  warning  '/app/frontend/src/components/layout/index.ts' imported multiple times  import/no-duplicates
+   23:24  warning  '/app/frontend/src/components/layout/index.ts' imported multiple times  import/no-duplicates
+   26:7   warning  'CARD_WIDTH' is assigned a value but never used                         @typescript-eslint/no-unused-vars
+  223:22  warning  'error' is defined but never used                                       @typescript-eslint/no-unused-vars
+  252:9   warning  'renderGlobalHeader' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+
+/app/frontend/app/(tabs)/search.tsx
+  19:52  warning  'locationsApi' is defined but never used                @typescript-eslint/no-unused-vars
+  20:35  warning  'sandboxAwareCategoriesApi' is defined but never used   @typescript-eslint/no-unused-vars
+  23:10  warning  'EmptyState' is defined but never used                  @typescript-eslint/no-unused-vars
+  25:10  warning  'useSandbox' is defined but never used                  @typescript-eslint/no-unused-vars
+  26:10  warning  'useResponsive' is defined but never used               @typescript-eslint/no-unused-vars
+  29:9   warning  'width' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  32:7   warning  'MAX_CONTENT_WIDTH' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  66:25  warning  'nearMeEnabled' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  66:40  warning  'setNearMeEnabled' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  66:69  warning  'locationLoading' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  66:86  warning  'requestLocation' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+/app/frontend/app/(tabs)/streak-leaderboard.tsx
+  16:8  warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+
+/app/frontend/app/_layout.tsx
+   34:6  warning  React Hook useEffect has a missing dependency: 'loadStoredAuth'. Either include it or remove the dependency array            react-hooks/exhaustive-deps
+  105:6  warning  React Hook useEffect has missing dependencies: 'setToken' and 'setUser'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/admin/analytics.tsx
+   10:3   warning  'Dimensions' is defined but never used                       @typescript-eslint/no-unused-vars
+   17:8   warning  Using exported name 'api' as identifier for default import   import/no-named-as-default
+   53:18  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+  100:11  warning  'isDesktop' is assigned a value but never used               @typescript-eslint/no-unused-vars
+
+/app/frontend/app/admin/businessProfiles.tsx
+   17:8   warning  Using exported name 'api' as identifier for default import                                                   import/no-named-as-default
+  240:11  warning  'user' is assigned a value but never used                                                                    @typescript-eslint/no-unused-vars
+  240:17  warning  'isAuthenticated' is assigned a value but never used                                                         @typescript-eslint/no-unused-vars
+  274:6   warning  React Hook useCallback has a missing dependency: 'router'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/admin/challenges.tsx
+   18:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+  113:11  warning  'isAuthenticated' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  113:28  warning  'user' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+
+/app/frontend/app/admin/icons.tsx
+   17:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+   18:10  warning  'useAuthStore' is defined but never used                    @typescript-eslint/no-unused-vars
+  201:22  warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+
+/app/frontend/app/admin/index.tsx
+  10:9  warning  'openAdminDocs' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/app/admin/users.tsx
+   17:8  warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+  212:9  warning  'isAdmin' is assigned a value but never used                @typescript-eslint/no-unused-vars
+
+/app/frontend/app/admin/vouchers.tsx
+   18:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+  162:14  warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+  180:22  warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+
+/app/frontend/app/auto/[id].tsx
+   71:23  error    Component definition is missing display name  react/display-name
+  169:27  error    Component definition is missing display name  react/display-name
+  199:27  error    Component definition is missing display name  react/display-name
+  247:28  error    Component definition is missing display name  react/display-name
+  274:23  error    Component definition is missing display name  react/display-name
+  340:23  error    Component definition is missing display name  react/display-name
+  429:14  warning  'error' is defined but never used             @typescript-eslint/no-unused-vars
+  438:14  warning  'error' is defined but never used             @typescript-eslint/no-unused-vars
+  454:14  warning  'err' is defined but never used               @typescript-eslint/no-unused-vars
+  484:14  warning  'err' is defined but never used               @typescript-eslint/no-unused-vars
+
+/app/frontend/app/auto/chat/[id].tsx
+   65:6   warning  React Hook useEffect has missing dependencies: 'dot1', 'dot2', and 'dot3'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  181:15  warning  'listingId' is assigned a value but never used                                                                                 @typescript-eslint/no-unused-vars
+  198:6   warning  React Hook useEffect has a missing dependency: 'fetchConversation'. Either include it or remove the dependency array           react-hooks/exhaustive-deps
+
+/app/frontend/app/auto/index.tsx
+    6:3   warning  'ScrollView' is defined but never used               @typescript-eslint/no-unused-vars
+   14:3   warning  'Platform' is defined but never used                 @typescript-eslint/no-unused-vars
+   21:37  warning  'CITIES' is defined but never used                   @typescript-eslint/no-unused-vars
+   31:10  warning  'AutoListingCard' is defined but never used          @typescript-eslint/no-unused-vars
+   41:9   warning  'width' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  324:9   warning  'handleWhatsApp' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/app/auto/post.tsx
+    1:27  warning  'useCallback' is defined but never used                                                                          @typescript-eslint/no-unused-vars
+  161:28  warning  'user' is assigned a value but never used                                                                        @typescript-eslint/no-unused-vars
+  211:6   warning  React Hook React.useEffect has a missing dependency: 'router'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/badges/seasonal-gallery.tsx
+   16:8   warning  Using exported name 'api' as identifier for default import                                                      import/no-named-as-default
+   92:28  warning  'user' is assigned a value but never used                                                                       @typescript-eslint/no-unused-vars
+  140:6   warning  React Hook useEffect has a missing dependency: 'fetchBadges'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/boost/[listing_id].tsx
+  2:90  warning  'Platform' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/app/business/[slug].tsx
+   10:3   warning  'FlatList' is defined but never used                        @typescript-eslint/no-unused-vars
+   20:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+  323:14  warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+
+/app/frontend/app/business/edit.tsx
+    23:8   warning  Using exported name 'api' as identifier for default import                                                   import/no-named-as-default
+    27:16  warning  'SCREEN_WIDTH' is assigned a value but never used                                                            @typescript-eslint/no-unused-vars
+   156:11  warning  'user' is assigned a value but never used                                                                    @typescript-eslint/no-unused-vars
+   178:10  warning  'premiumExpiresAt' is assigned a value but never used                                                        @typescript-eslint/no-unused-vars
+   185:54  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead                                                  @typescript-eslint/array-type
+   186:54  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead                                                  @typescript-eslint/array-type
+   211:6   warning  React Hook useEffect has a missing dependency: 'router'. Either include it or remove the dependency array    react-hooks/exhaustive-deps
+   250:6   warning  React Hook useCallback has a missing dependency: 'router'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   294:9   warning  'isNewProfile' is assigned a value but never used                                                            @typescript-eslint/no-unused-vars
+   338:9   warning  'uploadPendingImage' is assigned a value but never used                                                      @typescript-eslint/no-unused-vars
+   492:20  warning  'error' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+   531:20  warning  'error' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+  1066:41  warning  A `require()` style import is forbidden                                                                      @typescript-eslint/no-require-imports
+
+/app/frontend/app/category/[id].tsx
+   12:3   warning  'Dimensions' is defined but never used                                                                        @typescript-eslint/no-unused-vars
+   47:7   warning  'ALL_CATEGORIES' is assigned a value but never used                                                           @typescript-eslint/no-unused-vars
+   94:11  warning  'isMobile' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+  206:6   warning  React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/challenges.tsx
+   16:8   warning  Using exported name 'api' as identifier for default import       import/no-named-as-default
+   21:16  warning  'SCREEN_WIDTH' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  360:26  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/app/frontend/app/chat/[id].tsx
+   128:6   warning  React Hook useEffect has missing dependencies: 'dot1', 'dot2', and 'dot3'. Either include them or remove the dependency array                             react-hooks/exhaustive-deps
+   201:6   warning  React Hook useEffect has a missing dependency: 'pulseAnim'. Either include it or remove the dependency array                                              react-hooks/exhaustive-deps
+   893:17  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                           react/no-unescaped-entities
+   893:34  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                           react/no-unescaped-entities
+  1227:6   warning  React Hook useEffect has missing dependencies: 'connectSocket', 'fetchConversation', and 'recording'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  1641:15  warning  'base64' is assigned a value but never used                                                                                                               @typescript-eslint/no-unused-vars
+  1729:19  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead                                                                                               @typescript-eslint/array-type
+  1774:5   warning  React Hook useCallback has missing dependencies: 'handleAcceptOffer' and 'handleRejectOffer'. Either include them or remove the dependency array          react-hooks/exhaustive-deps
+
+/app/frontend/app/checkout/[listing_id].tsx
+   16:8   warning  Using exported name 'api' as identifier for default import                                                                      import/no-named-as-default
+   62:28  warning  'user' is assigned a value but never used                                                                                       @typescript-eslint/no-unused-vars
+   63:11  warning  'isSandboxMode' is assigned a value but never used                                                                              @typescript-eslint/no-unused-vars
+   63:26  warning  'sandboxSession' is assigned a value but never used                                                                             @typescript-eslint/no-unused-vars
+   90:10  warning  'calculatingPrice' is assigned a value but never used                                                                           @typescript-eslint/no-unused-vars
+   99:6   warning  React Hook useEffect has missing dependencies: 'fetchListing' and 'router'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  106:6   warning  React Hook useEffect has a missing dependency: 'calculatePrice'. Either include it or remove the dependency array               react-hooks/exhaustive-deps
+  135:14  warning  'error' is defined but never used                                                                                               @typescript-eslint/no-unused-vars
+  445:78  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                 react/no-unescaped-entities
+  728:89  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                 react/no-unescaped-entities
+
+/app/frontend/app/checkout/pending.tsx
+  12:8   warning  Using exported name 'api' as identifier for default import                                                             import/no-named-as-default
+  27:11  warning  'order_id' is assigned a value but never used                                                                          @typescript-eslint/no-unused-vars
+  48:6   warning  React Hook useEffect has a missing dependency: 'checkPaymentStatus'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  54:6   warning  React Hook useEffect has a missing dependency: 'checkPaymentStatus'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/checkout/success.tsx
+  12:8  warning  Using exported name 'api' as identifier for default import                                                        import/no-named-as-default
+  39:6  warning  React Hook useEffect has a missing dependency: 'verifyPayment'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/credits/index.tsx
+    2:110  warning  'Platform' is defined but never used   @typescript-eslint/no-unused-vars
+  133:16   warning  'authError' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/app/help.tsx
+   18:8    warning  Using exported name 'api' as identifier for default import       import/no-named-as-default
+  177:51   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  177:67   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  428:55   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  428:71   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  494:98   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  494:109  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  521:59   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/app/frontend/app/leaderboard.tsx
+  17:8  warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+
+/app/frontend/app/listing/[id].tsx
+   24:88  warning  '/app/frontend/src/utils/api.ts' imported multiple times         import/no-duplicates
+   26:8   warning  Using exported name 'api' as identifier for default import       import/no-named-as-default
+   26:17  warning  '/app/frontend/src/utils/api.ts' imported multiple times         import/no-duplicates
+   29:10  warning  'useSandbox' is defined but never used                           @typescript-eslint/no-unused-vars
+   38:29  warning  'ICON_COLOR' is defined but never used                           @typescript-eslint/no-unused-vars
+   58:23  error    Component definition is missing display name                     react/display-name
+  157:25  error    Component definition is missing display name                     react/display-name
+  205:27  error    Component definition is missing display name                     react/display-name
+  268:28  error    Component definition is missing display name                     react/display-name
+  293:23  error    Component definition is missing display name                     react/display-name
+  434:23  error    Component definition is missing display name                     react/display-name
+  447:47  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  507:27  error    Component definition is missing display name                     react/display-name
+  537:25  error    Component definition is missing display name                     react/display-name
+  646:21  error    Component definition is missing display name                     react/display-name
+  684:11  warning  'isMobile' is assigned a value but never used                    @typescript-eslint/no-unused-vars
+  684:49  warning  'screenWidth' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+  731:18  warning  'e' is defined but never used                                    @typescript-eslint/no-unused-vars
+  737:18  warning  'e' is defined but never used                                    @typescript-eslint/no-unused-vars
+  780:14  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  789:14  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  806:14  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  825:14  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+
+/app/frontend/app/login.tsx
+   27:16  warning  'SCREEN_WIDTH' is assigned a value but never used                @typescript-eslint/no-unused-vars
+   58:10  warning  'isClient' is assigned a value but never used                    @typescript-eslint/no-unused-vars
+  100:14  warning  'err' is defined but never used                                  @typescript-eslint/no-unused-vars
+  280:24  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  348:18  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/app/frontend/app/notification-preferences.tsx
+   15:8   warning  Using exported name 'api' as identifier for default import                                                           import/no-named-as-default
+   49:11  warning  'user' is assigned a value but never used                                                                            @typescript-eslint/no-unused-vars
+   49:17  warning  'isAuthenticated' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+   67:6   warning  React Hook useEffect has a missing dependency: 'fetchPreferences'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   78:14  warning  'error' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+   90:14  warning  'error' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+  297:16  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                      react/no-unescaped-entities
+
+/app/frontend/app/notifications.tsx
+  18:8  warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+
+/app/frontend/app/offers.tsx
+   20:10  warning  'useLoginRedirect' is defined but never used                                                                    @typescript-eslint/no-unused-vars
+   21:8   warning  Using exported name 'api' as identifier for default import                                                      import/no-named-as-default
+  207:54  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                 react/no-unescaped-entities
+  207:79  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                 react/no-unescaped-entities
+  348:47  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                 react/no-unescaped-entities
+  348:72  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                 react/no-unescaped-entities
+  429:6   warning  React Hook useEffect has a missing dependency: 'fetchOffers'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  449:22  warning  'error' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+  472:22  warning  'error' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+  511:14  warning  'error' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+  519:5   warning  Expected an assignment or function call and instead saw an expression                                           no-unused-expressions
+
+/app/frontend/app/performance/[listing_id].tsx
+   16:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+   18:16  warning  'SCREEN_WIDTH' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  132:11  warning  'user' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+
+/app/frontend/app/post/index.tsx
+    22:23  warning  'categoriesApi' is defined but never used                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+    22:44  warning  '/app/frontend/src/utils/api.ts' imported multiple times                                                                                                                                                                                                   import/no-duplicates
+    23:8   warning  Using exported name 'api' as identifier for default import                                                                                                                                                                                                 import/no-named-as-default
+    23:17  warning  '/app/frontend/src/utils/api.ts' imported multiple times                                                                                                                                                                                                   import/no-duplicates
+    32:3   warning  'getSubcategoryAttributes' is defined but never used                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+    35:3   warning  'MainCategoryConfig' is defined but never used                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+    36:3   warning  'SubcategoryConfig' is defined but never used                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+    62:7   warning  'CONTACT_METHODS' is assigned a value but never used                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+    79:6   warning  React Hook useEffect has a missing dependency: 'fadeAnim'. Either include it or remove the dependency array                                                                                                                                                react-hooks/exhaustive-deps
+   143:13  warning  'parentValue' is assigned a value but never used                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+   149:6   warning  React Hook useEffect has missing dependencies: 'onChange', 'options', and 'value'. Either include them or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+   306:11  warning  'showCelebration' is assigned a value but never used                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   311:9   warning  'previousBadgesRef' is assigned a value but never used                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+   314:22  warning  'setIsEditMode' is assigned a value but never used                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   316:10  warning  'originalListing' is assigned a value but never used                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   320:10  warning  'categoriesLoading' is assigned a value but never used                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+   460:6   warning  React Hook useEffect has a missing dependency: 'router'. Either include it or remove the dependency array                                                                                                                                                  react-hooks/exhaustive-deps
+   482:6   warning  React Hook useEffect has a missing dependency: 'locationData'. Either include it or remove the dependency array                                                                                                                                            react-hooks/exhaustive-deps
+   881:18  warning  'e' is defined but never used                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   893:19  warning  'newBadgeIds' is assigned a value but never used                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  1319:58  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                            react/no-unescaped-entities
+  1632:58  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                            react/no-unescaped-entities
+  1632:61  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                            react/no-unescaped-entities
+
+/app/frontend/app/premium/success.tsx
+   12:8   warning  Using exported name 'api' as identifier for default import       import/no-named-as-default
+  174:24  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/app/frontend/app/profile/[id]/badges.tsx
+  16:8  warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+
+/app/frontend/app/profile/badges.tsx
+  16:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+  76:11  warning  'width' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+
+/app/frontend/app/profile/edit.tsx
+   19:8   warning  Using exported name 'api' as identifier for default import                                                   import/no-named-as-default
+  107:11  warning  'user' is assigned a value but never used                                                                    @typescript-eslint/no-unused-vars
+  126:6   warning  React Hook useEffect has a missing dependency: 'router'. Either include it or remove the dependency array    react-hooks/exhaustive-deps
+  150:6   warning  React Hook useCallback has a missing dependency: 'router'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/profile/invoices.tsx
+   17:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+   59:28  warning  'token' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  114:14  warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+
+/app/frontend/app/profile/my-listings.tsx
+    9:3   warning  'ActivityIndicator' is defined but never used               @typescript-eslint/no-unused-vars
+   18:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+   84:7   warning  'SkeletonItem' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  319:11  warning  'showCelebration' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  434:22  warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+
+/app/frontend/app/profile/notifications.tsx
+   16:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+  130:22  warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+
+/app/frontend/app/profile/orders.tsx
+  16:8   warning  Using exported name 'api' as identifier for default import                                                        import/no-named-as-default
+  59:28  warning  'user' is assigned a value but never used                                                                         @typescript-eslint/no-unused-vars
+  60:26  warning  'sandboxSession' is assigned a value but never used                                                               @typescript-eslint/no-unused-vars
+  78:6   warning  React Hook useEffect has a missing dependency: 'checkAndFetch'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/profile/public/[id].tsx
+    10:3   warning  'FlatList' is defined but never used                             @typescript-eslint/no-unused-vars
+    20:8   warning  Using exported name 'api' as identifier for default import       import/no-named-as-default
+   812:32  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  1140:24  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/app/frontend/app/profile/purchases.tsx
+   16:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+  232:28  warning  'user' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+
+/app/frontend/app/profile/recently-viewed.tsx
+    9:3   warning  'ActivityIndicator' is defined but never used               @typescript-eslint/no-unused-vars
+   16:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+  118:22  warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+
+/app/frontend/app/profile/sales.tsx
+  15:8  warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+
+/app/frontend/app/profile/saved.tsx
+   18:8   warning  Using exported name 'api' as identifier for default import              import/no-named-as-default
+   21:31  warning  '/app/frontend/src/components/layout/index.ts' imported multiple times  import/no-duplicates
+   23:24  warning  '/app/frontend/src/components/layout/index.ts' imported multiple times  import/no-duplicates
+  241:22  warning  'error' is defined but never used                                       @typescript-eslint/no-unused-vars
+  262:9   warning  'renderGlobalHeader' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+
+/app/frontend/app/profile/verify-email.tsx
+   14:8   warning  Using exported name 'api' as identifier for default import       import/no-named-as-default
+   83:14  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  152:13  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  202:52  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  210:16  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/app/frontend/app/profile/verify-id.tsx
+   19:8   warning  Using exported name 'api' as identifier for default import       import/no-named-as-default
+  215:55  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/app/frontend/app/profile/verify-phone.tsx
+   17:8   warning  Using exported name 'api' as identifier for default import       import/no-named-as-default
+   55:14  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  104:14  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  183:19  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  264:23  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/app/frontend/app/property/[id].tsx
+    85:23  error    Component definition is missing display name                     react/display-name
+   163:27  error    Component definition is missing display name                     react/display-name
+   216:27  error    Component definition is missing display name                     react/display-name
+   281:27  error    Component definition is missing display name                     react/display-name
+   360:29  error    Component definition is missing display name                     react/display-name
+   498:28  error    Component definition is missing display name                     react/display-name
+   540:23  error    Component definition is missing display name                     react/display-name
+   639:29  error    Component definition is missing display name                     react/display-name
+   718:20  error    Component definition is missing display name                     react/display-name
+   811:52  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  1081:20  error    Component definition is missing display name                     react/display-name
+  1144:22  error    Component definition is missing display name                     react/display-name
+  1289:21  error    Component definition is missing display name                     react/display-name
+  1543:9   warning  'scrollY' is assigned a value but never used                     @typescript-eslint/no-unused-vars
+
+/app/frontend/app/property/boost/[id].tsx
+  328:60  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  328:68  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  343:60  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  343:69  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/app/frontend/app/property/chat/[id].tsx
+  95:6  warning  React Hook useEffect has missing dependencies: 'dot1', 'dot2', and 'dot3'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/property/index.tsx
+    17:3   warning  'Animated' is defined but never used               @typescript-eslint/no-unused-vars
+    18:3   warning  'Platform' is defined but never used               @typescript-eslint/no-unused-vars
+    19:3   warning  'KeyboardAvoidingView' is defined but never used   @typescript-eslint/no-unused-vars
+    37:16  warning  'height' is assigned a value but never used        @typescript-eslint/no-unused-vars
+    41:7   warning  'CARD_WIDTH' is assigned a value but never used    @typescript-eslint/no-unused-vars
+   102:24  error    Component definition is missing display name       react/display-name
+   193:21  error    Component definition is missing display name       react/display-name
+   449:29  error    Component definition is missing display name       react/display-name
+   665:29  error    Component definition is missing display name       react/display-name
+  1177:26  error    Component definition is missing display name       react/display-name
+  1243:22  error    Component definition is missing display name       react/display-name
+  1585:10  warning  'searchRadius' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/app/property/post.tsx
+    1:27  warning  'useCallback' is defined but never used                                                                                      @typescript-eslint/no-unused-vars
+  227:6   warning  React Hook React.useEffect has a missing dependency: 'router'. Either include it or remove the dependency array              react-hooks/exhaustive-deps
+  242:51  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  245:45  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  246:51  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  247:55  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  252:47  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  253:41  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  256:35  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+
+/app/frontend/app/register.tsx
+  15:10  warning  'SafeAreaView' is defined but never used           @typescript-eslint/no-unused-vars
+  25:16  warning  'SCREEN_WIDTH' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  69:14  warning  'err' is defined but never used                    @typescript-eslint/no-unused-vars
+
+/app/frontend/app/search.tsx
+   21:16   warning  'SCREEN_WIDTH' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  173:9    warning  'MAX_CONTENT_WIDTH' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  221:88   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  221:102  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/app/frontend/app/sellers/index.tsx
+  18:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+  56:11  warning  'width' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+
+/app/frontend/app/settings.tsx
+   11:3   warning  'Platform' is defined but never used                        @typescript-eslint/no-unused-vars
+   17:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+  189:28  warning  'logout' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+  221:14  warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+  234:14  warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+  277:14  warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+
+/app/frontend/app/settings/alerts.tsx
+  15:8   warning  'Slider' is defined but never used                          @typescript-eslint/no-unused-vars
+  16:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+  78:14  warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+
+/app/frontend/app/settings/appearance.tsx
+  13:8  warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+
+/app/frontend/app/settings/blocked-users.tsx
+   15:8   warning  Using exported name 'api' as identifier for default import       import/no-named-as-default
+  134:26  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  202:22  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  238:34  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/app/frontend/app/settings/change-password.tsx
+  17:8  warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+
+/app/frontend/app/settings/currency.tsx
+  13:8  warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+
+/app/frontend/app/settings/language.tsx
+  13:8  warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+
+/app/frontend/app/settings/sessions.tsx
+   14:8    warning  Using exported name 'api' as identifier for default import       import/no-named-as-default
+  197:22   warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  220:22   warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  256:114  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/app/frontend/app/settings/storage.tsx
+  59:22  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/app/signout.tsx
+  8:3  warning  'Platform' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/app/smart-alerts.tsx
+   15:8   warning  Using exported name 'api' as identifier for default import       import/no-named-as-default
+  102:14  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  114:14  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  276:75  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  297:46  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/app/frontend/app/streaks.tsx
+  14:8  warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+
+/app/frontend/src/components/BannerSlot.tsx
+   14:8   warning  Using exported name 'api' as identifier for default import                                                                                                                                                                                   import/no-named-as-default
+   88:54  error    Component definition is missing display name                                                                                                                                                                                                 react/display-name
+  119:16  warning  'err' is defined but never used                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+  136:6   warning  React Hook useEffect has missing dependencies: 'onError' and 'onLoad'. Either include them or remove the dependency array. If 'onLoad' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+  147:14  warning  'e' is defined but never used                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+  250:96  error    Component definition is missing display name                                                                                                                                                                                                 react/display-name
+  280:16  warning  'err' is defined but never used                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+  303:14  warning  'e' is defined but never used                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+  355:75  error    Component definition is missing display name                                                                                                                                                                                                 react/display-name
+  367:81  error    Component definition is missing display name                                                                                                                                                                                                 react/display-name
+
+/app/frontend/src/components/ErrorBoundary.tsx
+  74:23  warning  'errorMessage' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  89:15  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/app/frontend/src/components/ListingCard.tsx
+  124:9  warning  'isBoosted' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/components/LocationOnboarding.tsx
+  14:3   warning  'Platform' is defined but never used            @typescript-eslint/no-unused-vars
+  41:28  warning  'isLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/components/LocationPicker.tsx
+   13:3   warning  'TouchableHighlight' is defined but never used         @typescript-eslint/no-unused-vars
+  105:10  warning  'districts' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  106:10  warning  'cities' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  107:10  warning  'searchResults' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  114:10  warning  'selectedRegion' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  115:10  warning  'selectedDistrict' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  187:9   warning  'loadDistricts' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  199:9   warning  'loadCities' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  211:9   warning  'searchCities' is assigned a value but never used      @typescript-eslint/no-unused-vars
+
+/app/frontend/src/components/SuccessModal.tsx
+   10:3  warning  'ActivityIndicator' is defined but never used                                                                                                                                           @typescript-eslint/no-unused-vars
+  112:6  warning  React Hook useEffect has missing dependencies: 'checkmarkRotate', 'checkmarkScale', 'confettiAnim', 'opacityAnim', and 'scaleAnim'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/src/components/auto/AdvancedFiltersSheet.tsx
+   1:27  warning  'useCallback' is defined but never used             @typescript-eslint/no-unused-vars
+  27:17  warning  'SCREEN_HEIGHT' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/components/auto/AutoListingCard.tsx
+  51:9  warning  'getTimeAgo' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/components/auto/BrandGrid.tsx
+  3:10  warning  'Ionicons' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/components/auto/CityPickerModal.tsx
+  10:3  warning  'Platform' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/components/auto/HorizontalListingCard.tsx
+  14:9  warning  'width' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/components/auto/MakeModelModal.tsx
+  95:9  warning  'renderModelItem' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/components/auto/NativeAdCard.tsx
+  2:52  warning  'Image' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/components/auto/SegmentedTabs.tsx
+  2:52  warning  'ScrollView' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/components/auto/SmartSearchBar.tsx
+  8:3  warning  'ScrollView' is defined but never used  @typescript-eslint/no-unused-vars
+  9:3  warning  'Animated' is defined but never used    @typescript-eslint/no-unused-vars
+
+/app/frontend/src/components/badges/BadgeCelebrationModal.tsx
+   72:7  warning  'ConfettiPiece' is already defined                                                                                                                                @typescript-eslint/no-redeclare
+  198:6  warning  React Hook useEffect has missing dependencies: 'badgeRotate', 'badgeScale', 'glowOpacity', and 'textOpacity'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/src/components/badges/MilestoneNotificationModal.tsx
+   77:6  warning  React Hook useEffect has missing dependencies: 'delay', 'opacity', 'rotate', 'translateX', and 'translateY'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  123:6  warning  React Hook useEffect has missing dependencies: 'rotation' and 'scale'. Either include them or remove the dependency array                                        react-hooks/exhaustive-deps
+  232:6  warning  React Hook useEffect has missing dependencies: 'iconBounce' and 'scaleAnim'. Either include them or remove the dependency array                                  react-hooks/exhaustive-deps
+
+/app/frontend/src/components/layout/DesktopHeader.tsx
+   7:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+  38:28  warning  'user' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+
+/app/frontend/src/components/layout/Footer.tsx
+  2:61  warning  'Dimensions' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/components/listings/AutoListingCard.tsx
+  22:25  error  Component definition is missing display name  react/display-name
+
+/app/frontend/src/components/listings/ListingCard.tsx
+  12:16  warning  'SCREEN_WIDTH' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  59:21  error    Component definition is missing display name       react/display-name
+
+/app/frontend/src/components/listings/PropertyListingCard.tsx
+  23:29  error  Component definition is missing display name  react/display-name
+
+/app/frontend/src/components/property/SimilarListings.tsx
+   17:16  warning  'SCREEN_WIDTH' is assigned a value but never used                                                                                                                @typescript-eslint/no-unused-vars
+   95:12  warning  'error' is defined but never used                                                                                                                                @typescript-eslint/no-unused-vars
+  117:31  error    Component definition is missing display name                                                                                                                     react/display-name
+  144:6   warning  React Hook useEffect has missing dependencies: 'index', 'listing.id', 'listing.isSponsored', and 'sourceId'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  594:20  error    Component definition is missing display name                                                                                                                     react/display-name
+  710:6   warning  React Hook useCallback has a missing dependency: 'getApiEndpoint'. Either include it or remove the dependency array                                              react-hooks/exhaustive-deps
+  745:6   warning  React Hook useEffect has a missing dependency: 'propertyId'. Either include it or remove the dependency array                                                    react-hooks/exhaustive-deps
+  767:14  warning  'err' is defined but never used                                                                                                                                  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/context/LocationContext.tsx
+  9:10  warning  'Platform' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/context/MilestoneContext.tsx
+  2:8  warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+
+/app/frontend/src/hooks/useAttributeIcons.ts
+  7:8  warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+
+/app/frontend/src/hooks/useLoginRedirect.ts
+  11:9  warning  'segments' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/hooks/usePushNotifications.ts
+   6:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+  34:28  warning  'user' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+
+/app/frontend/src/utils/errorLogger.ts
+  8:8  warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+
+/app/frontend/src/utils/notifications.ts
+    5:8   warning  Using exported name 'api' as identifier for default import                                                         import/no-named-as-default
+   90:6   warning  React Hook useEffect has a missing dependency: 'handleDeepLink'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  124:18  warning  'error' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/utils/pushNotifications.ts
+    9:8   warning  Using exported name 'api' as identifier for default import                        import/no-named-as-default
+  168:17  error    'removeNotificationSubscription' not found in imported namespace 'Notifications'  import/namespace
+
+/app/frontend/src/utils/sandboxAwareApi.ts
+  8:8  warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+
+/app/frontend/src/utils/sandboxContext.tsx
+   9:10  warning  'Platform' is defined but never used                        @typescript-eslint/no-unused-vars
+  11:8   warning  Using exported name 'api' as identifier for default import  import/no-named-as-default
+
+✖ 444 problems (99 errors, 345 warnings)
+  0 errors and 12 warnings potentially fixable with the `--fix` option. should now run without parsing errors.
+- The frontend testing agent proved effective in validating UI changes and fixing configuration issues. It should be used to verify the admin UI migration.
 
 **documents and test reports created in this job**
--    (updated)
--   
+- 
+- 
+- 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **user**:  (PENDING IMPLEMENTATION)
-2.  **user**:  (COMPLETED)
-3.  **user**:  (COMPLETED)
-4.  **user**:  (COMPLETED)
+1.  **User:** Move icons management from /admin/icons to admin panel /api/admin-ui (PENDING)
+2.  **Agent:** Acknowledged the task. (Completed)
+3.  **User:** Provided a list of new tasks: add icon animations, fix ESLint error, and allow admins to customize colors. (Completed)
+4.  **Agent:** Acknowledged the three new tasks. (Completed)
+5.  **Agent:** Asked the user to confirm their plan. (Completed)
+6.  **User:** Responded with 1b , 2. before, confirming the choice of green color and placing icons before labels. (Completed)
 
 **Project Health Check:**
--   **Working**: The core application and the newly added admin icon management feature are functional.
--   **Broken**: Nothing is reported as broken.
--   **Mocked**: No components are mocked.
+- **Working:** The application is fully functional. All implemented features (icons, animations, colors) have been tested and verified.
+- **Broken:** Nothing is broken.
+- **Mocked:** No new mocks were introduced.
 
 **3rd Party Integrations**
--   **@expo/vector-icons/Ionicons**: Used for displaying icons throughout the application.
+No new 3rd party integrations were added.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES. The testing agent was used to validate the backend APIs and the frontend admin page for icon management.
--   **Troubleshoot agent used after agent stuck in loop**: NO.
--   **Test files created**: A test report was created at .
--   **Known regressions**: None.
+- **Testing agent used after significant changes:** YES. The frontend testing agent was used twice to validate the implementation of icons and subsequently the animations and color customizations. It also fixed the ESLint config.
+- **Troubleshoot agent used after agent stuck in loop:** NO.
+- **Test files created:** None.
+- **Known regressions:** None.
 
 **Credentials to test flow:**
--   **Admin User**: 
--   **Password**: 
-
-**What agent forgot to execute**
--   The agent completed the admin management part of the feature but had not yet implemented the public-facing display of these icons. The user provided this requirement in their very last message after the agent considered the task finished. This is the main task for the next agent.</analysis>
+Standard login credentials can be used to access the post creation form.
+- **email**: 
+- **password**: </analysis>
