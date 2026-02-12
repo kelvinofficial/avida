@@ -832,7 +832,26 @@ export default function BusinessProfileEditScreen() {
 
           {/* Delete Profile Button */}
           {hasProfile && (
-            <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteProfile} data-testid="delete-profile-button">
+            <TouchableOpacity 
+              style={styles.deleteBtn} 
+              onPress={() => {
+                Alert.alert('Delete Business Profile', 'Are you sure you want to delete your business profile? This cannot be undone.', [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Delete', style: 'destructive',
+                    onPress: async () => {
+                      try {
+                        await api.delete('/business-profiles/me');
+                        Alert.alert('Deleted', 'Your business profile has been deleted', [{ text: 'OK', onPress: () => router.back() }]);
+                      } catch (error: any) {
+                        Alert.alert('Error', error.response?.data?.detail || 'Failed to delete profile');
+                      }
+                    }
+                  }
+                ]);
+              }}
+              data-testid="delete-profile-button"
+            >
               <Ionicons name="trash-outline" size={18} color={COLORS.error} />
               <Text style={styles.deleteBtnText}>Delete Business Profile</Text>
             </TouchableOpacity>
