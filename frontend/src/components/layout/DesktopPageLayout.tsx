@@ -370,8 +370,8 @@ export const DesktopPageLayout: React.FC<DesktopPageLayoutProps> = ({
     };
 
     fetchBadges();
-    // Refresh badges every 30 seconds
-    const interval = setInterval(fetchBadges, 30000);
+    // Refresh badges every 10 seconds for near real-time updates
+    const interval = setInterval(fetchBadges, 10000);
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
