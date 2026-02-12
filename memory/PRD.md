@@ -765,6 +765,41 @@ Payment success page with:
 - Test reports: `/app/test_reports/iteration_102.json` (Icons Management Migration to Admin Dashboard)
 - Previous test reports: `/app/test_reports/iteration_101.json` (Icon Animations, Color Picker, ESLint Fix)
 
+### 2026-02-12: Multiple UI/Admin Improvements (Continued)
+**COMPLETED**
+
+#### Additional Tasks Completed:
+
+**Task: Category-specific Safety Tips Defaults**
+- Added `friendship_dating` and `community` categories to safety tips defaults
+- Safety tips now show category-specific tips on listing detail pages:
+  - Auto & Vehicles: Test drive, verify documents, mechanic inspection
+  - Properties: Visit in person, verify ownership, sign agreement
+  - Electronics: Test item, check warranty, meet in public
+  - Friendship & Dating: Meet in public, tell someone, trust instincts
+  - And more for all 15 categories
+
+**Task: Preview Feature for Safety Tips Admin**
+- Added Preview dialog to Safety Tips admin page (`/api/admin-ui/dashboard/safety-tips`)
+- Shows mobile and desktop preview of how tips appear on listing pages
+- Category selector to preview tips for different categories
+
+**Task: Similar Listings Price Color**
+- Changed price color from text color to green (`COLORS.primary`) in SimilarListings component
+- Location: `/app/frontend/src/components/property/SimilarListings.tsx`
+
+**Task: Friendship & Dating Subcategories**
+- Added full `FRIENDSHIP_DATING_CATEGORY` config with 16 subcategories:
+  - Friendship & Social, Looking for Friends, Professional Networking
+  - Roommate Search, Study Buddies, Dating & Relationships
+  - Casual Dating, Dating & Romance, Long-term Relationship
+  - Faith-based Dating, Mature Dating (40+), Activity Partners
+  - Travel Companions, Gaming Partners, Language Exchange
+- Added `COMMUNITY_CATEGORY` config with 6 subcategories:
+  - Local Events, Clubs & Groups, Volunteering
+  - Lost & Found, Announcements, Rideshare & Carpool
+- Location: `/app/frontend/src/config/subcategories.ts`
+
 ### 2026-02-12: Multiple UI/Admin Improvements
 **COMPLETED**
 
