@@ -1837,8 +1837,10 @@ export default function PostListingScreen() {
           </View>
         )}
       </View>
+      )}
 
-      {/* Phone Call */}
+      {/* Phone Call - Hidden for chat-only categories */}
+      {!chatOnly && (
       <View style={styles.preferenceCard}>
         <View style={styles.preferenceRow}>
           <View style={styles.preferenceInfo}>
@@ -1871,10 +1873,12 @@ export default function PostListingScreen() {
           </View>
         )}
       </View>
+      )}
 
       <View style={{ height: 40 }} />
     </ScrollView>
   );
+  };
 
   // ============ STEP 6: REVIEW ============
   const renderStep6 = () => (
