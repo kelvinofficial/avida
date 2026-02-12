@@ -296,7 +296,7 @@ def create_photography_guides_router(db, require_auth):
         return {"message": "Photography guide deleted successfully"}
     
     @router.post("/seed")
-    async def seed_default_guides(user: dict = Depends(require_auth)):
+    async def seed_default_guides(user = Depends(require_auth)):
         """Seed default photography guides for all categories"""
         from .photography_guides_defaults import DEFAULT_PHOTOGRAPHY_GUIDES
         
@@ -330,7 +330,7 @@ def create_photography_guides_router(db, require_auth):
         return {"message": f"Seeded {created_count} default photography guides"}
     
     @router.put("/reorder/{category_id}")
-    async def reorder_guides(category_id: str, guide_ids: List[str], user: dict = Depends(require_auth)):
+    async def reorder_guides(category_id: str, guide_ids: List[str], user = Depends(require_auth)):
         """Reorder guides within a category"""
         now = datetime.now(timezone.utc)
         
