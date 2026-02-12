@@ -6,6 +6,38 @@ Build a local marketplace application (Avida) with:
 2. Business Profile feature for verified sellers
 3. Premium subscription tiers with payment integration
 
+### 2026-02-12: User Profile Desktop Page Redesign (P0)
+**COMPLETED**
+
+#### Overview
+Standardized the desktop layout for all user profile-related pages to have a consistent, professional design with:
+- Standard header with search bar and location selector
+- Sidebar for navigation with profile section links
+- Main content area with max-width 1280px
+- Consistent styling and spacing
+
+#### Implementation
+Created reusable `DesktopPageLayout` component at `/app/frontend/src/components/layout/DesktopPageLayout.tsx`
+
+#### Pages Updated with DesktopPageLayout:
+1. **Saved Items** (`/app/frontend/app/profile/saved.tsx`) ✅
+2. **Badges** (`/app/frontend/app/profile/badges.tsx`) ✅
+3. **Invoices** (`/app/frontend/app/profile/invoices.tsx`) ✅
+4. **Recently Viewed** (`/app/frontend/app/profile/recently-viewed.tsx`) ✅
+5. **Credits Store** (`/app/frontend/app/credits/index.tsx`) ✅
+6. **Offers** (`/app/frontend/app/offers.tsx`) ✅
+7. **Business Profile Edit** (`/app/frontend/app/business/edit.tsx`) ✅
+
+#### Pages with Custom Desktop Layout (Not using DesktopPageLayout):
+- My Listings (`/app/frontend/app/profile/my-listings.tsx`)
+- Purchases (`/app/frontend/app/profile/purchases.tsx`)
+- Sales (`/app/frontend/app/profile/sales.tsx`)
+
+#### Test Report
+- `/app/test_reports/iteration_116.json` - Frontend 100% pass rate
+
+---
+
 ### 2026-02-12: Saved Filters Feature (P2)
 **COMPLETED**
 
