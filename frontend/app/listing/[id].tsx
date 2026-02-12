@@ -34,6 +34,7 @@ import { useResponsive } from '../../src/hooks/useResponsive';
 import { Footer } from '../../src/components/layout';
 import { BadgeRow, Badge } from '../../src/components/SellerBadges';
 import { BannerSlot } from '../../src/components/BannerSlot';
+import { useAttributeIcons, ICON_COLOR } from '../../src/hooks/useAttributeIcons';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
