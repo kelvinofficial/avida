@@ -321,6 +321,7 @@ const cardStyles = StyleSheet.create({
   card: { width: '100%', backgroundColor: '#fff', borderRadius: BORDER_RADIUS, overflow: 'hidden' },
   cardFeatured: { borderWidth: 2, borderColor: '#2E7D32' },
   imageContainer: { width: '100%', aspectRatio: 1, backgroundColor: '#F5F5F5' },
+  compactImageContainer: { aspectRatio: 1.25 },
   image: { width: '100%', height: '100%' },
   placeholderImage: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5F5F5' },
   badgesContainer: { position: 'absolute', top: 8, left: 8, flexDirection: 'row', flexWrap: 'wrap', gap: 4, maxWidth: '70%' },
