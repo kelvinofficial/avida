@@ -906,6 +906,74 @@ export default function PhotographyGuidesPage() {
           {reorderSnackbar.message}
         </Alert>
       </Snackbar>
+
+      {/* Image Preview Modal */}
+      <Dialog 
+        open={previewModalOpen} 
+        onClose={() => setPreviewModalOpen(false)} 
+        maxWidth="md" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: 'grey.900',
+            borderRadius: 2,
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          color: 'white',
+          bgcolor: 'grey.900',
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ImageIcon />
+            <Typography>{previewModalTitle}</Typography>
+          </Box>
+          <IconButton 
+            onClick={() => setPreviewModalOpen(false)}
+            sx={{ color: 'white' }}
+          >
+            <Close />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ 
+          p: 2, 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          bgcolor: 'grey.900',
+          minHeight: 400,
+        }}>
+          {previewModalImage && (
+            <img 
+              src={previewModalImage} 
+              alt={previewModalTitle}
+              style={{ 
+                maxWidth: '100%', 
+                maxHeight: '70vh', 
+                borderRadius: 8,
+                boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+              }} 
+            />
+          )}
+        </DialogContent>
+        <DialogActions sx={{ 
+          bgcolor: 'grey.900', 
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          p: 2,
+        }}>
+          <Button 
+            onClick={() => setPreviewModalOpen(false)} 
+            variant="outlined"
+            sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
