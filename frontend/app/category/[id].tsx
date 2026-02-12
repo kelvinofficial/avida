@@ -886,6 +886,53 @@ export default function CategoryScreen() {
     </Modal>
   );
 
+  // Save Filter Modal
+  const renderSaveFilterModal = () => (
+    <Modal
+      visible={showSaveFilterModal}
+      animationType="fade"
+      transparent={true}
+      onRequestClose={() => setShowSaveFilterModal(false)}
+    >
+      <View style={styles.saveModalOverlay}>
+        <View style={styles.saveModalContent}>
+          <Text style={styles.saveModalTitle}>Save Filter Preset</Text>
+          <Text style={styles.saveModalSubtitle}>
+            Save your current filter combination for quick access later.
+          </Text>
+          
+          <TextInput
+            style={styles.saveModalInput}
+            placeholder="Enter filter name (e.g., 'Budget Electronics')"
+            value={newFilterName}
+            onChangeText={setNewFilterName}
+            maxLength={50}
+            placeholderTextColor={COLORS.textLight}
+          />
+          
+          <View style={styles.saveModalButtons}>
+            <TouchableOpacity 
+              style={styles.saveModalCancelBtn}
+              onPress={() => { setShowSaveFilterModal(false); setNewFilterName(''); }}
+            >
+              <Text style={styles.saveModalCancelText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[
+                styles.saveModalSaveBtn, 
+                !newFilterName.trim() && styles.saveModalSaveBtnDisabled
+              ]}
+              onPress={saveCurrentFilters}
+              disabled={!newFilterName.trim()}
+            >
+              <Text style={styles.saveModalSaveText}>Save</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
   // Remove initial loading state - render immediately with empty content
   const mainCategory = getMainCategory(categoryId);
 
