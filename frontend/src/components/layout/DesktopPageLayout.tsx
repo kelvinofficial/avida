@@ -47,6 +47,12 @@ const SIDEBAR_LINKS: SidebarLink[] = [
   { id: 'settings', label: 'Settings', icon: 'settings-outline', route: '/settings' },
 ];
 
+// Notification Badges Context
+interface NotificationBadges {
+  unreadMessages: number;
+  pendingOffers: number;
+}
+
 // Quick Stats Component
 interface QuickStats {
   activeListings: number;
