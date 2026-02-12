@@ -130,6 +130,10 @@ export default function FormConfigPage() {
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [filterType, setFilterType] = useState<string>('');
 
+  // Preview dialog state
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewCategory, setPreviewCategory] = useState<string>('');
+
   // Form state for create/edit dialog
   const [formData, setFormData] = useState({
     category_id: '',
