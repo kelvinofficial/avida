@@ -68,9 +68,7 @@ export const DesktopPageLayout: React.FC<DesktopPageLayoutProps> = ({
 }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { isDesktop, isTablet } = useResponsive();
   const { isAuthenticated } = useAuthStore();
-  const isLargeScreen = isDesktop || isTablet;
 
   const renderSidebar = () => (
     <View style={styles.sidebar}>
