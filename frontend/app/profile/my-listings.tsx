@@ -453,229 +453,117 @@ export default function MyListingsScreen() {
     );
   }
 
-  // Render global desktop header
-  const renderGlobalHeader = () => (
-    <View style={desktopStyles.globalHeader}>
-      {/* Row 1: Logo + Nav + Auth + Post Listing */}
-      <View style={desktopStyles.globalHeaderRow1}>
-        <View style={desktopStyles.globalHeaderInner}>
-          {/* Logo */}
-          <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
-            <View style={desktopStyles.logoIcon}>
-              <Ionicons name="storefront" size={20} color="#fff" />
-            </View>
-            <Text style={desktopStyles.logoText}>avida</Text>
-          </TouchableOpacity>
-          
-          {/* Navigation Links - Desktop */}
-          {isAuthenticated && (
-            <View style={desktopStyles.navLinks}>
-              <TouchableOpacity 
-                style={[desktopStyles.navLink, pathname === '/profile/my-listings' && desktopStyles.navLinkActive]}
-                onPress={() => router.push('/profile/my-listings')}
-              >
-                <Ionicons name="pricetags-outline" size={18} color={pathname === '/profile/my-listings' ? COLORS.primary : COLORS.textSecondary} />
-                <Text style={[desktopStyles.navLinkText, pathname === '/profile/my-listings' && desktopStyles.navLinkTextActive]}>My Listings</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[desktopStyles.navLink, pathname === '/messages' && desktopStyles.navLinkActive]}
-                onPress={() => router.push('/messages')}
-              >
-                <Ionicons name="chatbubbles-outline" size={18} color={pathname === '/messages' ? COLORS.primary : COLORS.textSecondary} />
-                <Text style={[desktopStyles.navLinkText, pathname === '/messages' && desktopStyles.navLinkTextActive]}>Messages</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[desktopStyles.navLink, (pathname === '/saved' || pathname === '/profile/saved') && desktopStyles.navLinkActive]}
-                onPress={() => router.push('/profile/saved')}
-              >
-                <Ionicons name="heart-outline" size={18} color={(pathname === '/saved' || pathname === '/profile/saved') ? COLORS.primary : COLORS.textSecondary} />
-                <Text style={[desktopStyles.navLinkText, (pathname === '/saved' || pathname === '/profile/saved') && desktopStyles.navLinkTextActive]}>Saved</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[desktopStyles.navLink, pathname === '/offers' && desktopStyles.navLinkActive]}
-                onPress={() => router.push('/offers')}
-              >
-                <Ionicons name="pricetag-outline" size={18} color={pathname === '/offers' ? COLORS.primary : COLORS.textSecondary} />
-                <Text style={[desktopStyles.navLinkText, pathname === '/offers' && desktopStyles.navLinkTextActive]}>Offers</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          
-          {/* Header Actions */}
-          <View style={desktopStyles.globalHeaderActions}>
-            {isAuthenticated ? (
-              <>
-                <TouchableOpacity 
-                  style={desktopStyles.headerIconBtn} 
-                  onPress={() => router.push('/notifications')}
-                >
-                  <Ionicons name="notifications-outline" size={22} color={COLORS.text} />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={desktopStyles.headerIconBtn} 
-                  onPress={() => router.push('/profile')}
-                >
-                  <Ionicons name="person-circle-outline" size={26} color={COLORS.text} />
-                </TouchableOpacity>
-              </>
-            ) : (
-              <>
-                <TouchableOpacity style={desktopStyles.signInHeaderBtn} onPress={() => goToLogin()}>
-                  <Text style={desktopStyles.signInHeaderBtnText}>Sign In</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={desktopStyles.signUpHeaderBtn} onPress={() => goToLogin()}>
-                  <Text style={desktopStyles.signUpHeaderBtnText}>Sign Up</Text>
-                </TouchableOpacity>
-              </>
-            )}
-            <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => router.push('/post')}>
-              <Ionicons name="add" size={18} color="#fff" />
-              <Text style={desktopStyles.postListingBtnText}>Post Listing</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-      
-      {/* Row 2: Search + Location */}
-      <View style={desktopStyles.globalHeaderRow2}>
-        <View style={desktopStyles.globalHeaderInner}>
-          <TouchableOpacity 
-            style={desktopStyles.searchField} 
-            onPress={() => router.push('/search')} 
-            activeOpacity={0.8}
-          >
-            <Ionicons name="search" size={20} color={COLORS.textSecondary} />
-            <Text style={desktopStyles.searchPlaceholder}>Search for anything...</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={desktopStyles.locationChip} 
-            activeOpacity={0.7} 
-            onPress={() => router.push('/')}
-          >
-            <Ionicons name="location" size={18} color={COLORS.primary} />
-            <Text style={desktopStyles.locationText} numberOfLines={1}>All Locations</Text>
-            <Ionicons name="chevron-down" size={16} color={COLORS.textSecondary} />
-          </TouchableOpacity>
-        </View>
-      </View>
+  // Desktop Tabs Component
+  const DesktopTabs = () => (
+    <View style={desktopStyles.tabsRow}>
+      {TABS.map(tab => (
+        <TouchableOpacity
+          key={tab.key}
+          style={[desktopStyles.tab, activeTab === tab.key && desktopStyles.tabActive]}
+          onPress={() => setActiveTab(tab.key)}
+          data-testid={`tab-${tab.key}`}
+        >
+          <Ionicons 
+            name={tab.icon as any} 
+            size={16} 
+            color={activeTab === tab.key ? COLORS.primary : COLORS.textSecondary} 
+          />
+          <Text style={[desktopStyles.tabText, activeTab === tab.key && desktopStyles.tabTextActive]}>
+            {tab.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 
   // Desktop unauthenticated view
   if (isLargeScreen && !isAuthenticated) {
     return (
-      <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
-        {renderGlobalHeader()}
-        
-        <View style={desktopStyles.pageWrapper}>
-          <View style={desktopStyles.unauthContainer}>
-            <View style={desktopStyles.unauthIcon}>
-              <Ionicons name="lock-closed-outline" size={64} color={COLORS.textSecondary} />
-            </View>
-            <Text style={desktopStyles.unauthTitle}>Sign in to view your listings</Text>
-            <Text style={desktopStyles.unauthSubtitle}>
-              Manage your listings, track views, and see how your items are performing
-            </Text>
-            <TouchableOpacity style={desktopStyles.unauthSignInBtn} onPress={() => goToLogin()}>
-              <Ionicons name="log-in-outline" size={20} color="#fff" />
-              <Text style={desktopStyles.unauthSignInBtnText}>Sign In</Text>
-            </TouchableOpacity>
+      <DesktopPageLayout
+        title="My Listings"
+        icon="list-outline"
+      >
+        <View style={desktopStyles.unauthContainer}>
+          <View style={desktopStyles.unauthIcon}>
+            <Ionicons name="list-outline" size={64} color={COLORS.primary} />
           </View>
+          <Text style={desktopStyles.unauthTitle}>Sign in to view your listings</Text>
+          <Text style={desktopStyles.unauthSubtitle}>
+            Manage your listings, track views, and see how your items are performing
+          </Text>
+          <TouchableOpacity 
+            style={desktopStyles.signInButton} 
+            onPress={() => goToLogin()}
+            data-testid="sign-in-btn"
+          >
+            <Ionicons name="log-in-outline" size={20} color="#fff" />
+            <Text style={desktopStyles.signInButtonText}>Sign In</Text>
+          </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </DesktopPageLayout>
     );
   }
 
   // Desktop authenticated view
   if (isLargeScreen) {
-    return (
-      <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
-        {renderGlobalHeader()}
-        
-        <View style={desktopStyles.pageWrapper}>
-          {/* Page Header */}
-          <View style={desktopStyles.pageHeader}>
-            <View style={desktopStyles.pageHeaderLeft}>
-              <TouchableOpacity 
-                style={desktopStyles.backBtn} 
-                onPress={() => router.back()}
-              >
-                <Ionicons name="arrow-back" size={20} color={COLORS.text} />
-              </TouchableOpacity>
-              <Text style={desktopStyles.pageTitle}>My Listings</Text>
-              <View style={desktopStyles.totalBadge}>
-                <Text style={desktopStyles.totalBadgeText}>{total}</Text>
-              </View>
-            </View>
-            <TouchableOpacity style={desktopStyles.createBtn} onPress={() => router.push('/post')}>
-              <Ionicons name="add" size={18} color="#fff" />
-              <Text style={desktopStyles.createBtnText}>Create Listing</Text>
-            </TouchableOpacity>
-          </View>
+    const rightAction = (
+      <TouchableOpacity 
+        style={desktopStyles.createBtn} 
+        onPress={() => router.push('/post')}
+        data-testid="create-listing-btn"
+      >
+        <Ionicons name="add" size={18} color="#fff" />
+        <Text style={desktopStyles.createBtnText}>Create Listing</Text>
+      </TouchableOpacity>
+    );
 
-          {/* Tabs */}
-          <View style={desktopStyles.tabsContainer}>
-            {TABS.map(tab => (
-              <TouchableOpacity
-                key={tab.key}
-                style={[desktopStyles.tab, activeTab === tab.key && desktopStyles.tabActive]}
-                onPress={() => setActiveTab(tab.key)}
-              >
-                <Ionicons 
-                  name={tab.icon as any} 
-                  size={16} 
-                  color={activeTab === tab.key ? COLORS.primary : COLORS.textSecondary} 
-                />
-                <Text style={[desktopStyles.tabText, activeTab === tab.key && desktopStyles.tabTextActive]}>
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
+    return (
+      <DesktopPageLayout
+        title="My Listings"
+        subtitle={`${total} listings`}
+        icon="list-outline"
+        rightAction={rightAction}
+        headerContent={<DesktopTabs />}
+      >
+        {loading && !refreshing ? (
+          <View style={desktopStyles.grid}>
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <View key={i} style={desktopStyles.gridItem}>
+                <SkeletonItem isDesktop />
+              </View>
             ))}
           </View>
-
-          {/* Content - Render immediately */}
-          {listings.length === 0 && !loading ? (
-            <EmptyState status={activeTab} isDesktop />
-          ) : (
-            <ScrollView 
-              style={desktopStyles.scrollView}
-              contentContainerStyle={desktopStyles.gridContainer}
-              showsVerticalScrollIndicator={false}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={handleRefresh}
-                  colors={[COLORS.primary]}
-                  tintColor={COLORS.primary}
-                />
-              }
-            >
-              <View style={desktopStyles.grid}>
-                {listings.map((item) => (
-                  <View key={item.id} style={desktopStyles.gridItem}>
-                    <DesktopListingCard
-                      item={item}
-                      onPress={() => router.push(`/listing/${item.id}`)}
-                      onEdit={() => router.push(`/post?edit=${item.id}`)}
-                      onPerformance={() => handlePerformance(item)}
-                      onBoost={() => router.push(`/boost/${item.id}`)}
-                      onMarkSold={() => handleMarkSold(item)}
-                      onDelete={() => handleDelete(item)}
-                    />
-                  </View>
-                ))}
-              </View>
-              {hasMore && listings.length > 0 && (
-                <TouchableOpacity style={desktopStyles.loadMoreBtn} onPress={handleLoadMore}>
-                  <Text style={desktopStyles.loadMoreBtnText}>Load More</Text>
-                </TouchableOpacity>
-              )}
-              {/* Footer */}
-              <Footer isTablet={isTablet && !isDesktop} />
-            </ScrollView>
-          )}
-        </View>
-      </SafeAreaView>
+        ) : listings.length === 0 ? (
+          <EmptyState status={activeTab} isDesktop />
+        ) : (
+          <>
+            <View style={desktopStyles.grid}>
+              {listings.map((item) => (
+                <View key={item.id} style={desktopStyles.gridItem}>
+                  <DesktopListingCard
+                    item={item}
+                    onPress={() => router.push(`/listing/${item.id}`)}
+                    onEdit={() => router.push(`/post?edit=${item.id}`)}
+                    onPerformance={() => handlePerformance(item)}
+                    onBoost={() => router.push(`/boost/${item.id}`)}
+                    onMarkSold={() => handleMarkSold(item)}
+                    onDelete={() => handleDelete(item)}
+                  />
+                </View>
+              ))}
+            </View>
+            {hasMore && listings.length > 0 && (
+              <TouchableOpacity 
+                style={desktopStyles.loadMoreBtn} 
+                onPress={handleLoadMore}
+                data-testid="load-more-btn"
+              >
+                <Text style={desktopStyles.loadMoreBtnText}>Load More</Text>
+              </TouchableOpacity>
+            )}
+          </>
+        )}
+      </DesktopPageLayout>
     );
   }
 
