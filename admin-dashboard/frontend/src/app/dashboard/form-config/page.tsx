@@ -330,8 +330,6 @@ export default function FormConfigPage() {
     try {
       await api.put(`/form-config/${config.id}`, {
         is_active: !config.is_active,
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
       });
       fetchConfigs();
       fetchStats();
