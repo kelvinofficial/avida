@@ -19,7 +19,7 @@ import api from '../../src/utils/api';
 import { UserProfile, UserStats } from '../../src/types/settings';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { BadgeIcon, Badge } from '../../src/components/SellerBadges';
-import { DesktopHeader, Footer } from '../../src/components/layout';
+import { DesktopHeader, Footer, DesktopPageLayout } from '../../src/components/layout';
 
 const COLORS = {
   primary: '#2E7D32',
