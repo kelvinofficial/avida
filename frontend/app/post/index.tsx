@@ -1404,6 +1404,14 @@ export default function PostListingScreen() {
               <View style={styles.tipContent}>
                 <Text style={styles.tipItemTitle}>{guide.title}</Text>
                 <Text style={styles.tipItemDesc}>{guide.description}</Text>
+                {/* Display illustration image if available */}
+                {guide.image_url && (
+                  <Image 
+                    source={{ uri: guide.image_url }} 
+                    style={styles.tipIllustration}
+                    resizeMode="cover"
+                  />
+                )}
               </View>
             </View>
           ))}
