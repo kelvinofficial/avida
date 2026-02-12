@@ -1038,23 +1038,60 @@ export default function CategoryScreen() {
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
         {/* Mobile Search Input */}
-        <View style={styles.mobileSearchContainer}>
-          <Ionicons name="search" size={18} color="#999" />
-          <TextInput
-            style={styles.mobileSearchInput}
-            placeholder={`Search in ${mainCategory?.name || 'category'}...`}
-            placeholderTextColor="#999"
-            value={searchQuery}
-            onChangeText={handleSearch}
-            data-testid="mobile-category-search-input"
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => handleSearch('')} style={{ padding: 4 }}>
-              <Ionicons name="close-circle" size={16} color="#999" />
-            </TouchableOpacity>
-          )}
+        <View style={styles.mobileSearchWrapper}>
+          <View style={styles.mobileSearchContainer}>
+            <Ionicons name="search" size={18} color="#999" />
+            <TextInput
+              style={styles.mobileSearchInput}
+              placeholder={`Search in ${mainCategory?.name || 'category'}...`}
+              placeholderTextColor="#999"
+              value={searchQuery}
+              onChangeText={handleSearch}
+              onFocus={() => setShowRecentSearches(true)}
+              onBlur={() => setTimeout(() => setShowRecentSearches(false), 200)}
+              data-testid="mobile-category-search-input"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => handleSearch('')} style={{ padding: 4 }}>
+                <Ionicons name="close-circle" size={16} color="#999" />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
+      
+      {/* Mobile Recent Searches Dropdown */}
+      {showRecentSearches && recentSearches.length > 0 && !searchQuery && (
+        <View style={styles.mobileRecentSearches}>
+          <View style={styles.recentSearchesHeaderMobile}>
+            <View style={styles.recentSearchesTitleRowMobile}>
+              <Ionicons name="time-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.recentSearchesTitleMobile}>Recent Searches</Text>
+            </View>
+            <TouchableOpacity onPress={clearAllRecentSearches}>
+              <Text style={styles.clearAllBtnMobile}>Clear</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.recentSearchChipsContainer}>
+            {recentSearches.map((query, index) => (
+              <TouchableOpacity 
+                key={`mobile-${query}-${index}`}
+                style={styles.recentSearchChip}
+                onPress={() => applyRecentSearch(query)}
+              >
+                <Ionicons name="search-outline" size={12} color={COLORS.primary} />
+                <Text style={styles.recentSearchChipText}>{query}</Text>
+                <TouchableOpacity 
+                  onPress={() => removeRecentSearch(query)}
+                  style={styles.removeSearchChipBtn}
+                >
+                  <Ionicons name="close" size={12} color={COLORS.textSecondary} />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
       {/* Listings Grid with Header */}
       {isSingleColumn ? (
