@@ -98,6 +98,7 @@ const menuItems = [
   { text: 'Attributes', icon: <Tune />, path: '/dashboard/attributes' },
   { text: 'Attribute Icons', icon: <InterestsOutlined />, path: '/dashboard/icons' },
   { text: 'Safety Tips', icon: <GppGood />, path: '/dashboard/safety-tips' },
+  { text: 'Form Config', icon: <Tune />, path: '/dashboard/form-config' },
   { text: 'Location Manager', icon: <Place />, path: '/dashboard/locations' },
   { text: 'Users', icon: <People />, path: '/dashboard/users' },
   { text: 'Verification', icon: <VerifiedUser />, path: '/dashboard/verification' },
