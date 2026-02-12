@@ -1048,7 +1048,7 @@ export default function CategoryScreen() {
       </View>
 
       {/* Saved Filters Section (for authenticated users) */}
-      {isAuthenticated && (
+      {isAuthenticated ? (
         <View style={desktopStyles.sidebarSection}>
           <Text style={desktopStyles.sidebarSectionTitle}>SAVED FILTERS</Text>
           
@@ -1096,6 +1096,17 @@ export default function CategoryScreen() {
               No saved filters yet. Apply filters and save them for quick access.
             </Text>
           )}
+        </View>
+      ) : (
+        <View style={desktopStyles.sidebarSection}>
+          <Text style={desktopStyles.sidebarSectionTitle}>SAVED FILTERS</Text>
+          <TouchableOpacity 
+            style={[desktopStyles.saveFilterBtn, { backgroundColor: COLORS.background }]}
+            onPress={() => router.push('/login')}
+          >
+            <Ionicons name="log-in-outline" size={16} color={COLORS.textSecondary} />
+            <Text style={[desktopStyles.saveFilterBtnText, { color: COLORS.textSecondary }]}>Sign in to save filters</Text>
+          </TouchableOpacity>
         </View>
       )}
 
