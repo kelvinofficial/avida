@@ -84,6 +84,8 @@ const CATEGORIES = [
   { id: 'agriculture', name: 'Agriculture & Food' },
   { id: 'commercial_equipment', name: 'Commercial Equipment' },
   { id: 'repair_construction', name: 'Repair & Construction' },
+  { id: 'friendship_dating', name: 'Friendship & Dating' },
+  { id: 'community', name: 'Community' },
 ];
 
 export default function SafetyTipsPage() {
