@@ -235,6 +235,8 @@ DEFAULT_CATEGORIES = [
             {"id": "casual_dating", "name": "Casual Dating", "group": "dating_relationships"},
             {"id": "dating_romance", "name": "Dating & Romance", "group": "dating_relationships"},
             {"id": "long_term_relationship", "name": "Long-Term Relationship", "group": "dating_relationships"},
+            {"id": "faith_based_dating", "name": "Faith-Based Dating", "group": "dating_relationships"},
+            {"id": "mature_dating_40_plus", "name": "Mature Dating (40+)", "group": "dating_relationships"},
             
             # Marriage & Matchmaking
             {"id": "marriage_matchmaking", "name": "Marriage & Matchmaking", "is_group": True},
@@ -250,6 +252,8 @@ DEFAULT_CATEGORIES = [
             {"id": "hiking_outdoor", "name": "Hiking & Outdoor Adventures", "group": "activity_meetups"},
             {"id": "sports_partners", "name": "Sports Partners", "group": "activity_meetups"},
             {"id": "dining_partners", "name": "Dining & Food Partners", "group": "activity_meetups"},
+            {"id": "volunteering", "name": "Volunteering", "group": "activity_meetups"},
+            {"id": "music_arts", "name": "Music & Arts", "group": "activity_meetups"},
             
             # Online-Only Connections
             {"id": "online_connections", "name": "Online-Only Connections", "is_group": True},
