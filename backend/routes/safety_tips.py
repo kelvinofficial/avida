@@ -316,7 +316,7 @@ def create_safety_tips_router(db, require_admin):
                 tips.append(tip)
             
             if tips:
-                db.safety_tips.insert_many(tips)
+                await db.safety_tips.insert_many(tips)
                 # Remove _id from response
                 for tip in tips:
                     tip.pop("_id", None)
@@ -337,7 +337,7 @@ def create_safety_tips_router(db, require_admin):
                     continue
                     
                 # Check if tips already exist for this category
-                existing = db.safety_tips.count_documents({"category_id": category_id})
+                existing = await db.safety_tips.count_documents({"category_id": category_id})
                 if existing > 0:
                     continue
                 
@@ -352,7 +352,7 @@ def create_safety_tips_router(db, require_admin):
                         "updated_at": datetime.now(timezone.utc).isoformat(),
                         "created_by": current_user.get("email", "admin")
                     }
-                    db.safety_tips.insert_one(tip)
+                    await db.safety_tips.insert_one(tip)
                     created_count += 1
             
             return {"message": f"Seeded {created_count} default safety tips"}
@@ -369,7 +369,7 @@ def create_safety_tips_router(db, require_admin):
         """Reorder safety tips for a category"""
         try:
             for idx, tip_id in enumerate(tip_ids):
-                db.safety_tips.update_one(
+                await db.safety_tips.update_one(
                     {"id": tip_id, "category_id": category_id},
                     {"$set": {"order": idx, "updated_at": datetime.now(timezone.utc).isoformat()}}
                 )
