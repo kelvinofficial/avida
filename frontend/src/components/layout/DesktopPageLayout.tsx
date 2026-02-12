@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'expo-router';
 import { DesktopHeader } from './DesktopHeader';
 import { Footer } from './Footer';
 import { useAuthStore } from '../../store/authStore';
+import { useNotificationPrefsStore } from '../../store/notificationPrefsStore';
 import api from '../../utils/api';
 
 // Notification Sound Utility
