@@ -558,13 +558,47 @@ export default function IconsManagementScreen() {
                 placeholder="e.g., make, model, bedrooms"
               />
 
-              <Text style={styles.inputLabel}>Color (hex)</Text>
-              <TextInput
-                style={styles.textInput}
-                value={formData.color}
-                onChangeText={(text) => setFormData({ ...formData, color: text })}
-                placeholder="#9333EA"
-              />
+              <Text style={styles.inputLabel}>Icon Color</Text>
+              <View style={styles.colorPickerContainer}>
+                <View style={styles.colorSwatches}>
+                  {[
+                    '#2E7D32', // Primary Green
+                    '#1976D2', // Blue
+                    '#9333EA', // Purple
+                    '#E53935', // Red
+                    '#F57C00', // Orange
+                    '#00897B', // Teal
+                    '#5D4037', // Brown
+                    '#455A64', // Blue Grey
+                  ].map((color) => (
+                    <TouchableOpacity
+                      key={color}
+                      style={[
+                        styles.colorSwatch,
+                        { backgroundColor: color },
+                        formData.color === color && styles.colorSwatchSelected,
+                      ]}
+                      onPress={() => setFormData({ ...formData, color })}
+                    >
+                      {formData.color === color && (
+                        <Ionicons name="checkmark" size={16} color="#fff" />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <View style={styles.colorInputRow}>
+                  <View style={[styles.colorPreview, { backgroundColor: formData.color || '#2E7D32' }]}>
+                    <Ionicons name={formData.ionicon_name as any} size={18} color="#fff" />
+                  </View>
+                  <TextInput
+                    style={[styles.textInput, styles.colorInput]}
+                    value={formData.color}
+                    onChangeText={(text) => setFormData({ ...formData, color: text })}
+                    placeholder="#2E7D32"
+                    maxLength={7}
+                  />
+                </View>
+              </View>
 
               <Text style={styles.inputLabel}>Description</Text>
               <TextInput
