@@ -1101,7 +1101,7 @@ export default function ListingDetailScreen() {
                         <AnimatedIconBox 
                           iconName={getIconForAttribute('category', listing.category_id)} 
                           index={0} 
-                          color={ICON_COLOR}
+                          color={getIconColorForAttribute('category', listing.category_id)}
                           size={16}
                           boxStyle={desktopStyles.detailIconBox}
                         />
@@ -1116,7 +1116,7 @@ export default function ListingDetailScreen() {
                         <AnimatedIconBox 
                           iconName={getIconForAttribute('condition', listing.category_id)} 
                           index={1} 
-                          color={ICON_COLOR}
+                          color={getIconColorForAttribute('condition', listing.category_id)}
                           size={16}
                           boxStyle={desktopStyles.detailIconBox}
                         />
@@ -1131,7 +1131,7 @@ export default function ListingDetailScreen() {
                         <AnimatedIconBox 
                           iconName={getIconForAttribute(key, listing.category_id)} 
                           index={attrIndex + 2} 
-                          color={ICON_COLOR}
+                          color={getIconColorForAttribute(key, listing.category_id)}
                           size={16}
                           boxStyle={desktopStyles.detailIconBox}
                         />
