@@ -39,9 +39,9 @@ def create_badges_router(db, get_current_user, badge_service=None):
     ]
 
     @router.get("/progress")
-    async def get_badge_progress(current_user: dict = Depends(get_current_user)):
+    async def get_badge_progress(current_user = Depends(get_current_user)):
         """Get user's badge progress across all badge types."""
-        user_id = current_user["user_id"]
+        user_id = current_user.user_id
         
         # Get user's earned badges
         earned_badges_cursor = db.user_badges.find(
@@ -95,13 +95,13 @@ def create_badges_router(db, get_current_user, badge_service=None):
     @router.put("/showcase")
     async def update_showcased_badges(
         badge_ids: List[str],
-        current_user: dict = Depends(get_current_user)
+        current_user = Depends(get_current_user)
     ):
         """Update user's showcased badges (max 5)."""
         if len(badge_ids) > 5:
             raise HTTPException(status_code=400, detail="Maximum 5 badges can be showcased")
         
-        user_id = current_user["user_id"]
+        user_id = current_user.user_id
         
         # Verify user owns all badges
         owned_badges_cursor = db.user_badges.find(
@@ -131,19 +131,19 @@ def create_badges_router(db, get_current_user, badge_service=None):
         return {"success": True, "showcased_count": len(badge_ids)}
 
     @router.get("/unviewed-count")
-    async def get_unviewed_badge_count(current_user: dict = Depends(get_current_user)):
+    async def get_unviewed_badge_count(current_user = Depends(get_current_user)):
         """Get count of unviewed badges for notification bell."""
         count = await db.user_badges.count_documents({
-            "user_id": current_user["user_id"],
+            "user_id": current_user.user_id,
             "is_viewed": False
         })
         return {"unviewed_count": count}
 
     @router.post("/mark-viewed")
-    async def mark_badges_viewed(current_user: dict = Depends(get_current_user)):
+    async def mark_badges_viewed(current_user = Depends(get_current_user)):
         """Mark all user badges as viewed."""
         result = await db.user_badges.update_many(
-            {"user_id": current_user["user_id"], "is_viewed": False},
+            {"user_id": current_user.user_id, "is_viewed": False},
             {"$set": {"is_viewed": True}}
         )
         return {"success": True, "marked_count": result.modified_count}
@@ -168,9 +168,9 @@ def create_badges_router(db, get_current_user, badge_service=None):
     }
 
     @router.get("/milestones")
-    async def get_badge_milestones(current_user: dict = Depends(get_current_user)):
+    async def get_badge_milestones(current_user = Depends(get_current_user)):
         """Get user's achieved and pending milestones"""
-        user_id = current_user["user_id"]
+        user_id = current_user.user_id
         
         # Get total badge count
         total_badges = await db.user_badges.count_documents({"user_id": user_id})
@@ -239,9 +239,9 @@ def create_badges_router(db, get_current_user, badge_service=None):
         }
 
     @router.post("/milestones/acknowledge")
-    async def acknowledge_milestone(milestone_id: str, current_user: dict = Depends(get_current_user)):
+    async def acknowledge_milestone(milestone_id: str, current_user = Depends(get_current_user)):
         """Mark a milestone as acknowledged/seen"""
-        user_id = current_user["user_id"]
+        user_id = current_user.user_id
         
         if not milestone_id:
             raise HTTPException(status_code=400, detail="milestone_id is required")
@@ -316,9 +316,9 @@ def create_badges_router(db, get_current_user, badge_service=None):
         }
 
     @router.get("/leaderboard/my-rank")
-    async def get_my_rank(current_user: dict = Depends(get_current_user)):
+    async def get_my_rank(current_user = Depends(get_current_user)):
         """Get current user's rank on the leaderboard."""
-        user_id = current_user["user_id"]
+        user_id = current_user.user_id
         
         # Get all users' points
         pipeline = [
