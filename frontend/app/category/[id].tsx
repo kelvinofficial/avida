@@ -784,17 +784,12 @@ export default function CategoryScreen() {
   // Mobile view (original)
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header - Only this stays sticky */}
-      <View style={styles.header}>
+      {/* Navigation Header - Stays sticky */}
+      <View style={styles.navHeader}>
         <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          {mainCategory?.icon && (
-            <Ionicons name={mainCategory.icon as any} size={20} color={COLORS.primary} />
-          )}
-          <Text style={styles.headerTitle}>{mainCategory?.name || categoryId}</Text>
-        </View>
+        <View style={{ flex: 1 }} />
         <TouchableOpacity onPress={() => router.push('/search')} style={styles.searchButton}>
           <Ionicons name="search" size={22} color={COLORS.text} />
         </TouchableOpacity>
@@ -816,6 +811,14 @@ export default function CategoryScreen() {
           ListFooterComponent={renderFooter}
           ListHeaderComponent={
             <>
+              {/* Category Title - Scrolls with content */}
+              <View style={styles.categoryTitleSection}>
+                {mainCategory?.icon && (
+                  <Ionicons name={mainCategory.icon as any} size={24} color={COLORS.primary} />
+                )}
+                <Text style={styles.headerTitle}>{mainCategory?.name || categoryId}</Text>
+              </View>
+
               {/* Subcategory Chips - Now scrolls with content */}
               {subcategories.length > 0 && (
                 <View style={styles.subcategoriesBar}>
