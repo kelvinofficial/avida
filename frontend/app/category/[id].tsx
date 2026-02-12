@@ -299,11 +299,129 @@ export default function CategoryScreen() {
     }
   }, [RECENT_SEARCHES_KEY]);
   
+  // Fetch autocomplete suggestions
+  const fetchSuggestions = useCallback(async (query: string) => {
+    if (!query.trim() || query.trim().length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${API_URL}/api/searches/suggestions?q=${encodeURIComponent(query)}&category_id=${categoryId}&limit=5`);
+      if (response.ok) {
+        const data = await response.json();
+        setSuggestions(data.suggestions || []);
+        setShowSuggestions(data.suggestions && data.suggestions.length > 0);
+      }
+    } catch (error) {
+      console.log('Error fetching suggestions:', error);
+    }
+  }, [API_URL, categoryId]);
+  
+  // Load saved filters from API
+  const loadSavedFilters = useCallback(async () => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) return;
+      
+      const response = await fetch(`${API_URL}/api/saved-filters?category_id=${categoryId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setSavedFilters(data);
+        
+        // Apply default filter if exists and no filters currently active
+        const defaultFilter = data.find((f: any) => f.is_default);
+        if (defaultFilter && activeFilterCount === 0) {
+          applyFilterPreset(defaultFilter.filters);
+        }
+      }
+    } catch (error) {
+      console.log('Error loading saved filters:', error);
+    }
+  }, [API_URL, categoryId, isAuthenticated]);
+  
+  // Save current filters as a preset
+  const saveCurrentFilters = useCallback(async () => {
+    if (!isAuthenticated || !newFilterName.trim()) return;
+    
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) return;
+      
+      const filterConfig = {
+        selectedSubcategory,
+        priceRange,
+        selectedCondition,
+        sortBy,
+        activeFilters,
+      };
+      
+      const response = await fetch(`${API_URL}/api/saved-filters`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: newFilterName.trim(),
+          category_id: categoryId,
+          filters: filterConfig
+        })
+      });
+      
+      if (response.ok) {
+        setShowSaveFilterModal(false);
+        setNewFilterName('');
+        loadSavedFilters();
+      }
+    } catch (error) {
+      console.log('Error saving filter:', error);
+    }
+  }, [API_URL, categoryId, isAuthenticated, newFilterName, selectedSubcategory, priceRange, selectedCondition, sortBy, activeFilters, loadSavedFilters]);
+  
+  // Apply a saved filter preset
+  const applyFilterPreset = useCallback((filters: any) => {
+    if (filters.selectedSubcategory !== undefined) setSelectedSubcategory(filters.selectedSubcategory);
+    if (filters.priceRange) setPriceRange(filters.priceRange);
+    if (filters.selectedCondition !== undefined) setSelectedCondition(filters.selectedCondition);
+    if (filters.sortBy) setSortBy(filters.sortBy);
+    if (filters.activeFilters) setActiveFilters(filters.activeFilters);
+    setShowSavedFiltersMenu(false);
+  }, []);
+  
+  // Delete a saved filter
+  const deleteSavedFilter = useCallback(async (filterId: string) => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) return;
+      
+      const response = await fetch(`${API_URL}/api/saved-filters/${filterId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        loadSavedFilters();
+      }
+    } catch (error) {
+      console.log('Error deleting filter:', error);
+    }
+  }, [API_URL, isAuthenticated, loadSavedFilters]);
+  
   // Load recent searches on mount
   useEffect(() => {
     loadRecentSearches();
     loadPopularSearches();
-  }, [categoryId]);
+    loadSavedFilters();
+  }, [categoryId, isAuthenticated]);
 
   // Get subcategories for this category
   const subcategories = useMemo(() => {
