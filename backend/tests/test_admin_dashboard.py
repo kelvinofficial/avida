@@ -8,7 +8,7 @@ import requests
 import os
 
 # Use the public URL for testing
-BASE_URL = "https://route-extract-1.preview.emergentagent.com"
+BASE_URL = "https://dating-subcats.preview.emergentagent.com"
 
 # Test credentials
 ADMIN_EMAIL = "admin@marketplace.com"

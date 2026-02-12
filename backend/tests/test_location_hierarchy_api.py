@@ -7,7 +7,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://route-extract-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://dating-subcats.preview.emergentagent.com')
 
 class TestLocationCountriesAPI:
     """Test /api/locations/countries endpoint"""

@@ -9,7 +9,7 @@ import os
 import io
 import csv
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://route-extract-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://dating-subcats.preview.emergentagent.com')
 API_URL = f"{BASE_URL}/api/admin"
 
 # Test credentials
