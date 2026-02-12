@@ -2869,60 +2869,8 @@ async def verify_email(request: Request):
     return {"message": "Email verified successfully"}
 
 # ==================== FAVORITES (SAVED ITEMS) ====================
-
-@api_router.get("/profile/activity/favorites")
-async def get_saved_items(
-    request: Request,
-    page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100)
-):
-    """Get user's saved/favorite items"""
-    user = await require_auth(request)
-    
-    skip = (page - 1) * limit
-    
-    # Get favorites
-    favorites = await db.favorites.find(
-        {"user_id": user.user_id},
-        {"_id": 0}
-    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
-    
-    # Get listing details from all collections
-    listing_ids = [f["listing_id"] for f in favorites]
-    
-    listings = await db.listings.find({"id": {"$in": listing_ids}}, {"_id": 0}).to_list(len(listing_ids))
-    properties = await db.properties.find({"id": {"$in": listing_ids}}, {"_id": 0}).to_list(len(listing_ids))
-    auto_listings = await db.auto_listings.find({"id": {"$in": listing_ids}}, {"_id": 0}).to_list(len(listing_ids))
-    
-    listings_map = {}
-    for l in listings:
-        listings_map[l["id"]] = {**l, "type": "listing"}
-    for p in properties:
-        listings_map[p["id"]] = {**p, "type": "property"}
-    for a in auto_listings:
-        listings_map[a["id"]] = {**a, "type": "auto"}
-    
-    result = []
-    for fav in favorites:
-        listing = listings_map.get(fav["listing_id"])
-        if listing:
-            result.append({
-                **listing,
-                "saved_at": fav.get("created_at")
-            })
-    
-    total = await db.favorites.count_documents({"user_id": user.user_id})
-    
-    return {"items": result, "total": total, "page": page}
-
-@api_router.delete("/profile/activity/recently-viewed")
-async def clear_recently_viewed(request: Request):
-    """Clear recently viewed history"""
-    user = await require_auth(request)
-    
-    await db.recently_viewed.delete_many({"user_id": user.user_id})
-    
-    return {"message": "Viewing history cleared"}
+# NOTE: GET /profile/activity/favorites and DELETE /profile/activity/recently-viewed
+# are now handled by routes/profile.py
 
 # ==================== HEALTH CHECK ====================
 
