@@ -2752,6 +2752,50 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     marginLeft: 8,
   },
+  // Salary Range Styles
+  salaryInputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 12,
+    marginBottom: 16,
+  },
+  salaryInputWrapper: {
+    flex: 1,
+  },
+  salaryInputLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+  },
+  salaryDivider: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    paddingBottom: 28,
+  },
+  salaryPeriodRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  // Chat Only Notice
+  chatOnlyNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 10,
+    marginBottom: 16,
+  },
+  chatOnlyText: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: '500',
+  },
   // Section Divider
   sectionDivider: {
     marginTop: 24,
