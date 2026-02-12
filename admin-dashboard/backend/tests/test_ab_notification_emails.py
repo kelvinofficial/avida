@@ -11,7 +11,7 @@ import jwt
 from datetime import datetime, timezone
 
 # Use the external API URL for testing
-BASE_URL = os.environ.get('NEXT_PUBLIC_API_URL', 'https://filter-rollback.preview.emergentagent.com/api/admin')
+BASE_URL = os.environ.get('NEXT_PUBLIC_API_URL', 'https://ui-standardization-3.preview.emergentagent.com/api/admin')
 
 # Test credentials
 TEST_EMAIL = "admin@marketplace.com"
