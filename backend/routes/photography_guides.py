@@ -173,7 +173,7 @@ def create_photography_guides_router(db, require_auth):
         }
     
     @router.get("/{guide_id}")
-    async def get_guide(guide_id: str, user: dict = Depends(require_auth)):
+    async def get_guide(guide_id: str, user = Depends(require_auth)):
         """Get a specific photography guide with full details"""
         try:
             guide = await collection.find_one({"_id": ObjectId(guide_id)})
