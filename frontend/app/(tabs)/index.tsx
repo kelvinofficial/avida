@@ -1340,23 +1340,6 @@ export default function HomeScreen() {
             <Text style={desktopStyles.locationText} numberOfLines={1}>{currentCity}</Text>
             <Ionicons name="chevron-down" size={16} color="#666" />
           </TouchableOpacity>
-          {/* Include Nearby Toggle for Desktop */}
-          {selectedCity && (
-            <TouchableOpacity 
-              style={[desktopStyles.nearMeChip, includeNearbyCities && desktopStyles.nearMeChipActive]}
-              activeOpacity={0.7}
-              onPress={() => {
-                setIncludeNearbyCities(!includeNearbyCities);
-                Storage.setItem('@include_nearby', (!includeNearbyCities).toString());
-              }}
-              data-testid="include-nearby-toggle-desktop"
-            >
-              <Ionicons name="locate" size={16} color={includeNearbyCities ? "#fff" : "#1976D2"} />
-              <Text style={[desktopStyles.nearMeText, includeNearbyCities && desktopStyles.nearMeTextActive]}>
-                {includeNearbyCities ? 'Nearby On' : 'Nearby Off'}
-              </Text>
-            </TouchableOpacity>
-          )}
         </View>
       </View>
 
