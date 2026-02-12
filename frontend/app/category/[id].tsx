@@ -199,6 +199,14 @@ export default function CategoryScreen() {
   const [showRecentSearches, setShowRecentSearches] = useState(false);
   // Popular searches state
   const [popularSearches, setPopularSearches] = useState<{global: string[], category: string[]}>({ global: [], category: [] });
+  // Autocomplete suggestions state
+  const [suggestions, setSuggestions] = useState<{query: string, count: number}[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  // Saved filters state
+  const [savedFilters, setSavedFilters] = useState<Array<{id: string, name: string, filters: any, is_default: boolean}>>([]);
+  const [showSaveFilterModal, setShowSaveFilterModal] = useState(false);
+  const [newFilterName, setNewFilterName] = useState('');
+  const [showSavedFiltersMenu, setShowSavedFiltersMenu] = useState(false);
 
   const categoryId = id as string;
   
