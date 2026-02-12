@@ -4128,6 +4128,14 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load profile activity router: {e}")
     
+    # Create profile router (GET/PUT /profile, public profile endpoints)
+    try:
+        profile_router = create_profile_router(db, require_auth, get_current_user)
+        api_router.include_router(profile_router)
+        logger.info("Profile router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load profile router: {e}")
+    
     # Create notifications router
     try:
         notifications_router = create_notifications_router(db, require_auth)
