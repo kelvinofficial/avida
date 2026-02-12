@@ -375,6 +375,11 @@ export default function PostListingScreen() {
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [sellerType, setSellerType] = useState('Individual');
   
+  // Salary Range (for job listings)
+  const [salaryMin, setSalaryMin] = useState('');
+  const [salaryMax, setSalaryMax] = useState('');
+  const [salaryPeriod, setSalaryPeriod] = useState<'hourly' | 'monthly' | 'yearly'>('monthly');
+  
   // Price Suggestion State
   const [priceSuggestionLoading, setPriceSuggestionLoading] = useState(false);
   const [priceSuggestion, setPriceSuggestion] = useState<any>(null);
