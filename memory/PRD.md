@@ -41,13 +41,25 @@ Added `QuickStatsCard` component to the `DesktopPageLayout` sidebar that shows:
 - **Credit Balance** - Clickable, navigates to Credits page
 Only renders when user is authenticated. Fetches data in parallel from:
 - `/api/listings/my` for listings count
-- `/api/offers/received?status=pending` for offers count
+- `/api/offers?role=seller` for offers count (fixed from /api/offers/received)
 - `/api/boost/credits/balance` for credits
+
+#### Notification Badges Feature (2026-02-12) ✅
+Added red notification dots with counts to sidebar items:
+- **Messages**: Shows unread messages count (fetched from `/api/conversations`)
+- **Offers**: Shows pending offers count (fetched from `/api/offers?role=seller`)
+- Features:
+  - Red dot badge with white text
+  - Numbers capped at "99+" for high counts
+  - Auto-refreshes every 30 seconds
+  - Only displays for authenticated users
+- Test report: `/app/test_reports/iteration_119.json` - 100% pass (backend + code review)
 
 #### Test Reports
 - `/app/test_reports/iteration_6.json` - Initial 8 pages
 - `/app/test_reports/iteration_117.json` - Final 3 pages (my-listings, purchases, sales) - 100% pass
 - `/app/test_reports/iteration_118.json` - Messages & Profile pages + Quick Stats - 100% pass
+- `/app/test_reports/iteration_119.json` - Quick Stats fix + Notification badges - 100% pass
 
 ---
 
