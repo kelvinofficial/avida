@@ -93,6 +93,12 @@ const getNotificationConfig = (type: NotificationType) => {
       return { icon: 'checkmark-circle', color: '#16A34A', gradient: ['#16A34A', '#15803D'] };
     case 'offer_rejected':
       return { icon: 'close-circle', color: '#DC2626', gradient: ['#DC2626', '#B91C1C'] };
+    case 'badge':
+      return { icon: 'medal', color: '#8B5CF6', gradient: ['#8B5CF6', '#7C3AED'] };
+    case 'challenge':
+      return { icon: 'flag', color: '#F97316', gradient: ['#F97316', '#EA580C'] };
+    case 'credit':
+      return { icon: 'wallet', color: '#10B981', gradient: ['#10B981', '#059669'] };
     case 'system':
       return { icon: 'shield-checkmark', color: COLORS.systemColor, gradient: ['#6B7280', '#4B5563'] };
     default:
