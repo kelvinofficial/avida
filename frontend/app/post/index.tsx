@@ -1602,6 +1602,63 @@ export default function PostListingScreen() {
           </View>
         )}
       </View>
+      )}
+
+      {/* Salary Range Section - For Job listings */}
+      {showSalary && (
+        <View style={styles.priceSection}>
+          <Text style={styles.fieldLabel}>Salary Range</Text>
+          <Text style={styles.fieldHint}>Specify the compensation range for this position</Text>
+          
+          <View style={styles.salaryInputRow}>
+            <View style={styles.salaryInputWrapper}>
+              <Text style={styles.salaryInputLabel}>Min</Text>
+              <View style={styles.priceInputContainer}>
+                <Text style={styles.currencySymbol}>€</Text>
+                <TextInput
+                  style={styles.priceInput}
+                  placeholder="0"
+                  placeholderTextColor={COLORS.textSecondary}
+                  value={salaryMin}
+                  onChangeText={setSalaryMin}
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+            
+            <Text style={styles.salaryDivider}>to</Text>
+            
+            <View style={styles.salaryInputWrapper}>
+              <Text style={styles.salaryInputLabel}>Max</Text>
+              <View style={styles.priceInputContainer}>
+                <Text style={styles.currencySymbol}>€</Text>
+                <TextInput
+                  style={styles.priceInput}
+                  placeholder="0"
+                  placeholderTextColor={COLORS.textSecondary}
+                  value={salaryMax}
+                  onChangeText={setSalaryMax}
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+          </View>
+          
+          <View style={styles.salaryPeriodRow}>
+            {(['hourly', 'monthly', 'yearly'] as const).map((period) => (
+              <TouchableOpacity
+                key={period}
+                style={[styles.chip, salaryPeriod === period && styles.chipSelected]}
+                onPress={() => setSalaryPeriod(period)}
+              >
+                <Text style={[styles.chipText, salaryPeriod === period && styles.chipTextSelected]}>
+                  {period.charAt(0).toUpperCase() + period.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
 
       {/* Location */}
       <View style={styles.fieldContainer}>
@@ -1617,11 +1674,11 @@ export default function PostListingScreen() {
         />
       </View>
 
-      {/* Seller Type */}
+      {/* Listed by (Seller Type) - Dynamic based on category */}
       <View style={styles.fieldContainer}>
-        <Text style={styles.fieldLabel}>Seller Type</Text>
+        <Text style={styles.fieldLabel}>{sellerTypeConfig.label}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {SELLER_TYPES.map((type) => (
+          {sellerTypeConfig.options.map((type) => (
             <TouchableOpacity
               key={type}
               style={[styles.chip, sellerType === type && styles.chipSelected]}
@@ -1635,9 +1692,11 @@ export default function PostListingScreen() {
         </ScrollView>
       </View>
 
-      {/* Seller Preferences Section */}
+      {/* Preferences Section - Hidden for categories that don't support them */}
+      {!categoryPrefs?.acceptsOffers === false && !hidePrice && (
+        <>
       <View style={styles.sectionDivider}>
-        <Text style={styles.sectionDividerText}>Seller Preferences</Text>
+        <Text style={styles.sectionDividerText}>Preferences</Text>
       </View>
 
       {/* Accepts Offers */}
