@@ -188,6 +188,7 @@ const navStyles = StyleSheet.create({
 export default function SettingsScreen() {
   const router = useRouter();
   const { isAuthenticated, logout } = useAuthStore();
+  const { soundEnabled, setSoundEnabled, loadPrefs } = useNotificationPrefsStore();
   const { isDesktop, isTablet } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
   
@@ -197,6 +198,11 @@ export default function SettingsScreen() {
   const [activeSection, setActiveSection] = useState('notifications');
   const [defaultLocation, setDefaultLocation] = useState<LocationData | null>(null);
   const [locationSaving, setLocationSaving] = useState(false);
+
+  // Load notification prefs on mount
+  useEffect(() => {
+    loadPrefs();
+  }, []);
 
   const fetchSettings = useCallback(async () => {
     try {
