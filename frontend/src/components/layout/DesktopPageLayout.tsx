@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
@@ -6,6 +6,35 @@ import { DesktopHeader } from './DesktopHeader';
 import { Footer } from './Footer';
 import { useAuthStore } from '../../store/authStore';
 import api from '../../utils/api';
+
+// Notification Sound Utility
+const playNotificationSound = () => {
+  if (Platform.OS !== 'web') return;
+  
+  try {
+    // Create a subtle "ding" sound using Web Audio API
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Subtle ding sound - high frequency, short duration
+    oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5 note
+    oscillator.type = 'sine';
+    
+    // Quick fade in/out for a pleasant "ding"
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  } catch (error) {
+    console.log('Audio notification not supported');
+  }
+};
 
 const MAX_WIDTH = 1280;
 
