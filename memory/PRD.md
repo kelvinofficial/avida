@@ -2434,3 +2434,20 @@ Added dynamic photo tips that change based on the selected category in Step 2 (P
 - Previous agent task to merge AnimatedIcon and DesktopAnimatedIcon
 - File not found at specified location - needs investigation
 - May be outdated or already resolved
+
+### 2026-02-12: Sample Illustration Images Added
+**COMPLETED**
+
+Added 4 sample illustration images to photography guides:
+- Auto & Vehicles > "Exterior Shots" - Car exterior photography guide image
+- Auto & Vehicles > "Dashboard & Mileage" - Dashboard/odometer photography guide image  
+- Electronics > "Clean Background" - Electronics on clean surface guide image
+- Properties > "Wide Angles" - Living room wide angle photography guide image
+
+**Images Generated:** Used Gemini Imagen-4.0 to create instructional photography illustrations
+**Storage:** Images stored as external URLs in `image_url` field
+
+**Backend Fix:**
+- Updated `/app/admin-dashboard/backend/server.py` public endpoint to support both:
+  - External URLs via `image_url` field
+  - Base64 data URIs via `image_base64` field
