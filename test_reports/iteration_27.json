@@ -30,7 +30,7 @@
     "backend": "100% (31/31 Phase 2 tests passed, 24/24 Phase 1 tests passed)"
   },
   "test_credentials": {
-    "api_base": "https://classifieds-mvp-1.preview.emergentagent.com",
+    "api_base": "https://negotiate-badge.preview.emergentagent.com",
     "test_user": "seller@test.com / test1234"
   },
   "seed_data_creation": "Multiple test users created during pytest execution. A/B tests created with TEST_ prefix were cleaned up.",
