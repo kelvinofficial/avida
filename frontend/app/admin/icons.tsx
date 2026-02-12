@@ -9,31 +9,29 @@ import {
   Modal,
   ActivityIndicator,
   Alert,
-  Platform,
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { SvgXml } from 'react-native-svg';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
 // Categories list for dropdown
 const CATEGORIES = [
-  { id: 'motors', name: 'Motors' },
+  { id: 'auto_vehicles', name: 'Auto & Vehicles' },
   { id: 'properties', name: 'Properties' },
   { id: 'electronics', name: 'Electronics' },
   { id: 'phones_tablets', name: 'Phones & Tablets' },
   { id: 'home_furniture', name: 'Home & Furniture' },
   { id: 'fashion_beauty', name: 'Fashion & Beauty' },
-  { id: 'health_beauty', name: 'Health & Beauty' },
-  { id: 'jobs', name: 'Jobs' },
-  { id: 'services', name: 'Services' },
-  { id: 'agriculture_food', name: 'Agriculture & Food' },
+  { id: 'jobs_services', name: 'Jobs & Services' },
   { id: 'pets', name: 'Pets' },
-  { id: 'babies_kids', name: 'Babies & Kids' },
+  { id: 'kids_baby', name: 'Kids & Baby' },
   { id: 'sports_hobbies', name: 'Sports & Hobbies' },
-  { id: 'seeking_work', name: 'Seeking Work' },
+  { id: 'agriculture', name: 'Agriculture & Food' },
+  { id: 'commercial_equipment', name: 'Commercial Equipment' },
+  { id: 'repair_construction', name: 'Repair & Construction' },
 ];
 
 const ICON_TYPES = [
@@ -45,7 +43,7 @@ const ICON_TYPES = [
 interface AttributeIcon {
   id: string;
   name: string;
-  svg_content: string;
+  ionicon_name: string;
   category_id?: string;
   subcategory_id?: string;
   attribute_name?: string;
@@ -71,16 +69,18 @@ interface IconStats {
 export default function IconsManagementScreen() {
   const router = useRouter();
   const [icons, setIcons] = useState<AttributeIcon[]>([]);
+  const [availableIonicons, setAvailableIonicons] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<IconStats | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [iconPickerVisible, setIconPickerVisible] = useState(false);
   const [editingIcon, setEditingIcon] = useState<AttributeIcon | null>(null);
-  const [previewSvg, setPreviewSvg] = useState<string | null>(null);
+  const [seeding, setSeeding] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
     name: '',
-    svg_content: '',
+    ionicon_name: 'help-circle-outline',
     category_id: '',
     subcategory_id: '',
     attribute_name: '',
@@ -93,6 +93,7 @@ export default function IconsManagementScreen() {
   const [filterCategory, setFilterCategory] = useState('');
   const [filterType, setFilterType] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [iconSearch, setIconSearch] = useState('');
 
   const fetchIcons = useCallback(async () => {
     try {
@@ -125,14 +126,51 @@ export default function IconsManagementScreen() {
     }
   };
 
+  const fetchAvailableIonicons = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/attribute-icons/ionicons`);
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableIonicons(data.icons || []);
+      }
+    } catch (error) {
+      console.error('Error fetching ionicons:', error);
+    }
+  };
+
   useEffect(() => {
     fetchIcons();
     fetchStats();
+    fetchAvailableIonicons();
   }, [fetchIcons]);
 
+  const handleSeedIcons = async () => {
+    try {
+      setSeeding(true);
+      const response = await fetch(`${API_URL}/api/attribute-icons/seed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        Alert.alert('Success', data.message);
+        fetchIcons();
+        fetchStats();
+      } else {
+        const error = await response.json();
+        Alert.alert('Error', error.detail || 'Failed to seed icons');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to seed icons');
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   const handleCreateIcon = async () => {
-    if (!formData.name || !formData.svg_content) {
-      Alert.alert('Error', 'Name and SVG content are required');
+    if (!formData.name || !formData.ionicon_name) {
+      Alert.alert('Error', 'Name and icon are required');
       return;
     }
 
@@ -214,7 +252,7 @@ export default function IconsManagementScreen() {
     setEditingIcon(icon);
     setFormData({
       name: icon.name,
-      svg_content: icon.svg_content,
+      ionicon_name: icon.ionicon_name,
       category_id: icon.category_id || '',
       subcategory_id: icon.subcategory_id || '',
       attribute_name: icon.attribute_name || '',
@@ -228,7 +266,7 @@ export default function IconsManagementScreen() {
   const resetForm = () => {
     setFormData({
       name: '',
-      svg_content: '',
+      ionicon_name: 'help-circle-outline',
       category_id: '',
       subcategory_id: '',
       attribute_name: '',
@@ -239,17 +277,61 @@ export default function IconsManagementScreen() {
     setEditingIcon(null);
   };
 
-  const handlePreviewSvg = (svg: string) => {
-    setPreviewSvg(svg);
-  };
+  const filteredIonicons = availableIonicons.filter(icon => 
+    icon.toLowerCase().includes(iconSearch.toLowerCase())
+  );
 
-  const renderIconPreview = (svgContent: string, size: number = 40) => {
-    try {
-      return <SvgXml xml={svgContent} width={size} height={size} />;
-    } catch {
-      return <Ionicons name="image-outline" size={size} color="#ccc" />;
-    }
-  };
+  const renderIconPicker = () => (
+    <Modal
+      visible={iconPickerVisible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={() => setIconPickerVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={[styles.modalContent, { maxHeight: '80%' }]}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Select Icon</Text>
+            <TouchableOpacity onPress={() => setIconPickerVisible(false)}>
+              <Ionicons name="close" size={24} color="#333" />
+            </TouchableOpacity>
+          </View>
+          
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search icons..."
+            value={iconSearch}
+            onChangeText={setIconSearch}
+          />
+          
+          <FlatList
+            data={filteredIonicons}
+            numColumns={5}
+            keyExtractor={(item) => item}
+            contentContainerStyle={styles.iconGrid}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[
+                  styles.iconPickerItem,
+                  formData.ionicon_name === item && styles.iconPickerItemActive
+                ]}
+                onPress={() => {
+                  setFormData({ ...formData, ionicon_name: item });
+                  setIconPickerVisible(false);
+                }}
+              >
+                <Ionicons 
+                  name={item as any} 
+                  size={28} 
+                  color={formData.ionicon_name === item ? '#9333EA' : '#666'} 
+                />
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      </View>
+    </Modal>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -281,15 +363,33 @@ export default function IconsManagementScreen() {
             <Text style={styles.statLabel}>Active</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: '#FFF3E0' }]}>
-            <Text style={styles.statValue}>{stats.by_type.category}</Text>
+            <Text style={styles.statValue}>{stats.by_type?.category || 0}</Text>
             <Text style={styles.statLabel}>Category</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: '#F3E5F5' }]}>
-            <Text style={styles.statValue}>{stats.by_type.attribute}</Text>
+            <Text style={styles.statValue}>{stats.by_type?.attribute || 0}</Text>
             <Text style={styles.statLabel}>Attribute</Text>
           </View>
         </View>
       )}
+
+      {/* Seed Button */}
+      <View style={styles.seedContainer}>
+        <TouchableOpacity
+          style={styles.seedButton}
+          onPress={handleSeedIcons}
+          disabled={seeding}
+        >
+          {seeding ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <>
+              <Ionicons name="sparkles" size={18} color="#fff" />
+              <Text style={styles.seedButtonText}>Seed Default Icons</Text>
+            </>
+          )}
+        </TouchableOpacity>
+      </View>
 
       {/* Filters */}
       <View style={styles.filtersContainer}>
@@ -306,13 +406,12 @@ export default function IconsManagementScreen() {
             <TouchableOpacity
               style={styles.dropdownButton}
               onPress={() => {
-                // Simple toggle through categories
                 const currentIdx = CATEGORIES.findIndex(c => c.id === filterCategory);
                 const nextIdx = (currentIdx + 1) % (CATEGORIES.length + 1);
                 setFilterCategory(nextIdx === CATEGORIES.length ? '' : CATEGORIES[nextIdx].id);
               }}
             >
-              <Text style={styles.dropdownText}>
+              <Text style={styles.dropdownText} numberOfLines={1}>
                 {filterCategory ? CATEGORIES.find(c => c.id === filterCategory)?.name : 'All'}
               </Text>
               <Ionicons name="chevron-down" size={16} color="#666" />
@@ -345,20 +444,24 @@ export default function IconsManagementScreen() {
           <View style={styles.emptyState}>
             <Ionicons name="shapes-outline" size={64} color="#ccc" />
             <Text style={styles.emptyText}>No icons found</Text>
-            <Text style={styles.emptySubtext}>Create your first icon to get started</Text>
+            <Text style={styles.emptySubtext}>Tap "Seed Default Icons" to get started</Text>
           </View>
         ) : (
           <View style={styles.iconsGrid}>
             {icons.map((icon) => (
               <View key={icon.id} style={styles.iconCard}>
-                <TouchableOpacity
-                  style={styles.iconPreview}
-                  onPress={() => handlePreviewSvg(icon.svg_content)}
-                >
-                  {renderIconPreview(icon.svg_content, 48)}
-                </TouchableOpacity>
+                <View style={styles.iconPreview}>
+                  <Ionicons 
+                    name={icon.ionicon_name as any} 
+                    size={36} 
+                    color={icon.color || '#9333EA'} 
+                  />
+                </View>
                 <Text style={styles.iconName} numberOfLines={1}>{icon.name}</Text>
-                <Text style={styles.iconType}>{icon.icon_type}</Text>
+                <Text style={styles.ioniconName} numberOfLines={1}>{icon.ionicon_name}</Text>
+                <View style={styles.iconTypeBadge}>
+                  <Text style={styles.iconTypeText}>{icon.icon_type}</Text>
+                </View>
                 {icon.category_id && (
                   <Text style={styles.iconCategory} numberOfLines={1}>
                     {CATEGORIES.find(c => c.id === icon.category_id)?.name || icon.category_id}
@@ -408,25 +511,27 @@ export default function IconsManagementScreen() {
                 style={styles.textInput}
                 value={formData.name}
                 onChangeText={(text) => setFormData({ ...formData, name: text })}
-                placeholder="Icon name"
+                placeholder="e.g., Car Make, Bedrooms"
               />
 
-              <Text style={styles.inputLabel}>SVG Content *</Text>
-              <TextInput
-                style={[styles.textInput, styles.textArea]}
-                value={formData.svg_content}
-                onChangeText={(text) => setFormData({ ...formData, svg_content: text })}
-                placeholder='<svg viewBox="0 0 24 24">...</svg>'
-                multiline
-                numberOfLines={6}
-              />
-
-              {formData.svg_content && (
-                <View style={styles.svgPreviewContainer}>
-                  <Text style={styles.previewLabel}>Preview:</Text>
-                  {renderIconPreview(formData.svg_content, 60)}
+              <Text style={styles.inputLabel}>Icon *</Text>
+              <TouchableOpacity
+                style={styles.iconSelector}
+                onPress={() => setIconPickerVisible(true)}
+              >
+                <View style={styles.selectedIcon}>
+                  <Ionicons 
+                    name={formData.ionicon_name as any} 
+                    size={32} 
+                    color="#9333EA" 
+                  />
                 </View>
-              )}
+                <View style={styles.iconSelectorText}>
+                  <Text style={styles.iconSelectorLabel}>{formData.ionicon_name}</Text>
+                  <Text style={styles.iconSelectorHint}>Tap to change</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#999" />
+              </TouchableOpacity>
 
               <Text style={styles.inputLabel}>Icon Type</Text>
               <View style={styles.typeButtons}>
@@ -461,7 +566,7 @@ export default function IconsManagementScreen() {
                   onPress={() => setFormData({ ...formData, category_id: '' })}
                 >
                   <Text style={[styles.categoryChipText, !formData.category_id && styles.categoryChipTextActive]}>
-                    None
+                    Global
                   </Text>
                 </TouchableOpacity>
                 {CATEGORIES.map((cat) => (
@@ -478,6 +583,7 @@ export default function IconsManagementScreen() {
                         styles.categoryChipText,
                         formData.category_id === cat.id && styles.categoryChipTextActive,
                       ]}
+                      numberOfLines={1}
                     >
                       {cat.name}
                     </Text>
@@ -490,7 +596,7 @@ export default function IconsManagementScreen() {
                 style={styles.textInput}
                 value={formData.attribute_name}
                 onChangeText={(text) => setFormData({ ...formData, attribute_name: text })}
-                placeholder="e.g., make, model, color"
+                placeholder="e.g., make, model, bedrooms"
               />
 
               <Text style={styles.inputLabel}>Color (hex)</Text>
@@ -498,7 +604,7 @@ export default function IconsManagementScreen() {
                 style={styles.textInput}
                 value={formData.color}
                 onChangeText={(text) => setFormData({ ...formData, color: text })}
-                placeholder="#000000"
+                placeholder="#9333EA"
               />
 
               <Text style={styles.inputLabel}>Description</Text>
@@ -532,23 +638,8 @@ export default function IconsManagementScreen() {
         </View>
       </Modal>
 
-      {/* SVG Preview Modal */}
-      <Modal
-        visible={!!previewSvg}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setPreviewSvg(null)}
-      >
-        <TouchableOpacity
-          style={styles.previewOverlay}
-          activeOpacity={1}
-          onPress={() => setPreviewSvg(null)}
-        >
-          <View style={styles.previewBox}>
-            {previewSvg && renderIconPreview(previewSvg, 120)}
-          </View>
-        </TouchableOpacity>
-      </Modal>
+      {/* Icon Picker Modal */}
+      {renderIconPicker()}
     </SafeAreaView>
   );
 }
@@ -603,6 +694,24 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 2,
   },
+  seedContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
+  seedButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#10B981',
+    paddingVertical: 10,
+    borderRadius: 8,
+    gap: 8,
+  },
+  seedButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
   filtersContainer: {
     paddingHorizontal: 16,
     paddingBottom: 12,
@@ -640,6 +749,7 @@ const styles = StyleSheet.create({
   dropdownText: {
     fontSize: 13,
     color: '#333',
+    flex: 1,
   },
   scrollView: {
     flex: 1,
@@ -683,10 +793,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   iconPreview: {
-    width: 64,
-    height: 64,
+    width: 56,
+    height: 56,
     borderRadius: 12,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F3E8FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
@@ -697,16 +807,29 @@ const styles = StyleSheet.create({
     color: '#333',
     textAlign: 'center',
   },
-  iconType: {
-    fontSize: 11,
-    color: '#9333EA',
+  ioniconName: {
+    fontSize: 10,
+    color: '#999',
     marginTop: 2,
+    fontFamily: 'monospace',
+  },
+  iconTypeBadge: {
+    backgroundColor: '#F3E8FF',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginTop: 4,
+  },
+  iconTypeText: {
+    fontSize: 10,
+    color: '#9333EA',
+    fontWeight: '500',
     textTransform: 'capitalize',
   },
   iconCategory: {
     fontSize: 11,
     color: '#666',
-    marginTop: 2,
+    marginTop: 4,
   },
   iconActions: {
     flexDirection: 'row',
@@ -756,25 +879,55 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 14,
   },
-  textArea: {
-    height: 120,
-    textAlignVertical: 'top',
-  },
   textAreaSmall: {
     height: 80,
     textAlignVertical: 'top',
   },
-  svgPreviewContainer: {
+  iconSelector: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 12,
-    padding: 16,
     backgroundColor: '#F5F5F5',
     borderRadius: 12,
+    padding: 12,
   },
-  previewLabel: {
+  selectedIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#F3E8FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  iconSelectorText: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  iconSelectorLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
+  },
+  iconSelectorHint: {
     fontSize: 12,
-    color: '#666',
-    marginBottom: 8,
+    color: '#999',
+    marginTop: 2,
+  },
+  iconGrid: {
+    padding: 8,
+  },
+  iconPickerItem: {
+    width: 56,
+    height: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+    margin: 4,
+    backgroundColor: '#F5F5F5',
+  },
+  iconPickerItemActive: {
+    backgroundColor: '#F3E8FF',
+    borderWidth: 2,
+    borderColor: '#9333EA',
   },
   typeButtons: {
     flexDirection: 'row',
@@ -849,16 +1002,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#fff',
-  },
-  previewOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  previewBox: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 32,
   },
 });
