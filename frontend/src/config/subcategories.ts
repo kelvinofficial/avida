@@ -1121,6 +1121,198 @@ export const KIDS_BABY_CATEGORY: MainCategoryConfig = {
   ]
 };
 
+// ============ FRIENDSHIP & DATING ============
+export const FRIENDSHIP_DATING_CATEGORY: MainCategoryConfig = {
+  id: 'friendship_dating',
+  name: 'Friendship & Dating',
+  icon: 'heart-outline',
+  subcategories: [
+    {
+      id: 'friendship_social',
+      name: 'Friendship & Social',
+      attributes: [
+        { name: 'seeking', label: 'Looking For', type: 'select', options: ['Friends', 'Activity Partners', 'Study Buddies', 'Professional Network', 'Support Group'], required: true, icon: 'people-outline' },
+        { name: 'interests', label: 'Interests', type: 'text', placeholder: 'e.g., Sports, Music, Gaming', icon: 'flash-outline' },
+        { name: 'age_range', label: 'Age Range', type: 'text', placeholder: 'e.g., 25-35', icon: 'calendar-outline' },
+      ]
+    },
+    {
+      id: 'looking_for_friends',
+      name: 'Looking for Friends',
+      attributes: [
+        { name: 'friendship_type', label: 'Type of Friendship', type: 'select', options: ['Casual Friends', 'Close Friends', 'Activity Partners', 'Online Friends'], required: true, icon: 'people-outline' },
+        { name: 'interests', label: 'Common Interests', type: 'text', placeholder: 'e.g., Movies, Sports, Travel', icon: 'flash-outline' },
+      ]
+    },
+    {
+      id: 'professional_networking',
+      name: 'Professional Networking',
+      attributes: [
+        { name: 'industry', label: 'Industry', type: 'text', placeholder: 'e.g., Technology, Finance', icon: 'briefcase-outline' },
+        { name: 'purpose', label: 'Purpose', type: 'select', options: ['Career Advice', 'Business Partners', 'Mentorship', 'Collaboration', 'Job Referrals'], required: true, icon: 'people-outline' },
+      ]
+    },
+    {
+      id: 'roommate_search',
+      name: 'Roommate Search',
+      attributes: [
+        { name: 'location', label: 'Preferred Location', type: 'text', placeholder: 'City or neighborhood', icon: 'location-outline' },
+        { name: 'budget', label: 'Budget Range', type: 'text', placeholder: 'e.g., $500-800/month', icon: 'cash-outline' },
+        { name: 'move_in', label: 'Move-in Date', type: 'text', placeholder: 'e.g., Immediate, Next month', icon: 'calendar-outline' },
+      ]
+    },
+    {
+      id: 'study_buddies',
+      name: 'Study Buddies',
+      attributes: [
+        { name: 'subject', label: 'Subject/Course', type: 'text', placeholder: 'e.g., Math, Programming', required: true, icon: 'book-outline' },
+        { name: 'level', label: 'Level', type: 'select', options: ['High School', 'University', 'Graduate', 'Professional Certification', 'Self-Study'], icon: 'school-outline' },
+      ]
+    },
+    {
+      id: 'dating_relationships',
+      name: 'Dating & Relationships',
+      attributes: [
+        { name: 'looking_for', label: 'Looking For', type: 'select', options: ['Casual Dating', 'Serious Relationship', 'Long-term Partner', 'Marriage'], required: true, icon: 'heart-outline' },
+        { name: 'age_preference', label: 'Age Preference', type: 'text', placeholder: 'e.g., 25-35', icon: 'calendar-outline' },
+      ]
+    },
+    {
+      id: 'casual_dating',
+      name: 'Casual Dating',
+      attributes: [
+        { name: 'interests', label: 'Interests', type: 'text', placeholder: 'e.g., Dining, Movies, Travel', icon: 'flash-outline' },
+        { name: 'availability', label: 'Availability', type: 'select', options: ['Weekdays', 'Weekends', 'Evenings', 'Flexible'], icon: 'time-outline' },
+      ]
+    },
+    {
+      id: 'dating_romance',
+      name: 'Dating & Romance',
+      attributes: [
+        { name: 'relationship_goal', label: 'Relationship Goal', type: 'select', options: ['Dating', 'Romance', 'Companionship'], required: true, icon: 'heart-outline' },
+        { name: 'interests', label: 'Interests', type: 'text', placeholder: 'e.g., Travel, Music, Sports', icon: 'flash-outline' },
+      ]
+    },
+    {
+      id: 'long_term_relationship',
+      name: 'Long-term Relationship',
+      attributes: [
+        { name: 'values', label: 'Important Values', type: 'text', placeholder: 'e.g., Family, Career, Adventure', icon: 'heart-outline' },
+        { name: 'lifestyle', label: 'Lifestyle', type: 'select', options: ['Active', 'Homebody', 'Social', 'Quiet', 'Adventurous'], icon: 'sunny-outline' },
+      ]
+    },
+    {
+      id: 'faith_based_dating',
+      name: 'Faith-based Dating',
+      attributes: [
+        { name: 'faith', label: 'Faith/Religion', type: 'text', placeholder: 'e.g., Christian, Muslim, Jewish', required: true, icon: 'heart-outline' },
+        { name: 'involvement', label: 'Involvement Level', type: 'select', options: ['Very Active', 'Active', 'Moderate', 'Cultural'], icon: 'star-outline' },
+      ]
+    },
+    {
+      id: 'mature_dating_40_plus',
+      name: 'Mature Dating (40+)',
+      attributes: [
+        { name: 'relationship_type', label: 'Looking For', type: 'select', options: ['Companionship', 'Dating', 'Serious Relationship', 'Marriage'], required: true, icon: 'heart-outline' },
+        { name: 'status', label: 'Status', type: 'select', options: ['Single', 'Divorced', 'Widowed'], icon: 'person-outline' },
+      ]
+    },
+    {
+      id: 'activity_partners',
+      name: 'Activity Partners',
+      attributes: [
+        { name: 'activity', label: 'Activity', type: 'select', options: ['Sports', 'Hiking', 'Gym', 'Dancing', 'Gaming', 'Travel', 'Dining', 'Movies', 'Music', 'Art', 'Other'], required: true, icon: 'walk-outline' },
+        { name: 'frequency', label: 'Frequency', type: 'select', options: ['Daily', 'Weekly', 'Bi-weekly', 'Monthly', 'Occasional'], icon: 'calendar-outline' },
+      ]
+    },
+    {
+      id: 'travel_companions',
+      name: 'Travel Companions',
+      attributes: [
+        { name: 'destination', label: 'Destination/Region', type: 'text', placeholder: 'e.g., Europe, Asia, Beach', icon: 'airplane-outline' },
+        { name: 'travel_style', label: 'Travel Style', type: 'select', options: ['Budget', 'Mid-range', 'Luxury', 'Backpacking', 'Adventure'], icon: 'compass-outline' },
+        { name: 'duration', label: 'Trip Duration', type: 'text', placeholder: 'e.g., 1 week, 2 weeks', icon: 'time-outline' },
+      ]
+    },
+    {
+      id: 'gaming_partners',
+      name: 'Gaming Partners',
+      attributes: [
+        { name: 'platform', label: 'Platform', type: 'select', options: ['PC', 'PlayStation', 'Xbox', 'Nintendo', 'Mobile', 'Multiple'], required: true, icon: 'game-controller-outline' },
+        { name: 'games', label: 'Games', type: 'text', placeholder: 'e.g., FIFA, Call of Duty, Minecraft', icon: 'game-controller-outline' },
+      ]
+    },
+    {
+      id: 'language_exchange',
+      name: 'Language Exchange',
+      attributes: [
+        { name: 'native_language', label: 'Native Language', type: 'text', placeholder: 'Your native language', required: true, icon: 'globe-outline' },
+        { name: 'learning_language', label: 'Learning Language', type: 'text', placeholder: 'Language you want to learn', required: true, icon: 'book-outline' },
+        { name: 'level', label: 'Your Level', type: 'select', options: ['Beginner', 'Intermediate', 'Advanced'], icon: 'school-outline' },
+      ]
+    },
+  ]
+};
+
+// ============ COMMUNITY ============
+export const COMMUNITY_CATEGORY: MainCategoryConfig = {
+  id: 'community',
+  name: 'Community',
+  icon: 'people-outline',
+  subcategories: [
+    {
+      id: 'events',
+      name: 'Local Events',
+      attributes: [
+        { name: 'event_type', label: 'Event Type', type: 'select', options: ['Meetup', 'Workshop', 'Party', 'Sports Event', 'Concert', 'Exhibition', 'Charity', 'Other'], required: true, icon: 'calendar-outline' },
+        { name: 'date', label: 'Date', type: 'text', placeholder: 'Event date', icon: 'calendar-outline' },
+        { name: 'location', label: 'Location', type: 'text', placeholder: 'Event location', icon: 'location-outline' },
+      ]
+    },
+    {
+      id: 'clubs_groups',
+      name: 'Clubs & Groups',
+      attributes: [
+        { name: 'group_type', label: 'Group Type', type: 'select', options: ['Sports Club', 'Book Club', 'Hobby Group', 'Professional Group', 'Social Club', 'Support Group', 'Other'], required: true, icon: 'people-outline' },
+        { name: 'meeting_frequency', label: 'Meeting Frequency', type: 'select', options: ['Daily', 'Weekly', 'Bi-weekly', 'Monthly'], icon: 'time-outline' },
+      ]
+    },
+    {
+      id: 'volunteering',
+      name: 'Volunteering',
+      attributes: [
+        { name: 'cause', label: 'Cause', type: 'select', options: ['Environment', 'Education', 'Health', 'Animals', 'Elderly Care', 'Children', 'Homeless', 'Other'], required: true, icon: 'heart-outline' },
+        { name: 'commitment', label: 'Time Commitment', type: 'select', options: ['One-time', 'Weekly', 'Monthly', 'Flexible'], icon: 'time-outline' },
+      ]
+    },
+    {
+      id: 'lost_found',
+      name: 'Lost & Found',
+      attributes: [
+        { name: 'type', label: 'Type', type: 'select', options: ['Lost', 'Found'], required: true, icon: 'search-outline' },
+        { name: 'item', label: 'Item Description', type: 'text', placeholder: 'Describe the item', required: true, icon: 'cube-outline' },
+        { name: 'location', label: 'Last Known Location', type: 'text', placeholder: 'Where lost/found', icon: 'location-outline' },
+      ]
+    },
+    {
+      id: 'announcements',
+      name: 'Announcements',
+      attributes: [
+        { name: 'announcement_type', label: 'Type', type: 'select', options: ['Community News', 'Neighborhood Alert', 'Public Notice', 'General Announcement'], required: true, icon: 'megaphone-outline' },
+      ]
+    },
+    {
+      id: 'rideshare',
+      name: 'Rideshare & Carpool',
+      attributes: [
+        { name: 'route', label: 'Route', type: 'text', placeholder: 'From - To', required: true, icon: 'car-outline' },
+        { name: 'frequency', label: 'Frequency', type: 'select', options: ['One-time', 'Daily', 'Weekdays', 'Weekly'], icon: 'calendar-outline' },
+        { name: 'cost_share', label: 'Cost Share', type: 'text', placeholder: 'e.g., $5/trip', icon: 'cash-outline' },
+      ]
+    },
+  ]
+};
+
 // ============ MASTER CATEGORIES LIST ============
 export const ALL_CATEGORIES: MainCategoryConfig[] = [
   AUTO_VEHICLES_CATEGORY,
