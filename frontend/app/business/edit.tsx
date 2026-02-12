@@ -23,6 +23,8 @@ import QRCode from 'react-qr-code';
 import api from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
 import { safeGoBack } from '../../src/utils/navigation';
+import { useResponsive } from '../../src/hooks/useResponsive';
+import { DesktopPageLayout } from '../../src/components/layout';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
