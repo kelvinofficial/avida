@@ -917,34 +917,83 @@ export default function CategoryScreen() {
                   </TouchableOpacity>
                 )}
               </View>
-              {/* Recent Searches Dropdown - Desktop */}
-              {showRecentSearches && recentSearches.length > 0 && !searchQuery && (
+              {/* Recent & Popular Searches Dropdown - Desktop */}
+              {showRecentSearches && !searchQuery && (recentSearches.length > 0 || popularSearches.category.length > 0 || popularSearches.global.length > 0) && (
                 <View style={desktopStyles.recentSearchesDropdown}>
-                  <View style={desktopStyles.recentSearchesHeader}>
-                    <View style={desktopStyles.recentSearchesTitleRow}>
-                      <Ionicons name="time-outline" size={16} color={COLORS.textSecondary} />
-                      <Text style={desktopStyles.recentSearchesTitle}>Recent Searches</Text>
-                    </View>
-                    <TouchableOpacity onPress={clearAllRecentSearches}>
-                      <Text style={desktopStyles.clearAllBtn}>Clear all</Text>
-                    </TouchableOpacity>
-                  </View>
-                  {recentSearches.map((query, index) => (
-                    <TouchableOpacity 
-                      key={`${query}-${index}`}
-                      style={desktopStyles.recentSearchItem}
-                      onPress={() => applyRecentSearch(query)}
-                    >
-                      <Ionicons name="search-outline" size={16} color={COLORS.textSecondary} />
-                      <Text style={desktopStyles.recentSearchItemText}>{query}</Text>
-                      <TouchableOpacity 
-                        onPress={(e) => { e.stopPropagation(); removeRecentSearch(query); }}
-                        style={desktopStyles.removeSearchBtn}
-                      >
-                        <Ionicons name="close" size={14} color={COLORS.textLight} />
-                      </TouchableOpacity>
-                    </TouchableOpacity>
-                  ))}
+                  {/* Recent Searches Section */}
+                  {recentSearches.length > 0 && (
+                    <>
+                      <View style={desktopStyles.recentSearchesHeader}>
+                        <View style={desktopStyles.recentSearchesTitleRow}>
+                          <Ionicons name="time-outline" size={16} color={COLORS.textSecondary} />
+                          <Text style={desktopStyles.recentSearchesTitle}>Recent Searches</Text>
+                        </View>
+                        <TouchableOpacity onPress={clearAllRecentSearches}>
+                          <Text style={desktopStyles.clearAllBtn}>Clear</Text>
+                        </TouchableOpacity>
+                      </View>
+                      {recentSearches.map((query, index) => (
+                        <TouchableOpacity 
+                          key={`recent-${query}-${index}`}
+                          style={desktopStyles.recentSearchItem}
+                          onPress={() => applyRecentSearch(query)}
+                        >
+                          <Ionicons name="search-outline" size={16} color={COLORS.textSecondary} />
+                          <Text style={desktopStyles.recentSearchItemText}>{query}</Text>
+                          <TouchableOpacity 
+                            onPress={(e) => { e.stopPropagation(); removeRecentSearch(query); }}
+                            style={desktopStyles.removeSearchBtn}
+                          >
+                            <Ionicons name="close" size={14} color={COLORS.textLight} />
+                          </TouchableOpacity>
+                        </TouchableOpacity>
+                      ))}
+                    </>
+                  )}
+                  
+                  {/* Popular in Category Section */}
+                  {popularSearches.category.length > 0 && (
+                    <>
+                      <View style={[desktopStyles.recentSearchesHeader, recentSearches.length > 0 && { marginTop: 4 }]}>
+                        <View style={desktopStyles.recentSearchesTitleRow}>
+                          <Ionicons name="flame-outline" size={16} color="#FF6B35" />
+                          <Text style={desktopStyles.recentSearchesTitle}>Popular in {mainCategory?.name}</Text>
+                        </View>
+                      </View>
+                      {popularSearches.category.slice(0, 4).map((query, index) => (
+                        <TouchableOpacity 
+                          key={`cat-popular-${query}-${index}`}
+                          style={desktopStyles.recentSearchItem}
+                          onPress={() => applyRecentSearch(query)}
+                        >
+                          <Ionicons name="trending-up" size={16} color="#FF6B35" />
+                          <Text style={desktopStyles.recentSearchItemText}>{query}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </>
+                  )}
+                  
+                  {/* Trending Overall Section */}
+                  {popularSearches.global.length > 0 && popularSearches.category.length === 0 && (
+                    <>
+                      <View style={[desktopStyles.recentSearchesHeader, recentSearches.length > 0 && { marginTop: 4 }]}>
+                        <View style={desktopStyles.recentSearchesTitleRow}>
+                          <Ionicons name="trending-up" size={16} color="#2E7D32" />
+                          <Text style={desktopStyles.recentSearchesTitle}>Trending Searches</Text>
+                        </View>
+                      </View>
+                      {popularSearches.global.slice(0, 4).map((query, index) => (
+                        <TouchableOpacity 
+                          key={`global-popular-${query}-${index}`}
+                          style={desktopStyles.recentSearchItem}
+                          onPress={() => applyRecentSearch(query)}
+                        >
+                          <Ionicons name="trending-up" size={16} color="#2E7D32" />
+                          <Text style={desktopStyles.recentSearchItemText}>{query}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </>
+                  )}
                 </View>
               )}
             </View>
