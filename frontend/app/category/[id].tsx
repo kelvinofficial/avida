@@ -161,6 +161,7 @@ export default function CategoryScreen() {
         listingsApi.getAll({ 
           category: categoryId, 
           subcategory: selectedSubcategory || undefined,
+          search: searchQuery.trim() || undefined,
           page: currentPage, 
           limit: 20,
           min_price: priceRange.min ? parseFloat(priceRange.min) : undefined,
@@ -200,11 +201,26 @@ export default function CategoryScreen() {
       setRefreshing(false);
       setInitialLoadDone(true);
     }
-  }, [categoryId, page, isAuthenticated, selectedSubcategory, priceRange, selectedCondition, sortBy, activeFilters]);
+  }, [categoryId, page, isAuthenticated, selectedSubcategory, priceRange, selectedCondition, sortBy, activeFilters, searchQuery]);
 
   useEffect(() => {
     fetchData(true);
   }, [categoryId, selectedSubcategory, selectedCondition, sortBy]);
+  
+  // Handle search with debounce
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
+
+  // Debounced search effect
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery !== undefined) {
+        fetchData(true);
+      }
+    }, 500);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   const handleRefresh = () => {
     setRefreshing(true);
