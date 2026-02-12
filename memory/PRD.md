@@ -645,6 +645,37 @@ Added a "Preview Mode" button to the Admin Form Config page that lets admins see
 
 ---
 
+### 2026-02-12: Import from JSON Feature
+**COMPLETED**
+
+#### Feature Overview
+Added an "Import from JSON" button to the Admin Form Config page's Preview Mode dialog, allowing admins to import category configurations from JSON files. This complements the existing "Copy as JSON" functionality for easy backup/restore and configuration migration.
+
+#### Implementation Details
+- **Import Button**: Added next to "Copy as JSON" button in Preview Mode dialog footer
+- **File Input**: Hidden file input accepts `.json` and `application/json` files
+- **Validation**: Validates JSON structure (requires `category_id` and `configuration` object)
+- **Import Logic**: 
+  - Imports placeholders (title, titleLabel, description, descriptionLabel)
+  - Imports seller type (label, options)
+  - Imports preferences (acceptsOffers, acceptsExchanges, negotiable)
+  - Imports visibility rules (hidePrice, chatOnly, hideCondition)
+- **UI Feedback**: Shows loading spinner during import, success/error states
+- **Auto-refresh**: Refreshes config list and stats after successful import
+
+#### Key Files Modified
+- `/app/admin-dashboard/frontend/src/app/dashboard/form-config/page.tsx`:
+  - Added `FileUpload` and `ErrorIcon` imports
+  - Added import state variables (`importLoading`, `importError`, `importSuccess`)
+  - Added `handleImportJson` callback function (validates and imports JSON)
+  - Updated DialogActions with Import from JSON button
+
+#### Testing
+- All features tested and verified (100% pass rate)
+- Test report: `/app/test_reports/iteration_107.json`
+
+---
+
 ## Upcoming Tasks (Priority Order)
 
 ### P2: Admin-Managed Photography Guides
