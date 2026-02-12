@@ -143,7 +143,7 @@ export const SELLER_TYPE_CONFIG: Record<string, SellerTypeConfig> = {
 
 // Categories that should hide price
 export const HIDE_PRICE_CATEGORIES = ['friendship_dating'];
-export const HIDE_PRICE_SUBCATEGORIES = ['job_seekers'];
+export const HIDE_PRICE_SUBCATEGORIES: string[] = [];
 
 // Categories that show salary range instead of price
 export const SHOW_SALARY_SUBCATEGORIES = ['job_listings'];
