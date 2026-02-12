@@ -272,6 +272,7 @@ export default function CategoryScreen() {
   // Load recent searches on mount
   useEffect(() => {
     loadRecentSearches();
+    loadPopularSearches();
   }, [categoryId]);
 
   // Get subcategories for this category
