@@ -326,9 +326,15 @@ export const DesktopPageLayout: React.FC<DesktopPageLayoutProps> = ({
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated } = useAuthStore();
+  const { soundEnabled, loadPrefs } = useNotificationPrefsStore();
   const [badges, setBadges] = useState<NotificationBadges>({ unreadMessages: 0, pendingOffers: 0 });
   const prevUnreadRef = useRef<number>(0);
   const isFirstLoadRef = useRef<boolean>(true);
+
+  // Load notification preferences on mount
+  useEffect(() => {
+    loadPrefs();
+  }, []);
 
   // Fetch notification badges for authenticated users
   useEffect(() => {
@@ -355,8 +361,8 @@ export const DesktopPageLayout: React.FC<DesktopPageLayoutProps> = ({
           ? offersArray.filter((offer: any) => offer.status === 'pending').length 
           : 0;
 
-        // Play notification sound if unread messages increased (not on first load)
-        if (!isFirstLoadRef.current && unreadMessages > prevUnreadRef.current) {
+        // Play notification sound if unread messages increased (not on first load) and sound is enabled
+        if (!isFirstLoadRef.current && unreadMessages > prevUnreadRef.current && soundEnabled) {
           playNotificationSound();
         }
         
@@ -374,7 +380,7 @@ export const DesktopPageLayout: React.FC<DesktopPageLayoutProps> = ({
     // Refresh badges every 10 seconds for near real-time updates
     const interval = setInterval(fetchBadges, 10000);
     return () => clearInterval(interval);
-  }, [isAuthenticated]);
+  }, [isAuthenticated, soundEnabled]);
 
   // Get badge count for a specific sidebar item
   const getBadgeCount = (itemId: string): number => {
