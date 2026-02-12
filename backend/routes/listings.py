@@ -370,6 +370,13 @@ def create_listings_router(
         
         # Pagination
         skip = (page - 1) * limit
+        
+        # Debug logging for friendship_dating
+        if category and "friendship" in category.lower():
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"DEBUG Friendship query: {query}")
+        
         total = await db.listings.count_documents(query)
         
         # Aggregation for boosted listings first
