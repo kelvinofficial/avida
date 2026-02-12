@@ -646,7 +646,7 @@ export default function CategoryScreen() {
           </View>
 
           {/* Category-Specific Filters */}
-          {CATEGORY_FILTERS[categoryId] && CATEGORY_FILTERS[categoryId].map((filter) => (
+          {(CATEGORY_FILTERS[categoryId] || CATEGORY_FILTERS.default).map((filter) => (
             <View key={filter.key} style={styles.filterSection}>
               <Text style={styles.filterSectionTitle}>{filter.label}</Text>
               <View style={styles.filterChipsWrap}>
