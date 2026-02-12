@@ -1222,17 +1222,28 @@ export default function FormConfigPage() {
             );
           })()}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setPreviewOpen(false)}>Close</Button>
+        <DialogActions sx={{ justifyContent: 'space-between', px: 3 }}>
           <Button 
-            variant="contained" 
-            onClick={() => {
-              setPreviewOpen(false);
-              setFilterCategory(previewCategory);
-            }}
+            variant="outlined"
+            color={jsonCopied ? 'success' : 'primary'}
+            startIcon={jsonCopied ? <Check /> : <ContentCopy />}
+            onClick={() => copyConfigToClipboard(previewCategory)}
+            disabled={!previewCategory}
           >
-            Filter Configs for This Category
+            {jsonCopied ? 'Copied!' : 'Copy as JSON'}
           </Button>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button onClick={() => setPreviewOpen(false)}>Close</Button>
+            <Button 
+              variant="contained" 
+              onClick={() => {
+                setPreviewOpen(false);
+                setFilterCategory(previewCategory);
+              }}
+            >
+              Filter Configs for This Category
+            </Button>
+          </Box>
         </DialogActions>
       </Dialog>
     </Box>
