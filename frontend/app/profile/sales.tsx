@@ -75,9 +75,52 @@ const EmptyState = () => (
   </View>
 );
 
+// Desktop Sale Card Component
+const DesktopSaleCard = ({ item, onPress }: { item: any; onPress: () => void }) => (
+  <TouchableOpacity 
+    style={desktopStyles.card} 
+    onPress={onPress}
+    activeOpacity={0.8}
+    data-testid={`sale-item-${item.id}`}
+  >
+    <View style={desktopStyles.cardImageContainer}>
+      <Image
+        source={{ uri: item.images?.[0] || 'https://via.placeholder.com/300' }}
+        style={desktopStyles.cardImage}
+      />
+      <View style={desktopStyles.soldBadgeOverlay}>
+        <Ionicons name="checkmark-circle" size={12} color="#fff" />
+        <Text style={desktopStyles.soldBadgeText}>Sold</Text>
+      </View>
+    </View>
+    <View style={desktopStyles.cardContent}>
+      <Text style={desktopStyles.cardPrice}>€{item.price?.toLocaleString()}</Text>
+      <Text style={desktopStyles.cardTitle} numberOfLines={2}>{item.title}</Text>
+      <Text style={desktopStyles.cardDate}>
+        Sold on {new Date(item.updated_at).toLocaleDateString()}
+      </Text>
+    </View>
+  </TouchableOpacity>
+);
+
+// Desktop Empty State
+const DesktopEmptyState = () => (
+  <View style={desktopStyles.emptyContainer}>
+    <View style={desktopStyles.emptyIcon}>
+      <Ionicons name="cash-outline" size={64} color={COLORS.textSecondary} />
+    </View>
+    <Text style={desktopStyles.emptyTitle}>No sales yet</Text>
+    <Text style={desktopStyles.emptySubtitle}>Items you sell will appear here</Text>
+  </View>
+);
+
 export default function SalesScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
+  const { isDesktop, isTablet, isReady } = useResponsive();
+  const { goToLogin } = useLoginRedirect();
+  const isLargeScreen = isDesktop || isTablet;
+  
   const [sales, setSales] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
