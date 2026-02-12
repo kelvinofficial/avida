@@ -353,6 +353,57 @@ export default function FormConfigPage() {
     return cat?.name || categoryId;
   };
 
+  // Get preview data for a specific category
+  const getPreviewData = useCallback((categoryId: string) => {
+    const categoryConfigs = configs.filter(c => 
+      (c.category_id === categoryId || c.category_id === 'default' || c.category_id === 'global') && 
+      c.is_active
+    );
+    
+    // Find placeholder config (category-specific or default)
+    const placeholderConfig = categoryConfigs.find(c => c.config_type === 'placeholder' && c.category_id === categoryId) ||
+                              categoryConfigs.find(c => c.config_type === 'placeholder' && c.category_id === 'default');
+    
+    // Find seller type config
+    const sellerTypeConfig = categoryConfigs.find(c => c.config_type === 'seller_type' && c.category_id === categoryId) ||
+                             categoryConfigs.find(c => c.config_type === 'seller_type' && c.category_id === 'default');
+    
+    // Find preference config
+    const preferenceConfig = categoryConfigs.find(c => c.config_type === 'preference' && c.category_id === categoryId);
+    
+    // Find visibility rules (usually global)
+    const visibilityConfig = categoryConfigs.find(c => c.config_type === 'visibility_rule');
+    
+    // Determine visibility rules for this category
+    const visibilityData = visibilityConfig?.config_data || {};
+    const hidePrice = (visibilityData.hide_price_categories || []).includes(categoryId);
+    const chatOnly = (visibilityData.chat_only_categories || []).includes(categoryId);
+    const hideCondition = (visibilityData.hide_condition_categories || []).includes(categoryId);
+    
+    return {
+      placeholder: placeholderConfig?.config_data || {
+        title: 'What are you selling?',
+        titleLabel: 'Title',
+        description: 'Include details like condition, features...',
+        descriptionLabel: 'Description',
+      },
+      sellerType: sellerTypeConfig?.config_data || {
+        label: 'Listed by',
+        options: ['Individual', 'Owner', 'Company'],
+      },
+      preferences: preferenceConfig?.config_data || {
+        acceptsOffers: true,
+        acceptsExchanges: true,
+        negotiable: true,
+      },
+      visibility: {
+        hidePrice,
+        chatOnly,
+        hideCondition,
+      },
+    };
+  }, [configs]);
+
   const getConfigTypeName = (typeValue: string) => {
     const type = CONFIG_TYPES.find(t => t.value === typeValue);
     return type?.label || typeValue;
