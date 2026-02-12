@@ -8,12 +8,16 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import api from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
+import { useResponsive } from '../../src/hooks/useResponsive';
+import { DesktopPageLayout } from '../../src/components/layout';
+import { useLoginRedirect } from '../../src/hooks/useLoginRedirect';
 
 const COLORS = {
   primary: '#2E7D32',
