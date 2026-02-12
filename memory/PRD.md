@@ -6,6 +6,55 @@ Build a local marketplace application (Avida) with:
 2. Business Profile feature for verified sellers
 3. Premium subscription tiers with payment integration
 
+### 2026-02-12: UI/UX Improvements Batch
+**COMPLETED**
+
+#### Category Page Search Enhancement (P0)
+- **Inline Search**: Added searchable input field directly on category pages (`/category/[id].tsx`)
+- Search filters listings within the category context instead of redirecting to global search
+- Debounced search with 500ms delay for performance
+- Clear button to reset search
+- Works on both desktop (in header row) and mobile (in nav header)
+
+#### Negotiable Badge Repositioning (P1)
+- **ListingCard Component** (`/src/components/ListingCard.tsx`): Moved negotiable badge from price row to bottom-right of image
+- **Homepage ListingCard** (`/app/(tabs)/index.tsx`): Updated inline card component to match - badge now positioned at `bottom: 30, right: 8` on image container
+- Badge displays "Negotiable" text with green styling
+
+#### Notification Page Filter Chips (P1)
+- Added filter chips for "Badges", "Challenges", "Credits" (`/app/notifications.tsx`)
+- Clicking "Badges" routes to `/profile/badges`
+- Clicking "Challenges" routes to `/challenges`
+- Clicking "Credits" routes to `/credits`
+- Other filter chips continue to filter notifications by type
+
+#### Header Location Selector Enhancement (P1)
+- **Country Modal** (`/src/components/layout/DesktopHeader.tsx`): Clicking location selector opens a modal with list of countries
+- Modal shows country name and flag emoji
+- Removed "Browse location" and "All locations" generic text
+- Changed default text to "Select Country"
+
+#### Nearby Feature Removal (P1)
+- Removed "Include nearby cities" toggle from homepage (mobile and desktop)
+- Removed expanded search banner/message
+- API calls now use `include_nearby: false` and `only_my_city: true`
+
+#### Category-Specific Filters (P1)
+- Added `CATEGORY_FILTERS` configuration for all 14 categories in `/app/category/[id].tsx`
+- Quick filter chips displayed above listings grid on desktop
+- Full filter options available in filter modal
+- Example filters:
+  - **Auto & Vehicles**: Fuel Type (Petrol/Diesel/Electric/Hybrid/CNG), Transmission, Year
+  - **Properties**: Property Type, Bedrooms, Furnished status
+  - **Electronics**: Brand (Apple/Samsung/Sony/LG), Warranty
+  - **Fashion**: Gender, Size
+
+#### Minimum Character Display (P1)
+- Added min character indicators to listing form (`/app/post/index.tsx`)
+- Title: "Min: 10 chars" with checkmark when met
+- Description: "Min: 20 chars" with checkmark when met
+- Green highlight when minimum is satisfied
+
 ### 2026-02-11: Modular Routes Wired into Server
 **COMPLETED**
 
