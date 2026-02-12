@@ -518,9 +518,16 @@ export default function CategoryScreen() {
   // Handle search with debounce
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
+    // Show suggestions dropdown when typing
+    if (query.trim().length >= 2) {
+      setShowSuggestions(true);
+      setShowRecentSearches(false);
+    } else {
+      setShowSuggestions(false);
+    }
   }, []);
 
-  // Debounced search effect
+  // Debounced search effect - for fetching listings
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (searchQuery !== undefined) {
@@ -534,10 +541,31 @@ export default function CategoryScreen() {
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
   
+  // Faster debounce for autocomplete suggestions
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery.trim().length >= 2) {
+        fetchSuggestions(searchQuery);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 200);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, fetchSuggestions]);
+  
+  // Apply a suggestion
+  const applySuggestion = useCallback((query: string) => {
+    setSearchQuery(query);
+    setShowSuggestions(false);
+    setSuggestions([]);
+  }, []);
+  
   // Apply a recent search
   const applyRecentSearch = useCallback((query: string) => {
     setSearchQuery(query);
     setShowRecentSearches(false);
+    setShowSuggestions(false);
   }, []);
 
   const handleRefresh = () => {
