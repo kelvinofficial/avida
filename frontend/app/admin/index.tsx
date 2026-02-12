@@ -98,6 +98,28 @@ export default function AdminRedirectScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Quick Actions - Row 4 */}
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity 
+            style={styles.actionCard}
+            onPress={() => router.push('/admin/photography-guides')}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: '#FDF4FF' }]}>
+              <Ionicons name="camera" size={24} color="#A855F7" />
+            </View>
+            <Text style={styles.actionTitle}>Photography Guides</Text>
+            <Text style={styles.actionDesc}>Manage photo tips for listing creation</Text>
+          </TouchableOpacity>
+
+          <View style={styles.actionCard}>
+            <View style={[styles.actionIcon, { backgroundColor: '#F5F5F5' }]}>
+              <Ionicons name="settings" size={24} color="#666" />
+            </View>
+            <Text style={styles.actionTitle}>More Settings</Text>
+            <Text style={styles.actionDesc}>Additional admin settings</Text>
+          </View>
+        </View>
+
         <View style={styles.infoCard}>
           <Text style={styles.infoTitle}>Full Admin Dashboard</Text>
           <Text style={styles.infoNote}>
