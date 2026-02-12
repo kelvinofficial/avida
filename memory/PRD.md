@@ -6,6 +6,42 @@ Build a local marketplace application (Avida) with:
 2. Business Profile feature for verified sellers
 3. Premium subscription tiers with payment integration
 
+### 2026-02-12: Popular Searches Feature (P1)
+**COMPLETED**
+
+#### Backend API
+- **Track Search**: `POST /api/searches/track` - Stores search queries with category_id in MongoDB `search_tracking` collection
+- **Get Popular**: `GET /api/searches/popular?category_id={id}&limit=5` - Returns global and category-specific trending searches
+- **Get Suggestions**: `GET /api/searches/suggestions?q={query}` - Autocomplete based on popular searches
+- **Files**: `/app/backend/routes/popular_searches.py`, registered in `/app/backend/server.py`
+
+#### Frontend Integration
+- **Desktop UI**: Dropdown shows "Popular in {Category}" section with orange flame icon and trending-up icons
+- **Mobile UI**: Orange-styled chips showing popular searches with "Trending" label
+- Searches tracked automatically when user performs search (2+ chars)
+- Both global and per-category trending shown
+
+### 2026-02-12: Admin Photography Guides Interface (P2)
+**COMPLETED**
+
+#### Admin Page Features
+- **Stats Dashboard**: Shows total guides, active/inactive count, categories with guides
+- **Seed Button**: One-click seed default photography guides for all categories
+- **Category Filter**: Filter guides by category
+- **CRUD Operations**: Create, edit, toggle active, delete guides
+- **Form Fields**: Category, title, description, icon (Ionicons), display order, active toggle
+- **Files**: `/app/frontend/app/admin/photography-guides.tsx`, added to admin index and layout
+
+### 2026-02-12: Enhanced Category Filters (P2)
+**COMPLETED**
+
+#### Filter Refinements
+- Added more filter options to existing categories (e.g., body type for autos, bathrooms for properties)
+- Added condition filter to most categories (New, Like New, Used)
+- Added default filters for categories without specific filters (Condition, Seller Type)
+- Filter labels shortened for better mobile display
+- Files: `/app/frontend/app/category/[id].tsx` (CATEGORY_FILTERS object)
+
 ### 2026-02-12: Recently Searched Feature (P1)
 **COMPLETED**
 
