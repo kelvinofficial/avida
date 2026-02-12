@@ -730,6 +730,127 @@ export default function SafetyTipsPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Preview Dialog */}
+      <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6">Preview: How tips appear on listing</Typography>
+          <FormControl size="small" sx={{ minWidth: 180 }}>
+            <Select
+              value={previewCategory}
+              onChange={(e) => setPreviewCategory(e.target.value)}
+              displayEmpty
+            >
+              {CATEGORIES.map(cat => (
+                <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogTitle>
+        <DialogContent>
+          {/* Mobile Preview */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+              Mobile View
+            </Typography>
+            <Box
+              sx={{
+                bgcolor: '#fff',
+                border: '1px solid #e0e0e0',
+                borderRadius: 2,
+                p: 2,
+                maxWidth: 380,
+                mx: 'auto',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              }}
+            >
+              {/* Safety Header */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                <ShieldOutlined sx={{ color: '#2E7D32', fontSize: 20 }} />
+                <Typography sx={{ fontWeight: 600, fontSize: 15, color: '#333' }}>
+                  Safety Tips
+                </Typography>
+              </Box>
+              
+              {/* Tips List */}
+              <Box sx={{ mb: 2 }}>
+                {(groupedTips[previewCategory] || []).slice(0, 5).map((tip, idx) => (
+                  <Box key={tip.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 0.75 }}>
+                    <CheckCircle sx={{ color: '#2E7D32', fontSize: 16, mt: 0.25 }} />
+                    <Typography sx={{ fontSize: 13, color: '#555', lineHeight: 1.4 }}>
+                      {tip.tip_text}
+                    </Typography>
+                  </Box>
+                ))}
+                {(!groupedTips[previewCategory] || groupedTips[previewCategory].length === 0) && (
+                  <Typography sx={{ fontSize: 13, color: '#888', fontStyle: 'italic' }}>
+                    No tips configured. Default tips will be shown.
+                  </Typography>
+                )}
+              </Box>
+              
+              {/* Footer */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 1.5, borderTop: '1px solid #f0f0f0' }}>
+                <Typography sx={{ fontSize: 12, color: '#888' }}>ID: 4EA1BB66</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer' }}>
+                  <Flag sx={{ color: '#d32f2f', fontSize: 14 }} />
+                  <Typography sx={{ fontSize: 12, color: '#d32f2f' }}>Report this listing</Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Desktop Preview */}
+          <Box>
+            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+              Desktop View (Sidebar)
+            </Typography>
+            <Box
+              sx={{
+                bgcolor: '#fff',
+                border: '1px solid #e0e0e0',
+                borderRadius: 2,
+                p: 2,
+                maxWidth: 320,
+                mx: 'auto',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              }}
+            >
+              {/* Safety Header */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                <ShieldOutlined sx={{ color: '#2E7D32', fontSize: 18 }} />
+                <Typography sx={{ fontWeight: 600, fontSize: 14, color: '#333' }}>
+                  Safety Tips
+                </Typography>
+              </Box>
+              
+              {/* Tips List - Compact */}
+              <Box sx={{ mb: 1.5 }}>
+                {(groupedTips[previewCategory] || []).slice(0, 3).map((tip, idx) => (
+                  <Box key={tip.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75, mb: 0.5 }}>
+                    <CheckCircle sx={{ color: '#2E7D32', fontSize: 14, mt: 0.25 }} />
+                    <Typography sx={{ fontSize: 12, color: '#555', lineHeight: 1.3 }}>
+                      {tip.tip_text}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+              
+              {/* Footer */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 1, borderTop: '1px solid #f0f0f0' }}>
+                <Typography sx={{ fontSize: 11, color: '#888' }}>ID: 4EA1BB66</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer' }}>
+                  <Flag sx={{ color: '#d32f2f', fontSize: 12 }} />
+                  <Typography sx={{ fontSize: 11, color: '#d32f2f' }}>Report</Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPreviewOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
