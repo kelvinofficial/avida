@@ -140,22 +140,12 @@ export default function IconsManagementScreen() {
   const handleSeedIcons = async () => {
     try {
       setSeeding(true);
-      const response = await fetch(`${API_URL}/api/attribute-icons/seed`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        Alert.alert('Success', data.message);
-        fetchIcons();
-        fetchStats();
-      } else {
-        const error = await response.json();
-        Alert.alert('Error', error.detail || 'Failed to seed icons');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to seed icons');
+      const response = await api.post('/attribute-icons/seed');
+      Alert.alert('Success', response.data.message);
+      fetchIcons();
+      fetchStats();
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to seed icons');
     } finally {
       setSeeding(false);
     }
@@ -168,24 +158,14 @@ export default function IconsManagementScreen() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/attribute-icons`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        Alert.alert('Success', 'Icon created successfully');
-        setModalVisible(false);
-        resetForm();
-        fetchIcons();
-        fetchStats();
-      } else {
-        const error = await response.json();
-        Alert.alert('Error', error.detail || 'Failed to create icon');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to create icon');
+      await api.post('/attribute-icons', formData);
+      Alert.alert('Success', 'Icon created successfully');
+      setModalVisible(false);
+      resetForm();
+      fetchIcons();
+      fetchStats();
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to create icon');
     }
   };
 
@@ -193,24 +173,14 @@ export default function IconsManagementScreen() {
     if (!editingIcon) return;
 
     try {
-      const response = await fetch(`${API_URL}/api/attribute-icons/${editingIcon.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        Alert.alert('Success', 'Icon updated successfully');
-        setModalVisible(false);
-        setEditingIcon(null);
-        resetForm();
-        fetchIcons();
-      } else {
-        const error = await response.json();
-        Alert.alert('Error', error.detail || 'Failed to update icon');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update icon');
+      await api.put(`/attribute-icons/${editingIcon.id}`, formData);
+      Alert.alert('Success', 'Icon updated successfully');
+      setModalVisible(false);
+      setEditingIcon(null);
+      resetForm();
+      fetchIcons();
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to update icon');
     }
   };
 
@@ -225,13 +195,9 @@ export default function IconsManagementScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const response = await fetch(`${API_URL}/api/attribute-icons/${iconId}`, {
-                method: 'DELETE',
-              });
-              if (response.ok) {
-                fetchIcons();
-                fetchStats();
-              }
+              await api.delete(`/attribute-icons/${iconId}`);
+              fetchIcons();
+              fetchStats();
             } catch (error) {
               Alert.alert('Error', 'Failed to delete icon');
             }
