@@ -1102,49 +1102,6 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* LOCATION FILTER CONTROLS */}
-      {selectedCity && (
-        <View style={styles.filterControlsRow}>
-          <View style={styles.filterToggle}>
-            <Text style={styles.filterLabel}>Include nearby cities</Text>
-            <Switch
-              value={includeNearbyCities}
-              onValueChange={(value) => {
-                setIncludeNearbyCities(value);
-                Storage.setItem('@include_nearby', value.toString());
-              }}
-              trackColor={{ false: '#ccc', true: '#81C784' }}
-              thumbColor={includeNearbyCities ? '#2E7D32' : '#f4f3f4'}
-            />
-          </View>
-          {includeNearbyCities && (
-            <View style={styles.radiusSelector}>
-              <Text style={styles.filterLabel}>Radius:</Text>
-              {[50, 100].map((r) => (
-                <TouchableOpacity
-                  key={r}
-                  style={[styles.radiusOption, searchRadius === r && styles.radiusOptionActive]}
-                  onPress={() => {
-                    setSearchRadius(r);
-                    Storage.setItem('@search_radius', r.toString());
-                  }}
-                >
-                  <Text style={[styles.radiusText, searchRadius === r && styles.radiusTextActive]}>{r}km</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
-      )}
-
-      {/* EXPANDED SEARCH MESSAGE */}
-      {expandedSearch && expandedSearchMessage && (
-        <View style={styles.expandedSearchBanner}>
-          <Ionicons name="information-circle" size={16} color="#1976D2" />
-          <Text style={styles.expandedSearchText}>{expandedSearchMessage}</Text>
-        </View>
-      )}
-
       {/* FULL-WIDTH DIVIDER */}
       <View style={styles.divider} />
 
