@@ -32,6 +32,7 @@ import {
   CircularProgress,
   Avatar,
   Tooltip,
+  Snackbar,
 } from '@mui/material';
 import {
   Add,
@@ -44,8 +45,26 @@ import {
   CloudUpload,
   Check,
   Close,
+  DragIndicator,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface PhotographyGuide {
   id: string;
@@ -104,6 +123,139 @@ const IONICONS = [
   'people-outline', 'happy-outline', 'information-circle-outline',
 ];
 
+// Sortable table row component
+interface SortableRowProps {
+  guide: PhotographyGuide;
+  getCategoryName: (id: string) => string;
+  handleOpenDialog: (guide: PhotographyGuide) => void;
+  handleDeleteGuide: (id: string) => void;
+  handleToggleActive: (guide: PhotographyGuide) => void;
+  isDragging: boolean;
+}
+
+function SortableTableRow({ guide, getCategoryName, handleOpenDialog, handleDeleteGuide, handleToggleActive, isDragging }: SortableRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: guide.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    backgroundColor: isDragging ? '#f5f5f5' : undefined,
+    boxShadow: isDragging ? '0 4px 12px rgba(0,0,0,0.15)' : undefined,
+  };
+
+  return (
+    <TableRow 
+      ref={setNodeRef} 
+      style={style} 
+      hover
+      sx={{ 
+        '&:hover .drag-handle': { opacity: 1 },
+        cursor: isDragging ? 'grabbing' : 'default',
+      }}
+    >
+      <TableCell sx={{ width: 40, padding: '0 8px' }}>
+        <Box
+          {...attributes}
+          {...listeners}
+          className="drag-handle"
+          sx={{
+            cursor: 'grab',
+            opacity: 0.5,
+            transition: 'opacity 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            '&:hover': { opacity: 1 },
+            '&:active': { cursor: 'grabbing' },
+          }}
+        >
+          <DragIndicator sx={{ color: 'text.secondary' }} />
+        </Box>
+      </TableCell>
+      <TableCell>
+        <Avatar sx={{ bgcolor: 'primary.light', width: 40, height: 40 }}>
+          <ion-icon name={guide.icon} style={{ fontSize: '20px' }}></ion-icon>
+        </Avatar>
+      </TableCell>
+      <TableCell>
+        <Chip 
+          size="small" 
+          label={getCategoryName(guide.category_id)}
+          color="primary"
+          variant="outlined"
+        />
+      </TableCell>
+      <TableCell>
+        <Typography variant="body2" fontWeight="medium">
+          {guide.title}
+        </Typography>
+      </TableCell>
+      <TableCell sx={{ maxWidth: 250 }}>
+        <Typography variant="body2" color="text.secondary" noWrap>
+          {guide.description}
+        </Typography>
+      </TableCell>
+      <TableCell>
+        {guide.has_image ? (
+          <Chip 
+            size="small" 
+            icon={<ImageIcon fontSize="small" />} 
+            label="Has Image" 
+            color="success" 
+            variant="outlined"
+          />
+        ) : (
+          <Chip 
+            size="small" 
+            label="No Image" 
+            color="default" 
+            variant="outlined"
+          />
+        )}
+      </TableCell>
+      <TableCell>
+        <Chip 
+          size="small"
+          label={guide.is_active ? 'Active' : 'Inactive'}
+          color={guide.is_active ? 'success' : 'default'}
+          onClick={() => handleToggleActive(guide)}
+          sx={{ cursor: 'pointer' }}
+        />
+      </TableCell>
+      <TableCell>
+        <Chip 
+          size="small" 
+          label={guide.order} 
+          variant="outlined"
+          sx={{ minWidth: 32 }}
+        />
+      </TableCell>
+      <TableCell align="right">
+        <Tooltip title="Edit">
+          <IconButton size="small" onClick={() => handleOpenDialog(guide)}>
+            <Edit fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Delete">
+          <IconButton 
+            size="small" 
+            color="error"
+            onClick={() => handleDeleteGuide(guide.id)}
+          >
+            <Delete fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </TableCell>
+    </TableRow>
+  );
+}
+
 export default function PhotographyGuidesPage() {
   const [guides, setGuides] = useState<PhotographyGuide[]>([]);
   const [stats, setStats] = useState<GuideStats | null>(null);
@@ -112,6 +264,8 @@ export default function PhotographyGuidesPage() {
   const [editingGuide, setEditingGuide] = useState<PhotographyGuide | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [reorderSnackbar, setReorderSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
   
   // Form state
   const [formData, setFormData] = useState({
@@ -126,6 +280,18 @@ export default function PhotographyGuidesPage() {
   
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   const fetchGuides = useCallback(async () => {
     try {
       setLoading(true);
@@ -133,7 +299,9 @@ export default function PhotographyGuidesPage() {
       if (filterCategory) url += `&category_id=${filterCategory}`;
       
       const response = await api.get(url);
-      setGuides(response.guides || []);
+      // Sort by order to ensure correct display
+      const sortedGuides = (response.guides || []).sort((a: PhotographyGuide, b: PhotographyGuide) => a.order - b.order);
+      setGuides(sortedGuides);
     } catch (error) {
       console.error('Error fetching guides:', error);
     } finally {
@@ -278,6 +446,77 @@ export default function PhotographyGuidesPage() {
     }
   };
 
+  // Handle drag end for reordering
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over || active.id === over.id) return;
+
+    // Get the category of the dragged guide
+    const draggedGuide = guides.find(g => g.id === active.id);
+    const targetGuide = guides.find(g => g.id === over.id);
+
+    if (!draggedGuide || !targetGuide) return;
+
+    // Only allow reordering within the same category
+    if (draggedGuide.category_id !== targetGuide.category_id) {
+      setReorderSnackbar({
+        open: true,
+        message: 'Cannot reorder across different categories. Filter by category first.',
+        severity: 'error'
+      });
+      return;
+    }
+
+    // Filter guides by the same category
+    const categoryGuides = guides.filter(g => g.category_id === draggedGuide.category_id);
+    const oldIndex = categoryGuides.findIndex(g => g.id === active.id);
+    const newIndex = categoryGuides.findIndex(g => g.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Reorder the category guides
+    const reorderedCategoryGuides = arrayMove(categoryGuides, oldIndex, newIndex);
+    const guideIds = reorderedCategoryGuides.map(g => g.id);
+
+    // Optimistically update the UI
+    const otherGuides = guides.filter(g => g.category_id !== draggedGuide.category_id);
+    const updatedGuides = [
+      ...otherGuides,
+      ...reorderedCategoryGuides.map((g, index) => ({ ...g, order: index }))
+    ].sort((a, b) => {
+      if (a.category_id !== b.category_id) {
+        return a.category_id.localeCompare(b.category_id);
+      }
+      return a.order - b.order;
+    });
+    setGuides(updatedGuides);
+
+    try {
+      // Call the reorder API
+      await api.put(`/photography-guides/reorder/${draggedGuide.category_id}`, guideIds);
+      setReorderSnackbar({
+        open: true,
+        message: 'Guides reordered successfully!',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error reordering guides:', error);
+      setReorderSnackbar({
+        open: true,
+        message: 'Failed to save new order. Please try again.',
+        severity: 'error'
+      });
+      // Revert on error
+      fetchGuides();
+    }
+  };
+
+  const handleDragStart = (event: any) => {
+    setActiveId(event.active.id);
+  };
+
   const getCategoryName = (categoryId: string) => {
     const cat = CATEGORIES.find(c => c.id === categoryId);
     return cat?.name || categoryId;
@@ -355,6 +594,11 @@ export default function PhotographyGuidesPage() {
         </Grid>
       </Grid>
 
+      {/* Drag & Drop Info Banner */}
+      <Alert severity="info" sx={{ mb: 2 }}>
+        <strong>Drag & Drop Enabled:</strong> Drag guides by the handle (<DragIndicator sx={{ fontSize: 16, verticalAlign: 'middle' }} />) to reorder them within the same category. Filter by category for easier reordering.
+      </Alert>
+
       {/* Filters */}
       <Card sx={{ mb: 3 }}>
         <Box sx={{ p: 2, display: 'flex', gap: 2, alignItems: 'center', bgcolor: 'grey.50' }}>
@@ -374,9 +618,14 @@ export default function PhotographyGuidesPage() {
           {filterCategory && (
             <Button size="small" onClick={() => setFilterCategory('')}>Clear Filter</Button>
           )}
+          {filterCategory && (
+            <Typography variant="body2" color="text.secondary">
+              Showing {guides.filter(g => g.category_id === filterCategory).length} guides
+            </Typography>
+          )}
         </Box>
 
-        {/* Guides Table */}
+        {/* Guides Table with DnD */}
         <CardContent>
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -387,95 +636,48 @@ export default function PhotographyGuidesPage() {
               No photography guides found. Click "Seed Defaults" to add standard guides.
             </Alert>
           ) : (
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Icon</TableCell>
-                    <TableCell>Category</TableCell>
-                    <TableCell>Title</TableCell>
-                    <TableCell>Description</TableCell>
-                    <TableCell>Image</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Order</TableCell>
-                    <TableCell align="right">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {guides.map((guide) => (
-                    <TableRow key={guide.id} hover>
-                      <TableCell>
-                        <Avatar sx={{ bgcolor: 'primary.light', width: 40, height: 40 }}>
-                          <ion-icon name={guide.icon} style={{ fontSize: '20px' }}></ion-icon>
-                        </Avatar>
-                      </TableCell>
-                      <TableCell>
-                        <Chip 
-                          size="small" 
-                          label={getCategoryName(guide.category_id)}
-                          color="primary"
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" fontWeight="medium">
-                          {guide.title}
-                        </Typography>
-                      </TableCell>
-                      <TableCell sx={{ maxWidth: 250 }}>
-                        <Typography variant="body2" color="text.secondary" noWrap>
-                          {guide.description}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        {guide.has_image ? (
-                          <Chip 
-                            size="small" 
-                            icon={<ImageIcon fontSize="small" />} 
-                            label="Has Image" 
-                            color="success" 
-                            variant="outlined"
-                          />
-                        ) : (
-                          <Chip 
-                            size="small" 
-                            label="No Image" 
-                            color="default" 
-                            variant="outlined"
-                          />
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Chip 
-                          size="small"
-                          label={guide.is_active ? 'Active' : 'Inactive'}
-                          color={guide.is_active ? 'success' : 'default'}
-                          onClick={() => handleToggleActive(guide)}
-                          sx={{ cursor: 'pointer' }}
-                        />
-                      </TableCell>
-                      <TableCell>{guide.order}</TableCell>
-                      <TableCell align="right">
-                        <Tooltip title="Edit">
-                          <IconButton size="small" onClick={() => handleOpenDialog(guide)}>
-                            <Edit fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Delete">
-                          <IconButton 
-                            size="small" 
-                            color="error"
-                            onClick={() => handleDeleteGuide(guide.id)}
-                          >
-                            <Delete fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </TableCell>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <TableContainer component={Paper} variant="outlined">
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ width: 40 }}></TableCell>
+                      <TableCell>Icon</TableCell>
+                      <TableCell>Category</TableCell>
+                      <TableCell>Title</TableCell>
+                      <TableCell>Description</TableCell>
+                      <TableCell>Image</TableCell>
+                      <TableCell>Status</TableCell>
+                      <TableCell>Order</TableCell>
+                      <TableCell align="right">Actions</TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                  </TableHead>
+                  <TableBody>
+                    <SortableContext
+                      items={guides.map(g => g.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {guides.map((guide) => (
+                        <SortableTableRow
+                          key={guide.id}
+                          guide={guide}
+                          getCategoryName={getCategoryName}
+                          handleOpenDialog={handleOpenDialog}
+                          handleDeleteGuide={handleDeleteGuide}
+                          handleToggleActive={handleToggleActive}
+                          isDragging={activeId === guide.id}
+                        />
+                      ))}
+                    </SortableContext>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </DndContext>
           )}
         </CardContent>
       </Card>
@@ -663,6 +865,22 @@ export default function PhotographyGuidesPage() {
           <Button onClick={() => setIconPickerOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Reorder Snackbar */}
+      <Snackbar
+        open={reorderSnackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setReorderSnackbar({ ...reorderSnackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setReorderSnackbar({ ...reorderSnackbar, open: false })} 
+          severity={reorderSnackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {reorderSnackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
