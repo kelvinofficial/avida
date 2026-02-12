@@ -44,20 +44,21 @@ def create_badges_router(db, get_current_user, badge_service=None):
         user_id = current_user["user_id"]
         
         # Get user's earned badges
-        earned_badges = list(db.user_badges.find(
+        earned_badges_cursor = db.user_badges.find(
             {"user_id": user_id},
             {"_id": 0}
-        ))
+        )
+        earned_badges = await earned_badges_cursor.to_list(length=100)
         earned_badge_ids = {b["badge_id"] for b in earned_badges}
         
         # Get user stats for progress calculation
-        listings_count = db.listings.count_documents({"user_id": user_id, "status": {"$ne": "deleted"}})
-        sales_count = db.listings.count_documents({"user_id": user_id, "status": "sold"})
+        listings_count = await db.listings.count_documents({"user_id": user_id, "status": {"$ne": "deleted"}})
+        sales_count = await db.listings.count_documents({"user_id": user_id, "status": "sold"})
         
-        user = db.users.find_one({"user_id": user_id}, {"_id": 0, "verified": 1})
+        user = await db.users.find_one({"user_id": user_id}, {"_id": 0, "verified": 1})
         is_verified = user.get("verified", False) if user else False
         
-        reviews_count = db.reviews.count_documents({"reviewed_user_id": user_id, "rating": {"$gte": 4}})
+        reviews_count = await db.reviews.count_documents({"reviewed_user_id": user_id, "rating": {"$gte": 4}})
         
         progress = []
         for badge in BADGE_DEFINITIONS:
