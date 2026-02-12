@@ -185,6 +185,7 @@ export function useAttributeIcons(categoryId?: string) {
     loading,
     error,
     getIconForAttribute,
+    getIconColorForAttribute,
     getCategoryIcon,
     iconMap,
     refetch: fetchIcons,
