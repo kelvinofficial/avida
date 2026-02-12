@@ -1,0 +1,74 @@
+{
+  "summary": "Tested Dynamic Listing Creation Form. Category selection and subcategory display working correctly. FOUND BUG: SHOW_SALARY_SUBCATEGORIES config uses 'job_offers' but actual subcategory ID is 'job_listings', so salary range won't display for job listings. Code implementation verified for Friendship & Dating (price hidden, chat only, Listed by: Individual) and Auto & Vehicles (Listed by options). Cannot fully test Step 5 (Price & Contact) via UI due to photo validation requirement on Step 2.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Jobs Salary Range Display",
+        "issue": "SHOW_SALARY_SUBCATEGORIES uses 'job_offers' but actual subcategory ID is 'job_listings' - salary range won't show for job listings",
+        "affected_selectors": ["Step 5 salary range section"],
+        "affected_files": ["/app/frontend/src/config/listingFormConfig.ts"],
+        "priority": "MEDIUM"
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/test_reports/iteration_103.json"],
+  "action_items": [
+    "FIX: Update SHOW_SALARY_SUBCATEGORIES in listingFormConfig.ts to use 'job_listings' instead of 'job_offers'",
+    "Also update HIDE_CONDITION_SUBCATEGORIES to use 'job_listings' instead of 'job_offers'",
+    "Consider reviewing if 'services_offered' subcategory ID exists in subcategories.ts"
+  ],
+  "critical_code_review_comments": [
+    "listingFormConfig.ts line 149: SHOW_SALARY_SUBCATEGORIES = ['job_offers', 'job_seekers'] - 'job_offers' should be 'job_listings' to match subcategories.ts",
+    "listingFormConfig.ts line 156: HIDE_CONDITION_SUBCATEGORIES uses 'job_offers' which doesn't exist",
+    "renderStep5() correctly implements dynamic form logic using shouldHidePrice(), shouldShowSalaryRange(), getSellerTypes(), isChatOnlyCategory()",
+    "Code structure is clean - configuration in listingFormConfig.ts, implementation in post/index.tsx"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend-only testing)",
+    "frontend": "85%"
+  },
+  "test_credentials": {
+    "email": "demo@test.com",
+    "password": "password"
+  },
+  "seed_data_creation": "",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Dynamic form implementation is correct in code but has config mismatch for Jobs subcategory IDs. Tested via UI: category selection works, subcategory display works. Could not reach Step 5 in UI due to photo requirement. Code review confirms: Friendship & Dating hides price, shows chat only, Listed by: Individual. Auto & Vehicles shows Listed by options (Owner, Dealer, etc.). Fix the subcategory ID mismatch in listingFormConfig.ts.",
+  "verified_features": {
+    "category_selection_ui": "PASS - All 12 categories visible and selectable",
+    "subcategory_display": "PASS - Subcategories appear after category selection",
+    "friendship_dating_config": "PASS (Code Review) - hidePrice=true, chatOnly=true, sellerType=['Individual']",
+    "auto_vehicles_config": "PASS (Code Review) - sellerType=['Owner', 'Broker', 'Individual', 'Company', 'Dealer']",
+    "jobs_salary_range_config": "FAIL - Config uses wrong subcategory ID 'job_offers' instead of 'job_listings'",
+    "listed_by_label": "PASS (Code Review) - All SELLER_TYPE_CONFIG entries use 'Listed by' label",
+    "step_indicator": "PASS - Shows 6 steps: Category, Photos, Details, Attributes, Price, Review"
+  },
+  "code_review_findings": {
+    "bug_found": {
+      "file": "/app/frontend/src/config/listingFormConfig.ts",
+      "line": 149,
+      "issue": "SHOW_SALARY_SUBCATEGORIES = ['job_offers', 'job_seekers'] uses 'job_offers' but actual subcategory ID in subcategories.ts is 'job_listings'",
+      "fix": "Change 'job_offers' to 'job_listings'"
+    },
+    "related_issue": {
+      "file": "/app/frontend/src/config/listingFormConfig.ts",
+      "line": 156,
+      "issue": "HIDE_CONDITION_SUBCATEGORIES also uses 'job_offers'",
+      "fix": "Change 'job_offers' to 'job_listings'"
+    }
+  },
+  "screenshots": [
+    ".screenshots/post_form_step1.png",
+    ".screenshots/friendship_dating_selected.png",
+    ".screenshots/auto_subcategories.png",
+    ".screenshots/jobs_subcategories.png"
+  ]
+}
