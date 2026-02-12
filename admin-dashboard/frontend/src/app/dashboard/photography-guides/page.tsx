@@ -210,6 +210,8 @@ function SortableTableRow({ guide, getCategoryName, handleOpenDialog, handleDele
             label="Has Image" 
             color="success" 
             variant="outlined"
+            onClick={() => handleImagePreview(guide)}
+            sx={{ cursor: 'pointer' }}
           />
         ) : (
           <Chip 
