@@ -2843,6 +2843,14 @@ if ADMIN_TOOLS_AVAILABLE:
     app.include_router(webp_router, prefix="/api")
     app.include_router(invoice_pdf_router, prefix="/api")
     
+    # Safety Tips routes
+    try:
+        from .routes.safety_tips import router as safety_tips_router
+        app.include_router(safety_tips_router, prefix="/api")
+        print("Safety tips routes loaded successfully")
+    except Exception as e:
+        print(f"Failed to load safety tips routes: {e}")
+    
     # URL redirect endpoint for short URLs
     @app.get("/s/{code}")
     async def redirect_short_url(code: str, request: Request):
