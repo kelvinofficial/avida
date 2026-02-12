@@ -403,7 +403,7 @@ export default function IconsManagementScreen() {
           <View style={styles.emptyState}>
             <Ionicons name="shapes-outline" size={64} color="#ccc" />
             <Text style={styles.emptyText}>No icons found</Text>
-            <Text style={styles.emptySubtext}>Tap "Seed Default Icons" to get started</Text>
+            <Text style={styles.emptySubtext}>Tap &quot;Seed Default Icons&quot; to get started</Text>
           </View>
         ) : (
           <View style={styles.iconsGrid}>
