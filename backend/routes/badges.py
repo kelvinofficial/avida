@@ -279,7 +279,7 @@ def create_badges_router(db, get_current_user, badge_service=None):
             {"$sort": {"total_points": -1}}
         ]
         
-        all_users = list(db.user_badges.aggregate(pipeline))
+        all_users = await db.user_badges.aggregate(pipeline).to_list(length=10000)
         
         rank = None
         user_points = 0
@@ -289,7 +289,7 @@ def create_badges_router(db, get_current_user, badge_service=None):
                 user_points = u["total_points"]
                 break
         
-        badge_count = db.user_badges.count_documents({"user_id": user_id})
+        badge_count = await db.user_badges.count_documents({"user_id": user_id})
         
         return {
             "rank": rank,
