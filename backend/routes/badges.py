@@ -148,68 +148,118 @@ def create_badges_router(db, get_current_user, badge_service=None):
         )
         return {"success": True, "marked_count": result.modified_count}
 
+    # Define milestone thresholds
+    BADGE_MILESTONES = [
+        {"count": 1, "name": "First Badge!", "message": "You earned your first badge! You're on your way to becoming a top seller.", "icon": "ribbon"},
+        {"count": 5, "name": "Badge Collector", "message": "5 badges earned! You're building an impressive reputation.", "icon": "medal"},
+        {"count": 10, "name": "Achievement Hunter", "message": "10 badges! You're a dedicated member of our community.", "icon": "trophy"},
+        {"count": 25, "name": "Badge Master", "message": "25 badges! You're among our most accomplished sellers.", "icon": "star"},
+        {"count": 50, "name": "Legend Status", "message": "50 badges! You've achieved legendary status!", "icon": "diamond"},
+    ]
+
+    # Special badge milestones (triggered by specific badge names)
+    SPECIAL_BADGE_MILESTONES = {
+        "First Listing": {"name": "First Listing Unlocked!", "message": "You've created your first listing! Your journey as a seller begins.", "icon": "pricetag"},
+        "First Sale": {"name": "First Sale Celebration!", "message": "Congratulations on your first sale! You're officially a seller.", "icon": "cash"},
+        "Active Seller": {"name": "Active Seller Status!", "message": "You've reached Active Seller status with 5+ sales!", "icon": "trending-up"},
+        "Top Seller": {"name": "Top Seller Achieved!", "message": "You're now a Top Seller! Your hard work has paid off.", "icon": "trophy"},
+        "Trusted Member": {"name": "Trusted Member!", "message": "You've earned the trust of our community. Thank you!", "icon": "shield-checkmark"},
+        "Veteran": {"name": "Veteran Status!", "message": "A year of excellence! You're a veteran member.", "icon": "time"},
+    }
+
     @router.get("/milestones")
-    async def get_milestones(current_user: dict = Depends(get_current_user)):
-        """Get user's milestone progress."""
+    async def get_badge_milestones(current_user: dict = Depends(get_current_user)):
+        """Get user's achieved and pending milestones"""
         user_id = current_user["user_id"]
         
-        # Count user's badges
-        badge_count = await db.user_badges.count_documents({"user_id": user_id})
+        # Get total badge count
+        total_badges = await db.user_badges.count_documents({"user_id": user_id})
         
-        # Milestone definitions
-        milestones = [
-            {"id": "first_badge", "name": "Badge Collector", "description": "Earn your first badge", "badge_count_required": 1, "icon": "medal", "color": "#FFD700", "points_value": 10},
-            {"id": "badge_5", "name": "Rising Achiever", "description": "Earn 5 badges", "badge_count_required": 5, "icon": "ribbon", "color": "#4CAF50", "points_value": 25},
-            {"id": "badge_10", "name": "Badge Master", "description": "Earn 10 badges", "badge_count_required": 10, "icon": "trophy", "color": "#9C27B0", "points_value": 50},
-        ]
+        # Get user's badges with names
+        user_badges = await db.user_badges.find({"user_id": user_id}).to_list(length=100)
+        badge_ids = [b["badge_id"] for b in user_badges]
+        badges = await db.badges.find({"id": {"$in": badge_ids}}).to_list(length=100)
+        badge_names = {b["id"]: b["name"] for b in badges}
         
-        # Get achieved milestones
-        achieved_cursor = db.user_milestones.find(
-            {"user_id": user_id},
-            {"_id": 0}
-        )
-        achieved = await achieved_cursor.to_list(length=100)
-        achieved_ids = {m["milestone_id"] for m in achieved}
+        # Get acknowledged milestones
+        user_milestones = await db.user_milestones.find({"user_id": user_id}).to_list(length=100)
+        acknowledged_ids = {m["milestone_id"] for m in user_milestones}
         
-        result = []
-        for m in milestones:
-            result.append({
-                **m,
-                "achieved": m["id"] in achieved_ids,
-                "progress": min(badge_count, m["badge_count_required"]),
-            })
+        achieved_milestones = []
+        pending_milestones = []
+        new_milestones = []
         
-        return {"milestones": result, "total_badges": badge_count}
+        # Check count-based milestones
+        for milestone in BADGE_MILESTONES:
+            milestone_id = f"count_{milestone['count']}"
+            milestone_data = {
+                "id": milestone_id,
+                "type": "count",
+                "name": milestone["name"],
+                "message": milestone["message"],
+                "icon": milestone["icon"],
+                "threshold": milestone["count"],
+                "achieved": total_badges >= milestone["count"],
+                "acknowledged": milestone_id in acknowledged_ids,
+            }
+            
+            if total_badges >= milestone["count"]:
+                achieved_milestones.append(milestone_data)
+                if milestone_id not in acknowledged_ids:
+                    new_milestones.append(milestone_data)
+            else:
+                pending_milestones.append(milestone_data)
+        
+        # Check special badge milestones
+        for badge_name, milestone in SPECIAL_BADGE_MILESTONES.items():
+            milestone_id = f"special_{badge_name.replace(' ', '_').lower()}"
+            earned = any(badge_names.get(b["badge_id"]) == badge_name for b in user_badges)
+            
+            milestone_data = {
+                "id": milestone_id,
+                "type": "special",
+                "badge_name": badge_name,
+                "name": milestone["name"],
+                "message": milestone["message"],
+                "icon": milestone["icon"],
+                "achieved": earned,
+                "acknowledged": milestone_id in acknowledged_ids,
+            }
+            
+            if earned:
+                achieved_milestones.append(milestone_data)
+                if milestone_id not in acknowledged_ids:
+                    new_milestones.append(milestone_data)
+        
+        return {
+            "total_badges": total_badges,
+            "achieved_milestones": achieved_milestones,
+            "pending_milestones": pending_milestones,
+            "new_milestones": new_milestones,  # Unacknowledged milestones to show
+        }
 
     @router.post("/milestones/acknowledge")
-    async def acknowledge_milestones(current_user: dict = Depends(get_current_user)):
-        """Check and acknowledge newly achieved milestones."""
+    async def acknowledge_milestone(milestone_id: str, current_user: dict = Depends(get_current_user)):
+        """Mark a milestone as acknowledged/seen"""
         user_id = current_user["user_id"]
-        badge_count = await db.user_badges.count_documents({"user_id": user_id})
         
-        milestones = [
-            {"id": "first_badge", "name": "Badge Collector", "badge_count_required": 1, "icon": "medal", "color": "#FFD700", "points_value": 10},
-            {"id": "badge_5", "name": "Rising Achiever", "badge_count_required": 5, "icon": "ribbon", "color": "#4CAF50", "points_value": 25},
-            {"id": "badge_10", "name": "Badge Master", "badge_count_required": 10, "icon": "trophy", "color": "#9C27B0", "points_value": 50},
-        ]
+        if not milestone_id:
+            raise HTTPException(status_code=400, detail="milestone_id is required")
         
-        achieved_cursor = db.user_milestones.find({"user_id": user_id}, {"milestone_id": 1})
-        achieved = await achieved_cursor.to_list(length=100)
-        achieved_ids = {m["milestone_id"] for m in achieved}
+        # Check if already acknowledged
+        existing = await db.user_milestones.find_one({
+            "user_id": user_id,
+            "milestone_id": milestone_id
+        })
         
-        new_milestones = []
-        for m in milestones:
-            if m["id"] not in achieved_ids and badge_count >= m["badge_count_required"]:
-                await db.user_milestones.insert_one({
-                    "user_id": user_id,
-                    "milestone_id": m["id"],
-                    "milestone_name": m["name"],
-                    "achieved_at": datetime.now(timezone.utc),
-                    "acknowledged": True
-                })
-                new_milestones.append(m)
+        if not existing:
+            await db.user_milestones.insert_one({
+                "user_id": user_id,
+                "milestone_id": milestone_id,
+                "acknowledged_at": datetime.now(timezone.utc)
+            })
         
-        return {"new_milestones": new_milestones}
+        return {"message": "Milestone acknowledged", "milestone_id": milestone_id}
 
     @router.get("/leaderboard")
     async def get_leaderboard(
