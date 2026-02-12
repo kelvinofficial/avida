@@ -9356,6 +9356,501 @@ async def admin_reinstate_business_profile(
 logger.info("Business Profiles admin endpoints registered")
 
 # =============================================================================
+# FORM CONFIGURATION MANAGEMENT
+# =============================================================================
+
+class FormConfigType(str, Enum):
+    PLACEHOLDER = "placeholder"
+    SELLER_TYPE = "seller_type"
+    PREFERENCE = "preference"
+    LISTING_TIP = "listing_tip"
+    VISIBILITY_RULE = "visibility_rule"
+
+class FormConfigCreate(BaseModel):
+    category_id: str = Field(..., description="Category ID (e.g., 'auto_vehicles', 'properties')")
+    subcategory_id: Optional[str] = Field(None, description="Subcategory ID (optional, for subcategory-specific config)")
+    config_type: FormConfigType
+    config_data: Dict[str, Any]
+    is_active: bool = True
+    priority: int = Field(default=0, description="Higher priority configs override lower ones")
+
+class FormConfigUpdate(BaseModel):
+    config_data: Optional[Dict[str, Any]] = None
+    is_active: Optional[bool] = None
+    priority: Optional[int] = None
+
+# Default configurations for seeding
+DEFAULT_FORM_CONFIGS = {
+    "placeholders": {
+        "default": {
+            "title": "What are you selling?",
+            "titleLabel": "Title",
+            "description": "Include details like condition, features, reason for selling...",
+            "descriptionLabel": "Description"
+        },
+        "auto_vehicles": {
+            "title": "e.g., 2020 BMW 320i - Low Mileage",
+            "titleLabel": "Vehicle Title",
+            "description": "Include make, model, year, mileage, condition, features, service history...",
+            "descriptionLabel": "Vehicle Description"
+        },
+        "properties": {
+            "title": "e.g., 3 Bedroom Apartment in City Center",
+            "titleLabel": "Property Title",
+            "description": "Include property type, size, number of rooms, amenities, location details...",
+            "descriptionLabel": "Property Description"
+        },
+        "jobs_services": {
+            "title": "e.g., Experienced Web Developer Available",
+            "titleLabel": "Job/Service Title",
+            "description": "Include your skills, experience, availability, and what you can offer...",
+            "descriptionLabel": "Job/Service Description"
+        },
+        "friendship_dating": {
+            "title": "e.g., Looking for hiking buddies",
+            "titleLabel": "Post Title",
+            "description": "Introduce yourself, your interests, and what you are looking for...",
+            "descriptionLabel": "About You"
+        },
+        "community": {
+            "title": "e.g., Weekend Cleanup Event",
+            "titleLabel": "Post Title",
+            "description": "Describe your post, event, or announcement details...",
+            "descriptionLabel": "Details"
+        },
+        "electronics": {
+            "title": "e.g., MacBook Pro 2023 - Excellent Condition",
+            "titleLabel": "Item Title",
+            "description": "Include brand, model, specifications, condition, and accessories included...",
+            "descriptionLabel": "Item Description"
+        },
+        "phones_tablets": {
+            "title": "e.g., iPhone 15 Pro Max 256GB",
+            "titleLabel": "Device Title",
+            "description": "Include model, storage capacity, condition, battery health, accessories...",
+            "descriptionLabel": "Device Description"
+        }
+    },
+    "seller_types": {
+        "default": {
+            "label": "Listed by",
+            "options": ["Individual", "Owner", "Company", "Dealer", "Broker"]
+        },
+        "properties": {
+            "label": "Listed by",
+            "options": ["Landlord", "Landlady", "Owner", "Broker", "Individual", "Company"]
+        },
+        "auto_vehicles": {
+            "label": "Listed by",
+            "options": ["Owner", "Broker", "Individual", "Company", "Dealer"]
+        },
+        "friendship_dating": {
+            "label": "Listed by",
+            "options": ["Individual"]
+        },
+        "jobs_services": {
+            "label": "Listed by",
+            "options": ["Individual", "Company", "Recruiter"]
+        },
+        "community": {
+            "label": "Posted by",
+            "options": ["Individual", "Organization", "Community Group"]
+        }
+    },
+    "visibility_rules": {
+        "hide_price_categories": ["friendship_dating"],
+        "show_salary_subcategories": ["job_listings"],
+        "chat_only_categories": ["friendship_dating"],
+        "hide_condition_categories": ["friendship_dating", "community", "jobs_services"],
+        "hide_condition_subcategories": ["job_listings", "services_offered"]
+    },
+    "preferences": {
+        "friendship_dating": {
+            "acceptsOffers": False,
+            "acceptsExchanges": False,
+            "negotiable": False
+        },
+        "jobs_services": {
+            "acceptsExchanges": False
+        }
+    }
+}
+
+@app.get("/api/admin/form-config")
+async def get_form_configs(
+    category_id: Optional[str] = None,
+    subcategory_id: Optional[str] = None,
+    config_type: Optional[str] = None,
+    is_active: Optional[bool] = None,
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=200),
+    current_user: dict = Depends(get_current_admin)
+):
+    """Get all form configurations with optional filtering."""
+    try:
+        query = {}
+        if category_id:
+            query["category_id"] = category_id
+        if subcategory_id:
+            query["subcategory_id"] = subcategory_id
+        if config_type:
+            query["config_type"] = config_type
+        if is_active is not None:
+            query["is_active"] = is_active
+        
+        skip = (page - 1) * limit
+        total = await db.form_configs.count_documents(query)
+        
+        cursor = db.form_configs.find(query).sort([("priority", -1), ("created_at", -1)]).skip(skip).limit(limit)
+        configs = []
+        async for config in cursor:
+            configs.append({
+                "id": str(config["_id"]),
+                "category_id": config.get("category_id"),
+                "subcategory_id": config.get("subcategory_id"),
+                "config_type": config.get("config_type"),
+                "config_data": config.get("config_data", {}),
+                "is_active": config.get("is_active", True),
+                "priority": config.get("priority", 0),
+                "created_at": config.get("created_at").isoformat() if config.get("created_at") else None,
+                "updated_at": config.get("updated_at").isoformat() if config.get("updated_at") else None,
+            })
+        
+        return {
+            "configs": configs,
+            "total": total,
+            "page": page,
+            "limit": limit,
+        }
+    except Exception as e:
+        logger.error(f"Error fetching form configs: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch form configurations")
+
+@app.get("/api/admin/form-config/stats")
+async def get_form_config_stats(current_user: dict = Depends(get_current_admin)):
+    """Get statistics about form configurations."""
+    try:
+        total = await db.form_configs.count_documents({})
+        active = await db.form_configs.count_documents({"is_active": True})
+        
+        # Count by type
+        type_counts = {}
+        for config_type in FormConfigType:
+            count = await db.form_configs.count_documents({"config_type": config_type.value})
+            type_counts[config_type.value] = count
+        
+        # Get unique categories configured
+        categories = await db.form_configs.distinct("category_id")
+        
+        return {
+            "total": total,
+            "active": active,
+            "inactive": total - active,
+            "by_type": type_counts,
+            "categories_configured": len(categories),
+            "categories": categories,
+        }
+    except Exception as e:
+        logger.error(f"Error fetching form config stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch statistics")
+
+@app.post("/api/admin/form-config")
+async def create_form_config(
+    config: FormConfigCreate,
+    current_user: dict = Depends(get_current_admin)
+):
+    """Create a new form configuration."""
+    try:
+        # Check for existing config with same category/subcategory/type
+        existing_query = {
+            "category_id": config.category_id,
+            "config_type": config.config_type.value,
+        }
+        if config.subcategory_id:
+            existing_query["subcategory_id"] = config.subcategory_id
+        else:
+            existing_query["subcategory_id"] = {"$in": [None, ""]}
+        
+        existing = await db.form_configs.find_one(existing_query)
+        if existing:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Configuration already exists for this category/subcategory and type. Use PUT to update."
+            )
+        
+        config_doc = {
+            "category_id": config.category_id,
+            "subcategory_id": config.subcategory_id,
+            "config_type": config.config_type.value,
+            "config_data": config.config_data,
+            "is_active": config.is_active,
+            "priority": config.priority,
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc),
+            "created_by": current_user.get("email"),
+        }
+        
+        result = await db.form_configs.insert_one(config_doc)
+        
+        # Log audit
+        await db.audit_logs.insert_one({
+            "action": "form_config_created",
+            "admin_email": current_user.get("email"),
+            "target_type": "form_config",
+            "target_id": str(result.inserted_id),
+            "details": {
+                "category_id": config.category_id,
+                "subcategory_id": config.subcategory_id,
+                "config_type": config.config_type.value,
+            },
+            "timestamp": datetime.now(timezone.utc),
+        })
+        
+        return {
+            "success": True,
+            "id": str(result.inserted_id),
+            "message": "Form configuration created successfully",
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating form config: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create form configuration")
+
+@app.put("/api/admin/form-config/{config_id}")
+async def update_form_config(
+    config_id: str,
+    updates: FormConfigUpdate,
+    current_user: dict = Depends(get_current_admin)
+):
+    """Update an existing form configuration."""
+    try:
+        from bson import ObjectId
+        
+        existing = await db.form_configs.find_one({"_id": ObjectId(config_id)})
+        if not existing:
+            raise HTTPException(status_code=404, detail="Form configuration not found")
+        
+        update_doc = {"updated_at": datetime.now(timezone.utc)}
+        if updates.config_data is not None:
+            update_doc["config_data"] = updates.config_data
+        if updates.is_active is not None:
+            update_doc["is_active"] = updates.is_active
+        if updates.priority is not None:
+            update_doc["priority"] = updates.priority
+        
+        await db.form_configs.update_one(
+            {"_id": ObjectId(config_id)},
+            {"$set": update_doc}
+        )
+        
+        # Log audit
+        await db.audit_logs.insert_one({
+            "action": "form_config_updated",
+            "admin_email": current_user.get("email"),
+            "target_type": "form_config",
+            "target_id": config_id,
+            "details": {"updates": {k: v for k, v in update_doc.items() if k != "updated_at"}},
+            "timestamp": datetime.now(timezone.utc),
+        })
+        
+        return {"success": True, "message": "Form configuration updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating form config: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update form configuration")
+
+@app.delete("/api/admin/form-config/{config_id}")
+async def delete_form_config(
+    config_id: str,
+    current_user: dict = Depends(get_current_admin)
+):
+    """Delete a form configuration."""
+    try:
+        from bson import ObjectId
+        
+        existing = await db.form_configs.find_one({"_id": ObjectId(config_id)})
+        if not existing:
+            raise HTTPException(status_code=404, detail="Form configuration not found")
+        
+        await db.form_configs.delete_one({"_id": ObjectId(config_id)})
+        
+        # Log audit
+        await db.audit_logs.insert_one({
+            "action": "form_config_deleted",
+            "admin_email": current_user.get("email"),
+            "target_type": "form_config",
+            "target_id": config_id,
+            "details": {
+                "category_id": existing.get("category_id"),
+                "config_type": existing.get("config_type"),
+            },
+            "timestamp": datetime.now(timezone.utc),
+        })
+        
+        return {"success": True, "message": "Form configuration deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting form config: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete form configuration")
+
+@app.post("/api/admin/form-config/seed")
+async def seed_default_configs(current_user: dict = Depends(get_current_admin)):
+    """Seed the database with default form configurations."""
+    try:
+        created_count = 0
+        skipped_count = 0
+        
+        # Seed placeholders
+        for category_id, placeholder_data in DEFAULT_FORM_CONFIGS["placeholders"].items():
+            existing = await db.form_configs.find_one({
+                "category_id": category_id,
+                "config_type": "placeholder",
+                "subcategory_id": {"$in": [None, ""]}
+            })
+            if not existing:
+                await db.form_configs.insert_one({
+                    "category_id": category_id,
+                    "subcategory_id": None,
+                    "config_type": "placeholder",
+                    "config_data": placeholder_data,
+                    "is_active": True,
+                    "priority": 0,
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc),
+                    "created_by": "system_seed",
+                })
+                created_count += 1
+            else:
+                skipped_count += 1
+        
+        # Seed seller types
+        for category_id, seller_type_data in DEFAULT_FORM_CONFIGS["seller_types"].items():
+            existing = await db.form_configs.find_one({
+                "category_id": category_id,
+                "config_type": "seller_type",
+                "subcategory_id": {"$in": [None, ""]}
+            })
+            if not existing:
+                await db.form_configs.insert_one({
+                    "category_id": category_id,
+                    "subcategory_id": None,
+                    "config_type": "seller_type",
+                    "config_data": seller_type_data,
+                    "is_active": True,
+                    "priority": 0,
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc),
+                    "created_by": "system_seed",
+                })
+                created_count += 1
+            else:
+                skipped_count += 1
+        
+        # Seed preferences
+        for category_id, pref_data in DEFAULT_FORM_CONFIGS["preferences"].items():
+            existing = await db.form_configs.find_one({
+                "category_id": category_id,
+                "config_type": "preference",
+                "subcategory_id": {"$in": [None, ""]}
+            })
+            if not existing:
+                await db.form_configs.insert_one({
+                    "category_id": category_id,
+                    "subcategory_id": None,
+                    "config_type": "preference",
+                    "config_data": pref_data,
+                    "is_active": True,
+                    "priority": 0,
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc),
+                    "created_by": "system_seed",
+                })
+                created_count += 1
+            else:
+                skipped_count += 1
+        
+        # Seed visibility rules as a single config
+        existing_visibility = await db.form_configs.find_one({
+            "category_id": "global",
+            "config_type": "visibility_rule",
+        })
+        if not existing_visibility:
+            await db.form_configs.insert_one({
+                "category_id": "global",
+                "subcategory_id": None,
+                "config_type": "visibility_rule",
+                "config_data": DEFAULT_FORM_CONFIGS["visibility_rules"],
+                "is_active": True,
+                "priority": 100,
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc),
+                "created_by": "system_seed",
+            })
+            created_count += 1
+        else:
+            skipped_count += 1
+        
+        return {
+            "success": True,
+            "created": created_count,
+            "skipped": skipped_count,
+            "message": f"Seeded {created_count} configurations, skipped {skipped_count} existing ones",
+        }
+    except Exception as e:
+        logger.error(f"Error seeding form configs: {e}")
+        raise HTTPException(status_code=500, detail="Failed to seed form configurations")
+
+# Public endpoint for frontend to fetch form configs (no auth required)
+@app.get("/api/form-config/public")
+async def get_public_form_configs():
+    """Get all active form configurations for frontend use (public endpoint)."""
+    try:
+        configs = {
+            "placeholders": {},
+            "subcategory_placeholders": {},
+            "seller_types": {},
+            "preferences": {},
+            "visibility_rules": {},
+        }
+        
+        cursor = db.form_configs.find({"is_active": True}).sort("priority", -1)
+        async for config in cursor:
+            category_id = config.get("category_id")
+            subcategory_id = config.get("subcategory_id")
+            config_type = config.get("config_type")
+            config_data = config.get("config_data", {})
+            
+            if config_type == "placeholder":
+                if subcategory_id:
+                    configs["subcategory_placeholders"][subcategory_id] = config_data
+                else:
+                    configs["placeholders"][category_id] = config_data
+            elif config_type == "seller_type":
+                configs["seller_types"][category_id] = config_data
+            elif config_type == "preference":
+                configs["preferences"][category_id] = config_data
+            elif config_type == "visibility_rule":
+                if category_id == "global":
+                    configs["visibility_rules"] = config_data
+        
+        return configs
+    except Exception as e:
+        logger.error(f"Error fetching public form configs: {e}")
+        # Return empty configs instead of error for graceful fallback
+        return {
+            "placeholders": {},
+            "subcategory_placeholders": {},
+            "seller_types": {},
+            "preferences": {},
+            "visibility_rules": {},
+        }
+
+logger.info("Form Configuration endpoints registered")
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
