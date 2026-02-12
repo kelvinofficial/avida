@@ -143,6 +143,12 @@ const QuickStatsCard: React.FC = () => {
 
   if (!isAuthenticated) return null;
 
+  // Format rating display
+  const formatRating = (rating: number) => {
+    if (rating === 0) return '—';
+    return rating.toFixed(1);
+  };
+
   return (
     <View style={quickStatsStyles.container}>
       <Text style={quickStatsStyles.title}>Quick Stats</Text>
@@ -182,6 +188,34 @@ const QuickStatsCard: React.FC = () => {
             {(stats?.pendingOffers || 0) > 0 && (
               <View style={quickStatsStyles.alertDot} />
             )}
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={quickStatsStyles.statItem}
+            onPress={() => router.push('/profile/my-listings')}
+            data-testid="quick-stats-views"
+          >
+            <View style={[quickStatsStyles.statIcon, { backgroundColor: '#F3E5F5' }]}>
+              <Ionicons name="eye" size={16} color="#7B1FA2" />
+            </View>
+            <View style={quickStatsStyles.statInfo}>
+              <Text style={quickStatsStyles.statValue}>{stats?.totalViews || 0}</Text>
+              <Text style={quickStatsStyles.statLabel}>Total Views</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={quickStatsStyles.statItem}
+            onPress={() => router.push('/profile')}
+            data-testid="quick-stats-rating"
+          >
+            <View style={[quickStatsStyles.statIcon, { backgroundColor: '#FFF8E1' }]}>
+              <Ionicons name="star" size={16} color="#FFA000" />
+            </View>
+            <View style={quickStatsStyles.statInfo}>
+              <Text style={quickStatsStyles.statValue}>{formatRating(stats?.userRating || 0)}</Text>
+              <Text style={quickStatsStyles.statLabel}>Rating {stats?.totalRatings ? `(${stats.totalRatings})` : ''}</Text>
+            </View>
           </TouchableOpacity>
 
           <TouchableOpacity 
