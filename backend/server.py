@@ -2143,6 +2143,37 @@ async def admin_proxy(request: Request, path: str):
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
+# Public form config endpoint - proxy to admin backend (no auth required)
+@app.get("/api/form-config/public")
+async def get_public_form_configs():
+    """Proxy public form config request to admin backend."""
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(f"{ADMIN_BACKEND_URL}/api/form-config/public")
+            return Response(
+                content=response.content,
+                status_code=response.status_code,
+                headers={"Content-Type": "application/json"}
+            )
+    except httpx.ConnectError:
+        # Return empty config for graceful fallback
+        return {
+            "placeholders": {},
+            "subcategory_placeholders": {},
+            "seller_types": {},
+            "preferences": {},
+            "visibility_rules": {},
+        }
+    except Exception as e:
+        logger.error(f"Form config proxy error: {e}")
+        return {
+            "placeholders": {},
+            "subcategory_placeholders": {},
+            "seller_types": {},
+            "preferences": {},
+            "visibility_rules": {},
+        }
+
 # Include the router in the main app
 app.include_router(api_router)
 
