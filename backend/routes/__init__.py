@@ -24,6 +24,7 @@ from .user_settings import create_user_settings_router, create_sessions_router, 
 from .profile import create_profile_router
 from .badge_challenges import create_badge_challenges_router
 from .attribute_icons import create_attribute_icons_router
+from .safety_tips import create_safety_tips_router
 
 __all__ = [
     'create_auth_router',
