@@ -58,61 +58,83 @@ const ALL_CATEGORIES = [
   { id: 'pets', name: 'Pets', icon: 'paw-outline' },
 ];
 
-// Category-specific quick filters
+// Category-specific quick filters (enhanced with more options)
 const CATEGORY_FILTERS: Record<string, Array<{ key: string; label: string; options: string[] }>> = {
   auto_vehicles: [
-    { key: 'fuel_type', label: 'Fuel Type', options: ['Petrol', 'Diesel', 'Electric', 'Hybrid', 'CNG'] },
+    { key: 'fuel_type', label: 'Fuel', options: ['Petrol', 'Diesel', 'Electric', 'Hybrid', 'CNG'] },
     { key: 'transmission', label: 'Transmission', options: ['Automatic', 'Manual'] },
     { key: 'year_range', label: 'Year', options: ['2024+', '2020-2023', '2015-2019', '2010-2014', 'Before 2010'] },
+    { key: 'body_type', label: 'Body', options: ['Sedan', 'SUV', 'Hatchback', 'Pickup', 'Van', 'Coupe'] },
+    { key: 'mileage', label: 'Mileage', options: ['< 20K', '20-50K', '50-100K', '100K+'] },
   ],
   properties: [
     { key: 'property_type', label: 'Type', options: ['Apartment', 'House', 'Villa', 'Land', 'Commercial'] },
-    { key: 'bedrooms', label: 'Bedrooms', options: ['Studio', '1', '2', '3', '4+'] },
+    { key: 'bedrooms', label: 'Beds', options: ['Studio', '1', '2', '3', '4+'] },
+    { key: 'bathrooms', label: 'Baths', options: ['1', '2', '3+'] },
     { key: 'furnished', label: 'Furnished', options: ['Furnished', 'Semi-furnished', 'Unfurnished'] },
+    { key: 'listing_type', label: 'For', options: ['Sale', 'Rent'] },
   ],
   electronics: [
     { key: 'brand', label: 'Brand', options: ['Apple', 'Samsung', 'Sony', 'LG', 'Dell', 'HP', 'Other'] },
     { key: 'warranty', label: 'Warranty', options: ['Under Warranty', 'No Warranty'] },
+    { key: 'condition', label: 'Condition', options: ['New', 'Like New', 'Used'] },
   ],
   phones_tablets: [
     { key: 'brand', label: 'Brand', options: ['Apple', 'Samsung', 'Google', 'OnePlus', 'Xiaomi', 'Other'] },
-    { key: 'storage', label: 'Storage', options: ['64GB', '128GB', '256GB', '512GB', '1TB+'] },
+    { key: 'storage', label: 'Storage', options: ['64GB', '128GB', '256GB', '512GB+'] },
+    { key: 'condition', label: 'Condition', options: ['New', 'Like New', 'Used'] },
   ],
   home_furniture: [
-    { key: 'room', label: 'Room', options: ['Living Room', 'Bedroom', 'Kitchen', 'Dining', 'Office', 'Outdoor'] },
+    { key: 'room', label: 'Room', options: ['Living', 'Bedroom', 'Kitchen', 'Dining', 'Office', 'Outdoor'] },
     { key: 'material', label: 'Material', options: ['Wood', 'Metal', 'Fabric', 'Leather', 'Glass'] },
+    { key: 'condition', label: 'Condition', options: ['New', 'Like New', 'Used'] },
   ],
   fashion_beauty: [
     { key: 'gender', label: 'For', options: ['Men', 'Women', 'Unisex', 'Kids'] },
     { key: 'size', label: 'Size', options: ['XS', 'S', 'M', 'L', 'XL', 'XXL'] },
+    { key: 'category', label: 'Category', options: ['Clothing', 'Shoes', 'Bags', 'Accessories', 'Beauty'] },
+    { key: 'condition', label: 'Condition', options: ['New', 'Like New', 'Used'] },
   ],
   jobs_services: [
-    { key: 'job_type', label: 'Job Type', options: ['Full-time', 'Part-time', 'Contract', 'Freelance', 'Remote'] },
-    { key: 'experience', label: 'Experience', options: ['Entry Level', '1-3 Years', '3-5 Years', '5+ Years'] },
+    { key: 'job_type', label: 'Type', options: ['Full-time', 'Part-time', 'Contract', 'Freelance', 'Remote'] },
+    { key: 'experience', label: 'Experience', options: ['Entry', '1-3 Years', '3-5 Years', '5+ Years'] },
+    { key: 'industry', label: 'Industry', options: ['Tech', 'Healthcare', 'Finance', 'Education', 'Other'] },
   ],
   kids_baby: [
-    { key: 'age_group', label: 'Age Group', options: ['Newborn', '0-1 Year', '1-3 Years', '3-5 Years', '5+ Years'] },
+    { key: 'age_group', label: 'Age', options: ['Newborn', '0-1 Year', '1-3 Years', '3-5 Years', '5+'] },
     { key: 'item_type', label: 'Type', options: ['Clothing', 'Toys', 'Furniture', 'Strollers', 'Feeding'] },
+    { key: 'condition', label: 'Condition', options: ['New', 'Like New', 'Used'] },
   ],
   sports_hobbies: [
     { key: 'sport_type', label: 'Sport', options: ['Fitness', 'Cycling', 'Football', 'Tennis', 'Swimming', 'Other'] },
-    { key: 'skill_level', label: 'Level', options: ['Beginner', 'Intermediate', 'Advanced', 'Professional'] },
+    { key: 'skill_level', label: 'Level', options: ['Beginner', 'Intermediate', 'Advanced'] },
+    { key: 'condition', label: 'Condition', options: ['New', 'Like New', 'Used'] },
   ],
   pets: [
-    { key: 'pet_type', label: 'Pet Type', options: ['Dogs', 'Cats', 'Birds', 'Fish', 'Reptiles', 'Other'] },
+    { key: 'pet_type', label: 'Pet', options: ['Dogs', 'Cats', 'Birds', 'Fish', 'Reptiles', 'Other'] },
     { key: 'listing_type', label: 'Listing', options: ['For Sale', 'For Adoption', 'Accessories', 'Services'] },
+    { key: 'age', label: 'Age', options: ['Puppy/Kitten', 'Young', 'Adult', 'Senior'] },
   ],
   agriculture: [
     { key: 'item_type', label: 'Type', options: ['Machinery', 'Seeds', 'Fertilizers', 'Livestock', 'Land'] },
+    { key: 'condition', label: 'Condition', options: ['New', 'Used'] },
   ],
   commercial_equipment: [
     { key: 'equipment_type', label: 'Type', options: ['Office', 'Restaurant', 'Medical', 'Industrial', 'Retail'] },
+    { key: 'condition', label: 'Condition', options: ['New', 'Used', 'Refurbished'] },
   ],
   repair_construction: [
     { key: 'service_type', label: 'Service', options: ['Plumbing', 'Electrical', 'Painting', 'Carpentry', 'General'] },
+    { key: 'availability', label: 'Available', options: ['Immediate', 'Scheduled', 'Emergency'] },
   ],
   friendship_dating: [
     { key: 'looking_for', label: 'Looking For', options: ['Friendship', 'Dating', 'Activity Partner', 'Networking'] },
+    { key: 'age_range', label: 'Age', options: ['18-25', '25-35', '35-45', '45+'] },
+  ],
+  // Default filters for categories without specific filters
+  default: [
+    { key: 'condition', label: 'Condition', options: ['New', 'Like New', 'Used'] },
+    { key: 'seller_type', label: 'Seller', options: ['Individual', 'Business'] },
   ],
 };
 
