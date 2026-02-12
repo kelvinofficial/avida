@@ -1706,13 +1706,28 @@ Created `/app/backend/routes/profile.py` (~305 lines) containing:
 
 ---
 
+### 2026-02-12: Server.py Refactoring - Badge Share Endpoint
+**COMPLETED**
+
+#### Endpoint Moved to routes/badges.py
+- `GET /badges/share/{user_id}` - Shareable badge profile with OG meta (public endpoint)
+
+#### Line Count Reduction
+- Previous: 4644 lines
+- Current: 4581 lines
+- This extraction removed: 63 lines
+- routes/badges.py increased: 302 → 364 lines (+62 lines)
+
+---
+
 ## Backlog / Future Tasks
 
 ### P1 - Server.py Refactoring (Ongoing)
-Current state: 4644 lines (down from ~8881, ~47.7% reduction achieved)
+Current state: 4581 lines (down from ~8881, ~48.4% reduction achieved)
 
 **Completed extractions:**
 - Profile endpoints - Moved to routes/profile.py ✓
+- Badge share endpoint - Moved to routes/badges.py ✓
 
 **Remaining sections to potentially extract:**
 1. Badge Challenges section (~1100 lines) - Comprehensive implementation, keep in server.py
