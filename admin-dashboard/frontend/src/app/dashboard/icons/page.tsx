@@ -431,7 +431,7 @@ export default function IconsManagementPage() {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Avatar sx={{ bgcolor: 'primary.light', width: 48, height: 48 }}>
-                    <Shapes />
+                    <InterestsOutlined />
                   </Avatar>
                   <Box>
                     <Typography color="text.secondary" variant="body2">Total Icons</Typography>
@@ -446,7 +446,7 @@ export default function IconsManagementPage() {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Avatar sx={{ bgcolor: 'success.light', width: 48, height: 48 }}>
-                    <Shapes />
+                    <InterestsOutlined />
                   </Avatar>
                   <Box>
                     <Typography color="text.secondary" variant="body2">Active</Typography>
