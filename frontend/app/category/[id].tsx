@@ -2745,4 +2745,60 @@ const desktopStyles = StyleSheet.create({
   cardWrapper: {
     marginBottom: 12,
   },
+  // Saved Filters desktop styles
+  saveFilterBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: COLORS.primaryLight,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  saveFilterBtnText: {
+    fontSize: 13,
+    color: COLORS.primary,
+    fontWeight: '500',
+  },
+  savedFilterItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  savedFilterMain: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  savedFilterName: {
+    fontSize: 13,
+    color: COLORS.text,
+    flex: 1,
+  },
+  defaultBadge: {
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  defaultBadgeText: {
+    fontSize: 10,
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  deleteFilterBtn: {
+    padding: 4,
+  },
+  noSavedFilters: {
+    fontSize: 12,
+    color: COLORS.textLight,
+    fontStyle: 'italic',
+    paddingVertical: 8,
+  },
 });
