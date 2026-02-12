@@ -150,9 +150,11 @@ interface AnimatedIconBoxProps {
   iconName: string;
   index: number;
   color: string;
+  size?: number;
+  boxStyle?: any;
 }
 
-const AnimatedIconBox = memo(({ iconName, index, color }: AnimatedIconBoxProps) => {
+const AnimatedIconBox = memo(({ iconName, index, color, size = 18, boxStyle }: AnimatedIconBoxProps) => {
   const scaleAnim = useRef(new Animated.Value(0.3)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
@@ -180,14 +182,14 @@ const AnimatedIconBox = memo(({ iconName, index, color }: AnimatedIconBoxProps) 
   return (
     <Animated.View 
       style={[
-        detailStyles.iconBox,
+        boxStyle || detailStyles.iconBox,
         {
           opacity: opacityAnim,
           transform: [{ scale: scaleAnim }],
         }
       ]}
     >
-      <Ionicons name={iconName as any} size={18} color={color} />
+      <Ionicons name={iconName as any} size={size} color={color} />
     </Animated.View>
   );
 });
