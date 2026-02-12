@@ -56,20 +56,17 @@ def create_photography_guides_router(db, require_auth):
     
     collection = db.photography_guides
     
-    # Ensure indexes
-    collection.create_index([("category_id", 1), ("order", 1)])
-    collection.create_index([("is_active", 1)])
-    
     # ==================== PUBLIC ENDPOINTS ====================
     
     @router.get("/public/{category_id}", response_model=List[PhotographyGuideResponse])
     async def get_public_guides(category_id: str):
         """Get active photography guides for a category (public endpoint)"""
-        guides = list(collection.find(
+        cursor = collection.find(
             {"category_id": category_id, "is_active": True},
             {"_id": 1, "category_id": 1, "title": 1, "description": 1, "icon": 1, 
              "image_base64": 1, "order": 1, "is_active": 1, "created_at": 1, "updated_at": 1}
-        ).sort("order", 1).limit(10))
+        ).sort("order", 1).limit(10)
+        guides = await cursor.to_list(length=10)
         
         result = []
         for guide in guides:
@@ -96,7 +93,8 @@ def create_photography_guides_router(db, require_auth):
             {"$group": {"_id": "$category_id", "count": {"$sum": 1}}},
             {"$sort": {"_id": 1}}
         ]
-        result = list(collection.aggregate(pipeline))
+        cursor = collection.aggregate(pipeline)
+        result = await cursor.to_list(length=100)
         return {"categories": [{"category_id": r["_id"], "guide_count": r["count"]} for r in result]}
     
     # ==================== ADMIN ENDPOINTS ====================
@@ -116,13 +114,14 @@ def create_photography_guides_router(db, require_auth):
         if is_active is not None:
             query["is_active"] = is_active
         
-        total = collection.count_documents(query)
+        total = await collection.count_documents(query)
         skip = (page - 1) * limit
         
-        guides = list(collection.find(
+        cursor = collection.find(
             query,
             {"image_base64": 0}  # Exclude base64 from list view for performance
-        ).sort([("category_id", 1), ("order", 1)]).skip(skip).limit(limit))
+        ).sort([("category_id", 1), ("order", 1)]).skip(skip).limit(limit)
+        guides = await cursor.to_list(length=limit)
         
         result = []
         for guide in guides:
@@ -150,18 +149,19 @@ def create_photography_guides_router(db, require_auth):
     @router.get("/stats")
     async def get_stats(user: dict = Depends(require_auth)):
         """Get photography guides statistics"""
-        total = collection.count_documents({})
-        active = collection.count_documents({"is_active": True})
+        total = await collection.count_documents({})
+        active = await collection.count_documents({"is_active": True})
         
         # Count by category
         pipeline = [
             {"$group": {"_id": "$category_id", "count": {"$sum": 1}}},
             {"$sort": {"count": -1}}
         ]
-        by_category = list(collection.aggregate(pipeline))
+        cursor = collection.aggregate(pipeline)
+        by_category = await cursor.to_list(length=100)
         
         # Count with images
-        with_images = collection.count_documents({"has_image": True})
+        with_images = await collection.count_documents({"has_image": True})
         
         return {
             "total": total,
@@ -176,7 +176,7 @@ def create_photography_guides_router(db, require_auth):
     async def get_guide(guide_id: str, user: dict = Depends(require_auth)):
         """Get a specific photography guide with full details"""
         try:
-            guide = collection.find_one({"_id": ObjectId(guide_id)})
+            guide = await collection.find_one({"_id": ObjectId(guide_id)})
         except:
             raise HTTPException(status_code=400, detail="Invalid guide ID")
         
@@ -224,7 +224,7 @@ def create_photography_guides_router(db, require_auth):
             doc["image_base64"] = image_data
             doc["has_image"] = True
         
-        result = collection.insert_one(doc)
+        result = await collection.insert_one(doc)
         
         return {
             "id": str(result.inserted_id),
@@ -235,7 +235,7 @@ def create_photography_guides_router(db, require_auth):
     async def update_guide(guide_id: str, update: PhotographyGuideUpdate, user: dict = Depends(require_auth)):
         """Update a photography guide"""
         try:
-            existing = collection.find_one({"_id": ObjectId(guide_id)})
+            existing = await collection.find_one({"_id": ObjectId(guide_id)})
         except:
             raise HTTPException(status_code=400, detail="Invalid guide ID")
         
@@ -269,7 +269,7 @@ def create_photography_guides_router(db, require_auth):
                 update_doc["image_base64"] = image_data
                 update_doc["has_image"] = True
         
-        collection.update_one({"_id": ObjectId(guide_id)}, {"$set": update_doc})
+        await collection.update_one({"_id": ObjectId(guide_id)}, {"$set": update_doc})
         
         return {"message": "Photography guide updated successfully"}
     
@@ -277,7 +277,7 @@ def create_photography_guides_router(db, require_auth):
     async def delete_guide(guide_id: str, user: dict = Depends(require_auth)):
         """Delete a photography guide"""
         try:
-            result = collection.delete_one({"_id": ObjectId(guide_id)})
+            result = await collection.delete_one({"_id": ObjectId(guide_id)})
         except:
             raise HTTPException(status_code=400, detail="Invalid guide ID")
         
@@ -297,7 +297,7 @@ def create_photography_guides_router(db, require_auth):
         for category_id, guides in DEFAULT_PHOTOGRAPHY_GUIDES.items():
             for i, guide in enumerate(guides):
                 # Check if guide already exists
-                existing = collection.find_one({
+                existing = await collection.find_one({
                     "category_id": category_id,
                     "title": guide["title"]
                 })
@@ -315,7 +315,7 @@ def create_photography_guides_router(db, require_auth):
                         "updated_at": now,
                         "created_by": "system"
                     }
-                    collection.insert_one(doc)
+                    await collection.insert_one(doc)
                     created_count += 1
         
         return {"message": f"Seeded {created_count} default photography guides"}
@@ -327,7 +327,7 @@ def create_photography_guides_router(db, require_auth):
         
         for i, guide_id in enumerate(guide_ids):
             try:
-                collection.update_one(
+                await collection.update_one(
                     {"_id": ObjectId(guide_id), "category_id": category_id},
                     {"$set": {"order": i, "updated_at": now}}
                 )
