@@ -48,6 +48,12 @@ import {
   VisibilityOff,
   Save,
   PlaylistAdd,
+  Preview,
+  Phone,
+  Chat,
+  AttachMoney,
+  MoneyOff,
+  Work,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 
