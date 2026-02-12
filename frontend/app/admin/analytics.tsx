@@ -162,7 +162,7 @@ export default function AdminAnalyticsScreen() {
   const openAdminDashboard = () => {
     const url = Platform.OS === 'web' 
       ? '/api/admin-ui/dashboard/analytics'
-      : 'https://negotiate-badge.preview.emergentagent.com/api/admin-ui/dashboard/analytics';
+      : 'https://classifieds-search.preview.emergentagent.com/api/admin-ui/dashboard/analytics';
     Linking.openURL(url);
   };
 
