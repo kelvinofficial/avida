@@ -241,6 +241,9 @@ export const DesktopPageLayout: React.FC<DesktopPageLayoutProps> = ({
 
   const renderSidebar = () => (
     <View style={styles.sidebar}>
+      {/* Quick Stats Card */}
+      <QuickStatsCard />
+      
       <View style={styles.sidebarContent}>
         {SIDEBAR_LINKS.map((link) => {
           if (link.id.startsWith('divider')) {
