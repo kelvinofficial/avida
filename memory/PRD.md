@@ -820,6 +820,52 @@ Payment success page with:
 - Added "Attribute Icons" card to admin index page
 - Uses `shapes` Ionicon with purple styling
 
+### 2026-02-12: Public Display of Attribute Icons
+**COMPLETED**
+
+#### Feature Overview
+Display attribute icons on public-facing listing detail pages to enhance UX by showing visual cues for each attribute field.
+
+#### Frontend Implementation
+- **Custom Hook**: `/app/frontend/src/hooks/useAttributeIcons.ts`
+  - Fetches icons from `/api/attribute-icons/public` endpoint
+  - Caches icons globally with 5-minute TTL
+  - Provides `getIconForAttribute(attributeName, categoryId)` function
+  - Includes intelligent default icons for common attributes
+  - Exports `ICON_COLOR` constant (#2E7D32 - green)
+
+- **Listing Detail Page**: `/app/frontend/app/listing/[id].tsx`
+  - Updated `KeyDetailsSection` component (mobile view) to display icons
+  - Updated desktop details grid to display icons
+  - Icons appear BEFORE attribute labels as requested
+  - Icon color: Green (#2E7D32)
+  - Icon background: Light green (#E8F5E9)
+
+#### Icon Display
+- Icons are displayed in a rounded box (8px border-radius)
+- Box size: 36x36 (mobile), 32x32 (desktop)
+- Icons positioned before attribute labels in a row layout
+- Green color matches the app's primary theme
+
+#### Verified Features
+- Desktop view: Icons visible in Details grid section ✅
+- Mobile view: Icons visible in KeyDetailsSection component ✅
+- Icon color: Green (#2E7D32) ✅
+- Icon background: Light green (#E8F5E9) ✅
+- Icons before labels: Icon box on left, label/value on right ✅
+- API endpoint: /api/attribute-icons/public returns 73 icons ✅
+- Default fallback: Uses information-circle-outline for unknown attributes ✅
+
+#### Sample Icons Mapping
+- `year` → calendar-outline
+- `mileage` → speedometer-outline
+- `fuel_type` → water-outline
+- `transmission` → settings-outline
+- `make` → ribbon-outline
+- `model` → car-sport-outline
+- `condition` → star-outline
+- `category` → folder-outline
+
 ## Key Admin UI Pages
 - `/app/admin-dashboard/frontend/src/app/dashboard/vouchers/page.tsx` - Voucher management
 - `/app/admin-dashboard/frontend/src/app/dashboard/listing-moderation/page.tsx` - Listing moderation
