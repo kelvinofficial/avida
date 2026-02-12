@@ -759,7 +759,7 @@ export default function MessagesScreen() {
     // Mobile unauthenticated
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={[styles.headerContainer, { paddingHorizontal: 16, paddingTop: 12 }]}>
+        <View style={styles.unauthHeader}>
           <Text style={styles.title}>Messages</Text>
         </View>
         <ScrollView 
