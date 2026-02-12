@@ -1612,6 +1612,12 @@ const desktopStyles = StyleSheet.create({
     paddingVertical: 12,
     gap: 10,
   },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#333',
+    paddingVertical: 0,
+  },
   searchPlaceholder: {
     fontSize: 14,
     color: '#666',
