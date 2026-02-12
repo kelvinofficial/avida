@@ -511,6 +511,28 @@ export default function CategoryScreen() {
             </View>
           </View>
 
+          {/* Category-Specific Filters */}
+          {CATEGORY_FILTERS[categoryId] && CATEGORY_FILTERS[categoryId].map((filter) => (
+            <View key={filter.key} style={styles.filterSection}>
+              <Text style={styles.filterSectionTitle}>{filter.label}</Text>
+              <View style={styles.filterChipsWrap}>
+                {filter.options.map((opt) => (
+                  <FilterChip
+                    key={opt}
+                    label={opt}
+                    selected={activeFilters[filter.key] === opt}
+                    onPress={() => {
+                      setActiveFilters(prev => ({
+                        ...prev,
+                        [filter.key]: prev[filter.key] === opt ? undefined : opt
+                      }));
+                    }}
+                  />
+                ))}
+              </View>
+            </View>
+          ))}
+
           {/* Subcategory-Specific Attributes */}
           {currentSubcategoryConfig && currentSubcategoryConfig.attributes.length > 0 && (
             <View style={styles.filterSection}>
