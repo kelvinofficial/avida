@@ -1287,7 +1287,7 @@ export default function ListingDetailScreen() {
                   </View>
                 </View>
                 <View style={desktopStyles.footerRow}>
-                  <Text style={desktopStyles.listingId}>ID: {listing?.id || 'N/A'}</Text>
+                  <Text style={desktopStyles.listingId}>ID: {listing?.id ? listing.id.slice(0, 8).toUpperCase() : 'N/A'}</Text>
                   <TouchableOpacity style={desktopStyles.reportBtn} onPress={() => setShowReportModal(true)}>
                     <Ionicons name="flag-outline" size={16} color={COLORS.error} />
                     <Text style={desktopStyles.reportBtnText}>Report this listing</Text>
