@@ -542,11 +542,23 @@ export default function NotificationsScreen() {
             <View style={desktopStyles.filterChips}>
               {FILTER_CHIPS.map(chip => {
                 const isActive = activeFilter === chip.key;
+                // Route to specific pages for badges, challenges, credits
+                const handleChipPress = () => {
+                  if (chip.key === 'badge') {
+                    router.push('/profile/badges');
+                  } else if (chip.key === 'challenge') {
+                    router.push('/challenges');
+                  } else if (chip.key === 'credit') {
+                    router.push('/credits');
+                  } else {
+                    setActiveFilter(chip.key);
+                  }
+                };
                 return (
                   <TouchableOpacity
                     key={chip.key}
                     style={[desktopStyles.filterChip, isActive && desktopStyles.filterChipActive]}
-                    onPress={() => setActiveFilter(chip.key)}
+                    onPress={handleChipPress}
                   >
                     <Ionicons
                       name={chip.icon as any}
