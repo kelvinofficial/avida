@@ -489,6 +489,9 @@ export default function PostListingScreen() {
   const [selectedCategoryId, setSelectedCategoryId] = useState(categoryId || '');
   const [selectedSubcategoryId, setSelectedSubcategoryId] = useState('');
   
+  // Fetch photography guides from admin-managed API (with fallback to static)
+  const { guides: photoGuides, loading: photoGuidesLoading } = usePhotographyGuides(selectedCategoryId || undefined);
+  
   // Auto-scroll to subcategories when category is selected
   const handleCategorySelect = useCallback((catId: string) => {
     setSelectedCategoryId(catId);
