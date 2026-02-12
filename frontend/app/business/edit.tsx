@@ -635,7 +635,7 @@ export default function BusinessProfileEditScreen() {
     ]);
   };
 
-  if (loading) {
+  if (loading || !isReady) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.header}>
@@ -652,23 +652,28 @@ export default function BusinessProfileEditScreen() {
     );
   }
 
-  return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => safeGoBack(router)} data-testid="back-button">
-          <Ionicons name="close" size={24} color={COLORS.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{hasProfile ? 'Edit Business Profile' : 'Create Business Profile'}</Text>
-        <TouchableOpacity onPress={handleSave} disabled={saving} data-testid="save-button">
-          {saving ? <ActivityIndicator size="small" color={COLORS.primary} /> : <Text style={styles.saveBtn}>Save</Text>}
-        </TouchableOpacity>
-      </View>
+  // Right action for desktop layout (Save button)
+  const rightAction = (
+    <TouchableOpacity 
+      onPress={handleSave} 
+      disabled={saving} 
+      style={styles.desktopSaveBtn}
+      data-testid="save-button"
+    >
+      {saving ? (
+        <ActivityIndicator size="small" color="#fff" />
+      ) : (
+        <>
+          <Ionicons name="checkmark" size={18} color="#fff" />
+          <Text style={styles.desktopSaveBtnText}>Save Changes</Text>
+        </>
+      )}
+    </TouchableOpacity>
+  );
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-          
-          {/* VERIFICATION STATUS BANNER */}
-          {hasProfile && (
+  // Business profile form content (shared between mobile and desktop)
+  const BusinessFormContent = () => (
+    <>
             <View style={[styles.statusBanner, isPremium ? styles.premiumBanner : isVerified ? styles.verifiedBanner : verificationStatus === 'pending' ? styles.pendingBanner : styles.unverifiedBanner]}>
               <View style={styles.statusRow}>
                 <Ionicons 
