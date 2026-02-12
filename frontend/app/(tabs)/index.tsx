@@ -288,6 +288,12 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
             <Text style={cardStyles.imageCountText}>{imageCount}</Text>
           </View>
         )}
+        {/* Negotiable Badge - Bottom Right of Image */}
+        {listing.negotiable && (
+          <View style={cardStyles.negotiableBadge}>
+            <Text style={cardStyles.negotiableText}>Negotiable</Text>
+          </View>
+        )}
         {/* Views Counter - Bottom Right */}
         <View style={cardStyles.viewsOverlay}>
           <Ionicons name="eye-outline" size={11} color="#fff" />
@@ -307,7 +313,6 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
         <Text style={cardStyles.title} numberOfLines={2}>{listing.title}</Text>
         <View style={cardStyles.priceRow}>
           <Text style={cardStyles.price}>{formatPrice(listing.price)}</Text>
-          {listing.negotiable && <Text style={cardStyles.negotiable}>VB</Text>}
         </View>
         <View style={cardStyles.metaRow}>
           <Text style={cardStyles.time}>{getTimeAgo(listing.created_at)}</Text>
