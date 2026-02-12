@@ -147,7 +147,7 @@ def create_photography_guides_router(db, require_auth):
         }
     
     @router.get("/stats")
-    async def get_stats(user: dict = Depends(require_auth)):
+    async def get_stats(user = Depends(require_auth)):
         """Get photography guides statistics"""
         total = await collection.count_documents({})
         active = await collection.count_documents({"is_active": True})
