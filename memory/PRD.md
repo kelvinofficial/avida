@@ -1635,6 +1635,9 @@ Removed duplicate endpoints that were already handled by modular route files:
 **Streak Endpoints Removed (routes/streaks.py handles these):**
 - `/streaks/leaderboard`
 
+**Blocked Users Endpoints Removed:**
+- `/blocked-users` (GET, POST, DELETE) - Moved to routes/users.py as `/users/blocked`, `/users/block/{user_id}`, `/users/unblock/{user_id}`
+
 #### Async Bug Fixes in Modular Routes
 Fixed critical async/await issues in route files that were using synchronous MongoDB operations:
 
@@ -1649,29 +1652,37 @@ Fixed critical async/await issues in route files that were using synchronous Mon
 **routes/streaks.py:**
 - Fixed synchronous find/count operations to async equivalents
 
+**routes/challenges.py:**
+- Fixed all MongoDB operations to use async patterns
+- Note: Challenges router disabled in favor of comprehensive server.py implementation
+
+**routes/users.py:**
+- Added `/users/blocked` endpoint for listing blocked users
+- Enhanced `/users/block/{user_id}` with blocked_users collection support
+- Enhanced `/users/unblock/{user_id}` with blocked_users collection cleanup
+
 #### Line Count Reduction
 - Previous: 5287 lines
-- Current: 4993 lines
-- Removed: 294 lines (~5.6% additional reduction)
+- Current: 4908 lines
+- This session removed: 379 lines
+- Total from original: 8881 → 4908 = 3973 lines removed (~44.7% reduction)
 
 ---
 
 ## Backlog / Future Tasks
 
 ### P1 - Server.py Refactoring (Ongoing)
-Current state: 4993 lines (down from ~8881, ~44% reduction)
+Current state: 4908 lines (down from ~8881, ~44.7% reduction achieved)
 
-**Remaining sections to extract:**
-1. Badge Challenges section (~1147 lines) - Contains challenge definitions and helper functions
-2. Badge Milestones section (~300 lines) - More comprehensive than routes/badges.py version
-3. User Badges Public endpoints (~190 lines)
-4. Email Service functions (~128 lines)
-5. Email Verification routes (~64 lines)
-6. Media Upload routes (~66 lines)
-7. Reports routes (~20 lines)
-8. Blocked Users endpoints (~90 lines)
-9. Profile endpoints (~170 lines)
+**Remaining sections to potentially extract:**
+1. Badge Challenges section (~1100 lines) - Comprehensive implementation, keep in server.py
+2. Badge Milestones section (~200 lines) - More comprehensive than routes/badges.py
+3. User Badges Public endpoints (~150 lines)
+4. Email Service functions (~130 lines) - Helper functions used throughout
+5. Profile endpoints (~170 lines) - Used by frontend at /api/profile
+6. Push Notification Service (~110 lines) - Helper functions
 
-**Known Issues:**
-- routes/challenges.py exists but server.py has more comprehensive challenge logic
-- Careful consolidation needed before further extraction
+**Architecture Notes:**
+- routes/challenges.py disabled - server.py has more comprehensive implementation
+- Some endpoints kept in server.py due to complexity and frontend dependencies
+- Focus shifted to fixing async issues in modular routes rather than moving more code
