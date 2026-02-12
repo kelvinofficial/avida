@@ -9851,6 +9851,368 @@ async def get_public_form_configs():
 logger.info("Form Configuration endpoints registered")
 
 # =============================================================================
+# PHOTOGRAPHY GUIDES ENDPOINTS
+# Category-specific photo tips with illustration images for listing creation
+# =============================================================================
+
+# Default photography guides for seeding
+DEFAULT_PHOTOGRAPHY_GUIDES = {
+    "auto_vehicles": [
+        {"icon": "car-outline", "title": "Exterior Shots", "description": "Take photos from all 4 corners, plus front and back"},
+        {"icon": "speedometer-outline", "title": "Dashboard & Mileage", "description": "Show odometer clearly with engine running"},
+        {"icon": "construct-outline", "title": "Engine Bay", "description": "Clean engine bay photo shows good maintenance"},
+        {"icon": "warning-outline", "title": "Any Damage", "description": "Be transparent - show scratches, dents honestly"},
+    ],
+    "properties": [
+        {"icon": "home-outline", "title": "Wide Angles", "description": "Use corners of rooms to capture full space"},
+        {"icon": "sunny-outline", "title": "Natural Light", "description": "Shoot during daytime with curtains open"},
+        {"icon": "image-outline", "title": "Key Features", "description": "Highlight kitchen, bathrooms, views, balcony"},
+        {"icon": "map-outline", "title": "Neighborhood", "description": "Include street view, nearby amenities"},
+    ],
+    "electronics": [
+        {"icon": "phone-portrait-outline", "title": "Clean Background", "description": "Use plain white/neutral background"},
+        {"icon": "flash-outline", "title": "Good Lighting", "description": "Avoid harsh shadows, show true colors"},
+        {"icon": "apps-outline", "title": "Screen On", "description": "For devices, show working screen"},
+        {"icon": "cube-outline", "title": "Box & Accessories", "description": "Include original packaging, chargers, manuals"},
+    ],
+    "phones_tablets": [
+        {"icon": "phone-portrait-outline", "title": "Screen Condition", "description": "Show screen clearly - any scratches or cracks"},
+        {"icon": "camera-outline", "title": "Camera Quality", "description": "Include a sample photo taken with the device"},
+        {"icon": "cube-outline", "title": "All Angles", "description": "Show front, back, sides, and corners"},
+        {"icon": "gift-outline", "title": "Accessories", "description": "Photo all included items - case, charger, box"},
+    ],
+    "home_furniture": [
+        {"icon": "resize-outline", "title": "Scale Reference", "description": "Include common object for size comparison"},
+        {"icon": "color-palette-outline", "title": "True Colors", "description": "Use natural light to show actual color"},
+        {"icon": "eye-outline", "title": "Close-ups", "description": "Show material texture, patterns, details"},
+        {"icon": "alert-circle-outline", "title": "Wear & Tear", "description": "Be honest about any scratches or stains"},
+    ],
+    "fashion_beauty": [
+        {"icon": "shirt-outline", "title": "Flat Lay or Hanger", "description": "Show full garment clearly laid out"},
+        {"icon": "body-outline", "title": "Worn Photos", "description": "If possible, show item being worn"},
+        {"icon": "pricetag-outline", "title": "Tags & Labels", "description": "Include brand tags, size labels, care instructions"},
+        {"icon": "search-outline", "title": "Detail Shots", "description": "Show stitching, buttons, zippers, fabric texture"},
+    ],
+    "jobs_services": [
+        {"icon": "briefcase-outline", "title": "Professional Photo", "description": "Use a clear, professional headshot"},
+        {"icon": "albums-outline", "title": "Portfolio", "description": "Show examples of your work or projects"},
+        {"icon": "ribbon-outline", "title": "Certifications", "description": "Include photos of relevant certificates"},
+        {"icon": "build-outline", "title": "Equipment", "description": "For trades, show your professional tools"},
+    ],
+    "pets": [
+        {"icon": "paw-outline", "title": "Natural Behavior", "description": "Capture pet in natural, relaxed state"},
+        {"icon": "sunny-outline", "title": "Good Lighting", "description": "Natural light shows true coat color"},
+        {"icon": "camera-outline", "title": "Eye Level", "description": "Get down to pet's level for best shots"},
+        {"icon": "heart-outline", "title": "Personality", "description": "Show pet's character - playing, sleeping, curious"},
+    ],
+    "default": [
+        {"icon": "camera-outline", "title": "Good Lighting", "description": "Use natural light when possible"},
+        {"icon": "images-outline", "title": "Multiple Angles", "description": "Show item from different perspectives"},
+        {"icon": "eye-outline", "title": "Show Details", "description": "Include close-ups of important features"},
+        {"icon": "alert-circle-outline", "title": "Be Honest", "description": "Show any defects or wear clearly"},
+    ],
+}
+
+# Public endpoint - Get photography guides for a category (no auth required)
+@app.get("/api/photography-guides/public/{category_id}")
+async def get_public_photography_guides(category_id: str):
+    """Get active photography guides for a category (public endpoint)"""
+    try:
+        guides = []
+        cursor = db.photography_guides.find(
+            {"category_id": category_id, "is_active": True}
+        ).sort("order", 1).limit(10)
+        
+        async for guide in cursor:
+            guides.append({
+                "id": str(guide["_id"]),
+                "category_id": guide["category_id"],
+                "title": guide["title"],
+                "description": guide["description"],
+                "icon": guide.get("icon", "camera-outline"),
+                "image_url": f"data:image/jpeg;base64,{guide['image_base64']}" if guide.get("image_base64") else None,
+                "order": guide.get("order", 0),
+            })
+        
+        return {"guides": guides, "count": len(guides)}
+    except Exception as e:
+        logger.error(f"Error fetching photography guides: {e}")
+        return {"guides": [], "count": 0}
+
+# Admin endpoint - List all photography guides
+@app.get("/api/admin/photography-guides")
+async def list_photography_guides(
+    category_id: Optional[str] = None,
+    is_active: Optional[bool] = None,
+    page: int = 1,
+    limit: int = 50,
+    current_user: dict = Depends(get_current_admin)
+):
+    """List all photography guides with optional filtering (admin only)"""
+    try:
+        query = {}
+        if category_id:
+            query["category_id"] = category_id
+        if is_active is not None:
+            query["is_active"] = is_active
+        
+        total = await db.photography_guides.count_documents(query)
+        skip = (page - 1) * limit
+        
+        guides = []
+        cursor = db.photography_guides.find(
+            query,
+            {"image_base64": 0}  # Exclude base64 from list for performance
+        ).sort([("category_id", 1), ("order", 1)]).skip(skip).limit(limit)
+        
+        async for guide in cursor:
+            guides.append({
+                "id": str(guide["_id"]),
+                "category_id": guide["category_id"],
+                "title": guide["title"],
+                "description": guide["description"],
+                "icon": guide.get("icon", "camera-outline"),
+                "has_image": guide.get("has_image", False),
+                "order": guide.get("order", 0),
+                "is_active": guide.get("is_active", True),
+                "created_at": guide.get("created_at", "").isoformat() if isinstance(guide.get("created_at"), datetime) else str(guide.get("created_at", "")),
+                "updated_at": guide.get("updated_at", "").isoformat() if isinstance(guide.get("updated_at"), datetime) else str(guide.get("updated_at", "")),
+            })
+        
+        return {
+            "guides": guides,
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "pages": (total + limit - 1) // limit if limit > 0 else 0
+        }
+    except Exception as e:
+        logger.error(f"Error listing photography guides: {e}")
+        raise HTTPException(status_code=500, detail="Failed to list photography guides")
+
+# Admin endpoint - Get statistics
+@app.get("/api/admin/photography-guides/stats")
+async def get_photography_guides_stats(current_user: dict = Depends(get_current_admin)):
+    """Get photography guides statistics"""
+    try:
+        total = await db.photography_guides.count_documents({})
+        active = await db.photography_guides.count_documents({"is_active": True})
+        with_images = await db.photography_guides.count_documents({"has_image": True})
+        
+        # Count by category
+        pipeline = [
+            {"$group": {"_id": "$category_id", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]
+        by_category = {}
+        async for doc in db.photography_guides.aggregate(pipeline):
+            by_category[doc["_id"]] = doc["count"]
+        
+        return {
+            "total": total,
+            "active": active,
+            "inactive": total - active,
+            "with_images": with_images,
+            "categories_count": len(by_category),
+            "by_category": by_category
+        }
+    except Exception as e:
+        logger.error(f"Error getting photography guides stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get statistics")
+
+# Admin endpoint - Get single guide with full details
+@app.get("/api/admin/photography-guides/{guide_id}")
+async def get_photography_guide(guide_id: str, current_user: dict = Depends(get_current_admin)):
+    """Get a specific photography guide with full details"""
+    try:
+        guide = await db.photography_guides.find_one({"_id": ObjectId(guide_id)})
+        if not guide:
+            raise HTTPException(status_code=404, detail="Guide not found")
+        
+        return {
+            "id": str(guide["_id"]),
+            "category_id": guide["category_id"],
+            "title": guide["title"],
+            "description": guide["description"],
+            "icon": guide.get("icon", "camera-outline"),
+            "image_url": f"data:image/jpeg;base64,{guide['image_base64']}" if guide.get("image_base64") else None,
+            "has_image": bool(guide.get("image_base64")),
+            "order": guide.get("order", 0),
+            "is_active": guide.get("is_active", True),
+            "created_at": guide.get("created_at", "").isoformat() if isinstance(guide.get("created_at"), datetime) else "",
+            "updated_at": guide.get("updated_at", "").isoformat() if isinstance(guide.get("updated_at"), datetime) else "",
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting photography guide: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get photography guide")
+
+# Admin endpoint - Create guide
+@app.post("/api/admin/photography-guides")
+async def create_photography_guide(
+    guide_data: Dict[str, Any] = Body(...),
+    current_user: dict = Depends(get_current_admin)
+):
+    """Create a new photography guide"""
+    try:
+        now = datetime.now(timezone.utc)
+        
+        doc = {
+            "category_id": guide_data.get("category_id"),
+            "title": guide_data.get("title"),
+            "description": guide_data.get("description"),
+            "icon": guide_data.get("icon", "camera-outline"),
+            "order": guide_data.get("order", 0),
+            "is_active": guide_data.get("is_active", True),
+            "has_image": False,
+            "created_at": now,
+            "updated_at": now,
+            "created_by": current_user.get("email", "admin")
+        }
+        
+        # Handle image upload
+        image_base64 = guide_data.get("image_base64")
+        if image_base64:
+            # Remove data URL prefix if present
+            if "base64," in image_base64:
+                image_base64 = image_base64.split("base64,")[1]
+            doc["image_base64"] = image_base64
+            doc["has_image"] = True
+        
+        result = await db.photography_guides.insert_one(doc)
+        
+        return {
+            "id": str(result.inserted_id),
+            "message": "Photography guide created successfully"
+        }
+    except Exception as e:
+        logger.error(f"Error creating photography guide: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create photography guide")
+
+# Admin endpoint - Update guide
+@app.put("/api/admin/photography-guides/{guide_id}")
+async def update_photography_guide(
+    guide_id: str,
+    guide_data: Dict[str, Any] = Body(...),
+    current_user: dict = Depends(get_current_admin)
+):
+    """Update a photography guide"""
+    try:
+        existing = await db.photography_guides.find_one({"_id": ObjectId(guide_id)})
+        if not existing:
+            raise HTTPException(status_code=404, detail="Guide not found")
+        
+        update_doc = {"updated_at": datetime.now(timezone.utc)}
+        
+        for field in ["title", "description", "icon", "order", "is_active", "category_id"]:
+            if field in guide_data and guide_data[field] is not None:
+                update_doc[field] = guide_data[field]
+        
+        # Handle image update
+        if "image_base64" in guide_data:
+            if guide_data["image_base64"] == "" or guide_data["image_base64"] is None:
+                # Remove image
+                update_doc["image_base64"] = None
+                update_doc["has_image"] = False
+            else:
+                # Update image
+                image_data = guide_data["image_base64"]
+                if "base64," in image_data:
+                    image_data = image_data.split("base64,")[1]
+                update_doc["image_base64"] = image_data
+                update_doc["has_image"] = True
+        
+        await db.photography_guides.update_one(
+            {"_id": ObjectId(guide_id)},
+            {"$set": update_doc}
+        )
+        
+        return {"message": "Photography guide updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating photography guide: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update photography guide")
+
+# Admin endpoint - Delete guide
+@app.delete("/api/admin/photography-guides/{guide_id}")
+async def delete_photography_guide(guide_id: str, current_user: dict = Depends(get_current_admin)):
+    """Delete a photography guide"""
+    try:
+        result = await db.photography_guides.delete_one({"_id": ObjectId(guide_id)})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Guide not found")
+        
+        return {"message": "Photography guide deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting photography guide: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete photography guide")
+
+# Admin endpoint - Seed default guides
+@app.post("/api/admin/photography-guides/seed")
+async def seed_photography_guides(current_user: dict = Depends(get_current_admin)):
+    """Seed default photography guides for all categories"""
+    try:
+        now = datetime.now(timezone.utc)
+        created_count = 0
+        
+        for category_id, guides in DEFAULT_PHOTOGRAPHY_GUIDES.items():
+            for i, guide in enumerate(guides):
+                # Check if guide already exists
+                existing = await db.photography_guides.find_one({
+                    "category_id": category_id,
+                    "title": guide["title"]
+                })
+                
+                if not existing:
+                    doc = {
+                        "category_id": category_id,
+                        "title": guide["title"],
+                        "description": guide["description"],
+                        "icon": guide.get("icon", "camera-outline"),
+                        "order": i,
+                        "is_active": True,
+                        "has_image": False,
+                        "created_at": now,
+                        "updated_at": now,
+                        "created_by": "system"
+                    }
+                    await db.photography_guides.insert_one(doc)
+                    created_count += 1
+        
+        return {"message": f"Seeded {created_count} default photography guides", "created": created_count}
+    except Exception as e:
+        logger.error(f"Error seeding photography guides: {e}")
+        raise HTTPException(status_code=500, detail="Failed to seed photography guides")
+
+# Admin endpoint - Reorder guides
+@app.put("/api/admin/photography-guides/reorder/{category_id}")
+async def reorder_photography_guides(
+    category_id: str,
+    guide_ids: List[str] = Body(...),
+    current_user: dict = Depends(get_current_admin)
+):
+    """Reorder guides within a category"""
+    try:
+        now = datetime.now(timezone.utc)
+        
+        for i, guide_id in enumerate(guide_ids):
+            await db.photography_guides.update_one(
+                {"_id": ObjectId(guide_id), "category_id": category_id},
+                {"$set": {"order": i, "updated_at": now}}
+            )
+        
+        return {"message": "Guides reordered successfully"}
+    except Exception as e:
+        logger.error(f"Error reordering photography guides: {e}")
+        raise HTTPException(status_code=500, detail="Failed to reorder guides")
+
+logger.info("Photography Guides endpoints registered")
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
