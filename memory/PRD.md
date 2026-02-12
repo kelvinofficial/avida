@@ -6,6 +6,38 @@ Build a local marketplace application (Avida) with:
 2. Business Profile feature for verified sellers
 3. Premium subscription tiers with payment integration
 
+### 2026-02-12: Saved Filters Feature (P2)
+**COMPLETED**
+
+#### Feature Overview
+Allow authenticated users to save, name, and apply their favorite filter combinations on category pages.
+
+#### Backend API (`/app/backend/routes/saved_filters.py`)
+- **List Saved Filters**: `GET /api/saved-filters?category_id={id}` - Returns user's saved filters for a category
+- **Get Single Filter**: `GET /api/saved-filters/{filter_id}` - Get specific saved filter
+- **Create Filter**: `POST /api/saved-filters` - Create a new saved filter (max 20 per category)
+- **Update Filter**: `PUT /api/saved-filters/{filter_id}` - Update name, filters, or default status
+- **Delete Filter**: `DELETE /api/saved-filters/{filter_id}` - Remove a saved filter
+- **Set Default**: `POST /api/saved-filters/{filter_id}/set-default` - Set as default filter for category
+- **Get Default**: `GET /api/saved-filters/category/{category_id}/default` - Get default filter
+
+#### Frontend Integration (`/app/frontend/app/category/[id].tsx`)
+- **Desktop Sidebar**: SAVED FILTERS section at bottom of sidebar
+  - "Sign in to save filters" button for unauthenticated users
+  - "Save Current Filters" button when filters are applied (authenticated)
+  - List of saved filters with apply/delete actions
+  - Default badge indicator for default filters
+- **Save Filter Modal**: Name input for saving current filter combination
+- **Auto-apply**: Default filter automatically applied on page load
+
+#### Bug Fix
+- Fixed auth token key mismatch: Changed `authToken` to `session_token` to match auth store
+
+#### Test Report
+- `/app/test_reports/iteration_115.json` - 100% pass rate
+
+---
+
 ### 2026-02-12: Popular Searches Feature (P1)
 **COMPLETED**
 
