@@ -385,6 +385,14 @@ export default function SafetyTipsPage() {
             {seeding ? 'Seeding...' : 'Seed Default Tips'}
           </Button>
           <Button
+            variant="outlined"
+            color="info"
+            startIcon={<Preview />}
+            onClick={() => { setPreviewCategory('auto_vehicles'); setPreviewOpen(true); }}
+          >
+            Preview
+          </Button>
+          <Button
             variant="contained"
             startIcon={<Add />}
             onClick={() => { resetForm(); setDialogOpen(true); }}
