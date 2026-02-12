@@ -57,6 +57,64 @@ const ALL_CATEGORIES = [
   { id: 'pets', name: 'Pets', icon: 'paw-outline' },
 ];
 
+// Category-specific quick filters
+const CATEGORY_FILTERS: Record<string, Array<{ key: string; label: string; options: string[] }>> = {
+  auto_vehicles: [
+    { key: 'fuel_type', label: 'Fuel Type', options: ['Petrol', 'Diesel', 'Electric', 'Hybrid', 'CNG'] },
+    { key: 'transmission', label: 'Transmission', options: ['Automatic', 'Manual'] },
+    { key: 'year_range', label: 'Year', options: ['2024+', '2020-2023', '2015-2019', '2010-2014', 'Before 2010'] },
+  ],
+  properties: [
+    { key: 'property_type', label: 'Type', options: ['Apartment', 'House', 'Villa', 'Land', 'Commercial'] },
+    { key: 'bedrooms', label: 'Bedrooms', options: ['Studio', '1', '2', '3', '4+'] },
+    { key: 'furnished', label: 'Furnished', options: ['Furnished', 'Semi-furnished', 'Unfurnished'] },
+  ],
+  electronics: [
+    { key: 'brand', label: 'Brand', options: ['Apple', 'Samsung', 'Sony', 'LG', 'Dell', 'HP', 'Other'] },
+    { key: 'warranty', label: 'Warranty', options: ['Under Warranty', 'No Warranty'] },
+  ],
+  phones_tablets: [
+    { key: 'brand', label: 'Brand', options: ['Apple', 'Samsung', 'Google', 'OnePlus', 'Xiaomi', 'Other'] },
+    { key: 'storage', label: 'Storage', options: ['64GB', '128GB', '256GB', '512GB', '1TB+'] },
+  ],
+  home_furniture: [
+    { key: 'room', label: 'Room', options: ['Living Room', 'Bedroom', 'Kitchen', 'Dining', 'Office', 'Outdoor'] },
+    { key: 'material', label: 'Material', options: ['Wood', 'Metal', 'Fabric', 'Leather', 'Glass'] },
+  ],
+  fashion_beauty: [
+    { key: 'gender', label: 'For', options: ['Men', 'Women', 'Unisex', 'Kids'] },
+    { key: 'size', label: 'Size', options: ['XS', 'S', 'M', 'L', 'XL', 'XXL'] },
+  ],
+  jobs_services: [
+    { key: 'job_type', label: 'Job Type', options: ['Full-time', 'Part-time', 'Contract', 'Freelance', 'Remote'] },
+    { key: 'experience', label: 'Experience', options: ['Entry Level', '1-3 Years', '3-5 Years', '5+ Years'] },
+  ],
+  kids_baby: [
+    { key: 'age_group', label: 'Age Group', options: ['Newborn', '0-1 Year', '1-3 Years', '3-5 Years', '5+ Years'] },
+    { key: 'item_type', label: 'Type', options: ['Clothing', 'Toys', 'Furniture', 'Strollers', 'Feeding'] },
+  ],
+  sports_hobbies: [
+    { key: 'sport_type', label: 'Sport', options: ['Fitness', 'Cycling', 'Football', 'Tennis', 'Swimming', 'Other'] },
+    { key: 'skill_level', label: 'Level', options: ['Beginner', 'Intermediate', 'Advanced', 'Professional'] },
+  ],
+  pets: [
+    { key: 'pet_type', label: 'Pet Type', options: ['Dogs', 'Cats', 'Birds', 'Fish', 'Reptiles', 'Other'] },
+    { key: 'listing_type', label: 'Listing', options: ['For Sale', 'For Adoption', 'Accessories', 'Services'] },
+  ],
+  agriculture: [
+    { key: 'item_type', label: 'Type', options: ['Machinery', 'Seeds', 'Fertilizers', 'Livestock', 'Land'] },
+  ],
+  commercial_equipment: [
+    { key: 'equipment_type', label: 'Type', options: ['Office', 'Restaurant', 'Medical', 'Industrial', 'Retail'] },
+  ],
+  repair_construction: [
+    { key: 'service_type', label: 'Service', options: ['Plumbing', 'Electrical', 'Painting', 'Carpentry', 'General'] },
+  ],
+  friendship_dating: [
+    { key: 'looking_for', label: 'Looking For', options: ['Friendship', 'Dating', 'Activity Partner', 'Networking'] },
+  ],
+};
+
 // ============ FILTER CHIP ============
 interface FilterChipProps {
   label: string;
