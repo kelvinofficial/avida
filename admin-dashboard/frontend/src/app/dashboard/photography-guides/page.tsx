@@ -130,6 +130,7 @@ interface SortableRowProps {
   handleOpenDialog: (guide: PhotographyGuide) => void;
   handleDeleteGuide: (id: string) => void;
   handleToggleActive: (guide: PhotographyGuide) => void;
+  handleImagePreview: (guide: PhotographyGuide) => void;
   isDragging: boolean;
 }
 
