@@ -227,12 +227,12 @@ def create_badges_router(db, get_current_user, badge_service=None):
             {"$limit": limit}
         ]
         
-        results = list(db.user_badges.aggregate(pipeline))
+        results = await db.user_badges.aggregate(pipeline).to_list(length=limit)
         
         # Enrich with user info
         leaderboard = []
         for i, r in enumerate(results, start=skip + 1):
-            user = db.users.find_one(
+            user = await db.users.find_one(
                 {"user_id": r["_id"]},
                 {"_id": 0, "name": 1, "picture": 1}
             )
@@ -246,9 +246,10 @@ def create_badges_router(db, get_current_user, badge_service=None):
                     "total_points": r["total_points"]
                 })
         
-        total = len(list(db.user_badges.aggregate([
+        count_results = await db.user_badges.aggregate([
             {"$group": {"_id": "$user_id"}}
-        ])))
+        ]).to_list(length=10000)
+        total = len(count_results)
         
         return {
             "leaderboard": leaderboard,
