@@ -679,8 +679,8 @@ export default function ListingDetailScreen() {
   const { isAuthenticated, user } = useAuthStore();
   const { isMobile, isTablet, isDesktop, width: screenWidth } = useResponsive();
   
-  // Attribute icons hook for dynamic icons
-  const { getIconForAttribute } = useAttributeIcons();
+  // Attribute icons hook for dynamic icons and colors
+  const { getIconForAttribute, getIconColorForAttribute } = useAttributeIcons();
   
   const [listing, setListing] = useState<Listing | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
