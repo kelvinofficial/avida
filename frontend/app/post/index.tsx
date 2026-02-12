@@ -2855,6 +2855,13 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     lineHeight: 18,
   },
+  tipIllustration: {
+    width: '100%',
+    height: 120,
+    borderRadius: 8,
+    marginTop: 10,
+    backgroundColor: COLORS.border,
+  },
   tipText: {
     fontSize: 13,
     color: COLORS.textSecondary,
