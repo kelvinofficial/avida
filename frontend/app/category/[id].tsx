@@ -1414,6 +1414,7 @@ export default function CategoryScreen() {
         </ScrollView>
 
         {renderFiltersModal()}
+        {renderSaveFilterModal()}
       </View>
     );
   }
