@@ -19,7 +19,7 @@ Standardized the desktop layout for all user profile-related pages to have a con
 #### Implementation
 Created reusable `DesktopPageLayout` component at `/app/frontend/src/components/layout/DesktopPageLayout.tsx`
 
-#### All 11 Profile Pages Updated with DesktopPageLayout:
+#### All Profile Pages Updated with DesktopPageLayout:
 1. **Saved Items** (`/app/frontend/app/profile/saved.tsx`) ✅
 2. **Badges** (`/app/frontend/app/profile/badges.tsx`) ✅
 3. **Invoices** (`/app/frontend/app/profile/invoices.tsx`) ✅
@@ -31,10 +31,23 @@ Created reusable `DesktopPageLayout` component at `/app/frontend/src/components/
 9. **Purchases** (`/app/frontend/app/profile/purchases.tsx`) ✅ (Updated 2026-02-12)
 10. **Sales** (`/app/frontend/app/profile/sales.tsx`) ✅ (Updated 2026-02-12)
 11. **Boost Listings** (`/app/frontend/app/boost/[listing_id].tsx`) ✅
+12. **Messages** (`/app/frontend/app/(tabs)/messages.tsx`) ✅ (Updated 2026-02-12 - unauthenticated view only)
+13. **My Profile** (`/app/frontend/app/(tabs)/profile.tsx`) ✅ (Updated 2026-02-12 - authenticated view)
+
+#### Quick Stats Dashboard Feature (2026-02-12)
+Added `QuickStatsCard` component to the `DesktopPageLayout` sidebar that shows:
+- **Active Listings Count** - Clickable, navigates to My Listings
+- **Pending Offers Count** - Clickable, navigates to Offers (with alert dot if > 0)
+- **Credit Balance** - Clickable, navigates to Credits page
+Only renders when user is authenticated. Fetches data in parallel from:
+- `/api/listings/my` for listings count
+- `/api/offers/received?status=pending` for offers count
+- `/api/boost/credits/balance` for credits
 
 #### Test Reports
 - `/app/test_reports/iteration_6.json` - Initial 8 pages
 - `/app/test_reports/iteration_117.json` - Final 3 pages (my-listings, purchases, sales) - 100% pass
+- `/app/test_reports/iteration_118.json` - Messages & Profile pages + Quick Stats - 100% pass
 
 ---
 
