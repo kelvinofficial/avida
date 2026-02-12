@@ -7,6 +7,7 @@ from fastapi import FastAPI, APIRouter, Depends, HTTPException, Request, Respons
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from bson import ObjectId
 from dotenv import load_dotenv
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr, validator
