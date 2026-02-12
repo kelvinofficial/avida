@@ -14,6 +14,10 @@
   - Reduced from 4160 to 3085 lines (~25.8% additional reduction)
   - Total reduction from original ~8881 lines to 3085 (~65.3% total)
 
+- **Cleanup: Old challenges.py**
+  - Replaced old routes/challenges.py (282 lines) with deprecation notice
+  - Points users to use create_badge_challenges_router instead
+
 - **Testing**
   - iteration_97.json: Email & Push Service verification - 16/16 tests passed
   - iteration_98.json: Badge Challenges router verification - 26/26 tests passed
