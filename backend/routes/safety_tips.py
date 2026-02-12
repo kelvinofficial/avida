@@ -176,7 +176,8 @@ def create_safety_tips_router(db, require_admin):
             if category_id:
                 query["category_id"] = category_id
                 
-            tips = list(db.safety_tips.find(query, {"_id": 0}).sort([("category_id", 1), ("order", 1)]))
+            cursor = db.safety_tips.find(query, {"_id": 0}).sort([("category_id", 1), ("order", 1)])
+            tips = await cursor.to_list(length=1000)
             
             # Group by category
             grouped = {}
@@ -199,15 +200,16 @@ def create_safety_tips_router(db, require_admin):
     async def get_safety_tips_stats(current_user: dict = Depends(require_admin)):
         """Get safety tips statistics"""
         try:
-            total = db.safety_tips.count_documents({})
-            active = db.safety_tips.count_documents({"is_active": True})
+            total = await db.safety_tips.count_documents({})
+            active = await db.safety_tips.count_documents({"is_active": True})
             
             # Count by category
             pipeline = [
                 {"$group": {"_id": "$category_id", "count": {"$sum": 1}}},
                 {"$sort": {"count": -1}}
             ]
-            by_category = list(db.safety_tips.aggregate(pipeline))
+            cursor = db.safety_tips.aggregate(pipeline)
+            by_category = await cursor.to_list(length=100)
             
             return {
                 "total": total,
