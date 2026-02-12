@@ -416,6 +416,37 @@ const cardStyles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
   },
+  heartButton: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stickersRow: {
+    flexDirection: 'row',
+    gap: 4,
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+  },
+  stickerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
+    gap: 3,
+  },
+  stickerText: {
+    fontSize: 9,
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
   // Content
   content: {
     flex: 1,
