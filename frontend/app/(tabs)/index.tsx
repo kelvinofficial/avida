@@ -337,6 +337,8 @@ const cardStyles = StyleSheet.create({
   favoriteButton: { position: 'absolute', top: 8, right: 8, width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'center', alignItems: 'center' },
   imageCountBadge: { position: 'absolute', bottom: 8, left: 8, backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, flexDirection: 'row', alignItems: 'center', gap: 3 },
   imageCountText: { color: '#fff', fontSize: 10, fontWeight: '600' },
+  negotiableBadge: { position: 'absolute', bottom: 30, right: 8, backgroundColor: '#E8F5E9', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+  negotiableText: { fontSize: 10, color: '#2E7D32', fontWeight: '600' },
   viewsOverlay: { position: 'absolute', bottom: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 4, flexDirection: 'row', alignItems: 'center', gap: 3 },
   viewsOverlayText: { color: '#fff', fontSize: 10, fontWeight: '600' },
   content: { padding: 10 },
