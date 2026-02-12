@@ -103,9 +103,8 @@ export default function IconsManagementScreen() {
       if (filterType) params.append('icon_type', filterType);
       if (searchQuery) params.append('search', searchQuery);
       
-      const response = await fetch(`${API_URL}/api/attribute-icons/public?${params}`);
-      const data = await response.json();
-      setIcons(data.icons || []);
+      const response = await api.get(`/attribute-icons/public?${params}`);
+      setIcons(response.data.icons || []);
     } catch (error) {
       console.error('Error fetching icons:', error);
       Alert.alert('Error', 'Failed to load icons');
@@ -116,11 +115,8 @@ export default function IconsManagementScreen() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/attribute-icons/stats`);
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data);
-      }
+      const response = await api.get('/attribute-icons/stats');
+      setStats(response.data);
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
@@ -128,11 +124,8 @@ export default function IconsManagementScreen() {
 
   const fetchAvailableIonicons = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/attribute-icons/ionicons`);
-      if (response.ok) {
-        const data = await response.json();
-        setAvailableIonicons(data.icons || []);
-      }
+      const response = await api.get('/attribute-icons/ionicons');
+      setAvailableIonicons(response.data.icons || []);
     } catch (error) {
       console.error('Error fetching ionicons:', error);
     }
