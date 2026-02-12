@@ -760,7 +760,9 @@ export default function MessagesScreen() {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>Messages</Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>Messages</Text>
+          </View>
         </View>
         <ScrollView 
           style={styles.unauthScrollView}
