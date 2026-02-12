@@ -832,6 +832,7 @@ Display attribute icons on public-facing listing detail pages to enhance UX by s
   - Fetches icons from `/api/attribute-icons/public` endpoint
   - Caches icons globally with 5-minute TTL
   - Provides `getIconForAttribute(attributeName, categoryId)` function
+  - Provides `getIconColorForAttribute(attributeName, categoryId)` function for custom colors
   - Includes intelligent default icons for common attributes
   - Exports `ICON_COLOR` constant (#2E7D32 - green)
 
@@ -839,7 +840,7 @@ Display attribute icons on public-facing listing detail pages to enhance UX by s
   - Updated `KeyDetailsSection` component (mobile view) to display icons
   - Updated desktop details grid to display icons
   - Icons appear BEFORE attribute labels as requested
-  - Icon color: Green (#2E7D32)
+  - Icon color: Green (#2E7D32) or custom color from admin
   - Icon background: Light green (#E8F5E9)
 
 #### Icon Display
@@ -847,6 +848,25 @@ Display attribute icons on public-facing listing detail pages to enhance UX by s
 - Box size: 36x36 (mobile), 32x32 (desktop)
 - Icons positioned before attribute labels in a row layout
 - Green color matches the app's primary theme
+
+#### Icon Animation (Added 2026-02-12)
+- **AnimatedIconBox component**: Icons animate on page load with subtle bounce effect
+- Uses React Native Animated API with spring physics
+- Animation settings: friction=4, tension=100, start scale=0.3
+- Staggered delay: 80ms per icon creates cascade effect
+- Both mobile and desktop views have animated icons
+
+#### Admin Color Customization (Added 2026-02-12)
+- Admin panel at `/admin/icons` now has color picker UI
+- 8 predefined color swatches for quick selection
+- Custom hex color input field
+- Color preview shows selected icon with chosen color
+- Custom colors are stored in database and applied on public pages
+
+#### ESLint Fix (Added 2026-02-12)
+- Fixed TypeScript parsing error in `/app/frontend/eslint.config.js`
+- Simplified config to use expo-config-expo/flat which includes @typescript-eslint/parser
+- No more "interface is reserved keyword" errors
 
 #### Verified Features
 - Desktop view: Icons visible in Details grid section ✅
@@ -856,6 +876,9 @@ Display attribute icons on public-facing listing detail pages to enhance UX by s
 - Icons before labels: Icon box on left, label/value on right ✅
 - API endpoint: /api/attribute-icons/public returns 73 icons ✅
 - Default fallback: Uses information-circle-outline for unknown attributes ✅
+- Icon bounce animation: Working with spring physics ✅
+- Admin color picker: 8 swatches + hex input ✅
+- ESLint TypeScript parsing: Fixed ✅
 
 #### Sample Icons Mapping
 - `year` → calendar-outline
