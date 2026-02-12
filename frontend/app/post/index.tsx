@@ -1049,7 +1049,11 @@ export default function PostListingScreen() {
 
           {/* Subcategory Selection - MANDATORY */}
           {selectedCategoryId && availableSubcategories.length > 0 && (
-            <View ref={subcategorySectionRef} style={styles.subcategorySection}>
+            <View 
+              ref={subcategorySectionRef} 
+              style={styles.subcategorySection}
+              onLayout={(e) => setSubcategorySectionY(e.nativeEvent.layout.y)}
+            >
               <Text style={styles.sectionTitle}>
                 Subcategory <Text style={styles.required}>*</Text>
               </Text>
