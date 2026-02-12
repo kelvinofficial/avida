@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, FlatList, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
 import { useAuthStore } from '../../store/authStore';
 import { useLoginRedirect } from '../../hooks/useLoginRedirect';
-import api from '../../utils/api';
+import api, { locationsApi } from '../../utils/api';
+
+interface Country {
+  code: string;
+  name: string;
+  flag?: string;
+}
 
 const COLORS = {
   primary: '#2E7D32',
