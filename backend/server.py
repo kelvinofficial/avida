@@ -4044,13 +4044,14 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load streaks router: {e}")
     
-    # Create challenges router
-    try:
-        challenges_router_modular = create_challenges_router(db, require_auth)
-        api_router.include_router(challenges_router_modular)
-        logger.info("Challenges router loaded successfully")
-    except Exception as e:
-        logger.warning(f"Failed to load challenges router: {e}")
+    # NOTE: Challenges router disabled - comprehensive implementation exists in server.py
+    # The server.py version includes seasonal challenges, badge rewards, and more detailed tracking
+    # try:
+    #     challenges_router_modular = create_challenges_router(db, require_auth)
+    #     api_router.include_router(challenges_router_modular)
+    #     logger.info("Challenges router loaded successfully")
+    # except Exception as e:
+    #     logger.warning(f"Failed to load challenges router: {e}")
     
     # Create admin router for analytics and settings
     try:
