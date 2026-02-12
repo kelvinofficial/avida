@@ -180,11 +180,31 @@ export default function IconsManagementPage() {
       if (response.ok) {
         const data = await response.json();
         setStats(data);
+      } else {
+        // Calculate stats from icons list as fallback
+        console.log('Stats endpoint returned error, using local calculation');
       }
     } catch (err) {
       console.error('Error fetching stats:', err);
     }
   };
+
+  // Calculate stats from icons as fallback when stats API fails
+  const calculateLocalStats = useCallback(() => {
+    if (icons.length > 0 && !stats) {
+      const localStats: IconStats = {
+        total: icons.length,
+        active: icons.filter(i => i.is_active).length,
+        inactive: icons.filter(i => !i.is_active).length,
+        by_type: {
+          category: icons.filter(i => i.icon_type === 'category').length,
+          subcategory: icons.filter(i => i.icon_type === 'subcategory').length,
+          attribute: icons.filter(i => i.icon_type === 'attribute').length,
+        }
+      };
+      setStats(localStats);
+    }
+  }, [icons, stats]);
 
   const fetchAvailableIonicons = async () => {
     try {
