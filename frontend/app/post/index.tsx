@@ -1389,24 +1389,34 @@ export default function PostListingScreen() {
         ))}
       </View>
 
-      {/* Dynamic Category-Specific Photo Tips */}
-      {selectedCategoryId && (
+      {/* Dynamic Category-Specific Photo Tips - Now using admin-managed guides */}
+      {selectedCategoryId && photoGuides.length > 0 && (
         <View style={styles.photoTips}>
           <View style={styles.tipsHeader}>
             <Ionicons name="bulb-outline" size={20} color={COLORS.primary} />
             <Text style={styles.tipsTitle}>Tips for Great Photos</Text>
           </View>
-          {getListingTips(selectedCategoryId).photoTips.map((tip, index) => (
-            <View key={index} style={styles.tipItem}>
+          {photoGuides.map((guide, index) => (
+            <View key={guide.id || index} style={styles.tipItem}>
               <View style={styles.tipIcon}>
-                <Ionicons name={tip.icon as any} size={18} color={COLORS.primary} />
+                <Ionicons name={guide.icon as any} size={18} color={COLORS.primary} />
               </View>
               <View style={styles.tipContent}>
-                <Text style={styles.tipItemTitle}>{tip.title}</Text>
-                <Text style={styles.tipItemDesc}>{tip.description}</Text>
+                <Text style={styles.tipItemTitle}>{guide.title}</Text>
+                <Text style={styles.tipItemDesc}>{guide.description}</Text>
               </View>
             </View>
           ))}
+        </View>
+      )}
+      
+      {/* Loading state for photo guides */}
+      {selectedCategoryId && photoGuidesLoading && (
+        <View style={styles.photoTips}>
+          <View style={styles.tipsHeader}>
+            <ActivityIndicator size="small" color={COLORS.primary} />
+            <Text style={styles.tipsTitle}>Loading photo tips...</Text>
+          </View>
         </View>
       )}
       
