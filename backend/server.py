@@ -305,6 +305,7 @@ try:
         LEGACY_CATEGORY_MAP,
         validate_category_and_subcategory
     )
+    from routes.popular_searches import create_popular_searches_router
     MODULAR_ROUTES_AVAILABLE = True
 except ImportError as e:
     MODULAR_ROUTES_AVAILABLE = False
