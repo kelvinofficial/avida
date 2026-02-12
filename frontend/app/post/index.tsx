@@ -2233,6 +2233,13 @@ export default function PostListingScreen() {
               <Text style={desktopStyles.cancelText}>Cancel</Text>
             </TouchableOpacity>
           </View>
+          
+          {/* Error Banner - Desktop */}
+          <ErrorBanner 
+            errors={fieldErrors}
+            visible={showErrorBanner}
+            onDismiss={() => setShowErrorBanner(false)}
+          />
         </View>
 
         <View style={desktopStyles.mainLayout}>
