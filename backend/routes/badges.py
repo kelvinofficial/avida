@@ -104,10 +104,11 @@ def create_badges_router(db, get_current_user, badge_service=None):
         user_id = current_user["user_id"]
         
         # Verify user owns all badges
-        owned_badges = list(db.user_badges.find(
+        owned_badges_cursor = db.user_badges.find(
             {"user_id": user_id, "badge_id": {"$in": badge_ids}},
             {"badge_id": 1}
-        ))
+        )
+        owned_badges = await owned_badges_cursor.to_list(length=len(badge_ids))
         owned_ids = {b["badge_id"] for b in owned_badges}
         
         for badge_id in badge_ids:
@@ -115,14 +116,14 @@ def create_badges_router(db, get_current_user, badge_service=None):
                 raise HTTPException(status_code=400, detail=f"Badge {badge_id} not owned")
         
         # Clear all showcased
-        db.user_badges.update_many(
+        await db.user_badges.update_many(
             {"user_id": user_id},
             {"$set": {"is_showcased": False}}
         )
         
         # Set new showcased
         if badge_ids:
-            db.user_badges.update_many(
+            await db.user_badges.update_many(
                 {"user_id": user_id, "badge_id": {"$in": badge_ids}},
                 {"$set": {"is_showcased": True}}
             )
@@ -132,7 +133,7 @@ def create_badges_router(db, get_current_user, badge_service=None):
     @router.get("/unviewed-count")
     async def get_unviewed_badge_count(current_user: dict = Depends(get_current_user)):
         """Get count of unviewed badges for notification bell."""
-        count = db.user_badges.count_documents({
+        count = await db.user_badges.count_documents({
             "user_id": current_user["user_id"],
             "is_viewed": False
         })
@@ -141,7 +142,7 @@ def create_badges_router(db, get_current_user, badge_service=None):
     @router.post("/mark-viewed")
     async def mark_badges_viewed(current_user: dict = Depends(get_current_user)):
         """Mark all user badges as viewed."""
-        result = db.user_badges.update_many(
+        result = await db.user_badges.update_many(
             {"user_id": current_user["user_id"], "is_viewed": False},
             {"$set": {"is_viewed": True}}
         )
