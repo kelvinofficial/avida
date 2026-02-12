@@ -51,6 +51,21 @@ except ImportError:
     BOOST_ROUTES_AVAILABLE = False
     logging.warning("Boost routes not available. Credit system disabled.")
 
+# Utility Services (Email, Push Notifications)
+try:
+    from utils.email_service import send_notification_email, build_email_template
+    from utils.push_service import (
+        init_push_service,
+        send_push_notification,
+        send_bulk_push_notifications,
+        send_milestone_push_notification,
+        check_and_notify_new_milestones
+    )
+    UTILS_AVAILABLE = True
+except ImportError as e:
+    UTILS_AVAILABLE = False
+    logging.warning(f"Utility services not available: {e}")
+
 # Analytics Routes
 try:
     from analytics_system import create_analytics_router
