@@ -12,7 +12,7 @@ import requests
 import os
 import xml.etree.ElementTree as ET
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://desktop-profile-hub.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://classifieds-ui.preview.emergentagent.com').rstrip('/')
 # Use direct backend URL for sitemap/robots.txt since they're registered on root path
 # The public URL routes non-/api paths to frontend
 BACKEND_DIRECT_URL = "http://localhost:8001"

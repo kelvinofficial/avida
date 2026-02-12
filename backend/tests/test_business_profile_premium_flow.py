@@ -18,7 +18,7 @@ import uuid
 from datetime import datetime, timezone
 
 # Base URL from environment - use the public URL
-BASE_URL = "https://desktop-profile-hub.preview.emergentagent.com"
+BASE_URL = "https://classifieds-ui.preview.emergentagent.com"
 
 
 class TestPremiumSubscriptionPackages:
@@ -231,7 +231,7 @@ class TestBusinessProfileFlow:
         # Try checkout with non-existent profile ID
         response = self.session.post(f"{BASE_URL}/api/premium-subscription/stripe/checkout", json={
             "package_id": "monthly",
-            "origin_url": "https://desktop-profile-hub.preview.emergentagent.com",
+            "origin_url": "https://classifieds-ui.preview.emergentagent.com",
             "business_profile_id": "nonexistent-profile-id"
         })
         

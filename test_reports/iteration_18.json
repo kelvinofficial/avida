@@ -37,7 +37,7 @@
     "frontend": "85% (homepage, login page, signup form display correctly; form submission requires mobile testing)"
   },
   "test_credentials": {
-    "api_base": "https://desktop-profile-hub.preview.emergentagent.com",
+    "api_base": "https://classifieds-ui.preview.emergentagent.com",
     "test_user_pattern": "test_e2e_*.@test.com with password Test@123456"
   },
   "seed_data_creation": "Test users and listings created and cleaned up during test execution",
