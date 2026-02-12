@@ -451,6 +451,192 @@ export default function FormConfigPage() {
     }
   }, [configs, getPreviewData]);
 
+  // Import configuration from JSON file
+  const handleImportJson = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setImportLoading(true);
+    setImportError(null);
+    setImportSuccess(false);
+
+    try {
+      const text = await file.text();
+      const importedData = JSON.parse(text);
+
+      // Validate the imported JSON structure
+      if (!importedData.category_id) {
+        throw new Error('Invalid JSON: missing category_id');
+      }
+
+      if (!importedData.configuration) {
+        throw new Error('Invalid JSON: missing configuration object');
+      }
+
+      const { category_id, configuration } = importedData;
+      const { placeholders, seller_type, preferences, visibility_rules } = configuration;
+
+      // Validate category exists
+      const validCategory = CATEGORIES.find(c => c.id === category_id);
+      if (!validCategory) {
+        throw new Error(`Invalid category_id: ${category_id}`);
+      }
+
+      // Track created/updated configs
+      let created = 0;
+      let updated = 0;
+
+      // Import placeholders
+      if (placeholders && (placeholders.title || placeholders.description)) {
+        const existingPlaceholder = configs.find(
+          c => c.config_type === 'placeholder' && c.category_id === category_id && c.is_active
+        );
+
+        const placeholderData = {
+          title: placeholders.title || '',
+          titleLabel: placeholders.titleLabel || '',
+          description: placeholders.description || '',
+          descriptionLabel: placeholders.descriptionLabel || '',
+        };
+
+        if (existingPlaceholder) {
+          await api.put(`/form-config/${existingPlaceholder.id}`, {
+            config_data: placeholderData,
+            is_active: true,
+          });
+          updated++;
+        } else {
+          await api.post('/form-config', {
+            category_id,
+            config_type: 'placeholder',
+            config_data: placeholderData,
+            is_active: true,
+            priority: 0,
+          });
+          created++;
+        }
+      }
+
+      // Import seller type
+      if (seller_type && (seller_type.label || seller_type.options)) {
+        const existingSellerType = configs.find(
+          c => c.config_type === 'seller_type' && c.category_id === category_id && c.is_active
+        );
+
+        const sellerTypeData = {
+          label: seller_type.label || 'Listed by',
+          options: seller_type.options || ['Individual'],
+        };
+
+        if (existingSellerType) {
+          await api.put(`/form-config/${existingSellerType.id}`, {
+            config_data: sellerTypeData,
+            is_active: true,
+          });
+          updated++;
+        } else {
+          await api.post('/form-config', {
+            category_id,
+            config_type: 'seller_type',
+            config_data: sellerTypeData,
+            is_active: true,
+            priority: 0,
+          });
+          created++;
+        }
+      }
+
+      // Import preferences
+      if (preferences && typeof preferences === 'object') {
+        const existingPreference = configs.find(
+          c => c.config_type === 'preference' && c.category_id === category_id && c.is_active
+        );
+
+        const preferenceData = {
+          acceptsOffers: preferences.acceptsOffers ?? true,
+          acceptsExchanges: preferences.acceptsExchanges ?? true,
+          negotiable: preferences.negotiable ?? true,
+        };
+
+        if (existingPreference) {
+          await api.put(`/form-config/${existingPreference.id}`, {
+            config_data: preferenceData,
+            is_active: true,
+          });
+          updated++;
+        } else {
+          await api.post('/form-config', {
+            category_id,
+            config_type: 'preference',
+            config_data: preferenceData,
+            is_active: true,
+            priority: 0,
+          });
+          created++;
+        }
+      }
+
+      // Import visibility rules (these are typically global)
+      if (visibility_rules && typeof visibility_rules === 'object') {
+        const existingVisibility = configs.find(
+          c => c.config_type === 'visibility_rule' && c.category_id === 'global' && c.is_active
+        );
+
+        // Merge with existing visibility rules if they exist
+        const existingData = existingVisibility?.config_data || {};
+        
+        const visibilityData = {
+          hide_price_categories: visibility_rules.hidePrice 
+            ? [...new Set([...(existingData.hide_price_categories || []), category_id])]
+            : (existingData.hide_price_categories || []).filter((c: string) => c !== category_id),
+          chat_only_categories: visibility_rules.chatOnly
+            ? [...new Set([...(existingData.chat_only_categories || []), category_id])]
+            : (existingData.chat_only_categories || []).filter((c: string) => c !== category_id),
+          hide_condition_categories: visibility_rules.hideCondition
+            ? [...new Set([...(existingData.hide_condition_categories || []), category_id])]
+            : (existingData.hide_condition_categories || []).filter((c: string) => c !== category_id),
+          show_salary_subcategories: existingData.show_salary_subcategories || [],
+          hide_condition_subcategories: existingData.hide_condition_subcategories || [],
+        };
+
+        if (existingVisibility) {
+          await api.put(`/form-config/${existingVisibility.id}`, {
+            config_data: visibilityData,
+            is_active: true,
+          });
+          updated++;
+        } else {
+          await api.post('/form-config', {
+            category_id: 'global',
+            config_type: 'visibility_rule',
+            config_data: visibilityData,
+            is_active: true,
+            priority: 0,
+          });
+          created++;
+        }
+      }
+
+      setImportSuccess(true);
+      setTimeout(() => setImportSuccess(false), 3000);
+      
+      // Refresh configs
+      await fetchConfigs();
+      await fetchStats();
+
+      // Show success message
+      alert(`Import successful! Created: ${created}, Updated: ${updated} configurations for ${validCategory.name}`);
+
+    } catch (err: any) {
+      console.error('Import failed:', err);
+      setImportError(err.message || 'Failed to import JSON');
+    } finally {
+      setImportLoading(false);
+      // Reset file input
+      event.target.value = '';
+    }
+  }, [configs, fetchConfigs, fetchStats]);
+
   const getConfigTypeName = (typeValue: string) => {
     const type = CONFIG_TYPES.find(t => t.value === typeValue);
     return type?.label || typeValue;
