@@ -98,6 +98,8 @@ export default function SafetyTipsPage() {
   
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewCategory, setPreviewCategory] = useState('');
   const [editingTip, setEditingTip] = useState<SafetyTip | null>(null);
   const [seeding, setSeeding] = useState(false);
   
