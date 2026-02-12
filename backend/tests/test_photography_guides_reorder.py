@@ -10,8 +10,8 @@ ADMIN_BASE_URL = os.environ.get('ADMIN_BACKEND_URL', 'http://localhost:8002/api/
 MAIN_BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://listing-form-builder.preview.emergentagent.com')
 
 # Test credentials
-TEST_EMAIL = "test2@test.com"
-TEST_PASSWORD = "password"
+TEST_EMAIL = "admin@admin.com"
+TEST_PASSWORD = "admin123"
 
 
 @pytest.fixture(scope="module")
