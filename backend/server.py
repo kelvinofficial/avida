@@ -2233,6 +2233,19 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load admin settings router: {e}")
     
+    # Create attribute icons router for managing SVG icons
+    try:
+        async def require_admin_for_icons(request: Request) -> dict:
+            """Require admin authentication for icon management"""
+            user = await require_auth(request)
+            return {"user_id": user.user_id, "email": user.email, "name": user.name}
+        
+        attribute_icons_router = create_attribute_icons_router(db, require_admin_for_icons)
+        api_router.include_router(attribute_icons_router)
+        logger.info("Attribute icons router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load attribute icons router: {e}")
+    
     # Create notification preferences router
     try:
         notification_prefs_router = create_notification_preferences_router(db, require_auth)
