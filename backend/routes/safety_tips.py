@@ -239,7 +239,7 @@ def create_safety_tips_router(db, require_admin):
                 "created_by": current_user.get("email", "admin")
             }
             
-            db.safety_tips.insert_one(tip)
+            await db.safety_tips.insert_one(tip)
             tip.pop("_id", None)
             
             return {"message": "Safety tip created", "tip": tip}
@@ -255,7 +255,7 @@ def create_safety_tips_router(db, require_admin):
     ):
         """Update a safety tip"""
         try:
-            existing = db.safety_tips.find_one({"id": tip_id})
+            existing = await db.safety_tips.find_one({"id": tip_id})
             if not existing:
                 raise HTTPException(status_code=404, detail="Safety tip not found")
             
@@ -267,9 +267,9 @@ def create_safety_tips_router(db, require_admin):
             if tip_data.is_active is not None:
                 update_data["is_active"] = tip_data.is_active
                 
-            db.safety_tips.update_one({"id": tip_id}, {"$set": update_data})
+            await db.safety_tips.update_one({"id": tip_id}, {"$set": update_data})
             
-            updated = db.safety_tips.find_one({"id": tip_id}, {"_id": 0})
+            updated = await db.safety_tips.find_one({"id": tip_id}, {"_id": 0})
             return {"message": "Safety tip updated", "tip": updated}
         except HTTPException:
             raise
@@ -284,7 +284,7 @@ def create_safety_tips_router(db, require_admin):
     ):
         """Delete a safety tip"""
         try:
-            result = db.safety_tips.delete_one({"id": tip_id})
+            result = await db.safety_tips.delete_one({"id": tip_id})
             if result.deleted_count == 0:
                 raise HTTPException(status_code=404, detail="Safety tip not found")
             return {"message": "Safety tip deleted"}
