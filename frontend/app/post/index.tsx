@@ -311,6 +311,17 @@ export default function PostListingScreen() {
   const { checkForNewMilestones } = useMilestones();
   const isLargeScreen = isDesktop || isTablet;
   
+  // Use form config hook (fetches from API with static fallback)
+  const {
+    getPlaceholders,
+    getSellerTypes,
+    shouldHidePrice,
+    shouldShowSalaryRange,
+    shouldHideCondition,
+    isChatOnlyCategory,
+    getCategoryPreferences,
+  } = useFormConfig();
+  
   // Track user's badges before listing creation
   const previousBadgesRef = useRef<string[]>([]);
 
