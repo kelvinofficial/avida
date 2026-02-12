@@ -1,11 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { DesktopHeader } from './DesktopHeader';
 import { Footer } from './Footer';
-import { useResponsive } from '../../hooks/useResponsive';
 import { useAuthStore } from '../../store/authStore';
 
 const MAX_WIDTH = 1280;
