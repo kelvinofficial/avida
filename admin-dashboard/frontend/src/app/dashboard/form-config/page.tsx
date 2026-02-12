@@ -135,7 +135,7 @@ export default function FormConfigPage() {
   // Preview dialog state
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewCategory, setPreviewCategory] = useState<string>('');
-
+  const [jsonCopied, setJsonCopied] = useState(false);
   // Form state for create/edit dialog
   const [formData, setFormData] = useState({
     category_id: '',
