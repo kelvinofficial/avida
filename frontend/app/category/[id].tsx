@@ -859,20 +859,54 @@ export default function CategoryScreen() {
         {/* Row 2: Search + Location */}
         <View style={desktopStyles.headerRow2}>
           <View style={desktopStyles.headerRow2Inner}>
-            <View style={desktopStyles.searchField}>
-              <Ionicons name="search" size={20} color="#666" />
-              <TextInput
-                style={desktopStyles.searchInput}
-                placeholder={`Search in ${mainCategory?.name}...`}
-                placeholderTextColor="#999"
-                value={searchQuery}
-                onChangeText={handleSearch}
-                data-testid="category-search-input"
-              />
-              {searchQuery.length > 0 && (
-                <TouchableOpacity onPress={() => handleSearch('')} style={{ padding: 4 }}>
-                  <Ionicons name="close-circle" size={18} color="#999" />
-                </TouchableOpacity>
+            <View style={desktopStyles.searchFieldContainer}>
+              <View style={desktopStyles.searchField}>
+                <Ionicons name="search" size={20} color="#666" />
+                <TextInput
+                  style={desktopStyles.searchInput}
+                  placeholder={`Search in ${mainCategory?.name}...`}
+                  placeholderTextColor="#999"
+                  value={searchQuery}
+                  onChangeText={handleSearch}
+                  onFocus={() => setShowRecentSearches(true)}
+                  onBlur={() => setTimeout(() => setShowRecentSearches(false), 200)}
+                  data-testid="category-search-input"
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity onPress={() => handleSearch('')} style={{ padding: 4 }}>
+                    <Ionicons name="close-circle" size={18} color="#999" />
+                  </TouchableOpacity>
+                )}
+              </View>
+              {/* Recent Searches Dropdown - Desktop */}
+              {showRecentSearches && recentSearches.length > 0 && !searchQuery && (
+                <View style={desktopStyles.recentSearchesDropdown}>
+                  <View style={desktopStyles.recentSearchesHeader}>
+                    <View style={desktopStyles.recentSearchesTitleRow}>
+                      <Ionicons name="time-outline" size={16} color={COLORS.textSecondary} />
+                      <Text style={desktopStyles.recentSearchesTitle}>Recent Searches</Text>
+                    </View>
+                    <TouchableOpacity onPress={clearAllRecentSearches}>
+                      <Text style={desktopStyles.clearAllBtn}>Clear all</Text>
+                    </TouchableOpacity>
+                  </View>
+                  {recentSearches.map((query, index) => (
+                    <TouchableOpacity 
+                      key={`${query}-${index}`}
+                      style={desktopStyles.recentSearchItem}
+                      onPress={() => applyRecentSearch(query)}
+                    >
+                      <Ionicons name="search-outline" size={16} color={COLORS.textSecondary} />
+                      <Text style={desktopStyles.recentSearchItemText}>{query}</Text>
+                      <TouchableOpacity 
+                        onPress={(e) => { e.stopPropagation(); removeRecentSearch(query); }}
+                        style={desktopStyles.removeSearchBtn}
+                      >
+                        <Ionicons name="close" size={14} color={COLORS.textLight} />
+                      </TouchableOpacity>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               )}
             </View>
             <TouchableOpacity style={desktopStyles.locationChip} activeOpacity={0.7}>
