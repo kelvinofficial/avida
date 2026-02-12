@@ -28,7 +28,7 @@ import { Listing, Category } from '../../src/types';
 import { useAuthStore } from '../../src/store/authStore';
 import { useSandbox } from '../../src/utils/sandboxContext';
 import { formatDistanceToNow } from 'date-fns';
-import SimilarListings from '../../src/components/property/SimilarListings';
+import { useSafetyTips } from '../../src/hooks/useSafetyTips';
 import { safeGoBack } from '../../src/utils/navigation';
 import { getCategoryIcon, getCategoryName } from '../../src/config/categoryAttributes';
 import { useResponsive } from '../../src/hooks/useResponsive';
