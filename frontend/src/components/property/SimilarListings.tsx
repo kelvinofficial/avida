@@ -332,7 +332,7 @@ const HorizontalListingCard = memo(({
                 <Ionicons name="chatbubble-outline" size={18} color={COLORS.primary} />
               </TouchableOpacity>
             )}
-            {onCall && (
+            {onCall && listing.seller?.phone && (
               <TouchableOpacity
                 style={cardStyles.actionButton}
                 onPress={(e) => {
@@ -343,15 +343,17 @@ const HorizontalListingCard = memo(({
                 <Ionicons name="call-outline" size={18} color={COLORS.primary} />
               </TouchableOpacity>
             )}
-            <TouchableOpacity
-              style={[cardStyles.actionButton, cardStyles.whatsappButton]}
-              onPress={(e) => {
-                e.stopPropagation?.();
-                onWhatsApp?.();
-              }}
-            >
-              <Ionicons name="logo-whatsapp" size={18} color="#25D366" />
-            </TouchableOpacity>
+            {(listing.seller?.whatsapp || listing.seller?.phone) && (
+              <TouchableOpacity
+                style={[cardStyles.actionButton, cardStyles.whatsappButton]}
+                onPress={(e) => {
+                  e.stopPropagation?.();
+                  onWhatsApp?.();
+                }}
+              >
+                <Ionicons name="logo-whatsapp" size={18} color="#25D366" />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>
