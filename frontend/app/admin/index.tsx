@@ -63,6 +63,20 @@ export default function AdminRedirectScreen() {
 
           <TouchableOpacity 
             style={styles.actionCard}
+            onPress={() => router.push('/admin/icons')}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: '#F3E8FF' }]}>
+              <Ionicons name="shapes" size={24} color="#9333EA" />
+            </View>
+            <Text style={styles.actionTitle}>Attribute Icons</Text>
+            <Text style={styles.actionDesc}>Manage SVG icons for categories & attributes</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Quick Actions - Row 3 */}
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity 
+            style={styles.actionCard}
             onPress={() => router.push('/admin/analytics')}
           >
             <View style={[styles.actionIcon, { backgroundColor: '#EFF6FF' }]}>
@@ -70,6 +84,17 @@ export default function AdminRedirectScreen() {
             </View>
             <Text style={styles.actionTitle}>Analytics</Text>
             <Text style={styles.actionDesc}>View platform and seller analytics</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.actionCard}
+            onPress={() => router.push('/admin/vouchers')}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: '#FEF3C7' }]}>
+              <Ionicons name="ticket" size={24} color="#D97706" />
+            </View>
+            <Text style={styles.actionTitle}>Vouchers</Text>
+            <Text style={styles.actionDesc}>Manage discount vouchers</Text>
           </TouchableOpacity>
         </View>
 
