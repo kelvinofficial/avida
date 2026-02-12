@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../src/store/authStore';
+import { useNotificationPrefsStore } from '../src/store/notificationPrefsStore';
 import api from '../src/utils/api';
 import { UserSettings } from '../src/types/settings';
 import { useResponsive } from '../src/hooks/useResponsive';
