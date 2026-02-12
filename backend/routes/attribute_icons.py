@@ -10,7 +10,6 @@ from datetime import datetime, timezone
 from pydantic import BaseModel
 import logging
 import uuid
-import base64
 import re
 
 logger = logging.getLogger(__name__)
@@ -45,21 +44,6 @@ class IconUpdate(BaseModel):
     color: Optional[str] = None
     description: Optional[str] = None
     is_active: Optional[bool] = None
-
-
-class IconResponse(BaseModel):
-    id: str
-    name: str
-    svg_content: str
-    category_id: Optional[str] = None
-    subcategory_id: Optional[str] = None
-    attribute_name: Optional[str] = None
-    icon_type: str
-    color: Optional[str] = None
-    description: Optional[str] = None
-    is_active: bool
-    created_at: datetime
-    updated_at: datetime
 
 
 # =============================================================================
@@ -110,7 +94,7 @@ def create_attribute_icons_router(db, require_admin):
     Create the attribute icons router with dependencies injected
     
     Args:
-        db: MongoDB database instance
+        db: MongoDB database instance (async motor)
         require_admin: Dependency function for admin authentication
     
     Returns:
@@ -145,7 +129,7 @@ def create_attribute_icons_router(db, require_admin):
     @router.get("/public/{icon_id}")
     async def get_public_icon(icon_id: str):
         """Get a single icon by ID (public endpoint)"""
-        icon = db.attribute_icons.find_one(
+        icon = await db.attribute_icons.find_one(
             {"id": icon_id, "is_active": True},
             {"_id": 0}
         )
@@ -156,7 +140,7 @@ def create_attribute_icons_router(db, require_admin):
     @router.get("/public/{icon_id}/svg")
     async def get_icon_svg(icon_id: str):
         """Get just the SVG content of an icon"""
-        icon = db.attribute_icons.find_one(
+        icon = await db.attribute_icons.find_one(
             {"id": icon_id, "is_active": True},
             {"_id": 0, "svg_content": 1}
         )
@@ -171,10 +155,11 @@ def create_attribute_icons_router(db, require_admin):
     @router.get("/by-category/{category_id}")
     async def get_icons_by_category(category_id: str):
         """Get all icons for a specific category"""
-        icons = list(db.attribute_icons.find(
+        cursor = db.attribute_icons.find(
             {"category_id": category_id, "is_active": True},
             {"_id": 0}
-        ))
+        )
+        icons = await cursor.to_list(length=500)
         return {"icons": icons, "total": len(icons)}
     
     @router.get("/by-attribute")
@@ -191,7 +176,7 @@ def create_attribute_icons_router(db, require_admin):
         if attribute_name:
             query["attribute_name"] = attribute_name
         
-        icon = db.attribute_icons.find_one(query, {"_id": 0})
+        icon = await db.attribute_icons.find_one(query, {"_id": 0})
         return icon
     
     # =========================================================================
@@ -229,12 +214,10 @@ def create_attribute_icons_router(db, require_admin):
         
         skip = (page - 1) * limit
         
-        icons = list(db.attribute_icons.find(query, {"_id": 0})
-                    .sort("created_at", -1)
-                    .skip(skip)
-                    .limit(limit))
+        cursor = db.attribute_icons.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit)
+        icons = await cursor.to_list(length=limit)
         
-        total = db.attribute_icons.count_documents(query)
+        total = await db.attribute_icons.count_documents(query)
         
         return {
             "icons": icons,
@@ -249,21 +232,23 @@ def create_attribute_icons_router(db, require_admin):
     @router.get("/stats")
     async def get_icon_stats(current_user: dict = Depends(require_admin)):
         """Get icon statistics"""
-        total = db.attribute_icons.count_documents({})
-        active = db.attribute_icons.count_documents({"is_active": True})
+        total = await db.attribute_icons.count_documents({})
+        active = await db.attribute_icons.count_documents({"is_active": True})
         
         # Count by type
         by_type = {}
         for icon_type in ["category", "subcategory", "attribute"]:
-            by_type[icon_type] = db.attribute_icons.count_documents({"icon_type": icon_type})
+            by_type[icon_type] = await db.attribute_icons.count_documents({"icon_type": icon_type})
         
         # Count by category
-        by_category = list(db.attribute_icons.aggregate([
+        pipeline = [
             {"$match": {"category_id": {"$ne": None}}},
             {"$group": {"_id": "$category_id", "count": {"$sum": 1}}},
             {"$sort": {"count": -1}},
             {"$limit": 10}
-        ]))
+        ]
+        cursor = db.attribute_icons.aggregate(pipeline)
+        by_category = await cursor.to_list(length=10)
         
         return {
             "total": total,
@@ -305,7 +290,7 @@ def create_attribute_icons_router(db, require_admin):
             "created_by": current_user.get("user_id")
         }
         
-        db.attribute_icons.insert_one(icon_doc)
+        await db.attribute_icons.insert_one(icon_doc)
         del icon_doc["_id"]
         
         return {"success": True, "icon": icon_doc}
@@ -355,7 +340,7 @@ def create_attribute_icons_router(db, require_admin):
             "created_by": current_user.get("user_id")
         }
         
-        db.attribute_icons.insert_one(icon_doc)
+        await db.attribute_icons.insert_one(icon_doc)
         del icon_doc["_id"]
         
         return {"success": True, "icon": icon_doc}
@@ -367,7 +352,7 @@ def create_attribute_icons_router(db, require_admin):
         current_user: dict = Depends(require_admin)
     ):
         """Update an existing icon"""
-        existing = db.attribute_icons.find_one({"id": icon_id})
+        existing = await db.attribute_icons.find_one({"id": icon_id})
         if not existing:
             raise HTTPException(status_code=404, detail="Icon not found")
         
@@ -382,9 +367,9 @@ def create_attribute_icons_router(db, require_admin):
         update_data["updated_at"] = datetime.now(timezone.utc)
         update_data["updated_by"] = current_user.get("user_id")
         
-        db.attribute_icons.update_one({"id": icon_id}, {"$set": update_data})
+        await db.attribute_icons.update_one({"id": icon_id}, {"$set": update_data})
         
-        updated = db.attribute_icons.find_one({"id": icon_id}, {"_id": 0})
+        updated = await db.attribute_icons.find_one({"id": icon_id}, {"_id": 0})
         return {"success": True, "icon": updated}
     
     @router.delete("/{icon_id}")
@@ -393,11 +378,11 @@ def create_attribute_icons_router(db, require_admin):
         current_user: dict = Depends(require_admin)
     ):
         """Soft delete an icon"""
-        existing = db.attribute_icons.find_one({"id": icon_id})
+        existing = await db.attribute_icons.find_one({"id": icon_id})
         if not existing:
             raise HTTPException(status_code=404, detail="Icon not found")
         
-        db.attribute_icons.update_one(
+        await db.attribute_icons.update_one(
             {"id": icon_id},
             {"$set": {
                 "is_active": False,
@@ -414,7 +399,7 @@ def create_attribute_icons_router(db, require_admin):
         current_user: dict = Depends(require_admin)
     ):
         """Permanently delete an icon"""
-        result = db.attribute_icons.delete_one({"id": icon_id})
+        result = await db.attribute_icons.delete_one({"id": icon_id})
         
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Icon not found")
@@ -427,11 +412,11 @@ def create_attribute_icons_router(db, require_admin):
         current_user: dict = Depends(require_admin)
     ):
         """Restore a soft-deleted icon"""
-        existing = db.attribute_icons.find_one({"id": icon_id})
+        existing = await db.attribute_icons.find_one({"id": icon_id})
         if not existing:
             raise HTTPException(status_code=404, detail="Icon not found")
         
-        db.attribute_icons.update_one(
+        await db.attribute_icons.update_one(
             {"id": icon_id},
             {
                 "$set": {
@@ -481,7 +466,7 @@ def create_attribute_icons_router(db, require_admin):
                     "created_by": current_user.get("user_id")
                 }
                 
-                db.attribute_icons.insert_one(icon_doc)
+                await db.attribute_icons.insert_one(icon_doc)
                 del icon_doc["_id"]
                 created.append(icon_doc)
             except Exception as e:
@@ -507,11 +492,11 @@ def create_attribute_icons_router(db, require_admin):
         current_user: dict = Depends(require_admin)
     ):
         """Assign an icon to a category/subcategory/attribute"""
-        existing = db.attribute_icons.find_one({"id": icon_id})
+        existing = await db.attribute_icons.find_one({"id": icon_id})
         if not existing:
             raise HTTPException(status_code=404, detail="Icon not found")
         
-        db.attribute_icons.update_one(
+        await db.attribute_icons.update_one(
             {"id": icon_id},
             {"$set": {
                 "category_id": category_id,
@@ -527,10 +512,11 @@ def create_attribute_icons_router(db, require_admin):
     @router.get("/mappings")
     async def get_icon_mappings(current_user: dict = Depends(require_admin)):
         """Get all icon mappings organized by category"""
-        icons = list(db.attribute_icons.find(
+        cursor = db.attribute_icons.find(
             {"is_active": True},
             {"_id": 0, "id": 1, "name": 1, "category_id": 1, "subcategory_id": 1, "attribute_name": 1, "icon_type": 1}
-        ))
+        )
+        icons = await cursor.to_list(length=1000)
         
         # Organize by category
         mappings = {}
