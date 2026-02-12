@@ -169,7 +169,7 @@ async def send_bulk_push_notifications(
                 try:
                     response.validate_response()
                     sent += 1
-                except:
+                except Exception:
                     failed += 1
     except Exception as e:
         logger.error(f"Bulk push error: {e}")
