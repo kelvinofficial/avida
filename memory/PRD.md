@@ -55,6 +55,33 @@ Added red notification dots with counts to sidebar items:
   - Only displays for authenticated users
 - Test report: `/app/test_reports/iteration_119.json` - 100% pass (backend + code review)
 
+#### New Message Sound Notification (2026-02-12) ✅
+Added subtle "ding" notification sound when unread message count increases:
+- Uses Web Audio API (AudioContext) for browser compatibility
+- Plays 880Hz sine wave for 0.3 seconds
+- Only triggers when unread count increases (not on first page load)
+- Falls back gracefully if audio not supported
+- Test report: `/app/test_reports/iteration_120.json` - 100% pass
+
+#### Enhanced Quick Stats Metrics (2026-02-12) ✅
+Expanded Quick Stats card from 3 to 5 metrics:
+- **Listings**: Active listing count
+- **Offers**: Pending offers count (with alert dot)
+- **Total Views**: Aggregated views across all user's listings
+- **Rating**: User rating (X.X format or "—" if no rating)
+- **Credits**: Credit balance
+- Color-coded icons for each metric (green, orange, purple, yellow, blue)
+- Test report: `/app/test_reports/iteration_120.json` - 100% pass
+
+#### Photography Guides Admin CRUD (2026-02-12) ✅
+Verified existing functionality at `/admin/photography-guides`:
+- Stats dashboard showing Total, Active, With Images, Categories
+- Category filter chips for filtering guides
+- Add/Edit/Delete guide functionality with icon picker
+- Seed Defaults button to create default guides
+- Image upload support (base64, max 2MB)
+- Test report: `/app/test_reports/iteration_120.json` - CRUD APIs verified
+
 #### Test Reports
 - `/app/test_reports/iteration_6.json` - Initial 8 pages
 - `/app/test_reports/iteration_117.json` - Final 3 pages (my-listings, purchases, sales) - 100% pass
