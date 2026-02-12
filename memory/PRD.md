@@ -577,6 +577,35 @@ form_configs: {
 
 ---
 
+### 2026-02-12: Admin Preview Mode for Form Configuration
+**COMPLETED**
+
+#### Feature Overview
+Added a "Preview Mode" button to the Admin Form Config page that lets admins see how their configurations will appear in the actual listing form. This helps admins visualize the impact of their configuration changes before users encounter them.
+
+#### Implementation Details
+- **Preview Mode Button**: Added to the Form Config page header (blue outlined button with preview icon)
+- **Preview Dialog**: Full-featured dialog showing simulated listing form
+- **Category Selector**: Dropdown to select which category to preview (15 categories available)
+- **Dynamic Preview Content**:
+  - Title and Description fields with category-specific placeholders
+  - Condition chips (hidden for certain categories)
+  - Price field (hidden for Friendship & Dating)
+  - "Listed by" dropdown with category-specific options
+  - Contact Methods section (shows "Chat only" for certain categories)
+  - Preferences toggles (Accept Offers, Accept Exchanges, Price Negotiable)
+- **Active Configuration Summary**: Shows status of each config type for the selected category
+- **Filter Button**: "Filter Configs for This Category" button to quickly filter the main table
+
+#### Key Files Modified
+- `/app/admin-dashboard/frontend/src/app/dashboard/form-config/page.tsx`: Added Preview Mode button, dialog, and getPreviewData function
+
+#### Testing
+- All 12 features tested and verified working (100% pass rate)
+- Test report: `/app/test_reports/iteration_105.json`
+
+---
+
 ## Upcoming Tasks (Priority Order)
 
 ### P1: Form Validation Warnings
