@@ -77,8 +77,9 @@ const QuickStatsCard: React.FC = () => {
         ]);
 
         // Count pending offers from seller view
-        const pendingOffers = Array.isArray(offersRes.data) 
-          ? offersRes.data.filter((offer: any) => offer.status === 'pending').length 
+        const offersArray = offersRes.data?.offers || offersRes.data || [];
+        const pendingOffers = Array.isArray(offersArray) 
+          ? offersArray.filter((offer: any) => offer.status === 'pending').length 
           : 0;
 
         setStats({
