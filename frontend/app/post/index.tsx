@@ -47,6 +47,7 @@ import {
   shouldHideCondition,
   isChatOnlyCategory,
   CATEGORY_PREFERENCES,
+  getListingTips,
 } from '../../src/config/listingFormConfig';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
