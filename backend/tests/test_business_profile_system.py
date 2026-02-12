@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime, timezone
 
 # Base URL from environment - use the public URL
-BASE_URL = "https://dynamic-listings-2.preview.emergentagent.com"
+BASE_URL = "https://listing-form-builder.preview.emergentagent.com"
 
 
 class TestBusinessProfilePublicEndpoints:

@@ -8,7 +8,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = "https://dynamic-listings-2.preview.emergentagent.com/api/admin"
+BASE_URL = "https://listing-form-builder.preview.emergentagent.com/api/admin"
 
 # Test credentials
 ADMIN_EMAIL = "admin@marketplace.com"

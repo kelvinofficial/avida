@@ -238,7 +238,7 @@ export default function ExecutiveSummaryPage() {
     setLoading(true);
     try {
       // Use main backend API for executive summary (not /admin/)
-      const baseUrl = process.env.NEXT_PUBLIC_MAIN_API_URL || 'https://dynamic-listings-2.preview.emergentagent.com/api';
+      const baseUrl = process.env.NEXT_PUBLIC_MAIN_API_URL || 'https://listing-form-builder.preview.emergentagent.com/api';
       const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -277,7 +277,7 @@ export default function ExecutiveSummaryPage() {
     setGenerating(true);
     setError('');
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_MAIN_API_URL || 'https://dynamic-listings-2.preview.emergentagent.com/api';
+      const baseUrl = process.env.NEXT_PUBLIC_MAIN_API_URL || 'https://listing-form-builder.preview.emergentagent.com/api';
       const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -302,7 +302,7 @@ export default function ExecutiveSummaryPage() {
 
   const updateConfig = async (updates: Partial<SummaryConfig>) => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_MAIN_API_URL || 'https://dynamic-listings-2.preview.emergentagent.com/api';
+      const baseUrl = process.env.NEXT_PUBLIC_MAIN_API_URL || 'https://listing-form-builder.preview.emergentagent.com/api';
       const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
