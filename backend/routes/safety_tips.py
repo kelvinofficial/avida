@@ -135,10 +135,11 @@ def create_safety_tips_router(db, require_admin):
     async def get_public_safety_tips(category_id: str):
         """Get safety tips for a specific category (public endpoint)"""
         try:
-            tips = list(db.safety_tips.find(
+            cursor = db.safety_tips.find(
                 {"category_id": category_id, "is_active": True},
                 {"_id": 0}
-            ).sort("order", 1))
+            ).sort("order", 1)
+            tips = await cursor.to_list(length=100)
             
             if not tips:
                 # Return default tips if no custom tips exist
