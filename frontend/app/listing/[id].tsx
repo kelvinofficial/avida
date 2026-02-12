@@ -1537,7 +1537,7 @@ export default function ListingDetailScreen() {
         <HighlightsSection highlights={highlights} />
 
         {/* Key Details */}
-        <KeyDetailsSection listing={listing} category={category} getIconForAttribute={getIconForAttribute} />
+        <KeyDetailsSection listing={listing} category={category} getIconForAttribute={getIconForAttribute} getIconColorForAttribute={getIconColorForAttribute} />
 
         {/* Description */}
         {listing.description && <DescriptionSection description={listing.description} />}
