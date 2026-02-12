@@ -571,17 +571,7 @@ const LocationSection = memo(({ listing }: { listing: Listing }) => (
       </View>
     </View>
     
-    {/* Action Buttons */}
-    <View style={locationStyles.actions}>
-      <TouchableOpacity style={locationStyles.actionBtn}>
-        <Ionicons name="navigate-outline" size={18} color={COLORS.primary} />
-        <Text style={locationStyles.actionText}>Get Directions</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={locationStyles.actionBtn}>
-        <Ionicons name="share-outline" size={18} color={COLORS.primary} />
-        <Text style={locationStyles.actionText}>Share Location</Text>
-      </TouchableOpacity>
-    </View>
+    {/* Action Buttons removed per user request */}
   </View>
 ));
 

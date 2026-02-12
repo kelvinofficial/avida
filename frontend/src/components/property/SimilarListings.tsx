@@ -819,24 +819,7 @@ const SimilarListings: React.FC<SimilarListingsProps> = ({ propertyId, category 
         <Text style={styles.countText}>{listings.length} found</Text>
       </View>
       
-      {/* Filter Chips */}
-      <View style={styles.filtersRow}>
-        <FilterChip 
-          label="Same City" 
-          active={filterSameCity} 
-          onPress={() => setFilterSameCity(!filterSameCity)} 
-        />
-        <FilterChip 
-          label="Similar Price" 
-          active={filterSamePriceRange} 
-          onPress={() => setFilterSamePriceRange(!filterSamePriceRange)} 
-        />
-        <FilterChip 
-          label="Verified Only" 
-          active={filterVerifiedOnly} 
-          onPress={() => setFilterVerifiedOnly(!filterVerifiedOnly)} 
-        />
-      </View>
+      {/* Filter chips removed per user request */}
     </View>
   );
 
