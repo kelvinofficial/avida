@@ -72,13 +72,18 @@ const QuickStatsCard: React.FC = () => {
         // Fetch multiple stats in parallel
         const [listingsRes, offersRes, creditsRes] = await Promise.all([
           api.get('/listings/my?page=1&limit=1').catch(() => ({ data: { total: 0 } })),
-          api.get('/offers/received?status=pending').catch(() => ({ data: [] })),
+          api.get('/offers?role=seller').catch(() => ({ data: [] })),
           api.get('/boost/credits/balance').catch(() => ({ data: { balance: 0 } })),
         ]);
 
+        // Count pending offers from seller view
+        const pendingOffers = Array.isArray(offersRes.data) 
+          ? offersRes.data.filter((offer: any) => offer.status === 'pending').length 
+          : 0;
+
         setStats({
           activeListings: listingsRes.data?.total || listingsRes.data?.length || 0,
-          pendingOffers: Array.isArray(offersRes.data) ? offersRes.data.length : (offersRes.data?.total || 0),
+          pendingOffers: pendingOffers,
           totalViews: 0, // Will calculate from analytics if available
           creditBalance: creditsRes.data?.balance || 0,
         });
