@@ -996,4 +996,41 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  colorPickerContainer: {
+    marginTop: 4,
+  },
+  colorSwatches: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  colorSwatch: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  colorSwatchSelected: {
+    borderColor: '#333',
+    borderWidth: 2,
+  },
+  colorInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  colorPreview: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  colorInput: {
+    flex: 1,
+  },
 });
