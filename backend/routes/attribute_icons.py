@@ -138,7 +138,8 @@ def create_attribute_icons_router(db, require_admin):
         if icon_type:
             query["icon_type"] = icon_type
         
-        icons = list(db.attribute_icons.find(query, {"_id": 0}))
+        cursor = db.attribute_icons.find(query, {"_id": 0})
+        icons = await cursor.to_list(length=1000)
         return {"icons": icons, "total": len(icons)}
     
     @router.get("/public/{icon_id}")
