@@ -1,10 +1,11 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
 import { DesktopHeader } from './DesktopHeader';
 import { Footer } from './Footer';
 import { useAuthStore } from '../../store/authStore';
+import api from '../../utils/api';
 
 const MAX_WIDTH = 1280;
 
