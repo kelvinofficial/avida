@@ -110,6 +110,151 @@ const validationStyles = StyleSheet.create({
   },
 });
 
+// ============ ERROR BANNER COMPONENT ============
+interface ErrorBannerProps {
+  errors: FieldErrors;
+  visible: boolean;
+  onDismiss: () => void;
+}
+
+const ErrorBanner: React.FC<ErrorBannerProps> = ({ errors, visible, onDismiss }) => {
+  const [slideAnim] = useState(new Animated.Value(-100));
+  const errorList = Object.entries(errors);
+  const errorCount = errorList.length;
+
+  useEffect(() => {
+    Animated.spring(slideAnim, {
+      toValue: visible ? 0 : -100,
+      useNativeDriver: true,
+      tension: 100,
+      friction: 12,
+    }).start();
+  }, [visible]);
+
+  if (!visible || errorCount === 0) return null;
+
+  return (
+    <Animated.View 
+      style={[
+        errorBannerStyles.container, 
+        { transform: [{ translateY: slideAnim }] }
+      ]}
+    >
+      <View style={errorBannerStyles.header}>
+        <View style={errorBannerStyles.iconWrapper}>
+          <Ionicons name="alert-circle" size={20} color="#fff" />
+        </View>
+        <View style={errorBannerStyles.titleWrapper}>
+          <Text style={errorBannerStyles.title}>
+            Please fix {errorCount} error{errorCount > 1 ? 's' : ''}
+          </Text>
+          <Text style={errorBannerStyles.subtitle}>
+            Complete the required fields to continue
+          </Text>
+        </View>
+        <TouchableOpacity onPress={onDismiss} style={errorBannerStyles.closeButton}>
+          <Ionicons name="close" size={20} color="#fff" />
+        </TouchableOpacity>
+      </View>
+      <View style={errorBannerStyles.errorList}>
+        {errorList.slice(0, 3).map(([field, message], index) => (
+          <View key={field} style={errorBannerStyles.errorItem}>
+            <View style={errorBannerStyles.errorBullet} />
+            <Text style={errorBannerStyles.errorText} numberOfLines={1}>
+              {message}
+            </Text>
+          </View>
+        ))}
+        {errorCount > 3 && (
+          <Text style={errorBannerStyles.moreErrors}>
+            +{errorCount - 3} more error{errorCount - 3 > 1 ? 's' : ''}
+          </Text>
+        )}
+      </View>
+    </Animated.View>
+  );
+};
+
+const errorBannerStyles = StyleSheet.create({
+  container: {
+    backgroundColor: COLORS.error,
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 8,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  iconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleWrapper: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  subtitle: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.85)',
+    marginTop: 2,
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorList: {
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 6,
+  },
+  errorItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  errorBullet: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+  },
+  errorText: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.9)',
+    flex: 1,
+  },
+  moreErrors: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.7)',
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
+});
+
 // ============ FORM FIELD ERRORS STATE ============
 interface FieldErrors {
   [key: string]: string;
