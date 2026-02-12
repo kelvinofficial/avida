@@ -1276,7 +1276,7 @@ export default function CategoryScreen() {
                 </View>
               )}
               {/* Autocomplete Suggestions Dropdown - Desktop */}
-              {showSuggestions && searchQuery.length >= 2 && suggestions.length > 0 && (
+              {searchQuery.length >= 2 && suggestions.length > 0 && (
                 <View style={desktopStyles.recentSearchesDropdown}>
                   <View style={desktopStyles.recentSearchesHeader}>
                     <View style={desktopStyles.recentSearchesTitleRow}>
