@@ -2467,96 +2467,10 @@ async def get_past_seasonal_badges(
 
 # NOTE: /streaks/leaderboard is now handled by routes/streaks.py
 
-# ==================== BLOCKED USERS ENDPOINTS ====================
-
-@api_router.get("/blocked-users")
-async def get_blocked_users(request: Request):
-    """Get list of blocked users"""
-    user = await require_auth(request)
-    
-    blocked = await db.blocked_users.find({"user_id": user.user_id}, {"_id": 0}).to_list(100)
-    
-    # Get user details for blocked users
-    blocked_user_ids = [b["blocked_user_id"] for b in blocked]
-    users = await db.users.find({"user_id": {"$in": blocked_user_ids}}, {"_id": 0, "user_id": 1, "name": 1, "picture": 1}).to_list(100)
-    
-    users_map = {u["user_id"]: u for u in users}
-    
-    result = []
-    for b in blocked:
-        user_data = users_map.get(b["blocked_user_id"], {})
-        result.append({
-            "id": b["id"],
-            "blocked_user_id": b["blocked_user_id"],
-            "name": user_data.get("name", "Unknown User"),
-            "picture": user_data.get("picture"),
-            "reason": b.get("reason"),
-            "created_at": b.get("created_at")
-        })
-    
-    return {"blocked_users": result}
-
-@api_router.post("/blocked-users")
-async def block_user(request: Request):
-    """Block a user"""
-    user = await require_auth(request)
-    body = await request.json()
-    
-    blocked_user_id = body.get("blocked_user_id")
-    if not blocked_user_id:
-        raise HTTPException(status_code=400, detail="blocked_user_id required")
-    
-    if blocked_user_id == user.user_id:
-        raise HTTPException(status_code=400, detail="Cannot block yourself")
-    
-    # Check if already blocked
-    existing = await db.blocked_users.find_one({
-        "user_id": user.user_id,
-        "blocked_user_id": blocked_user_id
-    })
-    
-    if existing:
-        raise HTTPException(status_code=400, detail="User already blocked")
-    
-    blocked = BlockedUser(
-        user_id=user.user_id,
-        blocked_user_id=blocked_user_id,
-        reason=body.get("reason")
-    )
-    
-    blocked_dict = blocked.model_dump()
-    blocked_dict["created_at"] = datetime.now(timezone.utc)
-    
-    await db.blocked_users.insert_one(blocked_dict)
-    
-    # Also add to user's blocked_users array
-    await db.users.update_one(
-        {"user_id": user.user_id},
-        {"$addToSet": {"blocked_users": blocked_user_id}}
-    )
-    
-    return {"message": "User blocked successfully", "id": blocked.id}
-
-@api_router.delete("/blocked-users/{blocked_user_id}")
-async def unblock_user(blocked_user_id: str, request: Request):
-    """Unblock a user"""
-    user = await require_auth(request)
-    
-    result = await db.blocked_users.delete_one({
-        "user_id": user.user_id,
-        "blocked_user_id": blocked_user_id
-    })
-    
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Blocked user not found")
-    
-    # Also remove from user's blocked_users array
-    await db.users.update_one(
-        {"user_id": user.user_id},
-        {"$pull": {"blocked_users": blocked_user_id}}
-    )
-    
-    return {"message": "User unblocked successfully"}
+# NOTE: Blocked Users endpoints moved to routes/users.py
+# - GET /users/blocked - Get list of blocked users
+# - POST /users/block/{user_id} - Block a user
+# - POST /users/unblock/{user_id} - Unblock a user
 
 # ==================== PROFILE ENDPOINTS ====================
 
