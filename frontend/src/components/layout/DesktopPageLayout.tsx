@@ -43,8 +43,178 @@ const SIDEBAR_LINKS: SidebarLink[] = [
   { id: 'boost', label: 'Boost Listings', icon: 'rocket-outline', route: '/boost' },
   { id: 'divider2', label: '', icon: 'remove', route: '' },
   { id: 'business', label: 'Business Profile', icon: 'storefront-outline', route: '/business/edit' },
+  { id: 'profile', label: 'My Profile', icon: 'person-outline', route: '/profile' },
   { id: 'settings', label: 'Settings', icon: 'settings-outline', route: '/settings' },
 ];
+
+// Quick Stats Component
+interface QuickStats {
+  activeListings: number;
+  pendingOffers: number;
+  totalViews: number;
+  creditBalance: number;
+}
+
+const QuickStatsCard: React.FC = () => {
+  const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
+  const [stats, setStats] = useState<QuickStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchStats = async () => {
+      try {
+        // Fetch multiple stats in parallel
+        const [listingsRes, offersRes, creditsRes] = await Promise.all([
+          api.get('/listings/my?page=1&limit=1').catch(() => ({ data: { total: 0 } })),
+          api.get('/offers/received?status=pending').catch(() => ({ data: [] })),
+          api.get('/boost/credits/balance').catch(() => ({ data: { balance: 0 } })),
+        ]);
+
+        setStats({
+          activeListings: listingsRes.data?.total || listingsRes.data?.length || 0,
+          pendingOffers: Array.isArray(offersRes.data) ? offersRes.data.length : (offersRes.data?.total || 0),
+          totalViews: 0, // Will calculate from analytics if available
+          creditBalance: creditsRes.data?.balance || 0,
+        });
+      } catch (error) {
+        console.error('Error fetching quick stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [isAuthenticated]);
+
+  if (!isAuthenticated) return null;
+
+  return (
+    <View style={quickStatsStyles.container}>
+      <Text style={quickStatsStyles.title}>Quick Stats</Text>
+      
+      {loading ? (
+        <View style={quickStatsStyles.loadingContainer}>
+          <ActivityIndicator size="small" color={COLORS.primary} />
+        </View>
+      ) : (
+        <View style={quickStatsStyles.grid}>
+          <TouchableOpacity 
+            style={quickStatsStyles.statItem}
+            onPress={() => router.push('/profile/my-listings')}
+            data-testid="quick-stats-listings"
+          >
+            <View style={[quickStatsStyles.statIcon, { backgroundColor: '#E8F5E9' }]}>
+              <Ionicons name="list" size={16} color={COLORS.primary} />
+            </View>
+            <View style={quickStatsStyles.statInfo}>
+              <Text style={quickStatsStyles.statValue}>{stats?.activeListings || 0}</Text>
+              <Text style={quickStatsStyles.statLabel}>Listings</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={quickStatsStyles.statItem}
+            onPress={() => router.push('/offers')}
+            data-testid="quick-stats-offers"
+          >
+            <View style={[quickStatsStyles.statIcon, { backgroundColor: '#FFF3E0' }]}>
+              <Ionicons name="pricetag" size={16} color="#F57C00" />
+            </View>
+            <View style={quickStatsStyles.statInfo}>
+              <Text style={quickStatsStyles.statValue}>{stats?.pendingOffers || 0}</Text>
+              <Text style={quickStatsStyles.statLabel}>Offers</Text>
+            </View>
+            {(stats?.pendingOffers || 0) > 0 && (
+              <View style={quickStatsStyles.alertDot} />
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={quickStatsStyles.statItem}
+            onPress={() => router.push('/credits')}
+            data-testid="quick-stats-credits"
+          >
+            <View style={[quickStatsStyles.statIcon, { backgroundColor: '#E3F2FD' }]}>
+              <Ionicons name="wallet" size={16} color="#1976D2" />
+            </View>
+            <View style={quickStatsStyles.statInfo}>
+              <Text style={quickStatsStyles.statValue}>{stats?.creditBalance || 0}</Text>
+              <Text style={quickStatsStyles.statLabel}>Credits</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
+};
+
+const quickStatsStyles = StyleSheet.create({
+  container: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 12,
+  },
+  loadingContainer: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  grid: {
+    gap: 10,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: COLORS.background,
+    position: 'relative',
+  },
+  statIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statInfo: {
+    flex: 1,
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  statLabel: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+  },
+  alertDot: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#EF4444',
+  },
+});
 
 interface DesktopPageLayoutProps {
   children: React.ReactNode;
