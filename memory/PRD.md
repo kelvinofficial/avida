@@ -1618,21 +1618,60 @@ Added 4 new subcategories to the "Friendship & Dating" category as requested:
 
 ---
 
+### 2026-02-12: Server.py Refactoring - Duplicate Route Cleanup
+**COMPLETED**
+
+#### Duplicate Routes Removed from server.py
+Removed duplicate endpoints that were already handled by modular route files:
+
+**Badge Endpoints Removed (routes/badges.py handles these):**
+- `/badges/progress` 
+- `/badges/showcase`
+- `/badges/unviewed-count`
+- `/badges/mark-viewed`
+- `/badges/leaderboard`
+- `/badges/leaderboard/my-rank`
+
+**Streak Endpoints Removed (routes/streaks.py handles these):**
+- `/streaks/leaderboard`
+
+#### Async Bug Fixes in Modular Routes
+Fixed critical async/await issues in route files that were using synchronous MongoDB operations:
+
+**routes/badges.py:**
+- Fixed all `list(db.collection.find(...))` to `await db.collection.find(...).to_list()`
+- Fixed all `db.collection.count_documents(...)` to `await db.collection.count_documents(...)`
+- Fixed all `db.collection.find_one(...)` to `await db.collection.find_one(...)`
+- Fixed all `db.collection.update_many(...)` to `await db.collection.update_many(...)`
+- Fixed all `db.collection.insert_one(...)` to `await db.collection.insert_one(...)`
+- Fixed aggregate operations to use proper async patterns
+
+**routes/streaks.py:**
+- Fixed synchronous find/count operations to async equivalents
+
+#### Line Count Reduction
+- Previous: 5287 lines
+- Current: 4993 lines
+- Removed: 294 lines (~5.6% additional reduction)
+
+---
+
 ## Backlog / Future Tasks
 
 ### P1 - Server.py Refactoring (Ongoing)
-Current state: 5287 lines (down from ~8881, ~40% reduction)
+Current state: 4993 lines (down from ~8881, ~44% reduction)
 
 **Remaining sections to extract:**
-1. Badge Challenges section (lines 1367-2513) - ~1147 lines
-   - Note: Potential conflicts with routes/challenges.py - needs careful deduplication
-2. Badge Milestones section (lines 2967-3267) - ~300 lines
-3. User Badges (Public) section (lines 2776-2966) - ~190 lines
-4. Email Service section (lines 3278-3406) - ~128 lines
-5. Email Verification section (lines 3406-3470) - ~64 lines
-6. Media Upload section (lines 735-801) - ~66 lines
-7. Reports section (lines 802-822) - ~20 lines
+1. Badge Challenges section (~1147 lines) - Contains challenge definitions and helper functions
+2. Badge Milestones section (~300 lines) - More comprehensive than routes/badges.py version
+3. User Badges Public endpoints (~190 lines)
+4. Email Service functions (~128 lines)
+5. Email Verification routes (~64 lines)
+6. Media Upload routes (~66 lines)
+7. Reports routes (~20 lines)
+8. Blocked Users endpoints (~90 lines)
+9. Profile endpoints (~170 lines)
 
 **Known Issues:**
-- Duplicate challenge endpoints exist in both server.py and routes/challenges.py
-- Need to audit and consolidate before further refactoring
+- routes/challenges.py exists but server.py has more comprehensive challenge logic
+- Careful consolidation needed before further extraction
