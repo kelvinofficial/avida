@@ -426,6 +426,17 @@ export default function PostListingScreen() {
 
   // Form Validation Errors
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [showErrorBanner, setShowErrorBanner] = useState(false);
+
+  // Auto-hide error banner after 5 seconds
+  useEffect(() => {
+    if (showErrorBanner && Object.keys(fieldErrors).length > 0) {
+      const timer = setTimeout(() => {
+        setShowErrorBanner(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showErrorBanner, fieldErrors]);
 
   // Load existing listing data when in edit mode
   useEffect(() => {
