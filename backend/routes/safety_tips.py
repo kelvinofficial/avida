@@ -101,6 +101,20 @@ DEFAULT_SAFETY_TIPS = {
         "Get everything in writing",
         "Check references and previous work"
     ],
+    "friendship_dating": [
+        "Always meet in a public place for first meetings",
+        "Tell a friend or family member about your plans",
+        "Never share personal financial information",
+        "Trust your instincts - leave if you feel uncomfortable",
+        "Use video calls before meeting in person"
+    ],
+    "community": [
+        "Meet in a public place for any exchanges",
+        "Verify the person's identity before meeting",
+        "Don't share personal information until you trust them",
+        "Use the platform's messaging system",
+        "Report any suspicious behavior"
+    ],
     "default": [
         "Meet in a public place",
         "Don't send money before seeing the item",
