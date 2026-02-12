@@ -1443,6 +1443,13 @@ const styles = StyleSheet.create({
   unauthScrollView: {
     flex: 1,
   },
+  unauthHeader: {
+    backgroundColor: COLORS.surface,
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingTop: 12,
+    paddingBottom: 12,
+  },
   unauthContainer: {
     flexGrow: 1,
     justifyContent: 'center',
