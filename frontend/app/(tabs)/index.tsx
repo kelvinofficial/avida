@@ -709,22 +709,17 @@ export default function HomeScreen() {
             city_code: selectedCity.city_code,
             city_lat: selectedCity.lat,
             city_lng: selectedCity.lng,
-            include_nearby: includeNearbyCities,
+            include_nearby: false,
             radius: searchRadius,
             category: selectedCategory || undefined,
             page: refresh ? 1 : page,
             limit: 20,
-            only_my_city: !includeNearbyCities,
+            only_my_city: true,
           });
           
-          // Handle expanded search message
-          if (listingsRes.expanded_search) {
-            setExpandedSearch(true);
-            setExpandedSearchMessage(listingsRes.message);
-          } else {
-            setExpandedSearch(false);
-            setExpandedSearchMessage(null);
-          }
+          // Handle expanded search message (disabled)
+          setExpandedSearch(false);
+          setExpandedSearchMessage(null);
           
           categoriesRes = await categoriesApi.getAll();
         } catch (error) {
