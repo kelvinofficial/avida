@@ -51,7 +51,7 @@ Added red notification dots with counts to sidebar items:
 - Features:
   - Red dot badge with white text
   - Numbers capped at "99+" for high counts
-  - Auto-refreshes every 30 seconds
+  - Auto-refreshes every 10 seconds (upgraded from 30s for near real-time updates)
   - Only displays for authenticated users
 - Test report: `/app/test_reports/iteration_119.json` - 100% pass (backend + code review)
 
@@ -60,8 +60,33 @@ Added subtle "ding" notification sound when unread message count increases:
 - Uses Web Audio API (AudioContext) for browser compatibility
 - Plays 880Hz sine wave for 0.3 seconds
 - Only triggers when unread count increases (not on first page load)
+- Respects user preference (can be muted in Settings)
 - Falls back gracefully if audio not supported
 - Test report: `/app/test_reports/iteration_120.json` - 100% pass
+
+#### Notification Sound Preferences Toggle (2026-02-12) ✅
+Added "Message Sound" toggle to Settings page:
+- Available in both desktop and mobile notification settings
+- Description: "Play a sound when new messages arrive"
+- Uses `notificationPrefsStore` (Zustand) with localStorage persistence
+- Toggle persists across sessions
+- Files: `/app/frontend/src/store/notificationPrefsStore.ts`, `/app/frontend/app/settings.tsx`
+- Test report: `/app/test_reports/iteration_121.json` - 100% pass
+
+#### Near Real-Time Polling (2026-02-12) ✅
+Upgraded polling interval from 30s to 10s for:
+- Notification badges (unread messages, pending offers)
+- Quick Stats metrics
+- File: `/app/frontend/src/components/layout/DesktopPageLayout.tsx` line 381
+- Test report: `/app/test_reports/iteration_121.json` - 100% pass
+
+#### Premium Subscription E2E Verification (2026-02-12) ✅
+Verified premium subscription flow:
+- Packages API: GET `/api/premium-subscription/packages` returns Stripe and M-Pesa packages
+- Stripe checkout: POST `/api/premium-subscription/stripe/checkout` returns checkout_url
+- My subscription: GET `/api/premium-subscription/my-subscription` returns premium status
+- Success page: `/premium/success` handles checking, success, pending, error states
+- Test report: `/app/test_reports/iteration_121.json` - 100% pass (21/21 backend tests)
 
 #### Enhanced Quick Stats Metrics (2026-02-12) ✅
 Expanded Quick Stats card from 3 to 5 metrics:
