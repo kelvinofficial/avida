@@ -2487,3 +2487,38 @@ Generated and added illustration images for ALL 60 photography guides across 15 
 **API Verification:**
 - Verified via `/api/photography-guides/public/{category_id}` endpoints
 - All categories return guides with `image_url` populated
+
+### 2026-02-12: Admin Enhancements & Task Investigation
+**COMPLETED**
+
+#### P1: Image Preview Modal (Admin Photography Guides)
+- Added clickable "Has Image" chips in the guides table
+- When clicked, fetches the full guide with image and opens preview modal
+- Dark-themed modal with full-size image display, title, and close button
+- Files modified: `/app/admin-dashboard/frontend/src/app/dashboard/photography-guides/page.tsx`
+
+#### P2: AnimatedIcon Components Investigation
+- **RESOLVED**: Searched codebase for `AnimatedIcon` and `DesktopAnimatedIcon`
+- Found only `AnimatedIconBox` component in `/app/frontend/app/listing/[id].tsx`
+- No separate `DesktopAnimatedIcon` exists - the refactoring task is obsolete
+- Component is properly implemented as a memoized functional component
+
+#### P2: Import from JSON Feature (Form Config)
+- **ALREADY IMPLEMENTED**: Feature exists in `/app/admin-dashboard/frontend/src/app/dashboard/form-config/page.tsx`
+- `handleImportJson` function handles JSON file imports (lines 455-638)
+- Validates JSON structure, extracts configuration data
+- Creates/updates placeholders, seller types, preferences, and visibility rules
+- Shows success/error feedback with counts of created/updated configs
+
+#### P2: Admin Photography Guides Content Management
+- **ALREADY EXISTS**: Full CRUD interface at `/admin/photography-guides`
+- Drag-and-drop reordering, icon picker, image upload
+- Category filtering, stats dashboard, seed defaults functionality
+
+---
+
+## Backlog (Resolved)
+
+### Previously P2: Refactor AnimatedIcon Components
+- **STATUS**: CLOSED - No action needed
+- Investigation found no duplicate components to merge
