@@ -154,16 +154,13 @@ export default function FormConfigPage() {
   const fetchConfigs = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('admin_token');
       
-      let url = '/api/admin/form-config?limit=100';
+      let url = '/form-config?limit=100';
       if (filterCategory) url += `&category_id=${filterCategory}`;
       if (filterType) url += `&config_type=${filterType}`;
       
-      const response = await api.get(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setConfigs(response.data.configs || []);
+      const response = await api.get(url);
+      setConfigs(response.configs || []);
     } catch (error) {
       console.error('Error fetching configs:', error);
     } finally {
@@ -173,11 +170,8 @@ export default function FormConfigPage() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const token = localStorage.getItem('admin_token');
-      const response = await api.get('/api/admin/form-config/stats', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setStats(response.data);
+      const response = await api.get('/form-config/stats');
+      setStats(response);
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
@@ -190,11 +184,8 @@ export default function FormConfigPage() {
 
   const handleSeedDefaults = async () => {
     try {
-      const token = localStorage.getItem('admin_token');
-      const response = await api.post('/api/admin/form-config/seed', {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      alert(`${response.data.message}`);
+      const response = await api.post('/form-config/seed');
+      alert(`${response.message}`);
       fetchConfigs();
       fetchStats();
     } catch (error) {
