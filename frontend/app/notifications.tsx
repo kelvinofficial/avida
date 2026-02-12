@@ -43,7 +43,7 @@ const COLORS = {
   systemColor: '#6B7280',
 };
 
-type NotificationType = 'message' | 'follow' | 'review' | 'price_drop' | 'system' | 'offer_received' | 'offer_accepted' | 'offer_rejected';
+type NotificationType = 'message' | 'follow' | 'review' | 'price_drop' | 'system' | 'offer_received' | 'offer_accepted' | 'offer_rejected' | 'badge' | 'challenge' | 'credit';
 
 interface Notification {
   id: string;
