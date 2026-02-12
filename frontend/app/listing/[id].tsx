@@ -1283,14 +1283,12 @@ export default function ListingDetailScreen() {
                   <Text style={desktopStyles.sectionTitle}>Safety Tips</Text>
                 </View>
                 <View style={desktopStyles.safetyTips}>
-                  <View style={desktopStyles.safetyTip}>
-                    <Ionicons name="checkmark-circle" size={14} color={COLORS.primary} />
-                    <Text style={desktopStyles.safetyTipText}>Meet in a public place</Text>
-                  </View>
-                  <View style={desktopStyles.safetyTip}>
-                    <Ionicons name="checkmark-circle" size={14} color={COLORS.primary} />
-                    <Text style={desktopStyles.safetyTipText}>Check the item before paying</Text>
-                  </View>
+                  {safetyTips.slice(0, 3).map((tip, index) => (
+                    <View key={index} style={desktopStyles.safetyTip}>
+                      <Ionicons name="checkmark-circle" size={14} color={COLORS.primary} />
+                      <Text style={desktopStyles.safetyTipText}>{tip.tip_text}</Text>
+                    </View>
+                  ))}
                 </View>
                 <View style={desktopStyles.footerRow}>
                   <Text style={desktopStyles.listingId}>ID: {listing?.id ? listing.id.slice(0, 8).toUpperCase() : 'N/A'}</Text>
