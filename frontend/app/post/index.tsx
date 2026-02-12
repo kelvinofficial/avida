@@ -1026,10 +1026,7 @@ export default function PostListingScreen() {
                     desktopStyles.categoryCardInner,
                     selectedCategoryId === cat.id && desktopStyles.categoryCardSelected,
                   ]}
-                  onPress={() => {
-                    setSelectedCategoryId(cat.id);
-                    setSelectedSubcategoryId('');
-                  }}
+                  onPress={() => handleCategorySelect(cat.id)}
                 >
                   <View style={[
                     styles.categoryIconWrapper,
