@@ -530,6 +530,22 @@ export default function PhotographyGuidesPage() {
     return cat?.name || categoryId;
   };
 
+  // Handle image preview
+  const handleImagePreview = async (guide: PhotographyGuide) => {
+    if (!guide.has_image) return;
+    
+    try {
+      const fullGuide = await api.get(`/photography-guides/${guide.id}`);
+      if (fullGuide.image_url) {
+        setPreviewModalImage(fullGuide.image_url);
+        setPreviewModalTitle(`${getCategoryName(guide.category_id)} - ${guide.title}`);
+        setPreviewModalOpen(true);
+      }
+    } catch (error) {
+      console.error('Error fetching guide image:', error);
+    }
+  };
+
   return (
     <Box>
       {/* Header */}
