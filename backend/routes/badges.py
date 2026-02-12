@@ -154,7 +154,7 @@ def create_badges_router(db, get_current_user, badge_service=None):
         user_id = current_user["user_id"]
         
         # Count user's badges
-        badge_count = db.user_badges.count_documents({"user_id": user_id})
+        badge_count = await db.user_badges.count_documents({"user_id": user_id})
         
         # Milestone definitions
         milestones = [
@@ -164,10 +164,11 @@ def create_badges_router(db, get_current_user, badge_service=None):
         ]
         
         # Get achieved milestones
-        achieved = list(db.user_milestones.find(
+        achieved_cursor = db.user_milestones.find(
             {"user_id": user_id},
             {"_id": 0}
-        ))
+        )
+        achieved = await achieved_cursor.to_list(length=100)
         achieved_ids = {m["milestone_id"] for m in achieved}
         
         result = []
@@ -184,7 +185,7 @@ def create_badges_router(db, get_current_user, badge_service=None):
     async def acknowledge_milestones(current_user: dict = Depends(get_current_user)):
         """Check and acknowledge newly achieved milestones."""
         user_id = current_user["user_id"]
-        badge_count = db.user_badges.count_documents({"user_id": user_id})
+        badge_count = await db.user_badges.count_documents({"user_id": user_id})
         
         milestones = [
             {"id": "first_badge", "name": "Badge Collector", "badge_count_required": 1, "icon": "medal", "color": "#FFD700", "points_value": 10},
@@ -192,13 +193,14 @@ def create_badges_router(db, get_current_user, badge_service=None):
             {"id": "badge_10", "name": "Badge Master", "badge_count_required": 10, "icon": "trophy", "color": "#9C27B0", "points_value": 50},
         ]
         
-        achieved = list(db.user_milestones.find({"user_id": user_id}, {"milestone_id": 1}))
+        achieved_cursor = db.user_milestones.find({"user_id": user_id}, {"milestone_id": 1})
+        achieved = await achieved_cursor.to_list(length=100)
         achieved_ids = {m["milestone_id"] for m in achieved}
         
         new_milestones = []
         for m in milestones:
             if m["id"] not in achieved_ids and badge_count >= m["badge_count_required"]:
-                db.user_milestones.insert_one({
+                await db.user_milestones.insert_one({
                     "user_id": user_id,
                     "milestone_id": m["id"],
                     "milestone_name": m["name"],
