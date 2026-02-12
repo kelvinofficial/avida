@@ -818,10 +818,23 @@ export default function CategoryScreen() {
         <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
-        <View style={{ flex: 1 }} />
-        <TouchableOpacity onPress={() => router.push('/search')} style={styles.searchButton}>
-          <Ionicons name="search" size={22} color={COLORS.text} />
-        </TouchableOpacity>
+        {/* Mobile Search Input */}
+        <View style={styles.mobileSearchContainer}>
+          <Ionicons name="search" size={18} color="#999" />
+          <TextInput
+            style={styles.mobileSearchInput}
+            placeholder={`Search in ${mainCategory?.name || 'category'}...`}
+            placeholderTextColor="#999"
+            value={searchQuery}
+            onChangeText={handleSearch}
+            data-testid="mobile-category-search-input"
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => handleSearch('')} style={{ padding: 4 }}>
+              <Ionicons name="close-circle" size={16} color="#999" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* Listings Grid with Header */}
