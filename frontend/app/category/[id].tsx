@@ -1172,6 +1172,32 @@ export default function CategoryScreen() {
                   )}
                 </View>
               )}
+              {/* Autocomplete Suggestions Dropdown - Desktop */}
+              {showSuggestions && searchQuery.length >= 2 && suggestions.length > 0 && (
+                <View style={desktopStyles.recentSearchesDropdown}>
+                  <View style={desktopStyles.recentSearchesHeader}>
+                    <View style={desktopStyles.recentSearchesTitleRow}>
+                      <Ionicons name="flash-outline" size={16} color={COLORS.primary} />
+                      <Text style={desktopStyles.recentSearchesTitle}>Suggestions</Text>
+                    </View>
+                  </View>
+                  {suggestions.map((suggestion, index) => (
+                    <TouchableOpacity 
+                      key={`suggestion-${suggestion.query}-${index}`}
+                      style={desktopStyles.recentSearchItem}
+                      onPress={() => applySuggestion(suggestion.query)}
+                    >
+                      <Ionicons name="search-outline" size={16} color={COLORS.primary} />
+                      <Text style={desktopStyles.recentSearchItemText}>{suggestion.query}</Text>
+                      {suggestion.count > 1 && (
+                        <Text style={{ fontSize: 12, color: COLORS.textLight, marginLeft: 'auto' }}>
+                          {suggestion.count} searches
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
             </View>
             <TouchableOpacity style={desktopStyles.locationChip} activeOpacity={0.7}>
               <Ionicons name="location" size={18} color="#2E7D32" />
