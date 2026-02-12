@@ -145,18 +145,38 @@ const carouselStyles = StyleSheet.create({
 });
 
 // ============ KEY DETAILS SECTION ============
-const KeyDetailsSection = memo(({ listing, category }: { listing: Listing; category: Category | null }) => {
+interface KeyDetailsSectionProps {
+  listing: Listing;
+  category: Category | null;
+  getIconForAttribute: (attr: string, catId?: string) => string;
+}
+
+const KeyDetailsSection = memo(({ listing, category, getIconForAttribute }: KeyDetailsSectionProps) => {
   const attributes = listing.attributes || {};
+  const categoryId = listing.category_id || category?.id;
+  
   const details = Object.entries(attributes).map(([key, value]) => ({
+    key,
     label: key.replace(/_/g, ' '),
     value: String(value),
+    icon: getIconForAttribute(key, categoryId),
   }));
 
   if (category) {
-    details.unshift({ label: 'Category', value: category.name });
+    details.unshift({ 
+      key: 'category',
+      label: 'Category', 
+      value: category.name,
+      icon: getIconForAttribute('category', categoryId),
+    });
   }
   if (listing.condition) {
-    details.push({ label: 'Condition', value: listing.condition });
+    details.push({ 
+      key: 'condition',
+      label: 'Condition', 
+      value: listing.condition,
+      icon: getIconForAttribute('condition', categoryId),
+    });
   }
 
   if (details.length === 0) return null;
@@ -168,7 +188,7 @@ const KeyDetailsSection = memo(({ listing, category }: { listing: Listing; categ
         {details.map((item, index) => (
           <View key={index} style={detailStyles.item}>
             <View style={detailStyles.iconBox}>
-              <Ionicons name="information-circle-outline" size={18} color={COLORS.primary} />
+              <Ionicons name={item.icon as any} size={18} color={ICON_COLOR} />
             </View>
             <View style={detailStyles.textBox}>
               <Text style={detailStyles.label}>{item.label}</Text>
