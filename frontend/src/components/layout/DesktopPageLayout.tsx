@@ -108,31 +108,7 @@ export const DesktopPageLayout: React.FC<DesktopPageLayoutProps> = ({
     </View>
   );
 
-  if (!isLargeScreen) {
-    // Mobile layout - no sidebar, simple header
-    return (
-      <SafeAreaView style={styles.mobileContainer} edges={['top']}>
-        {/* Mobile Header */}
-        <View style={styles.mobileHeader}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.mobileBackBtn}>
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <View style={styles.mobileHeaderCenter}>
-            {icon && <Ionicons name={icon} size={22} color={COLORS.primary} style={{ marginRight: 8 }} />}
-            <Text style={styles.mobileHeaderTitle}>{title}</Text>
-          </View>
-          {rightAction || <View style={{ width: 40 }} />}
-        </View>
-        
-        {/* Mobile Content */}
-        <View style={styles.mobileContent}>
-          {children}
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // Desktop layout with header and sidebar
+  // Desktop layout with header and sidebar (Always render desktop version - pages handle mobile/desktop branching)
   return (
     <View style={styles.desktopContainer}>
       {/* Desktop Header */}
