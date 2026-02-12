@@ -2254,3 +2254,86 @@ const desktopStyles = StyleSheet.create({
     color: COLORS.primary,
   },
 });
+
+// Messages desktop styles (for DesktopPageLayout)
+const messagesDesktopStyles = StyleSheet.create({
+  unauthContainer: {
+    paddingVertical: 40,
+  },
+  heroSection: {
+    alignItems: 'center',
+    marginBottom: 48,
+  },
+  heroIcon: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: '#E3F2FD',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  heroTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  heroSubtitle: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    maxWidth: 500,
+    lineHeight: 24,
+    marginBottom: 32,
+  },
+  signInBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primary,
+    paddingVertical: 16,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+    gap: 10,
+  },
+  signInBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  featuresGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 20,
+  },
+  featureCard: {
+    width: 220,
+    backgroundColor: COLORS.background,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+  },
+  featureIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  featureTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  featureDesc: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+});
