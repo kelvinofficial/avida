@@ -146,14 +146,14 @@ export const HIDE_PRICE_CATEGORIES = ['friendship_dating'];
 export const HIDE_PRICE_SUBCATEGORIES = ['job_seekers'];
 
 // Categories that show salary range instead of price
-export const SHOW_SALARY_SUBCATEGORIES = ['job_offers', 'job_seekers'];
+export const SHOW_SALARY_SUBCATEGORIES = ['job_listings'];
 
 // Categories that should only allow chat (no phone/whatsapp)
 export const CHAT_ONLY_CATEGORIES = ['friendship_dating'];
 
 // Categories that should hide condition (new/used)
 export const HIDE_CONDITION_CATEGORIES = ['friendship_dating', 'community'];
-export const HIDE_CONDITION_SUBCATEGORIES = ['job_seekers', 'job_offers', 'services_offered'];
+export const HIDE_CONDITION_SUBCATEGORIES = ['job_seekers', 'job_listings', 'services_offered'];
 
 // Category-specific preferences
 export interface PreferenceConfig {
