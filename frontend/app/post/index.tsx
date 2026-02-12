@@ -1580,7 +1580,12 @@ export default function PostListingScreen() {
             onChangeText={setTitle}
             maxLength={100}
           />
-          <Text style={styles.charCount}>{title.length}/100</Text>
+          <View style={styles.charCountRow}>
+            <Text style={[styles.minChars, title.length >= 10 && styles.minCharsValid]}>
+              Min: 10 chars {title.length >= 10 ? '✓' : ''}
+            </Text>
+            <Text style={styles.charCount}>{title.length}/100</Text>
+          </View>
         </View>
 
         <View style={styles.fieldContainer}>
@@ -1596,7 +1601,12 @@ export default function PostListingScreen() {
             maxLength={2000}
             textAlignVertical="top"
           />
-          <Text style={styles.charCount}>{description.length}/2000</Text>
+          <View style={styles.charCountRow}>
+            <Text style={[styles.minChars, description.length >= 20 && styles.minCharsValid]}>
+              Min: 20 chars {description.length >= 20 ? '✓' : ''}
+            </Text>
+            <Text style={styles.charCount}>{description.length}/2000</Text>
+          </View>
         </View>
 
         {/* Condition - Hidden for certain categories */}
