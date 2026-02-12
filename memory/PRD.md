@@ -678,17 +678,44 @@ Added an "Import from JSON" button to the Admin Form Config page's Preview Mode 
 
 ## Upcoming Tasks (Priority Order)
 
-### P2: Admin-Managed Photography Guides
-- Allow admins to upload/manage category-specific illustration images for "Tips for Great Listings"
-
 ### P2: Refactor AnimatedIcon Components
-- Merge duplicate `AnimatedIcon` and `DesktopAnimatedIcon` components in `frontend/src/components/AnimatedIcon.tsx`
+- ~~Merge duplicate `AnimatedIcon` and `DesktopAnimatedIcon` components in `frontend/src/components/AnimatedIcon.tsx`~~
+- **RESOLVED**: Investigation found no duplicate AnimatedIcon components exist. The `AnimatedIconBox` component is properly contained within `/app/frontend/app/listing/[id].tsx` and doesn't need refactoring.
+
+### Low Priority/Backlog
+- MUI Grid v2 migration (deprecated props warnings)
+- Chart width/height console warnings fix
 
 - Payments: Stripe, PayPal, M-Pesa
 - Storage: Base64 images in MongoDB
 - Email: SendGrid for subscription notifications
 
 ## Status
+
+### Recently Completed (2026-02-12)
+
+#### Import from JSON Feature ✅
+- Added "Import from JSON" button to Admin Form Config Preview Mode dialog
+- Validates JSON structure and imports placeholders, seller types, preferences, visibility rules
+- Test report: `/app/test_reports/iteration_107.json`
+
+#### Photography Guides Admin Feature ✅
+- **Admin Dashboard Page**: `/api/admin-ui/dashboard/photography-guides`
+  - Stats cards (Total, Active, With Images, Categories)
+  - Guides table with category filtering
+  - Add/Edit/Delete guide functionality
+  - Icon picker with common Ionicons
+  - Image upload (base64, max 2MB)
+  - Seed Defaults button (creates 36 default guides across 9 categories)
+- **Backend APIs**:
+  - Public: `GET /api/photography-guides/public/{category_id}` - Fetch guides for frontend
+  - Admin CRUD: List, Create, Update, Delete, Get single, Stats, Seed
+- **Files Modified**:
+  - `/app/admin-dashboard/frontend/src/app/dashboard/photography-guides/page.tsx` (Created)
+  - `/app/admin-dashboard/frontend/src/app/dashboard/layout.tsx` (Added sidebar link)
+  - `/app/admin-dashboard/backend/server.py` (Added photography guides endpoints)
+  - `/app/backend/server.py` (Added public proxy endpoint)
+- Test report: `/app/test_reports/iteration_108.json`
 
 ### Completed ✅
 - [x] Payment integration backend (Stripe, PayPal, M-Pesa)
