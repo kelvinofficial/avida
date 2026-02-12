@@ -996,6 +996,58 @@ export default function CategoryScreen() {
         </View>
       </View>
 
+      {/* Saved Filters Section (for authenticated users) */}
+      {isAuthenticated && (
+        <View style={desktopStyles.sidebarSection}>
+          <Text style={desktopStyles.sidebarSectionTitle}>SAVED FILTERS</Text>
+          
+          {/* Save Current Filters Button */}
+          {activeFilterCount > 0 && (
+            <TouchableOpacity 
+              style={desktopStyles.saveFilterBtn}
+              onPress={() => setShowSaveFilterModal(true)}
+            >
+              <Ionicons name="bookmark-outline" size={16} color={COLORS.primary} />
+              <Text style={desktopStyles.saveFilterBtnText}>Save Current Filters</Text>
+            </TouchableOpacity>
+          )}
+          
+          {/* List of saved filters */}
+          {savedFilters.length > 0 ? (
+            savedFilters.map((filter) => (
+              <View key={filter.id} style={desktopStyles.savedFilterItem}>
+                <TouchableOpacity 
+                  style={desktopStyles.savedFilterMain}
+                  onPress={() => applyFilterPreset(filter.filters)}
+                >
+                  <Ionicons 
+                    name={filter.is_default ? "bookmark" : "bookmark-outline"} 
+                    size={16} 
+                    color={filter.is_default ? COLORS.primary : COLORS.textSecondary} 
+                  />
+                  <Text style={desktopStyles.savedFilterName}>{filter.name}</Text>
+                  {filter.is_default && (
+                    <View style={desktopStyles.defaultBadge}>
+                      <Text style={desktopStyles.defaultBadgeText}>Default</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  onPress={() => deleteSavedFilter(filter.id)}
+                  style={desktopStyles.deleteFilterBtn}
+                >
+                  <Ionicons name="trash-outline" size={14} color={COLORS.textLight} />
+                </TouchableOpacity>
+              </View>
+            ))
+          ) : (
+            <Text style={desktopStyles.noSavedFilters}>
+              No saved filters yet. Apply filters and save them for quick access.
+            </Text>
+          )}
+        </View>
+      )}
+
       {/* Clear Filters */}
       {activeFilterCount > 0 && (
         <TouchableOpacity style={desktopStyles.clearFiltersBtn} onPress={handleClearFilters}>
