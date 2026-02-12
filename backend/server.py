@@ -2423,6 +2423,14 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load popular searches router: {e}")
     
+    # Create Photography Guides router
+    try:
+        photography_guides_router = create_photography_guides_router(db, require_auth)
+        api_router.include_router(photography_guides_router)
+        logger.info("Photography guides router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load photography guides router: {e}")
+    
     app.include_router(api_router)  # Re-include to pick up modular routes
     logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors, Property, Offers, Similar, Social, ProfileActivity, Notifications, Account, Support, UserSettings, Sessions, IDVerification) loaded successfully")
 
