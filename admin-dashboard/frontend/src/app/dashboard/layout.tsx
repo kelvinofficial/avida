@@ -99,6 +99,7 @@ const menuItems = [
   { text: 'Attributes', icon: <Tune />, path: '/dashboard/attributes' },
   { text: 'Attribute Icons', icon: <InterestsOutlined />, path: '/dashboard/icons' },
   { text: 'Safety Tips', icon: <GppGood />, path: '/dashboard/safety-tips' },
+  { text: 'Photo Guides', icon: <PhotoCamera />, path: '/dashboard/photography-guides' },
   { text: 'Form Config', icon: <Tune />, path: '/dashboard/form-config' },
   { text: 'Location Manager', icon: <Place />, path: '/dashboard/locations' },
   { text: 'Users', icon: <People />, path: '/dashboard/users' },
