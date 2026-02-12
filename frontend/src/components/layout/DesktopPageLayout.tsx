@@ -88,11 +88,13 @@ interface QuickStats {
   pendingOffers: number;
   totalViews: number;
   creditBalance: number;
+  userRating: number;
+  totalRatings: number;
 }
 
 const QuickStatsCard: React.FC = () => {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const [stats, setStats] = useState<QuickStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -106,7 +108,7 @@ const QuickStatsCard: React.FC = () => {
       try {
         // Fetch multiple stats in parallel
         const [listingsRes, offersRes, creditsRes] = await Promise.all([
-          api.get('/listings/my?page=1&limit=1').catch(() => ({ data: { total: 0 } })),
+          api.get('/listings/my?page=1&limit=100').catch(() => ({ data: [] })),
           api.get('/offers?role=seller').catch(() => ({ data: [] })),
           api.get('/boost/credits/balance').catch(() => ({ data: { balance: 0 } })),
         ]);
@@ -117,11 +119,17 @@ const QuickStatsCard: React.FC = () => {
           ? offersArray.filter((offer: any) => offer.status === 'pending').length 
           : 0;
 
+        // Get listings array and calculate total views
+        const listingsArray = Array.isArray(listingsRes.data) ? listingsRes.data : [];
+        const totalViews = listingsArray.reduce((sum: number, listing: any) => sum + (listing.views || 0), 0);
+
         setStats({
-          activeListings: listingsRes.data?.total || listingsRes.data?.length || 0,
+          activeListings: listingsArray.length,
           pendingOffers: pendingOffers,
-          totalViews: 0, // Will calculate from analytics if available
+          totalViews: totalViews,
           creditBalance: creditsRes.data?.balance || 0,
+          userRating: user?.rating || 0,
+          totalRatings: user?.total_ratings || 0,
         });
       } catch (error) {
         console.error('Error fetching quick stats:', error);
