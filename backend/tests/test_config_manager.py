@@ -9,7 +9,7 @@ import os
 import uuid
 
 # Get base URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://classifieds-dynamic-1.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://classifieds-mvp-1.preview.emergentagent.com').rstrip('/')
 
 # Test environments
 ENVIRONMENTS = ['production', 'staging', 'sandbox', 'development']

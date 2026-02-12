@@ -32,7 +32,7 @@
     "frontend": "N/A (backend-only testing requested)"
   },
   "test_credentials": {
-    "api_base": "https://classifieds-dynamic-1.preview.emergentagent.com",
+    "api_base": "https://classifieds-mvp-1.preview.emergentagent.com",
     "test_pattern": "testmsg_*@test.com / test123456"
   },
   "seed_data_creation": "Multiple test users, listings, conversations, and messages created during tests",

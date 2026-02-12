@@ -31,7 +31,7 @@
     "frontend": "Verified via browser - Admin AI Analyzer page loads correctly"
   },
   "test_credentials": {
-    "api_base": "https://classifieds-dynamic-1.preview.emergentagent.com",
+    "api_base": "https://classifieds-mvp-1.preview.emergentagent.com",
     "admin_user": "admin@marketplace.com / Admin@123456"
   },
   "seed_data_creation": "None - Tests use nonexistent user IDs and test analysis IDs",
