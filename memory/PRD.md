@@ -1669,10 +1669,47 @@ Fixed critical async/await issues in route files that were using synchronous Mon
 
 ---
 
+### 2026-02-12: Server.py Refactoring - Profile Module
+**COMPLETED**
+
+#### New Route File Created
+Created `/app/backend/routes/profile.py` (~305 lines) containing:
+
+**Endpoints Extracted:**
+- `GET /profile` - Get current user profile with stats (requires auth)
+- `PUT /profile` - Update user profile (requires auth)
+- `GET /profile/public/{user_id}` - Get public profile of a user
+- `GET /profile/public/{user_id}/badges` - Get public badges for a user
+- `GET /profile/activity/favorites` - Get saved/favorite items (requires auth)
+- `DELETE /profile/activity/recently-viewed` - Clear recently viewed history (requires auth)
+
+#### Integration
+- Factory function: `create_profile_router(db, require_auth, get_current_user)`
+- Registered in server.py after profile_activity_router
+- All async database calls properly use await
+
+#### Line Count Reduction
+- Previous: 4908 lines
+- Current: 4644 lines
+- This session removed: 264 lines
+- New route file: 305 lines
+- Total from original: 8881 → 4644 = 4237 lines removed (~47.7% reduction)
+
+#### Testing
+- All 12 backend tests passed (100% success rate)
+- Test file created: /app/backend/tests/test_profile_router.py
+
+**Key Files:**
+- `/app/backend/routes/profile.py` (NEW - ~305 lines)
+- `/app/backend/routes/__init__.py` (Updated exports)
+- `/app/backend/server.py` (Removed inline profile endpoints)
+
+---
+
 ## Backlog / Future Tasks
 
 ### P1 - Server.py Refactoring (Ongoing)
-Current state: 4908 lines (down from ~8881, ~44.7% reduction achieved)
+Current state: 4644 lines (down from ~8881, ~47.7% reduction achieved)
 
 **Remaining sections to potentially extract:**
 1. Badge Challenges section (~1100 lines) - Comprehensive implementation, keep in server.py
