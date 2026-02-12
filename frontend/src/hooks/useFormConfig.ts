@@ -56,7 +56,7 @@ export const useFormConfig = () => {
 
     try {
       setLoading(true);
-      const response = await api.get('/api/form-config/public');
+      const response = await api.get('/form-config/public');
       const data = response.data as FormConfigData;
       
       // Update cache
