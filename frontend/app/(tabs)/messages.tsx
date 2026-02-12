@@ -28,7 +28,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { useSandbox } from '../../src/utils/sandboxContext';
 import { formatDistanceToNow, isToday, isYesterday, format } from 'date-fns';
 import { useResponsive } from '../../src/hooks/useResponsive';
-import { DesktopHeader } from '../../src/components/layout';
+import { DesktopHeader, DesktopPageLayout } from '../../src/components/layout';
 import { io, Socket } from 'socket.io-client';
 import Constants from 'expo-constants';
 
