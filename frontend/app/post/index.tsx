@@ -789,12 +789,16 @@ export default function PostListingScreen() {
         }
         break;
       case 5:
-        if (!price.trim()) {
-          errors.price = 'Price is required';
-          isValid = false;
-        } else if (isNaN(parseFloat(price)) || parseFloat(price) <= 0) {
-          errors.price = 'Please enter a valid price greater than 0';
-          isValid = false;
+        // Only validate price if the category requires it
+        const hidePrice = shouldHidePrice(selectedCategoryId, selectedSubcategoryId);
+        if (!hidePrice) {
+          if (!price.trim()) {
+            errors.price = 'Price is required';
+            isValid = false;
+          } else if (isNaN(parseFloat(price)) || parseFloat(price) <= 0) {
+            errors.price = 'Please enter a valid price greater than 0';
+            isValid = false;
+          }
         }
         if (!location.trim()) {
           errors.location = 'Location is required';
