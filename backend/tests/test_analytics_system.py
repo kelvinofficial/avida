@@ -17,7 +17,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://classifieds-dynamic.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://category-classifier-1.preview.emergentagent.com').rstrip('/')
 
 # Test credentials
 TEST_EMAIL = "paypaltest@test.com"
