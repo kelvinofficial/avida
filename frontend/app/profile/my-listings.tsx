@@ -794,185 +794,13 @@ const styles = StyleSheet.create({
 
 // Desktop-specific styles
 const desktopStyles = StyleSheet.create({
-  container: { backgroundColor: '#1A1A1A' }, // Dark footer background
+  container: { backgroundColor: '#1A1A1A' },
   
-  // Global Header
-  globalHeader: {
-    backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  globalHeaderRow1: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  globalHeaderRow2: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-  },
-  globalHeaderInner: {
+  // Tabs Row
+  tabsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    maxWidth: 1280,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  logoContainer: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  logoIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoText: { fontSize: 22, fontWeight: '700', color: COLORS.text },
-  
-  // Navigation Links
-  navLinks: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginLeft: 32,
-  },
-  navLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  navLinkActive: {
-    backgroundColor: COLORS.primaryLight,
-  },
-  navLinkText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.textSecondary,
-  },
-  navLinkTextActive: {
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
-  
-  globalHeaderActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  headerIconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-  },
-  signInHeaderBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: COLORS.background,
-  },
-  signInHeaderBtnText: { fontSize: 14, fontWeight: '600', color: COLORS.text },
-  signUpHeaderBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: COLORS.primaryLight,
-  },
-  signUpHeaderBtnText: { fontSize: 14, fontWeight: '600', color: COLORS.primary },
-  postListingBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: COLORS.primary,
-  },
-  postListingBtnText: { fontSize: 14, fontWeight: '600', color: '#fff' },
-  searchField: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginRight: 12,
-    gap: 10,
-  },
-  searchPlaceholder: { fontSize: 15, color: COLORS.textSecondary },
-  locationChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 6,
-  },
-  locationText: { fontSize: 14, fontWeight: '500', color: COLORS.text, maxWidth: 120 },
-  
-  // Page Wrapper
-  pageWrapper: {
-    flex: 1,
-    maxWidth: 1280,
-    width: '100%',
-    alignSelf: 'center',
-    backgroundColor: COLORS.surface,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: COLORS.border,
-  },
-  
-  // Page Header
-  pageHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  pageHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  pageTitle: { fontSize: 24, fontWeight: '700', color: COLORS.text },
-  totalBadge: {
-    backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  totalBadgeText: { fontSize: 13, fontWeight: '600', color: COLORS.primary },
-  createBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: COLORS.primary,
-  },
-  createBtnText: { fontSize: 15, fontWeight: '600', color: '#fff' },
-  
-  // Tabs
-  tabsContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
     gap: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    marginBottom: 16,
   },
   tab: {
     flexDirection: 'row',
@@ -988,8 +816,6 @@ const desktopStyles = StyleSheet.create({
   tabTextActive: { color: COLORS.primary, fontWeight: '600' },
   
   // Grid
-  scrollView: { flex: 1 },
-  gridContainer: { padding: 24 },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -1135,26 +961,37 @@ const desktopStyles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
   },
-  skeletonImage: { width: '100%', height: 180 },
+  skeletonImage: { width: '100%', height: 180, backgroundColor: COLORS.border },
   
   // Empty State
-  emptyContainer: { paddingVertical: 80 },
-  emptyIcon: { width: 120, height: 120, borderRadius: 60, marginBottom: 20 },
-  emptyTitle: { fontSize: 22 },
-  emptySubtitle: { fontSize: 15, maxWidth: 400 },
+  emptyContainer: { 
+    paddingVertical: 80,
+    alignItems: 'center',
+    justifyContent: 'center', 
+  },
+  emptyIcon: { 
+    width: 120, 
+    height: 120, 
+    borderRadius: 60, 
+    marginBottom: 20,
+    backgroundColor: COLORS.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyTitle: { fontSize: 22, fontWeight: '600', color: COLORS.text, marginBottom: 8 },
+  emptySubtitle: { fontSize: 15, maxWidth: 400, textAlign: 'center', color: COLORS.textSecondary },
   
   // Unauthenticated
   unauthContainer: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    justifyContent: 'center',
+    paddingVertical: 80,
   },
   unauthIcon: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
@@ -1173,7 +1010,7 @@ const desktopStyles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 24,
   },
-  unauthSignInBtn: {
+  signInButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.primary,
@@ -1182,7 +1019,19 @@ const desktopStyles = StyleSheet.create({
     borderRadius: 12,
     gap: 8,
   },
-  unauthSignInBtnText: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  signInButtonText: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  
+  // Create Button
+  createBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: COLORS.primary,
+  },
+  createBtnText: { fontSize: 15, fontWeight: '600', color: '#fff' },
   
   // Load More
   loadMoreBtn: {
