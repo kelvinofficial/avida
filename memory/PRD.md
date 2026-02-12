@@ -710,12 +710,19 @@ Added an "Import from JSON" button to the Admin Form Config page's Preview Mode 
 - **Backend APIs**:
   - Public: `GET /api/photography-guides/public/{category_id}` - Fetch guides for frontend
   - Admin CRUD: List, Create, Update, Delete, Get single, Stats, Seed
+- **Frontend Integration (2026-02-12)**:
+  - Created `usePhotographyGuides` hook (`/app/frontend/src/hooks/usePhotographyGuides.ts`)
+  - Post listing form now displays admin-managed photo tips when category is selected
+  - Fallback to static config if API fails
+  - Cache with 5-minute TTL for performance
 - **Files Modified**:
   - `/app/admin-dashboard/frontend/src/app/dashboard/photography-guides/page.tsx` (Created)
   - `/app/admin-dashboard/frontend/src/app/dashboard/layout.tsx` (Added sidebar link)
   - `/app/admin-dashboard/backend/server.py` (Added photography guides endpoints)
   - `/app/backend/server.py` (Added public proxy endpoint)
-- Test report: `/app/test_reports/iteration_108.json`
+  - `/app/frontend/src/hooks/usePhotographyGuides.ts` (Created - new hook)
+  - `/app/frontend/app/post/index.tsx` (Integrated hook, updated photo tips display)
+- Test reports: `/app/test_reports/iteration_108.json`, `/app/test_reports/iteration_109.json`
 
 ### Completed ✅
 - [x] Payment integration backend (Stripe, PayPal, M-Pesa)
