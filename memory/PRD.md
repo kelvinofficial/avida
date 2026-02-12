@@ -1594,3 +1594,45 @@ Extracted ~177 lines of user settings, sessions, and ID verification routes from
 - `/app/backend/routes/user_settings.py` (NEW - ~220 lines)
 - `/app/backend/routes/__init__.py` (Updated exports)
 - `/app/backend/server.py` (Removed inline routes)
+
+### 2026-02-12: Friendship & Dating Category - New Subcategories
+**COMPLETED**
+
+#### New Subcategories Added
+Added 4 new subcategories to the "Friendship & Dating" category as requested:
+
+**Dating & Relationships group:**
+- `Faith-Based Dating` (id: `faith_based_dating`)
+- `Mature Dating (40+)` (id: `mature_dating_40_plus`)
+
+**Activity-Based Meetups group:**
+- `Volunteering` (id: `volunteering`)
+- `Music & Arts` (id: `music_arts`)
+
+#### Files Modified
+- `/app/backend/routes/categories.py` - Added new subcategories to DEFAULT_CATEGORIES
+
+#### Verification
+- API endpoint `/api/categories/friendship_dating` returns updated subcategories
+- Backend hot-reloaded successfully
+
+---
+
+## Backlog / Future Tasks
+
+### P1 - Server.py Refactoring (Ongoing)
+Current state: 5287 lines (down from ~8881, ~40% reduction)
+
+**Remaining sections to extract:**
+1. Badge Challenges section (lines 1367-2513) - ~1147 lines
+   - Note: Potential conflicts with routes/challenges.py - needs careful deduplication
+2. Badge Milestones section (lines 2967-3267) - ~300 lines
+3. User Badges (Public) section (lines 2776-2966) - ~190 lines
+4. Email Service section (lines 3278-3406) - ~128 lines
+5. Email Verification section (lines 3406-3470) - ~64 lines
+6. Media Upload section (lines 735-801) - ~66 lines
+7. Reports section (lines 802-822) - ~20 lines
+
+**Known Issues:**
+- Duplicate challenge endpoints exist in both server.py and routes/challenges.py
+- Need to audit and consolidate before further refactoring
