@@ -1720,22 +1720,51 @@ Created `/app/backend/routes/profile.py` (~305 lines) containing:
 
 ---
 
+### 2026-02-12: Server.py Refactoring - Badge Milestones
+**COMPLETED**
+
+#### Endpoints Moved to routes/badges.py
+- `GET /badges/milestones` - Get user's achieved and pending milestones
+- `POST /badges/milestones/acknowledge` - Mark milestone as acknowledged
+
+#### Features Migrated
+- BADGE_MILESTONES constant (count-based: 1, 5, 10, 25, 50 badges)
+- SPECIAL_BADGE_MILESTONES constant (triggered by specific badge names)
+- Complete milestone tracking with achieved/pending/new categorization
+
+#### Bug Fixed During Testing
+- **Critical**: Changed `current_user['user_id']` to `current_user.user_id` (Pydantic model vs dict)
+- Affected 7 endpoints in routes/badges.py
+
+#### Line Count Reduction
+- Previous: 4581 lines
+- Current: 4468 lines  
+- This extraction removed: 113 lines
+- routes/badges.py increased: 364 → 414 lines
+
+#### Testing
+- 13/13 tests passed (100% success rate)
+- Test file: /app/backend/tests/test_badge_milestones_router.py
+
+---
+
 ## Backlog / Future Tasks
 
 ### P1 - Server.py Refactoring (Ongoing)
-Current state: 4581 lines (down from ~8881, ~48.4% reduction achieved)
+Current state: 4468 lines (down from ~8881, ~49.7% reduction achieved)
 
 **Completed extractions:**
 - Profile endpoints - Moved to routes/profile.py ✓
 - Badge share endpoint - Moved to routes/badges.py ✓
+- Badge milestones endpoints - Moved to routes/badges.py ✓
 
 **Remaining sections to potentially extract:**
 1. Badge Challenges section (~1100 lines) - Comprehensive implementation, keep in server.py
-2. Badge Milestones section (~200 lines) - More comprehensive than routes/badges.py
-3. Email Service functions (~130 lines) - Helper functions used throughout
-4. Push Notification Service (~110 lines) - Helper functions
+2. Email Service functions (~130 lines) - Helper functions used throughout
+3. Push Notification Service (~110 lines) - Helper functions
 
 **Architecture Notes:**
 - routes/challenges.py disabled - server.py has more comprehensive implementation
 - Some endpoints kept in server.py due to complexity and frontend dependencies
 - Focus shifted to fixing async issues in modular routes rather than moving more code
+
