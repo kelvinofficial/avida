@@ -1881,7 +1881,12 @@ export default function PostListingScreen() {
   };
 
   // ============ STEP 6: REVIEW ============
-  const renderStep6 = () => (
+  const renderStep6 = () => {
+    const hidePrice = shouldHidePrice(selectedCategoryId, selectedSubcategoryId);
+    const showSalary = shouldShowSalaryRange(selectedSubcategoryId);
+    const sellerTypeConfig = getSellerTypes(selectedCategoryId);
+    
+    return (
     <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
       <Text style={styles.stepTitle}>Review Your Listing</Text>
       <Text style={styles.stepSubtitle}>Make sure everything looks good before publishing</Text>
@@ -1896,10 +1901,18 @@ export default function PostListingScreen() {
 
         {/* Main Info */}
         <View style={styles.previewContent}>
-          <Text style={styles.previewPrice}>
-            €{parseFloat(price || '0').toLocaleString()}
-            {negotiable && <Text style={styles.previewVB}> VB</Text>}
-          </Text>
+          {/* Price or Salary display */}
+          {!hidePrice && !showSalary && (
+            <Text style={styles.previewPrice}>
+              €{parseFloat(price || '0').toLocaleString()}
+              {negotiable && <Text style={styles.previewVB}> VB</Text>}
+            </Text>
+          )}
+          {showSalary && (salaryMin || salaryMax) && (
+            <Text style={styles.previewPrice}>
+              €{salaryMin || '0'} - €{salaryMax || '0'} / {salaryPeriod}
+            </Text>
+          )}
           <Text style={styles.previewTitle}>{title}</Text>
           
           <View style={styles.previewMeta}>
