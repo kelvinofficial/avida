@@ -2083,3 +2083,48 @@ Total reduction: from ~8881 to 3085 (~65.3% total reduction achieved)
 - Removed ~1075 lines of badge challenge code
 - Reduced from 4160 to 3085 lines
 
+
+
+### 2026-02-12: Dynamic Listing Creation Form
+**COMPLETED**
+
+#### Dynamic Form Implementation
+Completed the dynamic listing creation form with category-specific configurations:
+
+**Configuration Changes (listingFormConfig.ts):**
+- Fixed subcategory IDs: Changed 'job_offers' to 'job_listings' to match actual subcategories
+- Updated SHOW_SALARY_SUBCATEGORIES to use correct 'job_listings' ID
+- Updated HIDE_CONDITION_SUBCATEGORIES: added 'jobs_services' category
+- Cleaned up invalid 'job_seekers' references from HIDE_PRICE_SUBCATEGORIES
+
+**Form Behavior by Category:**
+- **Friendship & Dating:**
+  - Price field hidden (shouldHidePrice = true)
+  - Contact restricted to Chat only (isChatOnlyCategory = true)
+  - Listed by options: ['Individual']
+  - Preferences section hidden (no negotiable/exchanges)
+
+- **Jobs & Services (job_listings subcategory):**
+  - Shows salary range instead of price (shouldShowSalaryRange = true)
+  - Salary inputs: Min/Max with period selector (hourly/monthly/yearly)
+  - Condition (new/used) hidden
+
+- **Auto & Vehicles:**
+  - Listed by options: ['Owner', 'Broker', 'Individual', 'Company', 'Dealer']
+  - Full price and preferences sections shown
+
+**Code Changes (post/index.tsx):**
+- Updated renderStep5() to use dynamic configurations
+- Added salary range state variables (salaryMin, salaryMax, salaryPeriod)
+- Added conditional rendering for price section
+- Added salary range inputs with period selector
+- Added chat-only notice UI for restricted categories
+- Updated validation to skip price validation when hidden
+- Added new styles: salaryInputRow, chatOnlyNotice, etc.
+
+**Testing:**
+- Test report: /app/test_reports/iteration_103.json
+- Category selection UI verified working
+- Configuration fixes verified via code review
+
+
