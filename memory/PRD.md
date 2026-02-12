@@ -1782,7 +1782,8 @@ Created `/app/backend/utils/` directory with modular service files:
 ## Backlog / Future Tasks
 
 ### P1 - Server.py Refactoring (Ongoing)
-Current state: 4160 lines (down from ~8881, ~53.1% reduction achieved)
+Current state: 3085 lines (down from ~4160, ~25.8% additional reduction)
+Total reduction: from ~8881 to 3085 (~65.3% total reduction achieved)
 
 **Completed extractions:**
 - Profile endpoints - Moved to routes/profile.py ✓
@@ -1790,12 +1791,45 @@ Current state: 4160 lines (down from ~8881, ~53.1% reduction achieved)
 - Badge milestones endpoints - Moved to routes/badges.py ✓
 - Email Service - Moved to utils/email_service.py ✓
 - Push Notification Service - Moved to utils/push_service.py ✓
-
-**Remaining sections to potentially extract:**
-1. Badge Challenges section (~1100 lines) - Comprehensive implementation, keep in server.py
+- Badge Challenges - Moved to routes/badge_challenges.py ✓ (1075 lines extracted)
 
 **Architecture Notes:**
-- routes/challenges.py disabled - server.py has more comprehensive implementation
-- Some endpoints kept in server.py due to complexity and frontend dependencies
-- **50%+ reduction goal achieved!**
+- routes/challenges.py disabled - replaced by badge_challenges.py router
+- routes/badge_challenges.py contains all challenge logic: seasonal, weekly, monthly challenges, joining, progress tracking, streak management
+- Factory function pattern used: create_badge_challenges_router(db, require_auth, send_push_notification)
+- **65%+ reduction goal achieved!**
+
+### 2026-02-12: Server.py Refactoring - Badge Challenges Extraction
+**COMPLETED**
+
+**Badge Challenges Router (`routes/badge_challenges.py` - ~1080 lines)**
+- Extracted all badge challenge logic from server.py
+- Endpoints extracted:
+  - `GET /challenges` - List all active challenges (weekly, monthly, seasonal)
+  - `GET /challenges/my-progress` - User's progress on all challenges
+  - `GET /challenges/{challenge_id}` - Challenge details with leaderboard
+  - `POST /challenges/{challenge_id}/join` - Join a challenge
+  - `GET /streaks/my-streak` - User's challenge completion streak
+  - `GET /badges/past-seasonal` - Gallery of past seasonal badges
+
+**Challenge Definitions Extracted:**
+- 8 seasonal challenges (valentine, spring, summer, back-to-school, halloween, black-friday, holiday, new-year)
+- 7 regular challenges (3 weekly + 4 monthly)
+
+**Helper Functions Extracted:**
+- `get_challenge_period()` - Calculate challenge time period
+- `get_seasonal_challenge_period()` - Seasonal date calculations
+- `is_seasonal_challenge_active()` - Check if seasonal challenge active
+- `get_active_seasonal_challenges()` - List active seasonal challenges
+- `get_weekend_period()` - Weekend warrior challenge dates
+- `get_user_challenge_progress()` - Calculate user progress
+- `check_and_award_challenge_badges()` - Award completion badges
+- `update_challenge_streak()` - Update user streak
+- `check_and_award_streak_badges()` - Award streak milestones
+
+**Server.py Updates:**
+- Added import for create_badge_challenges_router
+- Registered router with api_router.include_router()
+- Removed ~1075 lines of badge challenge code
+- Reduced from 4160 to 3085 lines
 
