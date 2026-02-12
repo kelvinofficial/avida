@@ -126,6 +126,32 @@ export function useAttributeIcons(categoryId?: string) {
   }, [icons, categoryId]);
 
   /**
+   * Get custom color for a specific attribute icon
+   * @param attributeName - The attribute name/key
+   * @param catId - Optional category ID for more specific matching
+   * @returns The custom color or the default ICON_COLOR
+   */
+  const getIconColorForAttribute = useCallback((
+    attributeName: string,
+    catId?: string
+  ): string => {
+    const normalizedAttr = attributeName.toLowerCase().replace(/[_\s-]/g, '');
+    const categoryToSearch = catId || categoryId;
+    
+    // Find matching icon with custom color
+    const matchingIcon = icons.find(icon => {
+      const iconAttr = (icon.attribute_name || '').toLowerCase().replace(/[_\s-]/g, '');
+      if (categoryToSearch) {
+        return iconAttr === normalizedAttr && icon.category_id === categoryToSearch;
+      }
+      return iconAttr === normalizedAttr;
+    });
+    
+    // Return custom color if set, otherwise default
+    return matchingIcon?.color || ICON_COLOR;
+  }, [icons, categoryId]);
+
+  /**
    * Get category icon
    * @param catId - The category ID
    * @returns The Ionicon name for the category
