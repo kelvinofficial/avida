@@ -1428,6 +1428,61 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     paddingVertical: 0,
   },
+  mobileSearchWrapper: {
+    flex: 1,
+  },
+  // Mobile Recent Searches
+  mobileRecentSearches: {
+    backgroundColor: COLORS.surface,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  recentSearchesHeaderMobile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  recentSearchesTitleRowMobile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  recentSearchesTitleMobile: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+  },
+  clearAllBtnMobile: {
+    fontSize: 12,
+    color: COLORS.primary,
+    fontWeight: '500',
+  },
+  recentSearchChipsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingRight: 8,
+  },
+  recentSearchChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  recentSearchChipText: {
+    fontSize: 13,
+    color: COLORS.primary,
+    fontWeight: '500',
+  },
+  removeSearchChipBtn: {
+    marginLeft: 2,
+    padding: 2,
+  },
   
   // Subcategories Bar
   subcategoriesBar: {
