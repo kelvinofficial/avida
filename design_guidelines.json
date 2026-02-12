@@ -1,0 +1,163 @@
+{
+  "identity": {
+    "persona": "E1",
+    "tone": "Trustworthy, Organized, Professional, Efficient",
+    "design_principle": "Fusion over Imitation. Functional Beauty. Content is King."
+  },
+  "typography": {
+    "font_family": "System",
+    "headings": {
+      "h1": "theme.typography.headlineLarge (32px, 400)",
+      "h2": "theme.typography.headlineMedium (28px, 400)",
+      "h3": "theme.typography.titleLarge (22px, 500)",
+      "usage": "Use h1 for Page Titles, h2 for Section Headers, h3 for Card Titles"
+    },
+    "body": {
+      "primary": "theme.typography.bodyLarge (16px, 400)",
+      "secondary": "theme.typography.bodyMedium (14px, 400)",
+      "tertiary": "theme.typography.bodySmall (12px, 400)",
+      "usage": "Use primary for main content, secondary for descriptions, tertiary for metadata"
+    }
+  },
+  "colors": {
+    "palette": "Organic & Earthy (Archetype 1)",
+    "primary": "#10B981",
+    "primary_container": "#D1FAE5",
+    "background": "#F9FAFB",
+    "surface": "#FFFFFF",
+    "text": {
+      "primary": "#111827",
+      "secondary": "#6B7280",
+      "tertiary": "#9CA3AF"
+    },
+    "border": "#E5E7EB",
+    "success": "#10B981",
+    "warning": "#F59E0B",
+    "error": "#EF4444",
+    "rules": [
+      "No generic full-screen gradients.",
+      "Use white surface for cards with subtle borders.",
+      "Use primary color for Actions (Buttons, Links)."
+    ]
+  },
+  "layout_strategies": {
+    "desktop_container": {
+      "maxWidth": 1280,
+      "alignSelf": "center",
+      "width": "100%",
+      "paddingHorizontal": 24
+    },
+    "sidebar_layout": {
+      "component": "ResponsiveLayout",
+      "structure": "Sidebar (Left, Fixed 280px) | Content (Right, Flex 1)",
+      "sidebar_component": "src/components/layout/DesktopSidebar"
+    },
+    "grids": {
+      "bento_grid": {
+        "description": "Asymmetric grid for dashboards. Use Flexbox.",
+        "gap": 24,
+        "columns": 3
+      },
+      "card_grid": {
+        "description": "Uniform grid for items/listings.",
+        "minWidth": 300,
+        "gap": 16
+      }
+    }
+  },
+  "components": {
+    "card": {
+      "style": "bg-white rounded-xl border border-gray-200 shadow-sm",
+      "native_style": {
+        "backgroundColor": "#FFFFFF",
+        "borderRadius": 12,
+        "borderWidth": 1,
+        "borderColor": "#E5E7EB",
+        "padding": 16
+      }
+    },
+    "button": {
+      "primary": "bg-emerald-500 text-white rounded-lg px-4 py-2",
+      "native_style": {
+        "backgroundColor": "#10B981",
+        "borderRadius": 8,
+        "paddingVertical": 10,
+        "paddingHorizontal": 16,
+        "alignItems": "center",
+        "justifyContent": "center"
+      }
+    },
+    "badge": {
+      "style": "bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5 text-xs",
+      "native_style": {
+        "backgroundColor": "#D1FAE5",
+        "borderRadius": 9999,
+        "paddingVertical": 4,
+        "paddingHorizontal": 8,
+        "alignSelf": "flex-start"
+      }
+    },
+    "header": {
+      "component": "src/components/layout/DesktopHeader",
+      "props": {
+        "showNavLinks": true,
+        "showSearch": true
+      }
+    }
+  },
+  "page_specific_guidelines": {
+    "saved_items": {
+      "layout": "Grid (3 columns)",
+      "card_type": "ListingCard",
+      "features": "Filter bar at top, Load more button at bottom"
+    },
+    "offers": {
+      "layout": "List View (Table rows)",
+      "features": "Tabs (Received/Sent), Status badges (Pending, Accepted, Rejected)"
+    },
+    "credits": {
+      "layout": "Bento Grid",
+      "sections": [
+        { "type": "Hero", "content": "Current Balance", "span": "full" },
+        { "type": "Grid", "content": "Purchase Packages", "cols": 3 },
+        { "type": "List", "content": "Transaction History", "span": "full" }
+      ]
+    },
+    "badges": {
+      "layout": "Grid (4 columns)",
+      "card_style": "Centered icon, Title, Progress Bar, Date",
+      "images": [
+        "https://images.unsplash.com/photo-1633176640669-44bd6adaa662?q=85&w=200",
+        "https://images.unsplash.com/photo-1643616802160-bcca2171c24a?q=85&w=200"
+      ]
+    },
+    "business_profile": {
+      "layout": "Profile Header + Content Tabs",
+      "header_style": "Cover Image (h-48) + Avatar (overlap) + Info",
+      "cover_image": "https://images.unsplash.com/photo-1686491970798-a9492598f6e0?q=85&w=1280"
+    }
+  },
+  "image_urls": {
+    "badges": [
+      "https://images.unsplash.com/photo-1625468743270-9c3c5b27933b?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "https://images.unsplash.com/photo-1633176640669-44bd6adaa662?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "https://images.unsplash.com/photo-1643616802160-bcca2171c24a?crop=entropy&cs=srgb&fm=jpg&q=85"
+    ],
+    "placeholders": {
+      "cover": "https://images.unsplash.com/photo-1577809868179-138e3ec929b3?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "avatar": "https://images.unsplash.com/photo-1686491970798-a9492598f6e0?crop=entropy&cs=srgb&fm=jpg&q=85"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Use 'src/utils/theme.ts' for all colors and spacing.",
+    "Wrap all page content in 'src/components/layout/ResponsiveLayout.tsx'.",
+    "Use 'src/components/layout/DesktopHeader.tsx' as the header.",
+    "Implement layouts using React Native 'View' with Flexbox styles.",
+    "Ensure 'maxWidth: 1280' and 'alignSelf: center' for the main content container.",
+    "For lists, use 'FlatList' or 'ScrollView'.",
+    "Mimic the visual style of Shadcn (clean borders, white backgrounds, generous padding) using 'StyleSheet.create'.",
+    "Do NOT install new libraries unless absolutely necessary. Use existing 'expo' and 'react-native' packages.",
+    "Ensure all text is readable and accessible (WCAG AA).",
+    "Add 'data-testid' to all interactive elements."
+  ]
+}
