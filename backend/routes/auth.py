@@ -194,11 +194,14 @@ def create_auth_router(db, get_current_user, get_session_token, check_rate_limit
         session_token = secrets.token_urlsafe(32)
         expires_at = datetime.now(timezone.utc) + timedelta(days=7)
         
+        # Get user_id - use existing field or fall back to _id
+        user_id = user.get("user_id") or str(user["_id"])
+        
         # Remove old sessions for this user
-        await db.user_sessions.delete_many({"user_id": user["user_id"]})
+        await db.user_sessions.delete_many({"user_id": user_id})
         
         await db.user_sessions.insert_one({
-            "user_id": user["user_id"],
+            "user_id": user_id,
             "session_token": session_token,
             "expires_at": expires_at,
             "created_at": datetime.now(timezone.utc)
