@@ -2845,7 +2845,7 @@ if ADMIN_TOOLS_AVAILABLE:
     
     # Safety Tips routes
     try:
-        from routes.safety_tips import create_safety_tips_router
+        from routes import create_safety_tips_router
         safety_tips_router = create_safety_tips_router(db, require_admin)
         app.include_router(safety_tips_router, prefix="/api")
         print("Safety tips routes loaded successfully")
