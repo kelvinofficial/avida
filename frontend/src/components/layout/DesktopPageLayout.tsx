@@ -322,11 +322,14 @@ export const DesktopPageLayout: React.FC<DesktopPageLayoutProps> = ({
   const pathname = usePathname();
   const { isAuthenticated } = useAuthStore();
   const [badges, setBadges] = useState<NotificationBadges>({ unreadMessages: 0, pendingOffers: 0 });
+  const prevUnreadRef = useRef<number>(0);
+  const isFirstLoadRef = useRef<boolean>(true);
 
   // Fetch notification badges for authenticated users
   useEffect(() => {
     if (!isAuthenticated) {
       setBadges({ unreadMessages: 0, pendingOffers: 0 });
+      isFirstLoadRef.current = true;
       return;
     }
 
@@ -346,6 +349,15 @@ export const DesktopPageLayout: React.FC<DesktopPageLayoutProps> = ({
         const pendingOffers = Array.isArray(offersArray) 
           ? offersArray.filter((offer: any) => offer.status === 'pending').length 
           : 0;
+
+        // Play notification sound if unread messages increased (not on first load)
+        if (!isFirstLoadRef.current && unreadMessages > prevUnreadRef.current) {
+          playNotificationSound();
+        }
+        
+        // Update refs
+        prevUnreadRef.current = unreadMessages;
+        isFirstLoadRef.current = false;
 
         setBadges({ unreadMessages, pendingOffers });
       } catch (error) {
