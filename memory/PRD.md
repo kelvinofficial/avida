@@ -2382,3 +2382,55 @@ Added dynamic photo tips that change based on the selected category in Step 2 (P
 - `tipItemDesc`: Description text
 
 
+
+### 2026-02-12: Photography Guides Admin Enhancements
+**COMPLETED**
+
+#### P0: Drag-and-Drop Reordering for Photography Guides
+**Admin Dashboard Feature:**
+- Implemented drag-and-drop functionality in admin Photography Guides page using `@dnd-kit` library
+- Users can reorder guides within a category by dragging the drag handle icon (DragIndicator)
+- Visual feedback during drag operations (shadow, background change)
+- Order persists to backend via `PUT /api/admin/photography-guides/reorder/{category_id}` endpoint
+- Info banner explains drag-and-drop functionality
+- Snackbar notifications for success/error states
+
+**Files Modified:**
+- `/app/admin-dashboard/frontend/src/app/dashboard/photography-guides/page.tsx`:
+  - Added DndContext, SortableContext from @dnd-kit/core and @dnd-kit/sortable
+  - Created SortableTableRow component with useSortable hook
+  - Added drag handle column with DragIndicator icon
+  - Implemented handleDragEnd for reorder logic
+  - Added reorderSnackbar state for user feedback
+
+#### P1: Display Guide Illustration Images in Frontend
+**Frontend Feature:**
+- Updated listing creation form to display illustration images when available
+- Images render below the guide description when `image_url` is present
+- Responsive image sizing with 120px height, full width, rounded corners
+
+**Files Modified:**
+- `/app/frontend/app/post/index.tsx`:
+  - Added Image component rendering with conditional display
+  - Added `tipIllustration` style for image container
+
+**API Structure:**
+- Guides already include `image_url` field from API
+- Images can be uploaded via admin dashboard (base64 encoding)
+- `/app/frontend/src/hooks/usePhotographyGuides.ts` already includes image_url in interface
+
+**Testing:**
+- Test report: `/app/test_reports/iteration_110.json`
+- Backend: 100% pass rate (10/10 tests)
+- Frontend: 100% pass rate
+- Drag-and-drop reordering verified working
+- Image display code verified (needs admin to upload images to see in frontend)
+
+---
+
+## Backlog
+
+### P2: Refactor AnimatedIcon Components
+- Previous agent task to merge AnimatedIcon and DesktopAnimatedIcon
+- File not found at specified location - needs investigation
+- May be outdated or already resolved
