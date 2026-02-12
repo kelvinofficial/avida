@@ -486,6 +486,28 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
+  sidebarIconContainer: {
+    position: 'relative',
+  },
+  notificationDot: {
+    position: 'absolute',
+    top: -6,
+    right: -8,
+    backgroundColor: '#EF4444',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: COLORS.surface,
+  },
+  notificationDotText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
+  },
   
   // Main Content
   mainContent: {
