@@ -6,11 +6,11 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
   RefreshControl,
   Alert,
   ScrollView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,7 +18,7 @@ import { useRouter, useLocalSearchParams, usePathname } from 'expo-router';
 import api from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
 import { useResponsive } from '../../src/hooks/useResponsive';
-import { Footer } from '../../src/components/layout';
+import { DesktopPageLayout } from '../../src/components/layout';
 import { useLoginRedirect } from '../../src/hooks/useLoginRedirect';
 import { useBadgeCelebration } from '../../src/context/BadgeCelebrationContext';
 import { useMilestones } from '../../src/context/MilestoneContext';
