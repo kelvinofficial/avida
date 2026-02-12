@@ -1711,13 +1711,14 @@ Created `/app/backend/routes/profile.py` (~305 lines) containing:
 ### P1 - Server.py Refactoring (Ongoing)
 Current state: 4644 lines (down from ~8881, ~47.7% reduction achieved)
 
+**Completed extractions:**
+- Profile endpoints - Moved to routes/profile.py ✓
+
 **Remaining sections to potentially extract:**
 1. Badge Challenges section (~1100 lines) - Comprehensive implementation, keep in server.py
 2. Badge Milestones section (~200 lines) - More comprehensive than routes/badges.py
-3. User Badges Public endpoints (~150 lines)
-4. Email Service functions (~130 lines) - Helper functions used throughout
-5. Profile endpoints (~170 lines) - Used by frontend at /api/profile
-6. Push Notification Service (~110 lines) - Helper functions
+3. Email Service functions (~130 lines) - Helper functions used throughout
+4. Push Notification Service (~110 lines) - Helper functions
 
 **Architecture Notes:**
 - routes/challenges.py disabled - server.py has more comprehensive implementation
