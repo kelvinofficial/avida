@@ -19,7 +19,7 @@ Standardized the desktop layout for all user profile-related pages to have a con
 #### Implementation
 Created reusable `DesktopPageLayout` component at `/app/frontend/src/components/layout/DesktopPageLayout.tsx`
 
-#### Pages Updated with DesktopPageLayout:
+#### All 11 Profile Pages Updated with DesktopPageLayout:
 1. **Saved Items** (`/app/frontend/app/profile/saved.tsx`) ✅
 2. **Badges** (`/app/frontend/app/profile/badges.tsx`) ✅
 3. **Invoices** (`/app/frontend/app/profile/invoices.tsx`) ✅
@@ -27,14 +27,14 @@ Created reusable `DesktopPageLayout` component at `/app/frontend/src/components/
 5. **Credits Store** (`/app/frontend/app/credits/index.tsx`) ✅
 6. **Offers** (`/app/frontend/app/offers.tsx`) ✅
 7. **Business Profile Edit** (`/app/frontend/app/business/edit.tsx`) ✅
+8. **My Listings** (`/app/frontend/app/profile/my-listings.tsx`) ✅ (Updated 2026-02-12)
+9. **Purchases** (`/app/frontend/app/profile/purchases.tsx`) ✅ (Updated 2026-02-12)
+10. **Sales** (`/app/frontend/app/profile/sales.tsx`) ✅ (Updated 2026-02-12)
+11. **Boost Listings** (`/app/frontend/app/boost/[listing_id].tsx`) ✅
 
-#### Pages with Custom Desktop Layout (Not using DesktopPageLayout):
-- My Listings (`/app/frontend/app/profile/my-listings.tsx`)
-- Purchases (`/app/frontend/app/profile/purchases.tsx`)
-- Sales (`/app/frontend/app/profile/sales.tsx`)
-
-#### Test Report
-- `/app/test_reports/iteration_116.json` - Frontend 100% pass rate
+#### Test Reports
+- `/app/test_reports/iteration_6.json` - Initial 8 pages
+- `/app/test_reports/iteration_117.json` - Final 3 pages (my-listings, purchases, sales) - 100% pass
 
 ---
 
