@@ -295,7 +295,7 @@ const HorizontalListingCard = memo(({
           </Text>
         </View>
 
-        {/* Bottom Row: Seller Info & Actions */}
+        {/* Bottom Row: Seller Info & Stickers */}
         <View style={cardStyles.bottomRow}>
           {/* Seller Info */}
           <View style={cardStyles.sellerInfo}>
@@ -323,57 +323,23 @@ const HorizontalListingCard = memo(({
             )}
           </View>
 
-          {/* Action Buttons */}
-          <View style={cardStyles.actionsRow}>
-            {onFavorite && (
-              <TouchableOpacity
-                style={cardStyles.actionButton}
-                onPress={(e) => {
-                  e.stopPropagation?.();
-                  onFavorite();
-                }}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Ionicons
-                  name={isFavorited ? 'heart' : 'heart-outline'}
-                  size={18}
-                  color={isFavorited ? COLORS.error : COLORS.textSecondary}
-                />
-              </TouchableOpacity>
-            )}
-            {onChat && (
-              <TouchableOpacity
-                style={cardStyles.actionButton}
-                onPress={(e) => {
-                  e.stopPropagation?.();
-                  onChat();
-                }}
-              >
-                <Ionicons name="chatbubble-outline" size={18} color={COLORS.primary} />
-              </TouchableOpacity>
-            )}
-            {onCall && listing.seller?.phone && (
-              <TouchableOpacity
-                style={cardStyles.actionButton}
-                onPress={(e) => {
-                  e.stopPropagation?.();
-                  onCall();
-                }}
-              >
-                <Ionicons name="call-outline" size={18} color={COLORS.primary} />
-              </TouchableOpacity>
-            )}
-            {(listing.seller?.whatsapp || listing.seller?.phone) && (
-              <TouchableOpacity
-                style={[cardStyles.actionButton, cardStyles.whatsappButton]}
-                onPress={(e) => {
-                  e.stopPropagation?.();
-                  onWhatsApp?.();
-                }}
-              >
-                <Ionicons name="logo-whatsapp" size={18} color="#25D366" />
-              </TouchableOpacity>
-            )}
+          {/* Stickers - Bottom Right (negotiable/offers/exchange) */}
+          <View style={cardStyles.stickersRow}>
+            {(() => {
+              const stickers = [];
+              if (isNegotiable) stickers.push({ label: 'Negotiable', icon: 'pricetag-outline' as const });
+              if (listing.acceptsOffers) stickers.push({ label: 'Accepts Offers', icon: 'hand-left-outline' as const });
+              if (listing.exchangePossible) stickers.push({ label: 'Exchange', icon: 'swap-horizontal-outline' as const });
+              
+              // Show 1 sticker on mobile, up to 3 on tablet/desktop
+              const maxStickers = isDesktop ? 3 : 1;
+              return stickers.slice(0, maxStickers).map((sticker, idx) => (
+                <View key={idx} style={cardStyles.stickerBadge}>
+                  <Ionicons name={sticker.icon} size={10} color={COLORS.primary} />
+                  <Text style={cardStyles.stickerText}>{sticker.label}</Text>
+                </View>
+              ));
+            })()}
           </View>
         </View>
       </View>
