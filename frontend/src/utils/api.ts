@@ -152,6 +152,13 @@ export const listingsApi = {
   delete: async (id: string) => {
     const response = await api.delete(`/listings/${id}`);
     return response.data;
+  },
+  // Search listings with optional category filter
+  search: async (query: string, category?: string) => {
+    const params: any = { search: query };
+    if (category) params.category = category;
+    const response = await api.get('/listings', { params });
+    return response.data;
   }
 };
 
