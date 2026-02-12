@@ -14,7 +14,7 @@ import uuid
 import time
 
 # Base URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://dating-subcats.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://code-organization.preview.emergentagent.com').rstrip('/')
 
 # Test data references
 TEST_AB_TEST_ID = None

@@ -2878,7 +2878,7 @@ async def get_shareable_badge_profile(user_id: str):
             "title": og_title,
             "description": og_description,
             "type": "profile",
-            "url": f"https://dating-subcats.preview.emergentagent.com/profile/{user_id}/badges",
+            "url": f"https://code-organization.preview.emergentagent.com/profile/{user_id}/badges",
         }
     }
 
@@ -3463,7 +3463,7 @@ async def get_sitemap():
     """Generate XML sitemap for all public business profiles"""
     from fastapi.responses import Response
     
-    base_url = os.environ.get("SITE_URL", "https://dating-subcats.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://code-organization.preview.emergentagent.com")
     
     # Get all active, verified business profiles
     profiles = await db.business_profiles.find(
@@ -3514,7 +3514,7 @@ async def get_robots():
     """Generate robots.txt with sitemap reference"""
     from fastapi.responses import PlainTextResponse
     
-    base_url = os.environ.get("SITE_URL", "https://dating-subcats.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://code-organization.preview.emergentagent.com")
     
     robots_content = f"""User-agent: *
 Allow: /
@@ -3556,7 +3556,7 @@ async def get_business_profile_og_meta(slug: str):
     """Get OG meta tags for a business profile for social media sharing"""
     from fastapi.responses import HTMLResponse
     
-    base_url = os.environ.get("SITE_URL", "https://dating-subcats.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://code-organization.preview.emergentagent.com")
     
     # Find profile by slug or identifier
     profile = await db.business_profiles.find_one(
