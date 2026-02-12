@@ -2174,6 +2174,25 @@ async def get_public_form_configs():
             "visibility_rules": {},
         }
 
+# Public photography guides endpoint - proxy to admin backend (no auth required)
+@app.get("/api/photography-guides/public/{category_id}")
+async def get_public_photography_guides(category_id: str):
+    """Proxy public photography guides request to admin backend."""
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(f"{ADMIN_BACKEND_URL}/api/photography-guides/public/{category_id}")
+            return Response(
+                content=response.content,
+                status_code=response.status_code,
+                headers={"Content-Type": "application/json"}
+            )
+    except httpx.ConnectError:
+        # Return empty guides for graceful fallback
+        return {"guides": [], "count": 0}
+    except Exception as e:
+        logger.error(f"Photography guides proxy error: {e}")
+        return {"guides": [], "count": 0}
+
 # Include the router in the main app
 app.include_router(api_router)
 
