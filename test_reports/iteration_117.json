@@ -1,0 +1,53 @@
+{
+  "summary": "Verified that all 3 profile pages (My Listings, Purchases, Sales) are now using DesktopPageLayout component correctly. This fixes the UI inconsistency issue reported in iteration_116. All pages show desktop header with search bar, sidebar navigation with correct active state highlighting, proper unauthenticated state with Sign In button, and footer.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "pages_verified_with_desktoppagelayout": {
+    "my_listings": {
+      "url": "/profile/my-listings",
+      "header_with_search": true,
+      "sidebar_navigation": true,
+      "sidebar_active_state_highlighted": true,
+      "unauthenticated_sign_in_button": true,
+      "page_title_with_icon": true,
+      "footer_visible": true
+    },
+    "purchases": {
+      "url": "/profile/purchases",
+      "header_with_search": true,
+      "sidebar_navigation": true,
+      "sidebar_active_state_highlighted": true,
+      "unauthenticated_sign_in_button": true,
+      "page_title_with_icon": true,
+      "footer_visible": true
+    },
+    "sales": {
+      "url": "/profile/sales",
+      "header_with_search": true,
+      "sidebar_navigation": true,
+      "sidebar_active_state_highlighted": true,
+      "unauthenticated_sign_in_button": true,
+      "page_title_with_icon": true,
+      "footer_visible": true
+    }
+  },
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100%"},
+  "test_credentials": "Not required for this test - tested unauthenticated state only",
+  "seed_data_creation": "",
+  "retest_needed": false,
+  "main_agent_can_self_test": false,
+  "context_for_next_testing_agent": "All 11 profile pages now consistently use DesktopPageLayout on desktop. The 3 pages (My Listings, Purchases, Sales) were updated from older mobile-style layout to use the same DesktopPageLayout component as other profile pages. Sidebar navigation works correctly and highlights the active page.",
+  "testing_date": "2026-02-12",
+  "fix_verified": "UI inconsistency in 3 profile pages fixed - now using DesktopPageLayout with sidebar"
+}
