@@ -279,6 +279,11 @@ export default function PhotographyGuidesPage() {
   });
   
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
+  // Image preview modal state
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewModalImage, setPreviewModalImage] = useState<string | null>(null);
+  const [previewModalTitle, setPreviewModalTitle] = useState<string>('');
 
   // DnD sensors
   const sensors = useSensors(
