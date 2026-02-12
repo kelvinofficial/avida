@@ -190,11 +190,16 @@ class TestPhotographyGuidesAPI:
         assert response.status_code == 200
         data = response.json()
         
-        assert isinstance(data, list)
+        # The response is now wrapped in {guides: [...], count: N}
+        if isinstance(data, dict) and "guides" in data:
+            guides = data.get("guides", [])
+        else:
+            guides = data if isinstance(data, list) else []
+        
         # All guides should be active
-        for guide in data:
+        for guide in guides:
             assert guide.get("is_active", True) == True
-        print(f"Found {len(data)} public photography guides for electronics")
+        print(f"Found {len(guides)} public photography guides for electronics")
     
     def test_create_guide(self, auth_headers):
         """Test POST /api/photography-guides creates a new guide"""
