@@ -29,7 +29,8 @@ def user_token():
     )
     if response.status_code == 200:
         data = response.json()
-        return data.get("token")
+        # The token field is 'session_token' in this API
+        return data.get("session_token") or data.get("token")
     pytest.skip(f"User authentication failed: {response.status_code}")
 
 
