@@ -198,9 +198,18 @@ def create_photography_guides_router(db, require_auth):
         }
     
     @router.post("")
-    async def create_guide(guide: PhotographyGuideCreate, user: dict = Depends(require_auth)):
+    async def create_guide(guide: PhotographyGuideCreate, user = Depends(require_auth)):
         """Create a new photography guide"""
         now = datetime.now(timezone.utc)
+        
+        # Extract user_id from user object (could be dict or object)
+        user_id = "admin"
+        if hasattr(user, 'user_id'):
+            user_id = user.user_id
+        elif hasattr(user, 'email'):
+            user_id = user.email
+        elif isinstance(user, dict):
+            user_id = user.get("user_id", user.get("email", "admin"))
         
         doc = {
             "category_id": guide.category_id,
@@ -212,7 +221,7 @@ def create_photography_guides_router(db, require_auth):
             "has_image": False,
             "created_at": now,
             "updated_at": now,
-            "created_by": user.get("user_id", user.get("email", "admin"))
+            "created_by": user_id
         }
         
         # Handle image upload
