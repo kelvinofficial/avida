@@ -328,9 +328,32 @@ export default function PostListingScreen() {
   const [loading, setLoading] = useState(false);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   
+  // Refs for auto-scrolling
+  const subcategorySectionRef = useRef<View>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+  
   // Step 1: Category & Subcategory Selection
   const [selectedCategoryId, setSelectedCategoryId] = useState(categoryId || '');
   const [selectedSubcategoryId, setSelectedSubcategoryId] = useState('');
+  
+  // Auto-scroll to subcategories when category is selected
+  const handleCategorySelect = useCallback((catId: string) => {
+    setSelectedCategoryId(catId);
+    setSelectedSubcategoryId('');
+    
+    // Scroll to subcategory section after a short delay
+    setTimeout(() => {
+      if (subcategorySectionRef.current && scrollViewRef.current) {
+        subcategorySectionRef.current.measureLayout(
+          scrollViewRef.current.getInnerViewRef() as any,
+          (x, y) => {
+            scrollViewRef.current?.scrollTo({ y: y - 20, animated: true });
+          },
+          () => {}
+        );
+      }
+    }, 100);
+  }, []);
   
   // Derived state for current subcategory config
   const currentSubcategoryConfig = useMemo(() => {
