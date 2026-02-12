@@ -138,6 +138,12 @@ export default function FormConfigPage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewCategory, setPreviewCategory] = useState<string>('');
   const [jsonCopied, setJsonCopied] = useState(false);
+  
+  // Import JSON state
+  const [importLoading, setImportLoading] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importSuccess, setImportSuccess] = useState(false);
+  
   // Form state for create/edit dialog
   const [formData, setFormData] = useState({
     category_id: '',
