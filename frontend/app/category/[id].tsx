@@ -1154,6 +1154,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // Mobile search container styles
+  mobileSearchContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginLeft: 8,
+    height: 36,
+    gap: 8,
+  },
+  mobileSearchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#1A1A1A',
+    paddingVertical: 0,
+  },
   
   // Subcategories Bar
   subcategoriesBar: {
