@@ -177,6 +177,64 @@ export default function CategoryScreen() {
   const [showRecentSearches, setShowRecentSearches] = useState(false);
 
   const categoryId = id as string;
+  
+  // Storage key for recent searches (per category)
+  const RECENT_SEARCHES_KEY = `recent_searches_${categoryId}`;
+  const MAX_RECENT_SEARCHES = 5;
+  
+  // Load recent searches from storage
+  const loadRecentSearches = useCallback(async () => {
+    try {
+      const stored = await AsyncStorage.getItem(RECENT_SEARCHES_KEY);
+      if (stored) {
+        setRecentSearches(JSON.parse(stored));
+      }
+    } catch (error) {
+      console.log('Error loading recent searches:', error);
+    }
+  }, [RECENT_SEARCHES_KEY]);
+  
+  // Save a search query to recent searches
+  const saveRecentSearch = useCallback(async (query: string) => {
+    if (!query.trim() || query.trim().length < 2) return;
+    
+    try {
+      const trimmedQuery = query.trim();
+      // Remove duplicate if exists and add to front
+      const updated = [trimmedQuery, ...recentSearches.filter(s => s.toLowerCase() !== trimmedQuery.toLowerCase())]
+        .slice(0, MAX_RECENT_SEARCHES);
+      setRecentSearches(updated);
+      await AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+    } catch (error) {
+      console.log('Error saving recent search:', error);
+    }
+  }, [recentSearches, RECENT_SEARCHES_KEY]);
+  
+  // Remove a specific recent search
+  const removeRecentSearch = useCallback(async (query: string) => {
+    try {
+      const updated = recentSearches.filter(s => s !== query);
+      setRecentSearches(updated);
+      await AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+    } catch (error) {
+      console.log('Error removing recent search:', error);
+    }
+  }, [recentSearches, RECENT_SEARCHES_KEY]);
+  
+  // Clear all recent searches
+  const clearAllRecentSearches = useCallback(async () => {
+    try {
+      setRecentSearches([]);
+      await AsyncStorage.removeItem(RECENT_SEARCHES_KEY);
+    } catch (error) {
+      console.log('Error clearing recent searches:', error);
+    }
+  }, [RECENT_SEARCHES_KEY]);
+  
+  // Load recent searches on mount
+  useEffect(() => {
+    loadRecentSearches();
+  }, [categoryId]);
 
   // Get subcategories for this category
   const subcategories = useMemo(() => {
