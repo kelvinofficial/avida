@@ -667,92 +667,67 @@ export default function MessagesScreen() {
   }
 
   if (!isAuthenticated) {
-    // Desktop unauthenticated - split screen layout
+    // Desktop unauthenticated - using DesktopPageLayout
     if (isLargeScreen) {
       return (
-        <SafeAreaView style={[styles.container, desktopStyles.container]} edges={['top']}>
-          {/* Global Header */}
-          <DesktopHeader />
-          
-          <View style={desktopStyles.splitContainer}>
-            {/* Left side - Promo illustration */}
-            <View style={desktopStyles.unauthLeftPanel}>
-              <View style={desktopStyles.unauthPromoContent}>
-                <View style={desktopStyles.unauthIconBgLarge}>
-                  <Ionicons name="chatbubbles" size={80} color="#1976D2" />
-                </View>
-                <Text style={desktopStyles.unauthPromoTitle}>Connect with Buyers & Sellers</Text>
-                <Text style={desktopStyles.unauthPromoText}>
-                  Real-time messaging, negotiate prices, make offers, and close deals securely.
-                </Text>
-                
-                {/* Features grid */}
-                <View style={desktopStyles.featuresGrid}>
-                  <View style={desktopStyles.featureCard}>
-                    <View style={[desktopStyles.featureIcon, { backgroundColor: '#E3F2FD' }]}>
-                      <Ionicons name="chatbubble-ellipses" size={24} color="#1976D2" />
-                    </View>
-                    <Text style={desktopStyles.featureTitle}>Real-time Chat</Text>
-                    <Text style={desktopStyles.featureDesc}>Instant messaging with buyers and sellers</Text>
-                  </View>
-                  <View style={desktopStyles.featureCard}>
-                    <View style={[desktopStyles.featureIcon, { backgroundColor: '#E8F5E9' }]}>
-                      <Ionicons name="pricetag" size={24} color={COLORS.primary} />
-                    </View>
-                    <Text style={desktopStyles.featureTitle}>Make Offers</Text>
-                    <Text style={desktopStyles.featureDesc}>Negotiate prices directly in chat</Text>
-                  </View>
-                  <View style={desktopStyles.featureCard}>
-                    <View style={[desktopStyles.featureIcon, { backgroundColor: '#FFF3E0' }]}>
-                      <Ionicons name="shield-checkmark" size={24} color="#F57C00" />
-                    </View>
-                    <Text style={desktopStyles.featureTitle}>Secure</Text>
-                    <Text style={desktopStyles.featureDesc}>Safe & private conversations</Text>
-                  </View>
-                  <View style={desktopStyles.featureCard}>
-                    <View style={[desktopStyles.featureIcon, { backgroundColor: '#FCE4EC' }]}>
-                      <Ionicons name="notifications" size={24} color="#E91E63" />
-                    </View>
-                    <Text style={desktopStyles.featureTitle}>Notifications</Text>
-                    <Text style={desktopStyles.featureDesc}>Never miss a message</Text>
-                  </View>
-                </View>
+        <DesktopPageLayout
+          title="Messages"
+          icon="chatbubbles-outline"
+        >
+          <View style={messagesDesktopStyles.unauthContainer}>
+            {/* Hero Section */}
+            <View style={messagesDesktopStyles.heroSection}>
+              <View style={messagesDesktopStyles.heroIcon}>
+                <Ionicons name="chatbubbles" size={72} color="#1976D2" />
               </View>
+              <Text style={messagesDesktopStyles.heroTitle}>Connect with Buyers & Sellers</Text>
+              <Text style={messagesDesktopStyles.heroSubtitle}>
+                Real-time messaging, negotiate prices, make offers, and close deals securely.
+              </Text>
+              
+              <TouchableOpacity 
+                style={messagesDesktopStyles.signInBtn} 
+                onPress={() => router.push('/login?redirect=/messages')}
+                data-testid="sign-in-btn"
+              >
+                <Ionicons name="log-in-outline" size={22} color="#fff" />
+                <Text style={messagesDesktopStyles.signInBtnText}>Sign In to Start Messaging</Text>
+              </TouchableOpacity>
             </View>
-
-            {/* Right side - Sign in form */}
-            <View style={desktopStyles.unauthRightPanel}>
-              <View style={desktopStyles.unauthFormCard}>
-                <Text style={desktopStyles.unauthFormTitle}>Sign in to Messages</Text>
-                <Text style={desktopStyles.unauthFormSubtitle}>
-                  Access your conversations and connect with the community
-                </Text>
-
-                <TouchableOpacity 
-                  style={desktopStyles.unauthPrimaryBtn} 
-                  onPress={() => router.push('/login?redirect=/messages')}
-                >
-                  <Ionicons name="log-in-outline" size={22} color="#fff" />
-                  <Text style={desktopStyles.unauthPrimaryBtnText}>Sign In</Text>
-                </TouchableOpacity>
-
-                <View style={desktopStyles.unauthDivider}>
-                  <View style={desktopStyles.unauthDividerLine} />
-                  <Text style={desktopStyles.unauthDividerText}>or</Text>
-                  <View style={desktopStyles.unauthDividerLine} />
+            
+            {/* Features Grid */}
+            <View style={messagesDesktopStyles.featuresGrid}>
+              <View style={messagesDesktopStyles.featureCard}>
+                <View style={[messagesDesktopStyles.featureIcon, { backgroundColor: '#E3F2FD' }]}>
+                  <Ionicons name="chatbubble-ellipses" size={28} color="#1976D2" />
                 </View>
-
-                <TouchableOpacity 
-                  style={desktopStyles.unauthSecondaryBtn} 
-                  onPress={() => router.push('/register?redirect=/messages')}
-                >
-                  <Ionicons name="person-add-outline" size={20} color={COLORS.primary} />
-                  <Text style={desktopStyles.unauthSecondaryBtnText}>Create New Account</Text>
-                </TouchableOpacity>
+                <Text style={messagesDesktopStyles.featureTitle}>Real-time Chat</Text>
+                <Text style={messagesDesktopStyles.featureDesc}>Instant messaging with buyers and sellers</Text>
+              </View>
+              <View style={messagesDesktopStyles.featureCard}>
+                <View style={[messagesDesktopStyles.featureIcon, { backgroundColor: '#E8F5E9' }]}>
+                  <Ionicons name="pricetag" size={28} color={COLORS.primary} />
+                </View>
+                <Text style={messagesDesktopStyles.featureTitle}>Make Offers</Text>
+                <Text style={messagesDesktopStyles.featureDesc}>Negotiate prices directly in chat</Text>
+              </View>
+              <View style={messagesDesktopStyles.featureCard}>
+                <View style={[messagesDesktopStyles.featureIcon, { backgroundColor: '#FFF3E0' }]}>
+                  <Ionicons name="shield-checkmark" size={28} color="#F57C00" />
+                </View>
+                <Text style={messagesDesktopStyles.featureTitle}>Secure</Text>
+                <Text style={messagesDesktopStyles.featureDesc}>Safe & private conversations</Text>
+              </View>
+              <View style={messagesDesktopStyles.featureCard}>
+                <View style={[messagesDesktopStyles.featureIcon, { backgroundColor: '#FCE4EC' }]}>
+                  <Ionicons name="notifications" size={28} color="#E91E63" />
+                </View>
+                <Text style={messagesDesktopStyles.featureTitle}>Notifications</Text>
+                <Text style={messagesDesktopStyles.featureDesc}>Never miss a message</Text>
               </View>
             </View>
           </View>
-        </SafeAreaView>
+        </DesktopPageLayout>
       );
     }
 
