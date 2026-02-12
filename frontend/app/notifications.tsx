@@ -711,12 +711,23 @@ export default function NotificationsScreen() {
         >
           {FILTER_CHIPS.map(chip => {
             const isActive = activeFilter === chip.key;
-
+            // Route to specific pages for badges, challenges, credits
+            const handleChipPress = () => {
+              if (chip.key === 'badge') {
+                router.push('/profile/badges');
+              } else if (chip.key === 'challenge') {
+                router.push('/challenges');
+              } else if (chip.key === 'credit') {
+                router.push('/credits');
+              } else {
+                setActiveFilter(chip.key);
+              }
+            };
             return (
               <TouchableOpacity
                 key={chip.key}
                 style={[styles.filterChip, isActive && styles.filterChipActive]}
-                onPress={() => setActiveFilter(chip.key)}
+                onPress={handleChipPress}
               >
                 <Ionicons
                   name={chip.icon as any}
