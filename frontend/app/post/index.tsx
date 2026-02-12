@@ -1322,61 +1322,71 @@ export default function PostListingScreen() {
   );
 
   // ============ STEP 3: BASE DETAILS ============
-  const renderStep3 = () => (
-    <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.stepTitle}>Listing Details</Text>
-      <Text style={styles.stepSubtitle}>Describe what you're selling</Text>
+  const renderStep3 = () => {
+    // Get dynamic placeholders based on category/subcategory
+    const placeholders = getPlaceholders(selectedCategoryId, selectedSubcategoryId);
+    const hideCondition = shouldHideCondition(selectedCategoryId, selectedSubcategoryId);
+    
+    return (
+      <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
+        <Text style={styles.stepTitle}>Listing Details</Text>
+        <Text style={styles.stepSubtitle}>
+          {selectedCategoryId === 'friendship_dating' ? 'Tell us about yourself' : 
+           selectedCategoryId === 'jobs_services' ? 'Describe your job or service' : 
+           "Describe what you're listing"}
+        </Text>
 
-      <View style={styles.fieldContainer}>
-        <Text style={styles.fieldLabel}>Title <Text style={styles.required}>*</Text></Text>
-        <TextInput
-          style={styles.input}
-          placeholder="What are you selling?"
-          placeholderTextColor={COLORS.textSecondary}
-          value={title}
-          onChangeText={setTitle}
-          maxLength={100}
-        />
-        <Text style={styles.charCount}>{title.length}/100</Text>
-      </View>
-
-      <View style={styles.fieldContainer}>
-        <Text style={styles.fieldLabel}>Description <Text style={styles.required}>*</Text></Text>
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          placeholder="Include details like condition, features, reason for selling..."
-          placeholderTextColor={COLORS.textSecondary}
-          value={description}
-          onChangeText={setDescription}
-          multiline
-          numberOfLines={6}
-          maxLength={2000}
-          textAlignVertical="top"
-        />
-        <Text style={styles.charCount}>{description.length}/2000</Text>
-      </View>
-
-      {/* Condition - Subcategory specific options */}
-      {conditionOptions && conditionOptions.length > 0 && (
         <View style={styles.fieldContainer}>
-          <Text style={styles.fieldLabel}>Condition</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {conditionOptions.map((c) => (
-              <TouchableOpacity
-                key={c}
-                style={[styles.chip, condition === c && styles.chipSelected]}
-                onPress={() => setCondition(condition === c ? '' : c)}
-              >
-                <Text style={[styles.chipText, condition === c && styles.chipTextSelected]}>
-                  {c}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          <Text style={styles.fieldLabel}>{placeholders.titleLabel || 'Title'} <Text style={styles.required}>*</Text></Text>
+          <TextInput
+            style={styles.input}
+            placeholder={placeholders.title}
+            placeholderTextColor={COLORS.textSecondary}
+            value={title}
+            onChangeText={setTitle}
+            maxLength={100}
+          />
+          <Text style={styles.charCount}>{title.length}/100</Text>
         </View>
-      )}
-    </ScrollView>
-  );
+
+        <View style={styles.fieldContainer}>
+          <Text style={styles.fieldLabel}>{placeholders.descriptionLabel || 'Description'} <Text style={styles.required}>*</Text></Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            placeholder={placeholders.description}
+            placeholderTextColor={COLORS.textSecondary}
+            value={description}
+            onChangeText={setDescription}
+            multiline
+            numberOfLines={6}
+            maxLength={2000}
+            textAlignVertical="top"
+          />
+          <Text style={styles.charCount}>{description.length}/2000</Text>
+        </View>
+
+        {/* Condition - Hidden for certain categories */}
+        {!hideCondition && conditionOptions && conditionOptions.length > 0 && (
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>Condition</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {conditionOptions.map((c) => (
+                <TouchableOpacity
+                  key={c}
+                  style={[styles.chip, condition === c && styles.chipSelected]}
+                  onPress={() => setCondition(condition === c ? '' : c)}
+                >
+                  <Text style={[styles.chipText, condition === c && styles.chipTextSelected]}>
+                    {c}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+      </ScrollView>
+    );
+  };
 
   // ============ STEP 4: DYNAMIC ATTRIBUTES (Subcategory-specific) ============
   const renderStep4 = () => {
