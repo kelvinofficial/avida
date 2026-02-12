@@ -175,8 +175,13 @@ export default function CategoryScreen() {
   // Recently searched state
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [showRecentSearches, setShowRecentSearches] = useState(false);
+  // Popular searches state
+  const [popularSearches, setPopularSearches] = useState<{global: string[], category: string[]}>({ global: [], category: [] });
 
   const categoryId = id as string;
+  
+  // API Base URL
+  const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
   
   // Storage key for recent searches (per category)
   const RECENT_SEARCHES_KEY = `recent_searches_${categoryId}`;
@@ -194,6 +199,37 @@ export default function CategoryScreen() {
     }
   }, [RECENT_SEARCHES_KEY]);
   
+  // Load popular searches from API
+  const loadPopularSearches = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/searches/popular?category_id=${categoryId}&limit=5`);
+      if (response.ok) {
+        const data = await response.json();
+        setPopularSearches({
+          global: (data.global_searches || []).map((s: any) => s.query),
+          category: (data.category_searches || []).map((s: any) => s.query)
+        });
+      }
+    } catch (error) {
+      console.log('Error loading popular searches:', error);
+    }
+  }, [API_URL, categoryId]);
+  
+  // Track search on backend
+  const trackSearch = useCallback(async (query: string) => {
+    if (!query.trim() || query.trim().length < 2) return;
+    
+    try {
+      await fetch(`${API_URL}/api/searches/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: query.trim().toLowerCase(), category_id: categoryId })
+      });
+    } catch (error) {
+      console.log('Error tracking search:', error);
+    }
+  }, [API_URL, categoryId]);
+  
   // Save a search query to recent searches
   const saveRecentSearch = useCallback(async (query: string) => {
     if (!query.trim() || query.trim().length < 2) return;
@@ -205,10 +241,12 @@ export default function CategoryScreen() {
         .slice(0, MAX_RECENT_SEARCHES);
       setRecentSearches(updated);
       await AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+      // Also track on backend for popular searches
+      trackSearch(query);
     } catch (error) {
       console.log('Error saving recent search:', error);
     }
-  }, [recentSearches, RECENT_SEARCHES_KEY]);
+  }, [recentSearches, RECENT_SEARCHES_KEY, trackSearch]);
   
   // Remove a specific recent search
   const removeRecentSearch = useCallback(async (query: string) => {
