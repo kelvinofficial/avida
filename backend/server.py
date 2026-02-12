@@ -3284,8 +3284,17 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load streaks router: {e}")
     
-    # NOTE: Challenges router disabled - comprehensive implementation exists in server.py
-    # The server.py version includes seasonal challenges, badge rewards, and more detailed tracking
+    # Badge Challenges router - comprehensive implementation with seasonal challenges, 
+    # badge rewards, streak tracking, and detailed progress
+    try:
+        badge_challenges_router = create_badge_challenges_router(db, require_auth, send_push_notification)
+        api_router.include_router(badge_challenges_router)
+        logger.info("Badge challenges router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load badge challenges router: {e}")
+    
+    # NOTE: Old challenges router disabled - replaced by badge_challenges_router above
+    # which includes seasonal challenges, badge rewards, and more detailed tracking
     # try:
     #     challenges_router_modular = create_challenges_router(db, require_auth)
     #     api_router.include_router(challenges_router_modular)
