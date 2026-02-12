@@ -30,7 +30,7 @@
     "backend": "100% (27/27 Phase 4 tests passed, 83/83 Phase 1-3 tests passed)"
   },
   "test_credentials": {
-    "api_base": "https://post-refactor.preview.emergentagent.com",
+    "api_base": "https://classifieds-dynamic.preview.emergentagent.com",
     "test_user": "seller@test.com / test1234"
   },
   "seed_data_creation": "Test custom segments created during pytest execution with TEST_ prefix were cleaned up after tests.",

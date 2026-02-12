@@ -255,7 +255,7 @@ export default function CheckoutScreen() {
         });
         
         const order = orderResponse.data.order;
-        const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://post-refactor.preview.emergentagent.com';
+        const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://classifieds-dynamic.preview.emergentagent.com';
         
         // Create payment
         let paymentResponse;
