@@ -283,7 +283,7 @@ def create_photography_guides_router(db, require_auth):
         return {"message": "Photography guide updated successfully"}
     
     @router.delete("/{guide_id}")
-    async def delete_guide(guide_id: str, user: dict = Depends(require_auth)):
+    async def delete_guide(guide_id: str, user = Depends(require_auth)):
         """Delete a photography guide"""
         try:
             result = await collection.delete_one({"_id": ObjectId(guide_id)})
