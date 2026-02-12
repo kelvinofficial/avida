@@ -250,6 +250,55 @@ export const DesktopPageLayout: React.FC<DesktopPageLayoutProps> = ({
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated } = useAuthStore();
+  const [badges, setBadges] = useState<NotificationBadges>({ unreadMessages: 0, pendingOffers: 0 });
+
+  // Fetch notification badges for authenticated users
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setBadges({ unreadMessages: 0, pendingOffers: 0 });
+      return;
+    }
+
+    const fetchBadges = async () => {
+      try {
+        const [conversationsRes, offersRes] = await Promise.all([
+          api.get('/conversations').catch(() => ({ data: [] })),
+          api.get('/offers?role=seller').catch(() => ({ data: { offers: [] } })),
+        ]);
+
+        // Calculate total unread messages
+        const conversations = Array.isArray(conversationsRes.data) ? conversationsRes.data : [];
+        const unreadMessages = conversations.reduce((sum: number, conv: any) => sum + (conv.unread || 0), 0);
+
+        // Count pending offers
+        const offersArray = offersRes.data?.offers || offersRes.data || [];
+        const pendingOffers = Array.isArray(offersArray) 
+          ? offersArray.filter((offer: any) => offer.status === 'pending').length 
+          : 0;
+
+        setBadges({ unreadMessages, pendingOffers });
+      } catch (error) {
+        console.error('Error fetching notification badges:', error);
+      }
+    };
+
+    fetchBadges();
+    // Refresh badges every 30 seconds
+    const interval = setInterval(fetchBadges, 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
+  // Get badge count for a specific sidebar item
+  const getBadgeCount = (itemId: string): number => {
+    switch (itemId) {
+      case 'messages':
+        return badges.unreadMessages;
+      case 'offers':
+        return badges.pendingOffers;
+      default:
+        return 0;
+    }
+  };
 
   const renderSidebar = () => (
     <View style={styles.sidebar}>
@@ -264,6 +313,7 @@ export const DesktopPageLayout: React.FC<DesktopPageLayoutProps> = ({
           
           const isActive = pathname === link.route || 
             (link.route !== '/' && pathname.startsWith(link.route));
+          const badgeCount = getBadgeCount(link.id);
           
           return (
             <TouchableOpacity
@@ -272,11 +322,20 @@ export const DesktopPageLayout: React.FC<DesktopPageLayoutProps> = ({
               onPress={() => router.push(link.route as any)}
               data-testid={`sidebar-${link.id}`}
             >
-              <Ionicons
-                name={link.icon}
-                size={20}
-                color={isActive ? COLORS.primary : COLORS.textSecondary}
-              />
+              <View style={styles.sidebarIconContainer}>
+                <Ionicons
+                  name={link.icon}
+                  size={20}
+                  color={isActive ? COLORS.primary : COLORS.textSecondary}
+                />
+                {badgeCount > 0 && (
+                  <View style={styles.notificationDot} data-testid={`badge-${link.id}`}>
+                    <Text style={styles.notificationDotText}>
+                      {badgeCount > 99 ? '99+' : badgeCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
               <Text style={[styles.sidebarItemText, isActive && styles.sidebarItemTextActive]}>
                 {link.label}
               </Text>
