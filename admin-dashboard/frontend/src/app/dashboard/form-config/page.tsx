@@ -406,6 +406,43 @@ export default function FormConfigPage() {
     };
   }, [configs]);
 
+  // Copy configuration to clipboard as JSON
+  const copyConfigToClipboard = useCallback(async (categoryId: string) => {
+    const preview = getPreviewData(categoryId);
+    const categoryConfigs = configs.filter(c => 
+      (c.category_id === categoryId || c.category_id === 'default' || c.category_id === 'global') && 
+      c.is_active
+    );
+    
+    const exportData = {
+      category_id: categoryId,
+      category_name: getCategoryName(categoryId),
+      exported_at: new Date().toISOString(),
+      configuration: {
+        placeholders: preview.placeholder,
+        seller_type: preview.sellerType,
+        preferences: preview.preferences,
+        visibility_rules: preview.visibility,
+      },
+      raw_configs: categoryConfigs.map(c => ({
+        id: c._id,
+        category_id: c.category_id,
+        config_type: c.config_type,
+        config_data: c.config_data,
+        is_active: c.is_active,
+        priority: c.priority,
+      })),
+    };
+    
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(exportData, null, 2));
+      setJsonCopied(true);
+      setTimeout(() => setJsonCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  }, [configs, getPreviewData]);
+
   const getConfigTypeName = (typeValue: string) => {
     const type = CONFIG_TYPES.find(t => t.value === typeValue);
     return type?.label || typeValue;
