@@ -9,7 +9,7 @@ import os
 import uuid
 from datetime import datetime, timezone
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://listing-form-builder.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://classifieds-dynamic-1.preview.emergentagent.com').rstrip('/')
 
 
 class TestBadgeServiceInitialization:
