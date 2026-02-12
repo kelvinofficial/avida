@@ -20,7 +20,7 @@ import uuid
 from datetime import datetime
 
 # Base URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://category-classifier-1.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://dynamic-listings-2.preview.emergentagent.com').rstrip('/')
 
 
 class TestSandboxConfiguration:

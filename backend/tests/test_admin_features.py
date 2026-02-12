@@ -9,7 +9,7 @@ import os
 import io
 import csv
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://category-classifier-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://dynamic-listings-2.preview.emergentagent.com')
 API_URL = f"{BASE_URL}/api/admin"
 
 # Test credentials

@@ -14,7 +14,7 @@ from datetime import datetime
 # Use the backend URL from environment
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
-    BASE_URL = "https://category-classifier-1.preview.emergentagent.com"
+    BASE_URL = "https://dynamic-listings-2.preview.emergentagent.com"
 
 
 class TestCriticalFlowTesting:

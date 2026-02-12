@@ -162,7 +162,7 @@ export default function AdminAnalyticsScreen() {
   const openAdminDashboard = () => {
     const url = Platform.OS === 'web' 
       ? '/api/admin-ui/dashboard/analytics'
-      : 'https://category-classifier-1.preview.emergentagent.com/api/admin-ui/dashboard/analytics';
+      : 'https://dynamic-listings-2.preview.emergentagent.com/api/admin-ui/dashboard/analytics';
     Linking.openURL(url);
   };
 
