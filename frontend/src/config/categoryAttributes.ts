@@ -323,20 +323,33 @@ export const MISC_CONFIG: CategoryAttributeConfig = {
 // ============ CATEGORY MAP ============
 export const CATEGORY_CONFIGS: Record<string, CategoryAttributeConfig> = {
   'vehicles': VEHICLES_CONFIG,
+  'auto_vehicles': VEHICLES_CONFIG,
   'electronics': ELECTRONICS_CONFIG,
   'realestate': REALESTATE_CONFIG,
+  'properties': REALESTATE_CONFIG,
   'home': FURNITURE_CONFIG,
+  'home_furniture': FURNITURE_CONFIG,
   'fashion': FASHION_CONFIG,
+  'fashion_beauty': FASHION_CONFIG,
   'services': SERVICES_CONFIG,
+  'jobs_services': SERVICES_CONFIG,
   'jobs': JOBS_CONFIG,
   'family': KIDS_CONFIG,
+  'kids_baby': KIDS_CONFIG,
   'beauty': BEAUTY_CONFIG,
   'leisure': LEISURE_CONFIG,
+  'sports_hobbies': LEISURE_CONFIG,
   'animals': ANIMALS_CONFIG,
+  'pets': ANIMALS_CONFIG,
   'industrial': INDUSTRIAL_CONFIG,
+  'commercial_equipment': INDUSTRIAL_CONFIG,
   'agriculture': AGRICULTURE_CONFIG,
   'misc': MISC_CONFIG,
   'bikes': BIKES_CONFIG,
+  'repair_construction': { id: 'repair_construction', name: 'Repair & Construction', icon: 'hammer-outline', attributes: [] },
+  'phones_tablets': { id: 'phones_tablets', name: 'Phones & Tablets', icon: 'phone-portrait-outline', attributes: [] },
+  'friendship_dating': { id: 'friendship_dating', name: 'Friendship & Dating', icon: 'heart-outline', attributes: [] },
+  'community': { id: 'community', name: 'Community', icon: 'people-outline', attributes: [] },
 };
 
 export const getCategoryConfig = (categoryId: string): CategoryAttributeConfig | null => {
