@@ -9925,13 +9925,20 @@ async def get_public_photography_guides(category_id: str):
         ).sort("order", 1).limit(10)
         
         async for guide in cursor:
+            # Support both image_url (external URL) and image_base64 (stored base64)
+            image_url = None
+            if guide.get("image_url"):
+                image_url = guide["image_url"]
+            elif guide.get("image_base64"):
+                image_url = f"data:image/jpeg;base64,{guide['image_base64']}"
+            
             guides.append({
                 "id": str(guide["_id"]),
                 "category_id": guide["category_id"],
                 "title": guide["title"],
                 "description": guide["description"],
                 "icon": guide.get("icon", "camera-outline"),
-                "image_url": f"data:image/jpeg;base64,{guide['image_base64']}" if guide.get("image_base64") else None,
+                "image_url": image_url,
                 "order": guide.get("order", 0),
             })
         
