@@ -1069,10 +1069,10 @@ export default function CategoryScreen() {
             </View>
 
             {/* Quick Category Filters */}
-            {CATEGORY_FILTERS[categoryId] && (
+            {(CATEGORY_FILTERS[categoryId] || CATEGORY_FILTERS.default) && (
               <View style={desktopStyles.quickFiltersContainer}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={desktopStyles.quickFiltersScroll}>
-                  {CATEGORY_FILTERS[categoryId].map((filter) => (
+                  {(CATEGORY_FILTERS[categoryId] || CATEGORY_FILTERS.default).map((filter) => (
                     filter.options.slice(0, 4).map((opt) => (
                       <TouchableOpacity
                         key={`${filter.key}-${opt}`}
