@@ -40,7 +40,7 @@ import {
   Edit,
   Delete,
   Search,
-  Shapes,
+  InterestsOutlined,
   AutoAwesome,
   Category,
   FilterList,
