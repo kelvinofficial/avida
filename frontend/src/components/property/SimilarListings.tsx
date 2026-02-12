@@ -444,7 +444,7 @@ const cardStyles = StyleSheet.create({
   price: {
     fontSize: 16,
     fontWeight: '700',
-    color: COLORS.text,
+    color: COLORS.primary,
   },
   negotiableBadge: {
     backgroundColor: COLORS.primaryLight,
