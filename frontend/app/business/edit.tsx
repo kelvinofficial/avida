@@ -847,7 +847,7 @@ export default function BusinessProfileEditScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={[styles.modalConfirmBtn, processingPayment && styles.modalConfirmBtnDisabled]} 
-                  onPress={handleMpesaPayment}
+                  onPress={handleMpesaCheckout}
                   disabled={processingPayment || mpesaPhone.length < 10}
                 >
                   {processingPayment ? (
