@@ -145,6 +145,53 @@ const carouselStyles = StyleSheet.create({
   indicatorActive: { backgroundColor: '#fff', width: 20 },
 });
 
+// ============ ANIMATED ICON COMPONENT ============
+interface AnimatedIconBoxProps {
+  iconName: string;
+  index: number;
+  color: string;
+}
+
+const AnimatedIconBox = memo(({ iconName, index, color }: AnimatedIconBoxProps) => {
+  const scaleAnim = useRef(new Animated.Value(0.3)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Staggered entrance animation with bounce
+    const delay = index * 80; // 80ms stagger per icon
+    
+    Animated.parallel([
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 300,
+        delay,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 4,
+        tension: 100,
+        delay,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [index, scaleAnim, opacityAnim]);
+
+  return (
+    <Animated.View 
+      style={[
+        detailStyles.iconBox,
+        {
+          opacity: opacityAnim,
+          transform: [{ scale: scaleAnim }],
+        }
+      ]}
+    >
+      <Ionicons name={iconName as any} size={18} color={color} />
+    </Animated.View>
+  );
+});
+
 // ============ KEY DETAILS SECTION ============
 interface KeyDetailsSectionProps {
   listing: Listing;
