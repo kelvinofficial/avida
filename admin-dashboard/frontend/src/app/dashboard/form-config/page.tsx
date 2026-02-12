@@ -1416,16 +1416,38 @@ export default function FormConfigPage() {
             );
           })()}
         </DialogContent>
-        <DialogActions sx={{ justifyContent: 'space-between', px: 3 }}>
-          <Button 
-            variant="outlined"
-            color={jsonCopied ? 'success' : 'primary'}
-            startIcon={jsonCopied ? <Check /> : <ContentCopy />}
-            onClick={() => copyConfigToClipboard(previewCategory)}
-            disabled={!previewCategory}
-          >
-            {jsonCopied ? 'Copied!' : 'Copy as JSON'}
-          </Button>
+        <DialogActions sx={{ justifyContent: 'space-between', px: 3, py: 2 }}>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Button 
+              variant="outlined"
+              color={jsonCopied ? 'success' : 'primary'}
+              startIcon={jsonCopied ? <Check /> : <ContentCopy />}
+              onClick={() => copyConfigToClipboard(previewCategory)}
+              disabled={!previewCategory}
+            >
+              {jsonCopied ? 'Copied!' : 'Copy as JSON'}
+            </Button>
+            <Button
+              variant="outlined"
+              color={importSuccess ? 'success' : importError ? 'error' : 'secondary'}
+              startIcon={importLoading ? <CircularProgress size={18} /> : importSuccess ? <Check /> : importError ? <ErrorIcon /> : <FileUpload />}
+              component="label"
+              disabled={importLoading}
+            >
+              {importLoading ? 'Importing...' : importSuccess ? 'Imported!' : importError ? 'Error' : 'Import from JSON'}
+              <input
+                type="file"
+                accept=".json,application/json"
+                hidden
+                onChange={handleImportJson}
+              />
+            </Button>
+          </Box>
+          {importError && (
+            <Typography variant="caption" color="error" sx={{ position: 'absolute', bottom: 60, left: 24 }}>
+              {importError}
+            </Typography>
+          )}
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Button onClick={() => setPreviewOpen(false)}>Close</Button>
             <Button 
