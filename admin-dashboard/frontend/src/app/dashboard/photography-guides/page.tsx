@@ -134,7 +134,7 @@ interface SortableRowProps {
   isDragging: boolean;
 }
 
-function SortableTableRow({ guide, getCategoryName, handleOpenDialog, handleDeleteGuide, handleToggleActive, isDragging }: SortableRowProps) {
+function SortableTableRow({ guide, getCategoryName, handleOpenDialog, handleDeleteGuide, handleToggleActive, handleImagePreview, isDragging }: SortableRowProps) {
   const {
     attributes,
     listeners,
