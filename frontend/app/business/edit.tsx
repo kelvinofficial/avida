@@ -736,7 +736,30 @@ export default function BusinessProfileEditScreen() {
 
               <TouchableOpacity 
                 style={[styles.upgradeBtn, processingPayment && styles.upgradeBtnDisabled]} 
-                onPress={handlePremiumUpgrade}
+                onPress={async () => {
+                  if (!selectedPackage) {
+                    Alert.alert('Select Package', 'Please select a premium package first');
+                    return;
+                  }
+                  setProcessingPayment(true);
+                  try {
+                    const response = await api.post('/premium-subscription/stripe/checkout', {
+                      package_id: selectedPackage,
+                      business_profile_id: profileId,
+                    });
+                    if (response.data.checkout_url) {
+                      if (Platform.OS === 'web') {
+                        window.location.href = response.data.checkout_url;
+                      } else {
+                        Linking.openURL(response.data.checkout_url);
+                      }
+                    }
+                  } catch (error: any) {
+                    Alert.alert('Error', error.response?.data?.detail || 'Failed to start checkout');
+                  } finally {
+                    setProcessingPayment(false);
+                  }
+                }}
                 disabled={!selectedPackage || processingPayment}
                 data-testid="upgrade-button"
               >
