@@ -1748,23 +1748,54 @@ Created `/app/backend/routes/profile.py` (~305 lines) containing:
 
 ---
 
+### 2026-02-12: Server.py Refactoring - Utility Services
+**COMPLETED**
+
+#### New Utils Directory Created
+Created `/app/backend/utils/` directory with modular service files:
+
+**Email Service (`utils/email_service.py` - 170 lines)**
+- `send_notification_email()` - Send emails via SendGrid
+- `build_email_template()` - Generate styled HTML email templates
+- Handles notification types: default, security_alert, offer_received, price_drop
+
+**Push Notification Service (`utils/push_service.py` - 314 lines)**
+- `send_push_notification()` - Send via Expo Push Service
+- `send_bulk_push_notifications()` - Batch push notifications
+- `send_milestone_push_notification()` - Milestone achievement notifications
+- `check_and_notify_new_milestones()` - Automatic milestone checks
+- `init_push_service()` - Initialize with database reference
+
+#### Integration
+- Services are imported in server.py on startup
+- Push service initialized with database in startup_event
+- Fallback to noop if utils not available (UTILS_AVAILABLE flag)
+
+#### Line Count Reduction
+- Previous: 4468 lines
+- Current: 4160 lines
+- This extraction removed: 308 lines
+- New utility files: 484 lines total (170 + 314)
+
+---
+
 ## Backlog / Future Tasks
 
 ### P1 - Server.py Refactoring (Ongoing)
-Current state: 4468 lines (down from ~8881, ~49.7% reduction achieved)
+Current state: 4160 lines (down from ~8881, ~53.1% reduction achieved)
 
 **Completed extractions:**
 - Profile endpoints - Moved to routes/profile.py ✓
 - Badge share endpoint - Moved to routes/badges.py ✓
 - Badge milestones endpoints - Moved to routes/badges.py ✓
+- Email Service - Moved to utils/email_service.py ✓
+- Push Notification Service - Moved to utils/push_service.py ✓
 
 **Remaining sections to potentially extract:**
 1. Badge Challenges section (~1100 lines) - Comprehensive implementation, keep in server.py
-2. Email Service functions (~130 lines) - Helper functions used throughout
-3. Push Notification Service (~110 lines) - Helper functions
 
 **Architecture Notes:**
 - routes/challenges.py disabled - server.py has more comprehensive implementation
 - Some endpoints kept in server.py due to complexity and frontend dependencies
-- Focus shifted to fixing async issues in modular routes rather than moving more code
+- **50%+ reduction goal achieved!**
 
