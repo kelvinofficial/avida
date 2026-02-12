@@ -509,6 +509,89 @@ Payment success page with:
 ## Tech Stack
 - Frontend: React Native + Expo (web), TypeScript
 - Backend: Python FastAPI, MongoDB
+
+
+### 2026-02-12: Admin UI for Form Configuration
+**COMPLETED**
+
+#### Backend API Endpoints (Admin Dashboard)
+- `GET /api/admin/form-config` - List all form configurations with filtering
+  - Filters: `category_id`, `subcategory_id`, `config_type`, `is_active`
+  - Pagination: `page`, `limit`
+- `GET /api/admin/form-config/stats` - Get configuration statistics
+  - Returns: total, active, inactive, by_type counts, categories_configured
+- `POST /api/admin/form-config` - Create new configuration
+  - Required: `category_id`, `config_type`, `config_data`
+  - Optional: `subcategory_id`, `is_active`, `priority`
+- `PUT /api/admin/form-config/{config_id}` - Update configuration
+- `DELETE /api/admin/form-config/{config_id}` - Delete configuration
+- `POST /api/admin/form-config/seed` - Seed default configurations
+
+#### Public API Endpoint
+- `GET /api/form-config/public` - Get active configs for frontend (no auth)
+  - Returns: `placeholders`, `subcategory_placeholders`, `seller_types`, `preferences`, `visibility_rules`
+
+#### Config Types Supported
+1. **Placeholders** - Title/Description placeholders and labels per category
+2. **Seller Types** - "Listed by" label and dropdown options
+3. **Preferences** - Category-specific preferences (acceptsOffers, acceptsExchanges, negotiable)
+4. **Visibility Rules** - Global rules for hiding price, showing salary, chat-only, etc.
+
+#### Admin Dashboard UI (`/api/admin-ui/dashboard/form-config`)
+- **Stats Cards**: Total Configs, Active count, Categories Configured, Config Types breakdown
+- **Tabs**: All Configurations, Placeholders, Listed By Options, Preferences, Visibility Rules
+- **Filter**: Category dropdown filter
+- **Table Columns**: Category, Type (chip), Preview, Status (clickable), Priority, Actions
+- **Actions**: Seed Defaults, Add Configuration, Edit, Delete, Toggle Active
+
+#### Frontend Integration
+- **Hook Created**: `/app/frontend/src/hooks/useFormConfig.ts`
+  - Fetches from API with 5-minute cache
+  - Falls back to static config (`listingFormConfig.ts`)
+  - Exports: `getPlaceholders`, `getSellerTypes`, `shouldHidePrice`, `shouldShowSalaryRange`, `isChatOnlyCategory`, `shouldHideCondition`, `getCategoryPreferences`
+
+#### Database Schema (MongoDB)
+```javascript
+form_configs: {
+  category_id: String,      // e.g., "auto_vehicles", "properties"
+  subcategory_id: String,   // Optional, for subcategory-specific config
+  config_type: Enum,        // "placeholder", "seller_type", "preference", "visibility_rule"
+  config_data: Object,      // Type-specific configuration
+  is_active: Boolean,
+  priority: Number,         // Higher = more priority
+  created_at: DateTime,
+  updated_at: DateTime,
+  created_by: String
+}
+```
+
+#### Default Configurations Seeded (17 total)
+- 8 Placeholder configs (default, auto_vehicles, properties, jobs_services, etc.)
+- 6 Seller Type configs (default, properties, auto_vehicles, etc.)
+- 2 Preference configs (friendship_dating, jobs_services)
+- 1 Visibility Rule config (global)
+
+#### Testing
+- Backend: 18/18 API tests passed
+- Frontend: All UI features verified (tabs, dialogs, filters, CRUD operations)
+
+---
+
+## Upcoming Tasks (Priority Order)
+
+### P1: Form Validation Warnings
+- Move all form validation warnings to appear at the top of the screen
+- Improve visibility of errors during listing creation
+
+### P1: Location Picker Enhancement
+- Refactor location picker to use nested Country > Region > District > City selection model
+
+### P2: Admin-Managed Photography Guides
+- Allow admins to upload/manage category-specific illustration images for "Tips for Great Listings"
+
+### P2: Refactor AnimatedIcon Components
+- Merge duplicate `AnimatedIcon` and `DesktopAnimatedIcon` components in `frontend/src/components/AnimatedIcon.tsx`
+
 - Payments: Stripe, PayPal, M-Pesa
 - Storage: Base64 images in MongoDB
 - Email: SendGrid for subscription notifications
