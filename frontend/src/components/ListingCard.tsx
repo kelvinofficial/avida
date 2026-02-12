@@ -192,6 +192,13 @@ export const ListingCard: React.FC<ListingCardProps> = ({
             <Text style={styles.imageCountText}>{imageCount}</Text>
           </View>
         )}
+
+        {/* Negotiable badge - bottom right of image */}
+        {listing.negotiable && (
+          <View style={styles.negotiableBadge}>
+            <Text style={styles.negotiableText}>Negotiable</Text>
+          </View>
+        )}
       </View>
       
       <View style={styles.content}>
@@ -218,11 +225,6 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           <Text style={styles.price}>
             {formatPrice(listing.price)}
           </Text>
-          {listing.negotiable && (
-            <View style={styles.negotiableBadge}>
-              <Text style={styles.negotiableText}>Negotiable</Text>
-            </View>
-          )}
         </View>
         
         {/* Footer - time and views */}
