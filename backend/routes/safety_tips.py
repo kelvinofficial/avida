@@ -7,7 +7,12 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, timezone
 import uuid
-from ..server import db, require_admin
+
+# Import db and require_admin from parent module
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from server import db, require_admin
 
 router = APIRouter(prefix="/safety-tips", tags=["Safety Tips"])
 
