@@ -54,6 +54,8 @@ import {
   AttachMoney,
   MoneyOff,
   Work,
+  ContentCopy,
+  Check,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 
