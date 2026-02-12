@@ -1807,6 +1807,38 @@ const desktopStyles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
   },
+  // Quick Filters Container
+  quickFiltersContainer: {
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH,
+    alignSelf: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
+  quickFiltersScroll: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  quickFilterChip: {
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+  },
+  quickFilterChipActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  quickFilterChipText: {
+    fontSize: 13,
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+  quickFilterChipTextActive: {
+    color: '#fff',
+  },
   // Scrollable Container
   scrollContainer: {
     flex: 1,
