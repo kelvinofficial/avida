@@ -4388,6 +4388,11 @@ async def expire_boosts_task():
 @app.on_event("startup")
 async def startup_event():
     """Start background tasks on server startup"""
+    # Initialize push notification service with database
+    if UTILS_AVAILABLE:
+        init_push_service(db)
+        logger.info("Push notification service initialized")
+    
     asyncio.create_task(expire_boosts_task())
     logger.info("Started boost expiration background task")
     
