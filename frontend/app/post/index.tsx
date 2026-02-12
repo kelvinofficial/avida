@@ -1205,12 +1205,35 @@ export default function PostListingScreen() {
         ))}
       </View>
 
-      <View style={styles.photoTips}>
-        <Text style={styles.tipsTitle}>📸 Photo Tips</Text>
-        <Text style={styles.tipText}>• Use good lighting</Text>
-        <Text style={styles.tipText}>• Show the item from multiple angles</Text>
-        <Text style={styles.tipText}>• Include any defects or damage</Text>
-      </View>
+      {/* Dynamic Category-Specific Photo Tips */}
+      {selectedCategoryId && (
+        <View style={styles.photoTips}>
+          <View style={styles.tipsHeader}>
+            <Ionicons name="bulb-outline" size={20} color={COLORS.primary} />
+            <Text style={styles.tipsTitle}>Tips for Great Photos</Text>
+          </View>
+          {getListingTips(selectedCategoryId).photoTips.map((tip, index) => (
+            <View key={index} style={styles.tipItem}>
+              <View style={styles.tipIcon}>
+                <Ionicons name={tip.icon as any} size={18} color={COLORS.primary} />
+              </View>
+              <View style={styles.tipContent}>
+                <Text style={styles.tipItemTitle}>{tip.title}</Text>
+                <Text style={styles.tipItemDesc}>{tip.description}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
+      
+      {!selectedCategoryId && (
+        <View style={styles.photoTips}>
+          <Text style={styles.tipsTitle}>Photo Tips</Text>
+          <Text style={styles.tipText}>• Use good lighting</Text>
+          <Text style={styles.tipText}>• Show the item from multiple angles</Text>
+          <Text style={styles.tipText}>• Include any defects or damage</Text>
+        </View>
+      )}
 
       {/* AI Analyzer Status */}
       {aiAnalyzing && (
