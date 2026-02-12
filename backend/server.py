@@ -2412,6 +2412,16 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load ID verification router: {e}")
     
+    # Create Popular Searches router
+    try:
+        popular_searches_router = create_popular_searches_router(db)
+        api_router.include_router(popular_searches_router)
+        # Create indexes in background
+        asyncio.create_task(popular_searches_router.create_indexes())
+        logger.info("Popular searches router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load popular searches router: {e}")
+    
     app.include_router(api_router)  # Re-include to pick up modular routes
     logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors, Property, Offers, Similar, Social, ProfileActivity, Notifications, Account, Support, UserSettings, Sessions, IDVerification) loaded successfully")
 
