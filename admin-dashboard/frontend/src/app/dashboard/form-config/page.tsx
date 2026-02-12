@@ -949,6 +949,253 @@ export default function FormConfigPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Preview Mode Dialog */}
+      <Dialog 
+        open={previewOpen} 
+        onClose={() => setPreviewOpen(false)} 
+        maxWidth="md" 
+        fullWidth
+        PaperProps={{
+          sx: { maxHeight: '90vh' }
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'primary.main', color: 'white' }}>
+          <Preview />
+          <Box>
+            <Typography variant="h6">Form Preview Mode</Typography>
+            <Typography variant="caption">See how your configurations appear in the listing form</Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Box sx={{ mb: 3 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Select Category to Preview</InputLabel>
+              <Select
+                value={previewCategory}
+                onChange={(e) => setPreviewCategory(e.target.value)}
+                label="Select Category to Preview"
+              >
+                {CATEGORIES.filter(c => c.id !== 'global').map(cat => (
+                  <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          {previewCategory && (() => {
+            const preview = getPreviewData(previewCategory);
+            return (
+              <Box sx={{ bgcolor: '#f5f5f5', p: 3, borderRadius: 2 }}>
+                {/* Simulated Form Header */}
+                <Box sx={{ mb: 3, pb: 2, borderBottom: '1px solid #e0e0e0' }}>
+                  <Typography variant="h6" gutterBottom>
+                    Create Listing: {getCategoryName(previewCategory)}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    This is how the listing form will appear for this category
+                  </Typography>
+                </Box>
+
+                {/* Title Field */}
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" fontWeight="medium" gutterBottom>
+                    {preview.placeholder.titleLabel || 'Title'} <span style={{ color: 'red' }}>*</span>
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    placeholder={preview.placeholder.title || 'What are you selling?'}
+                    disabled
+                    sx={{ bgcolor: 'white' }}
+                    size="small"
+                  />
+                </Box>
+
+                {/* Description Field */}
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" fontWeight="medium" gutterBottom>
+                    {preview.placeholder.descriptionLabel || 'Description'} <span style={{ color: 'red' }}>*</span>
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    placeholder={preview.placeholder.description || 'Include details...'}
+                    disabled
+                    multiline
+                    rows={3}
+                    sx={{ bgcolor: 'white' }}
+                    size="small"
+                  />
+                </Box>
+
+                {/* Condition Field - shown/hidden based on visibility */}
+                {!preview.visibility.hideCondition && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="subtitle2" fontWeight="medium" gutterBottom>
+                      Condition
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                      {['New', 'Like New', 'Good', 'Fair'].map(c => (
+                        <Chip key={c} label={c} variant="outlined" size="small" />
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+
+                {/* Visibility Rules Indicators */}
+                {preview.visibility.hideCondition && (
+                  <Alert severity="info" sx={{ mb: 2 }} icon={<VisibilityOff fontSize="small" />}>
+                    <strong>Condition field is hidden</strong> for this category
+                  </Alert>
+                )}
+
+                {/* Price Section - shown/hidden based on visibility */}
+                {!preview.visibility.hidePrice ? (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="subtitle2" fontWeight="medium" gutterBottom>
+                      Price <span style={{ color: 'red' }}>*</span>
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="0.00"
+                      disabled
+                      sx={{ bgcolor: 'white' }}
+                      size="small"
+                      InputProps={{
+                        startAdornment: <AttachMoney fontSize="small" sx={{ color: 'text.secondary', mr: 1 }} />,
+                      }}
+                    />
+                  </Box>
+                ) : (
+                  <Alert severity="warning" sx={{ mb: 2 }} icon={<MoneyOff fontSize="small" />}>
+                    <strong>Price field is hidden</strong> for this category
+                  </Alert>
+                )}
+
+                {/* Seller Type / Listed By */}
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" fontWeight="medium" gutterBottom>
+                    {preview.sellerType.label || 'Listed by'}
+                  </Typography>
+                  <FormControl fullWidth size="small" disabled>
+                    <Select
+                      value=""
+                      displayEmpty
+                      sx={{ bgcolor: 'white' }}
+                    >
+                      <MenuItem value="" disabled>
+                        <em>Select option...</em>
+                      </MenuItem>
+                      {(preview.sellerType.options || ['Individual']).map((opt: string) => (
+                        <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                    Options: {(preview.sellerType.options || ['Individual']).join(', ')}
+                  </Typography>
+                </Box>
+
+                {/* Contact Methods */}
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" fontWeight="medium" gutterBottom>
+                    Contact Methods
+                  </Typography>
+                  {preview.visibility.chatOnly ? (
+                    <Alert severity="info" sx={{ mb: 1 }} icon={<Chat fontSize="small" />}>
+                      <strong>Chat only</strong> - Phone and WhatsApp options are disabled for this category
+                    </Alert>
+                  ) : (
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                      <Chip icon={<Chat fontSize="small" />} label="In-App Chat" color="primary" variant="outlined" size="small" />
+                      <Chip icon={<Phone fontSize="small" />} label="Phone Call" variant="outlined" size="small" />
+                      <Chip label="WhatsApp" variant="outlined" size="small" />
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Preferences Section */}
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="subtitle2" fontWeight="medium" gutterBottom>
+                    Preferences
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <FormControlLabel
+                      control={<Switch checked={preview.preferences.acceptsOffers !== false} disabled size="small" />}
+                      label="Accept Offers"
+                    />
+                    <FormControlLabel
+                      control={<Switch checked={preview.preferences.acceptsExchanges !== false} disabled size="small" />}
+                      label="Accept Exchanges"
+                    />
+                    <FormControlLabel
+                      control={<Switch checked={preview.preferences.negotiable !== false} disabled size="small" />}
+                      label="Price Negotiable"
+                    />
+                  </Box>
+                </Box>
+
+                {/* Configuration Summary */}
+                <Divider sx={{ my: 2 }} />
+                <Box sx={{ bgcolor: 'white', p: 2, borderRadius: 1, border: '1px solid #e0e0e0' }}>
+                  <Typography variant="subtitle2" fontWeight="bold" gutterBottom color="primary">
+                    Active Configuration Summary
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <Typography variant="caption" color="text.secondary">Placeholder Config</Typography>
+                      <Typography variant="body2">
+                        {configs.find(c => c.config_type === 'placeholder' && c.category_id === previewCategory && c.is_active) 
+                          ? '✅ Category-specific' 
+                          : configs.find(c => c.config_type === 'placeholder' && c.category_id === 'default' && c.is_active)
+                            ? '⚪ Using default'
+                            : '❌ Not configured'}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="caption" color="text.secondary">Seller Type Config</Typography>
+                      <Typography variant="body2">
+                        {configs.find(c => c.config_type === 'seller_type' && c.category_id === previewCategory && c.is_active) 
+                          ? '✅ Category-specific' 
+                          : configs.find(c => c.config_type === 'seller_type' && c.category_id === 'default' && c.is_active)
+                            ? '⚪ Using default'
+                            : '❌ Not configured'}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="caption" color="text.secondary">Preferences Config</Typography>
+                      <Typography variant="body2">
+                        {configs.find(c => c.config_type === 'preference' && c.category_id === previewCategory && c.is_active) 
+                          ? '✅ Category-specific' 
+                          : '⚪ Using defaults'}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="caption" color="text.secondary">Visibility Rules</Typography>
+                      <Typography variant="body2">
+                        {preview.visibility.hidePrice || preview.visibility.chatOnly || preview.visibility.hideCondition
+                          ? '✅ Rules applied'
+                          : '⚪ Standard visibility'}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
+              </Box>
+            );
+          })()}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPreviewOpen(false)}>Close</Button>
+          <Button 
+            variant="contained" 
+            onClick={() => {
+              setPreviewOpen(false);
+              setFilterCategory(previewCategory);
+            }}
+          >
+            Filter Configs for This Category
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
