@@ -235,9 +235,7 @@ const KeyDetailsSection = memo(({ listing, category, getIconForAttribute }: KeyD
       <View style={detailStyles.grid}>
         {details.map((item, index) => (
           <View key={index} style={detailStyles.item}>
-            <View style={detailStyles.iconBox}>
-              <Ionicons name={item.icon as any} size={18} color={ICON_COLOR} />
-            </View>
+            <AnimatedIconBox iconName={item.icon} index={index} color={ICON_COLOR} />
             <View style={detailStyles.textBox}>
               <Text style={detailStyles.label}>{item.label}</Text>
               <Text style={detailStyles.value}>{item.value}</Text>
