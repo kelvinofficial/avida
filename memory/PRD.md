@@ -6,6 +6,29 @@ Build a local marketplace application (Avida) with:
 2. Business Profile feature for verified sellers
 3. Premium subscription tiers with payment integration
 
+### 2026-02-12: Recently Searched Feature (P1)
+**COMPLETED**
+
+#### Recently Searched on Category Pages
+- **Storage**: Uses AsyncStorage/localStorage per category (`recent_searches_{categoryId}`)
+- **Desktop UI**: Dropdown appears below search input when focused and empty
+  - Shows "Recent Searches" header with clock icon
+  - List of recent search queries (max 5)
+  - "Clear all" button to remove all searches
+  - Individual "X" button to remove specific searches
+  - Click on search term to apply it
+- **Mobile UI**: Horizontal scrolling chips below nav header
+  - Green-highlighted chips showing recent searches
+  - Individual remove buttons on each chip
+  - "Clear" button to remove all
+- **Logic**: 
+  - Searches saved after 500ms debounce
+  - Minimum 2 characters required to save
+  - Duplicate searches moved to front
+  - Max 5 recent searches per category
+- **Files Modified**: `/app/frontend/app/category/[id].tsx` (lines 176-230 for logic, 870-910 for desktop UI, 1035-1095 for mobile UI)
+- **Test Report**: `/app/test_reports/iteration_112.json` - 90% pass rate
+
 ### 2026-02-12: UI/UX Improvements Batch
 **COMPLETED**
 
