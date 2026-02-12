@@ -2846,7 +2846,19 @@ if ADMIN_TOOLS_AVAILABLE:
     # Safety Tips routes
     try:
         from routes import create_safety_tips_router
-        safety_tips_router = create_safety_tips_router(db, require_admin)
+        
+        async def require_admin_for_safety_tips(request: Request) -> dict:
+            """Admin auth dependency for safety tips"""
+            auth_header = request.headers.get("Authorization")
+            if not auth_header or not auth_header.startswith("Bearer "):
+                raise HTTPException(status_code=401, detail="Not authenticated")
+            token = auth_header.split(" ")[1]
+            payload = decode_token(token)
+            if not payload:
+                raise HTTPException(status_code=401, detail="Invalid token")
+            return payload
+        
+        safety_tips_router = create_safety_tips_router(db, require_admin_for_safety_tips)
         app.include_router(safety_tips_router, prefix="/api")
         print("Safety tips routes loaded successfully")
     except Exception as e:
