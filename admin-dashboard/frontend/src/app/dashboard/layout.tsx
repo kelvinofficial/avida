@@ -79,6 +79,7 @@ import {
   Business,
   InterestsOutlined,
   GppGood,
+  PhotoCamera,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
