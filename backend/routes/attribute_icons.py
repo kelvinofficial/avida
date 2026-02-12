@@ -1,16 +1,14 @@
 """
 Attribute Icons Routes Module
-Handles SVG icon management for categories and attributes
+Handles Ionicon management for categories and attributes
 """
 
-from fastapi import APIRouter, HTTPException, Depends, File, UploadFile, Form
-from fastapi.responses import Response
-from typing import Optional, List, Dict, Any
+from fastapi import APIRouter, HTTPException, Depends
+from typing import Optional, List
 from datetime import datetime, timezone
 from pydantic import BaseModel
 import logging
 import uuid
-import re
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class IconBase(BaseModel):
     name: str
-    svg_content: str
+    ionicon_name: str  # e.g., "car-outline", "home-outline"
     category_id: Optional[str] = None
     subcategory_id: Optional[str] = None
     attribute_name: Optional[str] = None
@@ -36,7 +34,7 @@ class IconCreate(IconBase):
 
 class IconUpdate(BaseModel):
     name: Optional[str] = None
-    svg_content: Optional[str] = None
+    ionicon_name: Optional[str] = None
     category_id: Optional[str] = None
     subcategory_id: Optional[str] = None
     attribute_name: Optional[str] = None
@@ -47,42 +45,84 @@ class IconUpdate(BaseModel):
 
 
 # =============================================================================
-# SVG VALIDATION
+# AVAILABLE IONICONS LIST
 # =============================================================================
 
-def validate_svg(svg_content: str) -> bool:
-    """Validate that the content is a valid SVG"""
-    svg_content = svg_content.strip()
+IONICONS_LIST = [
+    # Vehicles
+    "car-outline", "car-sport-outline", "bicycle-outline", "bus-outline", "boat-outline", 
+    "airplane-outline", "rocket-outline", "train-outline",
     
-    # Check if it starts with SVG tag
-    if not svg_content.startswith('<svg') and not svg_content.startswith('<?xml'):
-        return False
+    # Property/Building
+    "home-outline", "business-outline", "storefront-outline", "bed-outline", "key-outline",
     
-    # Check if it ends with closing SVG tag
-    if not svg_content.endswith('</svg>'):
-        return False
+    # Electronics
+    "laptop-outline", "desktop-outline", "phone-portrait-outline", "tablet-portrait-outline",
+    "tv-outline", "game-controller-outline", "headset-outline", "watch-outline", "camera-outline",
+    "videocam-outline", "mic-outline", "musical-notes-outline", "radio-outline",
     
-    # Basic security check - no script tags
-    if '<script' in svg_content.lower():
-        return False
+    # Fashion/Beauty
+    "shirt-outline", "glasses-outline", "diamond-outline", "gift-outline", "bag-outline",
+    "wallet-outline", "footsteps-outline", "watch-outline",
     
-    return True
-
-
-def sanitize_svg(svg_content: str) -> str:
-    """Sanitize SVG content for security"""
-    # Remove potentially dangerous elements
-    dangerous_patterns = [
-        r'<script[^>]*>.*?</script>',
-        r'on\w+\s*=\s*["\'][^"\']*["\']',  # Event handlers
-        r'javascript:',
-        r'data:text/html',
-    ]
+    # Common Attributes
+    "calendar-outline", "time-outline", "speedometer-outline", "flash-outline", "water-outline",
+    "color-palette-outline", "resize-outline", "layers-outline", "cube-outline",
+    "pricetag-outline", "cash-outline", "card-outline", "barcode-outline", "qr-code-outline",
     
-    for pattern in dangerous_patterns:
-        svg_content = re.sub(pattern, '', svg_content, flags=re.IGNORECASE | re.DOTALL)
+    # Location
+    "location-outline", "map-outline", "navigate-outline", "compass-outline", "globe-outline",
     
-    return svg_content
+    # People/Social
+    "person-outline", "people-outline", "man-outline", "woman-outline", "body-outline",
+    
+    # Work/Business
+    "briefcase-outline", "construct-outline", "hammer-outline", "settings-outline", 
+    "cog-outline", "build-outline", "analytics-outline", "stats-chart-outline",
+    
+    # Documents
+    "document-outline", "document-text-outline", "documents-outline", "folder-outline",
+    "clipboard-outline", "reader-outline", "newspaper-outline", "book-outline",
+    
+    # Communication
+    "mail-outline", "chatbubble-outline", "call-outline", "send-outline", "share-outline",
+    
+    # Status/Info
+    "checkmark-circle-outline", "close-circle-outline", "alert-circle-outline", 
+    "information-circle-outline", "help-circle-outline", "shield-checkmark-outline",
+    "star-outline", "heart-outline", "thumbs-up-outline", "thumbs-down-outline",
+    
+    # Actions
+    "add-outline", "remove-outline", "create-outline", "trash-outline", "pencil-outline",
+    "eye-outline", "eye-off-outline", "search-outline", "filter-outline", "options-outline",
+    
+    # Nature/Animals
+    "paw-outline", "leaf-outline", "flower-outline", "sunny-outline", "moon-outline",
+    "cloud-outline", "rainy-outline", "snow-outline",
+    
+    # Food
+    "restaurant-outline", "cafe-outline", "beer-outline", "wine-outline", "pizza-outline",
+    "fast-food-outline", "nutrition-outline", "ice-cream-outline",
+    
+    # Health/Fitness
+    "fitness-outline", "medkit-outline", "pulse-outline", "thermometer-outline", 
+    "bandage-outline", "medical-outline",
+    
+    # Entertainment
+    "football-outline", "basketball-outline", "tennisball-outline", "golf-outline",
+    "film-outline", "musical-note-outline", "dice-outline", "extension-puzzle-outline",
+    
+    # Kids/Baby
+    "happy-outline", "balloon-outline", "school-outline",
+    
+    # Misc
+    "flag-outline", "ribbon-outline", "trophy-outline", "medal-outline", 
+    "sparkles-outline", "bulb-outline", "battery-full-outline", "battery-half-outline",
+    "wifi-outline", "bluetooth-outline", "print-outline", "save-outline",
+    "lock-closed-outline", "lock-open-outline", "finger-print-outline",
+    "enter-outline", "exit-outline", "swap-horizontal-outline", "swap-vertical-outline",
+    "sync-outline", "refresh-outline", "reload-outline",
+]
 
 
 # =============================================================================
@@ -105,6 +145,11 @@ def create_attribute_icons_router(db, require_admin):
     # =========================================================================
     # PUBLIC ENDPOINTS (for frontend to fetch icons)
     # =========================================================================
+    
+    @router.get("/ionicons")
+    async def get_available_ionicons():
+        """Get list of all available Ionicons"""
+        return {"icons": IONICONS_LIST, "total": len(IONICONS_LIST)}
     
     @router.get("/public")
     async def get_public_icons(
@@ -136,21 +181,6 @@ def create_attribute_icons_router(db, require_admin):
         if not icon:
             raise HTTPException(status_code=404, detail="Icon not found")
         return icon
-    
-    @router.get("/public/{icon_id}/svg")
-    async def get_icon_svg(icon_id: str):
-        """Get just the SVG content of an icon"""
-        icon = await db.attribute_icons.find_one(
-            {"id": icon_id, "is_active": True},
-            {"_id": 0, "svg_content": 1}
-        )
-        if not icon:
-            raise HTTPException(status_code=404, detail="Icon not found")
-        
-        return Response(
-            content=icon["svg_content"],
-            media_type="image/svg+xml"
-        )
     
     @router.get("/by-category/{category_id}")
     async def get_icons_by_category(category_id: str):
@@ -209,7 +239,8 @@ def create_attribute_icons_router(db, require_admin):
             query["$or"] = [
                 {"name": {"$regex": search, "$options": "i"}},
                 {"description": {"$regex": search, "$options": "i"}},
-                {"attribute_name": {"$regex": search, "$options": "i"}}
+                {"attribute_name": {"$regex": search, "$options": "i"}},
+                {"ionicon_name": {"$regex": search, "$options": "i"}}
             ]
         
         skip = (page - 1) * limit
@@ -264,76 +295,19 @@ def create_attribute_icons_router(db, require_admin):
         current_user: dict = Depends(require_admin)
     ):
         """Create a new icon"""
-        # Validate SVG
-        if not validate_svg(icon_data.svg_content):
-            raise HTTPException(status_code=400, detail="Invalid SVG content")
-        
-        # Sanitize SVG
-        sanitized_svg = sanitize_svg(icon_data.svg_content)
-        
         icon_id = str(uuid.uuid4())
         now = datetime.now(timezone.utc)
         
         icon_doc = {
             "id": icon_id,
             "name": icon_data.name,
-            "svg_content": sanitized_svg,
+            "ionicon_name": icon_data.ionicon_name,
             "category_id": icon_data.category_id,
             "subcategory_id": icon_data.subcategory_id,
             "attribute_name": icon_data.attribute_name,
             "icon_type": icon_data.icon_type,
             "color": icon_data.color,
             "description": icon_data.description,
-            "is_active": True,
-            "created_at": now,
-            "updated_at": now,
-            "created_by": current_user.get("user_id")
-        }
-        
-        await db.attribute_icons.insert_one(icon_doc)
-        del icon_doc["_id"]
-        
-        return {"success": True, "icon": icon_doc}
-    
-    @router.post("/upload")
-    async def upload_icon(
-        name: str = Form(...),
-        icon_type: str = Form("attribute"),
-        category_id: Optional[str] = Form(None),
-        subcategory_id: Optional[str] = Form(None),
-        attribute_name: Optional[str] = Form(None),
-        color: Optional[str] = Form(None),
-        description: Optional[str] = Form(None),
-        file: UploadFile = File(...),
-        current_user: dict = Depends(require_admin)
-    ):
-        """Upload an SVG file as an icon"""
-        if not file.filename.endswith('.svg'):
-            raise HTTPException(status_code=400, detail="Only SVG files are allowed")
-        
-        content = await file.read()
-        svg_content = content.decode('utf-8')
-        
-        # Validate SVG
-        if not validate_svg(svg_content):
-            raise HTTPException(status_code=400, detail="Invalid SVG content")
-        
-        # Sanitize SVG
-        sanitized_svg = sanitize_svg(svg_content)
-        
-        icon_id = str(uuid.uuid4())
-        now = datetime.now(timezone.utc)
-        
-        icon_doc = {
-            "id": icon_id,
-            "name": name,
-            "svg_content": sanitized_svg,
-            "category_id": category_id,
-            "subcategory_id": subcategory_id,
-            "attribute_name": attribute_name,
-            "icon_type": icon_type,
-            "color": color,
-            "description": description,
             "is_active": True,
             "created_at": now,
             "updated_at": now,
@@ -357,13 +331,6 @@ def create_attribute_icons_router(db, require_admin):
             raise HTTPException(status_code=404, detail="Icon not found")
         
         update_data = updates.model_dump(exclude_unset=True)
-        
-        # Validate SVG if being updated
-        if "svg_content" in update_data:
-            if not validate_svg(update_data["svg_content"]):
-                raise HTTPException(status_code=400, detail="Invalid SVG content")
-            update_data["svg_content"] = sanitize_svg(update_data["svg_content"])
-        
         update_data["updated_at"] = datetime.now(timezone.utc)
         update_data["updated_by"] = current_user.get("user_id")
         
@@ -430,30 +397,24 @@ def create_attribute_icons_router(db, require_admin):
         
         return {"success": True, "message": "Icon restored"}
     
-    @router.post("/bulk-upload")
-    async def bulk_upload_icons(
+    @router.post("/bulk-create")
+    async def bulk_create_icons(
         icons: List[IconCreate],
         current_user: dict = Depends(require_admin)
     ):
-        """Bulk upload multiple icons"""
+        """Bulk create multiple icons"""
         created = []
         errors = []
         
         for idx, icon_data in enumerate(icons):
             try:
-                if not validate_svg(icon_data.svg_content):
-                    errors.append({"index": idx, "error": "Invalid SVG content"})
-                    continue
-                
-                sanitized_svg = sanitize_svg(icon_data.svg_content)
-                
                 icon_id = str(uuid.uuid4())
                 now = datetime.now(timezone.utc)
                 
                 icon_doc = {
                     "id": icon_id,
                     "name": icon_data.name,
-                    "svg_content": sanitized_svg,
+                    "ionicon_name": icon_data.ionicon_name,
                     "category_id": icon_data.category_id,
                     "subcategory_id": icon_data.subcategory_id,
                     "attribute_name": icon_data.attribute_name,
@@ -514,7 +475,7 @@ def create_attribute_icons_router(db, require_admin):
         """Get all icon mappings organized by category"""
         cursor = db.attribute_icons.find(
             {"is_active": True},
-            {"_id": 0, "id": 1, "name": 1, "category_id": 1, "subcategory_id": 1, "attribute_name": 1, "icon_type": 1}
+            {"_id": 0, "id": 1, "name": 1, "ionicon_name": 1, "category_id": 1, "subcategory_id": 1, "attribute_name": 1, "icon_type": 1}
         )
         icons = await cursor.to_list(length=1000)
         
@@ -545,47 +506,96 @@ def create_attribute_icons_router(db, require_admin):
     # =========================================================================
     
     DEFAULT_ICONS = [
-        # Motors category icons
-        {"name": "Car", "category_id": "motors", "attribute_name": "make", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h-2v-6l2-5h12l2 5v6h-2m-8 0h4m-10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4m14 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/></svg>'},
-        {"name": "Calendar Year", "category_id": "motors", "attribute_name": "year", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'},
-        {"name": "Speedometer", "category_id": "motors", "attribute_name": "mileage", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>'},
-        {"name": "Fuel", "category_id": "motors", "attribute_name": "fuel_type", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 22V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v14"/><path d="M15 10h2a2 2 0 0 1 2 2v6a2 2 0 0 0 2 2h0"/><path d="M18 6V4h-2"/><rect x="5" y="12" width="8" height="6"/></svg>'},
-        {"name": "Transmission", "category_id": "motors", "attribute_name": "transmission", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><line x1="6" y1="8" x2="6" y2="16"/><line x1="18" y1="8" x2="18" y2="16"/><line x1="8" y1="6" x2="16" y2="6"/></svg>'},
-        {"name": "Color Palette", "category_id": "motors", "attribute_name": "color", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.7-.1 2.5-.3L14 18c-1.5-1.5-.5-4 1.5-4h4c1.7 0 2.5-1 2.5-2.5 0-5.5-4.5-10-10-10Z"/></svg>'},
+        # Motors/Auto category icons
+        {"name": "Car Make", "ionicon_name": "car-outline", "category_id": "auto_vehicles", "attribute_name": "make", "icon_type": "attribute"},
+        {"name": "Car Model", "ionicon_name": "car-sport-outline", "category_id": "auto_vehicles", "attribute_name": "model", "icon_type": "attribute"},
+        {"name": "Year", "ionicon_name": "calendar-outline", "category_id": "auto_vehicles", "attribute_name": "year", "icon_type": "attribute"},
+        {"name": "Mileage", "ionicon_name": "speedometer-outline", "category_id": "auto_vehicles", "attribute_name": "mileage", "icon_type": "attribute"},
+        {"name": "Fuel Type", "ionicon_name": "water-outline", "category_id": "auto_vehicles", "attribute_name": "fuel_type", "icon_type": "attribute"},
+        {"name": "Transmission", "ionicon_name": "settings-outline", "category_id": "auto_vehicles", "attribute_name": "transmission", "icon_type": "attribute"},
+        {"name": "Body Type", "ionicon_name": "car-outline", "category_id": "auto_vehicles", "attribute_name": "body_type", "icon_type": "attribute"},
+        {"name": "Engine Size", "ionicon_name": "flash-outline", "category_id": "auto_vehicles", "attribute_name": "engine_size", "icon_type": "attribute"},
+        {"name": "Color", "ionicon_name": "color-palette-outline", "category_id": "auto_vehicles", "attribute_name": "color", "icon_type": "attribute"},
+        {"name": "Doors", "ionicon_name": "enter-outline", "category_id": "auto_vehicles", "attribute_name": "doors", "icon_type": "attribute"},
+        {"name": "Registered", "ionicon_name": "document-outline", "category_id": "auto_vehicles", "attribute_name": "registered", "icon_type": "attribute"},
         
         # Properties category icons
-        {"name": "Bed", "category_id": "properties", "attribute_name": "bedrooms", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>'},
-        {"name": "Bath", "category_id": "properties", "attribute_name": "bathrooms", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6L6 6a2 2 0 0 0-2 2v3a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V8a2 2 0 0 0-2-2h-3"/><path d="M4 14v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/></svg>'},
-        {"name": "Area", "category_id": "properties", "attribute_name": "size_sqm", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>'},
-        {"name": "Location", "category_id": "properties", "attribute_name": "location", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>'},
-        {"name": "Building Type", "category_id": "properties", "attribute_name": "property_type", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>'},
+        {"name": "Property Type", "ionicon_name": "home-outline", "category_id": "properties", "attribute_name": "property_type", "icon_type": "attribute"},
+        {"name": "Bedrooms", "ionicon_name": "bed-outline", "category_id": "properties", "attribute_name": "bedrooms", "icon_type": "attribute"},
+        {"name": "Bathrooms", "ionicon_name": "water-outline", "category_id": "properties", "attribute_name": "bathrooms", "icon_type": "attribute"},
+        {"name": "Size (sqm)", "ionicon_name": "resize-outline", "category_id": "properties", "attribute_name": "size_sqm", "icon_type": "attribute"},
+        {"name": "Floor", "ionicon_name": "layers-outline", "category_id": "properties", "attribute_name": "floor", "icon_type": "attribute"},
+        {"name": "Parking", "ionicon_name": "car-outline", "category_id": "properties", "attribute_name": "parking", "icon_type": "attribute"},
+        {"name": "Furnished", "ionicon_name": "cube-outline", "category_id": "properties", "attribute_name": "furnished", "icon_type": "attribute"},
+        {"name": "Available From", "ionicon_name": "time-outline", "category_id": "properties", "attribute_name": "available_from", "icon_type": "attribute"},
+        {"name": "Pets Allowed", "ionicon_name": "paw-outline", "category_id": "properties", "attribute_name": "pets_allowed", "icon_type": "attribute"},
+        {"name": "Balcony", "ionicon_name": "sunny-outline", "category_id": "properties", "attribute_name": "balcony", "icon_type": "attribute"},
+        {"name": "Elevator", "ionicon_name": "arrow-up-outline", "category_id": "properties", "attribute_name": "elevator", "icon_type": "attribute"},
         
         # Electronics category icons
-        {"name": "Laptop", "category_id": "electronics", "attribute_name": "brand", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="12" rx="2"/><path d="M2 16h20v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2z"/><line x1="6" y1="20" x2="6" y2="20"/><line x1="18" y1="20" x2="18" y2="20"/></svg>'},
-        {"name": "Storage", "category_id": "electronics", "attribute_name": "storage", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>'},
-        {"name": "Memory", "category_id": "electronics", "attribute_name": "ram", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 6V4"/><path d="M10 6V4"/><path d="M14 6V4"/><path d="M18 6V4"/><path d="M6 18v2"/><path d="M10 18v2"/><path d="M14 18v2"/><path d="M18 18v2"/></svg>'},
-        {"name": "Processor", "category_id": "electronics", "attribute_name": "processor", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M4 12H2"/><path d="M22 12h-2"/><path d="M12 4V2"/><path d="M12 22v-2"/></svg>'},
-        {"name": "Condition", "category_id": "electronics", "attribute_name": "condition", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'},
+        {"name": "Type", "ionicon_name": "laptop-outline", "category_id": "electronics", "attribute_name": "type", "icon_type": "attribute"},
+        {"name": "Brand", "ionicon_name": "ribbon-outline", "category_id": "electronics", "attribute_name": "brand", "icon_type": "attribute"},
+        {"name": "Model", "ionicon_name": "barcode-outline", "category_id": "electronics", "attribute_name": "model", "icon_type": "attribute"},
+        {"name": "Processor", "ionicon_name": "hardware-chip-outline", "category_id": "electronics", "attribute_name": "processor", "icon_type": "attribute"},
+        {"name": "RAM", "ionicon_name": "server-outline", "category_id": "electronics", "attribute_name": "ram", "icon_type": "attribute"},
+        {"name": "Storage", "ionicon_name": "folder-outline", "category_id": "electronics", "attribute_name": "storage", "icon_type": "attribute"},
+        {"name": "Graphics", "ionicon_name": "game-controller-outline", "category_id": "electronics", "attribute_name": "graphics", "icon_type": "attribute"},
+        {"name": "Screen Size", "ionicon_name": "expand-outline", "category_id": "electronics", "attribute_name": "screen_size", "icon_type": "attribute"},
+        {"name": "Warranty", "ionicon_name": "shield-checkmark-outline", "category_id": "electronics", "attribute_name": "warranty", "icon_type": "attribute"},
+        {"name": "Original Box", "ionicon_name": "cube-outline", "category_id": "electronics", "attribute_name": "original_box", "icon_type": "attribute"},
         
         # Phones & Tablets category icons
-        {"name": "Phone", "category_id": "phones_tablets", "attribute_name": "model", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>'},
-        {"name": "Screen Size", "category_id": "phones_tablets", "attribute_name": "screen_size", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>'},
-        {"name": "Battery", "category_id": "phones_tablets", "attribute_name": "battery", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="18" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/><rect x="4" y="9" width="4" height="6"/></svg>'},
+        {"name": "Phone Brand", "ionicon_name": "ribbon-outline", "category_id": "phones_tablets", "attribute_name": "brand", "icon_type": "attribute"},
+        {"name": "Phone Model", "ionicon_name": "phone-portrait-outline", "category_id": "phones_tablets", "attribute_name": "model", "icon_type": "attribute"},
+        {"name": "Phone Storage", "ionicon_name": "folder-outline", "category_id": "phones_tablets", "attribute_name": "storage", "icon_type": "attribute"},
+        {"name": "Phone Color", "ionicon_name": "color-palette-outline", "category_id": "phones_tablets", "attribute_name": "color", "icon_type": "attribute"},
+        {"name": "Battery Health", "ionicon_name": "battery-half-outline", "category_id": "phones_tablets", "attribute_name": "battery_health", "icon_type": "attribute"},
+        {"name": "Carrier Lock", "ionicon_name": "lock-closed-outline", "category_id": "phones_tablets", "attribute_name": "carrier_lock", "icon_type": "attribute"},
         
-        # Fashion category icons
-        {"name": "Size", "category_id": "fashion_beauty", "attribute_name": "size", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>'},
-        {"name": "Gender", "category_id": "fashion_beauty", "attribute_name": "gender", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="8" r="5"/><path d="M10 13v9"/><path d="M7 19h6"/><circle cx="19" cy="5" r="3"/><path d="M19 8v6"/></svg>'},
-        {"name": "Material", "category_id": "fashion_beauty", "attribute_name": "material", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>'},
+        # Fashion & Beauty category icons
+        {"name": "Clothing Type", "ionicon_name": "shirt-outline", "category_id": "fashion_beauty", "attribute_name": "type", "icon_type": "attribute"},
+        {"name": "Gender", "ionicon_name": "people-outline", "category_id": "fashion_beauty", "attribute_name": "for_gender", "icon_type": "attribute"},
+        {"name": "Fashion Brand", "ionicon_name": "ribbon-outline", "category_id": "fashion_beauty", "attribute_name": "brand", "icon_type": "attribute"},
+        {"name": "Size", "ionicon_name": "resize-outline", "category_id": "fashion_beauty", "attribute_name": "size", "icon_type": "attribute"},
+        {"name": "Color", "ionicon_name": "color-palette-outline", "category_id": "fashion_beauty", "attribute_name": "color", "icon_type": "attribute"},
+        {"name": "Material", "ionicon_name": "layers-outline", "category_id": "fashion_beauty", "attribute_name": "material", "icon_type": "attribute"},
         
-        # Jobs category icons
-        {"name": "Salary", "category_id": "jobs", "attribute_name": "salary", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>'},
-        {"name": "Experience", "category_id": "jobs", "attribute_name": "experience", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>'},
-        {"name": "Job Type", "category_id": "jobs", "attribute_name": "job_type", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>'},
+        # Jobs & Services category icons
+        {"name": "Job Title", "ionicon_name": "person-outline", "category_id": "jobs_services", "attribute_name": "job_title", "icon_type": "attribute"},
+        {"name": "Job Type", "ionicon_name": "briefcase-outline", "category_id": "jobs_services", "attribute_name": "job_type", "icon_type": "attribute"},
+        {"name": "Industry", "ionicon_name": "business-outline", "category_id": "jobs_services", "attribute_name": "industry", "icon_type": "attribute"},
+        {"name": "Experience", "ionicon_name": "trending-up-outline", "category_id": "jobs_services", "attribute_name": "experience", "icon_type": "attribute"},
+        {"name": "Salary Range", "ionicon_name": "cash-outline", "category_id": "jobs_services", "attribute_name": "salary_range", "icon_type": "attribute"},
+        {"name": "Remote Work", "ionicon_name": "home-outline", "category_id": "jobs_services", "attribute_name": "remote", "icon_type": "attribute"},
         
-        # Price icon (global)
-        {"name": "Price Tag", "attribute_name": "price", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>'},
-        {"name": "Description", "attribute_name": "description", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'},
-        {"name": "Title", "attribute_name": "title", "icon_type": "attribute", "svg_content": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>'},
+        # Pets category icons
+        {"name": "Pet Breed", "ionicon_name": "paw-outline", "category_id": "pets", "attribute_name": "breed", "icon_type": "attribute"},
+        {"name": "Pet Age", "ionicon_name": "calendar-outline", "category_id": "pets", "attribute_name": "age", "icon_type": "attribute"},
+        {"name": "Pet Gender", "ionicon_name": "male-female-outline", "category_id": "pets", "attribute_name": "gender", "icon_type": "attribute"},
+        {"name": "Vaccinated", "ionicon_name": "medkit-outline", "category_id": "pets", "attribute_name": "vaccinated", "icon_type": "attribute"},
+        
+        # Global/Common attribute icons
+        {"name": "Price", "ionicon_name": "pricetag-outline", "attribute_name": "price", "icon_type": "attribute"},
+        {"name": "Title", "ionicon_name": "text-outline", "attribute_name": "title", "icon_type": "attribute"},
+        {"name": "Description", "ionicon_name": "document-text-outline", "attribute_name": "description", "icon_type": "attribute"},
+        {"name": "Location", "ionicon_name": "location-outline", "attribute_name": "location", "icon_type": "attribute"},
+        {"name": "Condition", "ionicon_name": "star-outline", "attribute_name": "condition", "icon_type": "attribute"},
+        {"name": "Negotiable", "ionicon_name": "swap-horizontal-outline", "attribute_name": "negotiable", "icon_type": "attribute"},
+        
+        # Category icons (main categories)
+        {"name": "Auto & Vehicles", "ionicon_name": "car-outline", "category_id": "auto_vehicles", "icon_type": "category"},
+        {"name": "Properties", "ionicon_name": "business-outline", "category_id": "properties", "icon_type": "category"},
+        {"name": "Electronics", "ionicon_name": "laptop-outline", "category_id": "electronics", "icon_type": "category"},
+        {"name": "Phones & Tablets", "ionicon_name": "phone-portrait-outline", "category_id": "phones_tablets", "icon_type": "category"},
+        {"name": "Home & Furniture", "ionicon_name": "home-outline", "category_id": "home_furniture", "icon_type": "category"},
+        {"name": "Fashion & Beauty", "ionicon_name": "shirt-outline", "category_id": "fashion_beauty", "icon_type": "category"},
+        {"name": "Jobs & Services", "ionicon_name": "briefcase-outline", "category_id": "jobs_services", "icon_type": "category"},
+        {"name": "Kids & Baby", "ionicon_name": "happy-outline", "category_id": "kids_baby", "icon_type": "category"},
+        {"name": "Sports & Hobbies", "ionicon_name": "football-outline", "category_id": "sports_hobbies", "icon_type": "category"},
+        {"name": "Pets", "ionicon_name": "paw-outline", "category_id": "pets", "icon_type": "category"},
+        {"name": "Agriculture & Food", "ionicon_name": "nutrition-outline", "category_id": "agriculture", "icon_type": "category"},
+        {"name": "Commercial Equipment", "ionicon_name": "construct-outline", "category_id": "commercial_equipment", "icon_type": "category"},
+        {"name": "Repair & Construction", "ionicon_name": "hammer-outline", "category_id": "repair_construction", "icon_type": "category"},
     ]
     
     @router.post("/seed")
@@ -612,7 +622,7 @@ def create_attribute_icons_router(db, require_admin):
             icon_doc = {
                 "id": icon_id,
                 "name": icon_data["name"],
-                "svg_content": icon_data["svg_content"],
+                "ionicon_name": icon_data["ionicon_name"],
                 "category_id": icon_data.get("category_id"),
                 "subcategory_id": icon_data.get("subcategory_id"),
                 "attribute_name": icon_data.get("attribute_name"),
