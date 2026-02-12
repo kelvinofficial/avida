@@ -95,7 +95,7 @@ const menuItems = [
   { text: 'Analytics', icon: <Analytics />, path: '/dashboard/analytics' },
   { text: 'Categories', icon: <Category />, path: '/dashboard/categories' },
   { text: 'Attributes', icon: <Tune />, path: '/dashboard/attributes' },
-  { text: 'Attribute Icons', icon: <Shapes />, path: '/dashboard/icons' },
+  { text: 'Attribute Icons', icon: <InterestsOutlined />, path: '/dashboard/icons' },
   { text: 'Location Manager', icon: <Place />, path: '/dashboard/locations' },
   { text: 'Users', icon: <People />, path: '/dashboard/users' },
   { text: 'Verification', icon: <VerifiedUser />, path: '/dashboard/verification' },
