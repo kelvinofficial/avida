@@ -2536,12 +2536,26 @@ const desktopStyles = StyleSheet.create({
     width: '50%',
     paddingVertical: 10,
     paddingRight: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  detailIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#E8F5E9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  detailTextBox: {
+    flex: 1,
   },
   detailLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: COLORS.textSecondary,
     textTransform: 'capitalize',
-    marginBottom: 2,
+    marginBottom: 1,
   },
   detailValue: {
     fontSize: 14,
