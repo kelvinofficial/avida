@@ -1769,6 +1769,7 @@ export default function CategoryScreen() {
 
       {/* Filters Modal */}
       {renderFiltersModal()}
+      {renderSaveFilterModal()}
     </SafeAreaView>
   );
 }
