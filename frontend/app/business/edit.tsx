@@ -671,11 +671,306 @@ export default function BusinessProfileEditScreen() {
     </TouchableOpacity>
   );
 
-  // Business profile form content (shared between mobile and desktop)
-  const BusinessFormContent = () => (
-    <>
-      {/* VERIFICATION STATUS BANNER */}
-      {hasProfile && (
+  // Desktop Layout using DesktopPageLayout
+  if (isLargeScreen) {
+    return (
+      <DesktopPageLayout
+        title={hasProfile ? 'Edit Business Profile' : 'Create Business Profile'}
+        subtitle="Manage your business information and verification status"
+        icon="storefront-outline"
+        rightAction={rightAction}
+      >
+        {/* Main Form Content */}
+        <View style={styles.desktopFormContainer}>
+          {/* VERIFICATION STATUS BANNER */}
+          {hasProfile && (
+            <View style={[styles.statusBanner, isPremium ? styles.premiumBanner : isVerified ? styles.verifiedBanner : verificationStatus === 'pending' ? styles.pendingBanner : styles.unverifiedBanner]}>
+              <View style={styles.statusRow}>
+                <Ionicons 
+                  name={isPremium ? "diamond" : isVerified ? "checkmark-circle" : verificationStatus === 'pending' ? "time" : "shield-outline"} 
+                  size={20} 
+                  color={isPremium ? COLORS.premium : isVerified ? COLORS.verified : verificationStatus === 'pending' ? '#FF9800' : COLORS.textSecondary} 
+                />
+                <Text style={[styles.statusText, isPremium && styles.premiumText, isVerified && !isPremium && styles.verifiedText, verificationStatus === 'pending' && styles.pendingText]}>
+                  {isPremium ? 'Premium Verified Business' : isVerified ? 'Verified Business' : verificationStatus === 'pending' ? 'Verification Pending' : 'Not Verified'}
+                </Text>
+              </View>
+              {!isVerified && verificationStatus !== 'pending' && (
+                <TouchableOpacity style={styles.verifyBtn} onPress={handleRequestVerification} data-testid="request-verification-button">
+                  <Text style={styles.verifyBtnText}>Request Verification</Text>
+                </TouchableOpacity>
+              )}
+              {isVerified && !isPremium && (
+                <TouchableOpacity style={[styles.verifyBtn, styles.premiumUpgradeBtn]} onPress={() => setShowPremiumUpgrade(!showPremiumUpgrade)}>
+                  <Text style={styles.premiumUpgradeBtnText}>Upgrade to Premium</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {/* PREMIUM UPGRADE SECTION */}
+          {showPremiumUpgrade && hasProfile && isVerified && !isPremium && (
+            <View style={styles.premiumSection}>
+              <Text style={styles.premiumTitle}>Upgrade to Premium Verified Business</Text>
+              <Text style={styles.premiumSubtitle}>Get priority placement, premium badge, and more visibility</Text>
+              
+              <View style={styles.packagesGrid}>
+                {PREMIUM_PACKAGES.map((pkg) => (
+                  <TouchableOpacity
+                    key={pkg.id}
+                    style={[styles.packageCard, selectedPackage === pkg.id && styles.packageCardSelected]}
+                    onPress={() => setSelectedPackage(pkg.id)}
+                    data-testid={`package-${pkg.id}`}
+                  >
+                    {pkg.savings && <View style={styles.savingsBadge}><Text style={styles.savingsText}>Save {pkg.savings}</Text></View>}
+                    <Text style={styles.packageName}>{pkg.name}</Text>
+                    <Text style={styles.packagePrice}>${pkg.amount}</Text>
+                    <Text style={styles.packageDuration}>{pkg.duration}</Text>
+                    {selectedPackage === pkg.id && <View style={styles.packageCheck}><Ionicons name="checkmark-circle" size={20} color={COLORS.primary} /></View>}
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <TouchableOpacity 
+                style={[styles.upgradeBtn, processingPayment && styles.upgradeBtnDisabled]} 
+                onPress={handlePremiumUpgrade}
+                disabled={!selectedPackage || processingPayment}
+                data-testid="upgrade-button"
+              >
+                {processingPayment ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="diamond" size={18} color="#fff" />
+                    <Text style={styles.upgradeBtnText}>Upgrade Now</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* PREMIUM EXPIRATION WARNING */}
+          {isPremium && premiumExpiresAt && (
+            <View style={styles.premiumExpirationBanner}>
+              <Ionicons name="time-outline" size={20} color={COLORS.premium} />
+              <Text style={styles.premiumExpirationText}>
+                Premium expires on {new Date(premiumExpiresAt).toLocaleDateString()}
+              </Text>
+              <TouchableOpacity onPress={() => setShowPremiumUpgrade(true)}>
+                <Text style={styles.renewLink}>Renew</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Form Fields */}
+          <View style={styles.formSection}>
+            <Text style={styles.formSectionTitle}>Basic Information</Text>
+            <InputField label="Business Name" value={businessName} onChangeText={setBusinessName} placeholder="Enter business name" required />
+            <InputField label="Description" value={description} onChangeText={setDescription} placeholder="Describe your business" multiline maxLength={500} />
+          </View>
+
+          <View style={styles.formSection}>
+            <Text style={styles.formSectionTitle}>Contact Information</Text>
+            <InputField label="Phone" value={phone} onChangeText={setPhone} placeholder="Phone number" keyboardType="phone-pad" />
+            <InputField label="Email" value={email} onChangeText={setEmail} placeholder="Business email" keyboardType="email-address" />
+            <InputField label="Website" value={website} onChangeText={setWebsite} placeholder="https://yourwebsite.com" />
+          </View>
+
+          <View style={styles.formSection}>
+            <Text style={styles.formSectionTitle}>Location</Text>
+            <InputField label="Address" value={address} onChangeText={setAddress} placeholder="Street address" />
+            <InputField label="City" value={city} onChangeText={setCity} placeholder="City" />
+            <InputField label="Region/State" value={region} onChangeText={setRegion} placeholder="Region or State" />
+            <InputField label="Country" value={country} onChangeText={setCountry} placeholder="Country" />
+          </View>
+
+          <View style={styles.formSection}>
+            <Text style={styles.formSectionTitle}>Business Hours</Text>
+            <InputField label="Operating Hours" value={operatingHours} onChangeText={setOperatingHours} placeholder="e.g., Mon-Fri 9AM-5PM" />
+          </View>
+
+          <View style={styles.formSection}>
+            <Text style={styles.formSectionTitle}>Customization</Text>
+            <Text style={styles.inputLabel}>Brand Color</Text>
+            <View style={styles.colorPicker}>
+              {['#4CAF50', '#2196F3', '#9C27B0', '#FF9800', '#F44336', '#00BCD4', '#E91E63', '#607D8B'].map((color) => (
+                <TouchableOpacity
+                  key={color}
+                  style={[styles.colorOption, { backgroundColor: color }, brandColor === color && styles.colorOptionSelected]}
+                  onPress={() => setBrandColor(color)}
+                  data-testid={`color-${color}`}
+                />
+              ))}
+            </View>
+          </View>
+
+          {/* Delete Profile Button */}
+          {hasProfile && (
+            <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteProfile} data-testid="delete-profile-button">
+              <Ionicons name="trash-outline" size={18} color={COLORS.error} />
+              <Text style={styles.deleteBtnText}>Delete Business Profile</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* M-Pesa Modal */}
+        <Modal
+          visible={showMpesaModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowMpesaModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>M-Pesa Payment</Text>
+              <Text style={styles.modalSubtitle}>
+                Enter your M-Pesa registered phone number to receive a payment prompt
+              </Text>
+              <TextInput
+                style={styles.phoneInput}
+                placeholder="254XXXXXXXXX"
+                value={mpesaPhone}
+                onChangeText={setMpesaPhone}
+                keyboardType="phone-pad"
+                maxLength={12}
+              />
+              <Text style={styles.phoneHint}>Format: 254XXXXXXXXX (e.g., 254712345678)</Text>
+              <View style={styles.modalActions}>
+                <TouchableOpacity 
+                  style={styles.modalCancelBtn} 
+                  onPress={() => setShowMpesaModal(false)}
+                >
+                  <Text style={styles.modalCancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.modalConfirmBtn, processingPayment && styles.modalConfirmBtnDisabled]} 
+                  onPress={handleMpesaPayment}
+                  disabled={processingPayment || mpesaPhone.length < 10}
+                >
+                  {processingPayment ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={styles.modalConfirmText}>Pay ${selectedPackage ? PREMIUM_PACKAGES.find(p => p.id === selectedPackage)?.amount : ''}</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Success Modal */}
+        <Modal
+          visible={showSuccessModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowSuccessModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <ScrollView contentContainerStyle={styles.successModalScrollContent} showsVerticalScrollIndicator={false}>
+              <View style={styles.successModalContent}>
+                <View style={styles.successIconContainer}>
+                  <Ionicons name="checkmark-circle" size={64} color={COLORS.primary} />
+                </View>
+                <Text style={styles.successTitle}>
+                  {hasProfile ? 'Profile Updated!' : 'Business Profile Created!'}
+                </Text>
+                <Text style={styles.successSubtitle}>
+                  Your business profile is now live. Share it with customers!
+                </Text>
+                
+                <View style={styles.qrCodeSection}>
+                  <Text style={styles.qrCodeLabel}>Scan to View Profile</Text>
+                  <View style={styles.qrCodeContainer}>
+                    {successProfileUrl ? (
+                      <QRCode
+                        value={successProfileUrl}
+                        size={140}
+                        level="M"
+                        bgColor="#FFFFFF"
+                        fgColor="#000000"
+                      />
+                    ) : null}
+                  </View>
+                  <Text style={styles.qrCodeHint}>Share this QR code with customers</Text>
+                </View>
+                
+                <View style={styles.profileUrlBox}>
+                  <Text style={styles.profileUrlLabel}>Your Profile URL</Text>
+                  <Text style={styles.profileUrl} numberOfLines={2} selectable={true}>
+                    {successProfileUrl}
+                  </Text>
+                </View>
+
+                <View style={styles.successActions}>
+                  <TouchableOpacity
+                    style={styles.viewProfileBtn}
+                    onPress={() => {
+                      setShowSuccessModal(false);
+                      router.push(`/business/${successProfileSlug}`);
+                    }}
+                    data-testid="view-profile-button"
+                  >
+                    <Ionicons name="eye-outline" size={18} color="#fff" />
+                    <Text style={styles.viewProfileBtnText}>View Profile</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={styles.copyLinkBtn}
+                    onPress={async () => {
+                      if (Platform.OS === 'web') {
+                        try {
+                          await navigator.clipboard.writeText(successProfileUrl);
+                          Alert.alert('Copied!', 'Profile link copied to clipboard');
+                        } catch (e) {
+                          console.error('Failed to copy:', e);
+                        }
+                      } else {
+                        const { Share } = require('react-native');
+                        Share.share({
+                          message: `Check out my business on Avida: ${successProfileUrl}`,
+                          url: successProfileUrl,
+                        });
+                      }
+                    }}
+                    data-testid="copy-link-button"
+                  >
+                    <Ionicons name="copy-outline" size={18} color={COLORS.primary} />
+                    <Text style={styles.copyLinkBtnText}>Copy Link</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.successCloseBtn}
+                  onPress={() => setShowSuccessModal(false)}
+                >
+                  <Text style={styles.successCloseBtnText}>Continue Editing</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </Modal>
+      </DesktopPageLayout>
+    );
+  }
+
+  // Mobile Layout
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => safeGoBack(router)} data-testid="back-button">
+          <Ionicons name="close" size={24} color={COLORS.text} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{hasProfile ? 'Edit Business Profile' : 'Create Business Profile'}</Text>
+        <TouchableOpacity onPress={handleSave} disabled={saving} data-testid="save-button">
+          {saving ? <ActivityIndicator size="small" color={COLORS.primary} /> : <Text style={styles.saveBtn}>Save</Text>}
+        </TouchableOpacity>
+      </View>
+
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+          
+          {/* VERIFICATION STATUS BANNER */}
+          {hasProfile && (
             <View style={[styles.statusBanner, isPremium ? styles.premiumBanner : isVerified ? styles.verifiedBanner : verificationStatus === 'pending' ? styles.pendingBanner : styles.unverifiedBanner]}>
               <View style={styles.statusRow}>
                 <Ionicons 
