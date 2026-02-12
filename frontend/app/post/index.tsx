@@ -1999,6 +1999,7 @@ export default function PostListingScreen() {
       </View>
     </ScrollView>
   );
+  };
 
   // ============ RENDER ============
   // Show nothing while redirecting to login
