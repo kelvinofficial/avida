@@ -2413,6 +2413,13 @@ export default function PostListingScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Error Banner - Mobile */}
+      <ErrorBanner 
+        errors={fieldErrors}
+        visible={showErrorBanner}
+        onDismiss={() => setShowErrorBanner(false)}
+      />
+
       {/* Step Indicator */}
       {renderStepIndicator()}
 
