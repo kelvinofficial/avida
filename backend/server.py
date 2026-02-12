@@ -299,6 +299,7 @@ try:
         create_sessions_router,
         create_id_verification_router,
         create_profile_router,
+        create_badge_challenges_router,
         DEFAULT_CATEGORIES,
         LEGACY_CATEGORY_MAP,
         validate_category_and_subcategory
