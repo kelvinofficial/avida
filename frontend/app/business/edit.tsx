@@ -156,6 +156,8 @@ const catStyles = StyleSheet.create({
 export default function BusinessProfileEditScreen() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
+  const { isDesktop, isTablet, isReady } = useResponsive();
+  const isLargeScreen = isDesktop || isTablet;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
