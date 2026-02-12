@@ -452,7 +452,7 @@ const SafetySection = memo(({ onReport, listingId }: { onReport: () => void; lis
       </View>
     </View>
     <View style={safetyStyles.footerRow}>
-      <Text style={safetyStyles.listingId}>ID: {listingId || 'N/A'}</Text>
+      <Text style={safetyStyles.listingId}>ID: {listingId ? listingId.slice(0, 8).toUpperCase() : 'N/A'}</Text>
       <TouchableOpacity style={safetyStyles.reportBtn} onPress={onReport}>
         <Ionicons name="flag-outline" size={16} color={COLORS.error} />
         <Text style={safetyStyles.reportText}>Report this listing</Text>
