@@ -160,7 +160,7 @@ export default function LeaderboardScreen() {
 
   const handleShare = async () => {
     const message = `Check out the Badge Leaderboard on Avida Marketplace! See who's earning the most badges. #AvidaMarketplace`;
-    const url = 'https://icon-admin-panel-1.preview.emergentagent.com/leaderboard';
+    const url = 'https://post-refactor.preview.emergentagent.com/leaderboard';
     
     if (Platform.OS === 'web') {
       try {

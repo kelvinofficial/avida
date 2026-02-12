@@ -9,7 +9,7 @@ import os
 from datetime import datetime, timedelta
 
 # Use the public URL for testing
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://icon-admin-panel-1.preview.emergentagent.com/api')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://post-refactor.preview.emergentagent.com/api')
 
 class TestScheduledDeployments:
     """Scheduled Deployments endpoint tests"""
