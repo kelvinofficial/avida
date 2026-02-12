@@ -241,7 +241,7 @@ def create_photography_guides_router(db, require_auth):
         }
     
     @router.put("/{guide_id}")
-    async def update_guide(guide_id: str, update: PhotographyGuideUpdate, user: dict = Depends(require_auth)):
+    async def update_guide(guide_id: str, update: PhotographyGuideUpdate, user = Depends(require_auth)):
         """Update a photography guide"""
         try:
             existing = await collection.find_one({"_id": ObjectId(guide_id)})
