@@ -851,6 +851,38 @@ export default function CategoryScreen() {
               </View>
             </View>
 
+            {/* Quick Category Filters */}
+            {CATEGORY_FILTERS[categoryId] && (
+              <View style={desktopStyles.quickFiltersContainer}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={desktopStyles.quickFiltersScroll}>
+                  {CATEGORY_FILTERS[categoryId].map((filter) => (
+                    filter.options.slice(0, 4).map((opt) => (
+                      <TouchableOpacity
+                        key={`${filter.key}-${opt}`}
+                        style={[
+                          desktopStyles.quickFilterChip,
+                          activeFilters[filter.key] === opt && desktopStyles.quickFilterChipActive
+                        ]}
+                        onPress={() => {
+                          setActiveFilters(prev => ({
+                            ...prev,
+                            [filter.key]: prev[filter.key] === opt ? undefined : opt
+                          }));
+                        }}
+                      >
+                        <Text style={[
+                          desktopStyles.quickFilterChipText,
+                          activeFilters[filter.key] === opt && desktopStyles.quickFilterChipTextActive
+                        ]}>
+                          {opt}
+                        </Text>
+                      </TouchableOpacity>
+                    ))
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
             <View style={desktopStyles.mainContainerInner}>
             {/* Sidebar */}
             {renderDesktopSidebar()}
