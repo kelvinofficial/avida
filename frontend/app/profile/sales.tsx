@@ -175,6 +175,100 @@ export default function SalesScreen() {
   // Calculate total earnings
   const totalEarnings = sales.reduce((sum, item) => sum + (item.price || 0), 0);
 
+  if (!isReady) {
+    return (
+      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  // Desktop Layout
+  if (isLargeScreen) {
+    const rightAction = (
+      <View style={desktopStyles.earningsBadge}>
+        <Ionicons name="trending-up" size={18} color={COLORS.success} />
+        <Text style={desktopStyles.earningsBadgeText}>€{totalEarnings.toLocaleString()}</Text>
+      </View>
+    );
+
+    // Unauthenticated state
+    if (!isAuthenticated) {
+      return (
+        <DesktopPageLayout
+          title="Sales"
+          icon="cash-outline"
+        >
+          <View style={desktopStyles.unauthContainer}>
+            <View style={desktopStyles.unauthIcon}>
+              <Ionicons name="cash-outline" size={64} color={COLORS.success} />
+            </View>
+            <Text style={desktopStyles.unauthTitle}>Sign in to view your sales</Text>
+            <Text style={desktopStyles.unauthSubtitle}>
+              Track your sales and earnings in one place
+            </Text>
+            <TouchableOpacity 
+              style={desktopStyles.signInButton} 
+              onPress={() => goToLogin()}
+              data-testid="sign-in-btn"
+            >
+              <Ionicons name="log-in-outline" size={20} color="#fff" />
+              <Text style={desktopStyles.signInButtonText}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        </DesktopPageLayout>
+      );
+    }
+
+    // Authenticated state
+    return (
+      <DesktopPageLayout
+        title="Sales"
+        subtitle={`${total} items sold`}
+        icon="cash-outline"
+        rightAction={sales.length > 0 ? rightAction : undefined}
+      >
+        {loading && !refreshing ? (
+          <View style={desktopStyles.gridContainer}>
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <View key={i} style={desktopStyles.skeletonCard}>
+                <View style={desktopStyles.skeletonImage} />
+                <View style={desktopStyles.skeletonContent}>
+                  <View style={[desktopStyles.skeletonLine, { width: '60%' }]} />
+                  <View style={[desktopStyles.skeletonLine, { width: '40%' }]} />
+                </View>
+              </View>
+            ))}
+          </View>
+        ) : sales.length === 0 ? (
+          <DesktopEmptyState />
+        ) : (
+          <>
+            <View style={desktopStyles.gridContainer}>
+              {sales.map((item) => (
+                <DesktopSaleCard
+                  key={item.id}
+                  item={item}
+                  onPress={() => router.push(`/listing/${item.id}`)}
+                />
+              ))}
+            </View>
+            {hasMore && sales.length > 0 && (
+              <TouchableOpacity 
+                style={desktopStyles.loadMoreButton} 
+                onPress={handleLoadMore}
+                data-testid="load-more-btn"
+              >
+                <Text style={desktopStyles.loadMoreButtonText}>Load More</Text>
+              </TouchableOpacity>
+            )}
+          </>
+        )}
+      </DesktopPageLayout>
+    );
+  }
+
+  // Mobile Layout - Unauthenticated
   if (!isAuthenticated) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
