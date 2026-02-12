@@ -468,9 +468,6 @@ export default function PostListingScreen() {
     getCategoryPreferences,
   } = useFormConfig();
   
-  // Fetch photography guides from admin-managed API (with fallback to static)
-  const { guides: photoGuides, loading: photoGuidesLoading } = usePhotographyGuides(selectedCategoryId || undefined);
-  
   // Track user's badges before listing creation
   const previousBadgesRef = useRef<string[]>([]);
 
