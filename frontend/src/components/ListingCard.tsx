@@ -378,6 +378,9 @@ const styles = StyleSheet.create({
     color: theme.colors.onSurface,
   },
   negotiableBadge: {
+    position: 'absolute',
+    bottom: theme.spacing.sm,
+    right: theme.spacing.sm,
     backgroundColor: theme.colors.primaryContainer,
     paddingHorizontal: 6,
     paddingVertical: 2,
