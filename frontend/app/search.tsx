@@ -337,14 +337,22 @@ export default function SearchScreen() {
     }
   }, [searchQuery]);
 
-  // Auto-search when page loads with query parameter
+  // Auto-search when page loads with query parameter  
   useEffect(() => {
-    const queryParam = params.q as string;
-    console.log('[Search Page] params.q changed:', queryParam);
+    // Try to get query from params first, then from URL
+    let queryParam = params.q as string;
+    
+    // On web, also check window.location.search
+    if (!queryParam && Platform.OS === 'web' && typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      queryParam = urlParams.get('q') || '';
+    }
+    
+    console.log('[Search Page] Query param:', queryParam);
+    
     if (queryParam && queryParam.trim()) {
       setSearchQuery(queryParam);
       setHasSearched(true);
-      // Trigger search immediately
       handleSearch(queryParam);
     }
   }, [params.q]);
