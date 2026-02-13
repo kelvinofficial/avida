@@ -2309,7 +2309,11 @@ if MODULAR_ROUTES_AVAILABLE:
     api_router.include_router(categories_router)
     
     # Create favorites router
-    favorites_router = create_favorites_router(db, require_auth)
+    favorites_router = create_favorites_router(
+        db, require_auth, 
+        notify_stats_update=notify_stats_update,
+        create_notification=create_notification
+    )
     api_router.include_router(favorites_router)
     
     # Create conversations router with moderation integration
