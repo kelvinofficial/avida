@@ -66,8 +66,9 @@ export default function SearchScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
   const { width: windowWidth } = useWindowDimensions();
-  const { isDesktop, isTablet, isReady } = useResponsive();
-  const isLargeScreen = isReady && (isDesktop || isTablet);
+  const { isDesktop, isTablet, isReady, width } = useResponsive();
+  // Use 768 breakpoint to match the tabs layout
+  const isLargeScreen = isReady && width > 768;
   const { userLocation, nearMeEnabled, setNearMeEnabled, isLoading: locationLoading, requestLocation } = useUserLocation();
   const dynamicCardWidth = Math.floor((windowWidth - HORIZONTAL_PADDING * 2 - COLUMN_GAP) / 2);
   
