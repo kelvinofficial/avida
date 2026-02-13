@@ -43,7 +43,18 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
 
   if (scrollable) {
     return (
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+      <ScrollView 
+        style={styles.scroll} 
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          onRefresh ? (
+            <EnhancedRefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
+          ) : undefined
+        }
+      >
         {content}
       </ScrollView>
     );
