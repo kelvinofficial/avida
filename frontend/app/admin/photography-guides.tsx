@@ -168,6 +168,12 @@ export default function PhotographyGuidesAdmin() {
     }
 
     try {
+      const token = await getToken();
+      if (!token) {
+        Alert.alert('Error', 'Not authenticated');
+        return;
+      }
+
       const url = editingGuide 
         ? `${API_URL}/api/photography-guides/${editingGuide.id}`
         : `${API_URL}/api/photography-guides`;
@@ -176,7 +182,7 @@ export default function PhotographyGuidesAdmin() {
         method: editingGuide ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(formData)
       });
@@ -208,9 +214,12 @@ export default function PhotographyGuidesAdmin() {
           style: 'destructive',
           onPress: async () => {
             try {
+              const token = await getToken();
+              if (!token) return;
+
               const response = await fetch(`${API_URL}/api/photography-guides/${guideId}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${authToken}` }
+                headers: { 'Authorization': `Bearer ${token}` }
               });
               
               if (response.ok) {
@@ -229,11 +238,14 @@ export default function PhotographyGuidesAdmin() {
   // Toggle active status
   const handleToggleActive = async (guide: PhotographyGuide) => {
     try {
+      const token = await getToken();
+      if (!token) return;
+
       const response = await fetch(`${API_URL}/api/photography-guides/${guide.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ is_active: !guide.is_active })
       });
@@ -258,9 +270,12 @@ export default function PhotographyGuidesAdmin() {
           text: 'Seed',
           onPress: async () => {
             try {
+              const token = await getToken();
+              if (!token) return;
+
               const response = await fetch(`${API_URL}/api/photography-guides/seed`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${authToken}` }
+                headers: { 'Authorization': `Bearer ${token}` }
               });
               
               if (response.ok) {
