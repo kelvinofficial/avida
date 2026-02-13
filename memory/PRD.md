@@ -7,6 +7,43 @@ Build a local marketplace application (Avida) with:
 3. Premium subscription tiers with payment integration
 
 
+
+### 2026-02-13: Shimmer Animation for Skeleton Loaders (P0)
+**COMPLETED** ✅
+
+#### Features Implemented
+1. **CSS-based Shimmer Animation**: Added polished shimmer effect to all skeleton loaders
+   - Smooth left-to-right gradient animation (1.5s cycle)
+   - Uses CSS keyframes for optimal web performance
+   - Applied via `data-shimmer="true"` attribute selector
+
+2. **Customizable Theme System**:
+   - `ShimmerThemeProvider` for custom colors (baseColor, shimmerColor, backgroundColor)
+   - `useShimmerTheme()` hook for accessing theme values
+   - Default theme: gray gradient (#E0E0E0 → #F5F5F5 → #E0E0E0)
+
+3. **Reusable ShimmerBox Component**:
+   - Flexible sizing (width, height, aspectRatio, borderRadius)
+   - Web: CSS animation via global keyframes
+   - Native: Animated.View with translateX animation
+
+#### Files Modified
+- `/app/frontend/src/components/skeletons/index.tsx` - Added ShimmerBox, ShimmerThemeProvider, useShimmerTheme; refactored all skeleton components
+- `/app/frontend/app/+html.tsx` - Added global shimmer keyframes and data attribute CSS selector
+
+#### Technical Details
+- Animation: `@keyframes shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }`
+- Gradient: `linear-gradient(90deg, #E0E0E0 0%, #F5F5F5 50%, #E0E0E0 100%)`
+- Background-size: 200% for smooth animation scroll effect
+
+#### Verified
+- 46 shimmer elements render during page load
+- Animation properties confirmed: 1.5s ease-in-out infinite shimmer
+- Skeleton disappears after content loads (0 elements)
+
+---
+
+
 ### 2026-02-13: Page-Specific Skeleton Loaders, Footer Links & Login testID (P1/P2)
 **COMPLETED** ✅
 
