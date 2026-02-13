@@ -161,7 +161,7 @@ export default function ShareBadgesScreen() {
         <meta property="og:description" content={profile.og_meta.description} />
         <meta property="og:type" content={profile.og_meta.type} />
         <meta property="og:url" content={profile.og_meta.url} />
-        <meta property="og:image" content="https://classifieds-search-3.preview.emergentagent.com/badge-share-preview.png" />
+        <meta property="og:image" content="https://local-assets-bundle.preview.emergentagent.com/badge-share-preview.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={profile.og_meta.title} />
         <meta name="twitter:description" content={profile.og_meta.description} />
