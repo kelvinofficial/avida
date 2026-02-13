@@ -201,13 +201,9 @@ export default function RootLayout() {
     return () => subscription.remove();
   }, [mounted, processingAuth]);
 
-  // Render immediately without loading state
-  if (!mounted || !fontsLoaded) {
-    return (
-      <View style={{ flex: 1, backgroundColor: theme.colors.background, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
-    );
+  // Show skeleton while fonts are loading on web
+  if (!mounted || (Platform.OS === 'web' && !fontsReady)) {
+    return <FontLoadingSkeleton />;
   }
 
   return (
