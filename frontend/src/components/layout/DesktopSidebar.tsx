@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
 import { useAuthStore } from '../../store/authStore';
+import { ImagePlaceholder } from '../common/ImagePlaceholder';
 
 const COLORS = {
   primary: '#2E7D32',
@@ -115,10 +116,16 @@ export const DesktopSidebar: React.FC = () => {
       {/* User Profile (if logged in) */}
       {isAuthenticated && user && (
         <View style={styles.userSection}>
-          <Image
-            source={{ uri: user.picture || 'https://via.placeholder.com/40' }}
-            style={styles.userAvatar}
-          />
+          {user.picture ? (
+            <Image
+              source={{ uri: user.picture }}
+              style={styles.userAvatar}
+            />
+          ) : (
+            <View style={styles.userAvatar}>
+              <ImagePlaceholder type="avatar" size="small" showText={false} />
+            </View>
+          )}
           <View style={styles.userInfo}>
             <Text style={styles.userName} numberOfLines={1}>{user.name}</Text>
             <Text style={styles.userEmail} numberOfLines={1}>{user.email}</Text>
