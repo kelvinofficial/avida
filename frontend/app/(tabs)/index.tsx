@@ -1833,6 +1833,16 @@ const desktopStyles = StyleSheet.create({
     paddingVertical: 14,
     gap: 12,
   },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#333',
+    paddingVertical: 0,
+    ...(Platform.OS === 'web' ? { outlineStyle: 'none' } as any : {}),
+  },
+  clearSearchBtn: {
+    padding: 4,
+  },
   searchPlaceholder: {
     fontSize: 15,
     color: '#666',
