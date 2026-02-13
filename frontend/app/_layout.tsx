@@ -20,56 +20,12 @@ if (typeof window !== 'undefined' || Platform.OS !== 'web') {
   setupGlobalErrorHandler();
 }
 
-// Skeleton shimmer animation component for font loading
+// Import page-specific skeletons
+import { HomepageSkeleton } from '../src/components/skeletons';
+
+// Skeleton shimmer animation component for font loading (kept for backward compatibility)
 const FontLoadingSkeleton = () => {
-  const shimmerAnim = React.useRef(new Animated.Value(0)).current;
-  
-  React.useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmerAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
-        Animated.timing(shimmerAnim, { toValue: 0, duration: 1000, useNativeDriver: true }),
-      ])
-    );
-    animation.start();
-    return () => animation.stop();
-  }, []);
-  
-  const opacity = shimmerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.3, 0.7],
-  });
-  
-  return (
-    <View style={skeletonStyles.container}>
-      {/* Header skeleton */}
-      <View style={skeletonStyles.header}>
-        <Animated.View style={[skeletonStyles.logo, { opacity }]} />
-        <View style={skeletonStyles.headerRight}>
-          <Animated.View style={[skeletonStyles.iconBtn, { opacity }]} />
-          <Animated.View style={[skeletonStyles.iconBtn, { opacity }]} />
-        </View>
-      </View>
-      {/* Search bar skeleton */}
-      <Animated.View style={[skeletonStyles.searchBar, { opacity }]} />
-      {/* Category pills skeleton */}
-      <View style={skeletonStyles.categories}>
-        {[1, 2, 3, 4, 5].map((i) => (
-          <Animated.View key={i} style={[skeletonStyles.categoryPill, { opacity }]} />
-        ))}
-      </View>
-      {/* Grid skeleton */}
-      <View style={skeletonStyles.grid}>
-        {[1, 2, 3, 4].map((i) => (
-          <View key={i} style={skeletonStyles.card}>
-            <Animated.View style={[skeletonStyles.cardImage, { opacity }]} />
-            <Animated.View style={[skeletonStyles.cardTitle, { opacity }]} />
-            <Animated.View style={[skeletonStyles.cardPrice, { opacity }]} />
-          </View>
-        ))}
-      </View>
-    </View>
-  );
+  return <HomepageSkeleton isDesktop={false} />;
 };
 
 const skeletonStyles = StyleSheet.create({
