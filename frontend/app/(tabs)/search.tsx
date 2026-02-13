@@ -344,17 +344,92 @@ export default function SearchScreen() {
                     <Text style={desktopStyles.resultsCount}>
                       {listings.length} {listings.length === 1 ? 'result' : 'results'} found
                     </Text>
-                    <View style={desktopStyles.listingsGrid}>
+                    {/* Single-column horizontal card layout */}
+                    <View style={desktopStyles.listingsContainer}>
                       {listings.map((item) => (
-                        <View key={item.id} style={desktopStyles.listingItem}>
-                          <ListingCard
-                            listing={item}
-                            cardWidth={280}
-                            onFavoriteToggle={() => toggleFavorite(item.id)}
-                            isFavorited={favorites.has(item.id)}
-                            userLocation={userLocation}
-                          />
-                        </View>
+                        <TouchableOpacity 
+                          key={item.id} 
+                          style={desktopStyles.horizontalCard}
+                          onPress={() => router.push(`/listing/${item.id}`)}
+                          activeOpacity={0.8}
+                          data-testid={`search-result-${item.id}`}
+                        >
+                          {/* Image on Left */}
+                          <View style={desktopStyles.cardImageWrapper}>
+                            {item.images && item.images[0] ? (
+                              <View style={desktopStyles.cardImage}>
+                                <View style={{ width: '100%', height: '100%', backgroundColor: '#E5E7EB', borderRadius: 8, overflow: 'hidden' }}>
+                                  <img 
+                                    src={item.images[0]} 
+                                    alt={item.title}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  />
+                                </View>
+                              </View>
+                            ) : (
+                              <View style={[desktopStyles.cardImage, { backgroundColor: '#E5E7EB', alignItems: 'center', justifyContent: 'center' }]}>
+                                <Ionicons name="image-outline" size={32} color="#9CA3AF" />
+                              </View>
+                            )}
+                            {item.is_featured && (
+                              <View style={desktopStyles.featuredBadge}>
+                                <Ionicons name="star" size={10} color="#fff" />
+                                <Text style={desktopStyles.featuredText}>Featured</Text>
+                              </View>
+                            )}
+                          </View>
+                          
+                          {/* Content on Right */}
+                          <View style={desktopStyles.cardContent}>
+                            <View style={desktopStyles.cardHeader}>
+                              <Text style={desktopStyles.cardPrice}>€{item.price?.toLocaleString()}</Text>
+                              {item.negotiable && (
+                                <View style={desktopStyles.negotiableBadge}>
+                                  <Text style={desktopStyles.negotiableText}>Negotiable</Text>
+                                </View>
+                              )}
+                            </View>
+                            <Text style={desktopStyles.cardTitle} numberOfLines={2}>{item.title}</Text>
+                            <Text style={desktopStyles.cardDescription} numberOfLines={2}>
+                              {item.description || 'No description provided'}
+                            </Text>
+                            <View style={desktopStyles.cardMeta}>
+                              <View style={desktopStyles.metaItem}>
+                                <Ionicons name="location-outline" size={14} color="#6B7280" />
+                                <Text style={desktopStyles.metaText}>
+                                  {item.location?.city || item.location || 'Unknown'}
+                                </Text>
+                              </View>
+                              <View style={desktopStyles.metaItem}>
+                                <Ionicons name="time-outline" size={14} color="#6B7280" />
+                                <Text style={desktopStyles.metaText}>
+                                  {new Date(item.created_at).toLocaleDateString()}
+                                </Text>
+                              </View>
+                              {item.condition && (
+                                <View style={desktopStyles.conditionBadge}>
+                                  <Text style={desktopStyles.conditionText}>{item.condition}</Text>
+                                </View>
+                              )}
+                            </View>
+                          </View>
+                          
+                          {/* Favorite Button */}
+                          <TouchableOpacity 
+                            style={desktopStyles.favoriteBtn}
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              toggleFavorite(item.id);
+                            }}
+                            data-testid={`favorite-btn-${item.id}`}
+                          >
+                            <Ionicons 
+                              name={favorites.has(item.id) ? "heart" : "heart-outline"} 
+                              size={22} 
+                              color={favorites.has(item.id) ? "#EF4444" : "#9CA3AF"} 
+                            />
+                          </TouchableOpacity>
+                        </TouchableOpacity>
                       ))}
                     </View>
                   </View>
