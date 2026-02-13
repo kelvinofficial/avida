@@ -339,15 +339,13 @@ export default function SearchScreen() {
 
   // Auto-search when page loads with query parameter
   useEffect(() => {
-    const initialQuery = params.q as string;
-    if (initialQuery && initialQuery.trim()) {
-      // Set the query first
-      setSearchQuery(initialQuery);
-      // Trigger search with a small delay to ensure state is updated
-      const timer = setTimeout(() => {
-        handleSearch(initialQuery);
-      }, 100);
-      return () => clearTimeout(timer);
+    const queryParam = params.q as string;
+    console.log('[Search Page] params.q changed:', queryParam);
+    if (queryParam && queryParam.trim()) {
+      setSearchQuery(queryParam);
+      setHasSearched(true);
+      // Trigger search immediately
+      handleSearch(queryParam);
     }
   }, [params.q]);
 
