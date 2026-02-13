@@ -228,12 +228,23 @@ export default function SearchScreen() {
   const { isAuthenticated } = useAuthStore();
   const responsive = useResponsive();
   const { isDesktop, isTablet, width } = responsive;
-  const isLargeScreen = isDesktop || isTablet;
   
-  // Debug: log screen detection
+  // Use direct window check for SSR compatibility
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+  
   useEffect(() => {
-    console.log('Search page responsive:', { isDesktop, isTablet, width, isLargeScreen });
-  }, [isDesktop, isTablet, width, isLargeScreen]);
+    // Check on client-side
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      setIsLargeScreen(window.innerWidth > 768);
+      
+      const handleResize = () => {
+        setIsLargeScreen(window.innerWidth > 768);
+      };
+      
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
   
   const [searchQuery, setSearchQuery] = useState((params.q as string) || '');
   const [listings, setListings] = useState<any[]>([]);
