@@ -26,9 +26,16 @@ export default function RootLayout() {
   const [processingAuth, setProcessingAuth] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Fonts are loaded via CSS @font-face rules in +html.tsx
-  // Serving from /api/fonts/ to bypass the 520 errors from Metro's asset serving
-  const fontsLoaded = true;
+  // Load icon fonts from the public directory to avoid Metro asset serving issues
+  // These fonts are served from /fonts/ path via the public/ directory
+  const [fontsLoaded] = useFonts({
+    'ionicons': '/fonts/Ionicons.ttf',
+    'material': '/fonts/MaterialIcons.ttf',
+    'material-community': '/fonts/MaterialCommunityIcons.ttf',
+    'FontAwesome': '/fonts/FontAwesome.ttf',
+    'FontAwesome5_Solid': '/fonts/FontAwesome5_Solid.ttf',
+    'feather': '/fonts/Feather.ttf',
+  });
 
   // Initialize notification deep linking
   useNotificationDeepLinking();
