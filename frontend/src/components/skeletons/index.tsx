@@ -1,0 +1,426 @@
+import React, { useRef, useEffect } from 'react';
+import { View, StyleSheet, Animated, Dimensions, Platform } from 'react-native';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const COLORS = {
+  skeleton: '#E0E0E0',
+  skeletonLight: '#EBEBEB',
+  background: '#F5F5F5',
+  surface: '#FFFFFF',
+};
+
+// Base shimmer animation hook
+const useShimmer = () => {
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+  
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmerAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
+        Animated.timing(shimmerAnim, { toValue: 0, duration: 1000, useNativeDriver: true }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, []);
+  
+  return shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 0.7],
+  });
+};
+
+// ============ HOMEPAGE SKELETON ============
+export const HomepageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
+  const opacity = useShimmer();
+  
+  const cardCount = isDesktop ? 8 : 4;
+  const cardWidth = isDesktop ? '23%' : '48%';
+  
+  return (
+    <View style={[skeletonBase.container, isDesktop && { maxWidth: 1280, alignSelf: 'center' as const, width: '100%' }]}>
+      {/* Header skeleton */}
+      <View style={skeletonBase.header}>
+        <Animated.View style={[skeletonBase.logo, { opacity }]} />
+        <View style={skeletonBase.headerRight}>
+          <Animated.View style={[skeletonBase.textBtn, { opacity }]} />
+          <Animated.View style={[skeletonBase.textBtn, { opacity }]} />
+          <Animated.View style={[skeletonBase.primaryBtn, { opacity }]} />
+        </View>
+      </View>
+      
+      {/* Search bar skeleton */}
+      <View style={skeletonBase.searchRow}>
+        <Animated.View style={[skeletonBase.searchBar, { opacity }]} />
+        <Animated.View style={[skeletonBase.locationChip, { opacity }]} />
+      </View>
+      
+      {/* Category pills skeleton */}
+      <View style={skeletonBase.categories}>
+        {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+          <Animated.View key={i} style={[skeletonBase.categoryPill, { opacity }]} />
+        ))}
+      </View>
+      
+      {/* Section title */}
+      <Animated.View style={[skeletonBase.sectionTitle, { opacity, marginBottom: 16 }]} />
+      
+      {/* Grid skeleton */}
+      <View style={skeletonBase.grid}>
+        {Array(cardCount).fill(0).map((_, i) => (
+          <View key={i} style={[skeletonBase.card, { width: cardWidth }]}>
+            <Animated.View style={[skeletonBase.cardImage, { opacity }]} />
+            <Animated.View style={[skeletonBase.cardLocation, { opacity }]} />
+            <Animated.View style={[skeletonBase.cardTitle, { opacity }]} />
+            <Animated.View style={[skeletonBase.cardPrice, { opacity }]} />
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+
+// ============ SEARCH PAGE SKELETON ============
+export const SearchPageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
+  const opacity = useShimmer();
+  
+  if (!isDesktop) {
+    return (
+      <View style={skeletonBase.container}>
+        {/* Search header */}
+        <Animated.View style={[searchSkeleton.mobileSearchBar, { opacity }]} />
+        
+        {/* Results count */}
+        <Animated.View style={[{ width: 120, height: 16, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 16 }, { opacity }]} />
+        
+        {/* Result items */}
+        {Array(4).fill(0).map((_, i) => (
+          <View key={i} style={searchSkeleton.resultItem}>
+            <Animated.View style={[searchSkeleton.resultImage, { opacity }]} />
+            <View style={searchSkeleton.resultContent}>
+              <Animated.View style={[{ width: '60%', height: 18, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+              <Animated.View style={[{ width: '40%', height: 14, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+              <Animated.View style={[{ width: '30%', height: 20, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+            </View>
+          </View>
+        ))}
+      </View>
+    );
+  }
+  
+  return (
+    <View style={[skeletonBase.container, { maxWidth: 1280, alignSelf: 'center' as const, width: '100%' }]}>
+      {/* Header */}
+      <View style={skeletonBase.header}>
+        <Animated.View style={[skeletonBase.logo, { opacity }]} />
+        <Animated.View style={[searchSkeleton.desktopSearchBar, { opacity }]} />
+        <View style={skeletonBase.headerRight}>
+          <Animated.View style={[skeletonBase.primaryBtn, { opacity }]} />
+        </View>
+      </View>
+      
+      {/* Main content */}
+      <View style={searchSkeleton.desktopLayout}>
+        {/* Sidebar */}
+        <View style={searchSkeleton.sidebar}>
+          <Animated.View style={[searchSkeleton.sidebarSection, { opacity }]} />
+          <Animated.View style={[searchSkeleton.sidebarList, { opacity }]} />
+          <Animated.View style={[searchSkeleton.sidebarSection, { opacity }]} />
+          <Animated.View style={[searchSkeleton.sidebarList, { opacity, height: 200 }]} />
+        </View>
+        
+        {/* Results grid */}
+        <View style={searchSkeleton.resultsArea}>
+          <Animated.View style={[{ width: 150, height: 20, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 20 }, { opacity }]} />
+          <View style={skeletonBase.grid}>
+            {Array(6).fill(0).map((_, i) => (
+              <View key={i} style={[skeletonBase.card, { width: '31%' }]}>
+                <Animated.View style={[skeletonBase.cardImage, { opacity }]} />
+                <Animated.View style={[skeletonBase.cardLocation, { opacity }]} />
+                <Animated.View style={[skeletonBase.cardTitle, { opacity }]} />
+                <Animated.View style={[skeletonBase.cardPrice, { opacity }]} />
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+// ============ SETTINGS PAGE SKELETON ============
+export const SettingsSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
+  const opacity = useShimmer();
+  
+  const SettingsRow = () => (
+    <View style={settingsSkeleton.row}>
+      <Animated.View style={[settingsSkeleton.rowIcon, { opacity }]} />
+      <View style={settingsSkeleton.rowContent}>
+        <Animated.View style={[{ width: '50%', height: 16, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+        <Animated.View style={[{ width: '30%', height: 12, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+      </View>
+      <Animated.View style={[settingsSkeleton.toggle, { opacity }]} />
+    </View>
+  );
+  
+  if (!isDesktop) {
+    return (
+      <View style={skeletonBase.container}>
+        {/* Header */}
+        <View style={settingsSkeleton.mobileHeader}>
+          <Animated.View style={[{ width: 24, height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+          <Animated.View style={[{ width: 100, height: 20, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+          <View style={{ width: 24 }} />
+        </View>
+        
+        {/* Settings sections */}
+        {Array(3).fill(0).map((_, section) => (
+          <View key={section} style={settingsSkeleton.section}>
+            <Animated.View style={[settingsSkeleton.sectionTitle, { opacity }]} />
+            <View style={settingsSkeleton.sectionContent}>
+              {Array(4).fill(0).map((_, i) => <SettingsRow key={i} />)}
+            </View>
+          </View>
+        ))}
+      </View>
+    );
+  }
+  
+  return (
+    <View style={[skeletonBase.container, { maxWidth: 1280, alignSelf: 'center' as const, width: '100%' }]}>
+      {/* Header */}
+      <View style={skeletonBase.header}>
+        <Animated.View style={[skeletonBase.logo, { opacity }]} />
+        <View style={skeletonBase.headerRight}>
+          <Animated.View style={[skeletonBase.primaryBtn, { opacity }]} />
+        </View>
+      </View>
+      
+      {/* Main content */}
+      <View style={settingsSkeleton.desktopLayout}>
+        {/* Sidebar */}
+        <View style={settingsSkeleton.desktopSidebar}>
+          <Animated.View style={[{ width: '80%', height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 20 }, { opacity }]} />
+          {Array(6).fill(0).map((_, i) => (
+            <Animated.View key={i} style={[settingsSkeleton.desktopNavItem, { opacity }]} />
+          ))}
+        </View>
+        
+        {/* Content */}
+        <View style={settingsSkeleton.desktopContent}>
+          <View style={settingsSkeleton.desktopCard}>
+            <Animated.View style={[{ width: 200, height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 8 }, { opacity }]} />
+            <Animated.View style={[{ width: '60%', height: 16, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 24 }, { opacity }]} />
+            {Array(5).fill(0).map((_, i) => <SettingsRow key={i} />)}
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+// ============ MESSAGES PAGE SKELETON ============
+export const MessagesSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
+  const opacity = useShimmer();
+  
+  const MessageItem = () => (
+    <View style={messagesSkeleton.item}>
+      <Animated.View style={[messagesSkeleton.avatar, { opacity }]} />
+      <View style={messagesSkeleton.content}>
+        <Animated.View style={[{ width: '50%', height: 16, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+        <Animated.View style={[{ width: '80%', height: 14, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+      </View>
+      <Animated.View style={[{ width: 40, height: 12, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+    </View>
+  );
+  
+  return (
+    <View style={skeletonBase.container}>
+      {/* Header */}
+      <View style={settingsSkeleton.mobileHeader}>
+        <Animated.View style={[{ width: 24, height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+        <Animated.View style={[{ width: 100, height: 20, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+        <Animated.View style={[{ width: 24, height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+      </View>
+      
+      {/* Search bar */}
+      <Animated.View style={[messagesSkeleton.searchBar, { opacity }]} />
+      
+      {/* Tabs */}
+      <View style={messagesSkeleton.tabs}>
+        <Animated.View style={[messagesSkeleton.tab, { opacity }]} />
+        <Animated.View style={[messagesSkeleton.tab, { opacity }]} />
+      </View>
+      
+      {/* Message list */}
+      {Array(6).fill(0).map((_, i) => <MessageItem key={i} />)}
+    </View>
+  );
+};
+
+// ============ PROFILE PAGE SKELETON ============
+export const ProfileSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
+  const opacity = useShimmer();
+  
+  return (
+    <View style={skeletonBase.container}>
+      {/* Profile header */}
+      <View style={profileSkeleton.header}>
+        <Animated.View style={[profileSkeleton.avatar, { opacity }]} />
+        <Animated.View style={[{ width: 150, height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+        <Animated.View style={[{ width: 100, height: 16, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+        <View style={profileSkeleton.stats}>
+          {Array(3).fill(0).map((_, i) => (
+            <View key={i} style={profileSkeleton.statItem}>
+              <Animated.View style={[{ width: 40, height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+              <Animated.View style={[{ width: 60, height: 12, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+            </View>
+          ))}
+        </View>
+      </View>
+      
+      {/* Menu items */}
+      <View style={profileSkeleton.menu}>
+        {Array(6).fill(0).map((_, i) => (
+          <View key={i} style={profileSkeleton.menuItem}>
+            <Animated.View style={[{ width: 24, height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+            <Animated.View style={[{ flex: 1, height: 18, backgroundColor: COLORS.skeleton, borderRadius: 4, marginLeft: 12 }, { opacity }]} />
+            <Animated.View style={[{ width: 20, height: 20, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+
+// ============ LISTING DETAIL SKELETON ============
+export const ListingDetailSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
+  const opacity = useShimmer();
+  
+  return (
+    <View style={skeletonBase.container}>
+      {/* Image carousel */}
+      <Animated.View style={[listingSkeleton.mainImage, { opacity }]} />
+      
+      {/* Price and title */}
+      <View style={listingSkeleton.infoSection}>
+        <Animated.View style={[{ width: 120, height: 32, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+        <Animated.View style={[{ width: '90%', height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+        <Animated.View style={[{ width: '60%', height: 16, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+      </View>
+      
+      {/* Seller info */}
+      <View style={listingSkeleton.sellerSection}>
+        <Animated.View style={[listingSkeleton.sellerAvatar, { opacity }]} />
+        <View style={{ flex: 1, gap: 4 }}>
+          <Animated.View style={[{ width: '50%', height: 18, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+          <Animated.View style={[{ width: '30%', height: 14, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+        </View>
+      </View>
+      
+      {/* Description */}
+      <View style={listingSkeleton.descSection}>
+        <Animated.View style={[{ width: 100, height: 20, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 12 }, { opacity }]} />
+        <Animated.View style={[{ width: '100%', height: 14, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+        <Animated.View style={[{ width: '100%', height: 14, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+        <Animated.View style={[{ width: '70%', height: 14, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+      </View>
+      
+      {/* Action buttons */}
+      <View style={listingSkeleton.actions}>
+        <Animated.View style={[listingSkeleton.actionBtn, { opacity }]} />
+        <Animated.View style={[listingSkeleton.actionBtnPrimary, { opacity }]} />
+      </View>
+    </View>
+  );
+};
+
+// ============ STYLES ============
+const skeletonBase = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.background, padding: 16 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingVertical: 8 },
+  logo: { width: 100, height: 36, backgroundColor: COLORS.skeleton, borderRadius: 4 },
+  headerRight: { flexDirection: 'row', gap: 12, alignItems: 'center' },
+  textBtn: { width: 60, height: 36, backgroundColor: COLORS.skeleton, borderRadius: 8 },
+  primaryBtn: { width: 120, height: 40, backgroundColor: COLORS.skeleton, borderRadius: 8 },
+  searchRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+  searchBar: { flex: 1, height: 48, backgroundColor: COLORS.skeleton, borderRadius: 24 },
+  locationChip: { width: 150, height: 48, backgroundColor: COLORS.skeleton, borderRadius: 24 },
+  categories: { flexDirection: 'row', gap: 8, marginBottom: 24, flexWrap: 'wrap' },
+  categoryPill: { width: 100, height: 40, backgroundColor: COLORS.skeleton, borderRadius: 20 },
+  sectionTitle: { width: 150, height: 22, backgroundColor: COLORS.skeleton, borderRadius: 4 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
+  card: { backgroundColor: COLORS.surface, borderRadius: 12, padding: 8, marginBottom: 8 },
+  cardImage: { width: '100%', aspectRatio: 1, backgroundColor: COLORS.skeleton, borderRadius: 8, marginBottom: 8 },
+  cardLocation: { width: '40%', height: 12, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 4 },
+  cardTitle: { width: '80%', height: 16, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 6 },
+  cardPrice: { width: '50%', height: 20, backgroundColor: COLORS.skeleton, borderRadius: 4 },
+});
+
+const searchSkeleton = StyleSheet.create({
+  mobileSearchBar: { height: 48, backgroundColor: COLORS.skeleton, borderRadius: 8, marginBottom: 16 },
+  desktopSearchBar: { flex: 1, maxWidth: 500, height: 44, backgroundColor: COLORS.skeleton, borderRadius: 22, marginHorizontal: 24 },
+  desktopLayout: { flexDirection: 'row', gap: 24 },
+  sidebar: { width: 280, backgroundColor: COLORS.surface, borderRadius: 12, padding: 16 },
+  sidebarSection: { width: '70%', height: 20, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 12 },
+  sidebarList: { width: '100%', height: 150, backgroundColor: COLORS.skeleton, borderRadius: 8, marginBottom: 20 },
+  resultsArea: { flex: 1 },
+  resultItem: { flexDirection: 'row', backgroundColor: COLORS.surface, borderRadius: 12, padding: 12, marginBottom: 12, gap: 12 },
+  resultImage: { width: 100, height: 100, backgroundColor: COLORS.skeleton, borderRadius: 8 },
+  resultContent: { flex: 1, gap: 8, justifyContent: 'center' },
+});
+
+const settingsSkeleton = StyleSheet.create({
+  mobileHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, paddingVertical: 8 },
+  section: { marginBottom: 24 },
+  sectionTitle: { width: 120, height: 16, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 12, marginLeft: 16 },
+  sectionContent: { backgroundColor: COLORS.surface, borderRadius: 12 },
+  row: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12, borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
+  rowIcon: { width: 24, height: 24, backgroundColor: COLORS.skeleton, borderRadius: 12 },
+  rowContent: { flex: 1, gap: 4 },
+  toggle: { width: 50, height: 28, backgroundColor: COLORS.skeleton, borderRadius: 14 },
+  desktopLayout: { flexDirection: 'row', gap: 24 },
+  desktopSidebar: { width: 280, backgroundColor: COLORS.surface, borderRadius: 12, padding: 20 },
+  desktopNavItem: { width: '100%', height: 44, backgroundColor: COLORS.skeleton, borderRadius: 8, marginBottom: 8 },
+  desktopContent: { flex: 1 },
+  desktopCard: { backgroundColor: COLORS.surface, borderRadius: 12, padding: 24 },
+});
+
+const messagesSkeleton = StyleSheet.create({
+  searchBar: { height: 44, backgroundColor: COLORS.skeleton, borderRadius: 22, marginBottom: 16 },
+  tabs: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  tab: { flex: 1, height: 40, backgroundColor: COLORS.skeleton, borderRadius: 8 },
+  item: { flexDirection: 'row', alignItems: 'center', padding: 16, backgroundColor: COLORS.surface, borderRadius: 12, marginBottom: 8, gap: 12 },
+  avatar: { width: 50, height: 50, backgroundColor: COLORS.skeleton, borderRadius: 25 },
+  content: { flex: 1, gap: 6 },
+});
+
+const profileSkeleton = StyleSheet.create({
+  header: { alignItems: 'center', paddingVertical: 24, backgroundColor: COLORS.surface, borderRadius: 12, marginBottom: 16, gap: 8 },
+  avatar: { width: 80, height: 80, backgroundColor: COLORS.skeleton, borderRadius: 40 },
+  stats: { flexDirection: 'row', gap: 32, marginTop: 16 },
+  statItem: { alignItems: 'center', gap: 4 },
+  menu: { backgroundColor: COLORS.surface, borderRadius: 12 },
+  menuItem: { flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
+});
+
+const listingSkeleton = StyleSheet.create({
+  mainImage: { width: '100%', aspectRatio: 1, backgroundColor: COLORS.skeleton, borderRadius: 0 },
+  infoSection: { padding: 16, gap: 8 },
+  sellerSection: { flexDirection: 'row', alignItems: 'center', padding: 16, backgroundColor: COLORS.surface, marginHorizontal: 16, borderRadius: 12, gap: 12 },
+  sellerAvatar: { width: 48, height: 48, backgroundColor: COLORS.skeleton, borderRadius: 24 },
+  descSection: { padding: 16, gap: 8 },
+  actions: { flexDirection: 'row', padding: 16, gap: 12 },
+  actionBtn: { flex: 1, height: 48, backgroundColor: COLORS.skeleton, borderRadius: 8 },
+  actionBtnPrimary: { flex: 2, height: 48, backgroundColor: COLORS.skeleton, borderRadius: 8 },
+});
+
+export default {
+  HomepageSkeleton,
+  SearchPageSkeleton,
+  SettingsSkeleton,
+  MessagesSkeleton,
+  ProfileSkeleton,
+  ListingDetailSkeleton,
+};
