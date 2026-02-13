@@ -369,7 +369,7 @@ app = FastAPI(title="Local Marketplace API")
 fonts_path = Path(__file__).parent / "static" / "fonts"
 if fonts_path.exists():
     app.mount("/api/fonts", StaticFiles(directory=str(fonts_path)), name="fonts")
-    logger.info(f"Mounted static fonts directory at /api/fonts")
+    logging.info(f"Mounted static fonts directory at /api/fonts")
 
 # Create Socket.IO ASGI app
 socket_app = socketio.ASGIApp(sio, other_asgi_app=app)
