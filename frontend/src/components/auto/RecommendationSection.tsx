@@ -35,10 +35,10 @@ export const RecommendationSection: React.FC<RecommendationSectionProps> = ({
           <Text style={styles.title}>{title}</Text>
         </View>
         {onPressSeeAll && (
-          <TouchableOpacity onPress={onPressSeeAll} style={styles.seeAllButton}>
+          <TouchableScale onPress={onPressSeeAll} style={styles.seeAllButton} hapticFeedback="light">
             <Text style={styles.seeAllText}>See All</Text>
             <Ionicons name="chevron-forward" size={14} color={theme.colors.primary} />
-          </TouchableOpacity>
+          </TouchableScale>
         )}
       </View>
       <FlatList
