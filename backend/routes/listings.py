@@ -872,6 +872,15 @@ def create_listings_router(
             raise HTTPException(status_code=403, detail="Not authorized")
         
         await db.listings.update_one({"id": listing_id}, {"$set": {"status": "deleted"}})
+        
+        # Notify user of stats update via WebSocket (real-time Quick Stats)
+        if notify_stats_update:
+            try:
+                import asyncio
+                asyncio.create_task(notify_stats_update(user.user_id))
+            except Exception as e:
+                logger.debug(f"Stats notification failed: {e}")
+        
         return {"message": "Listing deleted"}
     
     @router.post("/{listing_id}/mark-sold")
