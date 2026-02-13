@@ -129,32 +129,51 @@ export const Footer: React.FC<FooterProps> = ({ isTablet = false }) => {
   // Add data attribute for CSS targeting on web
   const webProps = Platform.OS === 'web' ? { 'data-footer': 'true' } : {};
 
-  // Render link with separator
+  // Render link with separator and hover effect
   const renderLinkWithSeparator = (link: { label: string; route: string }, index: number, array: any[]) => (
     <View key={link.label} style={styles.linkWithSeparator}>
-      <TouchableOpacity
+      <HoverableLink
         style={styles.linkItem}
         onPress={() => handleNavigation(link.route)}
       >
-        <Text style={styles.linkText}>{link.label}</Text>
-      </TouchableOpacity>
+        {link.label}
+      </HoverableLink>
       {index < array.length - 1 && <View style={styles.verticalSeparator} />}
     </View>
   );
 
-  // Render category link with separator
-  const renderCategoryWithSeparator = (category: typeof CATEGORIES[0], index: number, array: any[]) => (
-    <View key={category.id} style={styles.linkWithSeparator}>
-      <TouchableOpacity
-        style={styles.linkItem}
-        onPress={() => handleCategoryPress(category.id)}
-      >
-        <Ionicons name={category.icon as any} size={16} color={COLORS.textSecondary} style={styles.linkIcon} />
-        <Text style={styles.linkText}>{category.name}</Text>
-      </TouchableOpacity>
-      {index < array.length - 1 && <View style={styles.verticalSeparator} />}
-    </View>
-  );
+  // Render category link with separator and hover effect
+  const renderCategoryWithSeparator = (category: typeof CATEGORIES[0], index: number, array: any[]) => {
+    const [isHovered, setIsHovered] = React.useState(false);
+    const webHoverProps = Platform.OS === 'web' ? {
+      onMouseEnter: () => setIsHovered(true),
+      onMouseLeave: () => setIsHovered(false),
+    } : {};
+    
+    return (
+      <View key={category.id} style={styles.linkWithSeparator}>
+        <TouchableOpacity
+          style={styles.linkItem}
+          onPress={() => handleCategoryPress(category.id)}
+          {...webHoverProps}
+        >
+          <Ionicons 
+            name={category.icon as any} 
+            size={16} 
+            color={isHovered ? '#FFFFFF' : COLORS.textSecondary} 
+            style={styles.linkIcon} 
+          />
+          <Text style={[
+            styles.linkText,
+            isHovered && Platform.OS === 'web' && { color: '#FFFFFF', textDecorationLine: 'underline' }
+          ]}>
+            {category.name}
+          </Text>
+        </TouchableOpacity>
+        {index < array.length - 1 && <View style={styles.verticalSeparator} />}
+      </View>
+    );
+  };
 
   const footerContent = (
     <>
