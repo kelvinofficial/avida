@@ -7,6 +7,43 @@ Build a local marketplace application (Avida) with:
 3. Premium subscription tiers with payment integration
 
 
+### 2026-02-13: Static Footer Links & Homepage Header Refactoring (P0)
+**COMPLETED** ✅
+
+#### Features Implemented
+1. **FAQ Page (`/faq`)**: Created comprehensive Help Center with 5 accordion-style sections:
+   - Getting Started (account creation, posting listings)
+   - Buying & Selling (contacting sellers, payments, negotiations)
+   - Account & Profile (verification, business profiles, password change)
+   - Credits & Promotions (boost credits, purchases, expiration)
+   - Safety & Security (reporting, meeting safety, scam prevention)
+
+2. **Footer Links Wired**: Updated `SUPPORT_LINKS` array in Footer.tsx:
+   - Help Center → `/faq`
+   - Safety Tips → `/safety-tips`
+   - Contact Us → `/contact`
+   - Report Issue → `/help`
+
+3. **Homepage Header Refactoring**: Replaced custom `renderDesktopHeader()` with shared `DesktopHeader` component:
+   - Uses global `useLocationStore` for location state sync
+   - Maintains category pills row separately
+   - Ensures UI consistency across all pages
+
+#### Files Created
+- `/app/frontend/app/faq.tsx` - FAQ page with expandable sections
+
+#### Files Modified
+- `/app/frontend/src/components/layout/Footer.tsx` - Updated SUPPORT_LINKS routes
+- `/app/frontend/app/(tabs)/index.tsx` - Refactored to use shared DesktopHeader
+
+#### Test Report
+- `/app/test_reports/iteration_127.json` - 100% frontend pass rate
+- All static pages verified working
+- Footer navigation verified
+- Homepage header with location selector verified
+
+---
+
 ### 2026-02-13: Footer Improvements (P1)
 **COMPLETED** ✅
 
