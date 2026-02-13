@@ -801,6 +801,16 @@ export default function HomeScreen() {
     } catch (error) { console.error('Error toggling favorite:', error); }
   };
 
+  // Handle search submit from homepage
+  const handleSearchSubmit = () => {
+    if (homeSearchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(homeSearchQuery.trim())}`);
+      setHomeSearchQuery(''); // Clear after navigation
+    } else {
+      router.push('/search');
+    }
+  };
+
   const handleCategoryPress = async (categoryId: string) => {
     // On desktop/tablet, navigate directly to category page
     if (isDesktop || isTablet) {
