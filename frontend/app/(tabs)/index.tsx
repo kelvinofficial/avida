@@ -1497,11 +1497,11 @@ export default function HomeScreen() {
     );
   };
 
-  // Desktop header with different layout
+  // Desktop header using shared DesktopHeader component
   const renderDesktopHeader = () => (
     <View style={desktopStyles.headerWrapper}>
-      {/* Row 1: Logo + Nav Links + Auth + Post Listing */}
-      <View style={desktopStyles.headerRow1}>
+      {/* Shared Desktop Header for Rows 1-2 */}
+      <DesktopHeader showNavLinks={true} showSearch={true} showLocationSelector={true} />
         <View style={desktopStyles.headerRow1Inner}>
           <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
             <View style={desktopStyles.logoIcon}>
