@@ -3,10 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, FlatList, ActivityIndi
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
 import { useAuthStore } from '../../store/authStore';
-import { useLocationStore } from '../../store/locationStore';
 import { useLoginRedirect } from '../../hooks/useLoginRedirect';
 import api, { locationsApi } from '../../utils/api';
-import { LocationPicker, LocationData } from '../LocationPicker';
+
+interface Country {
+  code: string;
+  name: string;
+  flag?: string;
+}
 
 interface Country {
   code: string;
