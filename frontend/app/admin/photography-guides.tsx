@@ -68,13 +68,13 @@ interface GuideStats {
 
 export default function PhotographyGuidesAdmin() {
   const router = useRouter();
+  const { token: authToken, isLoading: authLoading } = useAuthStore();
   const [guides, setGuides] = useState<PhotographyGuide[]>([]);
   const [stats, setStats] = useState<GuideStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
   const [editingGuide, setEditingGuide] = useState<PhotographyGuide | null>(null);
-  const [authToken, setAuthToken] = useState<string>('');
   
   // Form state
   const [formData, setFormData] = useState({
@@ -85,17 +85,6 @@ export default function PhotographyGuidesAdmin() {
     order: 0,
     is_active: true,
   });
-
-  // Load auth token
-  useEffect(() => {
-    const loadToken = async () => {
-      const token = await AsyncStorage.getItem('session_token');
-      if (token) {
-        setAuthToken(token);
-      }
-    };
-    loadToken();
-  }, []);
 
   // Fetch guides
   const fetchGuides = useCallback(async () => {
