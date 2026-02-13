@@ -2404,17 +2404,20 @@ const desktopStyles = StyleSheet.create({
     gap: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#F5F5F5',
+    width: '100%',
   },
   countryFlag: {
     fontSize: 20,
     width: 28,
     textAlign: 'center',
+    flexShrink: 0,
   },
   locationItemText: {
-    flex: 1,
     fontSize: 14,
     color: '#333',
-    overflow: 'visible',
+    flexShrink: 1,
+    flexGrow: 1,
+    width: 'auto',
   },
   allInCountryOption: {
     backgroundColor: '#F0FFF0',
