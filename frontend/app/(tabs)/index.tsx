@@ -1734,11 +1734,11 @@ export default function HomeScreen() {
                     {locationCountries.map((country) => (
                       <TouchableOpacity
                         key={country.code}
-                        style={desktopStyles.locationItem}
+                        style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F5F5F5' }}
                         onPress={() => handleSelectCountry(country)}
                       >
-                        <Text style={desktopStyles.countryFlag}>{country.flag}</Text>
-                        <Text style={desktopStyles.locationItemText}>{country.name}</Text>
+                        <Text style={{ fontSize: 20, width: 28, textAlign: 'center', marginRight: 12 }}>{country.flag}</Text>
+                        <Text style={{ flex: 1, fontSize: 14, color: '#333' }}>{country.name}</Text>
                         <Ionicons name="chevron-forward" size={16} color="#999" />
                       </TouchableOpacity>
                     ))}
