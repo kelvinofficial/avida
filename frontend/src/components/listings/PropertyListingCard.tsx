@@ -76,6 +76,7 @@ const PropertyListingCard = memo<ListingCardProps>(({ listing, onPress, onFavori
         <TouchableOpacity
           style={styles.propertyFavoriteButton}
           onPress={(e) => { e.stopPropagation(); onFavorite(); }}
+          testID={`property-favorite-btn-${listing._id || listing.id}`}
         >
           <Ionicons
             name={isFavorited ? 'heart' : 'heart-outline'}
