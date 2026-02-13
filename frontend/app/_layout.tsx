@@ -66,6 +66,11 @@ export default function RootLayout() {
   const [processingAuth, setProcessingAuth] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [fontsReady, setFontsReady] = useState(false);
+  
+  // Get current pathname and screen dimensions for skeleton selection
+  const pathname = usePathname();
+  const { width: windowWidth } = useWindowDimensions();
+  const isDesktop = Platform.OS === 'web' && windowWidth >= 1024;
 
   // Check if fonts are loaded via document.fonts API (web only)
   useEffect(() => {
