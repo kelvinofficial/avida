@@ -18,7 +18,7 @@ import time
 import uuid
 
 # Get base URL from environment
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://classifieds-ui.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://classifieds-search-1.preview.emergentagent.com").rstrip("/")
 
 
 class TestAIPersonalizationConfig:
