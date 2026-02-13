@@ -10,12 +10,14 @@ import {
   Alert,
   ActivityIndicator,
   Image,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import api from '../../src/utils/api';
-import { useAuthStore } from '../../src/store/authStore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
 const COLORS = {
   primary: '#2E7D32',
