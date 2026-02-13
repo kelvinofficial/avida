@@ -805,10 +805,11 @@ export default function HomeScreen() {
   const handleSearchSubmit = () => {
     console.log('[Homepage] handleSearchSubmit called, query:', homeSearchQuery);
     if (homeSearchQuery.trim()) {
-      console.log('[Homepage] Redirecting to /search?q=' + homeSearchQuery.trim());
+      const searchUrl = `/search?q=${encodeURIComponent(homeSearchQuery.trim())}&_t=${Date.now()}`;
+      console.log('[Homepage] Navigating to:', searchUrl);
       // On web, use full page navigation to ensure search page mounts fresh
       if (Platform.OS === 'web' && typeof window !== 'undefined') {
-        window.location.href = `/search?q=${encodeURIComponent(homeSearchQuery.trim())}`;
+        window.location.href = searchUrl;
       } else {
         router.push(`/search?q=${encodeURIComponent(homeSearchQuery.trim())}`);
       }
