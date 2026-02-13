@@ -339,39 +339,55 @@ export default function SearchScreen() {
     }
   }, [searchQuery]);
 
-  // Auto-search when page loads with query parameter  
+  // Auto-search when page loads with query parameter
+  // This effect handles both initial mount AND subsequent param changes
   useEffect(() => {
-    // Try to get query from params first, then from URL
-    let queryParam = params.q as string;
+    // Get query from URL params (works on web after hydration)
+    let queryFromUrl = '';
     
-    // On web, also check window.location.search
-    if (!queryParam && Platform.OS === 'web' && typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      queryParam = urlParams.get('q') || '';
+    // First try expo-router params
+    const paramQuery = params.q as string;
+    if (paramQuery && paramQuery.trim()) {
+      queryFromUrl = paramQuery.trim();
     }
     
-    console.log('[Search Page] Query param:', queryParam);
-    
-    if (queryParam && queryParam.trim()) {
-      setSearchQuery(queryParam);
-      setHasSearched(true);
-      handleSearch(queryParam);
-    }
-  }, [params.q]);
-
-  // Also check URL on mount (for web)
-  useEffect(() => {
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    // Fallback: On web, also check window.location.search directly
+    // This is more reliable during SSR hydration
+    if (!queryFromUrl && Platform.OS === 'web' && typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
-      const queryParam = urlParams.get('q');
-      console.log('[Search Page] Mount check - query:', queryParam);
-      if (queryParam && queryParam.trim() && !hasSearched) {
-        setSearchQuery(queryParam);
-        setHasSearched(true);
-        handleSearch(queryParam);
+      const urlQuery = urlParams.get('q');
+      if (urlQuery && urlQuery.trim()) {
+        queryFromUrl = urlQuery.trim();
       }
     }
-  }, []);
+    
+    console.log('[Search Page] Auto-search check - query:', queryFromUrl, 'handled:', initialSearchHandled.current);
+    
+    // Execute search if we have a query and haven't handled initial search yet
+    if (queryFromUrl && !initialSearchHandled.current) {
+      initialSearchHandled.current = true;
+      setSearchQuery(queryFromUrl);
+      setHasSearched(true);
+      setLoading(true);
+      
+      // Execute search directly (not via callback to avoid stale closure issues)
+      const executeSearch = async () => {
+        try {
+          api.post('/searches/track', { query: queryFromUrl.toLowerCase() }).catch(() => {});
+          const response = await listingsApi.search(queryFromUrl);
+          setListings(response.listings || []);
+          saveRecentSearch(queryFromUrl);
+        } catch (error) {
+          console.error('Search error:', error);
+          setListings([]);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      executeSearch();
+    }
+  }, [params.q, params]); // Watch both params.q and full params object
 
   const handleCategoryPress = (categoryId: string) => {
     router.push(`/category/${categoryId}`);
