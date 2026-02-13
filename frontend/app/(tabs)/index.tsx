@@ -1729,12 +1729,14 @@ export default function HomeScreen() {
                   </View>
                 )}
                 
-                {/* Countries List - Simplified for debugging */}
+                {/* Countries List */}
                 {locationDropdownStep === 'countries' && !locationDropdownLoading && (
-                  <View style={desktopStyles.locationListContainer}>
-                    {locationCountries.map((country) => (
+                  <FlatList
+                    key="countries-list"
+                    data={locationCountries}
+                    keyExtractor={(item) => item.code}
+                    renderItem={({ item: country }) => (
                       <TouchableOpacity
-                        key={country.code}
                         style={desktopStyles.locationItem}
                         onPress={() => handleSelectCountry(country)}
                       >
@@ -1742,8 +1744,11 @@ export default function HomeScreen() {
                         <Text style={desktopStyles.locationItemText}>{country.name}</Text>
                         <Ionicons name="chevron-forward" size={16} color="#999" />
                       </TouchableOpacity>
-                    ))}
-                  </View>
+                    )}
+                    style={desktopStyles.locationListContainer}
+                    showsVerticalScrollIndicator={false}
+                    extraData={locationDropdownStep}
+                  />
                 )}
                 
                 {/* Regions List */}
