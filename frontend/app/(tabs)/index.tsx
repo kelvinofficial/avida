@@ -806,11 +806,20 @@ export default function HomeScreen() {
     console.log('[Homepage] handleSearchSubmit called, query:', homeSearchQuery);
     if (homeSearchQuery.trim()) {
       console.log('[Homepage] Redirecting to /search?q=' + homeSearchQuery.trim());
-      router.push(`/search?q=${encodeURIComponent(homeSearchQuery.trim())}`);
+      // On web, use full page navigation to ensure search page mounts fresh
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        window.location.href = `/search?q=${encodeURIComponent(homeSearchQuery.trim())}`;
+      } else {
+        router.push(`/search?q=${encodeURIComponent(homeSearchQuery.trim())}`);
+      }
       setHomeSearchQuery(''); // Clear after navigation
     } else {
       console.log('[Homepage] Redirecting to /search (empty query)');
-      router.push('/search');
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        window.location.href = '/search';
+      } else {
+        router.push('/search');
+      }
     }
   };
 
