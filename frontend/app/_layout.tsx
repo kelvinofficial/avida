@@ -26,16 +26,9 @@ export default function RootLayout() {
   const [processingAuth, setProcessingAuth] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Load icon fonts from backend API to avoid Metro asset serving issues
-  // These fonts are served from /api/fonts/ via FastAPI static file mount
-  const [fontsLoaded] = useFonts({
-    'ionicons': '/api/fonts/Ionicons.ttf',
-    'material': '/api/fonts/MaterialIcons.ttf',
-    'material-community': '/api/fonts/MaterialCommunityIcons.ttf',
-    'FontAwesome': '/api/fonts/FontAwesome.ttf',
-    'FontAwesome5_Solid': '/api/fonts/FontAwesome5_Solid.ttf',
-    'feather': '/api/fonts/Feather.ttf',
-  });
+  // Fonts are loaded via JavaScript FontFace API in +html.tsx
+  // This bypasses Metro asset serving issues completely
+  const fontsLoaded = true;
 
   // Initialize notification deep linking
   useNotificationDeepLinking();
