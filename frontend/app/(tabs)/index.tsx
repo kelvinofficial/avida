@@ -2194,8 +2194,32 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F0F0',
     borderRadius: 12,
     height: 44,
-    paddingHorizontal: 14,
+    paddingLeft: 14,
+    paddingRight: 4,
     gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#333',
+    paddingVertical: 0,
+    height: '100%',
+    ...(Platform.OS === 'web' ? { outlineStyle: 'none' } as any : {}),
+  },
+  clearSearchBtn: {
+    padding: 4,
+    marginRight: 4,
+  },
+  searchButton: {
+    backgroundColor: '#2E7D32',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  searchButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   searchPlaceholder: {
     flex: 1,
