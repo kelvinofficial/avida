@@ -808,10 +808,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  desktopContent: {
+  desktopScrollView: {
     flex: 1,
+  },
+  desktopScrollContent: {
+    flexGrow: 1,
+  },
+  desktopContent: {
     alignItems: 'center',
     paddingTop: 24,
+    paddingBottom: 40,
+    minHeight: 600,
   },
   desktopInner: {
     flexDirection: 'row',
