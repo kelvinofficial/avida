@@ -28,9 +28,9 @@ export const BrandGrid: React.FC<BrandGridProps> = ({
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Browse by Brand</Text>
-        <TouchableOpacity onPress={() => onSelectBrand(null)}>
+        <TouchableScale onPress={() => onSelectBrand(null)} hapticFeedback="light">
           <Text style={styles.viewAll}>View All</Text>
-        </TouchableOpacity>
+        </TouchableScale>
       </View>
       <ScrollView
         horizontal
@@ -38,7 +38,7 @@ export const BrandGrid: React.FC<BrandGridProps> = ({
         contentContainerStyle={styles.scrollContent}
       >
         {brands.map((brand) => (
-          <TouchableOpacity
+          <TouchableScale
             key={brand.id}
             style={[
               styles.brandTile,
@@ -46,7 +46,8 @@ export const BrandGrid: React.FC<BrandGridProps> = ({
             ]}
             onPress={() => onSelectBrand(selectedBrand === brand.id ? null : brand.id)}
             onLongPress={() => onLongPressBrand?.(brand.id)}
-            activeOpacity={0.7}
+            hapticFeedback="light"
+            testID={`brand-${brand.id}`}
           >
             <View style={[
               styles.logoContainer,
