@@ -67,13 +67,14 @@ interface GuideStats {
 
 export default function PhotographyGuidesAdmin() {
   const router = useRouter();
-  const { isAuthenticated, loadStoredAuth } = useAuthStore();
+  const { token, isLoading: authLoading, loadStoredAuth } = useAuthStore();
   const [guides, setGuides] = useState<PhotographyGuide[]>([]);
   const [stats, setStats] = useState<GuideStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
   const [editingGuide, setEditingGuide] = useState<PhotographyGuide | null>(null);
+  const [authLoaded, setAuthLoaded] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -87,7 +88,11 @@ export default function PhotographyGuidesAdmin() {
 
   // Ensure auth is loaded on component mount
   useEffect(() => {
-    loadStoredAuth();
+    const loadAuth = async () => {
+      await loadStoredAuth();
+      setAuthLoaded(true);
+    };
+    loadAuth();
   }, [loadStoredAuth]);
 
   // Fetch guides
@@ -114,10 +119,15 @@ export default function PhotographyGuidesAdmin() {
     }
   }, []);
 
+  // Only fetch data after auth is loaded
   useEffect(() => {
-    fetchGuides();
-    fetchStats();
-  }, [fetchGuides, fetchStats]);
+    if (authLoaded && token) {
+      fetchGuides();
+      fetchStats();
+    } else if (authLoaded && !token) {
+      setLoading(false);
+    }
+  }, [authLoaded, token, fetchGuides, fetchStats]);
 
   // Create/Update guide
   const handleSaveGuide = async () => {
