@@ -116,9 +116,11 @@ export default function RootLayout() {
   }, [mounted, processingAuth]);
 
   // Render immediately without loading state
-  if (!mounted) {
+  if (!mounted || !fontsLoaded) {
     return (
-      <View style={{ flex: 1, backgroundColor: theme.colors.background }} />
+      <View style={{ flex: 1, backgroundColor: theme.colors.background, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
     );
   }
 
