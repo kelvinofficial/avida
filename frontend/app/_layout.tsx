@@ -32,16 +32,9 @@ export default function RootLayout() {
   const [processingAuth, setProcessingAuth] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Load icon fonts locally to avoid network dependency
-  // Using the .font static property from each icon library
-  const [fontsLoaded] = useFonts({
-    ...Ionicons.font,
-    ...MaterialIcons.font,
-    ...MaterialCommunityIcons.font,
-    ...FontAwesome.font,
-    ...FontAwesome5.font,
-    ...Feather.font,
-  });
+  // Fonts are loaded via CSS @font-face rules in +html.tsx
+  // Serving from /api/fonts/ to bypass the 520 errors from Metro's asset serving
+  const fontsLoaded = true;
 
   // Initialize notification deep linking
   useNotificationDeepLinking();
