@@ -6,21 +6,17 @@ Build a local marketplace application (Avida) with:
 2. Business Profile feature for verified sellers
 3. Premium subscription tiers with payment integration
 
-### 2026-02-13: Desktop Location Dropdown Selector (P1)
+### 2026-02-13: Desktop Location Selector Bug Fix (P0)
 **COMPLETED** ✅
 
-#### Feature
-Implemented an inline dropdown location selector for desktop view, replacing the full-screen modal approach.
+#### Problem
+The inline dropdown location selector implemented earlier had a React Native Web rendering bug where text in list items (countries and regions) would not render except for the first item. The bug was specific to absolutely positioned dropdowns in React Native Web.
 
-#### Functionality
-1. Click "Select Location" → Dropdown appears with list of countries (with flags)
-2. Click a country → Dropdown shows regions for that country + "All of [Country]" option
-3. Click a region or "All of [Country]" → Filters listings, closes dropdown, updates button text
-4. Back button to return to countries list
-5. Close button (X) to dismiss dropdown
+#### Solution
+Changed the desktop location selector to use the existing Modal-based LocationPicker component instead of a custom dropdown. When users click "Select Location" on desktop, a full-screen modal now opens with the working location picker that correctly renders all country and region names.
 
 #### Files Modified
-- `/app/frontend/app/(tabs)/index.tsx` - Added dropdown component, handlers, and styles
+- `/app/frontend/app/(tabs)/index.tsx` - Simplified desktop location selector to open modal instead of dropdown
 
 ---
 
