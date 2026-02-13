@@ -131,7 +131,7 @@ const responsiveStyle = `
     }
   }
   
-  .shimmer-effect {
+  [data-shimmer="true"] {
     background: linear-gradient(90deg, #E0E0E0 0%, #F5F5F5 50%, #E0E0E0 100%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite ease-in-out;
