@@ -47,8 +47,25 @@ export const getColumns = (screenSize: ScreenSize): number => {
 };
 
 export const useResponsive = (): ResponsiveInfo => {
-  const [dimensions, setDimensions] = useState(getInitialDimensions);
-  const [isReady, setIsReady] = useState(Platform.OS !== 'web');
+  // Initialize with actual window dimensions on web (works during hydration)
+  const [dimensions, setDimensions] = useState(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      return {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      };
+    }
+    const { width, height } = Dimensions.get('window');
+    return { width, height };
+  });
+  
+  // Start as true on web since we have dimensions, false on native until measured
+  const [isReady, setIsReady] = useState(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      return true;
+    }
+    return Platform.OS !== 'web';
+  });
 
   // Use useLayoutEffect on web to prevent flash
   const useIsomorphicLayoutEffect = Platform.OS === 'web' ? useLayoutEffect : useEffect;
@@ -61,8 +78,8 @@ export const useResponsive = (): ResponsiveInfo => {
         height: window.innerHeight,
       };
       setDimensions(actualDimensions);
+      setIsReady(true);
     }
-    setIsReady(true);
   }, []);
 
   useEffect(() => {
