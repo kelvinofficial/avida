@@ -14,8 +14,8 @@ const COLORS = {
   separator: '#4B5563',
 };
 
-// Background image for footer
-const FOOTER_BG_IMAGE = 'https://images.unsplash.com/photo-1766366622482-f7eec0a7a7ca?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwxfHxtYXJrZXRwbGFjZSUyMHBlb3BsZSUyMGV4Y2hhbmdpbmclMjBpdGVtcyUyMGZsZWElMjBtYXJrZXQlMjBjb21tdW5pdHl8ZW58MHx8fHwxNzcxMDA1MzY4fDA&ixlib=rb-4.1.0&q=85';
+// Background image for footer - marketplace community scene
+const FOOTER_BG_IMAGE = 'https://static.prod-images.emergentagent.com/jobs/be688282-08e4-4748-a128-ae84926e0c3e/images/bd0e045b651acf1e415a8c91df5921ed939abff44601582f6b42e7f023aa74c7.png';
 
 const CATEGORIES = [
   { id: 'auto_vehicles', name: 'Auto & Vehicles', icon: 'car-outline' },
