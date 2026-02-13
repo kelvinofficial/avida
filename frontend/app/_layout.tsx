@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View, Platform, ActivityIndicator, StyleSheet, Animated } from 'react-native';
+import { View, Platform, ActivityIndicator, StyleSheet, Animated, useWindowDimensions } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useAuthStore, saveUserData } from '../src/store/authStore';
 import { authApi } from '../src/utils/api';
