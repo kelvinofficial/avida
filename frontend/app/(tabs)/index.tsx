@@ -2403,6 +2403,10 @@ const desktopStyles = StyleSheet.create({
   locationList: {
     maxHeight: 300,
   },
+  locationListContainer: {
+    maxHeight: 300,
+    overflow: 'scroll',
+  },
   locationItem: {
     flexDirection: 'row',
     alignItems: 'center',
