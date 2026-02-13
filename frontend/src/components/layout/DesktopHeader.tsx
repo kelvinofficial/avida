@@ -57,38 +57,20 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
     }
   }, [isAuthenticated]);
 
-  // Fetch countries when modal opens
-  useEffect(() => {
-    if (showCountryModal && countries.length === 0) {
-      fetchCountries();
-    }
-  }, [showCountryModal]);
-
-  const fetchCountries = async () => {
-    try {
-      setLoadingCountries(true);
-      const data = await locationsApi.getCountries();
-      setCountries(data);
-    } catch (err) {
-      console.error('Failed to fetch countries:', err);
-    } finally {
-      setLoadingCountries(false);
-    }
-  };
-
-  const handleCountrySelect = (country: Country) => {
-    setShowCountryModal(false);
-    if (onCountrySelect) {
-      onCountrySelect(country);
-    }
-  };
-
-  const handleLocationPress = () => {
-    if (onLocationPress) {
-      onLocationPress();
-    } else {
-      setShowCountryModal(true);
-    }
+  // Handle location selection from LocationPicker
+  const handleLocationSelect = (location: LocationData) => {
+    const displayText = location.location_text || location.city_name || location.region_name || 'Selected Location';
+    setLocation(displayText, {
+      country_code: location.country_code,
+      country_name: location.country_name,
+      region_code: location.region_code,
+      region_name: location.region_name,
+      district_code: location.district_code,
+      district_name: location.district_name,
+      city_code: location.city_code,
+      city_name: location.city_name,
+      location_text: displayText,
+    });
   };
 
   const fetchCreditBalance = async () => {
