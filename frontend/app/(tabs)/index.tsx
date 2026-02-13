@@ -398,6 +398,11 @@ export default function HomeScreen() {
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [locationSearch, setLocationSearch] = useState('');
   const [homeSearchQuery, setHomeSearchQuery] = useState('');
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+  const [searchSuggestions, setSearchSuggestions] = useState<{
+    recent: string[];
+    trending: { query: string; count: number }[];
+  }>({ recent: [], trending: [] });
   const [selectedLocationFilter, setSelectedLocationFilter] = useState<{
     country_code?: string;
     region_code?: string;
