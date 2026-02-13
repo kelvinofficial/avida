@@ -927,6 +927,80 @@ async def stop_typing(sid, data):
 admin_alert_sockets: Dict[str, str] = {}  # admin_id -> socket_id
 admin_socket_ids: Dict[str, str] = {}  # socket_id -> admin_id
 
+# Track user stats subscriptions
+user_stats_sockets: Dict[str, str] = {}  # user_id -> socket_id
+stats_socket_users: Dict[str, str] = {}  # socket_id -> user_id
+
+@sio.event
+async def subscribe_stats(sid, data):
+    """Subscribe to real-time stats updates for a user"""
+    user_id = data.get("user_id")
+    if user_id:
+        user_stats_sockets[user_id] = sid
+        stats_socket_users[sid] = user_id
+        logger.info(f"User {user_id} subscribed to stats updates (socket: {sid})")
+        
+        # Send initial stats immediately
+        try:
+            stats = await get_user_quick_stats(user_id)
+            await sio.emit("stats_update", stats, room=sid)
+        except Exception as e:
+            logger.error(f"Error sending initial stats: {e}")
+
+@sio.event
+async def unsubscribe_stats(sid, data):
+    """Unsubscribe from stats updates"""
+    user_id = stats_socket_users.get(sid)
+    if user_id:
+        if user_id in user_stats_sockets:
+            del user_stats_sockets[user_id]
+        if sid in stats_socket_users:
+            del stats_socket_users[sid]
+        logger.info(f"User {user_id} unsubscribed from stats updates")
+
+async def get_user_quick_stats(user_id: str) -> dict:
+    """Get quick stats for a user"""
+    try:
+        # Get listings count and total views
+        listings = await db.listings.find({"seller_id": user_id}).to_list(length=1000)
+        active_listings = len([l for l in listings if l.get("status") == "active"])
+        total_views = sum(l.get("views", 0) for l in listings)
+        
+        # Get pending offers
+        offers = await db.offers.find({
+            "seller_id": user_id,
+            "status": "pending"
+        }).to_list(length=100)
+        pending_offers = len(offers)
+        
+        # Get credit balance
+        user = await db.users.find_one({"user_id": user_id})
+        credit_balance = user.get("boost_credits", 0) if user else 0
+        user_rating = user.get("rating", 0) if user else 0
+        total_ratings = user.get("total_ratings", 0) if user else 0
+        
+        return {
+            "activeListings": active_listings,
+            "pendingOffers": pending_offers,
+            "totalViews": total_views,
+            "creditBalance": credit_balance,
+            "userRating": user_rating,
+            "totalRatings": total_ratings
+        }
+    except Exception as e:
+        logger.error(f"Error getting quick stats for user {user_id}: {e}")
+        return {}
+
+async def notify_stats_update(user_id: str):
+    """Notify a user of stats changes via WebSocket"""
+    if user_id in user_stats_sockets:
+        try:
+            stats = await get_user_quick_stats(user_id)
+            await sio.emit("stats_update", stats, room=user_stats_sockets[user_id])
+            logger.debug(f"Sent stats update to user {user_id}")
+        except Exception as e:
+            logger.error(f"Error sending stats update: {e}")
+
 @sio.event
 async def admin_subscribe_alerts(sid, data):
     """Subscribe admin to real-time QA alerts"""
