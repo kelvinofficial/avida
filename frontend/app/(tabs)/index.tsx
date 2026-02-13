@@ -1358,10 +1358,31 @@ export default function HomeScreen() {
       {/* Row 2: Search + Location */}
       <View style={desktopStyles.headerRow2}>
         <View style={desktopStyles.headerRow2Inner}>
-          <TouchableOpacity style={desktopStyles.searchField} onPress={() => router.push('/search')} activeOpacity={0.8}>
+          <View style={desktopStyles.searchField}>
             <Ionicons name="search" size={20} color="#666" />
-            <Text style={desktopStyles.searchPlaceholder}>Search for anything...</Text>
-          </TouchableOpacity>
+            <TextInput
+              style={desktopStyles.searchInput}
+              placeholder="Search for anything..."
+              placeholderTextColor="#999"
+              value={homeSearchQuery}
+              onChangeText={setHomeSearchQuery}
+              onSubmitEditing={handleSearchSubmit}
+              returnKeyType="search"
+              data-testid="desktop-home-search-input"
+            />
+            {homeSearchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setHomeSearchQuery('')} style={desktopStyles.clearSearchBtn}>
+                <Ionicons name="close-circle" size={18} color="#999" />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity 
+              style={desktopStyles.searchButton} 
+              onPress={handleSearchSubmit}
+              data-testid="desktop-home-search-button"
+            >
+              <Text style={desktopStyles.searchButtonText}>Search</Text>
+            </TouchableOpacity>
+          </View>
           <TouchableOpacity style={desktopStyles.locationChip} activeOpacity={0.7} onPress={() => setShowLocationModal(true)}>
             <Ionicons name="location" size={18} color="#2E7D32" />
             <Text style={desktopStyles.locationText} numberOfLines={1}>{currentCity}</Text>
