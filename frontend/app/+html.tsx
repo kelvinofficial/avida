@@ -25,45 +25,45 @@ export default function Root({ children }: PropsWithChildren) {
 }
 
 const responsiveStyle = `
-  /* Load icon fonts from public directory - served by Metro/Expo dev server */
+  /* Load icon fonts from backend API - bypasses Metro asset serving issues */
   @font-face {
     font-family: 'ionicons';
-    src: url('/fonts/Ionicons.ttf') format('truetype');
+    src: url('/api/fonts/Ionicons.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
   }
   
   @font-face {
     font-family: 'material';
-    src: url('/fonts/MaterialIcons.ttf') format('truetype');
+    src: url('/api/fonts/MaterialIcons.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
   }
   
   @font-face {
     font-family: 'material-community';
-    src: url('/fonts/MaterialCommunityIcons.ttf') format('truetype');
+    src: url('/api/fonts/MaterialCommunityIcons.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
   }
   
   @font-face {
     font-family: 'FontAwesome';
-    src: url('/fonts/FontAwesome.ttf') format('truetype');
+    src: url('/api/fonts/FontAwesome.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
   }
   
   @font-face {
     font-family: 'FontAwesome5_Solid';
-    src: url('/fonts/FontAwesome5_Solid.ttf') format('truetype');
+    src: url('/api/fonts/FontAwesome5_Solid.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
   }
   
   @font-face {
     font-family: 'feather';
-    src: url('/fonts/Feather.ttf') format('truetype');
+    src: url('/api/fonts/Feather.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
   }
