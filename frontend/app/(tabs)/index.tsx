@@ -1523,8 +1523,14 @@ export default function HomeScreen() {
             </View>
             
             {/* Desktop Autocomplete Dropdown */}
-            {showSearchSuggestions && (searchSuggestions.recent.length > 0 || searchSuggestions.trending.length > 0) && (
+            {showSearchSuggestions && (
               <View style={desktopStyles.suggestionsDropdown}>
+                {/* Debug - show if no data */}
+                {searchSuggestions.recent.length === 0 && searchSuggestions.trending.length === 0 && (
+                  <View style={desktopStyles.suggestionSection}>
+                    <Text style={desktopStyles.suggestionHeaderText}>Loading suggestions...</Text>
+                  </View>
+                )}
                 {/* Recent Searches */}
                 {searchSuggestions.recent.length > 0 && (
                   <View style={desktopStyles.suggestionSection}>
