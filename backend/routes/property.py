@@ -712,7 +712,7 @@ def create_property_router(db, require_auth, get_current_user):
     return router
 
 
-def create_offers_router(db, require_auth, get_current_user):
+def create_offers_router(db, require_auth, get_current_user, notify_stats_update=None):
     """Create offers router with dependency injection."""
     router = APIRouter(prefix="/offers", tags=["offers"])
 
