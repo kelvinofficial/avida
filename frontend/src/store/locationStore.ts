@@ -1,6 +1,4 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface LocationFilter {
   country_code?: string;
@@ -29,36 +27,24 @@ interface LocationState {
   clearLocation: () => void;
 }
 
-export const useLocationStore = create<LocationState>()(
-  persist(
-    (set) => ({
-      currentCity: 'Select Location',
-      showLocationModal: false,
-      selectedLocationFilter: null,
+export const useLocationStore = create<LocationState>()((set) => ({
+  currentCity: 'Select Location',
+  showLocationModal: false,
+  selectedLocationFilter: null,
 
-      setCurrentCity: (city) => set({ currentCity: city }),
-      setShowLocationModal: (show) => set({ showLocationModal: show }),
-      setSelectedLocationFilter: (filter) => set({ selectedLocationFilter: filter }),
-      
-      setLocation: (city, filter) => set({ 
-        currentCity: city, 
-        selectedLocationFilter: filter,
-        showLocationModal: false 
-      }),
-      
-      clearLocation: () => set({ 
-        currentCity: 'All Locations', 
-        selectedLocationFilter: null,
-        showLocationModal: false 
-      }),
-    }),
-    {
-      name: 'avida-location-storage',
-      storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({
-        currentCity: state.currentCity,
-        selectedLocationFilter: state.selectedLocationFilter,
-      }),
-    }
-  )
-);
+  setCurrentCity: (city) => set({ currentCity: city }),
+  setShowLocationModal: (show) => set({ showLocationModal: show }),
+  setSelectedLocationFilter: (filter) => set({ selectedLocationFilter: filter }),
+  
+  setLocation: (city, filter) => set({ 
+    currentCity: city, 
+    selectedLocationFilter: filter,
+    showLocationModal: false 
+  }),
+  
+  clearLocation: () => set({ 
+    currentCity: 'All Locations', 
+    selectedLocationFilter: null,
+    showLocationModal: false 
+  }),
+}));
