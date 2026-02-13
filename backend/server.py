@@ -2299,7 +2299,8 @@ if MODULAR_ROUTES_AVAILABLE:
     # Create listings router
     listings_router = create_listings_router(
         db, get_current_user, require_auth, check_rate_limit,
-        validate_category_and_subcategory, LEGACY_CATEGORY_MAP
+        validate_category_and_subcategory, LEGACY_CATEGORY_MAP,
+        notify_stats_update=notify_stats_update
     )
     api_router.include_router(listings_router)
     
