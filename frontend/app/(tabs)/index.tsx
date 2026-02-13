@@ -1730,19 +1730,21 @@ export default function HomeScreen() {
                 
                 {/* Countries List */}
                 {locationDropdownStep === 'countries' && !locationDropdownLoading && (
-                  <ScrollView style={desktopStyles.locationList} showsVerticalScrollIndicator={false}>
-                    {locationCountries.map((country) => (
+                  <View style={{ maxHeight: 300, overflow: 'scroll' }}>
+                    {locationCountries.map((country, index) => (
                       <TouchableOpacity
                         key={country.code}
                         style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F5F5F5' }}
                         onPress={() => handleSelectCountry(country)}
                       >
-                        <Text style={{ fontSize: 20, width: 28, textAlign: 'center', marginRight: 12 }}>{country.flag}</Text>
-                        <Text style={{ flex: 1, fontSize: 14, color: '#333' }}>{country.name}</Text>
+                        <Text style={{ fontSize: 20, width: 28, marginRight: 12 }}>{country.flag}</Text>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ fontSize: 14, color: '#333' }}>{country.name}</Text>
+                        </View>
                         <Ionicons name="chevron-forward" size={16} color="#999" />
                       </TouchableOpacity>
                     ))}
-                  </ScrollView>
+                  </View>
                 )}
                 
                 {/* Regions List */}
