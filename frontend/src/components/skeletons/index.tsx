@@ -292,34 +292,34 @@ export const SearchPageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDeskto
 
 // ============ SETTINGS PAGE SKELETON ============
 export const SettingsSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
-  const opacity = useShimmer();
+  const theme = useShimmerTheme();
   
   const SettingsRow = () => (
     <View style={settingsSkeleton.row}>
-      <Animated.View style={[settingsSkeleton.rowIcon, { opacity }]} />
+      <ShimmerBox width={24} height={24} borderRadius={12} />
       <View style={settingsSkeleton.rowContent}>
-        <Animated.View style={[{ width: '50%', height: 16, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
-        <Animated.View style={[{ width: '30%', height: 12, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+        <ShimmerBox width="50%" height={16} borderRadius={4} />
+        <ShimmerBox width="30%" height={12} borderRadius={4} />
       </View>
-      <Animated.View style={[settingsSkeleton.toggle, { opacity }]} />
+      <ShimmerBox width={50} height={28} borderRadius={14} />
     </View>
   );
   
   if (!isDesktop) {
     return (
-      <View style={skeletonBase.container}>
+      <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor }]}>
         {/* Header */}
         <View style={settingsSkeleton.mobileHeader}>
-          <Animated.View style={[{ width: 24, height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
-          <Animated.View style={[{ width: 100, height: 20, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+          <ShimmerBox width={24} height={24} borderRadius={4} />
+          <ShimmerBox width={100} height={20} borderRadius={4} />
           <View style={{ width: 24 }} />
         </View>
         
         {/* Settings sections */}
         {Array(3).fill(0).map((_, section) => (
           <View key={section} style={settingsSkeleton.section}>
-            <Animated.View style={[settingsSkeleton.sectionTitle, { opacity }]} />
-            <View style={settingsSkeleton.sectionContent}>
+            <ShimmerBox width={120} height={16} borderRadius={4} style={{ marginBottom: 12, marginLeft: 16 }} />
+            <View style={[settingsSkeleton.sectionContent, { backgroundColor: theme.surfaceColor }]}>
               {Array(4).fill(0).map((_, i) => <SettingsRow key={i} />)}
             </View>
           </View>
@@ -329,30 +329,30 @@ export const SettingsSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop 
   }
   
   return (
-    <View style={[skeletonBase.container, { maxWidth: 1280, alignSelf: 'center' as const, width: '100%' }]}>
+    <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor, maxWidth: 1280, alignSelf: 'center' as const, width: '100%' }]}>
       {/* Header */}
       <View style={skeletonBase.header}>
-        <Animated.View style={[skeletonBase.logo, { opacity }]} />
+        <ShimmerBox width={100} height={36} borderRadius={4} />
         <View style={skeletonBase.headerRight}>
-          <Animated.View style={[skeletonBase.primaryBtn, { opacity }]} />
+          <ShimmerBox width={120} height={40} borderRadius={8} />
         </View>
       </View>
       
       {/* Main content */}
       <View style={settingsSkeleton.desktopLayout}>
         {/* Sidebar */}
-        <View style={settingsSkeleton.desktopSidebar}>
-          <Animated.View style={[{ width: '80%', height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 20 }, { opacity }]} />
+        <View style={[settingsSkeleton.desktopSidebar, { backgroundColor: theme.surfaceColor }]}>
+          <ShimmerBox width="80%" height={24} borderRadius={4} style={{ marginBottom: 20 }} />
           {Array(6).fill(0).map((_, i) => (
-            <Animated.View key={i} style={[settingsSkeleton.desktopNavItem, { opacity }]} />
+            <ShimmerBox key={i} height={44} borderRadius={8} style={{ marginBottom: 8 }} />
           ))}
         </View>
         
         {/* Content */}
         <View style={settingsSkeleton.desktopContent}>
-          <View style={settingsSkeleton.desktopCard}>
-            <Animated.View style={[{ width: 200, height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 8 }, { opacity }]} />
-            <Animated.View style={[{ width: '60%', height: 16, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 24 }, { opacity }]} />
+          <View style={[settingsSkeleton.desktopCard, { backgroundColor: theme.surfaceColor }]}>
+            <ShimmerBox width={200} height={24} borderRadius={4} style={{ marginBottom: 8 }} />
+            <ShimmerBox width="60%" height={16} borderRadius={4} style={{ marginBottom: 24 }} />
             {Array(5).fill(0).map((_, i) => <SettingsRow key={i} />)}
           </View>
         </View>
