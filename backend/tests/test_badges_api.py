@@ -8,7 +8,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = "https://quick-sell-15.preview.emergentagent.com/api/admin"
+BASE_URL = "https://listing-hub-15.preview.emergentagent.com/api/admin"
 
 # Test credentials
 ADMIN_EMAIL = "admin@marketplace.com"

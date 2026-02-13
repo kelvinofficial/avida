@@ -7,7 +7,7 @@ import requests
 import os
 from datetime import datetime, timezone
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://quick-sell-15.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://listing-hub-15.preview.emergentagent.com').rstrip('/')
 
 
 class TestSeasonalChallengesAPI:
