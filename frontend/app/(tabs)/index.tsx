@@ -1731,23 +1731,15 @@ export default function HomeScreen() {
                 
                 {/* Countries List - Simplified for debugging */}
                 {locationDropdownStep === 'countries' && !locationDropdownLoading && (
-                  <View style={{ maxHeight: 300 }}>
+                  <View style={desktopStyles.locationListContainer}>
                     {locationCountries.map((country) => (
                       <TouchableOpacity
                         key={country.code}
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          paddingHorizontal: 16,
-                          paddingVertical: 14,
-                          borderBottomWidth: 1,
-                          borderBottomColor: '#F5F5F5',
-                        }}
+                        style={desktopStyles.locationItem}
                         onPress={() => handleSelectCountry(country)}
                       >
-                        <Text style={{ fontSize: 20, marginRight: 12 }}>{country.flag}</Text>
-                        <Text style={{ fontSize: 14, color: '#333333' }}>{country.name}</Text>
-                        <View style={{ flex: 1 }} />
+                        <Text style={desktopStyles.countryFlag}>{country.flag}</Text>
+                        <Text style={desktopStyles.locationItemText}>{country.name}</Text>
                         <Ionicons name="chevron-forward" size={16} color="#999" />
                       </TouchableOpacity>
                     ))}
