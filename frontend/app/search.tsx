@@ -361,24 +361,28 @@ export default function SearchScreen() {
       }
     }
     
-    console.log('[Search Page] Auto-search check - query:', queryFromUrl, 'handled:', initialSearchHandled.current);
+    console.log('[Search Page] Auto-search check - query:', queryFromUrl, 'lastHandled:', initialSearchHandled.current);
     
-    // Execute search if we have a query and haven't handled initial search yet
-    if (queryFromUrl && !initialSearchHandled.current) {
-      initialSearchHandled.current = true;
+    // Execute search if we have a query and it's different from what we already handled
+    // This allows re-searching when navigating to the same page with a new query
+    if (queryFromUrl && initialSearchHandled.current !== queryFromUrl) {
+      initialSearchHandled.current = queryFromUrl;
       setSearchQuery(queryFromUrl);
       setHasSearched(true);
       setLoading(true);
+      
+      console.log('[Search Page] Executing auto-search for:', queryFromUrl);
       
       // Execute search directly (not via callback to avoid stale closure issues)
       const executeSearch = async () => {
         try {
           api.post('/searches/track', { query: queryFromUrl.toLowerCase() }).catch(() => {});
           const response = await listingsApi.search(queryFromUrl);
+          console.log('[Search Page] Search results received:', response?.listings?.length || 0);
           setListings(response.listings || []);
           saveRecentSearch(queryFromUrl);
         } catch (error) {
-          console.error('Search error:', error);
+          console.error('[Search Page] Search error:', error);
           setListings([]);
         } finally {
           setLoading(false);
