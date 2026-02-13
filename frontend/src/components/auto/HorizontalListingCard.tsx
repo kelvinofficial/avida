@@ -46,30 +46,26 @@ export const HorizontalListingCard: React.FC<HorizontalListingCardProps> = ({
     return `${mileage} km`;
   };
 
-  // Use the image URL if available, otherwise use placeholder
-  const imageSource = listing.images?.[0]
-    ? { uri: listing.images[0] }
-    : null;
-
   return (
-    <TouchableOpacity
+    <TouchableScale
       style={[
         styles.card,
         listing.featured && styles.cardFeatured,
         listing.boosted && styles.cardBoosted,
       ]}
       onPress={onPress}
-      activeOpacity={0.9}
+      hapticFeedback="light"
+      testID={`horizontal-listing-${listing.id}`}
     >
       {/* Left: Image */}
       <View style={styles.imageContainer}>
-        {imageSource ? (
-          <Image source={imageSource} style={styles.image} resizeMode="cover" />
-        ) : (
-          <View style={styles.placeholderImage}>
-            <Ionicons name="car" size={32} color={theme.colors.outline} />
-          </View>
-        )}
+        <OptimizedImage
+          uri={listing.images?.[0]}
+          style={styles.image}
+          placeholderType="listing"
+          placeholderSize="medium"
+          priority={listing.featured ? 'high' : 'normal'}
+        />
 
         {/* Featured/Boosted Badge */}
         {(listing.featured || listing.boosted) && (
