@@ -1484,30 +1484,89 @@ export default function HomeScreen() {
       {/* Row 2: Search + Location */}
       <View style={desktopStyles.headerRow2}>
         <View style={desktopStyles.headerRow2Inner}>
-          <View style={desktopStyles.searchField}>
-            <Ionicons name="search" size={20} color="#666" />
-            <TextInput
-              style={desktopStyles.searchInput}
-              placeholder="Search for anything..."
-              placeholderTextColor="#999"
-              value={homeSearchQuery}
-              onChangeText={setHomeSearchQuery}
-              onSubmitEditing={handleSearchSubmit}
-              returnKeyType="search"
-              data-testid="desktop-home-search-input"
-            />
-            {homeSearchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setHomeSearchQuery('')} style={desktopStyles.clearSearchBtn}>
-                <Ionicons name="close-circle" size={18} color="#999" />
+          <View style={desktopStyles.searchFieldWrapper}>
+            <View style={desktopStyles.searchField}>
+              <Ionicons name="search" size={20} color="#666" />
+              <TextInput
+                style={desktopStyles.searchInput}
+                placeholder="Search for anything..."
+                placeholderTextColor="#999"
+                value={homeSearchQuery}
+                onChangeText={(text) => {
+                  setHomeSearchQuery(text);
+                  if (text.length === 0) {
+                    setShowSearchSuggestions(true);
+                  }
+                }}
+                onFocus={() => setShowSearchSuggestions(true)}
+                onBlur={() => {
+                  setTimeout(() => setShowSearchSuggestions(false), 200);
+                }}
+                onSubmitEditing={handleSearchSubmit}
+                returnKeyType="search"
+                data-testid="desktop-home-search-input"
+              />
+              {homeSearchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => setHomeSearchQuery('')} style={desktopStyles.clearSearchBtn}>
+                  <Ionicons name="close-circle" size={18} color="#999" />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity 
+                style={desktopStyles.searchButton} 
+                onPress={handleSearchSubmit}
+                data-testid="desktop-home-search-button"
+              >
+                <Text style={desktopStyles.searchButtonText}>Search</Text>
               </TouchableOpacity>
+            </View>
+            
+            {/* Desktop Autocomplete Dropdown */}
+            {showSearchSuggestions && (searchSuggestions.recent.length > 0 || searchSuggestions.trending.length > 0) && (
+              <View style={desktopStyles.suggestionsDropdown}>
+                {/* Recent Searches */}
+                {searchSuggestions.recent.length > 0 && (
+                  <View style={desktopStyles.suggestionSection}>
+                    <View style={desktopStyles.suggestionHeader}>
+                      <Ionicons name="time-outline" size={14} color="#666" />
+                      <Text style={desktopStyles.suggestionHeaderText}>Recent Searches</Text>
+                    </View>
+                    {searchSuggestions.recent.slice(0, 3).map((query, idx) => (
+                      <TouchableOpacity
+                        key={`desktop-recent-${idx}`}
+                        style={desktopStyles.suggestionItem}
+                        onPress={() => handleSuggestionClick(query)}
+                      >
+                        <Ionicons name="search-outline" size={16} color="#999" />
+                        <Text style={desktopStyles.suggestionText}>{query}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+                
+                {/* Trending Searches */}
+                {searchSuggestions.trending.length > 0 && (
+                  <View style={desktopStyles.suggestionSection}>
+                    <View style={desktopStyles.suggestionHeader}>
+                      <Ionicons name="trending-up" size={14} color="#F57C00" />
+                      <Text style={[desktopStyles.suggestionHeaderText, { color: '#F57C00' }]}>Trending</Text>
+                    </View>
+                    {searchSuggestions.trending.slice(0, 5).map((item, idx) => (
+                      <TouchableOpacity
+                        key={`desktop-trending-${idx}`}
+                        style={desktopStyles.suggestionItem}
+                        onPress={() => handleSuggestionClick(item.query)}
+                      >
+                        <View style={desktopStyles.trendingRank}>
+                          <Text style={desktopStyles.trendingRankText}>{idx + 1}</Text>
+                        </View>
+                        <Text style={desktopStyles.suggestionText}>{item.query}</Text>
+                        <Text style={desktopStyles.trendingCount}>{item.count} searches</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
             )}
-            <TouchableOpacity 
-              style={desktopStyles.searchButton} 
-              onPress={handleSearchSubmit}
-              data-testid="desktop-home-search-button"
-            >
-              <Text style={desktopStyles.searchButtonText}>Search</Text>
-            </TouchableOpacity>
           </View>
           <TouchableOpacity style={desktopStyles.locationChip} activeOpacity={0.7} onPress={() => setShowLocationModal(true)}>
             <Ionicons name="location" size={18} color="#2E7D32" />
