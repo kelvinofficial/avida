@@ -133,8 +133,11 @@ export default function PhotographyGuidesAdmin() {
     if (authToken) {
       fetchGuides();
       fetchStats();
+    } else if (!authLoading) {
+      // No token and auth not loading means user is not authenticated
+      setLoading(false);
     }
-  }, [authToken, fetchGuides, fetchStats]);
+  }, [authToken, authLoading, fetchGuides, fetchStats]);
 
   // Create/Update guide
   const handleSaveGuide = async () => {
