@@ -115,10 +115,16 @@ const MobileCard = ({
   onRemove: () => void;
 }) => (
   <TouchableOpacity style={styles.mobileCard} onPress={onPress}>
-    <Image
-      source={{ uri: item.images?.[0] || 'https://via.placeholder.com/80' }}
-      style={styles.mobileCardImage}
-    />
+    {item.images?.[0] ? (
+      <Image
+        source={{ uri: item.images[0] }}
+        style={styles.mobileCardImage}
+      />
+    ) : (
+      <View style={styles.mobileCardImage}>
+        <ImagePlaceholder size="small" showText={false} />
+      </View>
+    )}
     <View style={styles.mobileCardContent}>
       <Text style={styles.mobileCardTitle} numberOfLines={2}>{item.title}</Text>
       <Text style={styles.mobileCardPrice}>€{item.price?.toLocaleString()}</Text>
