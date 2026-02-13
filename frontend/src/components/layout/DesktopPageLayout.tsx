@@ -99,32 +99,31 @@ interface QuickStats {
 
 const QuickStatsCard: React.FC = () => {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, token } = useAuthStore();
   const [stats, setStats] = useState<QuickStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const socketRef = useRef<any>(null);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user) {
       setLoading(false);
       return;
     }
 
-    const fetchStats = async () => {
+    const fetchInitialStats = async () => {
       try {
-        // Fetch multiple stats in parallel
+        // Fetch initial stats via API
         const [listingsRes, offersRes, creditsRes] = await Promise.all([
           api.get('/listings/my?page=1&limit=100').catch(() => ({ data: [] })),
           api.get('/offers?role=seller').catch(() => ({ data: [] })),
           api.get('/boost/credits/balance').catch(() => ({ data: { balance: 0 } })),
         ]);
 
-        // Count pending offers from seller view
         const offersArray = offersRes.data?.offers || offersRes.data || [];
         const pendingOffers = Array.isArray(offersArray) 
           ? offersArray.filter((offer: any) => offer.status === 'pending').length 
           : 0;
 
-        // Get listings array and calculate total views
         const listingsArray = Array.isArray(listingsRes.data) ? listingsRes.data : [];
         const totalViews = listingsArray.reduce((sum: number, listing: any) => sum + (listing.views || 0), 0);
 
@@ -143,8 +142,48 @@ const QuickStatsCard: React.FC = () => {
       }
     };
 
-    fetchStats();
-  }, [isAuthenticated]);
+    // Connect to WebSocket for real-time updates
+    const connectWebSocket = async () => {
+      try {
+        const { io } = await import('socket.io-client');
+        const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL || process.env.REACT_APP_BACKEND_URL || '';
+        
+        const socket = io(BACKEND_URL, {
+          transports: ['websocket'],
+          auth: { token }
+        });
+
+        socket.on('connect', () => {
+          console.log('[QuickStats] WebSocket connected');
+          socket.emit('subscribe_stats', { user_id: user.user_id });
+        });
+
+        socket.on('stats_update', (newStats: QuickStats) => {
+          console.log('[QuickStats] Received stats update:', newStats);
+          setStats(prev => ({ ...prev, ...newStats }));
+        });
+
+        socket.on('disconnect', () => {
+          console.log('[QuickStats] WebSocket disconnected');
+        });
+
+        socketRef.current = socket;
+      } catch (error) {
+        console.error('[QuickStats] WebSocket connection error:', error);
+      }
+    };
+
+    fetchInitialStats();
+    connectWebSocket();
+
+    // Cleanup on unmount
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.emit('unsubscribe_stats', { user_id: user.user_id });
+        socketRef.current.disconnect();
+      }
+    };
+  }, [isAuthenticated, user, token]);
 
   if (!isAuthenticated) return null;
 
