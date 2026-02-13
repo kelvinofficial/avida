@@ -1170,22 +1170,82 @@ export default function HomeScreen() {
 
       {/* ROW 2: SEARCH + LOCATION */}
       <View style={styles.row2}>
-        <View style={styles.searchField}>
-          <Ionicons name="search" size={20} color="#666" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder={`Search in ${currentCity === 'Select Location' ? 'all areas' : currentCity}`}
-            placeholderTextColor="#999"
-            value={homeSearchQuery}
-            onChangeText={setHomeSearchQuery}
-            onSubmitEditing={handleSearchSubmit}
-            returnKeyType="search"
-            data-testid="home-search-input"
-          />
-          {homeSearchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setHomeSearchQuery('')} style={styles.clearSearchBtn}>
-              <Ionicons name="close-circle" size={18} color="#999" />
-            </TouchableOpacity>
+        <View style={styles.searchFieldWrapper}>
+          <View style={styles.searchField}>
+            <Ionicons name="search" size={20} color="#666" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder={`Search in ${currentCity === 'Select Location' ? 'all areas' : currentCity}`}
+              placeholderTextColor="#999"
+              value={homeSearchQuery}
+              onChangeText={(text) => {
+                setHomeSearchQuery(text);
+                if (text.length === 0) {
+                  setShowSearchSuggestions(true);
+                }
+              }}
+              onFocus={() => setShowSearchSuggestions(true)}
+              onBlur={() => {
+                // Delay hiding to allow click events on suggestions
+                setTimeout(() => setShowSearchSuggestions(false), 200);
+              }}
+              onSubmitEditing={handleSearchSubmit}
+              returnKeyType="search"
+              data-testid="home-search-input"
+            />
+            {homeSearchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setHomeSearchQuery('')} style={styles.clearSearchBtn}>
+                <Ionicons name="close-circle" size={18} color="#999" />
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          {/* Autocomplete Dropdown */}
+          {showSearchSuggestions && (searchSuggestions.recent.length > 0 || searchSuggestions.trending.length > 0) && (
+            <View style={styles.suggestionsDropdown}>
+              {/* Recent Searches */}
+              {searchSuggestions.recent.length > 0 && (
+                <View style={styles.suggestionSection}>
+                  <View style={styles.suggestionHeader}>
+                    <Ionicons name="time-outline" size={14} color="#666" />
+                    <Text style={styles.suggestionHeaderText}>Recent Searches</Text>
+                  </View>
+                  {searchSuggestions.recent.slice(0, 3).map((query, idx) => (
+                    <TouchableOpacity
+                      key={`recent-${idx}`}
+                      style={styles.suggestionItem}
+                      onPress={() => handleSuggestionClick(query)}
+                    >
+                      <Ionicons name="search-outline" size={16} color="#999" />
+                      <Text style={styles.suggestionText}>{query}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+              
+              {/* Trending Searches */}
+              {searchSuggestions.trending.length > 0 && (
+                <View style={styles.suggestionSection}>
+                  <View style={styles.suggestionHeader}>
+                    <Ionicons name="trending-up" size={14} color="#F57C00" />
+                    <Text style={[styles.suggestionHeaderText, { color: '#F57C00' }]}>Trending</Text>
+                  </View>
+                  {searchSuggestions.trending.slice(0, 4).map((item, idx) => (
+                    <TouchableOpacity
+                      key={`trending-${idx}`}
+                      style={styles.suggestionItem}
+                      onPress={() => handleSuggestionClick(item.query)}
+                    >
+                      <View style={styles.trendingRank}>
+                        <Text style={styles.trendingRankText}>{idx + 1}</Text>
+                      </View>
+                      <Text style={styles.suggestionText}>{item.query}</Text>
+                      <Text style={styles.trendingCount}>{item.count}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
           )}
         </View>
         <TouchableOpacity style={styles.locationChip} activeOpacity={0.7} onPress={() => setShowLocationModal(true)}>
