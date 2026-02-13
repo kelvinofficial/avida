@@ -26,15 +26,15 @@ export default function RootLayout() {
   const [processingAuth, setProcessingAuth] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Load icon fonts from the public directory to avoid Metro asset serving issues
-  // These fonts are served from /fonts/ path via the public/ directory
+  // Load icon fonts from backend API to avoid Metro asset serving issues
+  // These fonts are served from /api/fonts/ via FastAPI static file mount
   const [fontsLoaded] = useFonts({
-    'ionicons': '/fonts/Ionicons.ttf',
-    'material': '/fonts/MaterialIcons.ttf',
-    'material-community': '/fonts/MaterialCommunityIcons.ttf',
-    'FontAwesome': '/fonts/FontAwesome.ttf',
-    'FontAwesome5_Solid': '/fonts/FontAwesome5_Solid.ttf',
-    'feather': '/fonts/Feather.ttf',
+    'ionicons': '/api/fonts/Ionicons.ttf',
+    'material': '/api/fonts/MaterialIcons.ttf',
+    'material-community': '/api/fonts/MaterialCommunityIcons.ttf',
+    'FontAwesome': '/api/fonts/FontAwesome.ttf',
+    'FontAwesome5_Solid': '/api/fonts/FontAwesome5_Solid.ttf',
+    'feather': '/api/fonts/Feather.ttf',
   });
 
   // Initialize notification deep linking
