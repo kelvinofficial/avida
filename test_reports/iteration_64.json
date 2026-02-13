@@ -93,7 +93,7 @@
     "problem": "Frontend route /admin/business-profiles not accessible",
     "root_cause": "expo-router doesn't seem to properly register routes for hyphenated files in nested folders (admin/business-profiles.tsx). Root level hyphenated files work (notification-preferences.tsx). This may be a bundling/caching issue or expo-router folder-based routing limitation.",
     "reproduction_steps": [
-      "1. Navigate to https://classifieds-search-2.preview.emergentagent.com/admin/business-profiles",
+      "1. Navigate to https://classifieds-search-3.preview.emergentagent.com/admin/business-profiles",
       "2. Observe 'Unmatched Route - Page could not be found' error"
     ],
     "mitigation": "Try: 1) Rename file to businessProfiles.tsx and use /admin/businessProfiles route, OR 2) Add explicit Stack.Screen in _layout.tsx for admin routes, OR 3) Check if admin folder needs its own _layout.tsx"
