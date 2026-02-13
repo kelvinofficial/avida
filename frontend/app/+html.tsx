@@ -121,3 +121,33 @@ const responsiveStyle = `
     margin-right: -50vw !important;
   }
 `;
+
+
+// JavaScript to load fonts using the FontFace API before React renders
+const fontLoadScript = `
+(function() {
+  const fontConfigs = [
+    { name: 'ionicons', url: '/api/fonts/Ionicons.ttf' },
+    { name: 'material', url: '/api/fonts/MaterialIcons.ttf' },
+    { name: 'material-community', url: '/api/fonts/MaterialCommunityIcons.ttf' },
+    { name: 'FontAwesome', url: '/api/fonts/FontAwesome.ttf' },
+    { name: 'FontAwesome5_Solid', url: '/api/fonts/FontAwesome5_Solid.ttf' },
+    { name: 'feather', url: '/api/fonts/Feather.ttf' }
+  ];
+  
+  fontConfigs.forEach(function(config) {
+    try {
+      var font = new FontFace(config.name, 'url(' + config.url + ')');
+      font.load().then(function(loadedFont) {
+        document.fonts.add(loadedFont);
+        console.log('[Font] Loaded: ' + config.name);
+      }).catch(function(err) {
+        console.warn('[Font] Failed to load ' + config.name + ':', err);
+      });
+    } catch(e) {
+      console.warn('[Font] FontFace API error for ' + config.name + ':', e);
+    }
+  });
+})();
+`;
+
