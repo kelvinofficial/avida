@@ -336,6 +336,15 @@ export default function SearchScreen() {
     }
   }, [searchQuery]);
 
+  // Auto-search when page loads with query parameter
+  useEffect(() => {
+    const initialQuery = params.q as string;
+    if (initialQuery && initialQuery.trim()) {
+      setSearchQuery(initialQuery);
+      handleSearch(initialQuery);
+    }
+  }, [params.q, handleSearch]);
+
   const handleCategoryPress = (categoryId: string) => {
     router.push(`/category/${categoryId}`);
   };
