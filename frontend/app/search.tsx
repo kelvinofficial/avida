@@ -396,6 +396,61 @@ export default function SearchScreen() {
     }, [params.q])
   );
 
+  // Web-specific: Listen for URL changes using History API
+  // This is needed because Expo Router may not properly trigger effects on client-side navigation
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    
+    const checkAndExecuteSearch = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryFromUrl = urlParams.get('q')?.trim() || '';
+      
+      console.log('[Search Page] URL check - query:', queryFromUrl, 'lastHandled:', initialSearchHandled.current);
+      
+      if (queryFromUrl && initialSearchHandled.current !== queryFromUrl) {
+        initialSearchHandled.current = queryFromUrl;
+        setSearchQuery(queryFromUrl);
+        setHasSearched(true);
+        setLoading(true);
+        
+        console.log('[Search Page] URL change detected - executing search for:', queryFromUrl);
+        
+        const executeSearch = async () => {
+          try {
+            api.post('/searches/track', { query: queryFromUrl.toLowerCase() }).catch(() => {});
+            const response = await listingsApi.search(queryFromUrl);
+            console.log('[Search Page] Search results received:', response?.listings?.length || 0);
+            setListings(response.listings || []);
+            saveRecentSearch(queryFromUrl);
+          } catch (error) {
+            console.error('[Search Page] Search error:', error);
+            setListings([]);
+          } finally {
+            setLoading(false);
+          }
+        };
+        
+        executeSearch();
+      }
+    };
+    
+    // Check on mount and also run after a short delay (for SSR hydration)
+    checkAndExecuteSearch();
+    const timer = setTimeout(checkAndExecuteSearch, 200);
+    
+    // Listen for popstate (browser back/forward) and custom navigation events
+    const handleNavigation = () => {
+      setTimeout(checkAndExecuteSearch, 50);
+    };
+    
+    window.addEventListener('popstate', handleNavigation);
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('popstate', handleNavigation);
+    };
+  }, []);
+
   const handleCategoryPress = (categoryId: string) => {
     router.push(`/category/${categoryId}`);
   };
