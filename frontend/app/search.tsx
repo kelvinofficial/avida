@@ -230,11 +230,18 @@ export default function SearchScreen() {
   const { isDesktop, isTablet, width } = responsive;
   
   // Use direct window check for SSR compatibility
-  const [isLargeScreen, setIsLargeScreen] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(() => {
+    // Initial state from window if available
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      return window.innerWidth > 768;
+    }
+    return false;
+  });
   
   useEffect(() => {
     // Check on client-side
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      // Set immediately
       setIsLargeScreen(window.innerWidth > 768);
       
       const handleResize = () => {
