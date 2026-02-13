@@ -6,7 +6,74 @@ Build a local marketplace application (Avida) with:
 2. Business Profile feature for verified sellers
 3. Premium subscription tiers with payment integration
 
+---
 
+### 2026-02-13: Real-time Favorite Notifications (P0)
+**COMPLETED** ✅
+
+#### Features Implemented
+1. **WebSocket Notification on Favorite**: When a user favorites a listing, the listing owner receives a real-time stats update via WebSocket (`stats_update` event).
+
+2. **In-app Notification**: Creates a persistent notification for the seller with message "Someone saved your listing '[title]'".
+
+3. **Self-favorite Check**: Users don't receive notifications when they favorite their own listings.
+
+#### Files Modified
+- `/app/backend/routes/favorites.py` - Added `notify_stats_update` and `create_notification` callbacks to `add_favorite` endpoint
+- `/app/backend/server.py` - Passed callbacks to `create_favorites_router`
+
+#### Test Report
+- `/app/test_reports/iteration_130.json` - 100% pass rate
+
+---
+
+### 2026-02-13: Mobile App Optimizations (P1)
+**COMPLETED** ✅
+
+#### Features Implemented
+1. **Network Status Monitoring** (`useNetworkStatus` hook):
+   - Web: Uses `navigator.onLine` and `online`/`offline` events
+   - Native: Uses `@react-native-community/netinfo`
+   - Returns `isConnected`, `isInternetReachable`, `connectionType`, `isOffline`
+
+2. **Offline Banner** (`OfflineBanner` component):
+   - Animated slide-down banner when offline
+   - Pulsing animation for visibility
+   - Optional retry button
+   - Safe area aware (iOS notch support)
+
+3. **Optimized Image** (`OptimizedImage` component):
+   - Lazy loading with loading indicator
+   - Graceful fallback to `ImagePlaceholder` on error
+   - Web-specific optimizations (`loading="lazy"`, `decoding="async"`)
+   - Memoized for performance
+
+4. **Touch Feedback** (`TouchableScale` component):
+   - Scale animation on press (spring physics)
+   - Haptic feedback on iOS/Android (`expo-haptics`)
+   - Configurable scale factor and haptic intensity
+   - Accessibility support
+
+5. **Enhanced Pull-to-Refresh** (`EnhancedRefreshControl` component):
+   - Haptic feedback when refresh triggers
+   - Consistent styling across platforms
+   - Promise-based refresh handling
+
+#### Files Created
+- `/app/frontend/src/hooks/useNetworkStatus.ts`
+- `/app/frontend/src/components/common/OfflineBanner.tsx`
+- `/app/frontend/src/components/common/OptimizedImage.tsx`
+- `/app/frontend/src/components/common/TouchableScale.tsx`
+- `/app/frontend/src/components/common/EnhancedRefreshControl.tsx`
+- `/app/frontend/src/components/common/index.ts` (barrel export)
+
+#### Files Modified
+- `/app/frontend/app/_layout.tsx` - Integrated `OfflineBanner` and `useNetworkStatus`
+
+#### Test Report
+- `/app/test_reports/iteration_130.json` - 100% frontend pass rate
+
+---
 
 ### 2026-02-13: Shimmer Animation for Skeleton Loaders (P0)
 **COMPLETED** ✅
