@@ -69,7 +69,7 @@ interface GuideStats {
 
 export default function PhotographyGuidesAdmin() {
   const router = useRouter();
-  const { token: authToken, isLoading: authLoading, loadStoredAuth } = useAuthStore();
+  const { isAuthenticated, loadStoredAuth } = useAuthStore();
   const [guides, setGuides] = useState<PhotographyGuide[]>([]);
   const [stats, setStats] = useState<GuideStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -94,56 +94,32 @@ export default function PhotographyGuidesAdmin() {
 
   // Fetch guides
   const fetchGuides = useCallback(async () => {
-    if (!authToken) return;
-    
     try {
       setLoading(true);
-      const url = selectedCategory 
-        ? `${API_URL}/api/photography-guides?category_id=${selectedCategory}`
-        : `${API_URL}/api/photography-guides`;
-      
-      const response = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${authToken}` }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setGuides(data.guides || []);
-      }
+      const params = selectedCategory ? { category_id: selectedCategory } : {};
+      const response = await api.get('/photography-guides', { params });
+      setGuides(response.data.guides || []);
     } catch (error) {
       console.error('Error fetching guides:', error);
     } finally {
       setLoading(false);
     }
-  }, [authToken, selectedCategory]);
+  }, [selectedCategory]);
 
   // Fetch stats
   const fetchStats = useCallback(async () => {
-    if (!authToken) return;
-    
     try {
-      const response = await fetch(`${API_URL}/api/photography-guides/stats`, {
-        headers: { 'Authorization': `Bearer ${authToken}` }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data);
-      }
+      const response = await api.get('/photography-guides/stats');
+      setStats(response.data);
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
-  }, [authToken]);
+  }, []);
 
   useEffect(() => {
-    if (authToken) {
-      fetchGuides();
-      fetchStats();
-    } else if (!authLoading) {
-      // No token and auth not loading means user is not authenticated
-      setLoading(false);
-    }
-  }, [authToken, authLoading, fetchGuides, fetchStats]);
+    fetchGuides();
+    fetchStats();
+  }, [fetchGuides, fetchStats]);
 
   // Create/Update guide
   const handleSaveGuide = async () => {
