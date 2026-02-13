@@ -1729,8 +1729,8 @@ export default function HomeScreen() {
                   </View>
                 )}
                 
-                {/* Countries List */}
-                {locationDropdownStep === 'countries' && !locationDropdownLoading && Platform.OS === 'web' && (
+                {/* Countries List - Use HTML on web for better rendering */}
+                {locationDropdownStep === 'countries' && !locationDropdownLoading && (
                   <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                     {locationCountries.map((country) => (
                       <div
@@ -1758,25 +1758,6 @@ export default function HomeScreen() {
                       </div>
                     ))}
                   </div>
-                )}
-                {locationDropdownStep === 'countries' && !locationDropdownLoading && Platform.OS !== 'web' && (
-                  <View style={{ height: 300 }}>
-                    <FlatList
-                      data={locationCountries}
-                      keyExtractor={(item) => item.code}
-                      renderItem={({ item: country }) => (
-                        <TouchableOpacity
-                          style={desktopStyles.locationItem}
-                          onPress={() => handleSelectCountry(country)}
-                        >
-                          <Text style={desktopStyles.countryFlag}>{country.flag}</Text>
-                          <Text style={desktopStyles.locationItemText}>{country.name}</Text>
-                          <Ionicons name="chevron-forward" size={16} color="#999" />
-                        </TouchableOpacity>
-                      )}
-                      showsVerticalScrollIndicator={false}
-                    />
-                  </View>
                 )}
                 
                 {/* Regions List */}
