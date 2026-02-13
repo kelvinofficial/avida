@@ -226,32 +226,8 @@ export default function SearchScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { isAuthenticated } = useAuthStore();
-  const responsive = useResponsive();
-  const { isDesktop, isTablet, width } = responsive;
-  
-  // Use direct window check for SSR compatibility
-  const [isLargeScreen, setIsLargeScreen] = useState(() => {
-    // Initial state from window if available
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      return window.innerWidth > 768;
-    }
-    return false;
-  });
-  
-  useEffect(() => {
-    // Check on client-side
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      // Set immediately
-      setIsLargeScreen(window.innerWidth > 768);
-      
-      const handleResize = () => {
-        setIsLargeScreen(window.innerWidth > 768);
-      };
-      
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-    }
-  }, []);
+  const { isDesktop, isTablet } = useResponsive();
+  const isLargeScreen = isDesktop || isTablet;
   
   const [searchQuery, setSearchQuery] = useState((params.q as string) || '');
   const [listings, setListings] = useState<any[]>([]);
