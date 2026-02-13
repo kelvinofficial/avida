@@ -39,6 +39,8 @@ const { width } = Dimensions.get('window');
 
 // Storage key for recently viewed subcategories
 const RECENT_SUBCATEGORIES_KEY = '@avida_recent_subcategories';
+// Storage key for selected location
+const SELECTED_LOCATION_KEY = '@avida_selected_location';
 
 // ============ LAYOUT CONSTANTS - Material 3 ============
 const HORIZONTAL_PADDING = 16;
