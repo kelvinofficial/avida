@@ -122,7 +122,8 @@ def create_listings_router(
     require_auth,
     check_rate_limit,
     validate_category_and_subcategory,
-    legacy_category_map: Dict[str, str]
+    legacy_category_map: Dict[str, str],
+    notify_stats_update=None
 ):
     """
     Create the listings router with dependencies injected
@@ -134,6 +135,7 @@ def create_listings_router(
         check_rate_limit: Function to check rate limits
         validate_category_and_subcategory: Function to validate category/subcategory
         legacy_category_map: Dict mapping old category IDs to new ones
+        notify_stats_update: Optional callback to notify user of stats update via WebSocket
     
     Returns:
         APIRouter with listing endpoints
