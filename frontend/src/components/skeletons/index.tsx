@@ -402,32 +402,32 @@ export const MessagesSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop 
 
 // ============ PROFILE PAGE SKELETON ============
 export const ProfileSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
-  const opacity = useShimmer();
+  const theme = useShimmerTheme();
   
   return (
-    <View style={skeletonBase.container}>
+    <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor }]}>
       {/* Profile header */}
-      <View style={profileSkeleton.header}>
-        <Animated.View style={[profileSkeleton.avatar, { opacity }]} />
-        <Animated.View style={[{ width: 150, height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
-        <Animated.View style={[{ width: 100, height: 16, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+      <View style={[profileSkeleton.header, { backgroundColor: theme.surfaceColor }]}>
+        <ShimmerBox width={80} height={80} borderRadius={40} />
+        <ShimmerBox width={150} height={24} borderRadius={4} />
+        <ShimmerBox width={100} height={16} borderRadius={4} />
         <View style={profileSkeleton.stats}>
           {Array(3).fill(0).map((_, i) => (
             <View key={i} style={profileSkeleton.statItem}>
-              <Animated.View style={[{ width: 40, height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
-              <Animated.View style={[{ width: 60, height: 12, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+              <ShimmerBox width={40} height={24} borderRadius={4} />
+              <ShimmerBox width={60} height={12} borderRadius={4} />
             </View>
           ))}
         </View>
       </View>
       
       {/* Menu items */}
-      <View style={profileSkeleton.menu}>
+      <View style={[profileSkeleton.menu, { backgroundColor: theme.surfaceColor }]}>
         {Array(6).fill(0).map((_, i) => (
           <View key={i} style={profileSkeleton.menuItem}>
-            <Animated.View style={[{ width: 24, height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
-            <Animated.View style={[{ flex: 1, height: 18, backgroundColor: COLORS.skeleton, borderRadius: 4, marginLeft: 12 }, { opacity }]} />
-            <Animated.View style={[{ width: 20, height: 20, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+            <ShimmerBox width={24} height={24} borderRadius={4} />
+            <ShimmerBox height={18} borderRadius={4} style={{ flex: 1, marginLeft: 12 }} />
+            <ShimmerBox width={20} height={20} borderRadius={4} />
           </View>
         ))}
       </View>
