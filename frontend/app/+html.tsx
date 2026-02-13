@@ -25,6 +25,58 @@ export default function Root({ children }: PropsWithChildren) {
 }
 
 const responsiveStyle = `
+  /* Load icon fonts from CDN as fallback for bundled fonts */
+  @font-face {
+    font-family: 'ionicons';
+    src: url('https://unpkg.com/ionicons@7.1.0/dist/fonts/ionicons.woff2') format('woff2'),
+         url('https://unpkg.com/ionicons@7.1.0/dist/fonts/ionicons.woff') format('woff'),
+         url('https://unpkg.com/ionicons@7.1.0/dist/fonts/ionicons.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url('https://fonts.gstatic.com/s/materialicons/v142/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2') format('woff2');
+  }
+  
+  @font-face {
+    font-family: 'material';
+    font-style: normal;
+    font-weight: 400;
+    src: url('https://fonts.gstatic.com/s/materialicons/v142/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2') format('woff2');
+  }
+  
+  @font-face {
+    font-family: 'Material Design Icons';
+    src: url('https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/fonts/materialdesignicons-webfont.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'material-community';
+    src: url('https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/fonts/materialdesignicons-webfont.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'FontAwesome';
+    src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'feather';
+    src: url('https://cdn.jsdelivr.net/npm/feather-icons@4.29.2/dist/feather-sprite.svg');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
   html, body, #root {
     height: 100%;
     width: 100%;
