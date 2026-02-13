@@ -592,7 +592,9 @@ Expanded Quick Stats card from 3 to 5 metrics:
 - Test report: `/app/test_reports/iteration_120.json` - 100% pass
 
 #### Photography Guides Admin CRUD (2026-02-12) ✅
-Verified existing functionality at `/admin/photography-guides`:
+**Note (2026-02-13):** The admin panel for Photography Guides is located at `/api/admin-ui/dashboard/photography-guides` (the dedicated Next.js admin dashboard), NOT in the React Native app at `/admin/photography-guides`.
+
+Verified existing functionality:
 - Stats dashboard showing Total, Active, With Images, Categories
 - Category filter chips for filtering guides
 - Add/Edit/Delete guide functionality with icon picker
