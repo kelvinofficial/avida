@@ -843,6 +843,17 @@ def create_offers_router(db, require_auth, get_current_user, notify_stats_update
         
         action = body.get("action")  # accept, reject, counter
         
+        # Helper function to notify stats update
+        async def notify_stats_for_offer():
+            if notify_stats_update:
+                try:
+                    import asyncio
+                    # Notify seller (their pending offers count changes)
+                    asyncio.create_task(notify_stats_update(user.user_id))
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).debug(f"Stats notification failed: {e}")
+        
         if action == "accept":
             await db.offers.update_one(
                 {"id": offer_id},
@@ -851,6 +862,7 @@ def create_offers_router(db, require_auth, get_current_user, notify_stats_update
                     "updated_at": datetime.now(timezone.utc).isoformat()
                 }}
             )
+            await notify_stats_for_offer()
             return {"message": "Offer accepted", "status": "accepted"}
         
         elif action == "reject":
@@ -861,6 +873,7 @@ def create_offers_router(db, require_auth, get_current_user, notify_stats_update
                     "updated_at": datetime.now(timezone.utc).isoformat()
                 }}
             )
+            await notify_stats_for_offer()
             return {"message": "Offer rejected", "status": "rejected"}
         
         elif action == "counter":
@@ -879,6 +892,7 @@ def create_offers_router(db, require_auth, get_current_user, notify_stats_update
                     "updated_at": datetime.now(timezone.utc).isoformat()
                 }}
             )
+            await notify_stats_for_offer()
             return {"message": "Counter offer sent", "status": "countered", "counter_price": counter_price}
         
         else:
