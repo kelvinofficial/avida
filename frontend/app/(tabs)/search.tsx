@@ -881,6 +881,207 @@ export default function SearchScreen() {
   );
 }
 
+// Desktop styles
+const desktopStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+  content: {
+    flex: 1,
+    alignItems: 'center',
+    paddingTop: 24,
+  },
+  inner: {
+    flexDirection: 'row',
+    maxWidth: 1280,
+    width: '100%',
+    paddingHorizontal: 24,
+    gap: 24,
+  },
+  sidebar: {
+    width: 300,
+  },
+  searchStatsCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 16,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 20,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 2,
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 12,
+    marginTop: 8,
+  },
+  categoryList: {
+    gap: 4,
+  },
+  categoryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    gap: 10,
+  },
+  categoryItemActive: {
+    backgroundColor: '#E8F5E9',
+  },
+  categoryText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  categoryTextActive: {
+    color: '#2E7D32',
+    fontWeight: '600',
+  },
+  main: {
+    flex: 1,
+  },
+  searchHeader: {
+    marginBottom: 20,
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    height: 52,
+    gap: 12,
+    borderWidth: 2,
+    borderColor: '#2E7D32',
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#1A1A1A',
+    outlineStyle: 'none',
+  },
+  searchBtn: {
+    backgroundColor: '#2E7D32',
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  searchBtnText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  filterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 16,
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 20,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  filterChipActive: {
+    backgroundColor: '#2E7D32',
+    borderColor: '#2E7D32',
+  },
+  filterChipText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#333',
+  },
+  clearFilters: {
+    fontSize: 13,
+    color: '#2E7D32',
+    fontWeight: '500',
+  },
+  resultsArea: {
+    flex: 1,
+  },
+  loadingContainer: {
+    paddingTop: 60,
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#666',
+  },
+  resultsCount: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 16,
+  },
+  listingsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  listingItem: {
+    width: 280,
+  },
+  browsePrompt: {
+    alignItems: 'center',
+    paddingTop: 80,
+  },
+  browseTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginTop: 20,
+    marginBottom: 8,
+  },
+  browseSubtitle: {
+    fontSize: 15,
+    color: '#666',
+    textAlign: 'center',
+    maxWidth: 400,
+  },
+});
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
