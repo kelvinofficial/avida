@@ -151,7 +151,7 @@ const PropertyListingCard = memo<ListingCardProps>(({ listing, onPress, onFavori
           </View>
         </View>
       </View>
-    </TouchableOpacity>
+    </TouchableScale>
   );
 });
 
