@@ -67,10 +67,14 @@ const DesktopCard = ({
     data-testid={`saved-item-${item.id}`}
   >
     <View style={styles.cardImageContainer}>
-      <Image
-        source={{ uri: item.images?.[0] || 'https://via.placeholder.com/300' }}
-        style={styles.cardImage}
-      />
+      {item.images?.[0] ? (
+        <Image
+          source={{ uri: item.images[0] }}
+          style={styles.cardImage}
+        />
+      ) : (
+        <ImagePlaceholder size="large" />
+      )}
       {item.is_featured && (
         <View style={styles.featuredBadge}>
           <Ionicons name="star" size={10} color="#fff" />
