@@ -241,62 +241,74 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
               <Ionicons name="search" size={20} color={COLORS.textSecondary} />
               <Text style={styles.searchPlaceholder}>Search for anything...</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.locationChip} 
-              activeOpacity={0.7} 
-              onPress={handleLocationPress}
-            >
-              <Ionicons name="location" size={18} color={COLORS.primary} />
-              <Text style={styles.locationText} numberOfLines={1}>{currentCity}</Text>
-              <Ionicons name="chevron-down" size={16} color={COLORS.textSecondary} />
-            </TouchableOpacity>
+            {showLocationSelector && (
+              <TouchableOpacity 
+                style={styles.locationChip} 
+                activeOpacity={0.7} 
+                onPress={() => setShowLocationModal(true)}
+                data-testid="header-location-selector"
+              >
+                <Ionicons name="location" size={18} color={COLORS.primary} />
+                <Text style={styles.locationText} numberOfLines={1}>{currentCity}</Text>
+                <Ionicons name="chevron-down" size={16} color={COLORS.textSecondary} />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       )}
 
-      {/* Country Selection Modal */}
+      {/* Location Picker Modal */}
       <Modal
-        visible={showCountryModal}
-        animationType="fade"
-        transparent={true}
-        onRequestClose={() => setShowCountryModal(false)}
+        visible={showLocationModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowLocationModal(false)}
       >
-        <TouchableOpacity 
-          style={styles.modalOverlay} 
-          activeOpacity={1} 
-          onPress={() => setShowCountryModal(false)}
-        >
-          <View style={styles.countryModalContainer}>
-            <View style={styles.countryModalHeader}>
-              <Text style={styles.countryModalTitle}>Select Country</Text>
-              <TouchableOpacity onPress={() => setShowCountryModal(false)}>
-                <Ionicons name="close" size={24} color={COLORS.text} />
-              </TouchableOpacity>
-            </View>
-            {loadingCountries ? (
-              <View style={styles.countryModalLoading}>
-                <ActivityIndicator size="large" color={COLORS.primary} />
-              </View>
-            ) : (
-              <FlatList
-                data={countries}
-                keyExtractor={(item) => item.code}
-                renderItem={({ item }) => (
-                  <TouchableOpacity 
-                    style={styles.countryItem}
-                    onPress={() => handleCountrySelect(item)}
-                  >
-                    <Text style={styles.countryFlag}>{item.flag || '🌍'}</Text>
-                    <Text style={styles.countryName}>{item.name}</Text>
-                    <Ionicons name="chevron-forward" size={18} color={COLORS.textSecondary} />
-                  </TouchableOpacity>
-                )}
-                ItemSeparatorComponent={() => <View style={styles.countryDivider} />}
-                contentContainerStyle={styles.countryList}
-              />
-            )}
+        <View style={styles.locationPickerModal}>
+          <View style={styles.locationPickerHeader}>
+            <Text style={styles.locationPickerTitle}>Select Location</Text>
+            <TouchableOpacity onPress={() => setShowLocationModal(false)}>
+              <Ionicons name="close" size={24} color={COLORS.text} />
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
+          
+          {/* Current Selection Display */}
+          {selectedLocationFilter && (
+            <View style={styles.currentLocationDisplay}>
+              <Ionicons name="location" size={18} color={COLORS.primary} />
+              <Text style={styles.currentLocationText}>
+                {selectedLocationFilter.location_text || selectedLocationFilter.city_name}
+              </Text>
+            </View>
+          )}
+          
+          {/* Location Picker Component */}
+          <View style={styles.locationPickerContent}>
+            <LocationPicker
+              value={selectedLocationFilter}
+              onChange={handleLocationSelect}
+              placeholder="Search for a location..."
+              showGpsOption={true}
+              showRecentLocations={true}
+            />
+          </View>
+          
+          {/* All Locations Option */}
+          <TouchableOpacity
+            style={[styles.allLocationsBtn, !selectedLocationFilter && styles.allLocationsBtnActive]}
+            onPress={() => {
+              clearLocation();
+            }}
+          >
+            <Ionicons name="globe-outline" size={20} color={!selectedLocationFilter ? COLORS.primary : COLORS.textSecondary} />
+            <Text style={[styles.allLocationsBtnText, !selectedLocationFilter && styles.allLocationsBtnTextActive]}>
+              All Locations
+            </Text>
+            {!selectedLocationFilter && (
+              <Ionicons name="checkmark" size={18} color={COLORS.primary} style={{ marginLeft: 'auto' }} />
+            )}
+          </TouchableOpacity>
+        </View>
       </Modal>
     </View>
   );
