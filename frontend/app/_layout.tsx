@@ -33,14 +33,14 @@ export default function RootLayout() {
   const [mounted, setMounted] = useState(false);
 
   // Load icon fonts locally to avoid network dependency
-  // Using font names that match @expo/vector-icons expectations
+  // Using the .font static property from each icon library
   const [fontsLoaded] = useFonts({
-    'ionicons': require('../assets/icon-fonts/Ionicons.ttf'),
-    'material': require('../assets/icon-fonts/MaterialIcons.ttf'),
-    'material-community': require('../assets/icon-fonts/MaterialCommunityIcons.ttf'),
-    'FontAwesome': require('../assets/icon-fonts/FontAwesome.ttf'),
-    'FontAwesome5_Solid': require('../assets/icon-fonts/FontAwesome5_Solid.ttf'),
-    'feather': require('../assets/icon-fonts/Feather.ttf'),
+    ...Ionicons.font,
+    ...MaterialIcons.font,
+    ...MaterialCommunityIcons.font,
+    ...FontAwesome.font,
+    ...FontAwesome5.font,
+    ...Feather.font,
   });
 
   // Initialize notification deep linking
