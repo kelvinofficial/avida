@@ -918,6 +918,14 @@ def create_listings_router(
         except Exception as e:
             logger.error(f"Error checking badges after sale: {e}")
         
+        # Notify user of stats update via WebSocket (real-time Quick Stats)
+        if notify_stats_update:
+            try:
+                import asyncio
+                asyncio.create_task(notify_stats_update(user.user_id))
+            except Exception as e:
+                logger.debug(f"Stats notification failed: {e}")
+        
         return {
             "message": "Listing marked as sold",
             "listing_id": listing_id,
