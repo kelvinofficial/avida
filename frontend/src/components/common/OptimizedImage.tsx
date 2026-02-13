@@ -1,12 +1,12 @@
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useRef, useEffect } from 'react';
 import { 
   Image, 
   View, 
   StyleSheet, 
-  ActivityIndicator,
   ImageStyle,
   ViewStyle,
-  Platform
+  Platform,
+  Animated
 } from 'react-native';
 import { ImagePlaceholder } from './ImagePlaceholder';
 
@@ -22,12 +22,62 @@ interface OptimizedImageProps {
 }
 
 /**
+ * ImageShimmer - Skeleton loading animation for images
+ * Uses CSS animation on web and Animated.View on native
+ */
+const ImageShimmer: React.FC<{ style?: ViewStyle }> = memo(({ style }) => {
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.timing(shimmerAnim, {
+        toValue: 1,
+        duration: 1500,
+        useNativeDriver: Platform.OS !== 'web',
+      })
+    );
+    animation.start();
+    return () => animation.stop();
+  }, []);
+
+  // For web, use CSS animation via data attribute
+  if (Platform.OS === 'web') {
+    return (
+      <View
+        // @ts-ignore - data attribute for CSS styling
+        dataSet={{ shimmer: true }}
+        style={[styles.shimmerContainer, style]}
+      />
+    );
+  }
+
+  // For native, use Animated.View with translateX
+  const translateX = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-300, 300],
+  });
+
+  return (
+    <View style={[styles.shimmerContainer, style]}>
+      <Animated.View
+        style={[
+          styles.shimmerGradient,
+          { transform: [{ translateX }, { skewX: '-20deg' }] }
+        ]}
+      />
+    </View>
+  );
+});
+
+ImageShimmer.displayName = 'ImageShimmer';
+
+/**
  * OptimizedImage Component
  * 
  * Features:
+ * - Shimmer skeleton loading animation
  * - Lazy loading with loading states
  * - Graceful fallback to placeholder on error
- * - Progressive loading indicator
  * - Optimized for mobile performance
  */
 export const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
@@ -87,9 +137,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
         {...webImageProps}
       />
       {isLoading && showLoadingIndicator && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="small" color="#2E7D32" />
-        </View>
+        <ImageShimmer style={StyleSheet.absoluteFillObject} />
       )}
     </View>
   );
@@ -106,11 +154,17 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(236, 239, 241, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  shimmerContainer: {
+    backgroundColor: '#E0E0E0',
+    overflow: 'hidden',
+  },
+  shimmerGradient: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 150,
+    backgroundColor: '#F5F5F5',
+    opacity: 0.5,
   },
 });
 
