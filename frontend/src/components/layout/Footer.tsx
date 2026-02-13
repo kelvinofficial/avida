@@ -225,16 +225,37 @@ export const Footer: React.FC<FooterProps> = ({ isTablet = false }) => {
             {isTablet ? (
               CATEGORIES.map((category, index, arr) => renderCategoryWithSeparator(category, index, arr))
             ) : (
-              CATEGORIES.map((category) => (
-                <TouchableOpacity
-                  key={category.id}
-                  style={styles.linkItem}
-                  onPress={() => handleCategoryPress(category.id)}
-                >
-                  <Ionicons name={category.icon as any} size={16} color={COLORS.textSecondary} style={styles.linkIcon} />
-                  <Text style={styles.linkText}>{category.name}</Text>
-                </TouchableOpacity>
-              ))
+              CATEGORIES.map((category) => {
+                const CategoryLink = () => {
+                  const [hovered, setHovered] = useState(false);
+                  const hoverProps = Platform.OS === 'web' ? {
+                    onMouseEnter: () => setHovered(true),
+                    onMouseLeave: () => setHovered(false),
+                  } : {};
+                  return (
+                    <TouchableOpacity
+                      key={category.id}
+                      style={styles.linkItem}
+                      onPress={() => handleCategoryPress(category.id)}
+                      {...hoverProps}
+                    >
+                      <Ionicons 
+                        name={category.icon as any} 
+                        size={16} 
+                        color={hovered ? '#FFFFFF' : COLORS.textSecondary} 
+                        style={styles.linkIcon} 
+                      />
+                      <Text style={[
+                        styles.linkText, 
+                        hovered && { color: '#FFFFFF', textDecorationLine: 'underline' }
+                      ]}>
+                        {category.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                };
+                return <CategoryLink key={category.id} />;
+              })
             )}
           </View>
         </View>
@@ -250,13 +271,13 @@ export const Footer: React.FC<FooterProps> = ({ isTablet = false }) => {
               QUICK_LINKS.map((link, index, arr) => renderLinkWithSeparator(link, index, arr))
             ) : (
               QUICK_LINKS.map((link) => (
-                <TouchableOpacity
+                <HoverableLink
                   key={link.label}
                   style={styles.linkItem}
                   onPress={() => handleNavigation(link.route)}
                 >
-                  <Text style={styles.linkText}>{link.label}</Text>
-                </TouchableOpacity>
+                  {link.label}
+                </HoverableLink>
               ))
             )}
           </View>
@@ -273,13 +294,13 @@ export const Footer: React.FC<FooterProps> = ({ isTablet = false }) => {
               SUPPORT_LINKS.map((link, index, arr) => renderLinkWithSeparator(link, index, arr))
             ) : (
               SUPPORT_LINKS.map((link) => (
-                <TouchableOpacity
+                <HoverableLink
                   key={link.label}
                   style={styles.linkItem}
                   onPress={() => handleNavigation(link.route)}
                 >
-                  <Text style={styles.linkText}>{link.label}</Text>
-                </TouchableOpacity>
+                  {link.label}
+                </HoverableLink>
               ))
             )}
           </View>
