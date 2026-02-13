@@ -448,6 +448,14 @@ export default function HomeScreen() {
     user?: {
       name: string;
       picture: string | null;
+  
+  // Desktop Location Dropdown State
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const [locationDropdownStep, setLocationDropdownStep] = useState<'countries' | 'regions'>('countries');
+  const [locationCountries, setLocationCountries] = useState<Array<{ code: string; name: string; flag: string }>>([]);
+  const [locationRegions, setLocationRegions] = useState<Array<{ country_code: string; region_code: string; name: string; lat?: number; lng?: number }>>([]);
+  const [selectedCountryForDropdown, setSelectedCountryForDropdown] = useState<{ code: string; name: string; flag: string } | null>(null);
+  const [locationDropdownLoading, setLocationDropdownLoading] = useState(false);
       rating?: number;
       total_ratings?: number;
     };
