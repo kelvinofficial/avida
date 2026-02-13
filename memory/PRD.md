@@ -43,6 +43,37 @@ Build a local marketplace application (Avida) with:
 
 ---
 
+### 2026-02-13: Improved Image Placeholders (P2)
+**COMPLETED** ✅
+
+#### Features Implemented
+1. **ImagePlaceholder Component**: Created reusable component at `/app/frontend/src/components/common/ImagePlaceholder.tsx`
+   - Three sizes: `small`, `medium`, `large`
+   - Two types: `listing` (image icon), `avatar` (person icon)
+   - Optional text label ("No image")
+   - Polished UI with circular icon wrapper and subtle gray background
+
+2. **Replaced `via.placeholder.com` URLs**: Updated key pages to use the new component:
+   - Search page (`search.tsx`) - mobile and desktop card views
+   - Saved items (`profile/saved.tsx`) - desktop and mobile cards
+   - My listings (`profile/my-listings.tsx`) - desktop and mobile cards
+
+#### Visual Design
+- Background: `#ECEFF1` (light blue-gray)
+- Icon wrapper: `#E0E4E7` circle with centered icon
+- Icon color: `#90A4AE` (muted gray-blue)
+- Text: `#90A4AE`, 11px, weight 500
+
+#### Remaining Files (Lower Priority)
+Still using `via.placeholder.com` but less frequently visited:
+- `offers.tsx`, `recently-viewed.tsx`, `sales.tsx`, `purchases.tsx`
+- `profile/public/[id].tsx`, `(tabs)/saved.tsx`
+- Shared components: `ListingCard.tsx`, `PropertyListingCard.tsx`, `AutoListingCard.tsx`
+- `DesktopSidebar.tsx` (user avatar)
+
+---
+
+
 
 ### 2026-02-13: Page-Specific Skeleton Loaders, Footer Links & Login testID (P1/P2)
 **COMPLETED** ✅
