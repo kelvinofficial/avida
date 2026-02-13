@@ -564,4 +564,6 @@ export default {
   MessagesSkeleton,
   ProfileSkeleton,
   ListingDetailSkeleton,
+  ShimmerThemeProvider,
+  useShimmerTheme,
 };
