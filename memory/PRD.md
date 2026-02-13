@@ -6,6 +6,36 @@ Build a local marketplace application (Avida) with:
 2. Business Profile feature for verified sellers
 3. Premium subscription tiers with payment integration
 
+### 2026-02-13: Icon Loading Fix - Local Font Bundling (P0)
+**COMPLETED** ✅
+
+#### Problem
+Icons were not displaying across the app (showing as empty boxes). The issue was caused by:
+1. `@expo/vector-icons` trying to load fonts from Metro's `/assets/?unstable_path=...` path
+2. The preview environment returning 520 errors for these asset requests
+
+#### Solution
+Implemented local font bundling with multi-layer approach:
+1. **Backend Static Files**: Copied icon fonts to `/app/backend/static/fonts/` and mounted via FastAPI at `/api/fonts/`
+2. **CSS @font-face**: Added font-face rules in `+html.tsx` pointing to `/api/fonts/` endpoints
+3. **JavaScript FontFace API**: Added script to proactively load fonts via FontFace API before React renders
+
+#### Files Modified
+- `/app/frontend/app/+html.tsx` - Added CSS @font-face rules and JavaScript font loading script
+- `/app/frontend/app/_layout.tsx` - Removed useFonts hook (fonts now loaded via JS/CSS)
+- `/app/backend/server.py` - Added StaticFiles mount for `/api/fonts/` endpoint
+- `/app/backend/static/fonts/` - Contains Ionicons.ttf, MaterialIcons.ttf, MaterialCommunityIcons.ttf, FontAwesome.ttf, FontAwesome5_Solid.ttf, Feather.ttf
+
+#### Fonts Loaded Successfully
+- ionicons
+- material  
+- material-community
+- FontAwesome
+- FontAwesome5_Solid
+- feather
+
+---
+
 ### 2026-02-13: Search Page Footer Fix & Autocomplete Feature (P0)
 **COMPLETED** ✅
 
