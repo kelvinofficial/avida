@@ -89,7 +89,7 @@ export default function PhotographyGuidesAdmin() {
   // Load auth token
   useEffect(() => {
     const loadToken = async () => {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await AsyncStorage.getItem('session_token');
       if (token) {
         setAuthToken(token);
       }
