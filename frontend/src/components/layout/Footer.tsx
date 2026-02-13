@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, Platform, ImageBackground } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
@@ -11,7 +11,11 @@ const COLORS = {
   primary: '#2E7D32',
   primaryLight: '#4CAF50',
   border: '#374151',
+  separator: '#4B5563',
 };
+
+// Background image for footer
+const FOOTER_BG_IMAGE = 'https://images.unsplash.com/photo-1766366622482-f7eec0a7a7ca?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwxfHxtYXJrZXRwbGFjZSUyMHBlb3BsZSUyMGV4Y2hhbmdpbmclMjBpdGVtcyUyMGZsZWElMjBtYXJrZXQlMjBjb21tdW5pdHl8ZW58MHx8fHwxNzcxMDA1MzY4fDA&ixlib=rb-4.1.0&q=85';
 
 const CATEGORIES = [
   { id: 'auto_vehicles', name: 'Auto & Vehicles', icon: 'car-outline' },
@@ -65,7 +69,6 @@ export const Footer: React.FC<FooterProps> = ({ isTablet = false }) => {
   };
 
   // For web, we need to use a style that breaks out of the parent container
-  // Using the "full-bleed" CSS technique
   const fullWidthStyle = Platform.OS === 'web' ? {
     width: '100vw',
     position: 'relative' as const,
@@ -78,12 +81,49 @@ export const Footer: React.FC<FooterProps> = ({ isTablet = false }) => {
   // Add data attribute for CSS targeting on web
   const webProps = Platform.OS === 'web' ? { 'data-footer': 'true' } : {};
 
-  return (
-    <View style={[styles.footer, fullWidthStyle]} {...webProps}>
+  // Render link with separator
+  const renderLinkWithSeparator = (link: { label: string; route: string }, index: number, array: any[]) => (
+    <View key={link.label} style={styles.linkWithSeparator}>
+      <TouchableOpacity
+        style={styles.linkItem}
+        onPress={() => handleNavigation(link.route)}
+      >
+        <Text style={styles.linkText}>{link.label}</Text>
+      </TouchableOpacity>
+      {index < array.length - 1 && <View style={styles.verticalSeparator} />}
+    </View>
+  );
+
+  // Render category link with separator
+  const renderCategoryWithSeparator = (category: typeof CATEGORIES[0], index: number, array: any[]) => (
+    <View key={category.id} style={styles.linkWithSeparator}>
+      <TouchableOpacity
+        style={styles.linkItem}
+        onPress={() => handleCategoryPress(category.id)}
+      >
+        <Ionicons name={category.icon as any} size={16} color={COLORS.textSecondary} style={styles.linkIcon} />
+        <Text style={styles.linkText}>{category.name}</Text>
+      </TouchableOpacity>
+      {index < array.length - 1 && <View style={styles.verticalSeparator} />}
+    </View>
+  );
+
+  const footerContent = (
+    <>
+      {/* Dark overlay */}
+      <View style={styles.overlay} />
+      
       {/* Main Footer Content */}
-      <View style={[styles.footerContent, isTablet && styles.footerContentTablet]}>
+      <View style={[
+        styles.footerContent, 
+        isTablet && styles.footerContentTablet
+      ]}>
         {/* Brand Section */}
-        <View style={[styles.footerSection, styles.brandSection]}>
+        <View style={[
+          styles.footerSection, 
+          styles.brandSection,
+          isTablet && styles.brandSectionTablet
+        ]}>
           <View style={styles.logoContainer}>
             <View style={styles.logoIcon}>
               <Ionicons name="storefront" size={24} color="#fff" />
@@ -109,80 +149,111 @@ export const Footer: React.FC<FooterProps> = ({ isTablet = false }) => {
         </View>
 
         {/* Categories Section */}
-        <View style={styles.footerSection}>
+        <View style={[
+          styles.footerSection,
+          isTablet && styles.footerSectionTablet
+        ]}>
           <Text style={styles.sectionTitle}>Categories</Text>
-          {CATEGORIES.map((category) => (
-            <TouchableOpacity
-              key={category.id}
-              style={styles.linkItem}
-              onPress={() => handleCategoryPress(category.id)}
-            >
-              <Ionicons name={category.icon as any} size={16} color={COLORS.textSecondary} style={styles.linkIcon} />
-              <Text style={styles.linkText}>{category.name}</Text>
-            </TouchableOpacity>
-          ))}
+          <View style={isTablet ? styles.linksRowTablet : styles.linksColumn}>
+            {isTablet ? (
+              CATEGORIES.map((category, index, arr) => renderCategoryWithSeparator(category, index, arr))
+            ) : (
+              CATEGORIES.map((category) => (
+                <TouchableOpacity
+                  key={category.id}
+                  style={styles.linkItem}
+                  onPress={() => handleCategoryPress(category.id)}
+                >
+                  <Ionicons name={category.icon as any} size={16} color={COLORS.textSecondary} style={styles.linkIcon} />
+                  <Text style={styles.linkText}>{category.name}</Text>
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
         </View>
 
         {/* Quick Links Section */}
-        <View style={styles.footerSection}>
+        <View style={[
+          styles.footerSection,
+          isTablet && styles.footerSectionTablet
+        ]}>
           <Text style={styles.sectionTitle}>Quick Links</Text>
-          {QUICK_LINKS.map((link) => (
-            <TouchableOpacity
-              key={link.label}
-              style={styles.linkItem}
-              onPress={() => handleNavigation(link.route)}
-            >
-              <Text style={styles.linkText}>{link.label}</Text>
-            </TouchableOpacity>
-          ))}
+          <View style={isTablet ? styles.linksRowTablet : styles.linksColumn}>
+            {isTablet ? (
+              QUICK_LINKS.map((link, index, arr) => renderLinkWithSeparator(link, index, arr))
+            ) : (
+              QUICK_LINKS.map((link) => (
+                <TouchableOpacity
+                  key={link.label}
+                  style={styles.linkItem}
+                  onPress={() => handleNavigation(link.route)}
+                >
+                  <Text style={styles.linkText}>{link.label}</Text>
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
         </View>
 
         {/* Support Section */}
-        <View style={styles.footerSection}>
+        <View style={[
+          styles.footerSection,
+          isTablet && styles.footerSectionTablet
+        ]}>
           <Text style={styles.sectionTitle}>Support</Text>
-          {SUPPORT_LINKS.map((link) => (
-            <TouchableOpacity
-              key={link.label}
-              style={styles.linkItem}
-              onPress={() => handleNavigation(link.route)}
-            >
-              <Text style={styles.linkText}>{link.label}</Text>
-            </TouchableOpacity>
-          ))}
+          <View style={isTablet ? styles.linksRowTablet : styles.linksColumn}>
+            {isTablet ? (
+              SUPPORT_LINKS.map((link, index, arr) => renderLinkWithSeparator(link, index, arr))
+            ) : (
+              SUPPORT_LINKS.map((link) => (
+                <TouchableOpacity
+                  key={link.label}
+                  style={styles.linkItem}
+                  onPress={() => handleNavigation(link.route)}
+                >
+                  <Text style={styles.linkText}>{link.label}</Text>
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
         </View>
 
-        {/* Download App Section - Desktop Only */}
-        {!isTablet && (
-          <View style={[styles.footerSection, styles.downloadSection]}>
-            <Text style={styles.sectionTitle}>Get the App</Text>
-            <Text style={styles.downloadText}>
-              Download our mobile app for the best experience. Buy and sell on the go!
-            </Text>
-            <View style={styles.appStoreButtons}>
-              <TouchableOpacity 
-                style={styles.appStoreBtn}
-                onPress={() => Linking.openURL('https://apps.apple.com')}
-              >
-                <Ionicons name="logo-apple" size={20} color="#fff" />
-                <View style={styles.appStoreBtnText}>
-                  <Text style={styles.appStoreLabel}>Download on the</Text>
-                  <Text style={styles.appStoreName}>App Store</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.appStoreBtn}
-                onPress={() => Linking.openURL('https://play.google.com')}
-              >
-                <Ionicons name="logo-google-playstore" size={20} color="#fff" />
-                <View style={styles.appStoreBtnText}>
-                  <Text style={styles.appStoreLabel}>Get it on</Text>
-                  <Text style={styles.appStoreName}>Google Play</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
+        {/* Download App Section */}
+        <View style={[
+          styles.footerSection, 
+          styles.downloadSection,
+          isTablet && styles.downloadSectionTablet
+        ]}>
+          <Text style={styles.sectionTitle}>Get the App</Text>
+          <Text style={styles.downloadText}>
+            Download our mobile app for the best experience. Buy and sell on the go!
+          </Text>
+          <View style={[styles.appStoreButtons, isTablet && styles.appStoreButtonsTablet]}>
+            <TouchableOpacity 
+              style={styles.appStoreBtn}
+              onPress={() => Linking.openURL('https://apps.apple.com')}
+            >
+              <Ionicons name="logo-apple" size={20} color="#fff" />
+              <View style={styles.appStoreBtnText}>
+                <Text style={styles.appStoreLabel}>Download on the</Text>
+                <Text style={styles.appStoreName}>App Store</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.appStoreBtn}
+              onPress={() => Linking.openURL('https://play.google.com')}
+            >
+              <Ionicons name="logo-google-playstore" size={20} color="#fff" />
+              <View style={styles.appStoreBtnText}>
+                <Text style={styles.appStoreLabel}>Get it on</Text>
+                <Text style={styles.appStoreName}>Google Play</Text>
+              </View>
+            </TouchableOpacity>
           </View>
-        )}
+        </View>
       </View>
+
+      {/* Footer Bottom */}
       <View style={styles.footerBottom}>
         <View style={[styles.footerBottomContent, isTablet && styles.footerBottomContentTablet]}>
           <Text style={styles.copyright}>
@@ -192,17 +263,46 @@ export const Footer: React.FC<FooterProps> = ({ isTablet = false }) => {
             <TouchableOpacity onPress={() => handleNavigation('#')}>
               <Text style={styles.legalLink}>Privacy Policy</Text>
             </TouchableOpacity>
-            <Text style={styles.legalDivider}>•</Text>
+            <View style={styles.legalSeparator} />
             <TouchableOpacity onPress={() => handleNavigation('#')}>
               <Text style={styles.legalLink}>Terms of Service</Text>
             </TouchableOpacity>
-            <Text style={styles.legalDivider}>•</Text>
+            <View style={styles.legalSeparator} />
             <TouchableOpacity onPress={() => handleNavigation('#')}>
               <Text style={styles.legalLink}>Cookie Policy</Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
+    </>
+  );
+
+  // Use ImageBackground for the main footer
+  if (Platform.OS === 'web') {
+    return (
+      <View style={[styles.footer, fullWidthStyle]} {...webProps}>
+        <ImageBackground
+          source={{ uri: FOOTER_BG_IMAGE }}
+          style={styles.backgroundImage}
+          imageStyle={styles.backgroundImageStyle}
+          resizeMode="cover"
+        >
+          {footerContent}
+        </ImageBackground>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.footer, fullWidthStyle]} {...webProps}>
+      <ImageBackground
+        source={{ uri: FOOTER_BG_IMAGE }}
+        style={styles.backgroundImage}
+        imageStyle={styles.backgroundImageStyle}
+        resizeMode="cover"
+      >
+        {footerContent}
+      </ImageBackground>
     </View>
   );
 };
@@ -211,6 +311,17 @@ const styles = StyleSheet.create({
   footer: {
     backgroundColor: COLORS.background,
     marginTop: 0,
+    overflow: 'hidden',
+  },
+  backgroundImage: {
+    width: '100%',
+  },
+  backgroundImageStyle: {
+    opacity: 0.15,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(26, 26, 26, 0.92)',
   },
   footerContent: {
     flexDirection: 'row',
@@ -221,20 +332,37 @@ const styles = StyleSheet.create({
     paddingTop: 48,
     paddingBottom: 32,
     gap: 40,
+    position: 'relative',
+    zIndex: 1,
   },
   footerContentTablet: {
-    gap: 24,
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 32,
     paddingHorizontal: 20,
+    paddingTop: 40,
+    paddingBottom: 24,
   },
   footerSection: {
     flex: 1,
     minWidth: 160,
     maxWidth: 240,
   },
+  footerSectionTablet: {
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: '100%',
+    alignItems: 'center',
+  },
   brandSection: {
     flex: 1.5,
     minWidth: 240,
     maxWidth: 320,
+  },
+  brandSectionTablet: {
+    alignItems: 'center',
+    maxWidth: 400,
+    textAlign: 'center',
   },
   logoContainer: {
     flexDirection: 'row',
@@ -260,6 +388,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: COLORS.textSecondary,
     marginBottom: 20,
+    textAlign: 'left',
   },
   socialLinks: {
     flexDirection: 'row',
@@ -269,7 +398,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.surface,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -278,6 +407,26 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.text,
     marginBottom: 16,
+  },
+  linksColumn: {
+    flexDirection: 'column',
+  },
+  linksRowTablet: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 4,
+  },
+  linkWithSeparator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  verticalSeparator: {
+    width: 1,
+    height: 14,
+    backgroundColor: COLORS.separator,
+    marginHorizontal: 12,
   },
   linkItem: {
     flexDirection: 'row',
@@ -291,53 +440,39 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
   },
-  newsletterSection: {
-    minWidth: 200,
-    maxWidth: 280,
-  },
-  newsletterText: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: COLORS.textSecondary,
-    marginBottom: 16,
-  },
-  subscribeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: COLORS.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  subscribeButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
-  },
   downloadSection: {
     minWidth: 200,
     maxWidth: 280,
+  },
+  downloadSectionTablet: {
+    alignItems: 'center',
+    maxWidth: 400,
   },
   downloadText: {
     fontSize: 14,
     lineHeight: 20,
     color: COLORS.textSecondary,
     marginBottom: 16,
+    textAlign: 'left',
   },
   appStoreButtons: {
     flexDirection: 'column',
     gap: 10,
   },
+  appStoreButtonsTablet: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
   appStoreBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 8,
     gap: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   appStoreBtnText: {
     flexDirection: 'column',
@@ -356,6 +491,8 @@ const styles = StyleSheet.create({
   footerBottom: {
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
+    position: 'relative',
+    zIndex: 1,
   },
   footerBottomContent: {
     maxWidth: 1280,
@@ -372,6 +509,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     paddingHorizontal: 20,
+    gap: 12,
   },
   copyright: {
     fontSize: 13,
@@ -380,17 +518,18 @@ const styles = StyleSheet.create({
   legalLinks: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
     flexWrap: 'wrap',
     justifyContent: 'center',
   },
   legalLink: {
     fontSize: 13,
     color: COLORS.textSecondary,
+    paddingHorizontal: 8,
   },
-  legalDivider: {
-    fontSize: 13,
-    color: COLORS.border,
+  legalSeparator: {
+    width: 1,
+    height: 12,
+    backgroundColor: COLORS.separator,
   },
 });
 
