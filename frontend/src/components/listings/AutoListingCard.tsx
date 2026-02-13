@@ -62,19 +62,22 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
   if (transmission) highlights.push(transmission);
 
   return (
-    <TouchableOpacity style={[styles.autoCard, listing.featured && styles.autoCardFeatured]} onPress={onPress} activeOpacity={0.97}>
+    <TouchableScale 
+      style={[styles.autoCard, listing.featured && styles.autoCardFeatured]} 
+      onPress={onPress}
+      hapticFeedback="light"
+      testID={`auto-card-${listing._id || listing.id}`}
+    >
       <View style={styles.autoCardRow}>
         {/* Left: Image */}
         <View style={styles.autoImageContainer}>
-          {listing.images?.[0] ? (
-            <Image
-              source={{ uri: listing.images[0] }}
-              style={styles.autoImage}
-              resizeMode="cover"
-            />
-          ) : (
-            <ImagePlaceholder size="medium" type="listing" showText={false} />
-          )}
+          <OptimizedImage
+            uri={listing.images?.[0]}
+            style={styles.autoImage}
+            placeholderType="listing"
+            placeholderSize="medium"
+            priority={listing.featured ? 'high' : 'normal'}
+          />
           {listing.featured && (
             <View style={styles.autoFeaturedBadge}>
               <Text style={styles.autoFeaturedText}>TOP</Text>
