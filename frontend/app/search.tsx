@@ -545,7 +545,7 @@ export default function SearchScreen() {
   if (isLargeScreen) {
     return (
       <View style={styles.desktopContainer}>
-        <DesktopHeader showNavLinks showSearch={false} />
+        <DesktopHeader showNavLinks showSearch={false} showLocationSelector={true} />
         
         <ScrollView 
           style={styles.desktopScrollView} 
