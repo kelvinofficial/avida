@@ -229,8 +229,8 @@ export default function SearchScreen() {
   const { isDesktop, isTablet } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
   
-  // Ref to track if initial URL-based search has been handled
-  const initialSearchHandled = useRef(false);
+  // Ref to track the last query that was searched (prevents duplicate searches)
+  const initialSearchHandled = useRef<string>('');
   
   const [searchQuery, setSearchQuery] = useState('');
   const [listings, setListings] = useState<any[]>([]);
