@@ -6,6 +6,35 @@ Build a local marketplace application (Avida) with:
 2. Business Profile feature for verified sellers
 3. Premium subscription tiers with payment integration
 
+### 2026-02-13: Desktop Location Dropdown Selector (P1)
+**COMPLETED** ✅
+
+#### Feature
+Implemented an inline dropdown location selector for desktop view, replacing the full-screen modal approach.
+
+#### Functionality
+1. Click "Select Location" → Dropdown appears with list of countries (with flags)
+2. Click a country → Dropdown shows regions for that country + "All of [Country]" option
+3. Click a region or "All of [Country]" → Filters listings, closes dropdown, updates button text
+4. Back button to return to countries list
+5. Close button (X) to dismiss dropdown
+
+#### Files Modified
+- `/app/frontend/app/(tabs)/index.tsx` - Added dropdown component, handlers, and styles
+
+---
+
+### 2026-02-13: Font Loading Skeleton (P1)
+**COMPLETED** ✅
+
+#### Feature  
+Added a loading skeleton animation displayed while icon fonts are loading on web, preventing flash of unstyled icons.
+
+#### Files Modified
+- `/app/frontend/app/_layout.tsx` - Added `FontLoadingSkeleton` component with shimmer animation
+
+---
+
 ### 2026-02-13: Icon Loading Fix - Local Font Bundling (P0)
 **COMPLETED** ✅
 
