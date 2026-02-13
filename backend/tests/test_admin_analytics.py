@@ -11,7 +11,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://local-assets-bundle.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://quick-sell-15.preview.emergentagent.com').rstrip('/')
 
 
 class TestAdminAnalyticsSettings:

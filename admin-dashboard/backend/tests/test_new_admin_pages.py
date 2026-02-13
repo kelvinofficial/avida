@@ -15,7 +15,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = os.environ.get('NEXT_PUBLIC_API_URL', 'https://local-assets-bundle.preview.emergentagent.com/api/admin')
+BASE_URL = os.environ.get('NEXT_PUBLIC_API_URL', 'https://quick-sell-15.preview.emergentagent.com/api/admin')
 
 # Test credentials
 ADMIN_EMAIL = "admin@marketplace.com"
