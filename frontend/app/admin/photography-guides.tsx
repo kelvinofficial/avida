@@ -170,17 +170,28 @@ export default function PhotographyGuidesAdmin() {
     }
 
     try {
-      if (editingGuide) {
-        await api.put(`/photography-guides/${editingGuide.id}`, formData);
-      } else {
-        await api.post('/photography-guides', formData);
-      }
+      const url = editingGuide 
+        ? `${API_URL}/api/photography-guides/${editingGuide.id}`
+        : `${API_URL}/api/photography-guides`;
       
-      setShowModal(false);
-      resetForm();
-      fetchGuides();
-      fetchStats();
-      Alert.alert('Success', editingGuide ? 'Guide updated!' : 'Guide created!');
+      const response = await fetch(url, {
+        method: editingGuide ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      if (response.ok) {
+        setShowModal(false);
+        resetForm();
+        fetchGuides();
+        fetchStats();
+        Alert.alert('Success', editingGuide ? 'Guide updated!' : 'Guide created!');
+      } else {
+        Alert.alert('Error', 'Failed to save guide');
+      }
     } catch (error) {
       console.error('Error saving guide:', error);
       Alert.alert('Error', 'Failed to save guide');
@@ -199,9 +210,15 @@ export default function PhotographyGuidesAdmin() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await api.delete(`/photography-guides/${guideId}`);
-              fetchGuides();
-              fetchStats();
+              const response = await fetch(`${API_URL}/api/photography-guides/${guideId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${authToken}` }
+              });
+              
+              if (response.ok) {
+                fetchGuides();
+                fetchStats();
+              }
             } catch (error) {
               console.error('Error deleting guide:', error);
             }
@@ -214,9 +231,19 @@ export default function PhotographyGuidesAdmin() {
   // Toggle active status
   const handleToggleActive = async (guide: PhotographyGuide) => {
     try {
-      await api.put(`/photography-guides/${guide.id}`, { is_active: !guide.is_active });
-      fetchGuides();
-      fetchStats();
+      const response = await fetch(`${API_URL}/api/photography-guides/${guide.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ is_active: !guide.is_active })
+      });
+      
+      if (response.ok) {
+        fetchGuides();
+        fetchStats();
+      }
     } catch (error) {
       console.error('Error toggling status:', error);
     }
@@ -233,10 +260,17 @@ export default function PhotographyGuidesAdmin() {
           text: 'Seed',
           onPress: async () => {
             try {
-              const response = await api.post('/photography-guides/seed');
-              Alert.alert('Success', response.data.message);
-              fetchGuides();
-              fetchStats();
+              const response = await fetch(`${API_URL}/api/photography-guides/seed`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${authToken}` }
+              });
+              
+              if (response.ok) {
+                const data = await response.json();
+                Alert.alert('Success', data.message);
+                fetchGuides();
+                fetchStats();
+              }
             } catch (error) {
               console.error('Error seeding guides:', error);
             }
