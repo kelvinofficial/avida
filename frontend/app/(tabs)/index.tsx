@@ -2015,6 +2015,7 @@ const desktopStyles = StyleSheet.create({
     flex: 1,
     position: 'relative',
     zIndex: 100,
+    ...(Platform.OS === 'web' ? { overflow: 'visible' } : {}),
   },
   searchField: {
     flex: 1,
