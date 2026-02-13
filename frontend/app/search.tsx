@@ -229,11 +229,12 @@ export default function SearchScreen() {
   const { isDesktop, isTablet } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
   
-  const [searchQuery, setSearchQuery] = useState((params.q as string) || '');
+  const initialQuery = (params.q as string) || '';
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [listings, setListings] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [hasSearched, setHasSearched] = useState(!!initialQuery);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   
   // Search stats state
