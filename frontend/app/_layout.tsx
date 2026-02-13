@@ -28,21 +28,7 @@ const FontLoadingSkeleton = () => {
   return <HomepageSkeleton isDesktop={false} />;
 };
 
-const skeletonStyles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F5F5', padding: 16 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  logo: { width: 80, height: 32, backgroundColor: '#E0E0E0', borderRadius: 4 },
-  headerRight: { flexDirection: 'row', gap: 12 },
-  iconBtn: { width: 40, height: 40, backgroundColor: '#E0E0E0', borderRadius: 20 },
-  searchBar: { height: 48, backgroundColor: '#E0E0E0', borderRadius: 24, marginBottom: 16 },
-  categories: { flexDirection: 'row', gap: 8, marginBottom: 24 },
-  categoryPill: { width: 100, height: 36, backgroundColor: '#E0E0E0', borderRadius: 18 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
-  card: { width: '48%', backgroundColor: '#fff', borderRadius: 12, padding: 8 },
-  cardImage: { width: '100%', aspectRatio: 1, backgroundColor: '#E0E0E0', borderRadius: 8, marginBottom: 8 },
-  cardTitle: { width: '80%', height: 14, backgroundColor: '#E0E0E0', borderRadius: 4, marginBottom: 6 },
-  cardPrice: { width: '50%', height: 18, backgroundColor: '#E0E0E0', borderRadius: 4 },
-});
+// Removed old skeletonStyles - now using HomepageSkeleton from src/components/skeletons
 
 export default function RootLayout() {
   const { loadStoredAuth, setUser, setToken, isAuthenticated, user } = useAuthStore();
