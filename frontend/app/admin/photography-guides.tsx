@@ -68,7 +68,7 @@ interface GuideStats {
 
 export default function PhotographyGuidesAdmin() {
   const router = useRouter();
-  const { token: authToken, isLoading: authLoading } = useAuthStore();
+  const { token: authToken, isLoading: authLoading, loadStoredAuth } = useAuthStore();
   const [guides, setGuides] = useState<PhotographyGuide[]>([]);
   const [stats, setStats] = useState<GuideStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -85,6 +85,11 @@ export default function PhotographyGuidesAdmin() {
     order: 0,
     is_active: true,
   });
+
+  // Ensure auth is loaded on component mount
+  useEffect(() => {
+    loadStoredAuth();
+  }, [loadStoredAuth]);
 
   // Fetch guides
   const fetchGuides = useCallback(async () => {
