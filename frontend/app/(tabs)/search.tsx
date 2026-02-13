@@ -213,6 +213,281 @@ export default function SearchScreen() {
     );
   };
 
+  // Desktop Layout
+  if (isLargeScreen) {
+    return (
+      <View style={desktopStyles.container}>
+        <DesktopHeader showNavLinks showSearch={false} />
+        
+        <View style={desktopStyles.content}>
+          <View style={desktopStyles.inner}>
+            {/* Sidebar with Search Stats */}
+            <View style={desktopStyles.sidebar}>
+              <View style={desktopStyles.searchStatsCard}>
+                <Text style={desktopStyles.cardTitle}>Search Stats</Text>
+                
+                {/* Search Stats */}
+                <View style={desktopStyles.statsGrid}>
+                  <View style={desktopStyles.statItem}>
+                    <View style={[desktopStyles.statIcon, { backgroundColor: '#E8F5E9' }]}>
+                      <Ionicons name="search" size={18} color="#2E7D32" />
+                    </View>
+                    <Text style={desktopStyles.statLabel}>Results</Text>
+                    <Text style={desktopStyles.statValue}>{listings.length}</Text>
+                  </View>
+                  <View style={desktopStyles.statItem}>
+                    <View style={[desktopStyles.statIcon, { backgroundColor: '#E3F2FD' }]}>
+                      <Ionicons name="grid" size={18} color="#1976D2" />
+                    </View>
+                    <Text style={desktopStyles.statLabel}>Categories</Text>
+                    <Text style={desktopStyles.statValue}>{categories.length}</Text>
+                  </View>
+                </View>
+
+                {/* Categories Quick Access */}
+                <Text style={desktopStyles.sectionTitle}>Browse by Category</Text>
+                <View style={desktopStyles.categoryList}>
+                  {categories.slice(0, 8).map((cat) => (
+                    <TouchableOpacity
+                      key={cat.id}
+                      style={[
+                        desktopStyles.categoryItem,
+                        selectedCategory === cat.id && desktopStyles.categoryItemActive
+                      ]}
+                      onPress={() => {
+                        setSelectedCategory(selectedCategory === cat.id ? null : cat.id);
+                        if (hasSearched) search();
+                      }}
+                    >
+                      <Ionicons 
+                        name={cat.icon as any} 
+                        size={18} 
+                        color={selectedCategory === cat.id ? '#2E7D32' : '#666'} 
+                      />
+                      <Text style={[
+                        desktopStyles.categoryText,
+                        selectedCategory === cat.id && desktopStyles.categoryTextActive
+                      ]}>{cat.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </View>
+
+            {/* Main Content */}
+            <View style={desktopStyles.main}>
+              {/* Search Bar */}
+              <View style={desktopStyles.searchHeader}>
+                <View style={desktopStyles.searchInputContainer}>
+                  <Ionicons name="search" size={22} color="#666" />
+                  <TextInput
+                    style={desktopStyles.searchInput}
+                    placeholder="What are you looking for?"
+                    placeholderTextColor="#999"
+                    value={query}
+                    onChangeText={setQuery}
+                    onSubmitEditing={search}
+                    returnKeyType="search"
+                    data-testid="desktop-search-input"
+                  />
+                  {query.length > 0 && (
+                    <TouchableOpacity onPress={() => setQuery('')}>
+                      <Ionicons name="close-circle" size={20} color="#999" />
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity 
+                    style={desktopStyles.searchBtn}
+                    onPress={search}
+                    data-testid="desktop-search-button"
+                  >
+                    <Text style={desktopStyles.searchBtnText}>Search</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Filter Pills */}
+                <View style={desktopStyles.filterRow}>
+                  <TouchableOpacity
+                    style={[desktopStyles.filterChip, activeFiltersCount > 0 && desktopStyles.filterChipActive]}
+                    onPress={() => setShowFilters(true)}
+                  >
+                    <Ionicons name="options-outline" size={16} color={activeFiltersCount > 0 ? '#fff' : '#333'} />
+                    <Text style={[desktopStyles.filterChipText, activeFiltersCount > 0 && { color: '#fff' }]}>
+                      Filters{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={desktopStyles.filterChip} onPress={() => setShowSort(true)}>
+                    <Ionicons name="swap-vertical" size={16} color="#333" />
+                    <Text style={desktopStyles.filterChipText}>
+                      {SORT_OPTIONS.find((s) => s.value === sortBy)?.label || 'Sort'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {activeFiltersCount > 0 && (
+                    <TouchableOpacity onPress={clearFilters}>
+                      <Text style={desktopStyles.clearFilters}>Clear all</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+
+              {/* Results */}
+              <ScrollView style={desktopStyles.resultsArea} showsVerticalScrollIndicator={false}>
+                {loading ? (
+                  <View style={desktopStyles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#2E7D32" />
+                    <Text style={desktopStyles.loadingText}>Searching...</Text>
+                  </View>
+                ) : hasSearched && listings.length > 0 ? (
+                  <View>
+                    <Text style={desktopStyles.resultsCount}>
+                      {listings.length} {listings.length === 1 ? 'result' : 'results'} found
+                    </Text>
+                    <View style={desktopStyles.listingsGrid}>
+                      {listings.map((item) => (
+                        <View key={item.id} style={desktopStyles.listingItem}>
+                          <ListingCard
+                            listing={item}
+                            cardWidth={280}
+                            onFavoriteToggle={() => toggleFavorite(item.id)}
+                            isFavorited={favorites.has(item.id)}
+                            userLocation={userLocation}
+                          />
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                ) : hasSearched ? (
+                  <EmptyState
+                    icon="search-outline"
+                    title="No results found"
+                    message="Try adjusting your search or filters"
+                  />
+                ) : (
+                  <View style={desktopStyles.browsePrompt}>
+                    <Ionicons name="search-outline" size={64} color="#ccc" />
+                    <Text style={desktopStyles.browseTitle}>Start Searching</Text>
+                    <Text style={desktopStyles.browseSubtitle}>
+                      Enter keywords above or select a category to find what you're looking for
+                    </Text>
+                  </View>
+                )}
+              </ScrollView>
+            </View>
+          </View>
+        </View>
+
+        <Footer />
+
+        {/* Filter Modal */}
+        <Modal visible={showFilters} animationType="slide" transparent>
+          <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowFilters(false)}>
+            <View style={styles.filterModal}>
+              <View style={styles.filterHeader}>
+                <Text style={styles.filterTitle}>Filters</Text>
+                <TouchableOpacity onPress={() => setShowFilters(false)}>
+                  <Ionicons name="close" size={24} color="#333" />
+                </TouchableOpacity>
+              </View>
+              <ScrollView style={styles.filterContent} showsVerticalScrollIndicator={false}>
+                {/* Category */}
+                <Text style={styles.filterSectionTitle}>Category</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterOptions}>
+                  {categories.map((cat) => (
+                    <TouchableOpacity
+                      key={cat.id}
+                      style={[styles.filterOption, selectedCategory === cat.id && styles.filterOptionSelected]}
+                      onPress={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+                    >
+                      <Ionicons name={cat.icon as any} size={18} color={selectedCategory === cat.id ? '#fff' : '#666'} />
+                      <Text style={[styles.filterOptionText, selectedCategory === cat.id && styles.filterOptionTextSelected]}>
+                        {cat.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+                
+                {/* Condition */}
+                <Text style={styles.filterSectionTitle}>Condition</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterOptions}>
+                  {CONDITIONS.map((cond) => (
+                    <TouchableOpacity
+                      key={cond.value}
+                      style={[styles.filterOption, condition === cond.value && styles.filterOptionSelected]}
+                      onPress={() => setCondition(condition === cond.value ? null : cond.value)}
+                    >
+                      <Ionicons name={cond.icon as any} size={18} color={condition === cond.value ? '#fff' : '#666'} />
+                      <Text style={[styles.filterOptionText, condition === cond.value && styles.filterOptionTextSelected]}>
+                        {cond.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+                
+                {/* Price Range */}
+                <Text style={styles.filterSectionTitle}>Price Range</Text>
+                <View style={styles.priceInputRow}>
+                  <TextInput
+                    style={styles.priceInput}
+                    placeholder="Min"
+                    placeholderTextColor="#999"
+                    value={minPrice}
+                    onChangeText={setMinPrice}
+                    keyboardType="numeric"
+                  />
+                  <Text style={styles.priceSeparator}>-</Text>
+                  <TextInput
+                    style={styles.priceInput}
+                    placeholder="Max"
+                    placeholderTextColor="#999"
+                    value={maxPrice}
+                    onChangeText={setMaxPrice}
+                    keyboardType="numeric"
+                  />
+                </View>
+              </ScrollView>
+              <TouchableOpacity 
+                style={styles.applyFiltersBtn} 
+                onPress={() => { setShowFilters(false); search(); }}
+              >
+                <Text style={styles.applyFiltersBtnText}>Apply Filters</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+
+        {/* Sort Modal */}
+        <Modal visible={showSort} animationType="slide" transparent>
+          <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowSort(false)}>
+            <View style={styles.sortModal}>
+              <Text style={styles.sortTitle}>Sort By</Text>
+              {SORT_OPTIONS.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[styles.sortOption, sortBy === option.value && styles.sortOptionSelected]}
+                  onPress={() => {
+                    setSortBy(option.value);
+                    setShowSort(false);
+                    if (hasSearched) search();
+                  }}
+                >
+                  <View style={styles.sortOptionLeft}>
+                    <Ionicons name={option.icon as any} size={20} color={sortBy === option.value ? '#2E7D32' : '#666'} />
+                    <Text style={[styles.sortOptionText, sortBy === option.value && styles.sortOptionTextSelected]}>
+                      {option.label}
+                    </Text>
+                  </View>
+                  {sortBy === option.value && <Ionicons name="checkmark-circle" size={22} color="#2E7D32" />}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </View>
+    );
+  }
+
+  // Mobile Layout
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
