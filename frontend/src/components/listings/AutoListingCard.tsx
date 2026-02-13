@@ -123,6 +123,7 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
         <TouchableOpacity
           style={styles.autoFavoriteButton}
           onPress={(e) => { e.stopPropagation(); onFavorite(); }}
+          testID={`auto-favorite-btn-${listing._id || listing.id}`}
         >
           <Ionicons
             name={isFavorited ? 'heart' : 'heart-outline'}
@@ -131,7 +132,7 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
           />
         </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </TouchableScale>
   );
 });
 
