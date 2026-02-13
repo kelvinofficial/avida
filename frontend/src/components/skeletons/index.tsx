@@ -437,41 +437,41 @@ export const ProfileSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop =
 
 // ============ LISTING DETAIL SKELETON ============
 export const ListingDetailSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
-  const opacity = useShimmer();
+  const theme = useShimmerTheme();
   
   return (
-    <View style={skeletonBase.container}>
+    <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor, padding: 0 }]}>
       {/* Image carousel */}
-      <Animated.View style={[listingSkeleton.mainImage, { opacity }]} />
+      <ShimmerBox aspectRatio={1} borderRadius={0} />
       
       {/* Price and title */}
       <View style={listingSkeleton.infoSection}>
-        <Animated.View style={[{ width: 120, height: 32, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
-        <Animated.View style={[{ width: '90%', height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
-        <Animated.View style={[{ width: '60%', height: 16, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+        <ShimmerBox width={120} height={32} borderRadius={4} />
+        <ShimmerBox width="90%" height={24} borderRadius={4} />
+        <ShimmerBox width="60%" height={16} borderRadius={4} />
       </View>
       
       {/* Seller info */}
-      <View style={listingSkeleton.sellerSection}>
-        <Animated.View style={[listingSkeleton.sellerAvatar, { opacity }]} />
+      <View style={[listingSkeleton.sellerSection, { backgroundColor: theme.surfaceColor }]}>
+        <ShimmerBox width={48} height={48} borderRadius={24} />
         <View style={{ flex: 1, gap: 4 }}>
-          <Animated.View style={[{ width: '50%', height: 18, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
-          <Animated.View style={[{ width: '30%', height: 14, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+          <ShimmerBox width="50%" height={18} borderRadius={4} />
+          <ShimmerBox width="30%" height={14} borderRadius={4} />
         </View>
       </View>
       
       {/* Description */}
       <View style={listingSkeleton.descSection}>
-        <Animated.View style={[{ width: 100, height: 20, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 12 }, { opacity }]} />
-        <Animated.View style={[{ width: '100%', height: 14, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
-        <Animated.View style={[{ width: '100%', height: 14, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
-        <Animated.View style={[{ width: '70%', height: 14, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+        <ShimmerBox width={100} height={20} borderRadius={4} style={{ marginBottom: 12 }} />
+        <ShimmerBox height={14} borderRadius={4} />
+        <ShimmerBox height={14} borderRadius={4} />
+        <ShimmerBox width="70%" height={14} borderRadius={4} />
       </View>
       
       {/* Action buttons */}
       <View style={listingSkeleton.actions}>
-        <Animated.View style={[listingSkeleton.actionBtn, { opacity }]} />
-        <Animated.View style={[listingSkeleton.actionBtnPrimary, { opacity }]} />
+        <ShimmerBox height={48} borderRadius={8} style={{ flex: 1 }} />
+        <ShimmerBox height={48} borderRadius={8} style={{ flex: 2 }} />
       </View>
     </View>
   );
