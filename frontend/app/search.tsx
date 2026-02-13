@@ -229,12 +229,14 @@ export default function SearchScreen() {
   const { isDesktop, isTablet } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
   
-  const initialQuery = (params.q as string) || '';
-  const [searchQuery, setSearchQuery] = useState(initialQuery);
+  // Ref to track if initial URL-based search has been handled
+  const initialSearchHandled = useRef(false);
+  
+  const [searchQuery, setSearchQuery] = useState('');
   const [listings, setListings] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(!!initialQuery);
+  const [hasSearched, setHasSearched] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   
   // Search stats state
