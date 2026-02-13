@@ -803,10 +803,13 @@ export default function HomeScreen() {
 
   // Handle search submit from homepage
   const handleSearchSubmit = () => {
+    console.log('[Homepage] handleSearchSubmit called, query:', homeSearchQuery);
     if (homeSearchQuery.trim()) {
+      console.log('[Homepage] Redirecting to /search?q=' + homeSearchQuery.trim());
       router.push(`/search?q=${encodeURIComponent(homeSearchQuery.trim())}`);
       setHomeSearchQuery(''); // Clear after navigation
     } else {
+      console.log('[Homepage] Redirecting to /search (empty query)');
       router.push('/search');
     }
   };
