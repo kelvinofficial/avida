@@ -91,16 +91,21 @@ export default function PhotographyGuidesAdmin() {
   useEffect(() => {
     const loadToken = async () => {
       try {
-        // Try AsyncStorage first (works for native)
-        let token = await AsyncStorage.getItem('session_token');
+        let token: string | null = null;
         
-        // Fallback to localStorage for web
-        if (!token && Platform.OS === 'web' && typeof window !== 'undefined') {
+        // On web, use localStorage directly (AsyncStorage wraps it but can be unreliable)
+        if (Platform.OS === 'web' && typeof window !== 'undefined') {
           token = window.localStorage.getItem('session_token');
+          console.log('Web token from localStorage:', token ? 'found' : 'not found');
+        } else {
+          // On native, use AsyncStorage
+          token = await AsyncStorage.getItem('session_token');
+          console.log('Native token from AsyncStorage:', token ? 'found' : 'not found');
         }
         
-        setAuthToken(token);
-        if (!token) {
+        if (token) {
+          setAuthToken(token);
+        } else {
           setLoading(false);
         }
       } catch (error) {
