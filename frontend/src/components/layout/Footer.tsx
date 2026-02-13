@@ -76,8 +76,8 @@ const CATEGORIES = [
 const QUICK_LINKS = [
   { label: 'Post a Listing', route: '/post' },
   { label: 'My Listings', route: '/profile/my-listings' },
-  { label: 'Saved Items', route: '/saved' },
-  { label: 'Messages', route: '/chat' },
+  { label: 'Saved Items', route: '/profile/saved' },
+  { label: 'Messages', route: '/messages' },
 ];
 
 const SUPPORT_LINKS = [
