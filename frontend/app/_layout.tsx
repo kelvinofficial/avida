@@ -69,6 +69,9 @@ export default function RootLayout() {
   const [mounted, setMounted] = useState(false);
   const [fontsReady, setFontsReady] = useState(false);
   
+  // Network status for offline banner
+  const { isOffline } = useNetworkStatus();
+  
   // Get current pathname and screen dimensions for skeleton selection
   const pathname = usePathname();
   const { width: windowWidth } = useWindowDimensions();
