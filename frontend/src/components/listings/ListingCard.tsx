@@ -69,11 +69,15 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
   return (
     <TouchableOpacity style={[styles.card, listing.featured && styles.cardFeatured]} onPress={onPress} activeOpacity={0.95}>
       <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: listing.images?.[0] || 'https://via.placeholder.com/300x200' }}
-          style={styles.image}
-          resizeMode="cover"
-        />
+        {listing.images?.[0] ? (
+          <Image
+            source={{ uri: listing.images[0] }}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        ) : (
+          <ImagePlaceholder size="large" type="listing" showText={false} />
+        )}
         {/* Badges - Just Listed, Featured & TOP */}
         <View style={styles.badgesContainer}>
           {isJustListed(listing.created_at) && (
