@@ -57,11 +57,15 @@ const PropertyListingCard = memo<ListingCardProps>(({ listing, onPress, onFavori
     <TouchableOpacity style={[styles.propertyCard, listing.featured && styles.propertyCardFeatured]} onPress={onPress} activeOpacity={0.97}>
       {/* Image on Top */}
       <View style={styles.propertyImageContainer}>
-        <Image
-          source={{ uri: listing.images?.[0] || 'https://via.placeholder.com/400x200' }}
-          style={styles.propertyImage}
-          resizeMode="cover"
-        />
+        {listing.images?.[0] ? (
+          <Image
+            source={{ uri: listing.images[0] }}
+            style={styles.propertyImage}
+            resizeMode="cover"
+          />
+        ) : (
+          <ImagePlaceholder size="large" type="listing" showText={false} />
+        )}
         {listing.featured && (
           <View style={styles.propertyFeaturedBadge}>
             <Text style={styles.propertyFeaturedText}>FEATURED</Text>
