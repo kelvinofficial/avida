@@ -55,7 +55,7 @@
   "test_credentials": {
     "email": "admin@marketplace.com",
     "password": "Admin@123456",
-    "admin_ui_url": "https://listing-hub-15.preview.emergentagent.com/api/admin-ui/"
+    "admin_ui_url": "https://ads-frontend.preview.emergentagent.com/api/admin-ui/"
   },
   "seed_data_creation": "Using pre-seeded admin user and categories from initial database setup",
   "retest_needed": false,

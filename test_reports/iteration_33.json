@@ -29,7 +29,7 @@
     "backend": "100% (40/40 tests passed)"
   },
   "test_credentials": {
-    "api_base": "https://listing-hub-15.preview.emergentagent.com"
+    "api_base": "https://ads-frontend.preview.emergentagent.com"
   },
   "seed_data_creation": "Test integrations, webhooks, and routing rules created in staging environment during testing. Cleaned up after tests.",
   "retest_needed": false,
