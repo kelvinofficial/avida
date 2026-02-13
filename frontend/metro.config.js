@@ -11,6 +11,8 @@ config.cacheStores = [
   new FileStore({ root: path.join(root, 'cache') }),
 ];
 
+// Add ttf to asset extensions for local font loading
+config.resolver.assetExts.push('ttf', 'otf');
 
 // // Exclude unnecessary directories from file watching
 // config.watchFolders = [__dirname];
