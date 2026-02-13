@@ -692,10 +692,14 @@ export default function SearchScreen() {
                             >
                               {/* Image on Left */}
                               <View style={styles.cardImageWrapper}>
-                                <Image
-                                  source={{ uri: item.images?.[0] || 'https://via.placeholder.com/180' }}
-                                  style={styles.cardImage}
-                                />
+                                {item.images?.[0] ? (
+                                  <Image
+                                    source={{ uri: item.images[0] }}
+                                    style={styles.cardImage}
+                                  />
+                                ) : (
+                                  <ImagePlaceholder size="medium" />
+                                )}
                               </View>
                               
                               {/* Content on Right */}
