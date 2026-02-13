@@ -1729,35 +1729,29 @@ export default function HomeScreen() {
                   </View>
                 )}
                 
-                {/* Countries List - Use HTML on web for better rendering */}
+                {/* Countries List - Simplified for debugging */}
                 {locationDropdownStep === 'countries' && !locationDropdownLoading && (
-                  <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                  <View style={{ maxHeight: 300 }}>
                     {locationCountries.map((country) => (
-                      <div
+                      <TouchableOpacity
                         key={country.code}
                         style={{
-                          display: 'flex',
                           flexDirection: 'row',
                           alignItems: 'center',
-                          padding: '14px 16px',
-                          cursor: 'pointer',
-                          backgroundColor: 'transparent',
-                          borderBottom: '1px solid #F5F5F5',
+                          paddingHorizontal: 16,
+                          paddingVertical: 14,
+                          borderBottomWidth: 1,
+                          borderBottomColor: '#F5F5F5',
                         }}
-                        onClick={() => handleSelectCountry(country)}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLElement).style.backgroundColor = '#F5F5F5';
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
-                        }}
+                        onPress={() => handleSelectCountry(country)}
                       >
-                        <span style={{ fontSize: '20px', width: '28px', textAlign: 'center', marginRight: '12px' }}>{country.flag}</span>
-                        <span style={{ flex: 1, fontSize: '14px', color: '#333' }}>{country.name}</span>
+                        <Text style={{ fontSize: 20, marginRight: 12 }}>{country.flag}</Text>
+                        <Text style={{ fontSize: 14, color: '#333333' }}>{country.name}</Text>
+                        <View style={{ flex: 1 }} />
                         <Ionicons name="chevron-forward" size={16} color="#999" />
-                      </div>
+                      </TouchableOpacity>
                     ))}
-                  </div>
+                  </View>
                 )}
                 
                 {/* Regions List */}
