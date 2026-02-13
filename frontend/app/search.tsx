@@ -292,6 +292,18 @@ export default function SearchScreen() {
     }
   }, [isAuthenticated]);
 
+  // Auto-search when page loads with query parameter
+  useEffect(() => {
+    const initialQuery = params.q as string;
+    if (initialQuery && initialQuery.trim()) {
+      setSearchQuery(initialQuery);
+      // Trigger search after a brief delay to ensure state is set
+      setTimeout(() => {
+        handleSearch(initialQuery);
+      }, 100);
+    }
+  }, [params.q]);
+
   // Save to recent searches
   const saveRecentSearch = (query: string) => {
     if (Platform.OS === 'web' && query.trim()) {
