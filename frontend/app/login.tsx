@@ -493,7 +493,7 @@ export default function LoginScreen() {
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  data-testid="login-email-input"
+                  testID="login-email-input"
                 />
               </View>
             </View>
@@ -509,9 +509,9 @@ export default function LoginScreen() {
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
-                  data-testid="login-password-input"
+                  testID="login-password-input"
                 />
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} data-testid="login-toggle-password">
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} testID="login-toggle-password">
                   <Ionicons 
                     name={showPassword ? 'eye-off-outline' : 'eye-outline'} 
                     size={20} 
@@ -525,10 +525,10 @@ export default function LoginScreen() {
               style={desktopStyles.primaryBtn}
               onPress={isLoginMode ? handleEmailLogin : handleEmailRegister}
               disabled={loading}
-              data-testid="login-submit-button"
+              testID="login-submit-button"
             >
               {loading ? (
-                <ActivityIndicator size="small" color="#fff" data-testid="login-loading-indicator" />
+                <ActivityIndicator size="small" color="#fff" testID="login-loading-indicator" />
               ) : (
                 <Text style={desktopStyles.primaryBtnText}>
                   {isLoginMode ? 'Sign In' : 'Create Account'}
@@ -662,7 +662,7 @@ export default function LoginScreen() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
-                data-testid="mobile-login-email-input"
+                testID="mobile-login-email-input"
               />
             </View>
           </View>
@@ -680,12 +680,12 @@ export default function LoginScreen() {
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
-                data-testid="mobile-login-password-input"
+                testID="mobile-login-password-input"
               />
               <TouchableOpacity 
                 onPress={() => setShowPassword(!showPassword)}
                 style={styles.eyeButton}
-                data-testid="mobile-login-toggle-password"
+                testID="mobile-login-toggle-password"
               >
                 <Ionicons 
                   name={showPassword ? "eye-off-outline" : "eye-outline"} 
@@ -701,7 +701,7 @@ export default function LoginScreen() {
             style={styles.primaryButton}
             onPress={isLoginMode ? handleEmailLogin : handleEmailRegister}
             disabled={loading}
-            data-testid="mobile-login-submit-button"
+            testID="mobile-login-submit-button"
             activeOpacity={0.9}
           >
             {loading ? (
