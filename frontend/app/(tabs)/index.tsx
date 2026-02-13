@@ -2342,7 +2342,6 @@ const desktopStyles = StyleSheet.create({
     borderColor: '#E8E8E8',
     boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
     zIndex: 1000,
-    overflow: 'hidden',
   },
   locationDropdownHeader: {
     flexDirection: 'row',
