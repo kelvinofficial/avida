@@ -7,6 +7,41 @@ Build a local marketplace application (Avida) with:
 3. Premium subscription tiers with payment integration
 
 
+### 2026-02-13: Page-Specific Skeleton Loaders, Footer Links & Login testID (P1/P2)
+**COMPLETED** ✅
+
+#### Features Implemented
+1. **Page-Specific Skeleton Loaders**: Updated `_layout.tsx` with route-based skeleton selection:
+   - Homepage → `HomepageSkeleton`
+   - Search `/search` → `SearchPageSkeleton`
+   - Settings `/settings`, `/notification-preferences` → `SettingsSkeleton`
+   - Messages `/messages`, `/chat` → `MessagesSkeleton`
+   - Profile `/profile` → `ProfileSkeleton`
+   - Listing Detail `/listing/[id]` → `ListingDetailSkeleton`
+
+2. **Footer QUICK_LINKS Fixed**: Updated routes to correct paths:
+   - Saved Items → `/profile/saved` (was `/saved`)
+   - Messages → `/messages` (was `/chat`)
+
+3. **Login Form testID Attributes**: Added `testID` props for reliable automated testing:
+   - `login-email-input` - Desktop email input
+   - `login-password-input` - Desktop password input
+   - `login-toggle-password` - Password visibility toggle
+   - `login-submit-button` - Desktop submit button
+   - Mobile equivalents with `mobile-` prefix
+
+#### Files Modified
+- `/app/frontend/app/_layout.tsx` - Added `getSkeletonForRoute()` function with route detection
+- `/app/frontend/src/components/layout/Footer.tsx` - Fixed QUICK_LINKS routes
+- `/app/frontend/app/login.tsx` - Added testID props to form elements
+
+#### Test Report
+- `/app/test_reports/iteration_128.json` - Login testID attributes verified working
+- All data-testid selectors render correctly in DOM
+- Login form fillable and submittable via testID selectors
+
+---
+
 ### 2026-02-13: Static Footer Links & Homepage Header Refactoring (P0)
 **COMPLETED** ✅
 
