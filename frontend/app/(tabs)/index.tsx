@@ -507,6 +507,54 @@ export default function HomeScreen() {
     fetchFeaturedListings();
   }, [fetchFeaturedListings]);
 
+  // Load search suggestions (recent + trending)
+  const loadSearchSuggestions = useCallback(async () => {
+    try {
+      // Load recent searches from localStorage
+      let recent: string[] = [];
+      if (Platform.OS === 'web') {
+        const stored = localStorage.getItem('recent_searches');
+        if (stored) {
+          recent = JSON.parse(stored);
+        }
+      }
+
+      // Fetch trending searches from API
+      let trending: { query: string; count: number }[] = [];
+      try {
+        const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/searches/popular?limit=5`);
+        if (res.ok) {
+          const data = await res.json();
+          trending = data.global_searches || [];
+        }
+      } catch (e) {
+        console.log('Could not fetch trending searches');
+      }
+
+      setSearchSuggestions({ recent: recent.slice(0, 5), trending });
+    } catch (err) {
+      console.error('Failed to load search suggestions:', err);
+    }
+  }, []);
+
+  // Load search suggestions on mount
+  useEffect(() => {
+    loadSearchSuggestions();
+  }, [loadSearchSuggestions]);
+
+  // Handle search suggestion click
+  const handleSuggestionClick = (query: string) => {
+    setHomeSearchQuery(query);
+    setShowSearchSuggestions(false);
+    // Navigate to search
+    const searchUrl = `/search?q=${encodeURIComponent(query.trim())}`;
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.location.href = searchUrl;
+    } else {
+      router.push(searchUrl);
+    }
+  };
+
   const loadSavedLocation = async () => {
     try {
       const saved = await Storage.getItem('@selected_city');
