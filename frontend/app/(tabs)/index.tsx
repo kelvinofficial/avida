@@ -518,41 +518,6 @@ export default function HomeScreen() {
     fetchFeaturedListings();
   }, [fetchFeaturedListings]);
 
-  // Load saved location from localStorage on mount
-  useEffect(() => {
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      try {
-        const savedLocation = localStorage.getItem(SELECTED_LOCATION_KEY);
-        if (savedLocation) {
-          const parsed = JSON.parse(savedLocation);
-          if (parsed.filter) {
-            setSelectedLocationFilter(parsed.filter);
-          }
-          if (parsed.displayName) {
-            setCurrentCity(parsed.displayName);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading saved location:', error);
-      }
-    }
-  }, []);
-
-  // Save location to localStorage when it changes
-  useEffect(() => {
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      try {
-        const locationData = {
-          filter: selectedLocationFilter,
-          displayName: currentCity,
-        };
-        localStorage.setItem(SELECTED_LOCATION_KEY, JSON.stringify(locationData));
-      } catch (error) {
-        console.error('Error saving location:', error);
-      }
-    }
-  }, [selectedLocationFilter, currentCity]);
-
   // Load search suggestions (recent + trending)
   const loadSearchSuggestions = useCallback(async () => {
     try {
