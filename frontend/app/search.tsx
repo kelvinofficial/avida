@@ -357,6 +357,20 @@ export default function SearchScreen() {
     }
   }, [params.q]);
 
+  // Also check URL on mount (for web)
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryParam = urlParams.get('q');
+      console.log('[Search Page] Mount check - query:', queryParam);
+      if (queryParam && queryParam.trim() && !hasSearched) {
+        setSearchQuery(queryParam);
+        setHasSearched(true);
+        handleSearch(queryParam);
+      }
+    }
+  }, []);
+
   const handleCategoryPress = (categoryId: string) => {
     router.push(`/category/${categoryId}`);
   };
