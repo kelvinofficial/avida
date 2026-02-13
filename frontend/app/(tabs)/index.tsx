@@ -1732,17 +1732,44 @@ export default function HomeScreen() {
                 {locationDropdownStep === 'countries' && !locationDropdownLoading && (
                   <View style={{ maxHeight: 300, overflow: 'scroll' }}>
                     {locationCountries.map((country, index) => (
-                      <TouchableOpacity
-                        key={country.code}
-                        style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F5F5F5' }}
-                        onPress={() => handleSelectCountry(country)}
-                      >
-                        <Text style={{ fontSize: 20, width: 28, marginRight: 12 }}>{country.flag}</Text>
-                        <View style={{ flex: 1 }}>
-                          <Text style={{ fontSize: 14, color: '#333' }}>{country.name}</Text>
-                        </View>
-                        <Ionicons name="chevron-forward" size={16} color="#999" />
-                      </TouchableOpacity>
+                      Platform.OS === 'web' ? (
+                        <div
+                          key={country.code}
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            padding: '14px 16px',
+                            gap: '12px',
+                            cursor: 'pointer',
+                            backgroundColor: 'transparent',
+                            borderBottom: '1px solid #F5F5F5',
+                          }}
+                          onClick={() => handleSelectCountry(country)}
+                          onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLElement).style.backgroundColor = '#F5F5F5';
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                          }}
+                        >
+                          <span style={{ fontSize: '20px', width: '28px', textAlign: 'center' }}>{country.flag}</span>
+                          <span style={{ flex: 1, fontSize: '14px', color: '#333' }}>{country.name}</span>
+                          <Ionicons name="chevron-forward" size={16} color="#999" />
+                        </div>
+                      ) : (
+                        <TouchableOpacity
+                          key={country.code}
+                          style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F5F5F5' }}
+                          onPress={() => handleSelectCountry(country)}
+                        >
+                          <Text style={{ fontSize: 20, width: 28, marginRight: 12 }}>{country.flag}</Text>
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ fontSize: 14, color: '#333' }}>{country.name}</Text>
+                          </View>
+                          <Ionicons name="chevron-forward" size={16} color="#999" />
+                        </TouchableOpacity>
+                      )
                     ))}
                   </View>
                 )}
