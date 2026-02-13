@@ -224,25 +224,25 @@ export const HomepageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop 
 
 // ============ SEARCH PAGE SKELETON ============
 export const SearchPageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
-  const opacity = useShimmer();
+  const theme = useShimmerTheme();
   
   if (!isDesktop) {
     return (
-      <View style={skeletonBase.container}>
+      <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor }]}>
         {/* Search header */}
-        <Animated.View style={[searchSkeleton.mobileSearchBar, { opacity }]} />
+        <ShimmerBox height={48} borderRadius={8} style={{ marginBottom: 16 }} />
         
         {/* Results count */}
-        <Animated.View style={[{ width: 120, height: 16, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 16 }, { opacity }]} />
+        <ShimmerBox width={120} height={16} borderRadius={4} style={{ marginBottom: 16 }} />
         
         {/* Result items */}
         {Array(4).fill(0).map((_, i) => (
-          <View key={i} style={searchSkeleton.resultItem}>
-            <Animated.View style={[searchSkeleton.resultImage, { opacity }]} />
+          <View key={i} style={[searchSkeleton.resultItem, { backgroundColor: theme.surfaceColor }]}>
+            <ShimmerBox width={100} height={100} borderRadius={8} />
             <View style={searchSkeleton.resultContent}>
-              <Animated.View style={[{ width: '60%', height: 18, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
-              <Animated.View style={[{ width: '40%', height: 14, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
-              <Animated.View style={[{ width: '30%', height: 20, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+              <ShimmerBox width="60%" height={18} borderRadius={4} />
+              <ShimmerBox width="40%" height={14} borderRadius={4} />
+              <ShimmerBox width="30%" height={20} borderRadius={4} />
             </View>
           </View>
         ))}
@@ -251,36 +251,36 @@ export const SearchPageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDeskto
   }
   
   return (
-    <View style={[skeletonBase.container, { maxWidth: 1280, alignSelf: 'center' as const, width: '100%' }]}>
+    <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor, maxWidth: 1280, alignSelf: 'center' as const, width: '100%' }]}>
       {/* Header */}
       <View style={skeletonBase.header}>
-        <Animated.View style={[skeletonBase.logo, { opacity }]} />
-        <Animated.View style={[searchSkeleton.desktopSearchBar, { opacity }]} />
+        <ShimmerBox width={100} height={36} borderRadius={4} />
+        <ShimmerBox width={500} height={44} borderRadius={22} style={{ marginHorizontal: 24 }} />
         <View style={skeletonBase.headerRight}>
-          <Animated.View style={[skeletonBase.primaryBtn, { opacity }]} />
+          <ShimmerBox width={120} height={40} borderRadius={8} />
         </View>
       </View>
       
       {/* Main content */}
       <View style={searchSkeleton.desktopLayout}>
         {/* Sidebar */}
-        <View style={searchSkeleton.sidebar}>
-          <Animated.View style={[searchSkeleton.sidebarSection, { opacity }]} />
-          <Animated.View style={[searchSkeleton.sidebarList, { opacity }]} />
-          <Animated.View style={[searchSkeleton.sidebarSection, { opacity }]} />
-          <Animated.View style={[searchSkeleton.sidebarList, { opacity, height: 200 }]} />
+        <View style={[searchSkeleton.sidebar, { backgroundColor: theme.surfaceColor }]}>
+          <ShimmerBox width="70%" height={20} borderRadius={4} style={{ marginBottom: 12 }} />
+          <ShimmerBox height={150} borderRadius={8} style={{ marginBottom: 20 }} />
+          <ShimmerBox width="70%" height={20} borderRadius={4} style={{ marginBottom: 12 }} />
+          <ShimmerBox height={200} borderRadius={8} style={{ marginBottom: 20 }} />
         </View>
         
         {/* Results grid */}
         <View style={searchSkeleton.resultsArea}>
-          <Animated.View style={[{ width: 150, height: 20, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 20 }, { opacity }]} />
+          <ShimmerBox width={150} height={20} borderRadius={4} style={{ marginBottom: 20 }} />
           <View style={skeletonBase.grid}>
             {Array(6).fill(0).map((_, i) => (
-              <View key={i} style={[skeletonBase.card, { width: '31%' }]}>
-                <Animated.View style={[skeletonBase.cardImage, { opacity }]} />
-                <Animated.View style={[skeletonBase.cardLocation, { opacity }]} />
-                <Animated.View style={[skeletonBase.cardTitle, { opacity }]} />
-                <Animated.View style={[skeletonBase.cardPrice, { opacity }]} />
+              <View key={i} style={[skeletonBase.card, { width: '31%', backgroundColor: theme.surfaceColor }]}>
+                <ShimmerBox aspectRatio={1} borderRadius={8} style={{ marginBottom: 8 }} />
+                <ShimmerBox width="40%" height={12} borderRadius={4} style={{ marginBottom: 4 }} />
+                <ShimmerBox width="80%" height={16} borderRadius={4} style={{ marginBottom: 6 }} />
+                <ShimmerBox width="50%" height={20} borderRadius={4} />
               </View>
             ))}
           </View>
