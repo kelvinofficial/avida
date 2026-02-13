@@ -192,7 +192,7 @@ export const HorizontalListingCard: React.FC<HorizontalListingCardProps> = ({
           </View>
         </View>
       </View>
-    </TouchableOpacity>
+    </TouchableScale>
   );
 };
 
