@@ -22,6 +22,7 @@ import { DesktopPageLayout } from '../../src/components/layout';
 import { useLoginRedirect } from '../../src/hooks/useLoginRedirect';
 import { useBadgeCelebration } from '../../src/context/BadgeCelebrationContext';
 import { useMilestones } from '../../src/context/MilestoneContext';
+import { ImagePlaceholder } from '../../src/components/common/ImagePlaceholder';
 
 const COLORS = {
   primary: '#2E7D32',
