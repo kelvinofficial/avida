@@ -530,6 +530,65 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.border,
     marginLeft: 56,
   },
+  // Location Picker Modal Styles
+  locationPickerModal: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+  },
+  locationPickerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  locationPickerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  currentLocationDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: COLORS.primaryLight,
+  },
+  currentLocationText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.primary,
+  },
+  locationPickerContent: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  allLocationsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    backgroundColor: COLORS.background,
+  },
+  allLocationsBtnActive: {
+    backgroundColor: COLORS.primaryLight,
+  },
+  allLocationsBtnText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+  },
+  allLocationsBtnTextActive: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
 });
 
 export default DesktopHeader;
