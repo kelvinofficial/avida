@@ -34,6 +34,48 @@ const COLORS = {
   border: '#E0E0E0',
 };
 
+// Image Placeholder Component - displays when listing has no images
+const ImagePlaceholder: React.FC<{ 
+  size?: 'small' | 'medium' | 'large';
+  style?: any;
+}> = ({ size = 'medium', style }) => {
+  const iconSize = size === 'small' ? 24 : size === 'large' ? 48 : 32;
+  
+  return (
+    <View style={[placeholderStyles.container, style]}>
+      <View style={placeholderStyles.iconWrapper}>
+        <Ionicons name="image-outline" size={iconSize} color="#B0BEC5" />
+      </View>
+      <Text style={placeholderStyles.text}>No image</Text>
+    </View>
+  );
+};
+
+const placeholderStyles = StyleSheet.create({
+  container: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#ECEFF1',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  iconWrapper: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#E0E4E7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  text: {
+    fontSize: 11,
+    color: '#90A4AE',
+    fontWeight: '500',
+  },
+});
+
 const MAX_WIDTH = 1280;
 
 // Search Stats Card Component
