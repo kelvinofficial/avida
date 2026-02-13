@@ -117,10 +117,14 @@ const DesktopListingCard = ({
     activeOpacity={0.8}
   >
     <View style={desktopStyles.cardImageContainer}>
-      <Image
-        source={{ uri: item.images?.[0] || 'https://via.placeholder.com/200' }}
-        style={desktopStyles.cardImage}
-      />
+      {item.images?.[0] ? (
+        <Image
+          source={{ uri: item.images[0] }}
+          style={desktopStyles.cardImage}
+        />
+      ) : (
+        <ImagePlaceholder size="large" />
+      )}
       {/* Top Left Badges */}
       <View style={desktopStyles.cardBadges}>
         {isJustListed(item.created_at) && (
