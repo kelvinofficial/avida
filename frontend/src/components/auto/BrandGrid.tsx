@@ -64,7 +64,7 @@ export const BrandGrid: React.FC<BrandGridProps> = ({
             <View style={styles.countBadge}>
               <Text style={styles.countText}>{formatCount(brand.listingsCount)}</Text>
             </View>
-          </TouchableOpacity>
+          </TouchableScale>
         ))}
       </ScrollView>
     </View>
