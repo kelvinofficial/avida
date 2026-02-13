@@ -22,6 +22,7 @@ import api from '../src/utils/api';
 import { useAuthStore } from '../src/store/authStore';
 import { useResponsive } from '../src/hooks/useResponsive';
 import { DesktopPageLayout } from '../src/components/layout';
+import { ImagePlaceholder } from '../src/components/common/ImagePlaceholder';
 
 const COLORS = {
   primary: '#2E7D32',
