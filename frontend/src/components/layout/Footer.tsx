@@ -1,7 +1,55 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Platform, ImageBackground } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+
+// Hoverable link component for web
+const HoverableLink: React.FC<{
+  onPress: () => void;
+  style?: any;
+  children: React.ReactNode;
+}> = ({ onPress, style, children }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  const webProps = Platform.OS === 'web' ? {
+    onMouseEnter: () => setIsHovered(true),
+    onMouseLeave: () => setIsHovered(false),
+  } : {};
+
+  return (
+    <TouchableOpacity
+      style={[
+        style,
+        isHovered && Platform.OS === 'web' && {
+          opacity: 1,
+        }
+      ]}
+      onPress={onPress}
+      {...webProps}
+    >
+      {typeof children === 'string' ? (
+        <Text style={[
+          hoverStyles.linkText,
+          isHovered && Platform.OS === 'web' && hoverStyles.linkTextHover
+        ]}>
+          {children}
+        </Text>
+      ) : children}
+    </TouchableOpacity>
+  );
+};
+
+const hoverStyles = StyleSheet.create({
+  linkText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    ...(Platform.OS === 'web' ? { transition: 'color 0.2s ease, text-decoration 0.2s ease' } as any : {}),
+  },
+  linkTextHover: {
+    color: '#FFFFFF',
+    textDecorationLine: 'underline',
+  },
+});
 
 const COLORS = {
   background: '#1A1A1A',
