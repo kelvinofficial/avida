@@ -448,6 +448,10 @@ export default function HomeScreen() {
     user?: {
       name: string;
       picture: string | null;
+      rating?: number;
+      total_ratings?: number;
+    };
+  }
   
   // Desktop Location Dropdown State
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
@@ -456,10 +460,6 @@ export default function HomeScreen() {
   const [locationRegions, setLocationRegions] = useState<Array<{ country_code: string; region_code: string; name: string; lat?: number; lng?: number }>>([]);
   const [selectedCountryForDropdown, setSelectedCountryForDropdown] = useState<{ code: string; name: string; flag: string } | null>(null);
   const [locationDropdownLoading, setLocationDropdownLoading] = useState(false);
-      rating?: number;
-      total_ratings?: number;
-    };
-  }
   
   interface FeaturedListing {
     id: string;
