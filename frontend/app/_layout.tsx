@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View, Platform, ActivityIndicator } from 'react-native';
 import * as Linking from 'expo-linking';
+import { useFonts } from 'expo-font';
 import { useAuthStore, saveUserData } from '../src/store/authStore';
 import { authApi } from '../src/utils/api';
 import { theme } from '../src/utils/theme';
