@@ -6,6 +6,22 @@ Build a local marketplace application (Avida) with:
 2. Business Profile feature for verified sellers
 3. Premium subscription tiers with payment integration
 
+### 2026-02-13: Location Persistence with localStorage (P1)
+**COMPLETED** ✅
+
+#### Feature
+The selected location now persists in localStorage. When users return to the homepage, their previously selected location (country/region) is automatically restored and listings are filtered accordingly.
+
+#### How It Works
+1. When user selects a location, it's saved to `@selected_city` in localStorage
+2. On page load, `loadSavedLocation()` reads from localStorage and restores the filter
+3. The listing API is called with location params (country_code, region_code)
+
+#### Files Modified
+- `/app/frontend/app/(tabs)/index.tsx` - Already had localStorage persistence via `saveSelectedCity()` and `loadSavedLocation()` functions using the cross-platform `Storage` utility
+
+---
+
 ### 2026-02-13: Desktop Location Selector Bug Fix (P0)
 **COMPLETED** ✅
 
