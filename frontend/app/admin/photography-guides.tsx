@@ -69,14 +69,13 @@ interface GuideStats {
 
 export default function PhotographyGuidesAdmin() {
   const router = useRouter();
-  const { token, isLoading: authLoading, loadStoredAuth } = useAuthStore();
+  const [authToken, setAuthToken] = useState<string | null>(null);
   const [guides, setGuides] = useState<PhotographyGuide[]>([]);
   const [stats, setStats] = useState<GuideStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
   const [editingGuide, setEditingGuide] = useState<PhotographyGuide | null>(null);
-  const [authLoaded, setAuthLoaded] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -88,48 +87,80 @@ export default function PhotographyGuidesAdmin() {
     is_active: true,
   });
 
-  // Ensure auth is loaded on component mount
+  // Load auth token
   useEffect(() => {
-    const loadAuth = async () => {
-      await loadStoredAuth();
-      setAuthLoaded(true);
+    const loadToken = async () => {
+      try {
+        // Try AsyncStorage first (works for native)
+        let token = await AsyncStorage.getItem('session_token');
+        
+        // Fallback to localStorage for web
+        if (!token && Platform.OS === 'web' && typeof window !== 'undefined') {
+          token = window.localStorage.getItem('session_token');
+        }
+        
+        setAuthToken(token);
+        if (!token) {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error loading token:', error);
+        setLoading(false);
+      }
     };
-    loadAuth();
-  }, [loadStoredAuth]);
+    loadToken();
+  }, []);
 
   // Fetch guides
   const fetchGuides = useCallback(async () => {
+    if (!authToken) return;
+    
     try {
       setLoading(true);
-      const params = selectedCategory ? { category_id: selectedCategory } : {};
-      const response = await api.get('/photography-guides', { params });
-      setGuides(response.data.guides || []);
+      const url = selectedCategory 
+        ? `${API_URL}/api/photography-guides?category_id=${selectedCategory}`
+        : `${API_URL}/api/photography-guides`;
+      
+      const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setGuides(data.guides || []);
+      }
     } catch (error) {
       console.error('Error fetching guides:', error);
     } finally {
       setLoading(false);
     }
-  }, [selectedCategory]);
+  }, [authToken, selectedCategory]);
 
   // Fetch stats
   const fetchStats = useCallback(async () => {
+    if (!authToken) return;
+    
     try {
-      const response = await api.get('/photography-guides/stats');
-      setStats(response.data);
+      const response = await fetch(`${API_URL}/api/photography-guides/stats`, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data);
+      }
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
-  }, []);
+  }, [authToken]);
 
-  // Only fetch data after auth is loaded
+  // Trigger fetch when token is loaded
   useEffect(() => {
-    if (authLoaded && token) {
+    if (authToken) {
       fetchGuides();
       fetchStats();
-    } else if (authLoaded && !token) {
-      setLoading(false);
     }
-  }, [authLoaded, token, fetchGuides, fetchStats]);
+  }, [authToken, fetchGuides, fetchStats]);
 
   // Create/Update guide
   const handleSaveGuide = async () => {
