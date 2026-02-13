@@ -77,11 +77,12 @@ const ShimmerBox: React.FC<ShimmerBoxProps> = ({
     return () => animation.stop();
   }, [theme.duration]);
 
-  // For web, use CSS class for shimmer animation (defined in +html.tsx)
+  // For web, use data attribute to apply CSS shimmer animation (defined in +html.tsx)
   if (Platform.OS === 'web') {
     return (
       <View
-        className="shimmer-effect"
+        // @ts-ignore - data attribute for CSS styling
+        dataSet={{ shimmer: true }}
         style={[
           {
             width,
