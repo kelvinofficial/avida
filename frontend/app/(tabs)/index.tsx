@@ -26,6 +26,7 @@ import { sandboxAwareListingsApi, sandboxAwareCategoriesApi, sandboxUtils } from
 import { Listing, Category } from '../../src/types';
 import { EmptyState } from '../../src/components/EmptyState';
 import { useAuthStore } from '../../src/store/authStore';
+import { useLocationStore } from '../../src/store/locationStore';
 import { useSandbox } from '../../src/utils/sandboxContext';
 import { formatDistanceToNow } from 'date-fns';
 import { getSubcategories, SubcategoryConfig, getMainCategory } from '../../src/config/subcategories';
