@@ -327,17 +327,17 @@ export const Footer: React.FC<FooterProps> = ({ isTablet = false }) => {
             © {currentYear} Avida Marketplace. All rights reserved.
           </Text>
           <View style={styles.legalLinks}>
-            <TouchableOpacity onPress={() => handleNavigation('#')}>
-              <Text style={styles.legalLink}>Privacy Policy</Text>
-            </TouchableOpacity>
+            <HoverableLink onPress={() => handleNavigation('/privacy')}>
+              Privacy Policy
+            </HoverableLink>
             <View style={styles.legalSeparator} />
-            <TouchableOpacity onPress={() => handleNavigation('#')}>
-              <Text style={styles.legalLink}>Terms of Service</Text>
-            </TouchableOpacity>
+            <HoverableLink onPress={() => handleNavigation('/terms')}>
+              Terms of Service
+            </HoverableLink>
             <View style={styles.legalSeparator} />
-            <TouchableOpacity onPress={() => handleNavigation('#')}>
-              <Text style={styles.legalLink}>Cookie Policy</Text>
-            </TouchableOpacity>
+            <HoverableLink onPress={() => handleNavigation('/cookies')}>
+              Cookie Policy
+            </HoverableLink>
           </View>
         </View>
       </View>
