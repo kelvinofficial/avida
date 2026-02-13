@@ -955,20 +955,18 @@ const styles = StyleSheet.create({
   },
   // Horizontal card layout styles
   listingsContainer: {
-    display: 'flex',
     flexDirection: 'column',
-    gap: 12,
+    gap: 16,
     width: '100%',
   },
   horizontalCard: {
-    display: 'flex',
     flexDirection: 'row',
     backgroundColor: COLORS.surface,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: COLORS.border,
     overflow: 'hidden',
-    padding: 12,
+    padding: 16,
     gap: 16,
     width: '100%',
     ...(Platform.OS === 'web' ? { cursor: 'pointer' } : {}),
