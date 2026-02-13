@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { listingsApi, categoriesApi, favoritesApi } from '../src/utils/api';
 import api from '../src/utils/api';
 import { useAuthStore } from '../src/store/authStore';
