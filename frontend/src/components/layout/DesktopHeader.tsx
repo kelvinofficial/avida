@@ -230,20 +230,22 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
       </View>
       
       {/* Row 2: Search + Location */}
-      {showSearch && (
+      {(showSearch || showLocationSelector) && (
         <View style={styles.globalHeaderRow2}>
           <View style={styles.globalHeaderInner}>
-            <TouchableOpacity 
-              style={styles.searchField} 
-              onPress={() => router.push('/search')} 
-              activeOpacity={0.8}
-            >
-              <Ionicons name="search" size={20} color={COLORS.textSecondary} />
-              <Text style={styles.searchPlaceholder}>Search for anything...</Text>
-            </TouchableOpacity>
+            {showSearch && (
+              <TouchableOpacity 
+                style={styles.searchField} 
+                onPress={() => router.push('/search')} 
+                activeOpacity={0.8}
+              >
+                <Ionicons name="search" size={20} color={COLORS.textSecondary} />
+                <Text style={styles.searchPlaceholder}>Search for anything...</Text>
+              </TouchableOpacity>
+            )}
             {showLocationSelector && (
               <TouchableOpacity 
-                style={styles.locationChip} 
+                style={[styles.locationChip, !showSearch && { marginLeft: 'auto' }]}
                 activeOpacity={0.7} 
                 onPress={() => setShowLocationModal(true)}
                 data-testid="header-location-selector"
