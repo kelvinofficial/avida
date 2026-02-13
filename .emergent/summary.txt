@@ -1,110 +1,116 @@
 <analysis>**original_problem_statement**:
 The user's initial request was to build a classifieds application.
 
-Most recent user requests:
-1.  **Skeleton Loader Polish**: Add visual feedback animations to the skeleton loaders (like a shimmer effect with customizable colors) to make them more polished. This was approved by the user as the next task.
+The most recent requests were:
+1.  Add real-time notifications to alert a seller when a buyer favorites their listing.
+2.  Implement mobile app optimizations for performance and user experience.
 
 PRODUCT REQUIREMENTS:
-1.  **Skeleton Loader**: The skeleton loader should reflect the actual layout of the pages and have a shimmer animation.
-2.  **Location Dropdown Enhancements**: Ensure the new location dropdown is present in the header on all pages. (Completed by refactoring homepage).
-3.  **Footer Improvements**: Add a background image, make it responsive, and separate links. (Completed).
-4.  **Functionality Implementation**: Wire up all static buttons and links. (Completed for footer and other known links).
-5.  **UI Polish**: Use an appropriate icon for My Listings and add hover animations to footer links. (Completed).
+1.  **Real-time Quick Stats**: The Quick Stats card on the user's dashboard must update in real-time when relevant user activity occurs (e.g., new offer, new message, listing created/sold).
+2.  **Image Placeholders**: All areas that display listing or user images should show a consistent, polished placeholder when no image is available.
+3.  **Favorite Notifications**: Sellers should receive a real-time notification when another user favorites one of their listings.
+4.  **Mobile Optimizations**: The mobile experience should be enhanced with better performance (e.g., optimized lists, lazy loading), improved UI/UX (e.g., better touch feedback, pull-to-refresh), and better resilience (e.g., offline support).
 
 **User's preferred language**: English
 
 **what currently exists?**
-The agent has successfully completed several key frontend tasks. The static links in the footer (, , ) are now wired up to newly created pages. A major refactoring of the homepage was completed, replacing its custom header with the shared  component, which makes the UI consistent and integrates the global location selector. Building on this, the agent implemented page-specific skeleton loaders by adding logic to the main layout file to render different skeletons based on the current route. Finally, a long-standing recurring issue with an unreliable login button in automated tests has been resolved by adding  props to the login form elements.
+The application now has a fully functional real-time statistics update system using WebSockets, where user stats on the dashboard update instantly upon actions like creating listings or managing offers. The UI has been polished by replacing all generic placeholders with a consistent  component. Furthermore, a new real-time notification feature alerts sellers when their listings are favorited. A suite of mobile optimization components (, , , ) has been created and the offline banner has been integrated into the main app layout.
 
 **Last working item**:
-The agent's last task was fixing the unreliable login button for automated tests. This task is complete and has been verified.
+The agent's last action was to create a set of mobile optimization components and get user approval to continue. The immediate next task is to integrate these newly created components throughout the application's mobile views.
 
--   **Last item agent was working**: Adding  props to interactive elements on the login page () to make them reliably selectable in automated tests.
--   **Status**: COMPLETED
--   **Agent Testing Done**: Y
--   **Which testing method agent to use?**: NA (Testing is complete. The agent used the  with the  flag to inspect the DOM and confirm the  attributes were rendered correctly, then confirmed a login flow could be initiated.)
+-   **Last item agent was working**: Integrating the newly created mobile optimization components (, , ) into the application's mobile screens.
+-   **Status**: NOT STARTED
+-   **Agent Testing Done**: N/A (The components themselves were tested upon creation, but their integration into the app has not started).
+-   **Which testing method agent to use?**: frontend testing agent. The agent should verify that replacing standard components (like ) with the new optimized versions works correctly, improves UX, and doesn't introduce regressions.
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: Unreliable login button in automated tests (Priority: P2)
-    -   **Status**: RESOLVED
+-   None.
 
 **Issues Detail**:
--   **Issue 1: Unreliable login button in automated tests**
-    -   **Attempted fixes**: The agent added the  prop to the email input, password input, password toggle, and submit button in . After a frontend service restart, it was verified that these props correctly render as  attributes in the web build, making the elements selectable.
-    -   **Status**: RESOLVED
-    -   **Is recurring issue?**: Y (This was a recurring issue that is now fixed).
+-   None.
 
 **In progress Task List**:
--   None. All tasks from the previous session were completed.
+-   **Task 1: Integrate Mobile Optimization Components (P0)**
+    -   **Where to resume**: The components exist in . The agent needs to identify which screens use components like , , and , and replace them with , , and  respectively.
+    -   **What will be achieved with this?**: A faster, more responsive, and more robust mobile user experience.
+    -   **Status**: NOT STARTED
+    -   **Should Test frontend/backend/both after fix?**: Frontend
+    -   **Blocked on something**: No.
 
 **Upcoming and Future Tasks**
+
 **Upcoming Tasks:**
--   **P0: Add Shimmer Animation to Skeleton Loaders**: Based on the user's approval, enhance the newly implemented skeleton loaders with a visual feedback animation, like a shimmer or pulse effect, to improve the perceived loading experience.
+-   **P1: E2E Testing for Premium Subscription Flow**: Perform end-to-end testing of the premium subscription feature.
+-   **P1: Admin CRUD for Photography Guides**: Implement the CRUD (Create, Read, Update, Delete) functionality for the Photography Guides section in the admin panel.
 
 **Future Tasks:**
--   Implement Photography Guides Admin CRUD functionality.
--   Improve the visual appearance of image placeholders on the search results page.
--   Consider adding real-time updates to the Quick Stats section (e.g., via WebSockets).
--   Perform end-to-end testing of the premium subscription flow.
+-   No other future tasks have been defined.
 
 **Completed work in this session**
--   **Footer Links Wired Up**: Created the  page and updated  to correctly link to all support pages (, , ). Also corrected a  path from  to .
--   **Homepage Header Refactored**: Replaced the custom header in  with the shared  component, successfully integrating the global location state () and unifying the app's UI.
--   **Page-Specific Skeleton Loaders**: Implemented logic in  using  to conditionally render different skeleton components based on the current route, improving the loading experience for pages like Home, Search, and Profile.
--   **Unreliable Login Button Fixed**: Resolved a recurring testing issue by adding  props to all interactive elements on the login page (), making automated tests more stable.
+-   **Real-time Quick Stats (DONE)**: Completed the feature by adding  trigger calls to all relevant backend endpoints in  and . Tested with .
+-   **Consistent Image Placeholders (DONE)**: Rolled out the  component to the remaining  and , removing all instances of .
+-   **Real-time Favorite Notifications (DONE)**: Implemented WebSocket notifications to alert sellers when their items are favorited. The  router was updated to trigger this notification.
+-   **Mobile Optimization Components (CREATED)**:
+    -   Created  for improved list rendering performance.
+    -   Created  for better touch feedback.
+    -   Created  for a better refresh experience.
+    -   Created  hook and  component to handle network connectivity issues, and integrated it into the root layout .
 
 **Earlier issues found/mentioned but not fixed**
--   None. The previously known issue regarding the login button was resolved in this session.
+-   None.
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork**: Unreliable login button in automated tests.
--   **Recurrence count**: 3+
--   **Status**: RESOLVED
+-   None.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Component Refactoring**: A large, single-file header implementation on the homepage was successfully replaced with a reusable, shared  component, improving code maintainability.
--   **State Synchronization**: Synchronized a component's local state with a global Zustand store () using a  hook to manage location data consistently.
--   **React Native Web Testing**: Debugged and fixed an automated testing issue by adding the  prop to components, learning that it compiles to the  HTML attribute and sometimes requires a service restart to be applied correctly.
--   **Conditional Rendering with Expo Router**: Used the  hook from Expo Router within the  file to conditionally render different skeleton loading components based on the active route.
+-   **Dependency Injection (Backend)**: Decoupled WebSocket logic from route handlers by passing the  function from  as a callback to the route creation functions (, , ).
+-   **Mobile App Optimization**: Created a suite of reusable React Native components focused on improving performance (), user experience (, ), and application resilience ( with  hook).
 
 **key DB schema**
--   No changes.
+-   No changes in this session.
 
 **changes in tech stack**
--   None.
+-   No new technologies were added.
 
 **All files of reference**
--   : Was significantly refactored to use the shared header.
--   : Modified to add  props to resolve a recurring testing issue.
--   : Updated to handle page-specific skeleton loaders.
--   : Links were updated to point to correct, functional pages.
--   : A new static page created to complete the footer links.
--   : The directory containing the various skeleton components used in .
+-   : Modified to pass callbacks to routers.
+-   , , : Modified to call notification/stat update callbacks.
+-   : Directory containing all new mobile optimization components.
+-   : New hook for checking network connectivity.
+-   : Modified to include the .
+-   , : Modified to use .
 
 **Areas that need refactoring**:
--   None. The major refactoring tasks from the previous session (homepage header, skeleton logic) have been completed.
+-   The newly created mobile optimization components now need to be integrated across the app's mobile screens to replace the standard, less-performant components.
 
 **key api endpoints**
--   No changes.
+-   Existing endpoints were modified to trigger WebSocket events. The key side-effects added are:
+    -   , , : Trigger .
+    -   , : Trigger  for both buyer and seller.
+    -   : Triggers a notification to the listing owner.
 
 **Critical Info for New Agent**
--   **Testing with **: The standard for making elements accessible to automated tests is to use the  prop in the React Native Web code. This resolves the previously unreliable login tests.
--   **Completed Refactoring**: The homepage () now uses the shared . Do not attempt to re-implement custom header logic there. The skeleton loading logic in  is also complete and can be extended for new routes.
+-   Your immediate priority (P0) is to integrate the mobile optimization components that were just created. They are located in . You should identify where components like  and  are used in the mobile views and replace them with  and .
+-   The real-time stats and favorite notification features are complete and have been tested. No further work is needed on them at this time.
 
 **documents and test reports created in this job**
 -    (updated)
 -   
+-   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: yes (Approving the plan to add shimmer animations to skeleton loaders).
-2.  **User**: yes (Approving the initial plan to work on footer links, homepage refactor, and skeleton loaders).
+1.  **User**: continue - (Status: Pending) User is asking the agent to proceed with the next logical steps after completing the mobile component creation.
+2.  **User**: e - (Status: Completed) Typo, likely confirming the feature request.
+3.  **User**: add real-time notifications when someone favorites your listing? This could increase seller engagement by alerting them when there's buyer interest. Do Mobile app optimizations - (Status: Completed) User requested two new features.
+4.  **User**: proceed - (Status: Completed) Approval to start work.
 
 **Project Health Check:**
--   **Broken**: None. The previously broken footer links and inconsistent homepage header have been fixed.
+-   **Broken**: None.
 -   **Mocked**: None.
 
 **3rd Party Integrations**
@@ -112,11 +118,12 @@ The agent's last task was fixing the unreliable login button for automated tests
 -   
 -   
 -   
+-    / 
 
 **Testing status**
--   **Testing agent used after significant changes**: YES. Used to verify the homepage header refactoring and footer link functionality. All tests passed.
--   **Troubleshoot agent used after agent stuck in loop**: NO.
--   **Test files created**: None.
+-   **Testing agent used after significant changes**: YES (used twice)
+-   **Troubleshoot agent used after agent stuck in loop**: NO
+-   **Test files created**: []
 -   **Known regressions**: None.
 
 **Credentials to test flow:**
@@ -124,4 +131,4 @@ The agent's last task was fixing the unreliable login button for automated tests
 -   **Regular User**:  / 
 
 **What agent forgot to execute**
--   None. The agent successfully addressed all planned tasks for the session, including items that were missed in the previous fork (homepage header refactor and skeleton routing logic).</analysis>
+-   The agent logically staged the work by first creating the mobile optimization components. It has not forgotten, but rather has set up the next task, which is to integrate these new components into the application.</analysis>

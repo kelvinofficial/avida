@@ -19,7 +19,7 @@ import io
 from datetime import datetime
 
 # Base URL from environment
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://classifieds-stats.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://listings-realtime.preview.emergentagent.com')
 
 @pytest.fixture
 def api_client():

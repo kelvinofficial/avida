@@ -15,7 +15,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = os.environ.get('NEXT_PUBLIC_API_URL', 'https://classifieds-stats.preview.emergentagent.com/api/admin')
+BASE_URL = os.environ.get('NEXT_PUBLIC_API_URL', 'https://listings-realtime.preview.emergentagent.com/api/admin')
 
 # Test credentials
 ADMIN_EMAIL = "admin@marketplace.com"

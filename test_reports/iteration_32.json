@@ -29,7 +29,7 @@
     "backend": "100% (30/30 tests passed)"
   },
   "test_credentials": {
-    "api_base": "https://classifieds-stats.preview.emergentagent.com"
+    "api_base": "https://listings-realtime.preview.emergentagent.com"
   },
   "seed_data_creation": "Test legal pages and currencies created in staging environment during testing.",
   "retest_needed": false,
