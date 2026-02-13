@@ -77,42 +77,22 @@ const ShimmerBox: React.FC<ShimmerBoxProps> = ({
     return () => animation.stop();
   }, [theme.duration]);
 
-  // For web, use CSS animation for better performance
+  // For web, use CSS class for shimmer animation (defined in +html.tsx)
   if (Platform.OS === 'web') {
     return (
       <View
+        className="shimmer-effect"
         style={[
           {
             width,
             height: aspectRatio ? undefined : height,
             aspectRatio,
             borderRadius,
-            backgroundColor: theme.baseColor,
             overflow: 'hidden',
-            position: 'relative',
           },
           style,
         ]}
-      >
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: `linear-gradient(90deg, ${theme.baseColor} 0%, ${theme.shimmerColor} 50%, ${theme.baseColor} 100%)`,
-            backgroundSize: '200% 100%',
-            animation: 'shimmer 1.5s infinite ease-in-out',
-          } as any}
-        />
-        <style>{`
-          @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-          }
-        `}</style>
-      </View>
+      />
     );
   }
 
