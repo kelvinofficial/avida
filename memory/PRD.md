@@ -57,6 +57,11 @@ Build a local marketplace application (Avida) with:
    - Search page (`search.tsx`) - mobile and desktop card views
    - Saved items (`profile/saved.tsx`) - desktop and mobile cards
    - My listings (`profile/my-listings.tsx`) - desktop and mobile cards
+   - **DesktopSidebar.tsx** - User avatar placeholder
+   - **offers.tsx** - Listing images and user avatars
+   - **recently-viewed.tsx** - Desktop and mobile cards
+   - **sales.tsx** - Desktop and mobile sale item cards
+   - **purchases.tsx** - Updated getImageUri to return null for placeholder handling
 
 #### Visual Design
 - Background: `#ECEFF1` (light blue-gray)
@@ -64,12 +69,31 @@ Build a local marketplace application (Avida) with:
 - Icon color: `#90A4AE` (muted gray-blue)
 - Text: `#90A4AE`, 11px, weight 500
 
-#### Remaining Files (Lower Priority)
-Still using `via.placeholder.com` but less frequently visited:
-- `offers.tsx`, `recently-viewed.tsx`, `sales.tsx`, `purchases.tsx`
-- `profile/public/[id].tsx`, `(tabs)/saved.tsx`
-- Shared components: `ListingCard.tsx`, `PropertyListingCard.tsx`, `AutoListingCard.tsx`
-- `DesktopSidebar.tsx` (user avatar)
+---
+
+### 2026-02-13: Real-time Quick Stats via WebSocket (P2)
+**COMPLETED** ✅
+
+#### Features Implemented
+1. **Backend WebSocket Events** (`/app/backend/server.py`):
+   - `subscribe_stats` - Users subscribe to their stats updates
+   - `unsubscribe_stats` - Users unsubscribe from stats updates
+   - `get_user_quick_stats()` - Helper function to fetch user stats
+   - `notify_stats_update()` - Emits stats updates to subscribed users
+
+2. **Frontend WebSocket Integration** (`/app/frontend/src/components/layout/DesktopPageLayout.tsx`):
+   - QuickStatsCard now connects to WebSocket on mount
+   - Subscribes to `stats_update` events for real-time updates
+   - Falls back to API fetch for initial stats
+   - Properly disconnects and unsubscribes on unmount
+
+#### Stats Tracked in Real-time
+- `activeListings` - Count of active listings
+- `pendingOffers` - Count of pending offers
+- `totalViews` - Sum of all listing views
+- `creditBalance` - Boost credits balance
+- `userRating` - User's average rating
+- `totalRatings` - Number of ratings received
 
 ---
 
