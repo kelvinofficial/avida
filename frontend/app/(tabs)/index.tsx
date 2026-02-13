@@ -1767,7 +1767,7 @@ export default function HomeScreen() {
                         onPress={() => handleSelectRegion(region)}
                       >
                         <Ionicons name="location-outline" size={18} color="#666" />
-                        <Text style={desktopStyles.locationItemText}>{region.name}</Text>
+                        <Text style={{ flex: 1, fontSize: 14, color: '#333' }}>{region.name}</Text>
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
