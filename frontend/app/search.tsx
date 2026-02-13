@@ -823,10 +823,13 @@ const styles = StyleSheet.create({
   },
   // Horizontal card layout styles
   listingsContainer: {
+    display: 'flex',
     flexDirection: 'column',
     gap: 12,
+    width: '100%',
   },
   horizontalCard: {
+    display: 'flex',
     flexDirection: 'row',
     backgroundColor: COLORS.surface,
     borderRadius: 12,
@@ -835,6 +838,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     padding: 12,
     gap: 16,
+    width: '100%',
     ...(Platform.OS === 'web' ? { cursor: 'pointer' } : {}),
   },
   cardImageWrapper: {
