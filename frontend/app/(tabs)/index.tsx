@@ -1525,12 +1525,6 @@ export default function HomeScreen() {
             {/* Desktop Autocomplete Dropdown */}
             {showSearchSuggestions && (
               <View style={desktopStyles.suggestionsDropdown}>
-                {/* Debug - show if no data */}
-                {searchSuggestions.recent.length === 0 && searchSuggestions.trending.length === 0 && (
-                  <View style={desktopStyles.suggestionSection}>
-                    <Text style={desktopStyles.suggestionHeaderText}>Loading suggestions...</Text>
-                  </View>
-                )}
                 {/* Recent Searches */}
                 {searchSuggestions.recent.length > 0 && (
                   <View style={desktopStyles.suggestionSection}>
@@ -1571,6 +1565,15 @@ export default function HomeScreen() {
                         <Text style={desktopStyles.trendingCount}>{item.count} searches</Text>
                       </TouchableOpacity>
                     ))}
+                  </View>
+                )}
+                
+                {/* Empty state - show only when no data is available */}
+                {searchSuggestions.recent.length === 0 && searchSuggestions.trending.length === 0 && (
+                  <View style={desktopStyles.suggestionSection}>
+                    <Text style={[desktopStyles.suggestionHeaderText, { paddingHorizontal: 16, paddingVertical: 12 }]}>
+                      Start typing to search...
+                    </Text>
                   </View>
                 )}
               </View>
