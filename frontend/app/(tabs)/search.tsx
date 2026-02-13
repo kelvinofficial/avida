@@ -342,7 +342,7 @@ export default function SearchScreen() {
                 ) : hasSearched && listings.length > 0 ? (
                   <View>
                     <Text style={desktopStyles.resultsCount}>
-                      {listings.length} {listings.length === 1 ? 'result' : 'results'} found - NEW LAYOUT
+                      {listings.length} {listings.length === 1 ? 'result' : 'results'} found
                     </Text>
                     {/* Single-column horizontal card layout */}
                     <View style={desktopStyles.listingsContainer}>
