@@ -17,6 +17,8 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   maxWidth = 1400,
   padding,
   scrollable = false,
+  refreshing = false,
+  onRefresh,
 }) => {
   const { isDesktop, isTablet, width } = useResponsive();
 
