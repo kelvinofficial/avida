@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ListingCardProps } from './ListingCard';
+import { ImagePlaceholder } from '../common/ImagePlaceholder';
 
 const COLORS = {
   primary: '#2E7D32',
