@@ -1998,6 +1998,8 @@ const desktopStyles = StyleSheet.create({
   // Row 2: Search + Location
   headerRow2: {
     alignItems: 'center',
+    zIndex: 200,
+    ...(Platform.OS === 'web' ? { overflow: 'visible' } : {}),
   },
   headerRow2Inner: {
     flexDirection: 'row',
@@ -2007,6 +2009,7 @@ const desktopStyles = StyleSheet.create({
     gap: 16,
     width: '100%',
     maxWidth: MAX_CONTENT_WIDTH,
+    ...(Platform.OS === 'web' ? { overflow: 'visible' } : {}),
   },
   searchFieldWrapper: {
     flex: 1,
