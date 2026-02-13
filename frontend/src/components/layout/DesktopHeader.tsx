@@ -128,7 +128,7 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
                       style={[styles.navLink, pathname === '/profile/my-listings' && styles.navLinkActive]}
                       onPress={() => router.push('/profile/my-listings')}
                     >
-                      <Ionicons name="pricetags-outline" size={18} color={pathname === '/profile/my-listings' ? COLORS.primary : COLORS.textSecondary} />
+                      <Ionicons name="list-outline" size={18} color={pathname === '/profile/my-listings' ? COLORS.primary : COLORS.textSecondary} />
                       <Text style={[styles.navLinkText, pathname === '/profile/my-listings' && styles.navLinkTextActive]}>My Listings</Text>
                     </TouchableOpacity>
                     <TouchableOpacity 

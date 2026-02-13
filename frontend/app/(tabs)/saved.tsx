@@ -269,7 +269,7 @@ export default function SavedScreen() {
                 style={[desktopStyles.navLink, pathname === '/profile/my-listings' && desktopStyles.navLinkActive]}
                 onPress={() => router.push('/profile/my-listings')}
               >
-                <Ionicons name="pricetags-outline" size={18} color={pathname === '/profile/my-listings' ? COLORS.primary : COLORS.textSecondary} />
+                <Ionicons name="list-outline" size={18} color={pathname === '/profile/my-listings' ? COLORS.primary : COLORS.textSecondary} />
                 <Text style={[desktopStyles.navLinkText, pathname === '/profile/my-listings' && desktopStyles.navLinkTextActive]}>My Listings</Text>
               </TouchableOpacity>
               <TouchableOpacity 
