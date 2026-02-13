@@ -900,7 +900,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   resultsArea: {
-    flex: 1,
+    minHeight: 400,
+  },
+  resultsContainer: {
+    paddingBottom: 24,
   },
   resultsText: {
     fontSize: 16,
