@@ -74,6 +74,7 @@ export default function PhotographyGuidesAdmin() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
   const [editingGuide, setEditingGuide] = useState<PhotographyGuide | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -84,6 +85,11 @@ export default function PhotographyGuidesAdmin() {
     order: 0,
     is_active: true,
   });
+
+  // Track client-side mounting
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Helper to get token
   const getToken = async (): Promise<string | null> => {
@@ -147,18 +153,20 @@ export default function PhotographyGuidesAdmin() {
     }
   }, []);
 
-  // Initial load
+  // Initial load - only after client-side mount
   useEffect(() => {
-    fetchGuides();
-    fetchStats();
-  }, []);
+    if (isMounted) {
+      fetchGuides();
+      fetchStats();
+    }
+  }, [isMounted, fetchGuides, fetchStats]);
 
   // Refresh when category changes
   useEffect(() => {
-    if (selectedCategory !== '') {
+    if (isMounted && selectedCategory !== '') {
       fetchGuides(selectedCategory);
     }
-  }, [selectedCategory]);
+  }, [isMounted, selectedCategory]);
 
   // Create/Update guide
   const handleSaveGuide = async () => {
