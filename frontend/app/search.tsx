@@ -821,6 +821,107 @@ const styles = StyleSheet.create({
   gridItem: {
     width: 'calc(50% - 8px)',
   },
+  // Horizontal card layout styles
+  listingsContainer: {
+    flexDirection: 'column',
+    gap: 12,
+  },
+  horizontalCard: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    overflow: 'hidden',
+    padding: 12,
+    gap: 16,
+    ...(Platform.OS === 'web' ? { cursor: 'pointer' } : {}),
+  },
+  cardImageWrapper: {
+    width: 180,
+    height: 140,
+    flexShrink: 0,
+  },
+  cardImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+    backgroundColor: COLORS.background,
+  },
+  cardContentWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  cardPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
+  cardPrice: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  negotiableBadge: {
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  negotiableText: {
+    fontSize: 11,
+    color: COLORS.primary,
+    fontWeight: '500',
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 4,
+    lineHeight: 22,
+  },
+  cardDescription: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginBottom: 10,
+    lineHeight: 18,
+  },
+  cardMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    flexWrap: 'wrap',
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  metaText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
+  conditionBadge: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  conditionText: {
+    fontSize: 11,
+    color: '#4B5563',
+    fontWeight: '500',
+  },
+  horizontalFavoriteBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F9FAFB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
   
   // Mobile styles
   container: {
