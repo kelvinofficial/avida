@@ -1671,11 +1671,110 @@ export default function HomeScreen() {
               </View>
             )}
           </View>
-          <TouchableOpacity style={desktopStyles.locationChip} activeOpacity={0.7} onPress={() => setShowLocationModal(true)}>
-            <Ionicons name="location" size={18} color="#2E7D32" />
-            <Text style={desktopStyles.locationText} numberOfLines={1}>{currentCity}</Text>
-            <Ionicons name="chevron-down" size={16} color="#666" />
-          </TouchableOpacity>
+          
+          {/* Location Selector with Dropdown */}
+          <View style={desktopStyles.locationWrapper}>
+            <TouchableOpacity 
+              style={desktopStyles.locationChip} 
+              activeOpacity={0.7} 
+              onPress={handleOpenLocationDropdown}
+              data-testid="desktop-location-selector"
+            >
+              <Ionicons name="location" size={18} color="#2E7D32" />
+              <Text style={desktopStyles.locationText} numberOfLines={1}>{currentCity}</Text>
+              <Ionicons name={showLocationDropdown ? "chevron-up" : "chevron-down"} size={16} color="#666" />
+            </TouchableOpacity>
+            
+            {/* Location Dropdown */}
+            {showLocationDropdown && (
+              <View style={desktopStyles.locationDropdown}>
+                {/* Header */}
+                <View style={desktopStyles.locationDropdownHeader}>
+                  {locationDropdownStep === 'regions' && (
+                    <TouchableOpacity onPress={handleBackToCountries} style={desktopStyles.backButton}>
+                      <Ionicons name="arrow-back" size={18} color="#666" />
+                    </TouchableOpacity>
+                  )}
+                  <Text style={desktopStyles.locationDropdownTitle}>
+                    {locationDropdownStep === 'countries' ? 'Select Country' : selectedCountryForDropdown?.name}
+                  </Text>
+                  <TouchableOpacity 
+                    onPress={() => setShowLocationDropdown(false)} 
+                    style={desktopStyles.closeDropdownBtn}
+                  >
+                    <Ionicons name="close" size={18} color="#666" />
+                  </TouchableOpacity>
+                </View>
+                
+                {/* Clear Filter Option */}
+                {selectedLocationFilter && locationDropdownStep === 'countries' && (
+                  <TouchableOpacity 
+                    style={desktopStyles.clearLocationOption}
+                    onPress={() => {
+                      handleClearLocationFilter();
+                      setShowLocationDropdown(false);
+                    }}
+                  >
+                    <Ionicons name="globe-outline" size={18} color="#2E7D32" />
+                    <Text style={desktopStyles.clearLocationText}>All Locations</Text>
+                  </TouchableOpacity>
+                )}
+                
+                {/* Loading State */}
+                {locationDropdownLoading && (
+                  <View style={desktopStyles.locationDropdownLoading}>
+                    <ActivityIndicator size="small" color="#2E7D32" />
+                    <Text style={desktopStyles.loadingText}>Loading...</Text>
+                  </View>
+                )}
+                
+                {/* Countries List */}
+                {locationDropdownStep === 'countries' && !locationDropdownLoading && (
+                  <ScrollView style={desktopStyles.locationList} showsVerticalScrollIndicator={false}>
+                    {locationCountries.map((country) => (
+                      <TouchableOpacity
+                        key={country.code}
+                        style={desktopStyles.locationItem}
+                        onPress={() => handleSelectCountry(country)}
+                      >
+                        <Text style={desktopStyles.countryFlag}>{country.flag}</Text>
+                        <Text style={desktopStyles.locationItemText}>{country.name}</Text>
+                        <Ionicons name="chevron-forward" size={16} color="#999" />
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
+                
+                {/* Regions List */}
+                {locationDropdownStep === 'regions' && !locationDropdownLoading && (
+                  <ScrollView style={desktopStyles.locationList} showsVerticalScrollIndicator={false}>
+                    {/* All in Country Option */}
+                    <TouchableOpacity
+                      style={[desktopStyles.locationItem, desktopStyles.allInCountryOption]}
+                      onPress={handleSelectAllInCountry}
+                    >
+                      <Ionicons name="globe-outline" size={18} color="#2E7D32" />
+                      <Text style={[desktopStyles.locationItemText, { color: '#2E7D32', fontWeight: '600' }]}>
+                        All of {selectedCountryForDropdown?.name}
+                      </Text>
+                    </TouchableOpacity>
+                    
+                    {/* Region Items */}
+                    {locationRegions.map((region) => (
+                      <TouchableOpacity
+                        key={region.region_code}
+                        style={desktopStyles.locationItem}
+                        onPress={() => handleSelectRegion(region)}
+                      >
+                        <Ionicons name="location-outline" size={18} color="#666" />
+                        <Text style={desktopStyles.locationItemText}>{region.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
+              </View>
+            )}
+          </View>
         </View>
       </View>
 
