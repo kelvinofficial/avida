@@ -725,7 +725,7 @@ export default function SearchScreen() {
           </View>
 
           {/* Footer inside scroll view */}
-          <Footer />
+          <Footer isTablet={isTablet && !isDesktop} />
         </ScrollView>
       </View>
     );
