@@ -85,7 +85,7 @@ class TestListingsStatsUpdate:
             "description": "Test listing to verify stats update notification is triggered",
             "price": 150.00,
             "category_id": "electronics",
-            "subcategory": "phones",
+            "subcategory": "laptops_computers",
             "condition": "good",
             "location": "Berlin, Germany",
             "images": [],
@@ -124,6 +124,7 @@ class TestListingsStatsUpdate:
             "description": "Test listing to be deleted",
             "price": 75.00,
             "category_id": "electronics",
+            "subcategory": "tv_dvd",
             "location": "Munich, Germany"
         }
         
@@ -164,6 +165,7 @@ class TestListingsStatsUpdate:
             "description": "Test listing to be marked as sold",
             "price": 200.00,
             "category_id": "electronics",
+            "subcategory": "video_game_consoles",
             "location": "Hamburg, Germany"
         }
         
@@ -246,6 +248,7 @@ class TestOffersStatsUpdate:
             "description": "Test listing for offer stats testing",
             "price": 500.00,
             "category_id": "electronics",
+            "subcategory": "headphones",
             "location": "Berlin, Germany",
             "accepts_offers": True
         }
