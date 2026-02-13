@@ -105,6 +105,7 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
         <TouchableOpacity
           style={styles.favoriteButton}
           onPress={(e) => { e.stopPropagation(); onFavorite(); }}
+          testID={`favorite-btn-${listing._id || listing.id}`}
         >
           <Ionicons
             name={isFavorited ? 'heart' : 'heart-outline'}
@@ -133,7 +134,7 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
           {formatTimeAgo(listing.created_at)}
         </Text>
       </View>
-    </TouchableOpacity>
+    </TouchableScale>
   );
 });
 
