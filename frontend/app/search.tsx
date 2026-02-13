@@ -514,11 +514,68 @@ export default function SearchScreen() {
                         <Text style={styles.emptySubtitle}>Try different keywords or browse categories</Text>
                       </View>
                     ) : (
-                      <View style={styles.listingsGrid}>
+                      <View style={styles.listingsContainer}>
                         {listings.map((item) => (
-                          <View key={item.id} style={styles.gridItem}>
-                            {renderListing({ item })}
-                          </View>
+                          <TouchableOpacity
+                            key={item.id}
+                            style={styles.horizontalCard}
+                            onPress={() => router.push(getListingRoute(item))}
+                            data-testid={`listing-${item.id}`}
+                          >
+                            {/* Image on Left */}
+                            <View style={styles.cardImageWrapper}>
+                              <Image
+                                source={{ uri: item.images?.[0] || 'https://via.placeholder.com/180' }}
+                                style={styles.cardImage}
+                              />
+                            </View>
+                            
+                            {/* Content on Right */}
+                            <View style={styles.cardContentWrapper}>
+                              <View style={styles.cardPriceRow}>
+                                <Text style={styles.cardPrice}>{formatPrice(item.price, item.currency)}</Text>
+                                {item.negotiable && (
+                                  <View style={styles.negotiableBadge}>
+                                    <Text style={styles.negotiableText}>Negotiable</Text>
+                                  </View>
+                                )}
+                              </View>
+                              <Text style={styles.cardTitle} numberOfLines={2}>{item.title}</Text>
+                              <Text style={styles.cardDescription} numberOfLines={2}>
+                                {item.description || 'No description provided'}
+                              </Text>
+                              <View style={styles.cardMeta}>
+                                <View style={styles.metaItem}>
+                                  <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
+                                  <Text style={styles.metaText}>{item.location || 'Unknown'}</Text>
+                                </View>
+                                <View style={styles.metaItem}>
+                                  <Ionicons name="time-outline" size={14} color={COLORS.textSecondary} />
+                                  <Text style={styles.metaText}>
+                                    {new Date(item.created_at).toLocaleDateString()}
+                                  </Text>
+                                </View>
+                                {item.condition && (
+                                  <View style={styles.conditionBadge}>
+                                    <Text style={styles.conditionText}>{item.condition}</Text>
+                                  </View>
+                                )}
+                              </View>
+                            </View>
+                            
+                            {/* Favorite Button */}
+                            <TouchableOpacity
+                              style={styles.horizontalFavoriteBtn}
+                              onPress={() => handleFavorite(item.id)}
+                              data-testid={`favorite-${item.id}`}
+                            >
+                              <Ionicons
+                                name={favorites.has(item.id) ? 'heart' : 'heart-outline'}
+                                size={22}
+                                color={favorites.has(item.id) ? '#E53935' : COLORS.textSecondary}
+                              />
+                            </TouchableOpacity>
+                          </TouchableOpacity>
                         ))}
                       </View>
                     )}
