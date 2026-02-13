@@ -340,10 +340,15 @@ export default function SearchScreen() {
   useEffect(() => {
     const initialQuery = params.q as string;
     if (initialQuery && initialQuery.trim()) {
+      // Set the query first
       setSearchQuery(initialQuery);
-      handleSearch(initialQuery);
+      // Trigger search with a small delay to ensure state is updated
+      const timer = setTimeout(() => {
+        handleSearch(initialQuery);
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [params.q, handleSearch]);
+  }, [params.q]);
 
   const handleCategoryPress = (categoryId: string) => {
     router.push(`/category/${categoryId}`);
