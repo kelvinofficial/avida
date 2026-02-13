@@ -340,89 +340,51 @@ export default function SearchScreen() {
     }
   }, [searchQuery]);
 
-  // Auto-search when page loads with query parameter
-  // This effect handles both initial mount AND subsequent param changes
-  useEffect(() => {
-    // Get query from URL params (works on web after hydration)
-    let queryFromUrl = '';
-    
-    // First try expo-router params
-    const paramQuery = params.q as string;
-    if (paramQuery && paramQuery.trim()) {
-      queryFromUrl = paramQuery.trim();
-    }
-    
-    // Fallback: On web, also check window.location.search directly
-    // This is more reliable during SSR hydration
-    if (!queryFromUrl && Platform.OS === 'web' && typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlQuery = urlParams.get('q');
-      if (urlQuery && urlQuery.trim()) {
-        queryFromUrl = urlQuery.trim();
-      }
-    }
-    
-    console.log('[Search Page] Auto-search check - query:', queryFromUrl, 'lastHandled:', initialSearchHandled.current);
-    
-    // Execute search if we have a query and it's different from what we already handled
-    // This allows re-searching when navigating to the same page with a new query
-    if (queryFromUrl && initialSearchHandled.current !== queryFromUrl) {
-      initialSearchHandled.current = queryFromUrl;
-      setSearchQuery(queryFromUrl);
-      setHasSearched(true);
-      setLoading(true);
+  // Auto-search using useFocusEffect - triggers when screen comes into focus
+  // This handles both client-side navigation and direct URL access
+  useFocusEffect(
+    useCallback(() => {
+      // Get query from URL (works reliably on web)
+      let queryFromUrl = '';
       
-      console.log('[Search Page] Executing auto-search for:', queryFromUrl);
-      
-      // Execute search directly (not via callback to avoid stale closure issues)
-      const executeSearch = async () => {
-        try {
-          api.post('/searches/track', { query: queryFromUrl.toLowerCase() }).catch(() => {});
-          const response = await listingsApi.search(queryFromUrl);
-          console.log('[Search Page] Search results received:', response?.listings?.length || 0);
-          setListings(response.listings || []);
-          saveRecentSearch(queryFromUrl);
-        } catch (error) {
-          console.error('[Search Page] Search error:', error);
-          setListings([]);
-        } finally {
-          setLoading(false);
+      // On web, always check window.location.search directly
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlQuery = urlParams.get('q');
+        if (urlQuery && urlQuery.trim()) {
+          queryFromUrl = urlQuery.trim();
         }
-      };
+      }
       
-      executeSearch();
-    }
-  }, [params.q, params]); // Watch both params.q and full params object
-
-  // Additional mount-only effect for web - handles SSR hydration edge case
-  // This runs once after first render and checks window.location directly
-  useEffect(() => {
-    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
-    
-    // Small delay to ensure hydration is complete
-    const timer = setTimeout(() => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const queryFromUrl = urlParams.get('q')?.trim() || '';
+      // Also try expo-router params as fallback
+      if (!queryFromUrl) {
+        const paramQuery = params.q as string;
+        if (paramQuery && paramQuery.trim()) {
+          queryFromUrl = paramQuery.trim();
+        }
+      }
       
-      console.log('[Search Page] Mount effect - query:', queryFromUrl, 'lastHandled:', initialSearchHandled.current);
+      console.log('[Search Page] useFocusEffect - query:', queryFromUrl, 'lastHandled:', initialSearchHandled.current);
       
+      // Execute search if we have a query and it's different from what we already handled
       if (queryFromUrl && initialSearchHandled.current !== queryFromUrl) {
         initialSearchHandled.current = queryFromUrl;
         setSearchQuery(queryFromUrl);
         setHasSearched(true);
         setLoading(true);
         
-        console.log('[Search Page] Mount effect - executing search for:', queryFromUrl);
+        console.log('[Search Page] Executing auto-search for:', queryFromUrl);
         
+        // Execute search
         const executeSearch = async () => {
           try {
             api.post('/searches/track', { query: queryFromUrl.toLowerCase() }).catch(() => {});
             const response = await listingsApi.search(queryFromUrl);
-            console.log('[Search Page] Mount search results:', response?.listings?.length || 0);
+            console.log('[Search Page] Search results received:', response?.listings?.length || 0);
             setListings(response.listings || []);
             saveRecentSearch(queryFromUrl);
           } catch (error) {
-            console.error('[Search Page] Mount search error:', error);
+            console.error('[Search Page] Search error:', error);
             setListings([]);
           } finally {
             setLoading(false);
@@ -431,10 +393,8 @@ export default function SearchScreen() {
         
         executeSearch();
       }
-    }, 100); // Small delay for hydration
-    
-    return () => clearTimeout(timer);
-  }, []); // Empty deps - runs once on mount
+    }, [params.q])
+  );
 
   const handleCategoryPress = (categoryId: string) => {
     router.push(`/category/${categoryId}`);
