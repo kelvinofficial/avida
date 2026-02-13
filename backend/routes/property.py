@@ -924,6 +924,15 @@ def create_offers_router(db, require_auth, get_current_user, notify_stats_update
             }}
         )
         
+        # Notify seller of stats update (pending offers count changed)
+        if notify_stats_update and offer.get("seller_id"):
+            try:
+                import asyncio
+                asyncio.create_task(notify_stats_update(offer.get("seller_id")))
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).debug(f"Stats notification failed: {e}")
+        
         return {"message": "Counter offer accepted", "final_price": offer.get("counter_price")}
 
     @router.delete("/{offer_id}")
@@ -949,6 +958,15 @@ def create_offers_router(db, require_auth, get_current_user, notify_stats_update
                 "updated_at": datetime.now(timezone.utc).isoformat()
             }}
         )
+        
+        # Notify seller of stats update (pending offers count changed)
+        if notify_stats_update and offer.get("seller_id"):
+            try:
+                import asyncio
+                asyncio.create_task(notify_stats_update(offer.get("seller_id")))
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).debug(f"Stats notification failed: {e}")
         
         return {"message": "Offer withdrawn"}
 
