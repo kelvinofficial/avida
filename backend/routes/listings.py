@@ -250,6 +250,14 @@ def create_listings_router(
         except Exception as e:
             logger.debug(f"Badge check failed: {e}")
         
+        # Notify user of stats update via WebSocket (real-time Quick Stats)
+        if notify_stats_update:
+            try:
+                import asyncio
+                asyncio.create_task(notify_stats_update(user.user_id))
+            except Exception as e:
+                logger.debug(f"Stats notification failed: {e}")
+        
         return created_listing
     
     @router.get("")
