@@ -81,10 +81,10 @@ const QUICK_LINKS = [
 ];
 
 const SUPPORT_LINKS = [
-  { label: 'Help Center', route: '#' },
-  { label: 'Safety Tips', route: '#' },
-  { label: 'Contact Us', route: '#' },
-  { label: 'Report Issue', route: '#' },
+  { label: 'Help Center', route: '/faq' },
+  { label: 'Safety Tips', route: '/safety-tips' },
+  { label: 'Contact Us', route: '/contact' },
+  { label: 'Report Issue', route: '/help' },
 ];
 
 const SOCIAL_LINKS = [
