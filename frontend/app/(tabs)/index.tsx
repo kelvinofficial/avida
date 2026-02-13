@@ -491,6 +491,25 @@ export default function HomeScreen() {
     loadSavedLocation();
   }, []);
 
+  // Sync with global location store for DesktopHeader
+  useEffect(() => {
+    // When global location changes (from DesktopHeader), sync local state
+    if (locationStore.selectedLocationFilter) {
+      setSelectedLocationFilter(locationStore.selectedLocationFilter);
+      setCurrentCity(locationStore.currentCity);
+    } else if (locationStore.currentCity === 'All Locations') {
+      setSelectedLocationFilter(null);
+      setCurrentCity('All Locations');
+    }
+  }, [locationStore.selectedLocationFilter, locationStore.currentCity]);
+
+  // Sync local location changes to global store
+  useEffect(() => {
+    if (selectedLocationFilter) {
+      locationStore.setLocation(currentCity, selectedLocationFilter);
+    }
+  }, [selectedLocationFilter]);
+
   // Fetch featured listings from verified sellers
   const fetchFeaturedListings = useCallback(async () => {
     try {
