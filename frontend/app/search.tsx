@@ -393,6 +393,48 @@ export default function SearchScreen() {
     }
   }, [params.q, params]); // Watch both params.q and full params object
 
+  // Additional mount-only effect for web - handles SSR hydration edge case
+  // This runs once after first render and checks window.location directly
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    
+    // Small delay to ensure hydration is complete
+    const timer = setTimeout(() => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryFromUrl = urlParams.get('q')?.trim() || '';
+      
+      console.log('[Search Page] Mount effect - query:', queryFromUrl, 'lastHandled:', initialSearchHandled.current);
+      
+      if (queryFromUrl && initialSearchHandled.current !== queryFromUrl) {
+        initialSearchHandled.current = queryFromUrl;
+        setSearchQuery(queryFromUrl);
+        setHasSearched(true);
+        setLoading(true);
+        
+        console.log('[Search Page] Mount effect - executing search for:', queryFromUrl);
+        
+        const executeSearch = async () => {
+          try {
+            api.post('/searches/track', { query: queryFromUrl.toLowerCase() }).catch(() => {});
+            const response = await listingsApi.search(queryFromUrl);
+            console.log('[Search Page] Mount search results:', response?.listings?.length || 0);
+            setListings(response.listings || []);
+            saveRecentSearch(queryFromUrl);
+          } catch (error) {
+            console.error('[Search Page] Mount search error:', error);
+            setListings([]);
+          } finally {
+            setLoading(false);
+          }
+        };
+        
+        executeSearch();
+      }
+    }, 100); // Small delay for hydration
+    
+    return () => clearTimeout(timer);
+  }, []); // Empty deps - runs once on mount
+
   const handleCategoryPress = (categoryId: string) => {
     router.push(`/category/${categoryId}`);
   };
