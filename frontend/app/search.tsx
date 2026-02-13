@@ -225,8 +225,14 @@ export default function SearchScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { isAuthenticated } = useAuthStore();
-  const { isDesktop, isTablet } = useResponsive();
+  const responsive = useResponsive();
+  const { isDesktop, isTablet, width } = responsive;
   const isLargeScreen = isDesktop || isTablet;
+  
+  // Debug: log screen detection
+  useEffect(() => {
+    console.log('Search page responsive:', { isDesktop, isTablet, width, isLargeScreen });
+  }, [isDesktop, isTablet, width, isLargeScreen]);
   
   const [searchQuery, setSearchQuery] = useState((params.q as string) || '');
   const [listings, setListings] = useState<any[]>([]);
