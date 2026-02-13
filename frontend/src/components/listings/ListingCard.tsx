@@ -4,11 +4,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ImagePlaceholder } from '../common/ImagePlaceholder';
+import { TouchableScale, OptimizedImage } from '../common';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
