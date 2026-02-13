@@ -514,11 +514,11 @@ export default function SearchScreen() {
                         <Text style={styles.emptySubtitle}>Try different keywords or browse categories</Text>
                       </View>
                     ) : (
-                      <View style={styles.listingsContainer}>
+                      <View style={[styles.listingsContainer, { display: 'flex', flexDirection: 'column', gap: 12 }]}>
                         {listings.map((item) => (
                           <TouchableOpacity
                             key={item.id}
-                            style={styles.horizontalCard}
+                            style={[styles.horizontalCard, { display: 'flex', flexDirection: 'row', width: '100%' }]}
                             onPress={() => router.push(getListingRoute(item))}
                             data-testid={`listing-${item.id}`}
                           >
