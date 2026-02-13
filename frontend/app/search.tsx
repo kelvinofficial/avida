@@ -557,10 +557,16 @@ export default function SearchScreen() {
       onPress={() => router.push(getListingRoute(item))}
       data-testid={`listing-${item.id}`}
     >
-      <Image
-        source={{ uri: item.images?.[0] || 'https://via.placeholder.com/100' }}
-        style={styles.listingImage}
-      />
+      {item.images?.[0] ? (
+        <Image
+          source={{ uri: item.images[0] }}
+          style={styles.listingImage}
+        />
+      ) : (
+        <View style={styles.listingImage}>
+          <ImagePlaceholder size="small" />
+        </View>
+      )}
       <View style={styles.listingContent}>
         <Text style={styles.listingPrice}>{formatPrice(item.price, item.currency)}</Text>
         <Text style={styles.listingTitle} numberOfLines={2}>{item.title}</Text>
