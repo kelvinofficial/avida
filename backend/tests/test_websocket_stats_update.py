@@ -206,7 +206,8 @@ class TestOffersStatsUpdate:
         seller_login = TestAuth.login("testuser@test.com", "password")
         if seller_login:
             self.seller_token = seller_login.get("session_token") or seller_login.get("token")
-            self.seller_id = seller_login.get("user_id")
+            # user_id is nested under 'user' key
+            self.seller_id = seller_login.get("user", {}).get("user_id") or seller_login.get("user_id")
         else:
             pytest.skip("Could not login as testuser@test.com")
         
@@ -214,7 +215,8 @@ class TestOffersStatsUpdate:
         buyer_login = TestAuth.login("test3@test.com", "password")
         if buyer_login:
             self.buyer_token = buyer_login.get("session_token") or buyer_login.get("token")
-            self.buyer_id = buyer_login.get("user_id")
+            # user_id is nested under 'user' key
+            self.buyer_id = buyer_login.get("user", {}).get("user_id") or buyer_login.get("user_id")
         else:
             pytest.skip("Could not login as test3@test.com")
         
@@ -223,6 +225,10 @@ class TestOffersStatsUpdate:
     
     def teardown_method(self, method):
         """Clean up created resources"""
+        if not hasattr(self, 'seller_token') or not self.seller_token:
+            return
+        if not hasattr(self, 'buyer_token') or not self.buyer_token:
+            return
         seller_headers = TestAuth.get_auth_headers(self.seller_token)
         buyer_headers = TestAuth.get_auth_headers(self.buyer_token)
         
