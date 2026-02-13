@@ -1,12 +1,15 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useResponsive } from '../../hooks/useResponsive';
+import { EnhancedRefreshControl } from '../common';
 
 interface ResponsiveContainerProps {
   children: React.ReactNode;
   maxWidth?: number;
   padding?: number;
   scrollable?: boolean;
+  refreshing?: boolean;
+  onRefresh?: () => Promise<void> | void;
 }
 
 export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
