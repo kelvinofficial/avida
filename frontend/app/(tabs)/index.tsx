@@ -805,17 +805,17 @@ export default function HomeScreen() {
   const handleSearchSubmit = () => {
     console.log('[Homepage] handleSearchSubmit called, query:', homeSearchQuery);
     if (homeSearchQuery.trim()) {
-      const searchUrl = `/search?q=${encodeURIComponent(homeSearchQuery.trim())}&_t=${Date.now()}`;
+      const searchUrl = `/search?q=${encodeURIComponent(homeSearchQuery.trim())}`;
       console.log('[Homepage] Navigating to:', searchUrl);
       // On web, use full page navigation to ensure search page mounts fresh
       if (Platform.OS === 'web' && typeof window !== 'undefined') {
         window.location.href = searchUrl;
       } else {
-        router.push(`/search?q=${encodeURIComponent(homeSearchQuery.trim())}`);
+        router.push(searchUrl);
       }
       setHomeSearchQuery(''); // Clear after navigation
     } else {
-      console.log('[Homepage] Redirecting to /search (empty query)');
+      console.log('[Homepage] Navigating to /search');
       if (Platform.OS === 'web' && typeof window !== 'undefined') {
         window.location.href = '/search';
       } else {
