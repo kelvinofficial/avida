@@ -225,8 +225,8 @@ export default function SearchScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { isAuthenticated } = useAuthStore();
-  const { isDesktop, isTablet } = useResponsive();
-  const isLargeScreen = isDesktop || isTablet;
+  const { isDesktop, isTablet, isReady } = useResponsive();
+  const isLargeScreen = isReady && (isDesktop || isTablet);
   
   const [searchQuery, setSearchQuery] = useState((params.q as string) || '');
   const [listings, setListings] = useState<any[]>([]);
