@@ -17,8 +17,6 @@ import { useRouter } from 'expo-router';
 import api from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
-
 const COLORS = {
   primary: '#2E7D32',
   primaryLight: '#E8F5E9',
