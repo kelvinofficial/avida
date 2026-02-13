@@ -2410,7 +2410,7 @@ if MODULAR_ROUTES_AVAILABLE:
     
     # Create offers router
     try:
-        offers_router = create_offers_router(db, require_auth, get_current_user)
+        offers_router = create_offers_router(db, require_auth, get_current_user, notify_stats_update=notify_stats_update)
         api_router.include_router(offers_router)
         logger.info("Offers router loaded successfully")
     except Exception as e:
