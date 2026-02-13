@@ -21,7 +21,38 @@ if (typeof window !== 'undefined' || Platform.OS !== 'web') {
 }
 
 // Import page-specific skeletons
-import { HomepageSkeleton } from '../src/components/skeletons';
+import { 
+  HomepageSkeleton, 
+  SearchPageSkeleton, 
+  SettingsSkeleton, 
+  MessagesSkeleton, 
+  ProfileSkeleton, 
+  ListingDetailSkeleton 
+} from '../src/components/skeletons';
+
+// Route-based skeleton selector
+const getSkeletonForRoute = (pathname: string, isDesktop: boolean) => {
+  // Normalize pathname
+  const route = pathname?.toLowerCase() || '/';
+  
+  if (route.includes('/search')) {
+    return <SearchPageSkeleton isDesktop={isDesktop} />;
+  }
+  if (route.includes('/settings') || route.includes('/notification-preferences')) {
+    return <SettingsSkeleton isDesktop={isDesktop} />;
+  }
+  if (route.includes('/messages') || route.includes('/chat')) {
+    return <MessagesSkeleton isDesktop={isDesktop} />;
+  }
+  if (route.includes('/profile')) {
+    return <ProfileSkeleton isDesktop={isDesktop} />;
+  }
+  if (route.includes('/listing/')) {
+    return <ListingDetailSkeleton isDesktop={isDesktop} />;
+  }
+  // Default to homepage skeleton for /, /index, or unknown routes
+  return <HomepageSkeleton isDesktop={isDesktop} />;
+};
 
 // Skeleton shimmer animation component for font loading (kept for backward compatibility)
 const FontLoadingSkeleton = () => {
