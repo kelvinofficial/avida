@@ -363,35 +363,35 @@ export const SettingsSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop 
 
 // ============ MESSAGES PAGE SKELETON ============
 export const MessagesSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
-  const opacity = useShimmer();
+  const theme = useShimmerTheme();
   
   const MessageItem = () => (
-    <View style={messagesSkeleton.item}>
-      <Animated.View style={[messagesSkeleton.avatar, { opacity }]} />
+    <View style={[messagesSkeleton.item, { backgroundColor: theme.surfaceColor }]}>
+      <ShimmerBox width={50} height={50} borderRadius={25} />
       <View style={messagesSkeleton.content}>
-        <Animated.View style={[{ width: '50%', height: 16, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
-        <Animated.View style={[{ width: '80%', height: 14, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+        <ShimmerBox width="50%" height={16} borderRadius={4} />
+        <ShimmerBox width="80%" height={14} borderRadius={4} />
       </View>
-      <Animated.View style={[{ width: 40, height: 12, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+      <ShimmerBox width={40} height={12} borderRadius={4} />
     </View>
   );
   
   return (
-    <View style={skeletonBase.container}>
+    <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor }]}>
       {/* Header */}
       <View style={settingsSkeleton.mobileHeader}>
-        <Animated.View style={[{ width: 24, height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
-        <Animated.View style={[{ width: 100, height: 20, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
-        <Animated.View style={[{ width: 24, height: 24, backgroundColor: COLORS.skeleton, borderRadius: 4 }, { opacity }]} />
+        <ShimmerBox width={24} height={24} borderRadius={4} />
+        <ShimmerBox width={100} height={20} borderRadius={4} />
+        <ShimmerBox width={24} height={24} borderRadius={4} />
       </View>
       
       {/* Search bar */}
-      <Animated.View style={[messagesSkeleton.searchBar, { opacity }]} />
+      <ShimmerBox height={44} borderRadius={22} style={{ marginBottom: 16 }} />
       
       {/* Tabs */}
       <View style={messagesSkeleton.tabs}>
-        <Animated.View style={[messagesSkeleton.tab, { opacity }]} />
-        <Animated.View style={[messagesSkeleton.tab, { opacity }]} />
+        <ShimmerBox height={40} borderRadius={8} style={{ flex: 1 }} />
+        <ShimmerBox height={40} borderRadius={8} style={{ flex: 1 }} />
       </View>
       
       {/* Message list */}
