@@ -31,28 +31,22 @@ const COLORS = {
 interface DesktopHeaderProps {
   showNavLinks?: boolean;
   showSearch?: boolean;
-  currentCity?: string;
-  onLocationPress?: () => void;
-  onCountrySelect?: (country: Country) => void;
+  showLocationSelector?: boolean;
 }
 
 export const DesktopHeader: React.FC<DesktopHeaderProps> = ({ 
   showNavLinks = true,
   showSearch = true,
-  currentCity = 'Select Country',
-  onLocationPress,
-  onCountrySelect,
+  showLocationSelector = true,
 }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, user } = useAuthStore();
+  const { currentCity, showLocationModal, setShowLocationModal, setLocation, clearLocation, selectedLocationFilter } = useLocationStore();
   const { goToLogin } = useLoginRedirect();
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [unviewedBadgeCount, setUnviewedBadgeCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(0);
-  const [showCountryModal, setShowCountryModal] = useState(false);
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [loadingCountries, setLoadingCountries] = useState(false);
 
   // Fetch credit balance, badge count, and notifications when authenticated
   useEffect(() => {
