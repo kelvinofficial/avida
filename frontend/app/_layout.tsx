@@ -195,6 +195,7 @@ export default function RootLayout() {
         <BadgeCelebrationProvider>
           <MilestoneProvider>
             <ErrorBoundary componentName="RootLayout">
+              <OfflineBanner isOffline={isOffline} />
               <SandboxBanner />
               <StatusBar style="dark" />
               <Stack
