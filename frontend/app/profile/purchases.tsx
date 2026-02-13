@@ -19,6 +19,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { DesktopPageLayout } from '../../src/components/layout';
 import { useLoginRedirect } from '../../src/hooks/useLoginRedirect';
+import { ImagePlaceholder } from '../../src/components/common/ImagePlaceholder';
 
 const COLORS = {
   primary: '#2E7D32',
@@ -99,8 +100,8 @@ const formatPrice = (price: number, currency: string = 'EUR') => {
   return `${symbols[currency] || currency} ${price?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || '0.00'}`;
 };
 
-const getImageUri = (img: string | undefined) => {
-  if (!img) return 'https://via.placeholder.com/80';
+const getImageUri = (img: string | undefined): string | null => {
+  if (!img) return null;
   if (img.startsWith('data:') || img.startsWith('http')) return img;
   return `data:image/jpeg;base64,${img}`;
 };
