@@ -1,16 +1,157 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo, createContext, useContext } from 'react';
 import { View, StyleSheet, Animated, Dimensions, Platform } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+// ============ SHIMMER THEME CONTEXT ============
+interface ShimmerTheme {
+  baseColor: string;
+  shimmerColor: string;
+  backgroundColor: string;
+  surfaceColor: string;
+  duration: number;
+}
+
+const defaultTheme: ShimmerTheme = {
+  baseColor: '#E0E0E0',
+  shimmerColor: '#F5F5F5',
+  backgroundColor: '#F5F5F5',
+  surfaceColor: '#FFFFFF',
+  duration: 1500,
+};
+
+const ShimmerThemeContext = createContext<ShimmerTheme>(defaultTheme);
+
+// Export provider for customization
+export const ShimmerThemeProvider: React.FC<{
+  children: React.ReactNode;
+  theme?: Partial<ShimmerTheme>;
+}> = ({ children, theme }) => {
+  const mergedTheme = useMemo(() => ({ ...defaultTheme, ...theme }), [theme]);
+  return (
+    <ShimmerThemeContext.Provider value={mergedTheme}>
+      {children}
+    </ShimmerThemeContext.Provider>
+  );
+};
+
+export const useShimmerTheme = () => useContext(ShimmerThemeContext);
+
+// Legacy COLORS object for backward compatibility
 const COLORS = {
   skeleton: '#E0E0E0',
-  skeletonLight: '#EBEBEB',
+  skeletonLight: '#F5F5F5',
   background: '#F5F5F5',
   surface: '#FFFFFF',
 };
 
-// Base shimmer animation hook
+// ============ SHIMMER BOX COMPONENT ============
+// A polished shimmer component with gradient animation
+interface ShimmerBoxProps {
+  width?: number | string;
+  height?: number | string;
+  borderRadius?: number;
+  style?: any;
+  aspectRatio?: number;
+}
+
+const ShimmerBox: React.FC<ShimmerBoxProps> = ({
+  width = '100%',
+  height = 20,
+  borderRadius = 4,
+  style,
+  aspectRatio,
+}) => {
+  const theme = useShimmerTheme();
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.timing(shimmerAnim, {
+        toValue: 1,
+        duration: theme.duration,
+        useNativeDriver: Platform.OS !== 'web',
+      })
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [theme.duration]);
+
+  // For web, use CSS animation for better performance
+  if (Platform.OS === 'web') {
+    return (
+      <View
+        style={[
+          {
+            width,
+            height: aspectRatio ? undefined : height,
+            aspectRatio,
+            borderRadius,
+            backgroundColor: theme.baseColor,
+            overflow: 'hidden',
+            position: 'relative',
+          },
+          style,
+        ]}
+      >
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: `linear-gradient(90deg, ${theme.baseColor} 0%, ${theme.shimmerColor} 50%, ${theme.baseColor} 100%)`,
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 1.5s infinite ease-in-out',
+          } as any}
+        />
+        <style>{`
+          @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+          }
+        `}</style>
+      </View>
+    );
+  }
+
+  // For native, use Animated.View with translateX
+  const translateX = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-300, 300],
+  });
+
+  return (
+    <View
+      style={[
+        {
+          width,
+          height: aspectRatio ? undefined : height,
+          aspectRatio,
+          borderRadius,
+          backgroundColor: theme.baseColor,
+          overflow: 'hidden',
+        },
+        style,
+      ]}
+    >
+      <Animated.View
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          width: 150,
+          backgroundColor: theme.shimmerColor,
+          opacity: 0.5,
+          transform: [{ translateX }, { skewX: '-20deg' }],
+        }}
+      />
+    </View>
+  );
+};
+
+// Shorthand for legacy opacity-based shimmer (kept for transition)
 const useShimmer = () => {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
   
