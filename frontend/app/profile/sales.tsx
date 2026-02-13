@@ -46,10 +46,16 @@ const SkeletonItem = () => (
 // Sale Item
 const SaleItem = ({ item, onPress }: { item: any; onPress: () => void }) => (
   <TouchableOpacity style={styles.saleItem} onPress={onPress}>
-    <Image
-      source={{ uri: item.images?.[0] || 'https://via.placeholder.com/80' }}
-      style={styles.itemImage}
-    />
+    {item.images?.[0] ? (
+      <Image
+        source={{ uri: item.images[0] }}
+        style={styles.itemImage}
+      />
+    ) : (
+      <View style={styles.itemImage}>
+        <ImagePlaceholder size="small" showText={false} />
+      </View>
+    )}
     <View style={styles.itemContent}>
       <Text style={styles.itemTitle} numberOfLines={2}>{item.title}</Text>
       <Text style={styles.itemPrice}>€{item.price?.toLocaleString()}</Text>
@@ -85,10 +91,14 @@ const DesktopSaleCard = ({ item, onPress }: { item: any; onPress: () => void }) 
     data-testid={`sale-item-${item.id}`}
   >
     <View style={desktopStyles.cardImageContainer}>
-      <Image
-        source={{ uri: item.images?.[0] || 'https://via.placeholder.com/300' }}
-        style={desktopStyles.cardImage}
-      />
+      {item.images?.[0] ? (
+        <Image
+          source={{ uri: item.images[0] }}
+          style={desktopStyles.cardImage}
+        />
+      ) : (
+        <ImagePlaceholder size="large" />
+      )}
       <View style={desktopStyles.soldBadgeOverlay}>
         <Ionicons name="checkmark-circle" size={12} color="#fff" />
         <Text style={desktopStyles.soldBadgeText}>Sold</Text>
