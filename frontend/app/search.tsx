@@ -21,6 +21,7 @@ import { useAuthStore } from '../src/store/authStore';
 import { safeGoBack } from '../src/utils/navigation';
 import { useResponsive } from '../src/hooks/useResponsive';
 import { DesktopHeader } from '../src/components/layout/DesktopHeader';
+import { DesktopPageLayout } from '../src/components/layout/DesktopPageLayout';
 import { Footer } from '../src/components/layout/Footer';
 
 const COLORS = {
