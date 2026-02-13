@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../utils/theme';
 import { AutoListing } from '../../types/auto';
 import { AutoListingCard } from './AutoListingCard';
+import { TouchableScale } from '../common';
 
 interface RecommendationSectionProps {
   title: string;
