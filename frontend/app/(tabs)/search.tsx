@@ -63,6 +63,8 @@ export default function SearchScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
   const { width: windowWidth } = useWindowDimensions();
+  const { isDesktop, isTablet } = useResponsive();
+  const isLargeScreen = isDesktop || isTablet;
   const { userLocation, nearMeEnabled, setNearMeEnabled, isLoading: locationLoading, requestLocation } = useUserLocation();
   const dynamicCardWidth = Math.floor((windowWidth - HORIZONTAL_PADDING * 2 - COLUMN_GAP) / 2);
   
