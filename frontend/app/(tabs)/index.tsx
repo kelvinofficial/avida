@@ -365,6 +365,9 @@ export default function HomeScreen() {
   const { isSandboxMode } = useSandbox();
   const { width: windowWidth } = useWindowDimensions();
   
+  // Global location store - used by DesktopHeader
+  const locationStore = useLocationStore();
+  
   // Location state - MANDATORY SELECTION, NO GPS
   const [selectedCity, setSelectedCity] = useState<{
     country_code: string;
