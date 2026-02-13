@@ -2415,6 +2415,7 @@ const desktopStyles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
     minWidth: 0,
+    backgroundColor: 'rgba(255, 0, 0, 0.1)',
   },
   allInCountryOption: {
     backgroundColor: '#F0FFF0',
