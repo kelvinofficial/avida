@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Platform } from 'react-native';
-import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 
 export interface NetworkStatus {
   isConnected: boolean;
@@ -43,43 +42,63 @@ export const useNetworkStatus = (): NetworkStatus => {
       };
 
       // Set initial state
-      setNetworkStatus({
-        isConnected: navigator.onLine,
-        isInternetReachable: navigator.onLine,
-        connectionType: navigator.onLine ? 'wifi' : null,
-        isOffline: !navigator.onLine,
-      });
+      if (typeof navigator !== 'undefined') {
+        setNetworkStatus({
+          isConnected: navigator.onLine,
+          isInternetReachable: navigator.onLine,
+          connectionType: navigator.onLine ? 'wifi' : null,
+          isOffline: !navigator.onLine,
+        });
+      }
 
-      window.addEventListener('online', handleOnline);
-      window.addEventListener('offline', handleOffline);
+      if (typeof window !== 'undefined') {
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
 
-      return () => {
-        window.removeEventListener('online', handleOnline);
-        window.removeEventListener('offline', handleOffline);
-      };
+        return () => {
+          window.removeEventListener('online', handleOnline);
+          window.removeEventListener('offline', handleOffline);
+        };
+      }
+      return;
     }
 
-    // For native platforms, use NetInfo
-    const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
-      setNetworkStatus({
-        isConnected: state.isConnected ?? false,
-        isInternetReachable: state.isInternetReachable,
-        connectionType: state.type,
-        isOffline: !state.isConnected,
-      });
-    });
+    // For native platforms, dynamically import NetInfo
+    let unsubscribe: (() => void) | undefined;
+    
+    const setupNetInfo = async () => {
+      try {
+        const NetInfo = require('@react-native-community/netinfo').default;
+        
+        unsubscribe = NetInfo.addEventListener((state: any) => {
+          setNetworkStatus({
+            isConnected: state.isConnected ?? false,
+            isInternetReachable: state.isInternetReachable,
+            connectionType: state.type,
+            isOffline: !state.isConnected,
+          });
+        });
 
-    // Get initial state
-    NetInfo.fetch().then((state: NetInfoState) => {
-      setNetworkStatus({
-        isConnected: state.isConnected ?? false,
-        isInternetReachable: state.isInternetReachable,
-        connectionType: state.type,
-        isOffline: !state.isConnected,
-      });
-    });
+        // Get initial state
+        const state = await NetInfo.fetch();
+        setNetworkStatus({
+          isConnected: state.isConnected ?? false,
+          isInternetReachable: state.isInternetReachable,
+          connectionType: state.type,
+          isOffline: !state.isConnected,
+        });
+      } catch (error) {
+        console.warn('NetInfo not available:', error);
+      }
+    };
 
-    return () => unsubscribe();
+    setupNetInfo();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   return networkStatus;
