@@ -29,12 +29,12 @@ export default function RootLayout() {
   // Load icon fonts locally to avoid network dependency
   // Using font names that match @expo/vector-icons expectations
   const [fontsLoaded] = useFonts({
-    'ionicons': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf'),
-    'material': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf'),
-    'material-community': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf'),
-    'FontAwesome': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome.ttf'),
-    'FontAwesome5_Solid': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf'),
-    'feather': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Feather.ttf'),
+    'ionicons': require('../assets/icon-fonts/Ionicons.ttf'),
+    'material': require('../assets/icon-fonts/MaterialIcons.ttf'),
+    'material-community': require('../assets/icon-fonts/MaterialCommunityIcons.ttf'),
+    'FontAwesome': require('../assets/icon-fonts/FontAwesome.ttf'),
+    'FontAwesome5_Solid': require('../assets/icon-fonts/FontAwesome5_Solid.ttf'),
+    'feather': require('../assets/icon-fonts/Feather.ttf'),
   });
 
   // Initialize notification deep linking
