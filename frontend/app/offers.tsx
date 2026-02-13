@@ -132,10 +132,16 @@ const DesktopOfferCard = ({
     <View style={[desktopStyles.offerCard, Platform.OS === 'web' && { cursor: 'default' } as any]}>
       {/* Header with listing info */}
       <TouchableOpacity style={desktopStyles.listingRow} onPress={onViewListing}>
-        <Image 
-          source={{ uri: offer.listing_image || 'https://via.placeholder.com/80' }} 
-          style={desktopStyles.listingImage} 
-        />
+        {offer.listing_image ? (
+          <Image 
+            source={{ uri: offer.listing_image }} 
+            style={desktopStyles.listingImage} 
+          />
+        ) : (
+          <View style={desktopStyles.listingImage}>
+            <ImagePlaceholder size="small" showText={false} />
+          </View>
+        )}
         <View style={desktopStyles.listingInfo}>
           <Text style={desktopStyles.listingTitle} numberOfLines={2}>{offer.listing_title}</Text>
           <Text style={desktopStyles.listedPrice}>Listed: {formatPrice(offer.listed_price)}</Text>
@@ -150,13 +156,16 @@ const DesktopOfferCard = ({
       <View style={desktopStyles.offerDetails}>
         {/* User info row */}
         <View style={desktopStyles.buyerRow}>
-          <Image 
-            source={{ uri: isSeller 
-              ? (offer.buyer_picture || 'https://via.placeholder.com/40') 
-              : (offer.seller_picture || 'https://via.placeholder.com/40') 
-            }} 
-            style={desktopStyles.buyerAvatar} 
-          />
+          {(isSeller ? offer.buyer_picture : offer.seller_picture) ? (
+            <Image 
+              source={{ uri: isSeller ? offer.buyer_picture : offer.seller_picture }} 
+              style={desktopStyles.buyerAvatar} 
+            />
+          ) : (
+            <View style={desktopStyles.buyerAvatar}>
+              <ImagePlaceholder type="avatar" size="small" showText={false} />
+            </View>
+          )}
           <View style={desktopStyles.buyerInfo}>
             <Text style={desktopStyles.buyerLabel}>{isSeller ? 'From' : 'To'}</Text>
             <Text style={desktopStyles.buyerName}>
@@ -273,10 +282,16 @@ const OfferCard = ({
     <View style={styles.offerCard}>
       {/* Header with listing info */}
       <TouchableOpacity style={styles.listingRow} onPress={onViewListing}>
-        <Image 
-          source={{ uri: offer.listing_image || 'https://via.placeholder.com/80' }} 
-          style={styles.listingImage} 
-        />
+        {offer.listing_image ? (
+          <Image 
+            source={{ uri: offer.listing_image }} 
+            style={styles.listingImage} 
+          />
+        ) : (
+          <View style={styles.listingImage}>
+            <ImagePlaceholder size="small" showText={false} />
+          </View>
+        )}
         <View style={styles.listingInfo}>
           <Text style={styles.listingTitle} numberOfLines={1}>{offer.listing_title}</Text>
           <Text style={styles.listedPrice}>Listed: {formatPrice(offer.listed_price)}</Text>
@@ -291,13 +306,16 @@ const OfferCard = ({
       <View style={styles.offerDetails}>
         {/* User info row - shows buyer for seller, seller for buyer */}
         <View style={styles.buyerRow}>
-          <Image 
-            source={{ uri: isSeller 
-              ? (offer.buyer_picture || 'https://via.placeholder.com/40') 
-              : (offer.seller_picture || 'https://via.placeholder.com/40') 
-            }} 
-            style={styles.buyerAvatar} 
-          />
+          {(isSeller ? offer.buyer_picture : offer.seller_picture) ? (
+            <Image 
+              source={{ uri: isSeller ? offer.buyer_picture : offer.seller_picture }} 
+              style={styles.buyerAvatar} 
+            />
+          ) : (
+            <View style={styles.buyerAvatar}>
+              <ImagePlaceholder type="avatar" size="small" showText={false} />
+            </View>
+          )}
           <View style={styles.buyerInfo}>
             <Text style={styles.buyerLabel}>{isSeller ? 'From' : 'To'}</Text>
             <Text style={styles.buyerName}>
