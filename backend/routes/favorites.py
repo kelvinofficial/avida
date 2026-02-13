@@ -15,13 +15,15 @@ logger = logging.getLogger(__name__)
 # ROUTER FACTORY
 # =============================================================================
 
-def create_favorites_router(db, require_auth):
+def create_favorites_router(db, require_auth, notify_stats_update=None, create_notification=None):
     """
     Create the favorites router with dependencies injected
     
     Args:
         db: MongoDB database instance
         require_auth: Function to require authentication
+        notify_stats_update: Optional callback to notify user of stats update via WebSocket
+        create_notification: Optional callback to create in-app notifications
     
     Returns:
         APIRouter with favorites endpoints
@@ -52,6 +54,40 @@ def create_favorites_router(db, require_auth):
         
         # Update favorites count
         await db.listings.update_one({"id": listing_id}, {"$inc": {"favorites_count": 1}})
+        
+        # Get listing owner ID for notifications
+        seller_id = listing.get("user_id")
+        
+        # Don't notify if user favorites their own listing
+        if seller_id and seller_id != user.user_id:
+            # Notify seller of stats update via WebSocket (real-time favorite notification)
+            if notify_stats_update:
+                try:
+                    import asyncio
+                    asyncio.create_task(notify_stats_update(seller_id))
+                except Exception as e:
+                    logger.debug(f"Stats notification failed: {e}")
+            
+            # Create in-app notification for the seller
+            if create_notification:
+                try:
+                    # Get user info for notification message
+                    user_info = await db.users.find_one({"user_id": user.user_id}, {"_id": 0, "name": 1})
+                    user_name = user_info.get("name", "Someone") if user_info else "Someone"
+                    
+                    await create_notification(
+                        user_id=seller_id,
+                        notification_type="favorite",
+                        title="New Favorite!",
+                        message=f"{user_name} saved your listing \"{listing.get('title', 'your listing')}\"",
+                        data={
+                            "listing_id": listing_id,
+                            "favorited_by": user.user_id,
+                            "listing_title": listing.get("title")
+                        }
+                    )
+                except Exception as e:
+                    logger.debug(f"Notification creation failed: {e}")
         
         # Track behavior for smart notifications
         try:
