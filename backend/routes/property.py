@@ -796,6 +796,15 @@ def create_offers_router(db, require_auth, get_current_user, notify_stats_update
         await db.offers.insert_one(offer)
         offer.pop("_id", None)
         
+        # Notify seller of stats update via WebSocket (new pending offer)
+        if notify_stats_update and seller_id:
+            try:
+                import asyncio
+                asyncio.create_task(notify_stats_update(seller_id))
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).debug(f"Stats notification failed: {e}")
+        
         return {"message": "Offer submitted successfully", "offer": offer}
 
     @router.get("")
