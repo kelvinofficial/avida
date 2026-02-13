@@ -53,18 +53,21 @@ const PropertyListingCard = memo<ListingCardProps>(({ listing, onPress, onFavori
   const propertyType = attributes.property_type || listing.subcategory?.replace(/_/g, ' ');
 
   return (
-    <TouchableOpacity style={[styles.propertyCard, listing.featured && styles.propertyCardFeatured]} onPress={onPress} activeOpacity={0.97}>
+    <TouchableScale 
+      style={[styles.propertyCard, listing.featured && styles.propertyCardFeatured]} 
+      onPress={onPress}
+      hapticFeedback="light"
+      testID={`property-card-${listing._id || listing.id}`}
+    >
       {/* Image on Top */}
       <View style={styles.propertyImageContainer}>
-        {listing.images?.[0] ? (
-          <Image
-            source={{ uri: listing.images[0] }}
-            style={styles.propertyImage}
-            resizeMode="cover"
-          />
-        ) : (
-          <ImagePlaceholder size="large" type="listing" showText={false} />
-        )}
+        <OptimizedImage
+          uri={listing.images?.[0]}
+          style={styles.propertyImage}
+          placeholderType="listing"
+          placeholderSize="large"
+          priority={listing.featured ? 'high' : 'normal'}
+        />
         {listing.featured && (
           <View style={styles.propertyFeaturedBadge}>
             <Text style={styles.propertyFeaturedText}>FEATURED</Text>
