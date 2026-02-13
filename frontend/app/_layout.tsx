@@ -179,9 +179,9 @@ export default function RootLayout() {
     return () => subscription.remove();
   }, [mounted, processingAuth]);
 
-  // Show skeleton while fonts are loading on web
+  // Show page-specific skeleton while fonts are loading on web
   if (!mounted || (Platform.OS === 'web' && !fontsReady)) {
-    return <FontLoadingSkeleton />;
+    return getSkeletonForRoute(pathname, isDesktop);
   }
 
   return (
