@@ -1494,13 +1494,15 @@ export default function HomeScreen() {
                 value={homeSearchQuery}
                 onChangeText={(text) => {
                   setHomeSearchQuery(text);
-                  if (text.length === 0) {
-                    setShowSearchSuggestions(true);
-                  }
+                  setShowSearchSuggestions(true);
                 }}
-                onFocus={() => setShowSearchSuggestions(true)}
+                onFocus={() => {
+                  console.log('Search input focused, showing suggestions');
+                  setShowSearchSuggestions(true);
+                }}
                 onBlur={() => {
-                  setTimeout(() => setShowSearchSuggestions(false), 200);
+                  // Delay hiding to allow click events on suggestions
+                  setTimeout(() => setShowSearchSuggestions(false), 250);
                 }}
                 onSubmitEditing={handleSearchSubmit}
                 returnKeyType="search"
