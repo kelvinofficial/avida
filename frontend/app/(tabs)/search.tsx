@@ -1131,8 +1131,9 @@ const desktopStyles = StyleSheet.create({
     color: '#666',
     marginBottom: 16,
   },
-  // New horizontal card layout styles
+  // New horizontal card layout styles - single column list
   listingsContainer: {
+    flexDirection: 'column',
     gap: 12,
   },
   horizontalCard: {
