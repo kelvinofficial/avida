@@ -1104,10 +1104,24 @@ export default function HomeScreen() {
 
       {/* ROW 2: SEARCH + LOCATION */}
       <View style={styles.row2}>
-        <TouchableOpacity style={styles.searchField} onPress={() => router.push('/search')} activeOpacity={0.8}>
+        <View style={styles.searchField}>
           <Ionicons name="search" size={20} color="#666" />
-          <Text style={styles.searchPlaceholder}>Search in {currentCity === 'Select Location' ? 'all areas' : currentCity}</Text>
-        </TouchableOpacity>
+          <TextInput
+            style={styles.searchInput}
+            placeholder={`Search in ${currentCity === 'Select Location' ? 'all areas' : currentCity}`}
+            placeholderTextColor="#999"
+            value={homeSearchQuery}
+            onChangeText={setHomeSearchQuery}
+            onSubmitEditing={handleSearchSubmit}
+            returnKeyType="search"
+            data-testid="home-search-input"
+          />
+          {homeSearchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setHomeSearchQuery('')} style={styles.clearSearchBtn}>
+              <Ionicons name="close-circle" size={18} color="#999" />
+            </TouchableOpacity>
+          )}
+        </View>
         <TouchableOpacity style={styles.locationChip} activeOpacity={0.7} onPress={() => setShowLocationModal(true)}>
           <Ionicons name="location" size={16} color="#2E7D32" />
           <Text style={styles.locationText} numberOfLines={1}>{currentCity}</Text>
