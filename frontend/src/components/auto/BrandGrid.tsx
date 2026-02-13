@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { theme } from '../../utils/theme';
 import { CarBrand } from '../../types/auto';
+import { TouchableScale } from '../common';
 
 interface BrandGridProps {
   brands: CarBrand[];
