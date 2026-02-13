@@ -7,7 +7,7 @@ Build a local marketplace application (Avida) with:
 3. Premium subscription tiers with payment integration
 
 ### 2026-02-13: Homepage Search Bar Enhancement (P0)
-**PARTIALLY COMPLETE**
+**COMPLETED** ✅
 
 #### Requirements
 User wants to type search query on homepage and redirect to `/search?q=query` with results showing.
@@ -16,18 +16,18 @@ User wants to type search query on homepage and redirect to `/search?q=query` wi
 1. ✅ Added typeable TextInput to homepage search bar (replaced TouchableOpacity)
 2. ✅ Added Search button next to input on desktop
 3. ✅ `handleSearchSubmit` redirects to `/search?q=encodeURIComponent(query)`
-4. ⚠️ Auto-search on `/search` page: Intermittent due to Expo Router SSR/hydration timing
+4. ✅ Auto-search on `/search` page now works reliably
+
+#### Fix Applied
+Changed homepage navigation from `router.push()` to `window.location.href` for web platform. This ensures the search page component fully mounts with proper lifecycle, allowing the auto-search effects to trigger correctly.
 
 #### Files Modified
-- `/app/frontend/app/(tabs)/index.tsx` - Homepage search bar with TextInput
-- `/app/frontend/app/search.tsx` - Auto-search useEffect (needs SSR fix)
+- `/app/frontend/app/(tabs)/index.tsx` - Homepage search bar with TextInput, uses `window.location.href` for web navigation
+- `/app/frontend/app/search.tsx` - Auto-search using useFocusEffect and useEffect hooks
+- `/app/frontend/app/_layout.tsx` - Added `search` to Stack.Screen definitions
 
-#### Known Issue
-The auto-search useEffect on `/search` page doesn't always trigger after navigation due to Expo Router's SSR hydration timing. Direct URL access works (`/search?q=laptop` triggers search), but navigation from homepage sometimes doesn't.
-
-#### Next Steps
-- Consider using `useFocusEffect` from `@react-navigation/native`
-- Or add a visible "Search" button on the search page that user can click if auto-search doesn't trigger
+#### Files Removed
+- `/app/frontend/app/(tabs)/search.tsx` - Removed unused duplicate file
 
 ---
 
