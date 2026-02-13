@@ -67,11 +67,15 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
       <View style={styles.autoCardRow}>
         {/* Left: Image */}
         <View style={styles.autoImageContainer}>
-          <Image
-            source={{ uri: listing.images?.[0] || 'https://via.placeholder.com/300x200' }}
-            style={styles.autoImage}
-            resizeMode="cover"
-          />
+          {listing.images?.[0] ? (
+            <Image
+              source={{ uri: listing.images[0] }}
+              style={styles.autoImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <ImagePlaceholder size="medium" type="listing" showText={false} />
+          )}
           {listing.featured && (
             <View style={styles.autoFeaturedBadge}>
               <Text style={styles.autoFeaturedText}>TOP</Text>
