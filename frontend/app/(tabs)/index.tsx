@@ -1752,30 +1752,37 @@ export default function HomeScreen() {
                 
                 {/* Regions List */}
                 {locationDropdownStep === 'regions' && !locationDropdownLoading && (
-                  <ScrollView style={desktopStyles.locationList} showsVerticalScrollIndicator={false}>
-                    {/* All in Country Option */}
-                    <TouchableOpacity
-                      style={[desktopStyles.locationItem, desktopStyles.allInCountryOption]}
-                      onPress={handleSelectAllInCountry}
-                    >
-                      <Ionicons name="globe-outline" size={18} color="#2E7D32" />
-                      <Text style={[desktopStyles.locationItemText, { color: '#2E7D32', fontWeight: '600' }]}>
-                        All of {selectedCountryForDropdown?.name}
-                      </Text>
-                    </TouchableOpacity>
-                    
-                    {/* Region Items */}
-                    {locationRegions.map((region) => (
-                      <TouchableOpacity
-                        key={region.region_code}
-                        style={desktopStyles.locationItem}
-                        onPress={() => handleSelectRegion(region)}
-                      >
-                        <Ionicons name="location-outline" size={18} color="#666" />
-                        <Text style={[desktopStyles.locationItemText, { color: '#333', fontWeight: '400' }]}>{region.name}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
+                  <View style={{ height: 300 }}>
+                    <FlatList
+                      data={[{ type: 'all' }, ...locationRegions.map(r => ({ type: 'region', ...r }))]}
+                      keyExtractor={(item, index) => item.type === 'all' ? 'all' : item.region_code}
+                      renderItem={({ item }) => {
+                        if (item.type === 'all') {
+                          return (
+                            <TouchableOpacity
+                              style={[desktopStyles.locationItem, desktopStyles.allInCountryOption]}
+                              onPress={handleSelectAllInCountry}
+                            >
+                              <Ionicons name="globe-outline" size={18} color="#2E7D32" />
+                              <Text style={[desktopStyles.locationItemText, { color: '#2E7D32', fontWeight: '600' }]}>
+                                All of {selectedCountryForDropdown?.name}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        }
+                        return (
+                          <TouchableOpacity
+                            style={desktopStyles.locationItem}
+                            onPress={() => handleSelectRegion(item)}
+                          >
+                            <Ionicons name="location-outline" size={18} color="#666" />
+                            <Text style={desktopStyles.locationItemText}>{item.name}</Text>
+                          </TouchableOpacity>
+                        );
+                      }}
+                      showsVerticalScrollIndicator={false}
+                    />
+                  </View>
                 )}
               </View>
             )}
