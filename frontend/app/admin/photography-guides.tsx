@@ -93,14 +93,14 @@ export default function PhotographyGuidesAdmin() {
       try {
         let token: string | null = null;
         
-        // On web, use localStorage directly (AsyncStorage wraps it but can be unreliable)
-        if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        // Try localStorage first (works on web)
+        if (typeof window !== 'undefined' && window.localStorage) {
           token = window.localStorage.getItem('session_token');
-          console.log('Web token from localStorage:', token ? 'found' : 'not found');
-        } else {
-          // On native, use AsyncStorage
+        }
+        
+        // Fallback to AsyncStorage (for native or if localStorage fails)
+        if (!token) {
           token = await AsyncStorage.getItem('session_token');
-          console.log('Native token from AsyncStorage:', token ? 'found' : 'not found');
         }
         
         if (token) {
