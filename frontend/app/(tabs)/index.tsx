@@ -1735,12 +1735,12 @@ export default function HomeScreen() {
                       Platform.OS === 'web' ? (
                         <div
                           key={country.code}
+                          data-country-name={country.name}
                           style={{
                             display: 'flex',
                             flexDirection: 'row',
                             alignItems: 'center',
                             padding: '14px 16px',
-                            gap: '12px',
                             cursor: 'pointer',
                             backgroundColor: 'transparent',
                             borderBottom: '1px solid #F5F5F5',
@@ -1753,8 +1753,8 @@ export default function HomeScreen() {
                             (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
                           }}
                         >
-                          <span style={{ fontSize: '20px', width: '28px', textAlign: 'center' }}>{country.flag}</span>
-                          <span style={{ flex: 1, fontSize: '14px', color: '#333' }}>{country.name}</span>
+                          <span style={{ fontSize: '20px', width: '28px', textAlign: 'center', marginRight: '12px', flexShrink: 0 }}>{country.flag}</span>
+                          <span style={{ fontSize: '14px', color: '#333333', flexGrow: 1 }}>{country.name}</span>
                           <Ionicons name="chevron-forward" size={16} color="#999" />
                         </div>
                       ) : (
