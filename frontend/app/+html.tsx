@@ -16,6 +16,9 @@ export default function Root({ children }: PropsWithChildren) {
         {/* Using raw CSS text to ensure full-width rendering */}
         <style dangerouslySetInnerHTML={{ __html: responsiveStyle }} />
         
+        {/* Load fonts using FontFace API to ensure they're registered before app renders */}
+        <script dangerouslySetInnerHTML={{ __html: fontLoadScript }} />
+        
         {/* Disable body scrolling - ScrollView handles this */}
         <ScrollViewStyleReset />
       </head>
