@@ -174,47 +174,47 @@ const useShimmer = () => {
 
 // ============ HOMEPAGE SKELETON ============
 export const HomepageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
-  const opacity = useShimmer();
+  const theme = useShimmerTheme();
   
   const cardCount = isDesktop ? 8 : 4;
   const cardWidth = isDesktop ? '23%' : '48%';
   
   return (
-    <View style={[skeletonBase.container, isDesktop && { maxWidth: 1280, alignSelf: 'center' as const, width: '100%' }]}>
+    <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor }, isDesktop && { maxWidth: 1280, alignSelf: 'center' as const, width: '100%' }]}>
       {/* Header skeleton */}
       <View style={skeletonBase.header}>
-        <Animated.View style={[skeletonBase.logo, { opacity }]} />
+        <ShimmerBox width={100} height={36} borderRadius={4} />
         <View style={skeletonBase.headerRight}>
-          <Animated.View style={[skeletonBase.textBtn, { opacity }]} />
-          <Animated.View style={[skeletonBase.textBtn, { opacity }]} />
-          <Animated.View style={[skeletonBase.primaryBtn, { opacity }]} />
+          <ShimmerBox width={60} height={36} borderRadius={8} />
+          <ShimmerBox width={60} height={36} borderRadius={8} />
+          <ShimmerBox width={120} height={40} borderRadius={8} />
         </View>
       </View>
       
       {/* Search bar skeleton */}
       <View style={skeletonBase.searchRow}>
-        <Animated.View style={[skeletonBase.searchBar, { opacity }]} />
-        <Animated.View style={[skeletonBase.locationChip, { opacity }]} />
+        <ShimmerBox height={48} borderRadius={24} style={{ flex: 1 }} />
+        <ShimmerBox width={150} height={48} borderRadius={24} />
       </View>
       
       {/* Category pills skeleton */}
       <View style={skeletonBase.categories}>
         {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-          <Animated.View key={i} style={[skeletonBase.categoryPill, { opacity }]} />
+          <ShimmerBox key={i} width={100} height={40} borderRadius={20} />
         ))}
       </View>
       
       {/* Section title */}
-      <Animated.View style={[skeletonBase.sectionTitle, { opacity, marginBottom: 16 }]} />
+      <ShimmerBox width={150} height={22} borderRadius={4} style={{ marginBottom: 16 }} />
       
       {/* Grid skeleton */}
       <View style={skeletonBase.grid}>
         {Array(cardCount).fill(0).map((_, i) => (
-          <View key={i} style={[skeletonBase.card, { width: cardWidth }]}>
-            <Animated.View style={[skeletonBase.cardImage, { opacity }]} />
-            <Animated.View style={[skeletonBase.cardLocation, { opacity }]} />
-            <Animated.View style={[skeletonBase.cardTitle, { opacity }]} />
-            <Animated.View style={[skeletonBase.cardPrice, { opacity }]} />
+          <View key={i} style={[skeletonBase.card, { width: cardWidth, backgroundColor: theme.surfaceColor }]}>
+            <ShimmerBox aspectRatio={1} borderRadius={8} style={{ marginBottom: 8 }} />
+            <ShimmerBox width="40%" height={12} borderRadius={4} style={{ marginBottom: 4 }} />
+            <ShimmerBox width="80%" height={16} borderRadius={4} style={{ marginBottom: 6 }} />
+            <ShimmerBox width="50%" height={20} borderRadius={4} />
           </View>
         ))}
       </View>
