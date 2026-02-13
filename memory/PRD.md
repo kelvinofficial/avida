@@ -87,6 +87,15 @@ Build a local marketplace application (Avida) with:
    - Falls back to API fetch for initial stats
    - Properly disconnects and unsubscribes on unmount
 
+3. **Trigger Calls Implemented** (2026-02-13):
+   - `POST /api/listings` - Triggers stats update on listing creation
+   - `DELETE /api/listings/{id}` - Triggers stats update on listing deletion
+   - `POST /api/listings/{id}/mark-sold` - Triggers stats update when listing is sold
+   - `POST /api/offers` - Triggers stats update to seller (new pending offer)
+   - `PUT /api/offers/{id}/respond` - Triggers stats update on accept/reject/counter
+   - `PUT /api/offers/{id}/accept-counter` - Triggers stats update to seller
+   - `DELETE /api/offers/{id}` - Triggers stats update to seller (offer withdrawn)
+
 #### Stats Tracked in Real-time
 - `activeListings` - Count of active listings
 - `pendingOffers` - Count of pending offers
@@ -94,6 +103,30 @@ Build a local marketplace application (Avida) with:
 - `creditBalance` - Boost credits balance
 - `userRating` - User's average rating
 - `totalRatings` - Number of ratings received
+
+#### Files Modified
+- `/app/backend/routes/listings.py` - Added notify_stats_update callback and trigger calls
+- `/app/backend/routes/property.py` - Added notify_stats_update callback and trigger calls
+- `/app/backend/server.py` - Passed notify_stats_update to router factories
+- `/app/backend/tests/test_websocket_stats_update.py` - Created tests for WebSocket stats
+
+#### Test Report
+- `/app/test_reports/iteration_129.json` - 100% backend pass rate
+- All endpoints trigger stats updates correctly
+
+---
+
+### 2026-02-13: Extended ImagePlaceholder to Listing Cards (P1)
+**COMPLETED** ✅
+
+#### Features Implemented
+Replaced all `via.placeholder.com` URLs with the reusable `ImagePlaceholder` component:
+- `/app/frontend/src/components/listings/ListingCard.tsx` - Desktop listing cards
+- `/app/frontend/src/components/listings/PropertyListingCard.tsx` - Property listing cards
+- `/app/frontend/src/components/listings/AutoListingCard.tsx` - Auto/vehicle listing cards
+
+#### Visual Result
+All listing cards now show consistent, polished placeholder icons when images are missing.
 
 ---
 
