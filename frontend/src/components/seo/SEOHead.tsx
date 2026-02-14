@@ -152,19 +152,62 @@ export const HomeSEO: React.FC = () => (
   />
 );
 
-export const CategorySEO: React.FC<{ categoryName: string; categorySlug: string; listingCount?: number }> = ({
+export const CategorySEO: React.FC<{ 
+  categoryName: string; 
+  categorySlug: string; 
+  listingCount?: number;
+  subcategory?: string;
+  subcategoryName?: string;
+  locationData?: {
+    city_name?: string;
+    region_name?: string;
+    country_name?: string;
+  };
+}> = ({
   categoryName,
   categorySlug,
   listingCount,
-}) => (
-  <SEOHead
-    title={`${categoryName} for Sale`}
-    description={`Browse ${listingCount ? `${listingCount}+ ` : ''}${categoryName.toLowerCase()} listings on Avida. Find great deals on ${categoryName.toLowerCase()} near you.`}
-    url={`/category/${categorySlug}`}
-    keywords={[categoryName.toLowerCase(), 'buy', 'sell', 'local', categorySlug]}
-    type="website"
-  />
-);
+  subcategory,
+  subcategoryName,
+  locationData,
+}) => {
+  // Build enhanced title with subcategory
+  const displayName = subcategoryName 
+    ? `${subcategoryName} (${categoryName})` 
+    : categoryName;
+  
+  // Build keywords
+  const keywords = [categoryName.toLowerCase(), 'buy', 'sell', 'local', categorySlug];
+  if (subcategory) keywords.push(subcategory.toLowerCase());
+  if (subcategoryName) keywords.push(subcategoryName.toLowerCase());
+  if (locationData?.country_name) keywords.push(locationData.country_name.toLowerCase());
+  if (locationData?.region_name) keywords.push(locationData.region_name.toLowerCase());
+  
+  // Build location suffix for description
+  let locationSuffix = '';
+  if (locationData) {
+    const parts = [];
+    if (locationData.city_name) parts.push(locationData.city_name);
+    if (locationData.region_name) parts.push(locationData.region_name);
+    if (locationData.country_name) parts.push(locationData.country_name);
+    if (parts.length > 0) locationSuffix = ` in ${parts.slice(0, 2).join(', ')}`;
+  }
+  
+  // Build URL
+  const url = subcategory 
+    ? `/category/${categorySlug}/${subcategory}`
+    : `/category/${categorySlug}`;
+  
+  return (
+    <SEOHead
+      title={`${displayName} for Sale`}
+      description={`Browse ${listingCount ? `${listingCount}+ ` : ''}${displayName.toLowerCase()} listings on Avida${locationSuffix}. Find great deals on ${categoryName.toLowerCase()} near you.`}
+      url={url}
+      keywords={keywords}
+      type="website"
+    />
+  );
+};
 
 export const ListingSEO: React.FC<{
   title: string;
