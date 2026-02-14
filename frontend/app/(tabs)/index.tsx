@@ -2500,7 +2500,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F0F0F0',
     borderRadius: 12,
-    height: 44,
+    height: 52,
     paddingLeft: 14,
     paddingRight: 4,
     gap: 10,
