@@ -141,28 +141,32 @@ export const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
         <TouchableOpacity 
           style={[styles.compactButton, styles.whatsappButton]} 
           onPress={handleWhatsAppShare}
-          data-testid="share-whatsapp-btn"
+          // @ts-ignore - for web compatibility
+          {...(Platform.OS === 'web' ? { 'data-testid': 'share-whatsapp-btn' } : { testID: 'share-whatsapp-btn' })}
         >
           <Ionicons name="logo-whatsapp" size={20} color="#fff" />
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.compactButton, styles.facebookButton]} 
           onPress={handleFacebookShare}
-          data-testid="share-facebook-btn"
+          // @ts-ignore - for web compatibility
+          {...(Platform.OS === 'web' ? { 'data-testid': 'share-facebook-btn' } : { testID: 'share-facebook-btn' })}
         >
           <Ionicons name="logo-facebook" size={20} color="#fff" />
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.compactButton, styles.twitterButton]} 
           onPress={handleTwitterShare}
-          data-testid="share-twitter-btn"
+          // @ts-ignore - for web compatibility
+          {...(Platform.OS === 'web' ? { 'data-testid': 'share-twitter-btn' } : { testID: 'share-twitter-btn' })}
         >
           <Ionicons name="logo-twitter" size={20} color="#fff" />
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.compactButton, styles.copyButton]} 
           onPress={handleCopyLink}
-          data-testid="share-copy-btn"
+          // @ts-ignore - for web compatibility
+          {...(Platform.OS === 'web' ? { 'data-testid': 'share-copy-btn' } : { testID: 'share-copy-btn' })}
         >
           <Ionicons name="copy-outline" size={20} color="#fff" />
         </TouchableOpacity>
@@ -178,7 +182,8 @@ export const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
         <TouchableOpacity 
           style={[styles.shareButton, styles.whatsappButton]} 
           onPress={handleWhatsAppShare}
-          data-testid="share-whatsapp-btn"
+          // @ts-ignore - for web compatibility
+          {...(Platform.OS === 'web' ? { 'data-testid': 'share-whatsapp-btn' } : { testID: 'share-whatsapp-btn' })}
         >
           <Ionicons name="logo-whatsapp" size={24} color="#fff" />
           <Text style={styles.buttonText}>WhatsApp</Text>
@@ -187,7 +192,8 @@ export const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
         <TouchableOpacity 
           style={[styles.shareButton, styles.facebookButton]} 
           onPress={handleFacebookShare}
-          data-testid="share-facebook-btn"
+          // @ts-ignore - for web compatibility
+          {...(Platform.OS === 'web' ? { 'data-testid': 'share-facebook-btn' } : { testID: 'share-facebook-btn' })}
         >
           <Ionicons name="logo-facebook" size={24} color="#fff" />
           <Text style={styles.buttonText}>Facebook</Text>
@@ -196,7 +202,8 @@ export const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
         <TouchableOpacity 
           style={[styles.shareButton, styles.twitterButton]} 
           onPress={handleTwitterShare}
-          data-testid="share-twitter-btn"
+          // @ts-ignore - for web compatibility
+          {...(Platform.OS === 'web' ? { 'data-testid': 'share-twitter-btn' } : { testID: 'share-twitter-btn' })}
         >
           <Ionicons name="logo-twitter" size={24} color="#fff" />
           <Text style={styles.buttonText}>Twitter</Text>
@@ -205,7 +212,8 @@ export const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
         <TouchableOpacity 
           style={[styles.shareButton, styles.copyButton]} 
           onPress={handleCopyLink}
-          data-testid="share-copy-btn"
+          // @ts-ignore - for web compatibility
+          {...(Platform.OS === 'web' ? { 'data-testid': 'share-copy-btn' } : { testID: 'share-copy-btn' })}
         >
           <Ionicons name="copy-outline" size={24} color="#fff" />
           <Text style={styles.buttonText}>Copy Link</Text>
@@ -217,7 +225,7 @@ export const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
         <TouchableOpacity 
           style={styles.nativeShareButton} 
           onPress={handleNativeShare}
-          data-testid="share-native-btn"
+          testID="share-native-btn"
         >
           <Ionicons name="share-outline" size={20} color="#2E7D32" />
           <Text style={styles.nativeShareText}>More sharing options</Text>
