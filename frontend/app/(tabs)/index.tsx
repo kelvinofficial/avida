@@ -1302,9 +1302,6 @@ export default function HomeScreen() {
   );
 }
 
-// Desktop/Tablet specific styles
-const MAX_CONTENT_WIDTH = 1280;
-
 const desktopStyles = StyleSheet.create({
   headerWrapper: {
     backgroundColor: '#fff',
