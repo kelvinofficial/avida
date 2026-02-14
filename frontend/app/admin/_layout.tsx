@@ -7,7 +7,6 @@ export default function AdminLayout() {
       <Stack.Screen name="businessProfiles" />
       <Stack.Screen name="challenges" />
       <Stack.Screen name="analytics" />
-      <Stack.Screen name="photography-guides" />
       <Stack.Screen name="users" />
       <Stack.Screen name="vouchers" />
     </Stack>

@@ -102,13 +102,13 @@ export default function AdminRedirectScreen() {
         <View style={styles.actionsContainer}>
           <TouchableOpacity 
             style={styles.actionCard}
-            onPress={() => router.push('/admin/photography-guides')}
+            onPress={() => Linking.openURL('/api/admin-ui/dashboard/photography-guides')}
           >
             <View style={[styles.actionIcon, { backgroundColor: '#FDF4FF' }]}>
               <Ionicons name="camera" size={24} color="#A855F7" />
             </View>
             <Text style={styles.actionTitle}>Photography Guides</Text>
-            <Text style={styles.actionDesc}>Manage photo tips for listing creation</Text>
+            <Text style={styles.actionDesc}>Opens in Admin Dashboard</Text>
           </TouchableOpacity>
 
           <View style={styles.actionCard}>
