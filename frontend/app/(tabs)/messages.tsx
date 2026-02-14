@@ -804,43 +804,7 @@ export default function MessagesScreen() {
   }
 
   if (loading) {
-    return (
-      <SafeAreaView style={[styles.container, isLargeScreen && desktopStyles.container]} edges={['top']}>
-        {isLargeScreen ? (
-          <>
-            {/* Global Header */}
-            <DesktopHeader />
-            
-            <View style={desktopStyles.pageWrapper}>
-              <View style={desktopStyles.masterDetailContainer}>
-                <View style={desktopStyles.sidebarContainer}>
-                  <View style={desktopStyles.sidebarHeader}>
-                    <Text style={desktopStyles.sidebarTitle}>Messages</Text>
-                  </View>
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={COLORS.primary} />
-                  </View>
-                </View>
-                <View style={desktopStyles.chatContainer}>
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={COLORS.primary} />
-                    <Text style={styles.loadingText}>Loading conversations...</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-          </>
-        ) : (
-          <>
-            {renderHeader()}
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={COLORS.primary} />
-              <Text style={styles.loadingText}>Loading conversations...</Text>
-            </View>
-          </>
-        )}
-      </SafeAreaView>
-    );
+    return <MessagesSkeleton isDesktop={isLargeScreen} />;
   }
 
   const emptyState = getEmptyState();
