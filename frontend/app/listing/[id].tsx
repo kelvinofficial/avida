@@ -962,6 +962,37 @@ export default function ListingDetailScreen() {
 
     return (
       <View style={desktopStyles.pageWrapper}>
+        {/* SEO Tags for Listing Page (Desktop) */}
+        <ListingSEO
+          title={listing.title}
+          description={listing.description || ''}
+          price={listing.price}
+          currency={listing.currency || 'EUR'}
+          image={images[0]}
+          listingId={listing.id}
+          category={category?.name || listing.category_id}
+          location={listing.location}
+        />
+        <ProductSchema
+          name={listing.title}
+          description={listing.description || ''}
+          image={images[0] || ''}
+          price={listing.price}
+          currency={listing.currency || 'EUR'}
+          availability={listing.status === 'sold' ? 'OutOfStock' : 'InStock'}
+          condition={listing.condition === 'new' ? 'NewCondition' : 'UsedCondition'}
+          sku={listing.id}
+          seller={{
+            name: sellerName,
+            url: `/profile/${listing.seller_id}`,
+          }}
+        />
+        <BreadcrumbSchema items={[
+          { name: 'Home', url: '/' },
+          { name: category?.name || 'Category', url: `/category/${listing.category_id}` },
+          { name: listing.title, url: `/listing/${listing.id}` },
+        ]} />
+        
         {/* Header Section - contains header and breadcrumb */}
         <View style={desktopStyles.headerSection}>
           {/* Desktop Header Row 1 */}
