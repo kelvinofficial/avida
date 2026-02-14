@@ -466,6 +466,7 @@ export default function AdminAnalyticsScreen() {
             {activeTab === 'overview' && renderOverviewTab()}
             {activeTab === 'sellers' && renderSellersTab()}
             {activeTab === 'engagement' && renderEngagementTab()}
+            {activeTab === 'searches' && renderSearchesTab()}
           </>
         )}
       </ScrollView>
