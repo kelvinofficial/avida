@@ -8,6 +8,58 @@ Build a local marketplace application (Avida) with:
 
 ---
 
+### 2026-02-14: Admin Search Analytics Feature (P1)
+**COMPLETED** ✅
+
+#### Features Implemented
+1. **Backend Endpoint**: `GET /api/admin-ui/search-analytics` provides comprehensive search analytics
+   - Total searches count with configurable time period (7-90 days)
+   - Top search queries with counts
+   - Breakdown by country, region, city (with unique query counts)
+   - Breakdown by category
+   - Recent activity timeline (searches per day)
+   - Filter support: country_code, region_code, city_code, category_id
+
+2. **Admin Dashboard Page**: `/analytics` in admin-dashboard
+   - Summary stat cards: Total Searches, Unique Queries, Countries, Cities
+   - **SEARCHES Tab**: Bar chart + table of top search queries
+   - **BY LOCATION Tab**: Pie chart for countries, tables for regions and cities
+   - **ACTIVITY Tab**: Line chart for search activity over time, daily breakdown table
+   - Time period dropdown (7/14/30/60/90 days)
+
+3. **Search Tracking Enhanced**: `POST /api/searches/track` now captures location context
+   - country_code, country_name, region_code, region_name
+   - district_code, district_name, city_code, city_name
+   - category_id for category-specific analytics
+
+#### Files Created/Modified
+- `/app/admin-dashboard/frontend/src/app/analytics/page.tsx` - New analytics page
+- `/app/admin-dashboard/frontend/src/app/dashboard/layout.tsx` - Added "Search Analytics" menu item
+- `/app/backend/routes/popular_searches.py` - Added analytics endpoint (lines 259-438)
+- `/app/backend/tests/test_search_analytics.py` - Backend test file
+
+#### Test Report
+- `/app/test_reports/iteration_135.json` - 100% pass rate (15/15 backend tests, UI verified)
+
+---
+
+### 2026-02-14: Shimmer on Listing Detail Page (P1)
+**COMPLETED** ✅
+
+#### Features Implemented
+1. **ImageWithSkeleton in Carousel**: Applied to listing detail page image carousel
+   - Shows shimmer effect while carousel images load
+   - Graceful fallback to placeholder icon for missing images
+   - Consistent with home page listing cards
+
+#### Files Modified
+- `/app/frontend/app/listing/[id].tsx` - ImageCarousel uses ImageWithSkeleton (lines 94-103)
+
+#### Test Report
+- `/app/test_reports/iteration_135.json` - Verified working
+
+---
+
 ### 2026-02-14: Image Skeleton Loaders (P2)
 **COMPLETED** ✅
 
