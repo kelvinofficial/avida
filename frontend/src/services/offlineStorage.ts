@@ -312,16 +312,6 @@ class OfflineStorageService {
 
   // ============ ENHANCED CACHE METHODS ============
 
-  async getLastSync(): Promise<number | null> {
-    try {
-      const data = await AsyncStorage.getItem(STORAGE_KEYS.LAST_SYNC);
-      return data ? parseInt(data, 10) : null;
-    } catch (error) {
-      console.error('Failed to get last sync:', error);
-      return null;
-    }
-  }
-
   async setLastSync(timestamp: number): Promise<void> {
     try {
       await AsyncStorage.setItem(STORAGE_KEYS.LAST_SYNC, timestamp.toString());
