@@ -368,4 +368,128 @@ def create_seo_settings_router(db, get_current_user):
         
         return preview
     
+    # ============ Listing SEO Endpoints ============
+    
+    @router.get("/listings/{listing_id}/seo")
+    async def get_listing_seo(listing_id: str):
+        """Get SEO data for a specific listing"""
+        listing = await listings_collection.find_one({"id": listing_id}, {"seo_data": 1, "title": 1})
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        return {
+            "listing_id": listing_id,
+            "title": listing.get("title", ""),
+            "seo_data": listing.get("seo_data", {})
+        }
+    
+    @router.post("/listings/{listing_id}/regenerate-seo")
+    async def regenerate_listing_seo(listing_id: str, admin = Depends(require_admin)):
+        """Regenerate SEO data for a specific listing (admin only)"""
+        listing = await listings_collection.find_one({"id": listing_id})
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+        
+        # Get category name
+        category_name = None
+        if listing.get("category_id"):
+            category = await categories_collection.find_one({"id": listing["category_id"]})
+            if category:
+                category_name = category.get("name")
+        
+        # Generate new SEO data
+        try:
+            from utils.seo_generator import generate_full_seo_data
+            seo_data = generate_full_seo_data(
+                listing_id=listing_id,
+                title=listing.get("title", ""),
+                description=listing.get("description", ""),
+                price=listing.get("price", 0),
+                currency=listing.get("currency", "EUR"),
+                location=listing.get("location"),
+                location_data=listing.get("location_data"),
+                condition=listing.get("condition"),
+                category_name=category_name,
+                subcategory=listing.get("subcategory"),
+                images=listing.get("images", []),
+                attributes=listing.get("attributes", {})
+            )
+            
+            # Update listing with new SEO data
+            await listings_collection.update_one(
+                {"id": listing_id},
+                {"$set": {"seo_data": seo_data, "updated_at": datetime.now(timezone.utc)}}
+            )
+            
+            return {
+                "success": True,
+                "listing_id": listing_id,
+                "seo_data": seo_data
+            }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to regenerate SEO: {str(e)}")
+    
+    @router.post("/listings/bulk-regenerate-seo")
+    async def bulk_regenerate_listing_seo(admin = Depends(require_admin), limit: int = 100):
+        """Bulk regenerate SEO data for listings without SEO data (admin only)"""
+        # Find listings without SEO data
+        cursor = listings_collection.find(
+            {"$or": [{"seo_data": {"$exists": False}}, {"seo_data": None}, {"seo_data": {}}]},
+            {"id": 1, "title": 1, "description": 1, "price": 1, "currency": 1, "location": 1, 
+             "location_data": 1, "condition": 1, "category_id": 1, "subcategory": 1, 
+             "images": 1, "attributes": 1}
+        ).limit(limit)
+        
+        listings = await cursor.to_list(length=limit)
+        
+        if not listings:
+            return {"success": True, "updated_count": 0, "message": "All listings have SEO data"}
+        
+        # Get all categories for lookup
+        categories_cursor = categories_collection.find({}, {"id": 1, "name": 1})
+        categories = {c["id"]: c["name"] for c in await categories_cursor.to_list(length=100)}
+        
+        updated_count = 0
+        errors = []
+        
+        try:
+            from utils.seo_generator import generate_full_seo_data
+            
+            for listing in listings:
+                try:
+                    category_name = categories.get(listing.get("category_id"))
+                    seo_data = generate_full_seo_data(
+                        listing_id=listing["id"],
+                        title=listing.get("title", ""),
+                        description=listing.get("description", ""),
+                        price=listing.get("price", 0),
+                        currency=listing.get("currency", "EUR"),
+                        location=listing.get("location"),
+                        location_data=listing.get("location_data"),
+                        condition=listing.get("condition"),
+                        category_name=category_name,
+                        subcategory=listing.get("subcategory"),
+                        images=listing.get("images", []),
+                        attributes=listing.get("attributes", {})
+                    )
+                    
+                    await listings_collection.update_one(
+                        {"id": listing["id"]},
+                        {"$set": {"seo_data": seo_data, "updated_at": datetime.now(timezone.utc)}}
+                    )
+                    updated_count += 1
+                except Exception as e:
+                    errors.append({"listing_id": listing["id"], "error": str(e)})
+        except ImportError:
+            raise HTTPException(status_code=500, detail="SEO generator module not found")
+        
+        return {
+            "success": True,
+            "updated_count": updated_count,
+            "errors": errors if errors else None,
+            "remaining": await listings_collection.count_documents(
+                {"$or": [{"seo_data": {"$exists": False}}, {"seo_data": None}, {"seo_data": {}}]}
+            )
+        }
+    
     return router
