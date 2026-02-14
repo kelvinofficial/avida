@@ -29,7 +29,9 @@ import {
   SettingsSkeleton, 
   MessagesSkeleton, 
   ProfileSkeleton, 
-  ListingDetailSkeleton 
+  ListingDetailSkeleton,
+  CategoryPageSkeleton,
+  BusinessDirectorySkeleton
 } from '../src/components/skeletons';
 
 // Route-based skeleton selector
@@ -51,6 +53,12 @@ const getSkeletonForRoute = (pathname: string, isDesktop: boolean) => {
   }
   if (route.includes('/listing/')) {
     return <ListingDetailSkeleton isDesktop={isDesktop} />;
+  }
+  if (route.includes('/category/')) {
+    return <CategoryPageSkeleton isDesktop={isDesktop} />;
+  }
+  if (route.includes('/sellers') || route.includes('/business-directory')) {
+    return <BusinessDirectorySkeleton isDesktop={isDesktop} />;
   }
   // Default to homepage skeleton for /, /index, or unknown routes
   return <HomepageSkeleton isDesktop={isDesktop} />;
