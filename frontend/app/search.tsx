@@ -26,6 +26,7 @@ import { DesktopHeader } from '../src/components/layout/DesktopHeader';
 import { DesktopPageLayout } from '../src/components/layout/DesktopPageLayout';
 import { Footer } from '../src/components/layout/Footer';
 import { ImagePlaceholder } from '../src/components/common/ImagePlaceholder';
+import { ImageWithSkeleton } from '../src/components/common/ImageWithSkeleton';
 
 const COLORS = {
   primary: '#2E7D32',
