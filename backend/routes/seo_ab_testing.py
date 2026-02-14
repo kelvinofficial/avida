@@ -77,10 +77,11 @@ def create_seo_ab_testing_router(db, get_current_user, require_admin_external):
                 user = await db.users.find_one({"user_id": session["user_id"]})
                 if user and user.get("email") in ["admin@marketplace.com", "admin@example.com", "admin@test.com"]:
                     return {"id": user["user_id"], "email": user.get("email")}
-        except:
+        except Exception:
             pass
         
         raise HTTPException(status_code=401, detail="Invalid or expired token")
+    
     router = APIRouter()
     
     def calculate_statistical_significance(control_impressions: int, control_clicks: int,
