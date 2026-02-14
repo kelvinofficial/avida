@@ -1405,8 +1405,8 @@ export default function HomeScreen() {
               {/* Recent Searches - Horizontal Chips */}
               {searchSuggestions.recent.length > 0 && (
                 <View style={styles.suggestionSection}>
-                  <View style={styles.suggestionHeaderRow}>
-                    <View style={styles.suggestionHeader}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 8 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                       <Ionicons name="time-outline" size={14} color="#666" />
                       <Text style={styles.suggestionHeaderText}>Recent</Text>
                     </View>
