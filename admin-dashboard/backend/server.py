@@ -8401,7 +8401,7 @@ async def send_challenge_reminder(
                                 <p>Your challenge <strong>{challenge['name']}</strong> ends in just {days_left} day{'s' if days_left != 1 else ''}!</p>
                                 <p>{challenge['description']}</p>
                                 <p>Complete the challenge to earn the exclusive <strong>{challenge['badge_reward']['name']}</strong> badge!</p>
-                                <a href="https://admin-portal-358.preview.emergentagent.com/challenges" style="display:inline-block;padding:12px 24px;background:#2E7D32;color:white;text-decoration:none;border-radius:8px;">View Challenge</a>
+                                <a href="https://mobile-header-ui.preview.emergentagent.com/challenges" style="display:inline-block;padding:12px 24px;background:#2E7D32;color:white;text-decoration:none;border-radius:8px;">View Challenge</a>
                                 """
                             }]
                         }

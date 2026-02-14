@@ -7,7 +7,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://admin-portal-358.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://mobile-header-ui.preview.emergentagent.com').rstrip('/')
 
 class TestBadgeNotificationAPIs:
     """Test badge notification endpoints"""
