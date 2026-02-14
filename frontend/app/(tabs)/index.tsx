@@ -425,19 +425,6 @@ export default function HomeScreen() {
     await saveSelectedCity(locationData);
   };
 
-  const handleClearLocationFilter = async () => {
-    setSelectedLocationFilter(null);
-    setCurrentCity('All Locations');
-    setSelectedCity(null);
-    setExpandedSearch(false);
-    setExpandedSearchMessage(null);
-    try {
-      await Storage.removeItem('@selected_city');
-    } catch (err) {
-      console.error('Failed to clear saved city:', err);
-    }
-  };
-
   // Desktop Location Dropdown Handlers
   const handleOpenLocationDropdown = async () => {
     setShowLocationDropdown(true);
