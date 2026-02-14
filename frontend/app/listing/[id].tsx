@@ -1193,6 +1193,18 @@ export default function ListingDetailScreen() {
                 </View>
               )}
 
+              {/* Social Share Buttons - Desktop */}
+              <View style={desktopStyles.detailCard}>
+                <SocialShareButtons
+                  title={listing.title}
+                  description={listing.description || ''}
+                  url={`/listing/${listing.id}`}
+                  image={images[0]}
+                  price={listing.price}
+                  currency="€"
+                />
+              </View>
+
               {/* Location - Moved to Left */}
               <View style={desktopStyles.detailCard}>
                 <Text style={desktopStyles.sectionTitle}>Location</Text>
