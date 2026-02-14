@@ -175,15 +175,6 @@ export default function HomeScreen() {
     router.push(path);
   };
 
-  const handleCategoryLongPress = (categoryId: string) => {
-    // Long press to filter in place (quick filter)
-    if (selectedCategory === categoryId) {
-      setSelectedCategory(null);
-    } else {
-      setSelectedCategory(categoryId);
-    }
-  };
-
   const handleLocationSelect = async (location: LocationData) => {
     setSelectedLocationFilter(location);
     // Use region_name for display since we're now using region-level selection
