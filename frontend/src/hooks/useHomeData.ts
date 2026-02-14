@@ -332,13 +332,13 @@ export function useHomeData(): UseHomeDataReturn {
 
       // Fetch listings with sandbox awareness
       const listingsResponse = await (isSandboxMode 
-        ? sandboxAwareListingsApi.getListings({
+        ? sandboxAwareListingsApi.getAll({
             page: currentPage,
             limit: 20,
             category: selectedCategory || undefined,
             ...locationParams
           })
-        : listingsApi.getListings({
+        : listingsApi.getAll({
             page: currentPage,
             limit: 20,
             category: selectedCategory || undefined,
