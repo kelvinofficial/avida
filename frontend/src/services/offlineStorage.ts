@@ -22,7 +22,10 @@ export type OfflineActionType =
   | 'SEND_MESSAGE'
   | 'UPDATE_PROFILE'
   | 'VIEW_LISTING'
-  | 'TRACK_SEARCH';
+  | 'TRACK_SEARCH'
+  | 'CREATE_LISTING'
+  | 'UPDATE_LISTING'
+  | 'DELETE_LISTING';
 
 export interface OfflineAction {
   id: string;
