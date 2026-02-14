@@ -41,6 +41,7 @@ import {
   AnimatedChip,
   FeaturedSellersSection,
   SubcategoryModal,
+  MobileHeader,
   COLORS_CATEGORY,
   CARD_WIDTH,
   CARD_IMAGE_HEIGHT,
