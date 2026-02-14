@@ -635,58 +635,13 @@ export default function HomeScreen() {
     );
   };
 
-  // Desktop header using shared DesktopHeader component
-  const renderDesktopHeader = () => (
-    <View style={desktopStyles.headerWrapper}>
-      {/* Shared Desktop Header for Rows 1-2 */}
-      <DesktopHeader showNavLinks={true} showSearch={true} showLocationSelector={true} />
-      {/* Row 3: Category Icons */}
-      <View style={desktopStyles.categoryRowWrapper}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={desktopStyles.categoryScroll}
-          contentContainerStyle={desktopStyles.categoryContent}
-        >
-          <TouchableOpacity
-            style={[desktopStyles.categoryPill, !selectedCategory && desktopStyles.categoryPillActive]}
-            onPress={() => setSelectedCategory(null)}
-          >
-            <Ionicons name="apps" size={16} color={!selectedCategory ? '#fff' : '#666'} />
-            <Text style={[desktopStyles.categoryPillText, !selectedCategory && desktopStyles.categoryPillTextActive]}>
-              All
-            </Text>
-          </TouchableOpacity>
-          {FULL_CATEGORIES.map((cat) => (
-            <TouchableOpacity
-              key={cat.id}
-              style={[desktopStyles.categoryPill, selectedCategory === cat.id && desktopStyles.categoryPillActive]}
-              onPress={() => handleCategoryPress(cat.id)}
-            >
-              <Ionicons 
-                name={cat.icon as any} 
-                size={16} 
-                color={selectedCategory === cat.id ? '#fff' : '#666'} 
-              />
-              <Text style={[desktopStyles.categoryPillText, selectedCategory === cat.id && desktopStyles.categoryPillTextActive]}>
-                {cat.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-
-      {/* Section Title */}
-      <View style={desktopStyles.sectionHeaderWrapper}>
-        <View style={desktopStyles.sectionHeader}>
-          <Text style={desktopStyles.sectionTitle}>
-            {selectedCategory ? FULL_CATEGORIES.find(c => c.id === selectedCategory)?.name || 'Listings' : 'Recent Listings'}
-          </Text>
-          <Text style={desktopStyles.listingCount}>{listings.length} items</Text>
-        </View>
-      </View>
-    </View>
-  );
+  // ============ HOME DESKTOP HEADER PROPS ============
+  const homeDesktopHeaderProps = {
+    selectedCategory,
+    onCategorySelect: setSelectedCategory,
+    onCategoryPress: handleCategoryPress,
+    listings,
+  };
 
   const mainContent = (
     <ScrollView
