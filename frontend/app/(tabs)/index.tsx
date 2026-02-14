@@ -24,6 +24,7 @@ import {
   styles, 
   HORIZONTAL_PADDING, 
 } from '../../src/components/home/homeStyles';
+import { HomeSEO, OrganizationSchema, WebsiteSearchSchema } from '../../src/components/seo';
 
 // ============ LAYOUT CONSTANTS ============
 const COLUMN_GAP = 12;
