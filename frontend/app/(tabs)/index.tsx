@@ -1428,12 +1428,7 @@ export default function HomeScreen() {
               placeholder="Search for anything..."
               placeholderTextColor="#999"
               value={homeSearchQuery}
-              onChangeText={(text) => {
-                setHomeSearchQuery(text);
-                if (text.length === 0) {
-                  setShowSearchSuggestions(true);
-                }
-              }}
+              onChangeText={handleSearchInputChange}
               onFocus={() => setShowSearchSuggestions(true)}
               onBlur={() => {
                 // Delay hiding to allow click events on suggestions
@@ -1444,7 +1439,7 @@ export default function HomeScreen() {
               data-testid="home-search-input"
             />
             {homeSearchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setHomeSearchQuery('')} style={styles.clearSearchBtn}>
+              <TouchableOpacity onPress={() => { setHomeSearchQuery(''); setSearchSuggestions(prev => ({ ...prev, autocomplete: [] })); }} style={styles.clearSearchBtn}>
                 <Ionicons name="close-circle" size={18} color="#999" />
               </TouchableOpacity>
             )}
@@ -1452,8 +1447,37 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Search Suggestions Section - Replaces categories when showing */}
-      {showSearchSuggestions && (searchSuggestions.recent.length > 0 || searchSuggestions.trending.length > 0) ? (
+      {/* Search Suggestions Section - Shows autocomplete when typing, or recent/trending when empty */}
+      {showSearchSuggestions && (homeSearchQuery.length > 0 && searchSuggestions.autocomplete.length > 0) ? (
+        <View style={styles.suggestionsSection}>
+          {/* Autocomplete Suggestions - Vertical List */}
+          <View style={styles.suggestionSection}>
+            <View style={styles.suggestionHeader}>
+              <Ionicons name="search" size={14} color="#2E7D32" />
+              <Text style={[styles.suggestionHeaderText, { color: '#2E7D32' }]}>Suggestions</Text>
+            </View>
+            <View style={styles.autocompleteList}>
+              {searchSuggestions.autocomplete.map((item, idx) => (
+                <TouchableOpacity
+                  key={`autocomplete-${idx}`}
+                  style={styles.autocompleteItem}
+                  onPress={() => handleSuggestionClick(item.query)}
+                  data-testid={`autocomplete-item-${idx}`}
+                >
+                  <Ionicons name="search-outline" size={16} color="#666" style={{ marginRight: 12 }} />
+                  <Text style={styles.autocompleteText} numberOfLines={1}>{item.query}</Text>
+                  {item.count > 0 && (
+                    <View style={styles.autocompleteCount}>
+                      <Text style={styles.autocompleteCountText}>{item.count}</Text>
+                    </View>
+                  )}
+                  <Ionicons name="arrow-forward" size={14} color="#999" style={{ marginLeft: 'auto' }} />
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+      ) : showSearchSuggestions && (searchSuggestions.recent.length > 0 || searchSuggestions.trending.length > 0) ? (
         <View style={styles.suggestionsSection}>
           {/* Recent Searches - Horizontal Chips */}
           {searchSuggestions.recent.length > 0 && (
