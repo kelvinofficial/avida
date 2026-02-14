@@ -705,7 +705,7 @@ export default function HomeScreen() {
       <View style={(isDesktop || isTablet) ? { backgroundColor: '#F5F5F5' } : undefined}>
         {isDesktop || isTablet ? (
           renderDesktopHeader()
-        ) : renderHeader()}
+        ) : <MobileHeader {...mobileHeaderProps} />}
         <View style={[styles.listContent, (isDesktop || isTablet) && { paddingHorizontal: 0, alignItems: 'center' }]}>
           {renderGrid()}
         </View>
