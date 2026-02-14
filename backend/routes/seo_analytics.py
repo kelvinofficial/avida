@@ -800,26 +800,29 @@ def create_seo_analytics_router(db, get_current_user, get_current_admin=None):
     
     @router.get("/admin/overview")
     async def admin_get_seo_overview(
+        request: Request,
         days: int = Query(30, ge=1, le=90),
-        admin = Depends(get_current_admin)
+        admin = Depends(require_admin)
     ):
         """Get platform-wide SEO analytics (admin only)"""
         return await analytics.get_admin_seo_overview(days)
     
     @router.get("/admin/listing/{listing_id}")
     async def admin_get_listing_seo_metrics(
+        request: Request,
         listing_id: str,
         days: int = Query(30, ge=1, le=90),
-        admin = Depends(get_current_admin)
+        admin = Depends(require_admin)
     ):
         """Get SEO metrics for any listing (admin only)"""
         return await analytics.get_listing_seo_metrics(listing_id, days)
     
     @router.get("/admin/seller/{seller_id}")
     async def admin_get_seller_seo_overview(
+        request: Request,
         seller_id: str,
         days: int = Query(30, ge=1, le=90),
-        admin = Depends(get_current_admin)
+        admin = Depends(require_admin)
     ):
         """Get SEO overview for a specific seller (admin only)"""
         return await analytics.get_seller_seo_overview(seller_id, days)
