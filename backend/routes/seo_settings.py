@@ -3,15 +3,22 @@ SEO Settings Routes
 Allows admins to manage global and page-specific SEO settings
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime, timezone
 from bson import ObjectId
 
 
-def create_seo_settings_router(db, require_auth, require_admin):
+def create_seo_settings_router(db, get_current_user):
+    """Create SEO settings management router"""
     router = APIRouter(prefix="/seo-settings", tags=["SEO Settings"])
+    
+    # Collections
+    seo_settings_collection = db.seo_settings
+    seo_page_overrides_collection = db.seo_page_overrides
+    categories_collection = db.categories
+    listings_collection = db.listings
     
     # ============ Pydantic Models ============
     
@@ -26,16 +33,6 @@ def create_seo_settings_router(db, require_auth, require_admin):
         robots_txt_custom: Optional[str] = None
         enable_sitemap: bool = True
         enable_structured_data: bool = True
-        
-    class PageSEOOverride(BaseModel):
-        page_type: str  # 'category', 'listing', 'profile', 'static'
-        page_id: Optional[str] = None  # category_id, listing_id, etc.
-        title_template: Optional[str] = None  # e.g., "{title} | {site_name}"
-        description_template: Optional[str] = None
-        og_image: Optional[str] = None
-        keywords: List[str] = []
-        no_index: bool = False
-        canonical_url: Optional[str] = None
         
     class CategorySEOSettings(BaseModel):
         category_id: str
@@ -82,12 +79,22 @@ def create_seo_settings_router(db, require_auth, require_admin):
                 result[key] = value.isoformat()
         return result
     
+    async def require_admin(request: Request):
+        """Require admin access for protected routes"""
+        user = await get_current_user(request)
+        if not user:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        admin_emails = ["admin@marketplace.com", "admin@example.com", "admin@test.com"]
+        if user.email not in admin_emails and not getattr(user, 'is_admin', False):
+            raise HTTPException(status_code=403, detail="Admin access required")
+        return user
+    
     # ============ Global SEO Settings Endpoints ============
     
     @router.get("/global")
     async def get_global_seo_settings():
         """Get global SEO settings (public endpoint for frontend)"""
-        settings = db.seo_settings.find_one({"type": "global"})
+        settings = await seo_settings_collection.find_one({"type": "global"})
         
         if not settings:
             # Return defaults if no settings exist
@@ -106,20 +113,20 @@ def create_seo_settings_router(db, require_auth, require_admin):
         
         return serialize_doc(settings)
     
-    @router.put("/global", dependencies=[Depends(require_admin)])
-    async def update_global_seo_settings(request: UpdateGlobalSettingsRequest):
+    @router.put("/global")
+    async def update_global_seo_settings(request_body: UpdateGlobalSettingsRequest, admin = Depends(require_admin)):
         """Update global SEO settings (admin only)"""
-        update_data = {k: v for k, v in request.dict().items() if v is not None}
+        update_data = {k: v for k, v in request_body.dict().items() if v is not None}
         update_data["type"] = "global"
         update_data["updated_at"] = datetime.now(timezone.utc)
         
-        result = db.seo_settings.update_one(
+        await seo_settings_collection.update_one(
             {"type": "global"},
             {"$set": update_data},
             upsert=True
         )
         
-        settings = db.seo_settings.find_one({"type": "global"})
+        settings = await seo_settings_collection.find_one({"type": "global"})
         return serialize_doc(settings)
     
     # ============ Page Override Endpoints ============
@@ -127,19 +134,21 @@ def create_seo_settings_router(db, require_auth, require_admin):
     @router.get("/overrides")
     async def get_all_page_overrides():
         """Get all page SEO overrides (public for frontend)"""
-        overrides = list(db.seo_page_overrides.find())
+        cursor = seo_page_overrides_collection.find()
+        overrides = await cursor.to_list(length=500)
         return [serialize_doc(o) for o in overrides]
     
     @router.get("/overrides/{page_type}")
     async def get_page_overrides_by_type(page_type: str):
         """Get SEO overrides for a specific page type"""
-        overrides = list(db.seo_page_overrides.find({"page_type": page_type}))
+        cursor = seo_page_overrides_collection.find({"page_type": page_type})
+        overrides = await cursor.to_list(length=500)
         return [serialize_doc(o) for o in overrides]
     
     @router.get("/overrides/{page_type}/{page_id}")
     async def get_page_override(page_type: str, page_id: str):
         """Get SEO override for a specific page"""
-        override = db.seo_page_overrides.find_one({
+        override = await seo_page_overrides_collection.find_one({
             "page_type": page_type,
             "page_id": page_id
         })
@@ -149,39 +158,39 @@ def create_seo_settings_router(db, require_auth, require_admin):
             
         return serialize_doc(override)
     
-    @router.post("/overrides", dependencies=[Depends(require_admin)])
-    async def create_page_override(request: CreatePageOverrideRequest):
+    @router.post("/overrides")
+    async def create_page_override(request_body: CreatePageOverrideRequest, admin = Depends(require_admin)):
         """Create a new page SEO override (admin only)"""
         # Check if override already exists
-        existing = db.seo_page_overrides.find_one({
-            "page_type": request.page_type,
-            "page_id": request.page_id
+        existing = await seo_page_overrides_collection.find_one({
+            "page_type": request_body.page_type,
+            "page_id": request_body.page_id
         })
         
         if existing:
             raise HTTPException(status_code=400, detail="Override already exists for this page")
         
-        override_data = request.dict()
+        override_data = request_body.dict()
         override_data["created_at"] = datetime.now(timezone.utc)
         override_data["updated_at"] = datetime.now(timezone.utc)
         
-        result = db.seo_page_overrides.insert_one(override_data)
-        override = db.seo_page_overrides.find_one({"_id": result.inserted_id})
+        result = await seo_page_overrides_collection.insert_one(override_data)
+        override = await seo_page_overrides_collection.find_one({"_id": result.inserted_id})
         
         return serialize_doc(override)
     
-    @router.put("/overrides/{override_id}", dependencies=[Depends(require_admin)])
-    async def update_page_override(override_id: str, request: CreatePageOverrideRequest):
+    @router.put("/overrides/{override_id}")
+    async def update_page_override(override_id: str, request_body: CreatePageOverrideRequest, admin = Depends(require_admin)):
         """Update a page SEO override (admin only)"""
         try:
             obj_id = ObjectId(override_id)
         except:
             raise HTTPException(status_code=400, detail="Invalid override ID")
         
-        update_data = request.dict()
+        update_data = request_body.dict()
         update_data["updated_at"] = datetime.now(timezone.utc)
         
-        result = db.seo_page_overrides.update_one(
+        result = await seo_page_overrides_collection.update_one(
             {"_id": obj_id},
             {"$set": update_data}
         )
@@ -189,18 +198,18 @@ def create_seo_settings_router(db, require_auth, require_admin):
         if result.matched_count == 0:
             raise HTTPException(status_code=404, detail="Override not found")
         
-        override = db.seo_page_overrides.find_one({"_id": obj_id})
+        override = await seo_page_overrides_collection.find_one({"_id": obj_id})
         return serialize_doc(override)
     
-    @router.delete("/overrides/{override_id}", dependencies=[Depends(require_admin)])
-    async def delete_page_override(override_id: str):
+    @router.delete("/overrides/{override_id}")
+    async def delete_page_override(override_id: str, admin = Depends(require_admin)):
         """Delete a page SEO override (admin only)"""
         try:
             obj_id = ObjectId(override_id)
         except:
             raise HTTPException(status_code=400, detail="Invalid override ID")
         
-        result = db.seo_page_overrides.delete_one({"_id": obj_id})
+        result = await seo_page_overrides_collection.delete_one({"_id": obj_id})
         
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Override not found")
@@ -212,51 +221,52 @@ def create_seo_settings_router(db, require_auth, require_admin):
     @router.get("/categories")
     async def get_all_category_seo():
         """Get SEO settings for all categories"""
-        category_overrides = list(db.seo_page_overrides.find({"page_type": "category"}))
+        cursor = seo_page_overrides_collection.find({"page_type": "category"})
+        category_overrides = await cursor.to_list(length=100)
         return [serialize_doc(o) for o in category_overrides]
     
     @router.get("/categories/{category_id}")
     async def get_category_seo(category_id: str):
         """Get SEO settings for a specific category"""
-        override = db.seo_page_overrides.find_one({
+        override = await seo_page_overrides_collection.find_one({
             "page_type": "category",
             "page_id": category_id
         })
         
         if not override:
             # Return defaults based on category
-            categories = db.categories.find_one({"id": category_id})
-            if categories:
+            category = await categories_collection.find_one({"id": category_id})
+            if category:
                 return {
                     "category_id": category_id,
-                    "title": f"{categories.get('name', category_id)} for Sale",
-                    "description": f"Browse {categories.get('name', category_id).lower()} listings on Avida. Find great deals near you.",
-                    "keywords": [categories.get('name', '').lower(), "buy", "sell", "local"]
+                    "title": f"{category.get('name', category_id)} for Sale",
+                    "description": f"Browse {category.get('name', category_id).lower()} listings on Avida. Find great deals near you.",
+                    "keywords": [category.get('name', '').lower(), "buy", "sell", "local"]
                 }
             return None
         
         return serialize_doc(override)
     
-    @router.put("/categories/{category_id}", dependencies=[Depends(require_admin)])
-    async def update_category_seo(category_id: str, request: CategorySEOSettings):
+    @router.put("/categories/{category_id}")
+    async def update_category_seo(category_id: str, request_body: CategorySEOSettings, admin = Depends(require_admin)):
         """Update SEO settings for a specific category (admin only)"""
         update_data = {
             "page_type": "category",
             "page_id": category_id,
-            "title_template": request.title,
-            "description_template": request.description,
-            "og_image": request.og_image,
-            "keywords": request.keywords,
+            "title_template": request_body.title,
+            "description_template": request_body.description,
+            "og_image": request_body.og_image,
+            "keywords": request_body.keywords,
             "updated_at": datetime.now(timezone.utc)
         }
         
-        result = db.seo_page_overrides.update_one(
+        await seo_page_overrides_collection.update_one(
             {"page_type": "category", "page_id": category_id},
             {"$set": update_data},
             upsert=True
         )
         
-        override = db.seo_page_overrides.find_one({
+        override = await seo_page_overrides_collection.find_one({
             "page_type": "category",
             "page_id": category_id
         })
@@ -265,8 +275,8 @@ def create_seo_settings_router(db, require_auth, require_admin):
     
     # ============ Bulk Operations ============
     
-    @router.post("/bulk-update-categories", dependencies=[Depends(require_admin)])
-    async def bulk_update_category_seo(updates: List[CategorySEOSettings]):
+    @router.post("/bulk-update-categories")
+    async def bulk_update_category_seo(updates: List[CategorySEOSettings], admin = Depends(require_admin)):
         """Bulk update SEO settings for multiple categories (admin only)"""
         results = []
         
@@ -281,7 +291,7 @@ def create_seo_settings_router(db, require_auth, require_admin):
                 "updated_at": datetime.now(timezone.utc)
             }
             
-            db.seo_page_overrides.update_one(
+            await seo_page_overrides_collection.update_one(
                 {"page_type": "category", "page_id": update.category_id},
                 {"$set": update_data},
                 upsert=True
@@ -296,11 +306,11 @@ def create_seo_settings_router(db, require_auth, require_admin):
     async def preview_seo_tags(page_type: str, page_id: str):
         """Preview how SEO tags will render for a specific page"""
         # Get global settings
-        global_settings = db.seo_settings.find_one({"type": "global"}) or {}
+        global_settings = await seo_settings_collection.find_one({"type": "global"}) or {}
         site_name = global_settings.get("site_name", "Avida Marketplace")
         
         # Get page-specific override
-        override = db.seo_page_overrides.find_one({
+        override = await seo_page_overrides_collection.find_one({
             "page_type": page_type,
             "page_id": page_id
         })
@@ -320,7 +330,7 @@ def create_seo_settings_router(db, require_auth, require_admin):
         }
         
         if page_type == "category":
-            category = db.categories.find_one({"id": page_id})
+            category = await categories_collection.find_one({"id": page_id})
             if category:
                 cat_name = category.get("name", page_id)
                 preview["title"] = f"{cat_name} for Sale | {site_name}"
@@ -329,7 +339,7 @@ def create_seo_settings_router(db, require_auth, require_admin):
                 preview["keywords"] = [cat_name.lower(), "buy", "sell", "local"]
                 
         elif page_type == "listing":
-            listing = db.listings.find_one({"id": page_id})
+            listing = await listings_collection.find_one({"id": page_id})
             if listing:
                 preview["title"] = f"{listing.get('title', 'Listing')} | {site_name}"
                 preview["description"] = listing.get("description", "")[:160]
