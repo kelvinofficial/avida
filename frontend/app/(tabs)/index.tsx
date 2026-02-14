@@ -2488,6 +2488,12 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: '500',
   },
+  searchFieldWrapper: {
+    flex: 1,
+    position: 'relative',
+    zIndex: 100,
+    ...(Platform.OS === 'web' ? { overflow: 'visible' } : {}),
+  },
   searchField: {
     flex: 1,
     flexDirection: 'row',
