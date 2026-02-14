@@ -1,14 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Card,
   CardContent,
   Typography,
   CircularProgress,
-  Tabs,
-  Tab,
   Select,
   MenuItem,
   FormControl,
@@ -21,15 +19,24 @@ import {
   TableRow,
   Paper,
   Chip,
+  IconButton,
+  Breadcrumbs,
+  Link,
+  Skeleton,
+  alpha,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {
   Search,
   Public,
   LocationCity,
-  Category,
   TrendingUp,
   CalendarToday,
+  ArrowBack,
+  KeyboardArrowRight,
+  Map,
+  QueryStats,
+  Insights,
 } from '@mui/icons-material';
 import {
   BarChart,
@@ -41,13 +48,30 @@ import {
   ResponsiveContainer,
   LineChart,
   Line,
-  PieChart,
-  Pie,
+  AreaChart,
+  Area,
   Cell,
 } from 'recharts';
 
-// Main backend API URL - search analytics is on the main backend
+// Main backend API URL
 const MAIN_API_URL = process.env.NEXT_PUBLIC_MAIN_API_URL || 'https://shimmer-loading.preview.emergentagent.com/api';
+
+// Theme colors - consistent with admin dashboard
+const THEME = {
+  primary: '#2E7D32',
+  primaryLight: '#4CAF50',
+  secondary: '#1976D2',
+  warning: '#FF9800',
+  error: '#F44336',
+  purple: '#9C27B0',
+  cyan: '#00BCD4',
+  background: '#F5F7FA',
+  cardBg: '#FFFFFF',
+  text: '#1A1A2E',
+  textSecondary: '#64748B',
+};
+
+const CHART_COLORS = ['#2E7D32', '#1976D2', '#FF9800', '#9C27B0', '#F44336', '#00BCD4', '#795548', '#607D8B'];
 
 interface SearchAnalyticsData {
   period_days: number;
@@ -92,39 +116,42 @@ interface SearchAnalyticsData {
   }>;
 }
 
-const COLORS = ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336', '#00BCD4', '#795548', '#607D8B'];
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
+interface LocationFilter {
+  type: 'global' | 'country' | 'region' | 'city';
+  country_code?: string;
+  country_name?: string;
+  region_code?: string;
+  region_name?: string;
+  city_code?: string;
+  city_name?: string;
 }
 
-function TabPanel({ children, value, index, ...other }: TabPanelProps) {
+// Stat Card Component - consistent with dashboard
+function StatCard({ 
+  title, 
+  value, 
+  icon, 
+  color, 
+  subtitle,
+  loading = false 
+}: { 
+  title: string; 
+  value: number | string; 
+  icon: React.ReactNode; 
+  color: string;
+  subtitle?: string;
+  loading?: boolean;
+}) {
   return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`analytics-tabpanel-${index}`}
-      aria-labelledby={`analytics-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
-    </div>
-  );
-}
-
-function StatCard({ title, value, icon, color }: { title: string; value: number | string; icon: React.ReactNode; color: string }) {
-  return (
-    <Card>
-      <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+    <Card sx={{ height: '100%', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+      <CardContent sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <Box
             sx={{
-              width: 48,
-              height: 48,
-              borderRadius: 2,
-              bgcolor: `${color}15`,
+              width: 52,
+              height: 52,
+              borderRadius: 3,
+              bgcolor: alpha(color, 0.1),
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -133,59 +160,380 @@ function StatCard({ title, value, icon, color }: { title: string; value: number 
           >
             {icon}
           </Box>
-          <Box>
-            <Typography variant="h4" fontWeight={700}>
-              {value}
+          {loading ? (
+            <Skeleton variant="text" width={60} height={40} />
+          ) : (
+            <Typography variant="h3" fontWeight={700} color={THEME.text}>
+              {typeof value === 'number' ? value.toLocaleString() : value}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {title}
+          )}
+        </Box>
+        <Typography variant="body2" color={THEME.textSecondary} sx={{ mt: 2, fontWeight: 500 }}>
+          {title}
+        </Typography>
+        {subtitle && (
+          <Typography variant="caption" color={THEME.textSecondary}>
+            {subtitle}
+          </Typography>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Location Breadcrumb Component
+function LocationBreadcrumb({ 
+  filter, 
+  onNavigate 
+}: { 
+  filter: LocationFilter; 
+  onNavigate: (filter: LocationFilter) => void;
+}) {
+  return (
+    <Breadcrumbs 
+      separator={<KeyboardArrowRight fontSize="small" sx={{ color: THEME.textSecondary }} />}
+      sx={{ mb: 3 }}
+    >
+      <Link
+        component="button"
+        variant="body2"
+        underline="hover"
+        onClick={() => onNavigate({ type: 'global' })}
+        sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 0.5,
+          color: filter.type === 'global' ? THEME.primary : THEME.textSecondary,
+          fontWeight: filter.type === 'global' ? 600 : 400,
+          cursor: 'pointer',
+          '&:hover': { color: THEME.primary }
+        }}
+      >
+        <Public fontSize="small" />
+        Global
+      </Link>
+      
+      {filter.country_code && (
+        <Link
+          component="button"
+          variant="body2"
+          underline="hover"
+          onClick={() => onNavigate({ 
+            type: 'country', 
+            country_code: filter.country_code,
+            country_name: filter.country_name 
+          })}
+          sx={{ 
+            color: filter.type === 'country' ? THEME.primary : THEME.textSecondary,
+            fontWeight: filter.type === 'country' ? 600 : 400,
+            cursor: 'pointer',
+            '&:hover': { color: THEME.primary }
+          }}
+        >
+          {filter.country_name || filter.country_code}
+        </Link>
+      )}
+      
+      {filter.region_code && (
+        <Link
+          component="button"
+          variant="body2"
+          underline="hover"
+          onClick={() => onNavigate({ 
+            type: 'region',
+            country_code: filter.country_code,
+            country_name: filter.country_name,
+            region_code: filter.region_code,
+            region_name: filter.region_name
+          })}
+          sx={{ 
+            color: filter.type === 'region' ? THEME.primary : THEME.textSecondary,
+            fontWeight: filter.type === 'region' ? 600 : 400,
+            cursor: 'pointer',
+            '&:hover': { color: THEME.primary }
+          }}
+        >
+          {filter.region_name || filter.region_code}
+        </Link>
+      )}
+      
+      {filter.city_code && (
+        <Typography 
+          variant="body2" 
+          sx={{ color: THEME.primary, fontWeight: 600 }}
+        >
+          {filter.city_name || filter.city_code}
+        </Typography>
+      )}
+    </Breadcrumbs>
+  );
+}
+
+// Location Card - clickable for drilldown
+function LocationCard({ 
+  name, 
+  code, 
+  searchCount, 
+  uniqueQueries, 
+  onClick,
+  icon,
+  color = THEME.primary
+}: { 
+  name: string;
+  code: string;
+  searchCount: number;
+  uniqueQueries: number;
+  onClick: () => void;
+  icon: React.ReactNode;
+  color?: string;
+}) {
+  return (
+    <Card 
+      sx={{ 
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        borderRadius: 2,
+        border: '1px solid',
+        borderColor: 'transparent',
+        '&:hover': { 
+          transform: 'translateY(-2px)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          borderColor: alpha(color, 0.3),
+        }
+      }}
+      onClick={onClick}
+    >
+      <CardContent sx={{ p: 2.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: 2,
+              bgcolor: alpha(color, 0.1),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: color,
+            }}
+          >
+            {icon}
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle1" fontWeight={600} color={THEME.text}>
+              {name}
+            </Typography>
+            <Typography variant="caption" color={THEME.textSecondary}>
+              {code}
             </Typography>
           </Box>
+          <Box sx={{ textAlign: 'right' }}>
+            <Typography variant="h6" fontWeight={700} color={color}>
+              {searchCount.toLocaleString()}
+            </Typography>
+            <Typography variant="caption" color={THEME.textSecondary}>
+              {uniqueQueries} unique
+            </Typography>
+          </Box>
+          <KeyboardArrowRight sx={{ color: THEME.textSecondary }} />
         </Box>
       </CardContent>
     </Card>
   );
 }
 
-export default function SearchAnalyticsPage() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [tabValue, setTabValue] = useState(0);
-  const [days, setDays] = useState(7);
-  const [data, setData] = useState<SearchAnalyticsData | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(`${MAIN_API_URL}/admin-ui/search-analytics?days=${days}`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch: ${response.status}`);
-        }
-        const result = await response.json();
-        setData(result);
-      } catch (err) {
-        console.error('Failed to load search analytics:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load data');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [days]);
-
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
-
+// Top Searches Table
+function TopSearchesTable({ 
+  searches, 
+  locationName,
+  loading = false
+}: { 
+  searches: Array<{ query: string; count: number }>;
+  locationName: string;
+  loading?: boolean;
+}) {
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
-        <CircularProgress />
+      <Box>
+        {[1, 2, 3, 4, 5].map((i) => (
+          <Skeleton key={i} variant="rectangular" height={50} sx={{ mb: 1, borderRadius: 1 }} />
+        ))}
       </Box>
     );
   }
+
+  if (searches.length === 0) {
+    return (
+      <Box sx={{ textAlign: 'center', py: 6 }}>
+        <Search sx={{ fontSize: 48, color: THEME.textSecondary, opacity: 0.5, mb: 2 }} />
+        <Typography color={THEME.textSecondary}>
+          No searches recorded in {locationName}
+        </Typography>
+      </Box>
+    );
+  }
+
+  const maxCount = Math.max(...searches.map(s => s.count));
+
+  return (
+    <Box>
+      {searches.slice(0, 10).map((item, index) => (
+        <Box
+          key={index}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            p: 2,
+            mb: 1,
+            borderRadius: 2,
+            bgcolor: index === 0 ? alpha(THEME.primary, 0.05) : 'transparent',
+            '&:hover': { bgcolor: alpha(THEME.primary, 0.05) }
+          }}
+        >
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              width: 28, 
+              height: 28, 
+              borderRadius: '50%',
+              bgcolor: index < 3 ? THEME.primary : THEME.textSecondary,
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 600,
+              fontSize: 12,
+            }}
+          >
+            {index + 1}
+          </Typography>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="body1" fontWeight={500} color={THEME.text}>
+              {item.query}
+            </Typography>
+            <Box sx={{ mt: 0.5, height: 4, bgcolor: alpha(THEME.primary, 0.1), borderRadius: 2, overflow: 'hidden' }}>
+              <Box 
+                sx={{ 
+                  height: '100%', 
+                  width: `${(item.count / maxCount) * 100}%`,
+                  bgcolor: THEME.primary,
+                  borderRadius: 2,
+                }} 
+              />
+            </Box>
+          </Box>
+          <Chip 
+            label={item.count.toLocaleString()} 
+            size="small"
+            sx={{ 
+              bgcolor: alpha(THEME.primary, 0.1),
+              color: THEME.primary,
+              fontWeight: 600,
+            }} 
+          />
+        </Box>
+      ))}
+    </Box>
+  );
+}
+
+// Custom Tooltip for charts
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <Paper sx={{ p: 1.5, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
+        <Typography variant="body2" fontWeight={600} gutterBottom>
+          {label}
+        </Typography>
+        {payload.map((entry: any, index: number) => (
+          <Typography key={index} variant="body2" sx={{ color: entry.color }}>
+            {entry.name}: {entry.value.toLocaleString()}
+          </Typography>
+        ))}
+      </Paper>
+    );
+  }
+  return null;
+};
+
+export default function SearchAnalyticsPage() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [days, setDays] = useState(7);
+  const [data, setData] = useState<SearchAnalyticsData | null>(null);
+  const [locationFilter, setLocationFilter] = useState<LocationFilter>({ type: 'global' });
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let url = `${MAIN_API_URL}/admin-ui/search-analytics?days=${days}`;
+      
+      if (locationFilter.country_code) {
+        url += `&country_code=${locationFilter.country_code}`;
+      }
+      if (locationFilter.region_code) {
+        url += `&region_code=${locationFilter.region_code}`;
+      }
+      if (locationFilter.city_code) {
+        url += `&city_code=${locationFilter.city_code}`;
+      }
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch: ${response.status}`);
+      }
+      const result = await response.json();
+      setData(result);
+    } catch (err) {
+      console.error('Failed to load search analytics:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load data');
+    } finally {
+      setLoading(false);
+    }
+  }, [days, locationFilter]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleLocationDrilldown = (filter: LocationFilter) => {
+    setLocationFilter(filter);
+  };
+
+  const handleCountryClick = (country: { country_code: string; country_name: string }) => {
+    setLocationFilter({
+      type: 'country',
+      country_code: country.country_code,
+      country_name: country.country_name,
+    });
+  };
+
+  const handleRegionClick = (region: { region_code: string; region_name: string; country_code: string }) => {
+    setLocationFilter({
+      ...locationFilter,
+      type: 'region',
+      region_code: region.region_code,
+      region_name: region.region_name,
+    });
+  };
+
+  const handleCityClick = (city: { city_code: string; city_name: string }) => {
+    setLocationFilter({
+      ...locationFilter,
+      type: 'city',
+      city_code: city.city_code,
+      city_name: city.city_name,
+    });
+  };
+
+  const getLocationName = () => {
+    if (locationFilter.city_name) return locationFilter.city_name;
+    if (locationFilter.region_name) return locationFilter.region_name;
+    if (locationFilter.country_name) return locationFilter.country_name;
+    return 'Global';
+  };
 
   if (error) {
     return (
@@ -193,31 +541,59 @@ export default function SearchAnalyticsPage() {
         <Typography variant="h5" color="error" gutterBottom>
           Error Loading Data
         </Typography>
-        <Typography color="text.secondary">{error}</Typography>
-      </Box>
-    );
-  }
-
-  if (!data) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Typography>No data available</Typography>
+        <Typography color={THEME.textSecondary}>{error}</Typography>
       </Box>
     );
   }
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+    <Box sx={{ bgcolor: THEME.background, minHeight: '100vh', p: 3 }}>
+      {/* Header */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
         <Box>
-          <Typography variant="h4" fontWeight={600} gutterBottom>
-            Search Analytics
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Track what users are searching for across different locations and categories
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+            {locationFilter.type !== 'global' && (
+              <IconButton 
+                onClick={() => {
+                  if (locationFilter.type === 'city') {
+                    setLocationFilter({
+                      type: 'region',
+                      country_code: locationFilter.country_code,
+                      country_name: locationFilter.country_name,
+                      region_code: locationFilter.region_code,
+                      region_name: locationFilter.region_name,
+                    });
+                  } else if (locationFilter.type === 'region') {
+                    setLocationFilter({
+                      type: 'country',
+                      country_code: locationFilter.country_code,
+                      country_name: locationFilter.country_name,
+                    });
+                  } else {
+                    setLocationFilter({ type: 'global' });
+                  }
+                }}
+                sx={{ 
+                  bgcolor: alpha(THEME.primary, 0.1), 
+                  color: THEME.primary,
+                  '&:hover': { bgcolor: alpha(THEME.primary, 0.2) }
+                }}
+              >
+                <ArrowBack />
+              </IconButton>
+            )}
+            <Typography variant="h4" fontWeight={700} color={THEME.text}>
+              Search Analytics
+            </Typography>
+          </Box>
+          <Typography variant="body1" color={THEME.textSecondary}>
+            {locationFilter.type === 'global' 
+              ? 'Track what users are searching for across all locations'
+              : `Viewing searches in ${getLocationName()}`
+            }
           </Typography>
         </Box>
-        <FormControl size="small" sx={{ minWidth: 150 }}>
+        <FormControl size="small" sx={{ minWidth: 160 }}>
           <InputLabel>Time Period</InputLabel>
           <Select
             value={days}
@@ -233,338 +609,242 @@ export default function SearchAnalyticsPage() {
         </FormControl>
       </Box>
 
+      {/* Location Breadcrumb */}
+      {locationFilter.type !== 'global' && (
+        <LocationBreadcrumb filter={locationFilter} onNavigate={handleLocationDrilldown} />
+      )}
+
       {/* Summary Stats */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="Total Searches"
-            value={data.total_searches}
-            icon={<Search />}
-            color="#4CAF50"
+            value={data?.total_searches || 0}
+            icon={<Search sx={{ fontSize: 28 }} />}
+            color={THEME.primary}
+            subtitle={`in ${getLocationName()}`}
+            loading={loading}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
             title="Unique Queries"
-            value={data.top_searches.length}
-            icon={<TrendingUp />}
-            color="#2196F3"
+            value={data?.top_searches.length || 0}
+            icon={<QueryStats sx={{ fontSize: 28 }} />}
+            color={THEME.secondary}
+            loading={loading}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
-            title="Countries"
-            value={data.by_country.length}
-            icon={<Public />}
-            color="#FF9800"
+            title={locationFilter.type === 'global' ? 'Countries' : locationFilter.type === 'country' ? 'Regions' : 'Cities'}
+            value={
+              locationFilter.type === 'global' 
+                ? data?.by_country.length || 0
+                : locationFilter.type === 'country'
+                  ? data?.by_region.length || 0
+                  : data?.by_city.length || 0
+            }
+            icon={<Map sx={{ fontSize: 28 }} />}
+            color={THEME.warning}
+            loading={loading}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
-            title="Cities"
-            value={data.by_city.length}
-            icon={<LocationCity />}
-            color="#9C27B0"
+            title="Daily Average"
+            value={data ? Math.round(data.total_searches / days) : 0}
+            icon={<Insights sx={{ fontSize: 28 }} />}
+            color={THEME.purple}
+            subtitle="searches/day"
+            loading={loading}
           />
         </Grid>
       </Grid>
 
-      {/* Tabs */}
-      <Card>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={tabValue} onChange={handleTabChange} aria-label="search analytics tabs">
-            <Tab label="Searches" icon={<Search />} iconPosition="start" />
-            <Tab label="By Location" icon={<Public />} iconPosition="start" />
-            <Tab label="Activity" icon={<CalendarToday />} iconPosition="start" />
-          </Tabs>
-        </Box>
+      <Grid container spacing={3}>
+        {/* Left Column - Top Searches */}
+        <Grid size={{ xs: 12, lg: 5 }}>
+          <Card sx={{ borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                <TrendingUp sx={{ color: THEME.primary }} />
+                <Typography variant="h6" fontWeight={600} color={THEME.text}>
+                  Top Searches in {getLocationName()}
+                </Typography>
+              </Box>
+              <TopSearchesTable 
+                searches={data?.top_searches || []} 
+                locationName={getLocationName()}
+                loading={loading}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
 
-        {/* Tab 0: Top Searches */}
-        <TabPanel value={tabValue} index={0}>
-          <Grid container spacing={3}>
-            <Grid size={{ xs: 12, md: 8 }}>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
-                Top Search Queries
-              </Typography>
-              {data.top_searches.length > 0 ? (
-                <Box sx={{ height: 400 }}>
+        {/* Right Column - Location Drilldown */}
+        <Grid size={{ xs: 12, lg: 7 }}>
+          <Card sx={{ borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', mb: 3 }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                <LocationCity sx={{ color: THEME.secondary }} />
+                <Typography variant="h6" fontWeight={600} color={THEME.text}>
+                  {locationFilter.type === 'global' && 'Searches by Country'}
+                  {locationFilter.type === 'country' && 'Searches by Region'}
+                  {locationFilter.type === 'region' && 'Searches by City'}
+                  {locationFilter.type === 'city' && 'City Details'}
+                </Typography>
+                <Typography variant="caption" color={THEME.textSecondary} sx={{ ml: 'auto' }}>
+                  Click to drill down
+                </Typography>
+              </Box>
+              
+              {loading ? (
+                <Box>
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} variant="rectangular" height={70} sx={{ mb: 2, borderRadius: 2 }} />
+                  ))}
+                </Box>
+              ) : (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {/* Show Countries at Global level */}
+                  {locationFilter.type === 'global' && data?.by_country.map((country, idx) => (
+                    <LocationCard
+                      key={country.country_code}
+                      name={country.country_name}
+                      code={country.country_code}
+                      searchCount={country.search_count}
+                      uniqueQueries={country.unique_query_count}
+                      onClick={() => handleCountryClick(country)}
+                      icon={<Public />}
+                      color={CHART_COLORS[idx % CHART_COLORS.length]}
+                    />
+                  ))}
+                  
+                  {/* Show Regions at Country level */}
+                  {locationFilter.type === 'country' && data?.by_region.map((region, idx) => (
+                    <LocationCard
+                      key={region.region_code}
+                      name={region.region_name}
+                      code={region.region_code}
+                      searchCount={region.search_count}
+                      uniqueQueries={region.unique_query_count}
+                      onClick={() => handleRegionClick(region)}
+                      icon={<Map />}
+                      color={CHART_COLORS[idx % CHART_COLORS.length]}
+                    />
+                  ))}
+                  
+                  {/* Show Cities at Region level */}
+                  {locationFilter.type === 'region' && data?.by_city.map((city, idx) => (
+                    <LocationCard
+                      key={city.city_code}
+                      name={city.city_name}
+                      code={city.city_code}
+                      searchCount={city.search_count}
+                      uniqueQueries={city.unique_query_count}
+                      onClick={() => handleCityClick(city)}
+                      icon={<LocationCity />}
+                      color={CHART_COLORS[idx % CHART_COLORS.length]}
+                    />
+                  ))}
+
+                  {/* City level - show message */}
+                  {locationFilter.type === 'city' && (
+                    <Box sx={{ textAlign: 'center', py: 4 }}>
+                      <LocationCity sx={{ fontSize: 48, color: THEME.primary, mb: 2 }} />
+                      <Typography variant="h6" color={THEME.text} gutterBottom>
+                        {locationFilter.city_name}
+                      </Typography>
+                      <Typography color={THEME.textSecondary}>
+                        Viewing all searches from this city. Check the top searches panel for details.
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {/* Empty state */}
+                  {!loading && (
+                    (locationFilter.type === 'global' && data?.by_country.length === 0) ||
+                    (locationFilter.type === 'country' && data?.by_region.length === 0) ||
+                    (locationFilter.type === 'region' && data?.by_city.length === 0)
+                  ) && (
+                    <Box sx={{ textAlign: 'center', py: 4 }}>
+                      <Map sx={{ fontSize: 48, color: THEME.textSecondary, opacity: 0.5, mb: 2 }} />
+                      <Typography color={THEME.textSecondary}>
+                        No location data available for this period
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Activity Chart */}
+          <Card sx={{ borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                <CalendarToday sx={{ color: THEME.warning }} />
+                <Typography variant="h6" fontWeight={600} color={THEME.text}>
+                  Search Activity Over Time
+                </Typography>
+              </Box>
+              
+              {loading ? (
+                <Skeleton variant="rectangular" height={250} sx={{ borderRadius: 2 }} />
+              ) : data?.recent_activity && data.recent_activity.length > 0 ? (
+                <Box sx={{ height: 250 }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data.top_searches.slice(0, 10)} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" />
-                      <YAxis dataKey="query" type="category" width={150} tick={{ fontSize: 12 }} />
-                      <Tooltip />
-                      <Bar dataKey="count" fill="#4CAF50" radius={[0, 4, 4, 0]} />
-                    </BarChart>
+                    <AreaChart data={[...data.recent_activity].reverse()}>
+                      <defs>
+                        <linearGradient id="searchGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={THEME.primary} stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor={THEME.primary} stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="uniqueGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={THEME.secondary} stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor={THEME.secondary} stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
+                      <XAxis 
+                        dataKey="date" 
+                        tick={{ fontSize: 11, fill: THEME.textSecondary }}
+                        tickFormatter={(value) => value.slice(5)}
+                      />
+                      <YAxis tick={{ fontSize: 11, fill: THEME.textSecondary }} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area
+                        type="monotone"
+                        dataKey="search_count"
+                        stroke={THEME.primary}
+                        strokeWidth={2}
+                        fill="url(#searchGradient)"
+                        name="Total Searches"
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="unique_query_count"
+                        stroke={THEME.secondary}
+                        strokeWidth={2}
+                        fill="url(#uniqueGradient)"
+                        name="Unique Queries"
+                      />
+                    </AreaChart>
                   </ResponsiveContainer>
                 </Box>
               ) : (
-                <Box sx={{ p: 4, textAlign: 'center' }}>
-                  <Typography color="text.secondary">No search data available for this period</Typography>
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <CalendarToday sx={{ fontSize: 48, color: THEME.textSecondary, opacity: 0.5, mb: 2 }} />
+                  <Typography color={THEME.textSecondary}>
+                    No activity data available for this period
+                  </Typography>
                 </Box>
               )}
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
-                All Queries
-              </Typography>
-              <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
-                <Table stickyHeader size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Query</TableCell>
-                      <TableCell align="right">Count</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {data.top_searches.map((item, index) => (
-                      <TableRow key={index} hover>
-                        <TableCell>{item.query}</TableCell>
-                        <TableCell align="right">
-                          <Chip label={item.count} size="small" color="primary" />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {data.top_searches.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={2} align="center">
-                          No queries found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Grid>
-          </Grid>
-        </TabPanel>
-
-        {/* Tab 1: By Location */}
-        <TabPanel value={tabValue} index={1}>
-          <Grid container spacing={3}>
-            {/* By Country */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
-                Searches by Country
-              </Typography>
-              {data.by_country.length > 0 ? (
-                <>
-                  <Box sx={{ height: 300 }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={data.by_country}
-                          dataKey="search_count"
-                          nameKey="country_name"
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={100}
-                          label={({ country_name, percent }) => `${country_name} (${(percent * 100).toFixed(0)}%)`}
-                        >
-                          {data.by_country.map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </Box>
-                  <TableContainer component={Paper} sx={{ mt: 2 }}>
-                    <Table size="small">
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>Country</TableCell>
-                          <TableCell align="right">Searches</TableCell>
-                          <TableCell align="right">Unique Queries</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {data.by_country.map((item, index) => (
-                          <TableRow key={index} hover>
-                            <TableCell>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Chip
-                                  label={item.country_code}
-                                  size="small"
-                                  sx={{ bgcolor: COLORS[index % COLORS.length], color: '#fff' }}
-                                />
-                                {item.country_name}
-                              </Box>
-                            </TableCell>
-                            <TableCell align="right">{item.search_count}</TableCell>
-                            <TableCell align="right">{item.unique_query_count}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </>
-              ) : (
-                <Box sx={{ p: 4, textAlign: 'center' }}>
-                  <Typography color="text.secondary">No location data available</Typography>
-                </Box>
-              )}
-            </Grid>
-
-            {/* By Region */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
-                Searches by Region
-              </Typography>
-              {data.by_region.length > 0 ? (
-                <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
-                  <Table stickyHeader size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Region</TableCell>
-                        <TableCell>Country</TableCell>
-                        <TableCell align="right">Searches</TableCell>
-                        <TableCell align="right">Unique</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {data.by_region.map((item, index) => (
-                        <TableRow key={index} hover>
-                          <TableCell>{item.region_name}</TableCell>
-                          <TableCell>
-                            <Chip label={item.country_code} size="small" variant="outlined" />
-                          </TableCell>
-                          <TableCell align="right">{item.search_count}</TableCell>
-                          <TableCell align="right">{item.unique_query_count}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              ) : (
-                <Box sx={{ p: 4, textAlign: 'center' }}>
-                  <Typography color="text.secondary">No region data available</Typography>
-                </Box>
-              )}
-            </Grid>
-
-            {/* By City */}
-            <Grid size={{ xs: 12 }}>
-              <Typography variant="h6" fontWeight={600} gutterBottom sx={{ mt: 2 }}>
-                Searches by City
-              </Typography>
-              {data.by_city.length > 0 ? (
-                <TableContainer component={Paper}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>City</TableCell>
-                        <TableCell>Region</TableCell>
-                        <TableCell>Country</TableCell>
-                        <TableCell align="right">Searches</TableCell>
-                        <TableCell align="right">Unique Queries</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {data.by_city.map((item, index) => (
-                        <TableRow key={index} hover>
-                          <TableCell>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <LocationCity fontSize="small" color="action" />
-                              {item.city_name}
-                            </Box>
-                          </TableCell>
-                          <TableCell>{item.region_name}</TableCell>
-                          <TableCell>
-                            <Chip label={item.country_code} size="small" variant="outlined" />
-                          </TableCell>
-                          <TableCell align="right">{item.search_count}</TableCell>
-                          <TableCell align="right">{item.unique_query_count}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              ) : (
-                <Box sx={{ p: 4, textAlign: 'center' }}>
-                  <Typography color="text.secondary">No city data available</Typography>
-                </Box>
-              )}
-            </Grid>
-          </Grid>
-        </TabPanel>
-
-        {/* Tab 2: Activity Timeline */}
-        <TabPanel value={tabValue} index={2}>
-          <Typography variant="h6" fontWeight={600} gutterBottom>
-            Search Activity Over Time
-          </Typography>
-          {data.recent_activity.length > 0 ? (
-            <Box sx={{ height: 400 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={[...data.recent_activity].reverse()}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 12 }}
-                    tickFormatter={(value) => value.slice(5)}
-                  />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Line
-                    type="monotone"
-                    dataKey="search_count"
-                    stroke="#4CAF50"
-                    strokeWidth={2}
-                    dot={{ fill: '#4CAF50' }}
-                    name="Total Searches"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="unique_query_count"
-                    stroke="#2196F3"
-                    strokeWidth={2}
-                    dot={{ fill: '#2196F3' }}
-                    name="Unique Queries"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </Box>
-          ) : (
-            <Box sx={{ p: 4, textAlign: 'center' }}>
-              <Typography color="text.secondary">No activity data available for this period</Typography>
-            </Box>
-          )}
-
-          {/* Activity Table */}
-          <TableContainer component={Paper} sx={{ mt: 3 }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Date</TableCell>
-                  <TableCell align="right">Total Searches</TableCell>
-                  <TableCell align="right">Unique Queries</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {data.recent_activity.map((item, index) => (
-                  <TableRow key={index} hover>
-                    <TableCell>{item.date}</TableCell>
-                    <TableCell align="right">
-                      <Chip label={item.search_count} size="small" color="success" />
-                    </TableCell>
-                    <TableCell align="right">
-                      <Chip label={item.unique_query_count} size="small" color="primary" />
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {data.recent_activity.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={3} align="center">
-                      No activity recorded
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </TabPanel>
-      </Card>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
     </Box>
   );
 }
