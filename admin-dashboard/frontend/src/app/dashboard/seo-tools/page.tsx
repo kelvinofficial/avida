@@ -1051,6 +1051,90 @@ export default function SeoToolsPage() {
           <Button onClick={() => setPreviewDialogOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
+
+      {/* AI SEO Apply Dialog */}
+      <Dialog open={aiApplyDialogOpen} onClose={() => setAiApplyDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <AutoAwesome color="primary" /> Apply AI-Generated SEO
+        </DialogTitle>
+        <DialogContent>
+          {selectedListing && aiSuggestions && (
+            <Box sx={{ mt: 2 }}>
+              <Alert severity="info" sx={{ mb: 3 }}>
+                Review the AI-generated SEO suggestions below. Click &quot;Apply&quot; to update the listing with this SEO data.
+              </Alert>
+              
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Listing: <strong>{selectedListing.title}</strong>
+              </Typography>
+              
+              <Divider sx={{ my: 2 }} />
+              
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12 }}>
+                  <Paper sx={{ p: 2, bgcolor: 'primary.50' }}>
+                    <Typography variant="subtitle2" fontWeight={600} gutterBottom>Meta Title</Typography>
+                    <Typography>{aiSuggestions.meta_title}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {aiSuggestions.meta_title?.length || 0} characters (recommended: 50-60)
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Paper sx={{ p: 2, bgcolor: 'success.50' }}>
+                    <Typography variant="subtitle2" fontWeight={600} gutterBottom>Meta Description</Typography>
+                    <Typography>{aiSuggestions.meta_description}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {aiSuggestions.meta_description?.length || 0} characters (recommended: 120-160)
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Paper sx={{ p: 2, bgcolor: 'info.50' }}>
+                    <Typography variant="subtitle2" fontWeight={600} gutterBottom>OG Title</Typography>
+                    <Typography variant="body2">{aiSuggestions.og_title}</Typography>
+                  </Paper>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Paper sx={{ p: 2, bgcolor: 'info.50' }}>
+                    <Typography variant="subtitle2" fontWeight={600} gutterBottom>OG Description</Typography>
+                    <Typography variant="body2">{aiSuggestions.og_description}</Typography>
+                  </Paper>
+                </Grid>
+                {aiSuggestions.keywords && aiSuggestions.keywords.length > 0 && (
+                  <Grid size={{ xs: 12 }}>
+                    <Paper sx={{ p: 2 }}>
+                      <Typography variant="subtitle2" fontWeight={600} gutterBottom>Keywords</Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {aiSuggestions.keywords.map((keyword: string, i: number) => (
+                          <Chip key={i} label={keyword} size="small" variant="outlined" />
+                        ))}
+                      </Box>
+                    </Paper>
+                  </Grid>
+                )}
+              </Grid>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setAiApplyDialogOpen(false);
+            setSelectedListing(null);
+            setAiSuggestions(null);
+          }}>
+            Cancel
+          </Button>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            startIcon={<CheckCircle />}
+            onClick={handleApplyAISeo}
+          >
+            Apply SEO
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
