@@ -30,7 +30,7 @@
     "frontend": "N/A (backend-only testing requested)"
   },
   "test_credentials": {
-    "api_base": "https://mobile-header-ui.preview.emergentagent.com",
+    "api_base": "https://search-ui-debug.preview.emergentagent.com",
     "test_pattern": "test_reporter_*@test.com / test123456"
   },
   "seed_data_creation": "Test users (reporter and listing owner), test listing, and test conversation created during setup",
