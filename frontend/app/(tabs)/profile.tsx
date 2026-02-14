@@ -20,6 +20,7 @@ import { UserProfile, UserStats } from '../../src/types/settings';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { BadgeIcon, Badge } from '../../src/components/SellerBadges';
 import { DesktopHeader, Footer, DesktopPageLayout } from '../../src/components/layout';
+import { ProfileSkeleton } from '../../src/components/skeletons';
 
 const COLORS = {
   primary: '#2E7D32',
