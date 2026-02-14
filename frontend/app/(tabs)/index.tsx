@@ -2667,6 +2667,12 @@ const styles = StyleSheet.create({
       elevation: 8,
     }),
   },
+  suggestionsSection: {
+    backgroundColor: '#fff',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EBEBEB',
+  },
   suggestionSection: {
     paddingVertical: 4,
   },
