@@ -654,7 +654,7 @@ export default function SearchAnalyticsPage() {
   return (
     <Box sx={{ bgcolor: THEME.background, minHeight: '100vh', p: 3 }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
             {locationFilter.type !== 'global' && (
@@ -668,14 +668,19 @@ export default function SearchAnalyticsPage() {
                       region_code: locationFilter.region_code,
                       region_name: locationFilter.region_name,
                     });
+                    // Update dropdown selections to match
+                    setSelectedRegionFilter(availableRegions.find(r => r.code === locationFilter.region_code) || null);
                   } else if (locationFilter.type === 'region') {
                     setLocationFilter({
                       type: 'country',
                       country_code: locationFilter.country_code,
                       country_name: locationFilter.country_name,
                     });
+                    setSelectedRegionFilter(null);
                   } else {
                     setLocationFilter({ type: 'global' });
+                    setSelectedCountryFilter(null);
+                    setSelectedRegionFilter(null);
                   }
                 }}
                 sx={{ 
@@ -713,6 +718,113 @@ export default function SearchAnalyticsPage() {
           </Select>
         </FormControl>
       </Box>
+
+      {/* Location Filter Controls */}
+      <Card sx={{ borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', mb: 3, p: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <FilterList sx={{ color: THEME.primary }} />
+          <Typography variant="subtitle1" fontWeight={600} color={THEME.text}>
+            Filter by Location
+          </Typography>
+          {(selectedCountryFilter || selectedRegionFilter) && (
+            <Button
+              size="small"
+              startIcon={<Clear />}
+              onClick={handleClearFilters}
+              sx={{ ml: 'auto', color: THEME.textSecondary }}
+            >
+              Clear Filters
+            </Button>
+          )}
+        </Box>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+          <Autocomplete
+            size="small"
+            sx={{ minWidth: 220 }}
+            options={availableCountries}
+            getOptionLabel={(option) => option.name}
+            value={selectedCountryFilter}
+            onChange={(_, value) => handleCountryFilterChange(value)}
+            loading={loadingCountries}
+            renderInput={(params) => (
+              <TextField 
+                {...params} 
+                label="Country" 
+                placeholder="Select country..."
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <>
+                      <Public sx={{ color: THEME.textSecondary, mr: 1, fontSize: 20 }} />
+                      {params.InputProps.startAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+            isOptionEqualToValue={(option, value) => option.code === value.code}
+          />
+          <Autocomplete
+            size="small"
+            sx={{ minWidth: 220 }}
+            options={availableRegions}
+            getOptionLabel={(option) => option.name}
+            value={selectedRegionFilter}
+            onChange={(_, value) => handleRegionFilterChange(value)}
+            loading={loadingRegions}
+            disabled={!selectedCountryFilter}
+            renderInput={(params) => (
+              <TextField 
+                {...params} 
+                label="Region" 
+                placeholder={selectedCountryFilter ? "Select region..." : "Select country first"}
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <>
+                      <Map sx={{ color: THEME.textSecondary, mr: 1, fontSize: 20 }} />
+                      {params.InputProps.startAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+            isOptionEqualToValue={(option, value) => option.code === value.code}
+          />
+          {/* Show active filter chips */}
+          {locationFilter.type !== 'global' && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+              <Typography variant="body2" color={THEME.textSecondary} sx={{ mr: 1 }}>
+                Active:
+              </Typography>
+              {locationFilter.country_name && (
+                <Chip 
+                  label={locationFilter.country_name} 
+                  size="small"
+                  icon={<Public sx={{ fontSize: 16 }} />}
+                  sx={{ bgcolor: alpha(THEME.primary, 0.1), color: THEME.primary }}
+                />
+              )}
+              {locationFilter.region_name && (
+                <Chip 
+                  label={locationFilter.region_name} 
+                  size="small"
+                  icon={<Map sx={{ fontSize: 16 }} />}
+                  sx={{ bgcolor: alpha(THEME.secondary, 0.1), color: THEME.secondary }}
+                />
+              )}
+              {locationFilter.city_name && (
+                <Chip 
+                  label={locationFilter.city_name} 
+                  size="small"
+                  icon={<LocationCity sx={{ fontSize: 16 }} />}
+                  sx={{ bgcolor: alpha(THEME.warning, 0.1), color: THEME.warning }}
+                />
+              )}
+            </Box>
+          )}
+        </Stack>
+      </Card>
 
       {/* Location Breadcrumb */}
       {locationFilter.type !== 'global' && (
