@@ -190,7 +190,6 @@ export default function HomeScreen() {
     const displayName = location.region_name || location.city_name || location.location_text || 'Selected Location';
     setCurrentCity(displayName);
     setShowLocationModal(false);
-    setLocationSearch('');
     
     // Save location data - now supports both city-level and region-level selection
     const locationData = {
@@ -207,90 +206,6 @@ export default function HomeScreen() {
       location_text: location.location_text,
     };
     await saveSelectedCity(locationData);
-  };
-
-  // Desktop Location Dropdown Handlers
-  const handleOpenLocationDropdown = async () => {
-    setShowLocationDropdown(true);
-    setLocationDropdownStep('countries');
-    setSelectedCountryForDropdown(null);
-    
-    // Fetch countries if not loaded
-    if (locationCountries.length === 0) {
-      setLocationDropdownLoading(true);
-      try {
-        const response = await locationsApi.getCountries();
-        setLocationCountries(response || []);
-      } catch (error) {
-        console.error('Failed to fetch countries:', error);
-      } finally {
-        setLocationDropdownLoading(false);
-      }
-    }
-  };
-
-  const handleSelectCountry = async (country: { code: string; name: string; flag: string }) => {
-    setSelectedCountryForDropdown(country);
-    setLocationDropdownStep('regions');
-    setLocationDropdownLoading(true);
-    
-    try {
-      const response = await locationsApi.getRegions(country.code);
-      setLocationRegions(response || []);
-    } catch (error) {
-      console.error('Failed to fetch regions:', error);
-    } finally {
-      setLocationDropdownLoading(false);
-    }
-  };
-
-  const handleSelectRegion = async (region: { country_code: string; region_code: string; name: string }) => {
-    // Set the location filter
-    setSelectedLocationFilter({
-      country_code: region.country_code,
-      region_code: region.region_code,
-      location_text: `${region.name}, ${selectedCountryForDropdown?.name || ''}`,
-    });
-    
-    // Update display text
-    setCurrentCity(region.name);
-    
-    // Close dropdown
-    setShowLocationDropdown(false);
-    setLocationDropdownStep('countries');
-    setSelectedCountryForDropdown(null);
-    
-    // Trigger data refresh with new location
-    setPage(1);
-    setHasMore(true);
-  };
-
-  const handleSelectAllInCountry = () => {
-    if (!selectedCountryForDropdown) return;
-    
-    // Set country-level filter
-    setSelectedLocationFilter({
-      country_code: selectedCountryForDropdown.code,
-      location_text: selectedCountryForDropdown.name,
-    });
-    
-    // Update display text
-    setCurrentCity(selectedCountryForDropdown.name);
-    
-    // Close dropdown
-    setShowLocationDropdown(false);
-    setLocationDropdownStep('countries');
-    setSelectedCountryForDropdown(null);
-    
-    // Trigger data refresh
-    setPage(1);
-    setHasMore(true);
-  };
-
-  const handleBackToCountries = () => {
-    setLocationDropdownStep('countries');
-    setSelectedCountryForDropdown(null);
-    setLocationRegions([]);
   };
 
   // ============ MOBILE HEADER PROPS ============
