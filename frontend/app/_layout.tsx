@@ -194,32 +194,34 @@ export default function RootLayout() {
       <SandboxProvider>
         <BadgeCelebrationProvider>
           <MilestoneProvider>
-            <ErrorBoundary componentName="RootLayout">
-              <OfflineBanner isOffline={isOffline} />
-              <SandboxBanner />
-              <StatusBar style="dark" />
-              <Stack
-                screenOptions={{
-                  headerShown: false,
-                  contentStyle: { backgroundColor: '#1A1A1A' }, // Dark footer background
-                }}
-              >
-                <Stack.Screen name="index" options={{ headerShown: false }} />
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="search" options={{ headerShown: false, contentStyle: { backgroundColor: '#F5F5F5' } }} />
-                <Stack.Screen name="listing/[id]" options={{ presentation: 'card', contentStyle: { backgroundColor: '#F5F5F5' } }} />
-                <Stack.Screen name="chat/[id]" options={{ presentation: 'card' }} />
-                <Stack.Screen name="post/index" options={{ presentation: 'modal' }} />
-                <Stack.Screen name="post/category" options={{ presentation: 'card' }} />
-                <Stack.Screen name="login" options={{ presentation: 'modal' }} />
-                <Stack.Screen name="auto/index" options={{ presentation: 'card' }} />
-                <Stack.Screen name="auto/[id]" options={{ presentation: 'card' }} />
-                <Stack.Screen name="leaderboard" options={{ presentation: 'card', contentStyle: { backgroundColor: '#F5F5F5' } }} />
-                <Stack.Screen name="challenges" options={{ presentation: 'card', contentStyle: { backgroundColor: '#F5F5F5' } }} />
-                <Stack.Screen name="profile/[id]/badges" options={{ presentation: 'card', contentStyle: { backgroundColor: '#F5F5F5' } }} />
-                <Stack.Screen name="badges" options={{ headerShown: false }} />
-              </Stack>
-            </ErrorBoundary>
+            <FavoriteNotificationProvider>
+              <ErrorBoundary componentName="RootLayout">
+                <OfflineBanner isOffline={isOffline} />
+                <SandboxBanner />
+                <StatusBar style="dark" />
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: '#1A1A1A' }, // Dark footer background
+                  }}
+                >
+                  <Stack.Screen name="index" options={{ headerShown: false }} />
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                  <Stack.Screen name="search" options={{ headerShown: false, contentStyle: { backgroundColor: '#F5F5F5' } }} />
+                  <Stack.Screen name="listing/[id]" options={{ presentation: 'card', contentStyle: { backgroundColor: '#F5F5F5' } }} />
+                  <Stack.Screen name="chat/[id]" options={{ presentation: 'card' }} />
+                  <Stack.Screen name="post/index" options={{ presentation: 'modal' }} />
+                  <Stack.Screen name="post/category" options={{ presentation: 'card' }} />
+                  <Stack.Screen name="login" options={{ presentation: 'modal' }} />
+                  <Stack.Screen name="auto/index" options={{ presentation: 'card' }} />
+                  <Stack.Screen name="auto/[id]" options={{ presentation: 'card' }} />
+                  <Stack.Screen name="leaderboard" options={{ presentation: 'card', contentStyle: { backgroundColor: '#F5F5F5' } }} />
+                  <Stack.Screen name="challenges" options={{ presentation: 'card', contentStyle: { backgroundColor: '#F5F5F5' } }} />
+                  <Stack.Screen name="profile/[id]/badges" options={{ presentation: 'card', contentStyle: { backgroundColor: '#F5F5F5' } }} />
+                  <Stack.Screen name="badges" options={{ headerShown: false }} />
+                </Stack>
+              </ErrorBoundary>
+            </FavoriteNotificationProvider>
           </MilestoneProvider>
         </BadgeCelebrationProvider>
       </SandboxProvider>
