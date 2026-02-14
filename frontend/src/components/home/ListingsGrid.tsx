@@ -135,7 +135,7 @@ export const ListingsGrid: React.FC<ListingsGridProps> = ({
               >
                 <ListingCard
                   listing={item}
-                  onPress={() => router.push(`/listing/${item.id}`)}
+                  onPress={() => handlePress(item.id)}
                   onFavorite={() => toggleFavorite(item.id)}
                   isFavorited={favorites.has(item.id)}
                   userLocation={userLocation}
