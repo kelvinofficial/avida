@@ -1401,8 +1401,11 @@ export default function HomeScreen() {
         </View>
       </View>
 
+      {/* Debug: Show state */}
+      {/* <Text style={{ backgroundColor: 'yellow', padding: 10 }}>showSearchSuggestions: {showSearchSuggestions ? 'TRUE' : 'FALSE'}</Text> */}
+
       {/* Search Suggestions Section - Replaces categories when showing */}
-      {showSearchSuggestions && (searchSuggestions.recent.length > 0 || searchSuggestions.trending.length > 0) && (
+      {showSearchSuggestions && (searchSuggestions.recent.length > 0 || searchSuggestions.trending.length > 0) ? (
         <View style={styles.suggestionsSection}>
           {/* Recent Searches - Horizontal Chips */}
           {searchSuggestions.recent.length > 0 && (
@@ -1464,32 +1467,32 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
-      )}
+      ) : (
+        <>
+          {/* FULL-WIDTH DIVIDER */}
+          <View style={styles.divider} />
 
-      {/* FULL-WIDTH DIVIDER */}
-      {!showSearchSuggestions && <View style={styles.divider} />}
-
-      {/* CATEGORY ICONS - CIRCULAR DESIGN - Hidden when search suggestions shown */}
-      {!showSearchSuggestions && (
-        <View style={styles.categoriesSection}>
-          <ScrollView
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            style={styles.categoriesScroll}
-            contentContainerStyle={styles.categoriesContent}
-          >
-            {FULL_CATEGORIES.map((cat) => (
-              <CategoryIcon
-                key={cat.id}
-                id={cat.id}
-                name={cat.name}
-                icon={cat.icon}
-                selected={selectedCategory === cat.id}
-                onPress={() => handleCategoryPress(cat.id)}
-              />
-            ))}
-          </ScrollView>
-        </View>
+          {/* CATEGORY ICONS - CIRCULAR DESIGN */}
+          <View style={styles.categoriesSection}>
+            <ScrollView
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+              style={styles.categoriesScroll}
+              contentContainerStyle={styles.categoriesContent}
+            >
+              {FULL_CATEGORIES.map((cat) => (
+                <CategoryIcon
+                  key={cat.id}
+                  id={cat.id}
+                  name={cat.name}
+                  icon={cat.icon}
+                  selected={selectedCategory === cat.id}
+                  onPress={() => handleCategoryPress(cat.id)}
+                />
+              ))}
+            </ScrollView>
+          </View>
+        </>
       )}
 
       {/* FEATURED SELLERS SECTION */}
