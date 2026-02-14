@@ -16,6 +16,7 @@ export { SubcategoryModal } from './SubcategoryModal';
 export { MobileHeader } from './MobileHeader';
 export { HomeDesktopHeader } from './HomeDesktopHeader';
 export { ListingsGrid } from './ListingsGrid';
+export { LocationModal } from './LocationModal';
 export { 
   styles, 
   desktopStyles, 
