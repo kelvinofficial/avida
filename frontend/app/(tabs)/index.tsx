@@ -2654,6 +2654,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: 4,
     paddingVertical: 8,
+    zIndex: 99999,
     ...(Platform.OS === 'web' ? {
       boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
     } : {
@@ -2663,7 +2664,6 @@ const styles = StyleSheet.create({
       shadowRadius: 16,
       elevation: 8,
     }),
-    zIndex: 1000,
   },
   suggestionSection: {
     paddingVertical: 4,
