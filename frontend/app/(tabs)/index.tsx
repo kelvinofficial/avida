@@ -2089,12 +2089,27 @@ const desktopStyles = StyleSheet.create({
   suggestionSection: {
     paddingVertical: 4,
   },
+  suggestionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingRight: 16,
+  },
   suggestionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     paddingHorizontal: 16,
     paddingVertical: 8,
+  },
+  clearAllBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  clearAllText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2E7D32',
   },
   suggestionHeaderText: {
     fontSize: 12,
@@ -2651,12 +2666,27 @@ const styles = StyleSheet.create({
   suggestionSection: {
     paddingVertical: 4,
   },
+  suggestionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingRight: 16,
+  },
   suggestionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     paddingHorizontal: 16,
     paddingVertical: 8,
+  },
+  clearAllBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  clearAllText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2E7D32',
   },
   suggestionHeaderText: {
     fontSize: 12,
