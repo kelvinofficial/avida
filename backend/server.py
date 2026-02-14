@@ -3104,7 +3104,7 @@ if ADMIN_TOOLS_AVAILABLE:
     # SEO Analytics router (impressions, clicks, CTR tracking)
     try:
         from routes.seo_analytics import create_seo_analytics_router
-        seo_analytics_router = create_seo_analytics_router(db, get_current_user, require_admin)
+        seo_analytics_router = create_seo_analytics_router(db, get_current_user)
         app.include_router(seo_analytics_router, prefix="/api")
         print("SEO Analytics routes loaded successfully")
     except Exception as e:
