@@ -521,6 +521,13 @@ export function useHomeData(): UseHomeDataReturn {
     setCurrentCity,
     saveSelectedCity,
     handleClearLocationFilter,
+    
+    // Additional state setters for desktop location dropdown
+    setPage,
+    setHasMore,
+    setSelectedCity,
+    setExpandedSearch,
+    setExpandedSearchMessage,
   };
 }
 
