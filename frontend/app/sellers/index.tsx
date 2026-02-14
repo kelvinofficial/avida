@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   RefreshControl,
   Image,
   TextInput,
@@ -18,6 +17,7 @@ import { useRouter } from 'expo-router';
 import api from '../../src/utils/api';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { DesktopHeader } from '../../src/components/layout';
+import { BusinessDirectorySkeleton } from '../../src/components/skeletons';
 
 const COLORS = {
   primary: '#2E7D32',
