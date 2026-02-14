@@ -14,7 +14,7 @@ import SandboxBanner from '../src/components/SandboxBanner';
 import { LocationProvider } from '../src/context/LocationContext';
 import { BadgeCelebrationProvider } from '../src/context/BadgeCelebrationContext';
 import { MilestoneProvider } from '../src/context/MilestoneContext';
-import { OfflineBanner } from '../src/components/common/OfflineBanner';
+import { OfflineBanner, FavoriteNotificationProvider } from '../src/components/common';
 import { useNetworkStatus } from '../src/hooks/useNetworkStatus';
 
 // Initialize global error handler
