@@ -32,6 +32,7 @@ import {
 } from '../../src/components/listings';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { Footer } from '../../src/components/layout';
+import { CategoryPageSkeleton } from '../../src/components/skeletons';
 
 const COLORS = {
   primary: '#2E7D32',
