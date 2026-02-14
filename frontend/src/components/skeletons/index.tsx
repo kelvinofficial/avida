@@ -458,6 +458,181 @@ export const ListingDetailSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDes
   );
 };
 
+// ============ CATEGORY PAGE SKELETON ============
+export const CategoryPageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
+  const theme = useShimmerTheme();
+  
+  const cardCount = isDesktop ? 9 : 6;
+  const cardWidth = isDesktop ? '31%' : '48%';
+  
+  if (!isDesktop) {
+    return (
+      <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor }]}>
+        {/* Header */}
+        <View style={categorySkeleton.mobileHeader}>
+          <ShimmerBox width={24} height={24} borderRadius={4} />
+          <ShimmerBox width={150} height={24} borderRadius={4} />
+          <ShimmerBox width={24} height={24} borderRadius={4} />
+        </View>
+        
+        {/* Subcategory chips */}
+        <View style={categorySkeleton.subcategoryChips}>
+          {Array(5).fill(0).map((_, i) => (
+            <ShimmerBox key={i} width={100} height={36} borderRadius={18} />
+          ))}
+        </View>
+        
+        {/* Quick filters */}
+        <View style={categorySkeleton.filterRow}>
+          <ShimmerBox width={80} height={32} borderRadius={16} />
+          <ShimmerBox width={80} height={32} borderRadius={16} />
+          <ShimmerBox width={80} height={32} borderRadius={16} />
+        </View>
+        
+        {/* Results count */}
+        <ShimmerBox width={100} height={16} borderRadius={4} style={{ marginBottom: 16, marginLeft: 4 }} />
+        
+        {/* Listing grid */}
+        <View style={skeletonBase.grid}>
+          {Array(cardCount).fill(0).map((_, i) => (
+            <View key={i} style={[skeletonBase.card, { width: cardWidth, backgroundColor: theme.surfaceColor }]}>
+              <ShimmerBox aspectRatio={1} borderRadius={8} style={{ marginBottom: 8 }} />
+              <ShimmerBox width="40%" height={12} borderRadius={4} style={{ marginBottom: 4 }} />
+              <ShimmerBox width="80%" height={16} borderRadius={4} style={{ marginBottom: 6 }} />
+              <ShimmerBox width="50%" height={20} borderRadius={4} />
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  }
+  
+  return (
+    <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor, maxWidth: 1280, alignSelf: 'center' as const, width: '100%' }]}>
+      {/* Desktop Header */}
+      <View style={skeletonBase.header}>
+        <ShimmerBox width={100} height={36} borderRadius={4} />
+        <ShimmerBox width={500} height={44} borderRadius={22} style={{ marginHorizontal: 24 }} />
+        <View style={skeletonBase.headerRight}>
+          <ShimmerBox width={120} height={40} borderRadius={8} />
+        </View>
+      </View>
+      
+      {/* Main layout */}
+      <View style={categorySkeleton.desktopLayout}>
+        {/* Left sidebar - Categories */}
+        <View style={[categorySkeleton.sidebar, { backgroundColor: theme.surfaceColor }]}>
+          <ShimmerBox width={120} height={20} borderRadius={4} style={{ marginBottom: 16 }} />
+          {Array(10).fill(0).map((_, i) => (
+            <View key={i} style={categorySkeleton.sidebarItem}>
+              <ShimmerBox width={20} height={20} borderRadius={4} />
+              <ShimmerBox width={100} height={16} borderRadius={4} />
+            </View>
+          ))}
+        </View>
+        
+        {/* Main content */}
+        <View style={{ flex: 1 }}>
+          {/* Breadcrumb */}
+          <View style={categorySkeleton.breadcrumb}>
+            <ShimmerBox width={50} height={14} borderRadius={4} />
+            <ShimmerBox width={80} height={14} borderRadius={4} />
+            <ShimmerBox width={100} height={14} borderRadius={4} />
+          </View>
+          
+          {/* Title and count */}
+          <View style={categorySkeleton.titleRow}>
+            <ShimmerBox width={200} height={28} borderRadius={4} />
+            <ShimmerBox width={100} height={16} borderRadius={4} />
+          </View>
+          
+          {/* Subcategory chips */}
+          <View style={categorySkeleton.subcategoryChips}>
+            {Array(8).fill(0).map((_, i) => (
+              <ShimmerBox key={i} width={110} height={36} borderRadius={18} />
+            ))}
+          </View>
+          
+          {/* Filter bar */}
+          <View style={categorySkeleton.filterBar}>
+            <ShimmerBox width={120} height={40} borderRadius={8} />
+            <ShimmerBox width={120} height={40} borderRadius={8} />
+            <ShimmerBox width={120} height={40} borderRadius={8} />
+            <View style={{ flex: 1 }} />
+            <ShimmerBox width={100} height={40} borderRadius={8} />
+          </View>
+          
+          {/* Listing grid */}
+          <View style={skeletonBase.grid}>
+            {Array(cardCount).fill(0).map((_, i) => (
+              <View key={i} style={[skeletonBase.card, { width: cardWidth, backgroundColor: theme.surfaceColor }]}>
+                <ShimmerBox aspectRatio={1} borderRadius={8} style={{ marginBottom: 8 }} />
+                <ShimmerBox width="40%" height={12} borderRadius={4} style={{ marginBottom: 4 }} />
+                <ShimmerBox width="80%" height={16} borderRadius={4} style={{ marginBottom: 6 }} />
+                <ShimmerBox width="50%" height={20} borderRadius={4} />
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+// ============ BUSINESS DIRECTORY SKELETON ============
+export const BusinessDirectorySkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
+  const theme = useShimmerTheme();
+  
+  const cardCount = isDesktop ? 8 : 4;
+  
+  return (
+    <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor }]}>
+      {/* Header */}
+      <View style={categorySkeleton.mobileHeader}>
+        <ShimmerBox width={24} height={24} borderRadius={4} />
+        <ShimmerBox width={180} height={24} borderRadius={4} />
+        <ShimmerBox width={24} height={24} borderRadius={4} />
+      </View>
+      
+      {/* Search bar */}
+      <ShimmerBox height={48} borderRadius={24} style={{ marginBottom: 16 }} />
+      
+      {/* Category filter chips */}
+      <View style={categorySkeleton.subcategoryChips}>
+        {Array(6).fill(0).map((_, i) => (
+          <ShimmerBox key={i} width={90} height={36} borderRadius={18} />
+        ))}
+      </View>
+      
+      {/* Business cards grid */}
+      <View style={businessSkeleton.grid}>
+        {Array(cardCount).fill(0).map((_, i) => (
+          <View key={i} style={[businessSkeleton.card, { backgroundColor: theme.surfaceColor }]}>
+            {/* Cover image */}
+            <ShimmerBox height={80} borderRadius={0} />
+            
+            {/* Logo */}
+            <View style={businessSkeleton.logoContainer}>
+              <ShimmerBox width={60} height={60} borderRadius={30} />
+            </View>
+            
+            {/* Content */}
+            <View style={businessSkeleton.cardContent}>
+              <ShimmerBox width="70%" height={18} borderRadius={4} />
+              <ShimmerBox width="50%" height={14} borderRadius={4} />
+              <View style={businessSkeleton.statsRow}>
+                <ShimmerBox width={60} height={12} borderRadius={4} />
+                <ShimmerBox width={60} height={12} borderRadius={4} />
+              </View>
+              <ShimmerBox width={80} height={24} borderRadius={12} style={{ alignSelf: 'flex-start' }} />
+            </View>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+
 // ============ STYLES ============
 const skeletonBase = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background, padding: 16 },
