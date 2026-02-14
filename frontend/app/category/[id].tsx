@@ -1436,6 +1436,11 @@ export default function CategoryScreen() {
   }
 
   // Mobile view (original)
+  // Show skeleton during initial load
+  if (!initialLoadDone) {
+    return <CategoryPageSkeleton isDesktop={false} />;
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Navigation Header - Stays sticky */}
