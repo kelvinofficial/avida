@@ -2538,7 +2538,7 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     zIndex: 10000,
     position: 'relative',
-    ...(Platform.OS === 'web' ? { overflow: 'visible' } : {}),
+    overflow: 'visible',
   },
 
   // ROW 1
