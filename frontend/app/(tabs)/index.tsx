@@ -2794,6 +2794,8 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#EBEBEB',
     marginHorizontal: 0, // Edge to edge
+    zIndex: 1,
+    position: 'relative',
   },
 
   // CATEGORIES
