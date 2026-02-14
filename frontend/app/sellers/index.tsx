@@ -185,11 +185,7 @@ export default function BusinessDirectoryScreen() {
   );
 
   if (!isReady) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-      </View>
-    );
+    return <BusinessDirectorySkeleton isDesktop={false} />;
   }
 
   const content = (
