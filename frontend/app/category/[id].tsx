@@ -1143,6 +1143,29 @@ export default function CategoryScreen() {
 
     return (
       <View style={desktopStyles.pageWrapper}>
+        {/* SEO Tags for Category Page */}
+        <CategorySEO 
+          categoryName={mainCategory?.name || categoryId} 
+          categorySlug={categoryId}
+          listingCount={total}
+        />
+        <BreadcrumbSchema items={[
+          { name: 'Home', url: '/' },
+          { name: mainCategory?.name || categoryId, url: `/category/${categoryId}` },
+        ]} />
+        {listings.length > 0 && (
+          <ItemListSchema
+            name={`${mainCategory?.name || categoryId} for Sale`}
+            description={`Browse ${total} ${mainCategory?.name?.toLowerCase() || categoryId} listings`}
+            items={listings.slice(0, 10).map(item => ({
+              name: item.title,
+              url: `/listing/${item.id}`,
+              image: item.images?.[0] || item.image,
+              price: item.price,
+              currency: item.currency || 'EUR',
+            }))}
+          />
+        )}
         {/* Row 1: Logo + Auth + Post Listing */}
         <View style={desktopStyles.headerRow1}>
           <View style={desktopStyles.headerRow1Inner}>
