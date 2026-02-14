@@ -1528,6 +1528,7 @@ export default function ListingDetailScreen() {
         listingId={listing.id}
         category={category?.name || listing.category_id}
         location={listing.location}
+        locationData={listing.location_data}
       />
       <ProductSchema
         name={listing.title}
