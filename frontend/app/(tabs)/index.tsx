@@ -36,6 +36,17 @@ import { ResponsiveLayout, Footer, DesktopHeader } from '../../src/components/la
 import { FeedBanner, HeaderBanner } from '../../src/components/BannerSlot';
 import { LocationPicker, LocationData } from '../../src/components/LocationPicker';
 import { ImageWithSkeleton } from '../../src/components/common';
+import { 
+  CategoryIcon, 
+  ListingCard, 
+  SkeletonCard, 
+  AnimatedChip,
+  COLORS_CATEGORY,
+  CARD_WIDTH,
+  CARD_IMAGE_HEIGHT,
+  BORDER_RADIUS,
+  CATEGORY_ITEM_WIDTH
+} from '../../src/components/home';
 
 const { width } = Dimensions.get('window');
 
