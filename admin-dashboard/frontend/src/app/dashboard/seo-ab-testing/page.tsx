@@ -88,6 +88,7 @@ export default function SEOABTestingPage() {
 
   const loadData = async () => {
     setLoading(true);
+    api.loadToken();  // Ensure token is loaded before making requests
     try {
       const [expRes, overviewRes] = await Promise.all([
         api.getSEOABExperiments(statusFilter || undefined, pageTypeFilter || undefined),
