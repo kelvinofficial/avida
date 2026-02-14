@@ -329,8 +329,21 @@ export default function SearchScreen() {
     setHasSearched(true);
     
     try {
-      // Track the search
-      api.post('/searches/track', { query: searchTerm.trim().toLowerCase() }).catch(() => {});
+      // Track the search with location context for admin analytics
+      const trackData: any = { query: searchTerm.trim().toLowerCase() };
+      if (selectedLocationFilter) {
+        trackData.location = {
+          country_code: selectedLocationFilter.country_code,
+          country_name: selectedLocationFilter.country_name,
+          region_code: selectedLocationFilter.region_code,
+          region_name: selectedLocationFilter.region_name,
+          district_code: selectedLocationFilter.district_code,
+          district_name: selectedLocationFilter.district_name,
+          city_code: selectedLocationFilter.city_code,
+          city_name: selectedLocationFilter.city_name,
+        };
+      }
+      api.post('/searches/track', trackData).catch(() => {});
       
       const response = await listingsApi.search(searchTerm.trim());
       setListings(response.listings || []);
@@ -341,7 +354,7 @@ export default function SearchScreen() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, selectedLocationFilter]);
 
   // Auto-search using useFocusEffect - triggers when screen comes into focus
   // This handles both client-side navigation and direct URL access
