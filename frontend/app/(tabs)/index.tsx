@@ -1285,126 +1285,16 @@ export default function HomeScreen() {
         </Modal>
 
       {/* Subcategory Selection Modal */}
-      <Modal
+      <SubcategoryModal
         visible={showSubcategoryModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowSubcategoryModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.subcategoryModalContent}>
-            {/* Modal Header */}
-            <View style={styles.subcategoryModalHeader}>
-              <View style={styles.subcategoryHeaderLeft}>
-                {selectedCategoryForSubcats?.icon && (
-                  <View style={styles.subcategoryHeaderIcon}>
-                    <Ionicons 
-                      name={selectedCategoryForSubcats.icon as any} 
-                      size={24} 
-                      color="#2E7D32" 
-                    />
-                  </View>
-                )}
-                <Text style={styles.subcategoryModalTitle}>
-                  {selectedCategoryForSubcats?.name}
-                </Text>
-              </View>
-              <TouchableOpacity 
-                onPress={() => setShowSubcategoryModal(false)} 
-                style={styles.modalCloseBtn}
-              >
-                <Ionicons name="close" size={24} color="#333" />
-              </TouchableOpacity>
-            </View>
-
-            {/* View All Option */}
-            <TouchableOpacity
-              style={styles.viewAllButton}
-              onPress={() => handleSubcategorySelect(selectedCategoryForSubcats?.id || '', undefined)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.viewAllContent}>
-                <Ionicons name="grid-outline" size={20} color="#2E7D32" />
-                <Text style={styles.viewAllText}>View All {selectedCategoryForSubcats?.name}</Text>
-              </View>
-              <View style={styles.viewAllRight}>
-                {loadingCounts ? (
-                  <ActivityIndicator size="small" color="#2E7D32" />
-                ) : (
-                  <Text style={styles.viewAllCount}>{subcategoryCounts._total || 0}</Text>
-                )}
-                <Ionicons name="chevron-forward" size={20} color="#2E7D32" />
-              </View>
-            </TouchableOpacity>
-
-            {/* Recently Viewed Section - Only show for current category */}
-            {(() => {
-              const recentForThisCategory = recentSubcategories.filter(
-                item => item.categoryId === selectedCategoryForSubcats?.id
-              );
-              if (recentForThisCategory.length === 0) return null;
-              return (
-                <>
-                  <View style={styles.subcategoryDivider}>
-                    <Ionicons name="time-outline" size={14} color="#999" style={{ marginRight: 6 }} />
-                    <Text style={styles.subcategoryDividerText}>Recently viewed</Text>
-                  </View>
-                  <View style={styles.recentSubcategoriesRow}>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.recentScrollContent}>
-                      {recentForThisCategory.slice(0, 5).map((item, index) => (
-                        <TouchableOpacity
-                          key={`${item.categoryId}-${item.subcategoryId}-${index}`}
-                          style={styles.recentChip}
-                          onPress={() => handleRecentSubcategoryPress(item)}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={styles.recentChipText} numberOfLines={1}>{item.subcategoryName}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                </>
-              );
-            })()}
-
-            {/* Divider */}
-            <View style={styles.subcategoryDivider}>
-              <Text style={styles.subcategoryDividerText}>All subcategories</Text>
-            </View>
-
-            {/* Subcategories List */}
-            <ScrollView 
-              style={styles.subcategoriesList} 
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.subcategoriesListContent}
-            >
-              {selectedCategoryForSubcats?.subcategories.map((subcat, index) => (
-                <TouchableOpacity
-                  key={subcat.id}
-                  style={[
-                    styles.subcategoryItem,
-                    index === (selectedCategoryForSubcats?.subcategories.length || 0) - 1 && styles.subcategoryItemLast
-                  ]}
-                  onPress={() => handleSubcategorySelect(selectedCategoryForSubcats?.id || '', subcat.id)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.subcategoryItemText}>{subcat.name}</Text>
-                  <View style={styles.subcategoryItemRight}>
-                    {loadingCounts ? (
-                      <View style={styles.countPlaceholder} />
-                    ) : subcategoryCounts[subcat.id] !== undefined && subcategoryCounts[subcat.id] > 0 ? (
-                      <View style={styles.countBadge}>
-                        <Text style={styles.countBadgeText}>{subcategoryCounts[subcat.id]}</Text>
-                      </View>
-                    ) : null}
-                    <Ionicons name="chevron-forward" size={18} color="#999" />
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setShowSubcategoryModal(false)}
+        category={selectedCategoryForSubcats}
+        subcategoryCounts={subcategoryCounts}
+        loadingCounts={loadingCounts}
+        recentSubcategories={recentSubcategories}
+        onSelectSubcategory={handleSubcategorySelect}
+        onSelectRecentSubcategory={handleRecentSubcategoryPress}
+      />
       </SafeAreaView>
     </ResponsiveLayout>
   );
