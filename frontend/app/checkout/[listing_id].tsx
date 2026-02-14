@@ -255,7 +255,7 @@ export default function CheckoutScreen() {
         });
         
         const order = orderResponse.data.order;
-        const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://item-exchange-36.preview.emergentagent.com';
+        const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://analytics-dash-v2.preview.emergentagent.com';
         
         // Create payment
         let paymentResponse;

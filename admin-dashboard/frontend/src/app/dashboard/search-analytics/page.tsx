@@ -54,7 +54,7 @@ import {
 } from 'recharts';
 
 // Main backend API URL
-const MAIN_API_URL = process.env.NEXT_PUBLIC_MAIN_API_URL || 'https://item-exchange-36.preview.emergentagent.com/api';
+const MAIN_API_URL = process.env.NEXT_PUBLIC_MAIN_API_URL || 'https://analytics-dash-v2.preview.emergentagent.com/api';
 
 // Theme colors - consistent with admin dashboard
 const THEME = {

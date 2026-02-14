@@ -16,7 +16,7 @@ import os
 import io
 
 # Get the API base URL from environment
-BASE_URL = "https://item-exchange-36.preview.emergentagent.com/api/admin"
+BASE_URL = "https://analytics-dash-v2.preview.emergentagent.com/api/admin"
 
 # Test credentials from main agent
 ADMIN_EMAIL = "admin@example.com"

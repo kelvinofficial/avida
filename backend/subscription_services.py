@@ -298,7 +298,7 @@ class SubscriptionEmailService:
         self.sg = sendgrid_client
         self.from_email = os.environ.get("SENDGRID_FROM_EMAIL", "noreply@marketplace.com")
         self.from_name = os.environ.get("SENDGRID_FROM_NAME", "Avida Marketplace")
-        self.base_url = os.environ.get("FRONTEND_URL", "https://item-exchange-36.preview.emergentagent.com")
+        self.base_url = os.environ.get("FRONTEND_URL", "https://analytics-dash-v2.preview.emergentagent.com")
     
     # Map email templates to preference keys
     TEMPLATE_PREFERENCE_MAP = {

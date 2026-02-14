@@ -7,7 +7,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://item-exchange-36.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://analytics-dash-v2.preview.emergentagent.com')
 
 # Test credentials
 TEST_SELLER_ID = "user_3fe547c78c76"  # verified premium seller

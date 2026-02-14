@@ -8,7 +8,7 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://item-exchange-36.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://analytics-dash-v2.preview.emergentagent.com')
 
 class TestLeaderboardAPI:
     """Tests for badge leaderboard endpoints"""

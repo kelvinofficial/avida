@@ -11,7 +11,7 @@ import jwt
 from datetime import datetime, timezone
 
 # Use the external API URL for testing
-BASE_URL = os.environ.get('NEXT_PUBLIC_API_URL', 'https://item-exchange-36.preview.emergentagent.com/api/admin')
+BASE_URL = os.environ.get('NEXT_PUBLIC_API_URL', 'https://analytics-dash-v2.preview.emergentagent.com/api/admin')
 
 # Test credentials
 TEST_EMAIL = "admin@marketplace.com"
