@@ -20,15 +20,25 @@ Build a local marketplace application (Avida) with:
    - Chips truncate text to 120px max width
    - ScrollView horizontal for overflow
 
+3. **Animated Chip Component**: Created `AnimatedChip` with spring bounce effect on tap:
+   - Scale animation (0.92 on press, 1.0 on release)
+   - Uses `Animated.spring` with friction/tension for natural feel
+   - Reusable component with icon, text, and style props
+
+4. **Clear Recent Searches**: Added `clearRecentSearches` function to remove recent searches from localStorage.
+
 #### Files Modified
 - `/app/frontend/app/(tabs)/index.tsx`:
   - Updated `searchField` style: height 44 → 52
-  - Replaced `suggestionItem` vertical list with horizontal `ScrollView` + chips
-  - Added new styles: `suggestionChipsContainer`, `suggestionChip`, `trendingChip`, `suggestionChipText`
+  - Added `AnimatedChip` component with bounce animation
+  - Added `clearRecentSearches` callback function
+  - Replaced `TouchableOpacity` chips with `AnimatedChip` for both Recent and Trending
+  - Added new styles for chip containers and layouts
 
 #### Verified
 - Screenshot confirmed search bar height increased
-- Horizontal chip layout visible with "TRENDING" label and scrollable chips
+- Horizontal chip layout visible with "RECENT" and "TRENDING" labels
+- Chips render with correct styling and icons
 
 ---
 
