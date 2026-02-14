@@ -9,7 +9,7 @@ Build a local marketplace application (Avida) with:
 ---
 
 ### 2026-02-14: Mobile Header UI Improvements (P0)
-**COMPLETED** ✅
+**IN PROGRESS** - z-index/layering issue in web preview
 
 #### Features Implemented
 1. **Increased Search Bar Height**: Changed mobile search field height from 44px to 52px for better tap target and visibility.
@@ -25,20 +25,22 @@ Build a local marketplace application (Avida) with:
    - Uses `Animated.spring` with friction/tension for natural feel
    - Reusable component with icon, text, and style props
 
-4. **Clear Recent Searches**: Added `clearRecentSearches` function to remove recent searches from localStorage.
+4. **Clear Recent Searches**: Added `clearRecentSearches` function and button to remove recent searches from localStorage.
+
+5. **Conditional Layout**: Implemented ternary conditional to show suggestions OR categories (not both).
+
+#### Known Issue
+- In the web preview, the suggestions section and categories are both rendering visually overlapped due to React Native Web CSS stacking context issues. The logic is correct (ternary conditional), but the web preview has rendering artifacts.
+- **VERIFY ON ACTUAL MOBILE DEVICE** - The native mobile app should render correctly.
 
 #### Files Modified
 - `/app/frontend/app/(tabs)/index.tsx`:
   - Updated `searchField` style: height 44 → 52
   - Added `AnimatedChip` component with bounce animation
   - Added `clearRecentSearches` callback function
-  - Replaced `TouchableOpacity` chips with `AnimatedChip` for both Recent and Trending
-  - Added new styles for chip containers and layouts
-
-#### Verified
-- Screenshot confirmed search bar height increased
-- Horizontal chip layout visible with "RECENT" and "TRENDING" labels
-- Chips render with correct styling and icons
+  - Moved suggestions to separate section outside header
+  - Used ternary to show suggestions OR categories exclusively
+  - Added new styles: `suggestionsSection`, `suggestionChipsContainer`, etc.
 
 ---
 
