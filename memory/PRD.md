@@ -7,6 +7,31 @@ Build a local marketplace application (Avida) with:
 3. Premium subscription tiers with payment integration
 
 
+### 2026-02-14: HomeDesktopHeader Component Extraction
+**COMPLETED** ✅
+
+#### Changes Made
+- **Extracted `HomeDesktopHeader`** from `index.tsx` into `/app/frontend/src/components/home/HomeDesktopHeader.tsx`
+- **File size reduction**: 799 → 711 lines (88 lines removed)
+- **Total reduction from original**: 2946 → 711 lines (~76% total reduction)
+- Created reusable `HomeDesktopHeader` component with category pills and section title
+- Utilizes shared `DesktopHeader` component from layout for rows 1-2
+- Cleaned up unused imports: removed Dimensions, useWindowDimensions, memo, Image, TextInput, etc.
+- Fixed API method name mismatches in `useHomeData.ts` (getListings→getAll, getCategories→getAll, etc.)
+
+#### Files Created
+- `/app/frontend/src/components/home/HomeDesktopHeader.tsx` (~100 lines)
+
+#### Files Modified
+- `/app/frontend/app/(tabs)/index.tsx` - Now uses `HomeDesktopHeader` component (711 lines)
+- `/app/frontend/src/components/home/index.ts` - Added `HomeDesktopHeader` export
+- `/app/frontend/src/hooks/useHomeData.ts` - Fixed API method names, fixed import paths
+
+#### Test Report
+- `/app/test_reports/iteration_141.json` - 100% frontend pass rate (9/9 features)
+
+---
+
 ### 2026-02-14: MobileHeader Component Extraction
 **COMPLETED** ✅
 
