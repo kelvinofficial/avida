@@ -1580,6 +1580,18 @@ export default function ListingDetailScreen() {
         {/* Description */}
         {listing.description && <DescriptionSection description={listing.description} />}
 
+        {/* Social Share Buttons */}
+        <View style={styles.section}>
+          <SocialShareButtons
+            title={listing.title}
+            description={listing.description || ''}
+            url={`/listing/${listing.id}`}
+            image={images[0]}
+            price={listing.price}
+            currency="€"
+          />
+        </View>
+
         {/* Seller */}
         <SellerSection 
           listing={listing} 
