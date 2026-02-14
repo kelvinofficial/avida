@@ -3109,6 +3109,19 @@ if ADMIN_TOOLS_AVAILABLE:
         print("SEO Analytics routes loaded successfully")
     except Exception as e:
         print(f"Failed to load SEO Analytics routes: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    # Offline Sync router
+    try:
+        from routes.offline_sync import create_offline_sync_router
+        offline_sync_router = create_offline_sync_router(db, get_current_user)
+        app.include_router(offline_sync_router, prefix="/api")
+        print("Offline Sync routes loaded successfully")
+    except Exception as e:
+        print(f"Failed to load Offline Sync routes: {e}")
+        import traceback
+        traceback.print_exc()
     
     app.include_router(seo_router, prefix="/api")
     app.include_router(url_masking_router, prefix="/api")
