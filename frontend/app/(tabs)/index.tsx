@@ -139,28 +139,8 @@ export default function HomeScreen() {
     setExpandedSearchMessage,
   } = useHomeData();
   
-  // ============ UI-SPECIFIC STATE (not in hook) ============
+  // ============ UI-SPECIFIC STATE (not in hooks) ============
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const [locationSearch, setLocationSearch] = useState('');
-  
-  // Subcategory Modal State
-  const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
-  const [selectedCategoryForSubcats, setSelectedCategoryForSubcats] = useState<{
-    id: string;
-    name: string;
-    icon: string;
-    subcategories: SubcategoryConfig[];
-  } | null>(null);
-  const [subcategoryCounts, setSubcategoryCounts] = useState<Record<string, number>>({});
-  const [loadingCounts, setLoadingCounts] = useState(false);
-  const [recentSubcategories, setRecentSubcategories] = useState<Array<{
-    categoryId: string;
-    categoryName: string;
-    categoryIcon: string;
-    subcategoryId: string;
-    subcategoryName: string;
-    timestamp: number;
-  }>>([]);
   
   // Desktop Location Dropdown State
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
