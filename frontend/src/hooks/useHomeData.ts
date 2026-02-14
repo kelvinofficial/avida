@@ -5,13 +5,13 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
-import { Storage } from '../../utils/storage';
-import { listingsApi, categoriesApi, favoritesApi, notificationsApi, locationsApi } from '../../utils/api';
-import { sandboxAwareListingsApi, sandboxAwareCategoriesApi, sandboxUtils } from '../../utils/sandboxAwareApi';
-import { Listing, Category } from '../../types';
-import { useAuthStore } from '../../store/authStore';
-import { useSandbox } from '../../utils/sandboxContext';
-import type { FeaturedSeller, FeaturedListing } from '../home';
+import { Storage } from '../utils/storage';
+import { listingsApi, categoriesApi, favoritesApi, notificationsApi, locationsApi } from '../utils/api';
+import { sandboxAwareListingsApi, sandboxAwareCategoriesApi, sandboxUtils } from '../utils/sandboxAwareApi';
+import { Listing, Category } from '../types';
+import { useAuthStore } from '../store/authStore';
+import { useSandbox } from '../utils/sandboxContext';
+import type { FeaturedSeller, FeaturedListing } from '../components/home';
 
 // Types
 export interface LocationFilter {
