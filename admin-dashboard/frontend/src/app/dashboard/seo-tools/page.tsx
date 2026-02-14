@@ -728,7 +728,7 @@ export default function SeoToolsPage() {
           )}
 
           {/* Global Settings Tab */}
-          {currentTab === 1 && (
+          {currentTab === 2 && (
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Global SEO Settings</Typography>
@@ -791,7 +791,7 @@ export default function SeoToolsPage() {
           )}
 
           {/* Category SEO Tab */}
-          {currentTab === 2 && (
+          {currentTab === 3 && (
             <Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h6">Category SEO Settings</Typography>
@@ -893,7 +893,7 @@ export default function SeoToolsPage() {
           )}
 
           {/* Sitemap Tab */}
-          {currentTab === 3 && (
+          {currentTab === 4 && (
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
