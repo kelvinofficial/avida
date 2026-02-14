@@ -2817,6 +2817,35 @@ const styles = StyleSheet.create({
     gap: 8,
     flexDirection: 'row',
   },
+  autocompleteList: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 8,
+  },
+  autocompleteItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginVertical: 2,
+  },
+  autocompleteText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#333',
+  },
+  autocompleteCount: {
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginRight: 8,
+  },
+  autocompleteCountText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#2E7D32',
+  },
   suggestionChip: {
     flexDirection: 'row',
     alignItems: 'center',
