@@ -5,28 +5,27 @@ import {
   TouchableOpacity,
   RefreshControl,
   ScrollView,
-  Modal,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Storage } from '../../src/utils/storage';
-import { categoriesApi, locationsApi } from '../../src/utils/api';
+import { locationsApi } from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
 import { useLocationStore } from '../../src/store/locationStore';
 import { useSandbox } from '../../src/utils/sandboxContext';
-import { getSubcategories, SubcategoryConfig } from '../../src/config/subcategories';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { useHomeData } from '../../src/hooks/useHomeData';
+import { useSubcategoryModal } from '../../src/hooks/useSubcategoryModal';
 import { ResponsiveLayout, Footer } from '../../src/components/layout';
-import { LocationPicker, LocationData } from '../../src/components/LocationPicker';
+import { LocationData } from '../../src/components/LocationPicker';
 import { 
   FeaturedSellersSection,
   SubcategoryModal,
   MobileHeader,
   HomeDesktopHeader,
   ListingsGrid,
+  LocationModal,
 } from '../../src/components/home';
 import type { FeaturedSeller, FeaturedListing } from '../../src/components/home';
 import { 
