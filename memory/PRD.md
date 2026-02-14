@@ -8,6 +8,31 @@ Build a local marketplace application (Avida) with:
 
 ---
 
+### 2026-02-14: Image Skeleton Loaders (P2)
+**COMPLETED** ✅
+
+#### Features Implemented
+1. **ImageWithSkeleton Component**: New reusable component that shows shimmer skeleton while images load
+   - CSS animation for web platform using `data-shimmer` attribute
+   - Animated API with translateX interpolation for native platforms
+   - Smooth linear-gradient shimmer effect (E0E0E0 → F5F5F5 → E0E0E0)
+   - 1.5s infinite ease-in-out animation
+
+2. **Integration into ListingCard**: Replaced old Image + placeholder logic with ImageWithSkeleton
+   - No layout shifts during load (skeleton matches final dimensions)
+   - Graceful fallback to placeholder icon for missing images
+   - Image opacity transitions from 0 → 1 when loaded
+
+#### Files Modified/Created
+- `/app/frontend/src/components/common/ImageWithSkeleton.tsx` - New component
+- `/app/frontend/src/components/common/index.ts` - Export added
+- `/app/frontend/app/(tabs)/index.tsx` - ListingCard updated to use ImageWithSkeleton
+
+#### Test Report
+- `/app/test_reports/iteration_134.json` - 100% pass rate (5/5 features verified)
+
+---
+
 ### 2026-02-14: Bug Fixes - Missing Images & Search UI (P0/P1)
 **COMPLETED** ✅
 
