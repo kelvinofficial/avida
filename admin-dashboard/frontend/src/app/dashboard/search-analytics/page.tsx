@@ -469,6 +469,105 @@ export default function SearchAnalyticsPage() {
   const [days, setDays] = useState(7);
   const [data, setData] = useState<SearchAnalyticsData | null>(null);
   const [locationFilter, setLocationFilter] = useState<LocationFilter>({ type: 'global' });
+  
+  // Filter dropdown states
+  const [availableCountries, setAvailableCountries] = useState<Array<{ code: string; name: string }>>([]);
+  const [availableRegions, setAvailableRegions] = useState<Array<{ code: string; name: string }>>([]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [loadingRegions, setLoadingRegions] = useState(false);
+  const [selectedCountryFilter, setSelectedCountryFilter] = useState<{ code: string; name: string } | null>(null);
+  const [selectedRegionFilter, setSelectedRegionFilter] = useState<{ code: string; name: string } | null>(null);
+
+  // Fetch available countries for filtering
+  const fetchCountries = useCallback(async () => {
+    setLoadingCountries(true);
+    try {
+      const response = await fetch(`${MAIN_API_URL}/locations/countries`);
+      if (response.ok) {
+        const countries = await response.json();
+        setAvailableCountries(countries.map((c: any) => ({ code: c.code, name: c.name })));
+      }
+    } catch (err) {
+      console.error('Failed to fetch countries:', err);
+    } finally {
+      setLoadingCountries(false);
+    }
+  }, []);
+
+  // Fetch regions for selected country
+  const fetchRegions = useCallback(async (countryCode: string) => {
+    setLoadingRegions(true);
+    try {
+      const response = await fetch(`${MAIN_API_URL}/locations/regions?country_code=${countryCode}`);
+      if (response.ok) {
+        const regions = await response.json();
+        setAvailableRegions(regions.map((r: any) => ({ code: r.region_code, name: r.name })));
+      }
+    } catch (err) {
+      console.error('Failed to fetch regions:', err);
+    } finally {
+      setLoadingRegions(false);
+    }
+  }, []);
+
+  // Load countries on mount
+  useEffect(() => {
+    fetchCountries();
+  }, [fetchCountries]);
+
+  // Load regions when country changes
+  useEffect(() => {
+    if (selectedCountryFilter) {
+      fetchRegions(selectedCountryFilter.code);
+    } else {
+      setAvailableRegions([]);
+      setSelectedRegionFilter(null);
+    }
+  }, [selectedCountryFilter, fetchRegions]);
+
+  // Handle country filter change
+  const handleCountryFilterChange = (country: { code: string; name: string } | null) => {
+    setSelectedCountryFilter(country);
+    setSelectedRegionFilter(null);
+    
+    if (country) {
+      setLocationFilter({
+        type: 'country',
+        country_code: country.code,
+        country_name: country.name,
+      });
+    } else {
+      setLocationFilter({ type: 'global' });
+    }
+  };
+
+  // Handle region filter change
+  const handleRegionFilterChange = (region: { code: string; name: string } | null) => {
+    setSelectedRegionFilter(region);
+    
+    if (region && selectedCountryFilter) {
+      setLocationFilter({
+        type: 'region',
+        country_code: selectedCountryFilter.code,
+        country_name: selectedCountryFilter.name,
+        region_code: region.code,
+        region_name: region.name,
+      });
+    } else if (selectedCountryFilter) {
+      setLocationFilter({
+        type: 'country',
+        country_code: selectedCountryFilter.code,
+        country_name: selectedCountryFilter.name,
+      });
+    }
+  };
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setSelectedCountryFilter(null);
+    setSelectedRegionFilter(null);
+    setLocationFilter({ type: 'global' });
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
