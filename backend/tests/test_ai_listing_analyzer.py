@@ -21,7 +21,7 @@ import os
 import uuid
 
 # Base URLs
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://shimmer-perf.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://classifieds-seo.preview.emergentagent.com')
 if BASE_URL.endswith('/'):
     BASE_URL = BASE_URL.rstrip('/')
 

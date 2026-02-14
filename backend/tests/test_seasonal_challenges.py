@@ -7,7 +7,7 @@ import requests
 import os
 from datetime import datetime, timezone
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://shimmer-perf.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://classifieds-seo.preview.emergentagent.com').rstrip('/')
 
 
 class TestSeasonalChallengesAPI:

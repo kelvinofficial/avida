@@ -18,7 +18,7 @@ import uuid
 from datetime import datetime
 
 # API configuration
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://shimmer-perf.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://classifieds-seo.preview.emergentagent.com')
 if BASE_URL.endswith('/api'):
     BASE_URL = BASE_URL.rstrip('/api')
 API_URL = f"{BASE_URL}/api"
