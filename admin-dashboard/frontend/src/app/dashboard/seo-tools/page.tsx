@@ -271,6 +271,76 @@ export default function SeoToolsPage() {
     }
   };
 
+  // AI SEO Handlers
+  const handleGenerateAISeo = async () => {
+    if (!aiTestForm.title || !aiTestForm.price) {
+      setError('Title and price are required');
+      return;
+    }
+    
+    setAiGenerating(true);
+    setAiSuggestions(null);
+    try {
+      const result = await api.generateAISeo({
+        title: aiTestForm.title,
+        description: aiTestForm.description,
+        price: parseFloat(aiTestForm.price),
+        currency: aiTestForm.currency,
+        category: aiTestForm.category,
+        condition: aiTestForm.condition,
+        location: aiTestForm.location,
+      });
+      setAiSuggestions(result.seo_suggestions);
+      setSuccess('AI SEO suggestions generated successfully');
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to generate AI SEO');
+    } finally {
+      setAiGenerating(false);
+    }
+  };
+
+  const handleGenerateAISeoForListing = async (listing: any) => {
+    setAiGenerating(true);
+    setSelectedListing(listing);
+    setAiSuggestions(null);
+    try {
+      const result = await api.generateAISeoForListing(listing.id);
+      setAiSuggestions(result.ai_suggestions);
+      setAiApplyDialogOpen(true);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to generate AI SEO for listing');
+    } finally {
+      setAiGenerating(false);
+    }
+  };
+
+  const handleApplyAISeo = async () => {
+    if (!selectedListing || !aiSuggestions) return;
+    
+    try {
+      await api.applyAISeo(selectedListing.id, {
+        listing_id: selectedListing.id,
+        meta_title: aiSuggestions.meta_title,
+        meta_description: aiSuggestions.meta_description,
+        og_title: aiSuggestions.og_title,
+        og_description: aiSuggestions.og_description,
+        keywords: aiSuggestions.keywords,
+      });
+      setSuccess(`AI SEO applied to listing "${selectedListing.title}"`);
+      setAiApplyDialogOpen(false);
+      setSelectedListing(null);
+      setAiSuggestions(null);
+      loadData(); // Refresh stats
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to apply AI SEO');
+    }
+  };
+
+  const handleCopyToClipboard = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setSuccess(`${field} copied to clipboard`);
+  };
+
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
