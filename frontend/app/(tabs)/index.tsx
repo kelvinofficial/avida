@@ -669,6 +669,50 @@ export default function HomeScreen() {
     setSearchSuggestions(prev => ({ ...prev, recent: [] }));
   }, []);
 
+  // Fetch autocomplete suggestions as user types
+  const fetchAutocompleteSuggestions = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setSearchSuggestions(prev => ({ ...prev, autocomplete: [] }));
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/searches/suggestions?q=${encodeURIComponent(query)}&limit=8`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setSearchSuggestions(prev => ({ 
+          ...prev, 
+          autocomplete: data.suggestions || [] 
+        }));
+      }
+    } catch (e) {
+      console.log('Could not fetch autocomplete suggestions');
+    }
+  }, []);
+
+  // Debounced autocomplete handler
+  const handleSearchInputChange = useCallback((text: string) => {
+    setHomeSearchQuery(text);
+    
+    // Clear previous timeout
+    if (autocompleteTimeoutRef.current) {
+      clearTimeout(autocompleteTimeoutRef.current);
+    }
+    
+    if (text.length === 0) {
+      setShowSearchSuggestions(true);
+      setSearchSuggestions(prev => ({ ...prev, autocomplete: [] }));
+    } else {
+      setShowSearchSuggestions(true);
+      // Debounce the autocomplete fetch
+      autocompleteTimeoutRef.current = setTimeout(() => {
+        fetchAutocompleteSuggestions(text);
+      }, 300);
+    }
+  }, [fetchAutocompleteSuggestions]);
+
   const loadSavedLocation = async () => {
     try {
       const saved = await Storage.getItem('@selected_city');
