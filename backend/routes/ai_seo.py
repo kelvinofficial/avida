@@ -3,6 +3,8 @@ AI SEO Routes
 API endpoints for AI-powered SEO generation
 """
 
+import os
+import jwt as pyjwt
 from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
@@ -10,6 +12,10 @@ from datetime import datetime, timezone
 import logging
 
 logger = logging.getLogger(__name__)
+
+# Admin JWT settings (must match server.py)
+ADMIN_JWT_SECRET = os.environ.get("ADMIN_JWT_SECRET", "admin-super-secret-key-for-jwt-auth-marketplace-2024")
+ADMIN_JWT_ALGORITHM = "HS256"
 
 
 class GenerateSEORequest(BaseModel):
