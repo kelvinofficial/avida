@@ -1,33 +1,25 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
-  Text,
-  TouchableOpacity,
   RefreshControl,
   ScrollView,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { locationsApi } from '../../src/utils/api';
-import { useAuthStore } from '../../src/store/authStore';
 import { useLocationStore } from '../../src/store/locationStore';
-import { useSandbox } from '../../src/utils/sandboxContext';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { useHomeData } from '../../src/hooks/useHomeData';
 import { useSubcategoryModal } from '../../src/hooks/useSubcategoryModal';
 import { ResponsiveLayout, Footer } from '../../src/components/layout';
 import { LocationData } from '../../src/components/LocationPicker';
 import { 
-  FeaturedSellersSection,
   SubcategoryModal,
   MobileHeader,
   HomeDesktopHeader,
   ListingsGrid,
   LocationModal,
 } from '../../src/components/home';
-import type { FeaturedSeller, FeaturedListing } from '../../src/components/home';
 import { 
   styles, 
   HORIZONTAL_PADDING, 
