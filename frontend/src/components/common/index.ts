@@ -7,6 +7,7 @@
  * - TouchableScale: Enhanced touch feedback with haptics
  * - EnhancedRefreshControl: Pull-to-refresh with haptics
  * - OfflineBanner: Network status indicator
+ * - FavoriteToast: Toast notification for favorites
  */
 
 export { ImagePlaceholder } from './ImagePlaceholder';
@@ -15,3 +16,5 @@ export { ImageWithSkeleton } from './ImageWithSkeleton';
 export { TouchableScale } from './TouchableScale';
 export { EnhancedRefreshControl } from './EnhancedRefreshControl';
 export { OfflineBanner } from './OfflineBanner';
+export { FavoriteToast } from './FavoriteToast';
+export type { FavoriteToastProps } from './FavoriteToast';
