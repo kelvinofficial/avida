@@ -1414,8 +1414,9 @@ export default function HomeScreen() {
                       onPress={clearRecentSearches}
                       style={styles.clearAllBtn}
                       data-testid="clear-recent-searches-btn"
+                      activeOpacity={0.7}
                     >
-                      <Text style={styles.clearAllText}>Clear All</Text>
+                      <Text style={styles.clearAllText}>Clear</Text>
                     </TouchableOpacity>
                   </View>
                   <ScrollView 
