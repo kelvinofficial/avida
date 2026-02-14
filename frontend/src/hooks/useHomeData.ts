@@ -425,9 +425,9 @@ export function useHomeData(): UseHomeDataReturn {
 
     try {
       if (isFavorite) {
-        await favoritesApi.removeFavorite(listingId);
+        await favoritesApi.remove(listingId);
       } else {
-        await favoritesApi.addFavorite(listingId);
+        await favoritesApi.add(listingId);
       }
     } catch (error) {
       // Revert on error
