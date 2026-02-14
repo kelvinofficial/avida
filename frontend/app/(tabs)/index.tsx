@@ -1412,11 +1412,11 @@ export default function HomeScreen() {
                     </View>
                     <TouchableOpacity 
                       onPress={clearRecentSearches}
-                      style={styles.clearAllBtn}
+                      style={{ backgroundColor: '#E8F5E9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}
                       data-testid="clear-recent-searches-btn"
                       activeOpacity={0.7}
                     >
-                      <Text style={styles.clearAllText}>Clear</Text>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: '#2E7D32' }}>Clear</Text>
                     </TouchableOpacity>
                   </View>
                   <ScrollView 
