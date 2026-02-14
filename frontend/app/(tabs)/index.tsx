@@ -156,6 +156,73 @@ const categoryStyles = StyleSheet.create({
   },
 });
 
+// ============ ANIMATED CHIP COMPONENT ============
+interface AnimatedChipProps {
+  onPress: () => void;
+  icon: string;
+  iconColor: string;
+  text: string;
+  style?: any;
+  testID?: string;
+}
+
+const AnimatedChip = memo<AnimatedChipProps>(({ onPress, icon, iconColor, text, style, testID }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.92,
+      friction: 4,
+      tension: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 3,
+      tension: 200,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      activeOpacity={1}
+      testID={testID}
+    >
+      <Animated.View style={[animatedChipStyles.chip, style, { transform: [{ scale: scaleAnim }] }]}>
+        <Ionicons name={icon as any} size={14} color={iconColor} />
+        <Text style={animatedChipStyles.chipText} numberOfLines={1}>{text}</Text>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+});
+
+const animatedChipStyles = StyleSheet.create({
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  chipText: {
+    fontSize: 13,
+    color: '#333',
+    fontWeight: '500',
+    maxWidth: 120,
+  },
+});
+
 // ============ SKELETON LOADER ============
 const SkeletonCard = memo(() => (
   <View style={skeletonStyles.card}>
