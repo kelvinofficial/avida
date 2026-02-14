@@ -84,7 +84,23 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
 
     const fullTitle = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
     const fullUrl = url ? (url.startsWith('http') ? url : `${BASE_URL}${url}`) : BASE_URL;
-    const ogImage = image || DEFAULT_IMAGE;
+    
+    // Process image URL for social sharing - ensure it's a full absolute URL
+    let ogImage = DEFAULT_IMAGE;
+    if (image) {
+      if (image.startsWith('http')) {
+        ogImage = image;
+      } else if (image.startsWith('data:')) {
+        // Base64 images may not work well for social sharing
+        // Use default or try to use the image anyway
+        ogImage = image;
+      } else if (image.startsWith('/')) {
+        // Relative URLs - convert to absolute
+        ogImage = `${BASE_URL}${image}`;
+      } else {
+        ogImage = `${BASE_URL}/${image}`;
+      }
+    }
     const truncatedDescription = description.length > 160 ? description.slice(0, 157) + '...' : description;
 
     // Set document title
