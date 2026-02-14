@@ -25,26 +25,8 @@ import {
   HORIZONTAL_PADDING, 
 } from '../../src/components/home/homeStyles';
 
-// ============ LAYOUT CONSTANTS - Material 3 ============
+// ============ LAYOUT CONSTANTS ============
 const COLUMN_GAP = 12;
-
-// ============ CATEGORIES DATA - Match backend DEFAULT_CATEGORIES ============
-const FULL_CATEGORIES = [
-  { id: 'auto_vehicles', name: 'Auto & Vehicles', icon: 'car-outline' },
-  { id: 'properties', name: 'Properties', icon: 'business-outline' },
-  { id: 'electronics', name: 'Electronics', icon: 'laptop-outline' },
-  { id: 'phones_tablets', name: 'Phones & Tablets', icon: 'phone-portrait-outline' },
-  { id: 'home_furniture', name: 'Home & Furniture', icon: 'home-outline' },
-  { id: 'fashion_beauty', name: 'Fashion & Beauty', icon: 'shirt-outline' },
-  { id: 'jobs_services', name: 'Jobs & Services', icon: 'briefcase-outline' },
-  { id: 'kids_baby', name: 'Kids & Baby', icon: 'people-outline' },
-  { id: 'sports_hobbies', name: 'Sports & Hobbies', icon: 'football-outline' },
-  { id: 'pets', name: 'Pets', icon: 'paw-outline' },
-  { id: 'agriculture', name: 'Agriculture & Food', icon: 'leaf-outline' },
-  { id: 'commercial_equipment', name: 'Commercial Equipment', icon: 'construct-outline' },
-  { id: 'repair_construction', name: 'Repair & Construction', icon: 'hammer-outline' },
-  { id: 'friendship_dating', name: 'Friendship & Dating', icon: 'heart-outline' },
-];
 
 // ============ MAIN HOME SCREEN ============
 export default function HomeScreen() {
