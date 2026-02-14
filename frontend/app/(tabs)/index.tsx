@@ -1030,7 +1030,11 @@ export default function HomeScreen() {
       )}
 
       {/* FEATURED SELLERS SECTION */}
-      <FeaturedSellersSection />
+      <FeaturedSellersSection 
+        featuredListings={featuredListings}
+        featuredSellers={featuredSellers}
+        loadingFeatured={loadingFeatured}
+      />
 
       {/* SECTION TITLE */}
       <View style={styles.sectionHeader}>
