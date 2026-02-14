@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 # ROUTER FACTORY
 # =============================================================================
 
-def create_favorites_router(db, require_auth, notify_stats_update=None, create_notification=None):
+def create_favorites_router(db, require_auth, notify_stats_update=None, create_notification=None, notify_new_favorite=None):
     """
     Create the favorites router with dependencies injected
     
@@ -24,6 +24,7 @@ def create_favorites_router(db, require_auth, notify_stats_update=None, create_n
         require_auth: Function to require authentication
         notify_stats_update: Optional callback to notify user of stats update via WebSocket
         create_notification: Optional callback to create in-app notifications
+        notify_new_favorite: Optional callback to notify seller of new favorite via WebSocket
     
     Returns:
         APIRouter with favorites endpoints
