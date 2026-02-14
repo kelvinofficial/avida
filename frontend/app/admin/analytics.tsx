@@ -664,6 +664,62 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     padding: 20,
   },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  searchCount: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  searchCountText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  locationInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  locationName: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: COLORS.text,
+  },
+  locationRegion: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
+  locationStats: {
+    alignItems: 'flex-end',
+  },
+  locationCount: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  locationQueries: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
   loadingContainer: {
     padding: 40,
     alignItems: 'center',
