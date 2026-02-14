@@ -8,6 +8,7 @@
  * - EnhancedRefreshControl: Pull-to-refresh with haptics
  * - OfflineBanner: Network status indicator
  * - FavoriteToast: Toast notification for favorites
+ * - FavoriteNotificationProvider: WebSocket-based favorite notifications
  */
 
 export { ImagePlaceholder } from './ImagePlaceholder';
@@ -18,3 +19,4 @@ export { EnhancedRefreshControl } from './EnhancedRefreshControl';
 export { OfflineBanner } from './OfflineBanner';
 export { FavoriteToast } from './FavoriteToast';
 export type { FavoriteToastProps } from './FavoriteToast';
+export { FavoriteNotificationProvider, useFavoriteNotification } from './FavoriteNotificationProvider';
