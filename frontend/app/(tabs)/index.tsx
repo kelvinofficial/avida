@@ -211,63 +211,18 @@ export default function HomeScreen() {
       return;
     }
     
-    // On mobile, show subcategory selection modal
-    const category = FULL_CATEGORIES.find(c => c.id === categoryId);
-    if (!category) return;
-    
-    const subcategories = getSubcategories(categoryId);
-    
-    // Show subcategory selection modal
-    setSelectedCategoryForSubcats({
-      id: categoryId,
-      name: category.name,
-      icon: category.icon,
-      subcategories: subcategories,
-    });
-    setShowSubcategoryModal(true);
-    
-    // Fetch subcategory counts in background
-    setLoadingCounts(true);
-    try {
-      const counts = await categoriesApi.getSubcategoryCounts(categoryId);
-      setSubcategoryCounts(counts);
-    } catch (error) {
-      console.log('Error fetching subcategory counts:', error);
-      setSubcategoryCounts({});
-    } finally {
-      setLoadingCounts(false);
-    }
+    // On mobile, show subcategory selection modal via hook
+    await openSubcategoryModal(categoryId);
   };
 
   const handleSubcategorySelect = async (categoryId: string, subcategoryId?: string) => {
-    setShowSubcategoryModal(false);
-    
-    // Save to recent if a specific subcategory is selected
-    if (subcategoryId && selectedCategoryForSubcats) {
-      const subcategory = selectedCategoryForSubcats.subcategories.find(s => s.id === subcategoryId);
-      if (subcategory) {
-        await saveRecentSubcategory(
-          categoryId,
-          selectedCategoryForSubcats.name,
-          selectedCategoryForSubcats.icon,
-          subcategoryId,
-          subcategory.name
-        );
-      }
-    }
-    
-    if (subcategoryId) {
-      // Navigate to category page with subcategory pre-selected
-      router.push(`/category/${categoryId}?subcategory=${subcategoryId}`);
-    } else {
-      // View all in category
-      router.push(`/category/${categoryId}`);
-    }
+    const path = await hookSubcategorySelect(categoryId, subcategoryId);
+    router.push(path);
   };
 
-  const handleRecentSubcategoryPress = (item: typeof recentSubcategories[0]) => {
-    setShowSubcategoryModal(false);
-    router.push(`/category/${item.categoryId}?subcategory=${item.subcategoryId}`);
+  const handleRecentSubcategoryPress = (item: any) => {
+    const path = hookRecentSubcategoryPress(item);
+    router.push(path);
   };
 
   const handleCategoryLongPress = (categoryId: string) => {
