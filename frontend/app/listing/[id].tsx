@@ -38,6 +38,8 @@ import { BadgeRow, Badge } from '../../src/components/SellerBadges';
 import { BannerSlot } from '../../src/components/BannerSlot';
 import { useAttributeIcons, ICON_COLOR } from '../../src/hooks/useAttributeIcons';
 import { ImageWithSkeleton } from '../../src/components/common';
+import { ListingSEO, ProductSchema, BreadcrumbSchema } from '../../src/components/seo';
+import { SocialShareButtons } from '../../src/components/common/SocialShareButtons';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
