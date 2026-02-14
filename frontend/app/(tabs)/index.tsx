@@ -189,11 +189,6 @@ export default function HomeScreen() {
   const [selectedCountryForDropdown, setSelectedCountryForDropdown] = useState<{ code: string; name: string; flag: string } | null>(null);
   const [locationDropdownLoading, setLocationDropdownLoading] = useState(false);
 
-  // Load saved location on mount
-  useEffect(() => {
-    loadSavedLocation();
-  }, []);
-
   // Sync with global location store for DesktopHeader
   useEffect(() => {
     // When global location changes (from DesktopHeader), sync local state
@@ -211,173 +206,7 @@ export default function HomeScreen() {
     if (selectedLocationFilter) {
       locationStore.setLocation(currentCity, selectedLocationFilter);
     }
-  }, [selectedLocationFilter]);
-
-  // Fetch featured listings from verified sellers
-  const fetchFeaturedListings = useCallback(async () => {
-    try {
-      setLoadingFeatured(true);
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/listings/featured-verified?limit=12`);
-      if (response.ok) {
-        const data = await response.json();
-        setFeaturedListings(data.listings || []);
-      } else {
-        // Fallback to featured sellers endpoint
-        const sellersResponse = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/business-profiles/featured?limit=8`);
-        if (sellersResponse.ok) {
-          const data = await sellersResponse.json();
-          setFeaturedSellers(data.sellers || []);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching featured listings:', error);
-    } finally {
-      setLoadingFeatured(false);
-    }
-  }, []);
-
-  // Load featured listings on mount
-  useEffect(() => {
-    fetchFeaturedListings();
-  }, [fetchFeaturedListings]);
-
-  // Load search suggestions (recent + trending)
-  const loadSearchSuggestions = useCallback(async () => {
-    try {
-      // Load recent searches from localStorage
-      let recent: string[] = [];
-      if (Platform.OS === 'web') {
-        const stored = localStorage.getItem('recent_searches');
-        if (stored) {
-          recent = JSON.parse(stored);
-        }
-      }
-
-      // Fetch trending searches from API
-      let trending: { query: string; count: number }[] = [];
-      try {
-        const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/searches/popular?limit=5`);
-        if (res.ok) {
-          const data = await res.json();
-          trending = data.global_searches || [];
-        }
-      } catch (e) {
-        console.log('Could not fetch trending searches');
-      }
-
-      setSearchSuggestions({ recent: recent.slice(0, 5), trending });
-    } catch (err) {
-      console.error('Failed to load search suggestions:', err);
-    }
-  }, []);
-
-  // Load search suggestions on mount
-  useEffect(() => {
-    loadSearchSuggestions();
-  }, [loadSearchSuggestions]);
-
-  // Handle search suggestion click
-  const handleSuggestionClick = (query: string) => {
-    setHomeSearchQuery(query);
-    setShowSearchSuggestions(false);
-    // Navigate to search
-    const searchUrl = `/search?q=${encodeURIComponent(query.trim())}`;
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      window.location.href = searchUrl;
-    } else {
-      router.push(searchUrl);
-    }
-  };
-
-  // Clear all recent searches
-  const clearRecentSearches = useCallback(() => {
-    if (Platform.OS === 'web') {
-      localStorage.removeItem('recent_searches');
-    }
-    setSearchSuggestions(prev => ({ ...prev, recent: [] }));
-  }, []);
-
-  // Fetch autocomplete suggestions as user types
-  const fetchAutocompleteSuggestions = useCallback(async (query: string) => {
-    if (query.length < 2) {
-      setSearchSuggestions(prev => ({ ...prev, autocomplete: [] }));
-      return;
-    }
-
-    try {
-      const res = await fetch(
-        `${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/searches/suggestions?q=${encodeURIComponent(query)}&limit=8`
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setSearchSuggestions(prev => ({ 
-          ...prev, 
-          autocomplete: data.suggestions || [] 
-        }));
-      }
-    } catch (e) {
-      console.log('Could not fetch autocomplete suggestions');
-    }
-  }, []);
-
-  // Debounced autocomplete handler
-  const handleSearchInputChange = useCallback((text: string) => {
-    setHomeSearchQuery(text);
-    
-    // Clear previous timeout
-    if (autocompleteTimeoutRef.current) {
-      clearTimeout(autocompleteTimeoutRef.current);
-    }
-    
-    if (text.length === 0) {
-      setShowSearchSuggestions(true);
-      setSearchSuggestions(prev => ({ ...prev, autocomplete: [] }));
-    } else {
-      setShowSearchSuggestions(true);
-      // Debounce the autocomplete fetch
-      autocompleteTimeoutRef.current = setTimeout(() => {
-        fetchAutocompleteSuggestions(text);
-      }, 300);
-    }
-  }, [fetchAutocompleteSuggestions]);
-
-  const loadSavedLocation = async () => {
-    try {
-      const saved = await Storage.getItem('@selected_city');
-      if (saved) {
-        const city = JSON.parse(saved);
-        setSelectedCity(city);
-        // Use city_name or location_text for display
-        setCurrentCity(city.city_name || city.location_text || 'Selected Location');
-        // Also set the location filter for proper display
-        setSelectedLocationFilter({
-          country_code: city.country_code,
-          region_code: city.region_code,
-          region_name: city.region_name,
-          city_name: city.city_name,
-          location_text: city.location_text,
-        } as LocationData);
-      }
-      const savedRadius = await Storage.getItem('@search_radius');
-      if (savedRadius) setSearchRadius(parseInt(savedRadius, 10));
-      const savedInclude = await Storage.getItem('@include_nearby');
-      if (savedInclude !== null) setIncludeNearbyCities(savedInclude === 'true');
-    } catch (err) {
-      console.error('Failed to load saved location:', err);
-    }
-  };
-
-  const saveSelectedCity = async (city: typeof selectedCity) => {
-    setSelectedCity(city);
-    if (city) {
-      setCurrentCity(city.city_name);
-      try {
-        await Storage.setItem('@selected_city', JSON.stringify(city));
-      } catch (err) {
-        console.error('Failed to save city:', err);
-      }
-    }
-  };
+  }, [selectedLocationFilter, currentCity, locationStore]);
 
   // Load recent subcategories from storage
   const loadRecentSubcategories = useCallback(async () => {
@@ -435,50 +264,7 @@ export default function HomeScreen() {
     loadRecentSubcategories();
   }, []);
 
-  // Fetch credit balance when authenticated
-  const fetchCreditBalance = useCallback(async () => {
-    try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/boost/credits/balance`, {
-        headers: {
-          'Authorization': `Bearer ${await Storage.getItem('authToken')}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setCreditBalance(data?.balance ?? 0);
-      }
-    } catch (err) {
-      console.error('Failed to fetch credit balance:', err);
-      setCreditBalance(0);
-    }
-  }, []);
-
-  // Fetch unviewed badge count when authenticated
-  const fetchUnviewedBadgeCount = useCallback(async () => {
-    try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/badges/unviewed-count`, {
-        headers: {
-          'Authorization': `Bearer ${await Storage.getItem('authToken')}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setUnviewedBadgeCount(data?.unviewed_count ?? 0);
-      }
-    } catch (err) {
-      console.error('Failed to fetch unviewed badge count:', err);
-      setUnviewedBadgeCount(0);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchCreditBalance();
-      fetchUnviewedBadgeCount();
-    }
-  }, [isAuthenticated, fetchCreditBalance, fetchUnviewedBadgeCount]);
-
-  // Popular cities list
+  // Popular cities list (kept for UI)
   const POPULAR_CITIES = [
     { name: 'All Locations', icon: 'globe-outline' },
     { name: 'Berlin', icon: 'business-outline' },
@@ -497,147 +283,16 @@ export default function HomeScreen() {
     city.name.toLowerCase().includes(locationSearch.toLowerCase())
   );
 
-  // Fetch unread notification count
-  const fetchNotificationCount = useCallback(async () => {
-    if (!isAuthenticated) {
-      setNotificationCount(0);
-      return;
+  // Handle suggestion click with navigation (wraps hook function)
+  const handleSuggestionClick = (query: string) => {
+    hookSuggestionClick(query);
+    // Navigate to search
+    const searchUrl = `/search?q=${encodeURIComponent(query.trim())}`;
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.location.href = searchUrl;
+    } else {
+      router.push(searchUrl);
     }
-    try {
-      const response = await notificationsApi.getUnreadCount();
-      setNotificationCount(response.unread_count || 0);
-    } catch (error) {
-      console.error('Error fetching notification count:', error);
-      setNotificationCount(0);
-    }
-  }, [isAuthenticated]);
-
-  // Refresh notification count when screen comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      fetchNotificationCount();
-    }, [fetchNotificationCount])
-  );
-
-  const fetchData = useCallback(async (refresh = false) => {
-    try {
-      if (refresh) { setPage(1); setHasMore(true); }
-      
-      // Build location filter params - prefer hierarchical codes over text search
-      const locationParams: {
-        location?: string;
-        country_code?: string;
-        region_code?: string;
-        district_code?: string;
-        city_code?: string;
-      } = {};
-      
-      if (selectedLocationFilter) {
-        // Use hierarchical codes for precise filtering
-        if (selectedLocationFilter.country_code) locationParams.country_code = selectedLocationFilter.country_code;
-        if (selectedLocationFilter.region_code) locationParams.region_code = selectedLocationFilter.region_code;
-        if (selectedLocationFilter.district_code) locationParams.district_code = selectedLocationFilter.district_code;
-        if (selectedLocationFilter.city_code) locationParams.city_code = selectedLocationFilter.city_code;
-      } else if (currentCity !== 'Select Location' && currentCity !== 'All Locations') {
-        // Fallback to text search for legacy compatibility
-        locationParams.location = currentCity;
-      }
-      
-      // Check if sandbox mode is active and use sandbox-aware API
-      const sandboxActive = await sandboxUtils.isActive();
-      
-      let listingsRes;
-      let categoriesRes;
-      
-      // Use smart location-based search if city is selected
-      if (selectedCity && !sandboxActive) {
-        try {
-          listingsRes = await listingsApi.getByLocation({
-            city_code: selectedCity.city_code,
-            city_lat: selectedCity.lat,
-            city_lng: selectedCity.lng,
-            include_nearby: false,
-            radius: searchRadius,
-            category: selectedCategory || undefined,
-            page: refresh ? 1 : page,
-            limit: 20,
-            only_my_city: true,
-          });
-          
-          // Handle expanded search message (disabled)
-          setExpandedSearch(false);
-          setExpandedSearchMessage(null);
-          
-          categoriesRes = await categoriesApi.getAll();
-        } catch (error) {
-          console.error('Error with location-based fetch:', error);
-          // Fallback to regular fetch
-          listingsRes = await listingsApi.getAll({ 
-            category: selectedCategory || undefined, 
-            ...locationParams,
-            page: refresh ? 1 : page, 
-            limit: 20 
-          });
-          categoriesRes = await categoriesApi.getAll();
-        }
-      } else if (sandboxActive) {
-        // Use sandbox proxy APIs
-        [listingsRes, categoriesRes] = await Promise.all([
-          sandboxAwareListingsApi.getAll({ 
-            category: selectedCategory || undefined, 
-            ...locationParams,
-            page: refresh ? 1 : page, 
-            limit: 20 
-          }),
-          sandboxAwareCategoriesApi.getAll(),
-        ]);
-        setExpandedSearch(false);
-        setExpandedSearchMessage(null);
-      } else {
-        // Use normal production APIs
-        [listingsRes, categoriesRes] = await Promise.all([
-          listingsApi.getAll({ 
-            category: selectedCategory || undefined, 
-            ...locationParams,
-            page: refresh ? 1 : page, 
-            limit: 20 
-          }),
-          categoriesApi.getAll(),
-        ]);
-        setExpandedSearch(false);
-        setExpandedSearchMessage(null);
-      }
-      
-      if (refresh) { setListings(listingsRes.listings || listingsRes); }
-      else { setListings((prev) => [...prev, ...(listingsRes.listings || listingsRes)]); }
-      setHasMore(listingsRes.page < listingsRes.pages);
-      setCategories(categoriesRes);
-      if (isAuthenticated && !sandboxActive) {
-        try { const favs = await favoritesApi.getAll(); setFavorites(new Set(favs.map((f: Listing) => f.id))); } catch (e) {}
-        // Also refresh notification count on data refresh
-        fetchNotificationCount();
-      }
-    } catch (error) { console.error('Error fetching data:', error); }
-    finally { setLoading(false); setRefreshing(false); setInitialLoadDone(true); }
-  }, [selectedCategory, currentCity, selectedLocationFilter, selectedCity, includeNearbyCities, searchRadius, page, isAuthenticated, fetchNotificationCount]);
-
-  useEffect(() => { fetchData(true); }, [selectedCategory, currentCity, selectedLocationFilter, selectedCity, includeNearbyCities, searchRadius]);
-
-  const onRefresh = useCallback(() => { setRefreshing(true); fetchData(true); }, [fetchData]);
-
-  const loadMore = () => { if (!loading && hasMore) { setPage((prev) => prev + 1); fetchData(); } };
-
-  const toggleFavorite = async (listingId: string) => {
-    if (!isAuthenticated) { router.push('/login'); return; }
-    try {
-      if (favorites.has(listingId)) {
-        await favoritesApi.remove(listingId);
-        setFavorites((prev) => { const newSet = new Set(prev); newSet.delete(listingId); return newSet; });
-      } else {
-        await favoritesApi.add(listingId);
-        setFavorites((prev) => new Set(prev).add(listingId));
-      }
-    } catch (error) { console.error('Error toggling favorite:', error); }
   };
 
   // Handle search submit from homepage
