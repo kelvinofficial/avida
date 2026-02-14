@@ -6,6 +6,42 @@ Build a local marketplace application (Avida) with:
 2. Business Profile feature for verified sellers
 3. Premium subscription tiers with payment integration
 
+
+### 2026-02-14: Home Screen Refactoring Phase 2 (P2)
+**COMPLETED** ✅
+
+#### Changes Made
+1. **Extracted FeaturedSellersSection Component** (~155 lines)
+   - Created `/app/frontend/src/components/home/FeaturedSellersSection.tsx`
+   - Displays featured listings from verified sellers
+   - Includes seller cards with logos, badges, and stats
+   - Fully typed with TypeScript interfaces
+
+2. **Extracted SubcategoryModal Component** (~120 lines + styles)
+   - Created `/app/frontend/src/components/home/SubcategoryModal.tsx`
+   - Modal for selecting subcategories on mobile
+   - Shows recent subcategories, all subcategories list, and counts
+
+3. **Removed Duplicate Styles** (~360 lines)
+   - Removed `featuredStyles` StyleSheet (now in FeaturedSellersSection.tsx)
+   - Removed subcategory modal styles (now in SubcategoryModal.tsx)
+
+4. **Total Reduction**: 642 lines (from 2946 to 2304 lines, ~22%)
+
+#### Files Created
+- `/app/frontend/src/components/home/FeaturedSellersSection.tsx`
+- `/app/frontend/src/components/home/SubcategoryModal.tsx`
+
+#### Files Modified
+- `/app/frontend/src/components/home/index.ts` - Added exports
+- `/app/frontend/app/(tabs)/index.tsx` - Refactored to use imported components
+
+#### Verification
+- Screenshot verified app loads correctly after refactoring
+- All listings display properly with images and prices
+
+---
+
 ---
 
 ### 2026-02-14: Home Screen Refactoring (P2)
