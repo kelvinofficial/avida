@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Admin JWT settings (must match server.py)
-ADMIN_JWT_SECRET = os.environ.get("ADMIN_JWT_SECRET", "admin-super-secret-key-for-jwt-auth-marketplace-2024")
+ADMIN_JWT_SECRET = os.environ.get("ADMIN_JWT_SECRET_KEY", "admin-super-secret-key-change-in-production-2024")
 ADMIN_JWT_ALGORITHM = "HS256"
 
 
