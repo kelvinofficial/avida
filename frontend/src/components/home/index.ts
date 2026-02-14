@@ -10,3 +10,6 @@ export { ListingCard, CARD_WIDTH, CARD_IMAGE_HEIGHT, BORDER_RADIUS } from './Lis
 export type { Listing, ListingCardProps } from './ListingCard';
 export { SkeletonCard } from './SkeletonCard';
 export type { SkeletonCardProps } from './SkeletonCard';
+export { FeaturedSellersSection } from './FeaturedSellersSection';
+export type { FeaturedSeller, FeaturedListing } from './FeaturedSellersSection';
+export { SubcategoryModal } from './SubcategoryModal';
