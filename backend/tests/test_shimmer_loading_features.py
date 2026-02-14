@@ -9,7 +9,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://classifieds-seo.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://marketplace-meta.preview.emergentagent.com')
 
 class TestAdminSearchAnalyticsFilters:
     """Tests for Admin Search Analytics page location filters"""

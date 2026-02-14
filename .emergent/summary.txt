@@ -1,102 +1,123 @@
 <analysis>**original_problem_statement**:
 The user's initial request was to build a full-stack classifieds application.
 
-Recent user requests have focused on:
-1.  **Bug Fixes**: Addressing UI issues like broken layouts and non-functional components.
-2.  **UI/UX Enhancements**: Implementing shimmer/skeleton loading effects, adding real-time autocomplete search, and enhancing notifications.
-3.  **Admin Features**: Building an admin dashboard to track user search queries with location data.
-4.  **Code Quality**: A major ongoing effort is to refactor the monolithic  file into smaller, manageable components.
+The most recent request from the user, which has now been implemented, was to enhance the application with advanced SEO features and social sharing capabilities.
+
+A new set of requirements was provided by the user at the end of the session:
+- **Automatic SEO**: Auto-generate meta descriptions for new listings from title, price, and location.
+- **AI for SEO**:
+    - Add an AI section to the SEO settings in the admin dashboard.
+    - Use AI to manage SEO data.
+- **Expanded SEO Coverage**:
+    - Add SEO to sub-category pages.
+    - Ensure all pages are populated with SEO data.
+    - Enhance meta tags to include district, region, and country in the location.
+- **Sitemap**: Implement the sitemap regeneration endpoint (currently returns 404).
+- **Enhanced Social Sharing**: Include listing images in social media previews.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The project is a full-stack classifieds application featuring a React Native frontend, a FastAPI backend, and a Next.js admin dashboard.
-
-In this session, the agent investigated three tasks marked as in-progress from the previous handover: admin page filters, a category page shimmer effect, and the  custom hook. The agent discovered that the admin filters and shimmer effect were already fully implemented and functional.
-
-The primary focus then shifted to completing the refactoring of . The agent successfully integrated the  hook, which moved over 340 lines of state management and data-fetching logic out of the component. Following this, the agent continued the refactoring by extracting the mobile header into a new  component, further reducing the  file size. The  file has been reduced from an initial ~2946 lines to approximately 799 lines over the course of the project.
+The project is a stable, full-stack classifieds application. In this session, the agent successfully implemented a comprehensive SEO and social sharing feature set as requested. This includes a backend API and an admin dashboard UI for managing SEO settings, dynamic SEO meta tags (title, description, JSON-LD) on category and listing detail pages, and social sharing buttons (WhatsApp, Facebook, Twitter) on listing pages.
 
 **Last working item**:
-The agent was refactoring  by extracting the header logic into separate components.
+The agent completed the implementation and verification of the advanced SEO and social sharing features, updated the project's documentation, and finished the session.
 
--   **Last item agent was working**: Extracting the mobile header logic from  in  into a new, dedicated  component.
+-   **Last item agent was working**: Completing the implementation of advanced SEO and Social Sharing features.
 -   **Status**: NONE (COMPLETED)
--   **Agent Testing Done**: Y (Verified with screenshots on both mobile and desktop viewports, confirming the app remains functional.)
--   **Which testing method agent to use?**: Frontend testing agent. Given the significant refactoring of a core component, a full regression test is recommended to ensure no functionality has been broken.
+-   **Agent Testing Done**: Y (The  was used, which passed all major checks. The agent also performed manual verification with  to confirm dynamic meta tags were present in the DOM.)
+-   **Which testing method agent to use?**: both
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   There are no pending issues. The agent successfully resolved the primary refactoring tasks for this session.
+-   There are no pending issues. A minor  issue reported by the testing agent was fixed.
 
 **In progress Task List**:
 -   There are no in-progress tasks.
 
 **Upcoming and Future Tasks**
--   **Upcoming Tasks**:
-    -   **(P0) Continue refactoring **: The file is now ~799 lines. The next logical step is to extract the  function into its own  component to further modularize the code.
-    -   **(P1) Extract other UI sections from **: After the headers, the main content/listing grid could be extracted into its own component.
-    -   **(P2) Verify Quick Stats feature**: The Quick Stats feature mentioned in a previous handover should be formally verified to ensure it works as expected.
-    -   **(P3) Apply shimmer/skeleton loading to other pages**: Extend the skeleton loading pattern to other parts of the application, such as the  page.
+
+-   **Upcoming Tasks (Based on the user's last message)**:
+    -   **(P0) Automatic SEO Generation**: Implement a mechanism to auto-generate meta descriptions for new listings using their title, price, and location.
+    -   **(P1) Enhanced Social Sharing with Images**: Modify the social sharing functionality to include the primary listing image in the preview ( meta tag).
+    -   **(P1) Expanded SEO Location Data**: Update the SEO components to include district, region, and country in the meta descriptions and structured data.
+    -   **(P2) Sub-category Page SEO**: Implement dynamic SEO meta tags and structured data for sub-category pages.
+    -   **(P2) Sitemap Endpoint**: Create the backend logic for the  endpoint to generate and return a sitemap.
 
 -   **Future Tasks**:
-    -   Add push notifications for badge milestones.
-    -   Implement performance optimizations for grids with a large number of listings.
+    -   **AI-Powered SEO**:
+        -   Add an AI section to the admin dashboard for SEO management.
+        -   Integrate an AI model to help generate or suggest SEO content.
+    -   **Offline Mode Support**: The initial files (, ) exist, but the full functionality needs to be built out.
 
 **Completed work in this session**
--   **Verification of Previous Work**: Confirmed that the Admin Filters and Category Page Shimmer effect, previously marked as incomplete, were already fully functional.
--   ** Hook Integration**: Successfully integrated the  hook into , centralizing data-fetching logic and reducing component size from 1303 to ~969 lines.
--   **Bug Fix (Hook Exports)**: After the testing agent identified an issue, fixed the  hook by exporting necessary state setters (, , etc.) that were required by the  component.
--   ** Component Extraction**: Further refactored  by extracting the  function into a new  component, reducing the file to ~799 lines.
+-   **Admin SEO Management (Backend)**: Created a new  Pydantic model and new FastAPI endpoints () to get and update SEO configurations.
+-   **Admin SEO Management (Frontend)**: Enhanced the Admin Dashboard's SEO Tools page () by adding a new Category SEO tab and integrating the new API endpoints.
+-   **Category Page SEO**: Integrated the  and  components into the category page () to provide dynamic titles, descriptions, and breadcrumb JSON-LD.
+-   **Listing Page SEO**: Integrated  and  into the listing detail page (), providing dynamic metadata and JSON-LD for  and .
+-   **Social Sharing**: Created a  component () and added it to the listing detail page, allowing users to share to WhatsApp, Facebook, and Twitter.
+-   **Bug Fixes**: Resolved TypeScript errors related to incorrect prop types () on the listing detail page and fixed a  attribute issue for React Native Web.
 
 **Earlier issues found/mentioned but not fixed**
 -   None.
 
 **Known issue recurrence from previous fork**
--   None.
+-   An incorrect relative import path ( instead of ) appeared multiple times in newly created hook files in a previous session. This suggests a pattern to watch for when creating new files in the  directory.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **React Custom Hooks**: Successfully integrated a complex custom hook () to abstract away data fetching and state management from a large component, demonstrating the separation of concerns principle.
--   **Component Composition**: Continued the process of breaking down a monolithic component () into smaller, more manageable child components ().
--   **Agent-Based Testing**: Utilized the  to perform regression testing after a major refactor, which successfully identified a critical bug related to missing state setters in the custom hook.
+-   **Full-Stack Feature Implementation**: Built a complete feature from the database model to the frontend UI, including a new FastAPI router and modifications to a React-based admin panel.
+-   **Dynamic SEO for SPAs**: Successfully integrated dynamic meta tags and JSON-LD structured data into various page templates using a -based approach that works reliably on the web.
+-   **Component Reusability**: Extended existing SEO components (, ) to handle new page types (Category, Listing) by passing page-specific props.
+-   **Comprehensive Testing**: Utilized  to validate the backend API, admin UI, and frontend rendering across multiple pages, ensuring the feature was robust before completion.
 
 **key DB schema**
--   No changes to the DB schema in this session.
+-   **seo_settings**:  (Implicitly created by the application, managed via )
 
 **changes in tech stack**
 -   None.
 
 **All files of reference**
--    (The primary file being refactored)
--    (Hook file that was integrated and then modified)
--    (New component created for the mobile header)
--    (Modified to export the new  component)
--   , ,  (Reports from testing agent runs)
+-    (New model for SEO settings)
+-    (New API routes for SEO management)
+-    (Modified to register the new SEO router)
+-    (Modified to add Category SEO tab)
+-    (Modified to add SEO components)
+-    (Modified to add SEO and Social Sharing components)
+-    (New component for share buttons)
+-    (Modified to include API calls for SEO settings)
+-    (Generated by testing agent)
+-    (Updated)
 
 **Areas that need refactoring**:
--    remains the top priority. Although significantly improved (now ~799 lines), it still contains the  function and other UI logic that should be extracted into separate components to complete the refactoring process.
+-   None.
 
 **key api endpoints**
--   No new API endpoints were introduced.
+-   ****: Fetches SEO settings for a specific category.
+-   ****: Creates or updates SEO settings for a category.
 
 **Critical Info for New Agent**
--   The main task is to continue the refactoring of . The immediate next step should be extracting the  function into a new  component, similar to what was done for the mobile header.
--   The  hook is now the single source of truth for all data and data-related actions on the home screen. Any future modifications to data handling for this page should be made within this hook.
--   Using the testing agent after each significant refactoring step proved highly effective and is recommended to catch regressions before they become a problem.
+-   The user's immediate priorities are the new feature requests from their last message, starting with automatic SEO for new listings and adding images to social shares.
+-   The core SEO framework is in place and working. New SEO tasks should extend the existing components (, ).
+-   Remember the established pattern for web SEO: use  for DOM manipulation, as  has proven unreliable.
 
 **documents and test reports created in this job**
 -    (Updated)
 -   
--   
--   
 
 **Last 10 User Messages and any pending HUMAN messages**
--   The last several messages were from the user (continue, proceed, YES) approving the agent's step-by-step plan to first integrate the  hook and then proceed with extracting the  component. All user directives have been acted upon.
+1.  **User**: Provided a long list of new feature requests including automatic SEO generation, AI for SEO, sitemap implementation, SEO for sub-categories, and enhancing social sharing with images.
+    -   **Status**: NOT STARTED. This forms the basis for the Upcoming and Future Tasks.
+2.  **User**:  (multiple times)
+    -   **Status**: COMPLETED.
+3.  **User**: 
+    -   **Summary**: User approved the agent's initial plan to implement the advanced SEO and social sharing features.
+    -   **Status**: COMPLETED.
 
 **Project Health Check:**
--   **Broken**: None. The application was verified to be working after each refactoring stage.
+-   **Broken**: None.
 -   **Mocked**: None.
 
 **3rd Party Integrations**
@@ -108,14 +129,14 @@ The agent was refactoring  by extracting the header logic into separate componen
 -   
 
 **Testing status**
--   **Testing agent used after significant changes**: YES
+-   **Testing agent used after significant changes**: YES. The testing agent was used to validate the entire SEO and social sharing feature set.
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: []
--   **Known regressions**: None
+-   **Known regressions**: None. The one minor issue found by the testing agent was resolved.
 
 **Credentials to test flow:**
 -   **Admin User**:  / 
 -   **Regular User**:  / 
 
 **What agent forgot to execute**
--   Nothing. The agent successfully identified the true state of pending tasks, executed the necessary refactoring, used the testing agent to find and fix a bug, and completed the planned work for the session.</analysis>
+-   The agent successfully completed all planned work for the session. The new requests from the user's final message have been captured as upcoming tasks.</analysis>
