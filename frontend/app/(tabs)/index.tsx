@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback, memo, useRef } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   Dimensions,
   RefreshControl,
@@ -50,6 +49,15 @@ import {
   CATEGORY_ITEM_WIDTH
 } from '../../src/components/home';
 import type { FeaturedSeller, FeaturedListing } from '../../src/components/home';
+import { 
+  styles, 
+  desktopStyles, 
+  HORIZONTAL_PADDING, 
+  ROW_1_HEIGHT, 
+  TOUCH_TARGET, 
+  ICON_SIZE,
+  MAX_CONTENT_WIDTH 
+} from '../../src/components/home/homeStyles';
 
 const { width } = Dimensions.get('window');
 
