@@ -38,19 +38,11 @@ import {
   HORIZONTAL_PADDING, 
 } from '../../src/components/home/homeStyles';
 
-const { width } = Dimensions.get('window');
-
 // Storage key for recently viewed subcategories
 const RECENT_SUBCATEGORIES_KEY = '@avida_recent_subcategories';
 
 // ============ LAYOUT CONSTANTS - Material 3 ============
 const COLUMN_GAP = 12;
-
-// Category icon constants - CIRCULAR DESIGN
-const CATEGORY_ICON_SIZE = 48;
-const CATEGORY_ICON_RADIUS = 24; // Full circle
-const CATEGORY_INNER_ICON = 22;
-const CATEGORY_GAP = 4;
 
 // ============ CATEGORIES DATA - Match backend DEFAULT_CATEGORIES ============
 const FULL_CATEGORIES = [
