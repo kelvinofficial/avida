@@ -65,13 +65,7 @@ const { width } = Dimensions.get('window');
 const RECENT_SUBCATEGORIES_KEY = '@avida_recent_subcategories';
 
 // ============ LAYOUT CONSTANTS - Material 3 ============
-const HORIZONTAL_PADDING = 16;
 const COLUMN_GAP = 12;
-
-// Header constants
-const ROW_1_HEIGHT = 52;
-const ICON_SIZE = 24;
-const TOUCH_TARGET = 48;
 
 // Category icon constants - CIRCULAR DESIGN
 const CATEGORY_ICON_SIZE = 48;
