@@ -306,6 +306,220 @@ class OfflineStorageService {
       console.error('Failed to clear old cache:', error);
     }
   }
+
+  // ============ ENHANCED CACHE METHODS ============
+
+  async getLastSync(): Promise<number | null> {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.LAST_SYNC);
+      return data ? parseInt(data, 10) : null;
+    } catch (error) {
+      console.error('Failed to get last sync:', error);
+      return null;
+    }
+  }
+
+  async setLastSync(timestamp: number): Promise<void> {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.LAST_SYNC, timestamp.toString());
+    } catch (error) {
+      console.error('Failed to set last sync:', error);
+    }
+  }
+
+  async mapClientToServerId(clientId: string, serverId: string): Promise<void> {
+    try {
+      const key = `@avida/id_mapping_${clientId}`;
+      await AsyncStorage.setItem(key, serverId);
+    } catch (error) {
+      console.error('Failed to map client to server ID:', error);
+    }
+  }
+
+  async getServerIdForClient(clientId: string): Promise<string | null> {
+    try {
+      const key = `@avida/id_mapping_${clientId}`;
+      return await AsyncStorage.getItem(key);
+    } catch (error) {
+      console.error('Failed to get server ID for client:', error);
+      return null;
+    }
+  }
+
+  async updateCachedListing(listing: any): Promise<void> {
+    try {
+      const listings = await this.getCachedListings();
+      const index = listings.findIndex(l => l.id === listing.id);
+      
+      if (index !== -1) {
+        listings[index] = { ...listing, cachedAt: Date.now() };
+      } else {
+        listings.unshift({ ...listing, cachedAt: Date.now() });
+      }
+      
+      await AsyncStorage.setItem(STORAGE_KEYS.OFFLINE_LISTINGS, JSON.stringify(listings.slice(0, 100)));
+    } catch (error) {
+      console.error('Failed to update cached listing:', error);
+    }
+  }
+
+  async cacheMessage(message: any): Promise<void> {
+    try {
+      const key = `@avida/messages_${message.conversation_id}`;
+      const existing = await AsyncStorage.getItem(key);
+      const messages = existing ? JSON.parse(existing) : [];
+      
+      // Add message if not already exists
+      if (!messages.find((m: any) => m.id === message.id)) {
+        messages.push(message);
+        await AsyncStorage.setItem(key, JSON.stringify(messages.slice(-100))); // Keep last 100
+      }
+    } catch (error) {
+      console.error('Failed to cache message:', error);
+    }
+  }
+
+  async cacheConversations(conversations: any[]): Promise<void> {
+    try {
+      await AsyncStorage.setItem('@avida/conversations', JSON.stringify(conversations));
+    } catch (error) {
+      console.error('Failed to cache conversations:', error);
+    }
+  }
+
+  async getCachedConversations(): Promise<any[]> {
+    try {
+      const data = await AsyncStorage.getItem('@avida/conversations');
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('Failed to get cached conversations:', error);
+      return [];
+    }
+  }
+
+  // ============ OFFLINE LISTING CREATION ============
+
+  async queueListingCreation(listingData: {
+    title: string;
+    description: string;
+    price: number;
+    currency: string;
+    category: string;
+    subcategory?: string;
+    condition?: string;
+    images?: string[];
+    location?: any;
+    attributes?: any;
+  }): Promise<string> {
+    const clientId = `offline_lst_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const action: OfflineAction = {
+      id: clientId,
+      type: 'CREATE_LISTING' as OfflineActionType,
+      payload: listingData,
+      timestamp: Date.now(),
+      retryCount: 0
+    };
+    
+    await this.queueAction(action);
+    
+    // Also cache it locally for immediate display
+    const cachedListing: CachedListing = {
+      id: clientId,
+      title: listingData.title,
+      price: listingData.price,
+      currency: listingData.currency,
+      images: listingData.images || [],
+      location: listingData.location?.city || 'Local',
+      category: listingData.category,
+      seller: {
+        id: 'self',
+        name: 'You (Pending)',
+      },
+      cachedAt: Date.now()
+    };
+    
+    await this.cacheListings([cachedListing]);
+    
+    return clientId;
+  }
+
+  async queueListingUpdate(listingId: string, updates: any): Promise<void> {
+    const action: OfflineAction = {
+      id: `offline_upd_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'UPDATE_LISTING' as OfflineActionType,
+      payload: { listing_id: listingId, updates },
+      timestamp: Date.now(),
+      retryCount: 0
+    };
+    
+    await this.queueAction(action);
+  }
+
+  async queueListingDeletion(listingId: string): Promise<void> {
+    const action: OfflineAction = {
+      id: `offline_del_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'DELETE_LISTING' as OfflineActionType,
+      payload: { listing_id: listingId },
+      timestamp: Date.now(),
+      retryCount: 0
+    };
+    
+    await this.queueAction(action);
+    
+    // Remove from local cache
+    const listings = await this.getCachedListings();
+    const filtered = listings.filter(l => l.id !== listingId);
+    await AsyncStorage.setItem(STORAGE_KEYS.OFFLINE_LISTINGS, JSON.stringify(filtered));
+  }
+
+  async queueMessage(data: {
+    conversationId?: string;
+    recipientId?: string;
+    listingId?: string;
+    content: string;
+  }): Promise<string> {
+    const clientId = `offline_msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const action: OfflineAction = {
+      id: clientId,
+      type: 'SEND_MESSAGE' as OfflineActionType,
+      payload: {
+        conversation_id: data.conversationId,
+        recipient_id: data.recipientId,
+        listing_id: data.listingId,
+        content: data.content
+      },
+      timestamp: Date.now(),
+      retryCount: 0
+    };
+    
+    await this.queueAction(action);
+    
+    return clientId;
+  }
+
+  // ============ OFFLINE STATE ============
+
+  async getOfflineState(): Promise<{
+    isOnline: boolean;
+    lastSyncTime: number | null;
+    pendingActions: number;
+    cachedListingsCount: number;
+  }> {
+    const [lastSync, queue, listings] = await Promise.all([
+      this.getLastSync(),
+      this.getActionQueue(),
+      this.getCachedListings()
+    ]);
+
+    return {
+      isOnline: true, // This should be determined by NetInfo in the hook
+      lastSyncTime: lastSync,
+      pendingActions: queue.length,
+      cachedListingsCount: listings.length
+    };
+  }
 }
 
 export const offlineStorage = OfflineStorageService.getInstance();
