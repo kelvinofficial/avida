@@ -2478,10 +2478,15 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     gap: 10,
   },
-  row2Top: {
+  locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 6,
+  },
+  locationRowText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
   },
   searchField: {
     flex: 1,
