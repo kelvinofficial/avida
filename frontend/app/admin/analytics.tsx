@@ -437,14 +437,14 @@ export default function AdminAnalyticsScreen() {
 
         {/* Tabs */}
         <View style={styles.tabsContainer}>
-          {(['overview', 'sellers', 'engagement'] as TabType[]).map((tab) => (
+          {(['overview', 'sellers', 'engagement', 'searches'] as TabType[]).map((tab) => (
             <TouchableOpacity
               key={tab}
               style={[styles.tab, activeTab === tab && styles.activeTab]}
               onPress={() => setActiveTab(tab)}
             >
               <Ionicons
-                name={tab === 'overview' ? 'bar-chart' : tab === 'sellers' ? 'storefront' : 'heart'}
+                name={tab === 'overview' ? 'bar-chart' : tab === 'sellers' ? 'storefront' : tab === 'engagement' ? 'heart' : 'search'}
                 size={18}
                 color={activeTab === tab ? COLORS.primary : COLORS.textSecondary}
               />
