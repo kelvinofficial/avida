@@ -33,9 +33,6 @@ import {
   HORIZONTAL_PADDING, 
 } from '../../src/components/home/homeStyles';
 
-// Storage key for recently viewed subcategories
-const RECENT_SUBCATEGORIES_KEY = '@avida_recent_subcategories';
-
 // ============ LAYOUT CONSTANTS - Material 3 ============
 const COLUMN_GAP = 12;
 
@@ -65,6 +62,19 @@ export default function HomeScreen() {
   
   // Global location store - used by DesktopHeader
   const locationStore = useLocationStore();
+  
+  // ============ USE SUBCATEGORY MODAL HOOK ============
+  const {
+    showSubcategoryModal,
+    selectedCategoryForSubcats,
+    subcategoryCounts,
+    loadingCounts,
+    recentSubcategories,
+    openSubcategoryModal,
+    closeSubcategoryModal,
+    handleSubcategorySelect: hookSubcategorySelect,
+    handleRecentSubcategoryPress: hookRecentSubcategoryPress,
+  } = useSubcategoryModal();
   
   // ============ USE HOME DATA HOOK ============
   // Centralized data fetching and state management
