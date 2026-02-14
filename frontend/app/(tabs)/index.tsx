@@ -2800,6 +2800,8 @@ const styles = StyleSheet.create({
   categoriesSection: {
     paddingTop: 16,
     paddingBottom: 8,
+    zIndex: 1,
+    position: 'relative',
   },
   categoriesScroll: {
     flexGrow: 0,
