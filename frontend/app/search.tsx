@@ -19,6 +19,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { listingsApi, categoriesApi, favoritesApi } from '../src/utils/api';
 import api from '../src/utils/api';
 import { useAuthStore } from '../src/store/authStore';
+import { useLocationStore } from '../src/store/locationStore';
 import { safeGoBack } from '../src/utils/navigation';
 import { useResponsive } from '../src/hooks/useResponsive';
 import { DesktopHeader } from '../src/components/layout/DesktopHeader';
