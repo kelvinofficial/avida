@@ -2093,14 +2093,13 @@ const desktopStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingRight: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   suggestionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
   },
   clearAllBtn: {
     paddingHorizontal: 8,
@@ -2670,14 +2669,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingRight: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   suggestionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
   },
   clearAllBtn: {
     paddingHorizontal: 8,
