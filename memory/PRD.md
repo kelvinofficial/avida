@@ -8,6 +8,24 @@ Build a local marketplace application (Avida) with:
 
 ---
 
+### 2026-02-14: Home Screen Refactoring (P2)
+**COMPLETED** ✅
+
+#### Changes Made
+1. **index.tsx Refactoring**: Removed ~345 duplicate lines by using imported components
+   - Updated imports to use components from `/src/components/home/`
+   - Removed inline CategoryIcon, AnimatedChip, SkeletonCard, ListingCard definitions
+   - Removed duplicate constant definitions (CARD_WIDTH, CARD_IMAGE_HEIGHT, etc.)
+   - File reduced from 3291 lines to 2946 lines (~10% reduction)
+
+#### Files Modified
+- `/app/frontend/app/(tabs)/index.tsx` - Refactored to use imported components
+
+#### Verification
+- Screenshot verified app loads correctly after refactoring
+
+---
+
 ### 2026-02-14: Admin Search Analytics Layout Fix & FavoriteToast Integration (P0/P1)
 **COMPLETED** ✅
 
