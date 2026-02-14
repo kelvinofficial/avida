@@ -154,6 +154,13 @@ export default function HomeScreen() {
     setCurrentCity,
     saveSelectedCity,
     handleClearLocationFilter,
+    
+    // Additional setters for desktop location dropdown
+    setPage,
+    setHasMore,
+    setSelectedCity,
+    setExpandedSearch,
+    setExpandedSearchMessage,
   } = useHomeData();
   
   // ============ UI-SPECIFIC STATE (not in hook) ============
