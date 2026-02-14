@@ -9,8 +9,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { styles } from './homeStyles';
-import { CategoryIcon, AnimatedChip, FeaturedSellersSection } from './index';
-import type { FeaturedSeller, FeaturedListing } from './index';
+import { CategoryIcon } from './CategoryIcon';
+import { AnimatedChip } from './AnimatedChip';
+import { FeaturedSellersSection } from './FeaturedSellersSection';
+import type { FeaturedSeller, FeaturedListing } from './FeaturedSellersSection';
 import { Category } from '../../types';
 
 // Full categories list
