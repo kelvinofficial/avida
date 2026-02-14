@@ -1040,14 +1040,7 @@ export default function ProfileScreen() {
   }
 
   if (loading) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading profile...</Text>
-        </View>
-      </SafeAreaView>
-    );
+    return <ProfileSkeleton isDesktop={isLargeScreen} />;
   }
 
   // ============ DESKTOP VIEW - AUTHENTICATED ============
