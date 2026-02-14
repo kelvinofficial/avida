@@ -2325,7 +2325,8 @@ if MODULAR_ROUTES_AVAILABLE:
     favorites_router = create_favorites_router(
         db, require_auth, 
         notify_stats_update=notify_stats_update,
-        create_notification=create_notification
+        create_notification=create_notification,
+        notify_new_favorite=notify_new_favorite
     )
     api_router.include_router(favorites_router)
     
