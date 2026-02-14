@@ -3092,6 +3092,15 @@ if ADMIN_TOOLS_AVAILABLE:
     except Exception as e:
         print(f"Failed to load SEO settings routes: {e}")
     
+    # AI SEO router (AI-powered SEO generation)
+    try:
+        from routes.ai_seo import create_ai_seo_router
+        ai_seo_router = create_ai_seo_router(db, get_current_user)
+        app.include_router(ai_seo_router, prefix="/api")
+        print("AI SEO routes loaded successfully")
+    except Exception as e:
+        print(f"Failed to load AI SEO routes: {e}")
+    
     app.include_router(seo_router, prefix="/api")
     app.include_router(url_masking_router, prefix="/api")
     app.include_router(polls_router, prefix="/api")
