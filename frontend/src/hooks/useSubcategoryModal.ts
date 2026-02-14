@@ -4,9 +4,9 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { Storage } from '../../utils/storage';
-import { categoriesApi } from '../../utils/api';
-import { getSubcategories, SubcategoryConfig } from '../../config/subcategories';
+import { Storage } from '../utils/storage';
+import { categoriesApi } from '../utils/api';
+import { getSubcategories, SubcategoryConfig } from '../config/subcategories';
 
 // Storage key for recently viewed subcategories
 const RECENT_SUBCATEGORIES_KEY = '@avida_recent_subcategories';
