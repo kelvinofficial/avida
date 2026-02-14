@@ -647,7 +647,7 @@ export default function HomeScreen() {
       {/* Content wrapper with light background */}
       <View style={(isDesktop || isTablet) ? { backgroundColor: '#F5F5F5' } : undefined}>
         {isDesktop || isTablet ? (
-          renderDesktopHeader()
+          <HomeDesktopHeader {...homeDesktopHeaderProps} />
         ) : <MobileHeader {...mobileHeaderProps} />}
         <View style={[styles.listContent, (isDesktop || isTablet) && { paddingHorizontal: 0, alignItems: 'center' }]}>
           {renderGrid()}
