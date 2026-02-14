@@ -1467,28 +1467,30 @@ export default function HomeScreen() {
       </View>
 
       {/* FULL-WIDTH DIVIDER */}
-      <View style={styles.divider} />
+      {!showSearchSuggestions && <View style={styles.divider} />}
 
-      {/* CATEGORY ICONS - CIRCULAR DESIGN */}
-      <View style={styles.categoriesSection}>
-        <ScrollView
-          horizontal={true}
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoriesScroll}
-          contentContainerStyle={styles.categoriesContent}
-        >
-          {FULL_CATEGORIES.map((cat) => (
-            <CategoryIcon
-              key={cat.id}
-              id={cat.id}
-              name={cat.name}
-              icon={cat.icon}
-              selected={selectedCategory === cat.id}
-              onPress={() => handleCategoryPress(cat.id)}
-            />
-          ))}
-        </ScrollView>
-      </View>
+      {/* CATEGORY ICONS - CIRCULAR DESIGN - Hidden when search suggestions shown */}
+      {!showSearchSuggestions && (
+        <View style={styles.categoriesSection}>
+          <ScrollView
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+            style={styles.categoriesScroll}
+            contentContainerStyle={styles.categoriesContent}
+          >
+            {FULL_CATEGORIES.map((cat) => (
+              <CategoryIcon
+                key={cat.id}
+                id={cat.id}
+                name={cat.name}
+                icon={cat.icon}
+                selected={selectedCategory === cat.id}
+                onPress={() => handleCategoryPress(cat.id)}
+              />
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
       {/* FEATURED SELLERS SECTION */}
       <FeaturedSellersSection />
