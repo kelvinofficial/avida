@@ -102,55 +102,65 @@ export default function HomeScreen() {
   // Global location store - used by DesktopHeader
   const locationStore = useLocationStore();
   
-  // Location state - MANDATORY SELECTION, NO GPS
-  const [selectedCity, setSelectedCity] = useState<{
-    country_code: string;
-    country_name: string;
-    region_code: string;
-    region_name: string;
-    district_code?: string;
-    district_name?: string;
-    city_code: string;
-    city_name: string;
-    lat: number;
-    lng: number;
-  } | null>(null);
-  const [includeNearbyCities, setIncludeNearbyCities] = useState(true);
-  const [searchRadius, setSearchRadius] = useState(50);
-  const [expandedSearch, setExpandedSearch] = useState(false);
-  const [expandedSearchMessage, setExpandedSearchMessage] = useState<string | null>(null);
+  // ============ USE HOME DATA HOOK ============
+  // Centralized data fetching and state management
+  const {
+    // Listings data
+    listings,
+    categories,
+    loading,
+    initialLoadDone,
+    refreshing,
+    hasMore,
+    
+    // Featured data
+    featuredSellers,
+    featuredListings,
+    loadingFeatured,
+    
+    // User data
+    favorites,
+    notificationCount,
+    creditBalance,
+    unviewedBadgeCount,
+    
+    // Location state
+    selectedCity,
+    currentCity,
+    selectedLocationFilter,
+    includeNearbyCities,
+    searchRadius,
+    expandedSearch,
+    expandedSearchMessage,
+    
+    // Search state
+    homeSearchQuery,
+    showSearchSuggestions,
+    searchSuggestions,
+    
+    // Category state
+    selectedCategory,
+    
+    // Actions
+    fetchData,
+    handleRefresh: onRefresh,
+    loadMore,
+    toggleFavorite,
+    setSelectedCategory,
+    setHomeSearchQuery,
+    setShowSearchSuggestions,
+    handleSearchInputChange,
+    handleSuggestionClick: hookSuggestionClick,
+    clearRecentSearches,
+    setSelectedLocationFilter,
+    setCurrentCity,
+    saveSelectedCity,
+    handleClearLocationFilter,
+  } = useHomeData();
   
-  const [listings, setListings] = useState<Listing[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [initialLoadDone, setInitialLoadDone] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [notificationCount, setNotificationCount] = useState(0);
-  const [creditBalance, setCreditBalance] = useState<number | null>(null);
-  const [unviewedBadgeCount, setUnviewedBadgeCount] = useState(0);
-  const [currentCity, setCurrentCity] = useState('Select Location');
+  // ============ UI-SPECIFIC STATE (not in hook) ============
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [locationSearch, setLocationSearch] = useState('');
-  const [homeSearchQuery, setHomeSearchQuery] = useState('');
-  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
-  const [searchSuggestions, setSearchSuggestions] = useState<{
-    recent: string[];
-    trending: { query: string; count: number }[];
-    autocomplete: { query: string; count: number }[];
-  }>({ recent: [], trending: [], autocomplete: [] });
-  const autocompleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [selectedLocationFilter, setSelectedLocationFilter] = useState<{
-    country_code?: string;
-    region_code?: string;
-    district_code?: string;
-    city_code?: string;
-    city_name?: string;
-    location_text?: string;
-  } | null>(null);
   
   // Subcategory Modal State
   const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
@@ -170,11 +180,6 @@ export default function HomeScreen() {
     subcategoryName: string;
     timestamp: number;
   }>>([]);
-
-  // Featured Sellers State - types imported from components/home
-  const [featuredSellers, setFeaturedSellers] = useState<FeaturedSeller[]>([]);
-  const [featuredListings, setFeaturedListings] = useState<FeaturedListing[]>([]);
-  const [loadingFeatured, setLoadingFeatured] = useState(true);
   
   // Desktop Location Dropdown State
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
