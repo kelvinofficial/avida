@@ -8,8 +8,27 @@ Build a local marketplace application (Avida) with:
 
 ---
 
-### 2026-02-14: Mobile Header UI Improvements (P0)
-**IN PROGRESS** - z-index/layering issue in web preview
+### 2026-02-14: Bug Fixes - Missing Images & Search UI (P0/P1)
+**COMPLETED** ✅
+
+#### Issues Fixed
+1. **P0 - Missing Listing Images**: 
+   - Root cause: 77 test listings without images were sorted to the top due to most recent creation date
+   - Fix: Cleaned up test data (deleted listings matching test patterns without images)
+   - Result: Real listings with images now display correctly on homepage
+
+2. **P1 - Search Suggestions UI Bugs**:
+   - **Overlap with Categories**: Verified FIXED - conditional rendering properly hides categories when suggestions show
+   - **"Clear All" Button Not Visible**: Verified WORKING - button appears in "Recent" section header when there are stored searches
+   - Note: "Recent" section only displays when `localStorage.getItem('recent_searches')` has data
+
+#### Test Report
+- `/app/test_reports/iteration_133.json` - 100% pass rate (6/6 features verified)
+
+---
+
+### 2026-02-14: Mobile Header UI Improvements (Earlier)
+**COMPLETED** ✅
 
 #### Features Implemented
 1. **Increased Search Bar Height**: Changed mobile search field height from 44px to 52px for better tap target and visibility.
@@ -28,10 +47,6 @@ Build a local marketplace application (Avida) with:
 4. **Clear Recent Searches**: Added `clearRecentSearches` function and button to remove recent searches from localStorage.
 
 5. **Conditional Layout**: Implemented ternary conditional to show suggestions OR categories (not both).
-
-#### Known Issue
-- In the web preview, the suggestions section and categories are both rendering visually overlapped due to React Native Web CSS stacking context issues. The logic is correct (ternary conditional), but the web preview has rendering artifacts.
-- **VERIFY ON ACTUAL MOBILE DEVICE** - The native mobile app should render correctly.
 
 #### Files Modified
 - `/app/frontend/app/(tabs)/index.tsx`:
