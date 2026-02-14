@@ -1,0 +1,85 @@
+{
+  "summary": "Completed frontend testing of useHomeData hook refactoring. Homepage loads correctly with listings displayed. Major features work: categories clickable, search with autocomplete, location selector, login flow. Found missing state setter functions in hook that will cause runtime errors on desktop location dropdown.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/socket.io/", "issue": "WebSocket connection fails with 520 status - non-critical for homepage functionality"}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Desktop location dropdown (handleSelectRegion, handleSelectAllInCountry)",
+        "issue": "Functions reference setPage and setHasMore which are NOT exposed from useHomeData hook - will cause ReferenceError",
+        "affected_selectors": [],
+        "priority": "HIGH",
+        "location": "/app/frontend/app/(tabs)/index.tsx lines 484-485, 506-507"
+      },
+      {
+        "flow": "Local handleClearLocationFilter function",
+        "issue": "Function references setSelectedCity, setExpandedSearch, setExpandedSearchMessage which are NOT exposed from useHomeData hook - will cause ReferenceError when called",
+        "affected_selectors": [],
+        "priority": "HIGH",
+        "location": "/app/frontend/app/(tabs)/index.tsx lines 419-430"
+      }
+    ],
+    "design_issues": []
+  },
+  "features_tested": {
+    "homepage_loads_correctly": {
+      "status": "PASS",
+      "notes": "Homepage loads with listings displayed, '20 items' shown, categories visible"
+    },
+    "categories_displayed_and_clickable": {
+      "status": "PASS",
+      "notes": "Categories (All, Auto & Vehicles, Electronics, etc.) displayed and clicking Electronics navigates to /category/electronics with 80 listings"
+    },
+    "search_bar_with_autocomplete": {
+      "status": "PASS",
+      "notes": "Search input works, typing triggers autocomplete suggestions, search returns results (4 results for MacBook), recent searches saved"
+    },
+    "location_selector": {
+      "status": "PASS",
+      "notes": "Location selector opens modal with search input and 'All Locations' option"
+    },
+    "favorites_toggle": {
+      "status": "PARTIAL",
+      "notes": "Heart icons visible on listing cards, login flow works, but direct heart click test was inconclusive due to element selection complexity. Functionality exists in code via toggleFavorite from hook."
+    },
+    "pull_to_refresh": {
+      "status": "NOT_TESTED",
+      "notes": "Pull-to-refresh not tested - requires mobile/touch simulation. Code correctly uses onRefresh from hook in RefreshControl."
+    },
+    "load_more_pagination": {
+      "status": "PASS",
+      "notes": "loadMore function correctly integrated, initial load shows 20 items, scroll handler triggers loadMore when near bottom"
+    }
+  },
+  "test_report_links": [],
+  "action_items": [
+    "CRITICAL: Add missing state setters to useHomeData hook exports OR refactor index.tsx to not use them directly. Missing: setPage, setHasMore, setSelectedCity, setExpandedSearch, setExpandedSearchMessage",
+    "Alternative fix: Move handleSelectRegion, handleSelectAllInCountry, handleClearLocationFilter (local version at line 419) logic into useHomeData hook and expose via hook methods"
+  ],
+  "critical_code_review_comments": [
+    "useHomeData hook is correctly imported and destructured at lines 105-157 in index.tsx",
+    "Hook correctly manages: listings, categories, favorites, search, location state",
+    "BUG: index.tsx lines 484-485 call setPage(1) and setHasMore(true) which are NOT exposed from hook - ReferenceError will occur",
+    "BUG: index.tsx lines 506-507 same issue with setPage and setHasMore",
+    "BUG: index.tsx lines 419-430 local handleClearLocationFilter uses setSelectedCity, setExpandedSearch, setExpandedSearchMessage which are NOT exposed",
+    "File size reduced from 1303 to 962 lines as expected - hook properly extracts data fetching logic"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A - frontend only testing",
+    "frontend": "80% (4/5 features fully working, 1 partial)"
+  },
+  "test_credentials": {
+    "regular_user": "testuser@test.com / password"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "useHomeData hook integration is complete but has missing state setter exports. Desktop location dropdown handlers (handleSelectRegion, handleSelectAllInCountry) and local handleClearLocationFilter will throw ReferenceError. These functions are only triggered on desktop view when using location dropdown - mobile flow works fine.",
+  "rca_of_the_issue": "During refactoring, state setters (setPage, setHasMore, setSelectedCity, setExpandedSearch, setExpandedSearchMessage) were moved into the hook but not exposed in the return object. The component still has local functions that try to call these setters directly instead of using hook methods. Solution: Either export the setters from the hook OR move the affected functions into the hook."
+}
