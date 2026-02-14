@@ -669,8 +669,48 @@ class SEOAnalyticsSystem:
 # ROUTER FACTORY
 # =============================================================================
 
-def create_seo_analytics_router(db, get_current_user, get_current_admin):
+def create_seo_analytics_router(db, get_current_user, get_current_admin=None):
     """Create SEO analytics router"""
+    
+    import os
+    import jwt as pyjwt
+    
+    # Admin JWT settings
+    ADMIN_JWT_SECRET = os.environ.get("ADMIN_JWT_SECRET_KEY", "admin-super-secret-key-change-in-production-2024")
+    ADMIN_JWT_ALGORITHM = "HS256"
+    
+    async def require_admin(request: Request):
+        """Verify admin JWT token or session token"""
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Authentication required")
+        
+        token = auth_header.split(" ")[1]
+        
+        # Try admin JWT first
+        try:
+            payload = pyjwt.decode(token, ADMIN_JWT_SECRET, algorithms=[ADMIN_JWT_ALGORITHM])
+            admin_id = payload.get("sub")
+            if admin_id:
+                admin = await db.admin_users.find_one({"id": admin_id}, {"_id": 0})
+                if admin:
+                    return admin
+        except pyjwt.ExpiredSignatureError:
+            pass
+        except pyjwt.InvalidTokenError:
+            pass
+        
+        # Try session token (for main app users with admin role)
+        try:
+            session = await db.sessions.find_one({"token": token})
+            if session:
+                user = await db.users.find_one({"user_id": session["user_id"]})
+                if user and user.get("role") in ["admin", "super_admin"]:
+                    return {"id": user["user_id"], "email": user.get("email")}
+        except:
+            pass
+        
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
     
     router = APIRouter(prefix="/seo-analytics", tags=["SEO Analytics"])
     analytics = SEOAnalyticsSystem(db)
