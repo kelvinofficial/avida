@@ -91,7 +91,16 @@ const ImageCarousel = memo(({
                 <Ionicons name="image-outline" size={64} color={COLORS.textSecondary} />
               </View>
             ) : (
-              <Image source={{ uri: getImageUri(item) }} style={carouselStyles.image} resizeMode="cover" />
+              <ImageWithSkeleton
+                source={{ uri: getImageUri(item) }}
+                style={carouselStyles.image}
+                containerStyle={carouselStyles.imageWrapper}
+                resizeMode="cover"
+                placeholderIcon="image-outline"
+                placeholderIconSize={64}
+                placeholderIconColor={COLORS.textSecondary}
+                testID={`carousel-image-${index}`}
+              />
             )}
           </TouchableOpacity>
         )}
