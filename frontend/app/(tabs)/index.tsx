@@ -1,37 +1,28 @@
-import React, { useEffect, useState, useCallback, memo } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
-  Dimensions,
   RefreshControl,
-  Image,
   ScrollView,
-  useWindowDimensions,
   Modal,
-  TextInput,
   Platform,
-  ActivityIndicator,
-  Switch,
-  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Storage } from '../../src/utils/storage';
-import { theme } from '../../src/utils/theme';
 import { categoriesApi, locationsApi } from '../../src/utils/api';
-import { Listing, Category } from '../../src/types';
+import { Listing } from '../../src/types';
 import { EmptyState } from '../../src/components/EmptyState';
 import { useAuthStore } from '../../src/store/authStore';
 import { useLocationStore } from '../../src/store/locationStore';
 import { useSandbox } from '../../src/utils/sandboxContext';
-import { formatDistanceToNow } from 'date-fns';
-import { getSubcategories, SubcategoryConfig, getMainCategory } from '../../src/config/subcategories';
+import { getSubcategories, SubcategoryConfig } from '../../src/config/subcategories';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { useHomeData } from '../../src/hooks/useHomeData';
 import { ResponsiveLayout, Footer } from '../../src/components/layout';
-import { FeedBanner, HeaderBanner } from '../../src/components/BannerSlot';
+import { FeedBanner } from '../../src/components/BannerSlot';
 import { LocationPicker, LocationData } from '../../src/components/LocationPicker';
 import { ImageWithSkeleton } from '../../src/components/common';
 import { 
