@@ -67,7 +67,6 @@ export default function HomeScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
   const { isSandboxMode } = useSandbox();
-  const { width: windowWidth } = useWindowDimensions();
   
   // Global location store - used by DesktopHeader
   const locationStore = useLocationStore();
