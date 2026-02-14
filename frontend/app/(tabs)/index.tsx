@@ -2608,6 +2608,33 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#999',
   },
+  suggestionChipsContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+    gap: 8,
+    flexDirection: 'row',
+  },
+  suggestionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  trendingChip: {
+    backgroundColor: '#FFF8E1',
+    borderColor: '#FFE0B2',
+  },
+  suggestionChipText: {
+    fontSize: 13,
+    color: '#333',
+    fontWeight: '500',
+    maxWidth: 120,
+  },
   locationChip: {
     flexDirection: 'row',
     alignItems: 'center',
