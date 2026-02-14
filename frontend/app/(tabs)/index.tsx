@@ -35,29 +35,16 @@ import { FeedBanner, HeaderBanner } from '../../src/components/BannerSlot';
 import { LocationPicker, LocationData } from '../../src/components/LocationPicker';
 import { ImageWithSkeleton } from '../../src/components/common';
 import { 
-  CategoryIcon, 
-  ListingCard, 
-  SkeletonCard, 
-  AnimatedChip,
+  ListingCard,
   FeaturedSellersSection,
   SubcategoryModal,
   MobileHeader,
   HomeDesktopHeader,
-  COLORS_CATEGORY,
-  CARD_WIDTH,
-  CARD_IMAGE_HEIGHT,
-  BORDER_RADIUS,
-  CATEGORY_ITEM_WIDTH
 } from '../../src/components/home';
 import type { FeaturedSeller, FeaturedListing } from '../../src/components/home';
 import { 
   styles, 
-  desktopStyles, 
   HORIZONTAL_PADDING, 
-  ROW_1_HEIGHT, 
-  TOUCH_TARGET, 
-  ICON_SIZE,
-  MAX_CONTENT_WIDTH 
 } from '../../src/components/home/homeStyles';
 
 const { width } = Dimensions.get('window');
