@@ -3101,6 +3101,15 @@ if ADMIN_TOOLS_AVAILABLE:
     except Exception as e:
         print(f"Failed to load AI SEO routes: {e}")
     
+    # SEO Analytics router (impressions, clicks, CTR tracking)
+    try:
+        from routes.seo_analytics import create_seo_analytics_router
+        seo_analytics_router = create_seo_analytics_router(db, get_current_user, require_admin)
+        app.include_router(seo_analytics_router, prefix="/api")
+        print("SEO Analytics routes loaded successfully")
+    except Exception as e:
+        print(f"Failed to load SEO Analytics routes: {e}")
+    
     app.include_router(seo_router, prefix="/api")
     app.include_router(url_masking_router, prefix="/api")
     app.include_router(polls_router, prefix="/api")
