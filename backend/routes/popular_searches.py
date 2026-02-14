@@ -252,6 +252,248 @@ def create_popular_searches_router(db):
             logger.error(f"Error fetching suggestions: {e}")
             raise HTTPException(status_code=500, detail="Failed to fetch suggestions")
     
+    # =========================================================================
+    # ADMIN SEARCH ANALYTICS ENDPOINTS
+    # =========================================================================
+    
+    @router.get("/admin/search-analytics")
+    async def get_search_analytics(
+        days: int = Query(7, ge=1, le=90, description="Look back period in days"),
+        country_code: Optional[str] = Query(None, description="Filter by country"),
+        region_code: Optional[str] = Query(None, description="Filter by region"),
+        city_code: Optional[str] = Query(None, description="Filter by city"),
+        category_id: Optional[str] = Query(None, description="Filter by category"),
+        limit: int = Query(20, ge=1, le=100, description="Max results per section")
+    ):
+        """
+        Admin endpoint: Get detailed search analytics with location breakdown.
+        Shows what users are searching, where, and in which categories.
+        """
+        try:
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
+            
+            # Build match conditions
+            match_conditions = {"timestamp": {"$gte": cutoff_date}}
+            
+            if country_code:
+                match_conditions["country_code"] = country_code
+            if region_code:
+                match_conditions["region_code"] = region_code
+            if city_code:
+                match_conditions["city_code"] = city_code
+            if category_id:
+                match_conditions["category_id"] = category_id
+            
+            # 1. Top searches overall
+            top_searches_pipeline = [
+                {"$match": match_conditions},
+                {"$group": {
+                    "_id": "$query",
+                    "count": {"$sum": 1},
+                    "last_searched": {"$max": "$timestamp"}
+                }},
+                {"$sort": {"count": -1}},
+                {"$limit": limit},
+                {"$project": {"_id": 0, "query": "$_id", "count": 1}}
+            ]
+            
+            # 2. Searches by country
+            by_country_pipeline = [
+                {"$match": {**match_conditions, "country_code": {"$exists": True, "$ne": None}}},
+                {"$group": {
+                    "_id": {"country_code": "$country_code", "country_name": "$country_name"},
+                    "search_count": {"$sum": 1},
+                    "unique_queries": {"$addToSet": "$query"}
+                }},
+                {"$project": {
+                    "_id": 0,
+                    "country_code": "$_id.country_code",
+                    "country_name": "$_id.country_name",
+                    "search_count": 1,
+                    "unique_query_count": {"$size": "$unique_queries"}
+                }},
+                {"$sort": {"search_count": -1}},
+                {"$limit": limit}
+            ]
+            
+            # 3. Searches by region (within selected country if filtered)
+            by_region_pipeline = [
+                {"$match": {**match_conditions, "region_code": {"$exists": True, "$ne": None}}},
+                {"$group": {
+                    "_id": {
+                        "country_code": "$country_code",
+                        "region_code": "$region_code",
+                        "region_name": "$region_name"
+                    },
+                    "search_count": {"$sum": 1},
+                    "unique_queries": {"$addToSet": "$query"}
+                }},
+                {"$project": {
+                    "_id": 0,
+                    "country_code": "$_id.country_code",
+                    "region_code": "$_id.region_code",
+                    "region_name": "$_id.region_name",
+                    "search_count": 1,
+                    "unique_query_count": {"$size": "$unique_queries"}
+                }},
+                {"$sort": {"search_count": -1}},
+                {"$limit": limit}
+            ]
+            
+            # 4. Searches by city
+            by_city_pipeline = [
+                {"$match": {**match_conditions, "city_code": {"$exists": True, "$ne": None}}},
+                {"$group": {
+                    "_id": {
+                        "city_code": "$city_code",
+                        "city_name": "$city_name",
+                        "region_name": "$region_name",
+                        "country_code": "$country_code"
+                    },
+                    "search_count": {"$sum": 1},
+                    "unique_queries": {"$addToSet": "$query"}
+                }},
+                {"$project": {
+                    "_id": 0,
+                    "city_code": "$_id.city_code",
+                    "city_name": "$_id.city_name",
+                    "region_name": "$_id.region_name",
+                    "country_code": "$_id.country_code",
+                    "search_count": 1,
+                    "unique_query_count": {"$size": "$unique_queries"}
+                }},
+                {"$sort": {"search_count": -1}},
+                {"$limit": limit}
+            ]
+            
+            # 5. Searches by category
+            by_category_pipeline = [
+                {"$match": {**match_conditions, "category_id": {"$exists": True, "$ne": None}}},
+                {"$group": {
+                    "_id": "$category_id",
+                    "search_count": {"$sum": 1},
+                    "unique_queries": {"$addToSet": "$query"},
+                    "top_queries": {"$push": "$query"}
+                }},
+                {"$project": {
+                    "_id": 0,
+                    "category_id": "$_id",
+                    "search_count": 1,
+                    "unique_query_count": {"$size": "$unique_queries"}
+                }},
+                {"$sort": {"search_count": -1}},
+                {"$limit": limit}
+            ]
+            
+            # 6. Recent search activity (timeline)
+            recent_activity_pipeline = [
+                {"$match": match_conditions},
+                {"$group": {
+                    "_id": {
+                        "date": {"$dateToString": {"format": "%Y-%m-%d", "date": "$timestamp"}}
+                    },
+                    "search_count": {"$sum": 1},
+                    "unique_queries": {"$addToSet": "$query"}
+                }},
+                {"$project": {
+                    "_id": 0,
+                    "date": "$_id.date",
+                    "search_count": 1,
+                    "unique_query_count": {"$size": "$unique_queries"}
+                }},
+                {"$sort": {"date": -1}},
+                {"$limit": 30}
+            ]
+            
+            # Execute all pipelines
+            top_searches = await search_analytics_collection.aggregate(top_searches_pipeline).to_list(length=limit)
+            by_country = await search_analytics_collection.aggregate(by_country_pipeline).to_list(length=limit)
+            by_region = await search_analytics_collection.aggregate(by_region_pipeline).to_list(length=limit)
+            by_city = await search_analytics_collection.aggregate(by_city_pipeline).to_list(length=limit)
+            by_category = await search_analytics_collection.aggregate(by_category_pipeline).to_list(length=limit)
+            recent_activity = await search_analytics_collection.aggregate(recent_activity_pipeline).to_list(length=30)
+            
+            # Get total counts
+            total_searches = await search_analytics_collection.count_documents(match_conditions)
+            
+            return {
+                "period_days": days,
+                "total_searches": total_searches,
+                "filters_applied": {
+                    "country_code": country_code,
+                    "region_code": region_code,
+                    "city_code": city_code,
+                    "category_id": category_id
+                },
+                "top_searches": top_searches,
+                "by_country": by_country,
+                "by_region": by_region,
+                "by_city": by_city,
+                "by_category": by_category,
+                "recent_activity": recent_activity
+            }
+            
+        except Exception as e:
+            logger.error(f"Error fetching search analytics: {e}")
+            raise HTTPException(status_code=500, detail="Failed to fetch search analytics")
+    
+    @router.get("/admin/search-analytics/top-queries-by-location")
+    async def get_top_queries_by_location(
+        country_code: Optional[str] = Query(None),
+        region_code: Optional[str] = Query(None),
+        city_code: Optional[str] = Query(None),
+        days: int = Query(7, ge=1, le=90),
+        limit: int = Query(10, ge=1, le=50)
+    ):
+        """
+        Get top search queries for a specific location.
+        Useful for drilling down into what users in a specific area are searching for.
+        """
+        try:
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
+            
+            match_conditions = {"timestamp": {"$gte": cutoff_date}}
+            
+            location_name = "Global"
+            if city_code:
+                match_conditions["city_code"] = city_code
+                location_name = f"City: {city_code}"
+            elif region_code:
+                match_conditions["region_code"] = region_code
+                location_name = f"Region: {region_code}"
+            elif country_code:
+                match_conditions["country_code"] = country_code
+                location_name = f"Country: {country_code}"
+            
+            pipeline = [
+                {"$match": match_conditions},
+                {"$group": {
+                    "_id": "$query",
+                    "count": {"$sum": 1},
+                    "categories": {"$addToSet": "$category_id"}
+                }},
+                {"$project": {
+                    "_id": 0,
+                    "query": "$_id",
+                    "count": 1,
+                    "category_count": {"$size": {"$filter": {"input": "$categories", "cond": {"$ne": ["$$this", None]}}}}
+                }},
+                {"$sort": {"count": -1}},
+                {"$limit": limit}
+            ]
+            
+            queries = await search_analytics_collection.aggregate(pipeline).to_list(length=limit)
+            
+            return {
+                "location": location_name,
+                "period_days": days,
+                "top_queries": queries
+            }
+            
+        except Exception as e:
+            logger.error(f"Error fetching top queries by location: {e}")
+            raise HTTPException(status_code=500, detail="Failed to fetch top queries")
+    
     # Create indexes for better query performance
     async def create_indexes():
         try:
@@ -259,7 +501,16 @@ def create_popular_searches_router(db):
             await searches_collection.create_index([("count", -1)])
             await searches_collection.create_index([("last_searched", -1)])
             await searches_collection.create_index([("category_id", 1), ("count", -1)])
-            logger.info("Popular searches indexes created")
+            
+            # Indexes for search analytics
+            await search_analytics_collection.create_index([("timestamp", -1)])
+            await search_analytics_collection.create_index([("country_code", 1), ("timestamp", -1)])
+            await search_analytics_collection.create_index([("region_code", 1), ("timestamp", -1)])
+            await search_analytics_collection.create_index([("city_code", 1), ("timestamp", -1)])
+            await search_analytics_collection.create_index([("category_id", 1), ("timestamp", -1)])
+            await search_analytics_collection.create_index([("query", 1), ("timestamp", -1)])
+            
+            logger.info("Popular searches and analytics indexes created")
         except Exception as e:
             logger.warning(f"Could not create indexes: {e}")
     
