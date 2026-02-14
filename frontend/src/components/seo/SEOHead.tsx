@@ -175,17 +175,54 @@ export const ListingSEO: React.FC<{
   listingId: string;
   category?: string;
   location?: string;
-}> = ({ title, description, price, currency = 'EUR', image, listingId, category, location }) => {
+  locationData?: {
+    city_name?: string;
+    district_name?: string;
+    region_name?: string;
+    country_name?: string;
+  };
+}> = ({ title, description, price, currency = 'EUR', image, listingId, category, location, locationData }) => {
   const keywords = [title.toLowerCase()];
   if (category) keywords.push(category.toLowerCase());
   if (location) keywords.push(location.toLowerCase());
   
+  // Build enhanced location string with full hierarchy
+  let locationStr = location || '';
+  if (locationData) {
+    const parts = [];
+    if (locationData.city_name) parts.push(locationData.city_name);
+    if (locationData.district_name) parts.push(locationData.district_name);
+    if (locationData.region_name) parts.push(locationData.region_name);
+    if (locationData.country_name) {
+      parts.push(locationData.country_name);
+      keywords.push(locationData.country_name.toLowerCase());
+    }
+    if (parts.length > 0) locationStr = parts.join(', ');
+  }
+  
+  // Format description with location
+  const enhancedDescription = locationStr 
+    ? `${description.slice(0, 100)}${locationStr ? ` - Located in ${locationStr}` : ''}`
+    : description.slice(0, 160);
+  
+  // Process image URL - ensure it's a full URL for social sharing
+  let ogImage = image;
+  if (image) {
+    if (image.startsWith('data:')) {
+      // Base64 images work for og:image in modern browsers
+      ogImage = image;
+    } else if (!image.startsWith('http')) {
+      // Convert relative URLs to absolute
+      ogImage = `${BASE_URL}${image.startsWith('/') ? '' : '/'}${image}`;
+    }
+  }
+  
   return (
     <SEOHead
       title={title}
-      description={`${description.slice(0, 100)}${location ? ` - Located in ${location}` : ''}`}
+      description={enhancedDescription}
       url={`/listing/${listingId}`}
-      image={image}
+      image={ogImage}
       type="product"
       price={price}
       currency={currency}
