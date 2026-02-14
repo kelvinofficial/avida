@@ -14,6 +14,7 @@ export { FeaturedSellersSection } from './FeaturedSellersSection';
 export type { FeaturedSeller, FeaturedListing } from './FeaturedSellersSection';
 export { SubcategoryModal } from './SubcategoryModal';
 export { MobileHeader } from './MobileHeader';
+export { HomeDesktopHeader } from './HomeDesktopHeader';
 export { 
   styles, 
   desktopStyles, 
