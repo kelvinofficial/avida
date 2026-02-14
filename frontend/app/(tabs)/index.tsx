@@ -2672,12 +2672,12 @@ const styles = StyleSheet.create({
   },
   suggestionsSection: {
     backgroundColor: '#fff',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EBEBEB',
+    paddingVertical: 12,
+    paddingTop: 4,
+    marginTop: -60,
+    paddingBottom: 20,
     position: 'relative',
-    zIndex: 100,
-    marginTop: -1,
+    zIndex: 10000,
   },
   suggestionSection: {
     paddingVertical: 4,
