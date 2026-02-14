@@ -13,3 +13,13 @@ export type { SkeletonCardProps } from './SkeletonCard';
 export { FeaturedSellersSection } from './FeaturedSellersSection';
 export type { FeaturedSeller, FeaturedListing } from './FeaturedSellersSection';
 export { SubcategoryModal } from './SubcategoryModal';
+export { 
+  styles, 
+  desktopStyles, 
+  mobileStyles,
+  HORIZONTAL_PADDING, 
+  ROW_1_HEIGHT, 
+  TOUCH_TARGET, 
+  ICON_SIZE,
+  MAX_CONTENT_WIDTH 
+} from './homeStyles';
