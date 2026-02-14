@@ -143,6 +143,7 @@ const ImageCarousel = memo(({
 
 const carouselStyles = StyleSheet.create({
   container: { position: 'relative', height: 280, backgroundColor: COLORS.background },
+  imageWrapper: { width: SCREEN_WIDTH, height: 280 },
   image: { width: SCREEN_WIDTH, height: 280 },
   placeholder: { justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
   featuredBadge: { position: 'absolute', top: 12, left: 12, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: COLORS.gold, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6 },
