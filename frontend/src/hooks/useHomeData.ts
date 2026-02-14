@@ -95,6 +95,13 @@ export interface UseHomeDataReturn {
   setCurrentCity: (city: string) => void;
   saveSelectedCity: (city: SelectedCity | null) => Promise<void>;
   handleClearLocationFilter: () => Promise<void>;
+  
+  // Additional state setters for desktop location dropdown
+  setPage: (page: number) => void;
+  setHasMore: (hasMore: boolean) => void;
+  setSelectedCity: (city: SelectedCity | null) => void;
+  setExpandedSearch: (expanded: boolean) => void;
+  setExpandedSearchMessage: (message: string | null) => void;
 }
 
 export function useHomeData(): UseHomeDataReturn {
