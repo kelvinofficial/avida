@@ -983,8 +983,8 @@ export default function ListingDetailScreen() {
           condition={listing.condition === 'new' ? 'NewCondition' : 'UsedCondition'}
           sku={listing.id}
           seller={{
-            name: sellerName,
-            url: `/profile/${listing.seller_id}`,
+            name: listing.seller?.name || 'Seller',
+            url: `/profile/${listing.seller?.user_id || listing.id}`,
           }}
         />
         <BreadcrumbSchema items={[
