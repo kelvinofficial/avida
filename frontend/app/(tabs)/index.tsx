@@ -35,6 +35,7 @@ import { useResponsive } from '../../src/hooks/useResponsive';
 import { ResponsiveLayout, Footer, DesktopHeader } from '../../src/components/layout';
 import { FeedBanner, HeaderBanner } from '../../src/components/BannerSlot';
 import { LocationPicker, LocationData } from '../../src/components/LocationPicker';
+import { ImageWithSkeleton } from '../../src/components/common';
 
 const { width } = Dimensions.get('window');
 
