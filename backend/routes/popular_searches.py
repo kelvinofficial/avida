@@ -16,10 +16,23 @@ logger = logging.getLogger(__name__)
 # MODELS
 # =============================================================================
 
+class LocationContext(BaseModel):
+    """Location context for search tracking"""
+    country_code: Optional[str] = None
+    country_name: Optional[str] = None
+    region_code: Optional[str] = None
+    region_name: Optional[str] = None
+    district_code: Optional[str] = None
+    district_name: Optional[str] = None
+    city_code: Optional[str] = None
+    city_name: Optional[str] = None
+
+
 class SearchTrackRequest(BaseModel):
     """Request model for tracking a search"""
     query: str
     category_id: Optional[str] = None
+    location: Optional[LocationContext] = None
 
 
 class PopularSearch(BaseModel):
@@ -46,12 +59,15 @@ def create_popular_searches_router(db):
     
     # Collection for storing search tracking data
     searches_collection = db.search_tracking
+    # New collection for detailed search analytics (for admin)
+    search_analytics_collection = db.search_analytics
     
     @router.post("/searches/track")
     async def track_search(request: SearchTrackRequest):
         """
         Track a search query for popularity analysis.
         Called from frontend when user performs a search.
+        Now includes location context for admin analytics.
         """
         query = request.query.strip().lower()
         
@@ -63,7 +79,7 @@ def create_popular_searches_router(db):
             raise HTTPException(status_code=400, detail="Query too long")
         
         try:
-            # Upsert the search record
+            # Upsert the search record (for popular searches)
             await searches_collection.update_one(
                 {
                     "query": query,
@@ -81,6 +97,28 @@ def create_popular_searches_router(db):
                 },
                 upsert=True
             )
+            
+            # Also store detailed analytics record (for admin insights)
+            analytics_record = {
+                "query": query,
+                "category_id": request.category_id,
+                "timestamp": datetime.now(timezone.utc),
+            }
+            
+            # Add location data if provided
+            if request.location:
+                analytics_record.update({
+                    "country_code": request.location.country_code,
+                    "country_name": request.location.country_name,
+                    "region_code": request.location.region_code,
+                    "region_name": request.location.region_name,
+                    "district_code": request.location.district_code,
+                    "district_name": request.location.district_name,
+                    "city_code": request.location.city_code,
+                    "city_name": request.location.city_name,
+                })
+            
+            await search_analytics_collection.insert_one(analytics_record)
             
             return {"status": "tracked", "query": query}
             
