@@ -48,10 +48,27 @@ export default function SeoToolsPage() {
   const [categorySeo, setCategorySeo] = useState<Record<string, any>>({});
   const [seoPreview, setSeoPreview] = useState<any>(null);
   
+  // AI SEO states
+  const [aiSeoStats, setAiSeoStats] = useState<any>(null);
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<any>(null);
+  const [listings, setListings] = useState<any[]>([]);
+  const [selectedListing, setSelectedListing] = useState<any>(null);
+  const [aiTestForm, setAiTestForm] = useState({
+    title: '',
+    description: '',
+    price: '',
+    currency: 'EUR',
+    category: '',
+    condition: '',
+    location: '',
+  });
+  
   // Dialog states
   const [metaDialogOpen, setMetaDialogOpen] = useState(false);
   const [selectedMeta, setSelectedMeta] = useState<any>(null);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [aiApplyDialogOpen, setAiApplyDialogOpen] = useState(false);
   
   // Form state
   const [metaForm, setMetaForm] = useState({
@@ -88,6 +105,14 @@ export default function SeoToolsPage() {
         }
       });
       setCategorySeo(categoryMap);
+      
+      // Load AI SEO stats
+      const aiStats = await api.getAISeoStats().catch(() => null);
+      setAiSeoStats(aiStats);
+      
+      // Load recent listings for AI SEO generation
+      const listingsRes = await api.get('/listings?limit=50&sort=newest').catch(() => ({ listings: [] }));
+      setListings(listingsRes.listings || []);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load SEO data');
     } finally {
