@@ -1544,6 +1544,127 @@ class ApiClient {
     });
     return data;
   }
+
+  // ==================== SEO A/B Testing API ====================
+
+  async getSEOABExperiments(status?: string, pageType?: string) {
+    const params: Record<string, string> = {};
+    if (status) params.status = status;
+    if (pageType) params.page_type = pageType;
+    const { data } = await axios.get(`${this.getMainApiUrl()}/seo-ab/experiments`, {
+      params,
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
+
+  async getSEOABExperiment(experimentId: string) {
+    const { data } = await axios.get(`${this.getMainApiUrl()}/seo-ab/experiments/${experimentId}`, {
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
+
+  async createSEOABExperiment(experiment: {
+    name: string;
+    description?: string;
+    listing_id?: string;
+    category_id?: string;
+    page_type: string;
+    variants: {
+      name: string;
+      meta_title: string;
+      meta_description: string;
+      traffic_percent: number;
+      is_control: boolean;
+    }[];
+    min_impressions: number;
+    confidence_level: number;
+  }) {
+    const { data } = await axios.post(`${this.getMainApiUrl()}/seo-ab/experiments`, experiment, {
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
+
+  async startSEOABExperiment(experimentId: string) {
+    const { data } = await axios.post(`${this.getMainApiUrl()}/seo-ab/experiments/${experimentId}/start`, {}, {
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
+
+  async pauseSEOABExperiment(experimentId: string) {
+    const { data } = await axios.post(`${this.getMainApiUrl()}/seo-ab/experiments/${experimentId}/pause`, {}, {
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
+
+  async stopSEOABExperiment(experimentId: string, winnerVariantId?: string) {
+    const { data } = await axios.post(`${this.getMainApiUrl()}/seo-ab/experiments/${experimentId}/stop`, 
+      { winner_variant_id: winnerVariantId }, {
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
+
+  async deleteSEOABExperiment(experimentId: string) {
+    const { data } = await axios.delete(`${this.getMainApiUrl()}/seo-ab/experiments/${experimentId}`, {
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
+
+  async getSEOABOverview() {
+    const { data } = await axios.get(`${this.getMainApiUrl()}/seo-ab/overview`, {
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
+
+  async checkSEOABWinners() {
+    const { data } = await axios.post(`${this.getMainApiUrl()}/seo-ab/check-winners`, {}, {
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
+
+  // ==================== Deep Linking API ====================
+
+  async createDeepLink(linkData: {
+    target_type: string;
+    target_id?: string;
+    params?: Record<string, any>;
+    campaign?: string;
+    source?: string;
+    medium?: string;
+  }) {
+    const { data } = await axios.post(`${this.getMainApiUrl()}/deep-links/create`, linkData, {
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
+
+  async getListingShareLink(listingId: string, campaign?: string) {
+    const { data } = await axios.get(`${this.getMainApiUrl()}/deep-links/listing/${listingId}`, {
+      params: campaign ? { campaign } : undefined,
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
+
+  async getDeepLinkStats(shortCode: string) {
+    const { data } = await axios.get(`${this.getMainApiUrl()}/deep-links/stats/${shortCode}`, {
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
+
+  async getDeepLinkConfig() {
+    const { data } = await axios.get(`${this.getMainApiUrl()}/deep-links/config`);
+    return data;
+  }
 }
 
 export const api = new ApiClient();
