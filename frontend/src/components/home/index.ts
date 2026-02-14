@@ -13,6 +13,7 @@ export type { SkeletonCardProps } from './SkeletonCard';
 export { FeaturedSellersSection } from './FeaturedSellersSection';
 export type { FeaturedSeller, FeaturedListing } from './FeaturedSellersSection';
 export { SubcategoryModal } from './SubcategoryModal';
+export { MobileHeader } from './MobileHeader';
 export { 
   styles, 
   desktopStyles, 
