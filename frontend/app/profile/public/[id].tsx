@@ -20,6 +20,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import api from '../../../src/utils/api';
 import { useAuthStore } from '../../../src/store/authStore';
 import { useResponsive } from '../../../src/hooks/useResponsive';
+import { ImageWithSkeleton } from '../../../src/components/common';
 
 const COLORS = {
   primary: '#2E7D32',
