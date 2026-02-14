@@ -1405,9 +1405,9 @@ export default function HomeScreen() {
               {/* Recent Searches - Horizontal Chips */}
               {searchSuggestions.recent.length > 0 && (
                 <View style={styles.suggestionSection}>
-                  <View style={styles.suggestionHeader}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8 }}>
                     <Ionicons name="time-outline" size={14} color="#666" />
-                    <Text style={styles.suggestionHeaderText}>Recent</Text>
+                    <Text style={[styles.suggestionHeaderText, { marginLeft: 6 }]}>Recent</Text>
                     <TouchableOpacity 
                       onPress={clearRecentSearches}
                       style={{ marginLeft: 'auto', backgroundColor: '#E8F5E9', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 }}
