@@ -7,6 +7,26 @@ Build a local marketplace application (Avida) with:
 3. Premium subscription tiers with payment integration
 
 
+### 2026-02-14: useHomeData Hook Integration
+**COMPLETED** ✅
+
+#### Changes Made
+- **Integrated `useHomeData` hook** into `/app/frontend/app/(tabs)/index.tsx`
+- **Reduced file size**: 1303 → 969 lines (334 lines removed, ~26% reduction)
+- **Total reduction from original**: 2946 → 969 lines (~67% total reduction)
+- **Cleaned up imports**: Removed unused `useFocusEffect`, API imports handled by hook
+- **Added missing exports** to hook: `setPage`, `setHasMore`, `setSelectedCity`, `setExpandedSearch`, `setExpandedSearchMessage`
+
+#### Files Modified
+- `/app/frontend/app/(tabs)/index.tsx` - Now uses `useHomeData` hook (969 lines)
+- `/app/frontend/src/hooks/useHomeData.ts` - Added missing state setter exports (534 lines)
+
+#### Test Report
+- `/app/test_reports/iteration_140.json` - 80% frontend pass rate
+- Fixed: Missing state setters causing ReferenceError on desktop location dropdown
+
+---
+
 ### 2026-02-14: Feature Verification Session
 **COMPLETED** ✅
 
@@ -25,11 +45,11 @@ Build a local marketplace application (Avida) with:
 - Shimmer effect displays during page load before content renders
 - **Verified**: Skeleton elements render during initial navigation
 
-**Task 3: useHomeData Hook** ✅ (EXISTS, NOT INTEGRATED)
-- Complete hook implementation at `/app/frontend/src/hooks/useHomeData.ts` (525 lines)
+**Task 3: useHomeData Hook** ✅ (NOW INTEGRATED)
+- Complete hook implementation at `/app/frontend/src/hooks/useHomeData.ts` (534 lines)
 - Exports all required state: listings, categories, loading, favorites, location, search suggestions
 - Exports all required actions: fetchData, handleRefresh, loadMore, toggleFavorite, etc.
-- **Note**: Hook exists but is not yet integrated into `index.tsx` - current inline implementation works
+- **Now integrated into `index.tsx`** - reduces duplicate code significantly
 
 #### Test Report
 - `/app/test_reports/iteration_139.json` - 100% pass rate (Backend: 11/11, Frontend: 3/3)
