@@ -7,6 +7,83 @@ Build a local marketplace application (Avida) with:
 3. Premium subscription tiers with payment integration
 
 
+### 2026-02-14: Mobile Deep Linking & SEO A/B Testing
+**COMPLETED** ✅
+
+#### P2: Mobile App Deep Linking
+**Status**: Implemented ✅
+
+**Backend Implementation**:
+- **New File**: `/app/backend/routes/deep_linking.py`
+  - `GET /api/deep-links/config` - Returns URL scheme and platform configuration
+  - `POST /api/deep-links/create` - Creates trackable short links with UTM tracking
+  - `GET /api/deep-links/listing/{id}` - Generate shareable link for specific listing
+  - `GET /api/l/{short_code}` - Smart redirect (mobile: app fallback with HTML, desktop: web redirect)
+  - `GET /api/deep-links/stats/{short_code}` - Link click statistics and breakdown
+  - `GET /api/deep-links/my-links` - User's created links
+  - `GET /.well-known/apple-app-site-association` - iOS Universal Links config
+  - `GET /.well-known/assetlinks.json` - Android App Links config
+- **Features**:
+  - Short URL generation with tracking
+  - Smart redirect with app/web fallback
+  - Click tracking with mobile/desktop breakdown
+  - UTM campaign parameter support
+  - Daily click statistics
+
+**Frontend Implementation (Main App)**:
+- **New File**: `/app/frontend/src/services/deepLinking.ts`
+  - `buildDeepLink()` - Build app deep link URLs
+  - `buildWebUrl()` - Build web fallback URLs
+  - `createListingShareLink()` - Create trackable share links
+  - `parseDeepLink()` - Parse incoming deep links
+  - `shareListing()` - Share listing with native share sheet
+- **Updated File**: `/app/frontend/app.json`
+  - iOS: Added `associatedDomains` for Universal Links
+  - Android: Added `intentFilters` for App Links (/api/l/*, /listing/*, /profile/*, /category/*)
+
+#### P2: SEO A/B Testing for Meta Descriptions
+**Status**: Implemented ✅
+
+**Backend Implementation**:
+- **New File**: `/app/backend/routes/seo_ab_testing.py`
+  - `POST /api/seo-ab/experiments` - Create A/B experiment with variants
+  - `GET /api/seo-ab/experiments` - List experiments (admin auth)
+  - `GET /api/seo-ab/experiments/{id}` - Get experiment details with statistics
+  - `POST /api/seo-ab/experiments/{id}/start` - Start experiment
+  - `POST /api/seo-ab/experiments/{id}/pause` - Pause experiment
+  - `POST /api/seo-ab/experiments/{id}/stop` - Stop and declare winner
+  - `DELETE /api/seo-ab/experiments/{id}` - Delete experiment
+  - `POST /api/seo-ab/track` - Track impressions/clicks (public)
+  - `GET /api/seo-ab/get-variant` - Get assigned variant for page
+  - `GET /api/seo-ab/overview` - Overview statistics (admin auth)
+  - `POST /api/seo-ab/check-winners` - Check all experiments for statistical significance
+- **Features**:
+  - Multi-variant support with traffic split
+  - Statistical significance calculation (z-test for proportions)
+  - Auto-winner detection based on CTR
+  - Page type targeting (listing, category, search, home)
+  - Confidence level configuration (90%, 95%, 99%)
+
+**Frontend Implementation (Admin Dashboard)**:
+- **New File**: `/app/admin-dashboard/frontend/src/app/dashboard/seo-ab-testing/page.tsx`
+  - Stats cards: Total Experiments, Running, Completed, Total Impressions, Overall CTR
+  - Experiments table with status filters
+  - Create experiment dialog with tabs: Basic Info, Variants, Settings
+  - Variant editor with traffic percentage slider
+  - View experiment dialog with CTR comparison and significance indicators
+  - Start/Pause/Stop/Delete actions
+  - Check Winners button for significance check
+- **Updated File**: `/app/admin-dashboard/frontend/src/lib/api.ts`
+  - Added SEO A/B Testing API methods
+  - Added Deep Linking API methods
+
+**Test Results**:
+- Backend: 95% (18/19 tests passed)
+- Frontend: 100% (SEO A/B Testing admin page fully functional)
+- Test report: `/app/test_reports/iteration_149.json`
+
+---
+
 ### 2026-02-14: SEO Performance Analytics & Full Offline Mode
 **COMPLETED** ✅
 
