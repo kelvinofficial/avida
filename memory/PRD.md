@@ -8,6 +8,35 @@ Build a local marketplace application (Avida) with:
 
 ---
 
+### 2026-02-14: Admin Search Analytics Layout Fix & FavoriteToast Integration (P0/P1)
+**COMPLETED** ✅
+
+#### Issues Fixed
+1. **P0 - Admin Search Analytics Missing Sidebar**: 
+   - Root cause: Page was placed at `/app/analytics/` outside the dashboard folder
+   - Fix: Moved page to `/app/dashboard/search-analytics/` and updated menu path
+   - Result: Search Analytics page now displays with full sidebar navigation
+
+2. **P1 - FavoriteToast Not Integrated with WebSocket**:
+   - Added `notify_new_favorite` function in `server.py` to emit WebSocket events
+   - Updated favorites route to call this function when a listing is favorited
+   - Created `FavoriteNotificationProvider.tsx` for WebSocket connection and toast display
+   - Integrated provider in the app's root layout
+
+#### Files Created/Modified
+- `/app/admin-dashboard/frontend/src/app/dashboard/search-analytics/page.tsx` - Moved from /analytics/
+- `/app/admin-dashboard/frontend/src/app/dashboard/layout.tsx` - Updated menu path at line 98
+- `/app/backend/server.py` - Added notify_new_favorite function (line ~1004)
+- `/app/backend/routes/favorites.py` - Added notify_new_favorite callback
+- `/app/frontend/src/components/common/FavoriteNotificationProvider.tsx` - New provider
+- `/app/frontend/src/components/common/index.ts` - Export added
+- `/app/frontend/app/_layout.tsx` - Integrated FavoriteNotificationProvider
+
+#### Test Report
+- `/app/test_reports/iteration_138.json` - 100% pass rate (Backend: 100%, Frontend: 100%)
+
+---
+
 ### 2026-02-14: Search Analytics Redesign & Component Refactoring (P1)
 **COMPLETED** ✅
 
