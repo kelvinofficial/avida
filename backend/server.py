@@ -3123,6 +3123,36 @@ if ADMIN_TOOLS_AVAILABLE:
         import traceback
         traceback.print_exc()
     
+    # Deep Linking router for mobile app
+    try:
+        from routes.deep_linking import create_deep_linking_router
+        deep_linking_router = create_deep_linking_router(db, get_current_user)
+        app.include_router(deep_linking_router, prefix="/api")
+        print("Deep Linking routes loaded successfully")
+    except Exception as e:
+        print(f"Failed to load Deep Linking routes: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    # SEO A/B Testing router for meta description experiments
+    try:
+        from routes.seo_ab_testing import create_seo_ab_testing_router
+        
+        async def require_admin_for_seo_ab(request: Request):
+            user = await require_auth(request)
+            admin_emails = ["admin@marketplace.com", "admin@example.com", "admin@test.com"]
+            if user.email not in admin_emails:
+                raise HTTPException(status_code=403, detail="Admin access required")
+            return user
+        
+        seo_ab_router = create_seo_ab_testing_router(db, get_current_user, require_admin_for_seo_ab)
+        app.include_router(seo_ab_router, prefix="/api")
+        print("SEO A/B Testing routes loaded successfully")
+    except Exception as e:
+        print(f"Failed to load SEO A/B Testing routes: {e}")
+        import traceback
+        traceback.print_exc()
+    
     app.include_router(seo_router, prefix="/api")
     app.include_router(url_masking_router, prefix="/api")
     app.include_router(polls_router, prefix="/api")
