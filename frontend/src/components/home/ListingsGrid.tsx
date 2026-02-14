@@ -51,6 +51,36 @@ export const ListingsGrid: React.FC<ListingsGridProps> = ({
 }) => {
   const router = useRouter();
 
+  // Memoized user location
+  const userLocation = useMemo(() => {
+    return selectedCity?.lat && selectedCity?.lng && 
+      !isNaN(selectedCity.lat) && !isNaN(selectedCity.lng) 
+      ? { lat: selectedCity.lat, lng: selectedCity.lng } 
+      : null;
+  }, [selectedCity?.lat, selectedCity?.lng]);
+
+  // Memoized rows calculation for performance
+  const rows = useMemo(() => {
+    const result: (Listing[] | { type: 'banner'; position: number })[] = [];
+    let rowCount = 0;
+
+    for (let i = 0; i < listings.length; i += columns) {
+      result.push(listings.slice(i, i + columns));
+      rowCount++;
+
+      // Inject banner after every BANNER_INTERVAL rows
+      if (rowCount % BANNER_INTERVAL === 0 && i + columns < listings.length) {
+        result.push({ type: 'banner', position: rowCount * columns });
+      }
+    }
+    return result;
+  }, [listings, columns]);
+
+  // Memoized press handler factory
+  const handlePress = useCallback((listingId: string) => {
+    router.push(`/listing/${listingId}`);
+  }, [router]);
+
   // Don't show empty state until initial load is complete
   if (!initialLoadDone) {
     return null;
@@ -66,26 +96,6 @@ export const ListingsGrid: React.FC<ListingsGridProps> = ({
       />
     );
   }
-
-  // Create rows based on column count
-  const rows: (Listing[] | { type: 'banner'; position: number })[] = [];
-  let rowCount = 0;
-
-  for (let i = 0; i < listings.length; i += columns) {
-    rows.push(listings.slice(i, i + columns));
-    rowCount++;
-
-    // Inject banner after every BANNER_INTERVAL rows
-    if (rowCount % BANNER_INTERVAL === 0 && i + columns < listings.length) {
-      rows.push({ type: 'banner', position: rowCount * columns });
-    }
-  }
-
-  // Get user location for distance calculation
-  const userLocation = selectedCity?.lat && selectedCity?.lng && 
-    !isNaN(selectedCity.lat) && !isNaN(selectedCity.lng) 
-    ? { lat: selectedCity.lat, lng: selectedCity.lng } 
-    : null;
 
   return (
     <View 
