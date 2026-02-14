@@ -479,7 +479,9 @@ export default function HomeScreen() {
   const [searchSuggestions, setSearchSuggestions] = useState<{
     recent: string[];
     trending: { query: string; count: number }[];
-  }>({ recent: [], trending: [] });
+    autocomplete: { query: string; count: number }[];
+  }>({ recent: [], trending: [], autocomplete: [] });
+  const autocompleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [selectedLocationFilter, setSelectedLocationFilter] = useState<{
     country_code?: string;
     region_code?: string;
