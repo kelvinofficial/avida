@@ -8,7 +8,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://smart-listings-ai.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://classified-ai-tools.preview.emergentagent.com')
 
 # Test user credentials
 TEST_EMAIL = f"challenge_test_{uuid.uuid4().hex[:6]}@example.com"
