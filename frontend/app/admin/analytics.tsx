@@ -135,7 +135,7 @@ export default function AdminAnalyticsScreen() {
       else setLoading(true);
       setAuthError(false);
 
-      const [platformRes, sellersRes, engagementRes] = await Promise.all([
+      const [platformRes, sellersRes, engagementRes, searchRes] = await Promise.all([
         api.get('/admin/analytics/platform').catch((err) => {
           if (err.response?.status === 401) setAuthError(true);
           return { data: defaultAnalytics.platform };
@@ -148,6 +148,10 @@ export default function AdminAnalyticsScreen() {
           if (err.response?.status === 401) setAuthError(true);
           return { data: defaultAnalytics.engagement };
         }),
+        api.get('/admin/search-analytics?days=30').catch((err) => {
+          console.log('Search analytics fetch error:', err);
+          return { data: null };
+        }),
       ]);
 
       setAnalytics({
@@ -155,6 +159,10 @@ export default function AdminAnalyticsScreen() {
         sellers: sellersRes.data || defaultAnalytics.sellers,
         engagement: engagementRes.data || defaultAnalytics.engagement,
       });
+      
+      if (searchRes.data) {
+        setSearchAnalytics(searchRes.data);
+      }
     } catch (error: any) {
       console.error('Error fetching analytics:', error);
       if (error.response?.status === 401) {
