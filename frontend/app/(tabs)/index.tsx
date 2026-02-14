@@ -168,53 +168,7 @@ export default function HomeScreen() {
     timestamp: number;
   }>>([]);
 
-  // Featured Sellers State
-  interface FeaturedSeller {
-    id: string;
-    business_name: string;
-    identifier: string;
-    logo_url: string | null;
-    city: string | null;
-    country: string | null;
-    is_verified: boolean;
-    is_premium: boolean;
-    verification_tier: string;
-    total_listings: number;
-    total_views: number;
-    primary_categories: string[];
-    user?: {
-      name: string;
-      picture: string | null;
-      rating?: number;
-      total_ratings?: number;
-    };
-  }
-  
-  // Desktop Location Dropdown State
-  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-  const [locationDropdownStep, setLocationDropdownStep] = useState<'countries' | 'regions'>('countries');
-  const [locationCountries, setLocationCountries] = useState<Array<{ code: string; name: string; flag: string }>>([]);
-  const [locationRegions, setLocationRegions] = useState<Array<{ country_code: string; region_code: string; name: string; lat?: number; lng?: number }>>([]);
-  const [selectedCountryForDropdown, setSelectedCountryForDropdown] = useState<{ code: string; name: string; flag: string } | null>(null);
-  const [locationDropdownLoading, setLocationDropdownLoading] = useState(false);
-  
-  interface FeaturedListing {
-    id: string;
-    title: string;
-    price: number;
-    currency: string;
-    images: string[];
-    location: any;
-    created_at: string;
-    views: number;
-    featured: boolean;
-    seller?: {
-      business_name: string;
-      is_verified: boolean;
-      is_premium: boolean;
-    };
-  }
-  
+  // Featured Sellers State - types imported from components/home
   const [featuredSellers, setFeaturedSellers] = useState<FeaturedSeller[]>([]);
   const [featuredListings, setFeaturedListings] = useState<FeaturedListing[]>([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
