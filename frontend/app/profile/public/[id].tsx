@@ -114,12 +114,13 @@ const StarDisplay = ({ rating, size = 14 }: { rating: number; size?: number }) =
   </View>
 );
 
-// Listing Card
+// Listing Card with Shimmer
 const ListingCard = ({ item, onPress }: { item: any; onPress: () => void }) => (
-  <TouchableOpacity style={styles.listingCard} onPress={onPress}>
-    <Image
-      source={{ uri: item.images?.[0] || 'https://via.placeholder.com/150' }}
+  <TouchableOpacity style={styles.listingCard} onPress={onPress} data-testid={`listing-card-${item.id}`}>
+    <ImageWithSkeleton
+      source={{ uri: item.images?.[0] }}
       style={styles.listingImage}
+      skeletonStyle={{ borderRadius: 8 }}
     />
     <View style={styles.listingInfo}>
       <Text style={styles.listingPrice}>€{item.price?.toLocaleString()}</Text>
