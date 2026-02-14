@@ -1126,6 +1126,14 @@ class ApiClient {
   private getMainApiUrl() {
     return process.env.NEXT_PUBLIC_MAIN_API_URL || 'http://localhost:8001/api';
   }
+  
+  private getAuthHeaders() {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null;
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    };
+  }
 
   async generateAISeo(listingData: {
     title: string;
@@ -1139,20 +1147,14 @@ class ApiClient {
     attributes?: Record<string, any>;
   }) {
     const { data } = await axios.post(`${this.getMainApiUrl()}/ai-seo/generate`, listingData, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': this.accessToken ? `Bearer ${this.accessToken}` : '',
-      }
+      headers: this.getAuthHeaders()
     });
     return data;
   }
 
   async generateAISeoForListing(listingId: string) {
     const { data } = await axios.post(`${this.getMainApiUrl()}/ai-seo/generate-for-listing/${listingId}`, {}, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': this.accessToken ? `Bearer ${this.accessToken}` : '',
-      }
+      headers: this.getAuthHeaders()
     });
     return data;
   }
@@ -1166,10 +1168,7 @@ class ApiClient {
     currency?: string;
   }) {
     const { data } = await axios.post(`${this.getMainApiUrl()}/ai-seo/optimize`, seoData, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': this.accessToken ? `Bearer ${this.accessToken}` : '',
-      }
+      headers: this.getAuthHeaders()
     });
     return data;
   }
@@ -1183,10 +1182,7 @@ class ApiClient {
     keywords?: string[];
   }) {
     const { data } = await axios.post(`${this.getMainApiUrl()}/ai-seo/apply/${listingId}`, seoData, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': this.accessToken ? `Bearer ${this.accessToken}` : '',
-      }
+      headers: this.getAuthHeaders()
     });
     return data;
   }
@@ -1197,28 +1193,21 @@ class ApiClient {
     listing_count?: number;
   }) {
     const { data } = await axios.post(`${this.getMainApiUrl()}/ai-seo/generate-category`, categoryData, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': this.accessToken ? `Bearer ${this.accessToken}` : '',
-      }
+      headers: this.getAuthHeaders()
     });
     return data;
   }
 
   async getAISeoHistory(listingId: string) {
     const { data } = await axios.get(`${this.getMainApiUrl()}/ai-seo/history/${listingId}`, {
-      headers: {
-        'Authorization': this.accessToken ? `Bearer ${this.accessToken}` : '',
-      }
+      headers: this.getAuthHeaders()
     });
     return data;
   }
 
   async getAISeoStats() {
     const { data } = await axios.get(`${this.getMainApiUrl()}/ai-seo/stats`, {
-      headers: {
-        'Authorization': this.accessToken ? `Bearer ${this.accessToken}` : '',
-      }
+      headers: this.getAuthHeaders()
     });
     return data;
   }
