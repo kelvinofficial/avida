@@ -7,7 +7,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://marketplace-meta.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://smart-listings-ai.preview.emergentagent.com').rstrip('/')
 
 class TestBadgeNotificationAPIs:
     """Test badge notification endpoints"""

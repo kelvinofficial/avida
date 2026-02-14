@@ -9,7 +9,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://marketplace-meta.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://smart-listings-ai.preview.emergentagent.com')
 
 class TestFavoritesNotification:
     """Test favorite notifications feature"""
