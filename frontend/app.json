@@ -11,6 +11,9 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.localmarket.app",
+      "associatedDomains": [
+        "applinks:seo-performance-10.preview.emergentagent.com"
+      ],
       "infoPlist": {
         "NSCameraUsageDescription": "Take photos to add to your listings",
         "NSPhotoLibraryUsageDescription": "Select photos to add to your listings",
@@ -29,6 +32,35 @@
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "seo-performance-10.preview.emergentagent.com",
+              "pathPrefix": "/api/l/"
+            },
+            {
+              "scheme": "https",
+              "host": "seo-performance-10.preview.emergentagent.com",
+              "pathPrefix": "/listing/"
+            },
+            {
+              "scheme": "https",
+              "host": "seo-performance-10.preview.emergentagent.com",
+              "pathPrefix": "/profile/"
+            },
+            {
+              "scheme": "https",
+              "host": "seo-performance-10.preview.emergentagent.com",
+              "pathPrefix": "/category/"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
       ]
     },
     "web": {
