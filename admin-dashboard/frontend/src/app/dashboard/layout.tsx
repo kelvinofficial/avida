@@ -95,7 +95,7 @@ const menuItems = [
   { text: 'Admin Sandbox', icon: <Science />, path: '/dashboard/sandbox' },
   { text: 'Cohort Analytics', icon: <GroupWork />, path: '/dashboard/cohort-analytics' },
   { text: 'Analytics', icon: <Analytics />, path: '/dashboard/analytics' },
-  { text: 'Search Analytics', icon: <TrendingUp />, path: '/analytics' },
+  { text: 'Search Analytics', icon: <TrendingUp />, path: '/dashboard/search-analytics' },
   { text: 'Categories', icon: <Category />, path: '/dashboard/categories' },
   { text: 'Attributes', icon: <Tune />, path: '/dashboard/attributes' },
   { text: 'Attribute Icons', icon: <InterestsOutlined />, path: '/dashboard/icons' },
