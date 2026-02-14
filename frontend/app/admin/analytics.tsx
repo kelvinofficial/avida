@@ -93,7 +93,17 @@ const defaultAnalytics: AnalyticsData = {
   },
 };
 
-type TabType = 'overview' | 'sellers' | 'engagement';
+type TabType = 'overview' | 'sellers' | 'engagement' | 'searches';
+
+interface SearchAnalyticsData {
+  total_searches: number;
+  top_searches: Array<{ query: string; count: number }>;
+  by_country: Array<{ country_code: string; country_name: string; search_count: number; unique_query_count: number }>;
+  by_region: Array<{ region_code: string; region_name: string; search_count: number; unique_query_count: number }>;
+  by_city: Array<{ city_code: string; city_name: string; search_count: number; unique_query_count: number }>;
+  by_category: Array<{ category_id: string; search_count: number; unique_query_count: number }>;
+  recent_activity: Array<{ date: string; search_count: number; unique_query_count: number }>;
+}
 
 export default function AdminAnalyticsScreen() {
   const router = useRouter();
