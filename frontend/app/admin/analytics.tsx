@@ -261,6 +261,128 @@ export default function AdminAnalyticsScreen() {
     </View>
   );
 
+  const renderSearchesTab = () => (
+    <View style={styles.tabContent}>
+      {/* Overview Stats */}
+      <View style={styles.statsGrid}>
+        {renderStatCard('Total Searches', searchAnalytics?.total_searches?.toLocaleString() || '0', 'search', COLORS.primary, COLORS.primaryLight, 'Last 30 days')}
+        {renderStatCard('Unique Queries', searchAnalytics?.top_searches?.length?.toString() || '0', 'analytics', COLORS.blue, COLORS.blueLight)}
+        {renderStatCard('Countries', searchAnalytics?.by_country?.length?.toString() || '0', 'globe', COLORS.purple, COLORS.purpleLight)}
+        {renderStatCard('Cities', searchAnalytics?.by_city?.length?.toString() || '0', 'location', COLORS.warning, COLORS.warningLight)}
+      </View>
+
+      {/* Top Searches */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Top Searches</Text>
+        {!searchAnalytics?.top_searches?.length ? (
+          <Text style={styles.emptyText}>No search data available yet</Text>
+        ) : (
+          searchAnalytics.top_searches.slice(0, 10).map((search, index) => (
+            <View key={search.query} style={styles.searchRow}>
+              <View style={styles.sellerRank}>
+                <Text style={styles.rankText}>#{index + 1}</Text>
+              </View>
+              <View style={styles.sellerInfo}>
+                <Text style={styles.sellerName}>{search.query}</Text>
+              </View>
+              <View style={styles.searchCount}>
+                <Ionicons name="search" size={14} color={COLORS.textSecondary} />
+                <Text style={styles.searchCountText}>{search.count}</Text>
+              </View>
+            </View>
+          ))
+        )}
+      </View>
+
+      {/* By Country */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Searches by Country</Text>
+        {!searchAnalytics?.by_country?.length ? (
+          <Text style={styles.emptyText}>No location data available</Text>
+        ) : (
+          searchAnalytics.by_country.slice(0, 5).map((country) => (
+            <View key={country.country_code} style={styles.locationRow}>
+              <View style={styles.locationInfo}>
+                <Ionicons name="flag" size={16} color={COLORS.primary} />
+                <Text style={styles.locationName}>{country.country_name || country.country_code}</Text>
+              </View>
+              <View style={styles.locationStats}>
+                <Text style={styles.locationCount}>{country.search_count} searches</Text>
+                <Text style={styles.locationQueries}>{country.unique_query_count} unique</Text>
+              </View>
+            </View>
+          ))
+        )}
+      </View>
+
+      {/* By Region */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Searches by Region</Text>
+        {!searchAnalytics?.by_region?.length ? (
+          <Text style={styles.emptyText}>No region data available</Text>
+        ) : (
+          searchAnalytics.by_region.slice(0, 5).map((region, idx) => (
+            <View key={`${region.region_code}-${idx}`} style={styles.locationRow}>
+              <View style={styles.locationInfo}>
+                <Ionicons name="map" size={16} color={COLORS.blue} />
+                <Text style={styles.locationName}>{region.region_name || region.region_code}</Text>
+              </View>
+              <View style={styles.locationStats}>
+                <Text style={styles.locationCount}>{region.search_count} searches</Text>
+                <Text style={styles.locationQueries}>{region.unique_query_count} unique</Text>
+              </View>
+            </View>
+          ))
+        )}
+      </View>
+
+      {/* By City */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Searches by City</Text>
+        {!searchAnalytics?.by_city?.length ? (
+          <Text style={styles.emptyText}>No city data available</Text>
+        ) : (
+          searchAnalytics.by_city.slice(0, 5).map((city, idx) => (
+            <View key={`${city.city_code}-${idx}`} style={styles.locationRow}>
+              <View style={styles.locationInfo}>
+                <Ionicons name="location" size={16} color={COLORS.warning} />
+                <View>
+                  <Text style={styles.locationName}>{city.city_name || city.city_code}</Text>
+                  {city.region_name && <Text style={styles.locationRegion}>{city.region_name}</Text>}
+                </View>
+              </View>
+              <View style={styles.locationStats}>
+                <Text style={styles.locationCount}>{city.search_count} searches</Text>
+                <Text style={styles.locationQueries}>{city.unique_query_count} unique</Text>
+              </View>
+            </View>
+          ))
+        )}
+      </View>
+
+      {/* By Category */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Searches by Category</Text>
+        {!searchAnalytics?.by_category?.length ? (
+          <Text style={styles.emptyText}>No category data available</Text>
+        ) : (
+          searchAnalytics.by_category.slice(0, 5).map((cat, idx) => (
+            <View key={`${cat.category_id}-${idx}`} style={styles.locationRow}>
+              <View style={styles.locationInfo}>
+                <Ionicons name="pricetag" size={16} color={COLORS.purple} />
+                <Text style={styles.locationName}>{cat.category_id}</Text>
+              </View>
+              <View style={styles.locationStats}>
+                <Text style={styles.locationCount}>{cat.search_count} searches</Text>
+                <Text style={styles.locationQueries}>{cat.unique_query_count} unique</Text>
+              </View>
+            </View>
+          ))
+        )}
+      </View>
+    </View>
+  );
+
   if (authError) {
     return (
       <SafeAreaView style={styles.container}>
