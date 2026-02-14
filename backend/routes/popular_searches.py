@@ -256,7 +256,7 @@ def create_popular_searches_router(db):
     # ADMIN SEARCH ANALYTICS ENDPOINTS
     # =========================================================================
     
-    @router.get("/admin/search-analytics")
+    @router.get("/admin-ui/search-analytics")
     async def get_search_analytics(
         days: int = Query(7, ge=1, le=90, description="Look back period in days"),
         country_code: Optional[str] = Query(None, description="Filter by country"),
