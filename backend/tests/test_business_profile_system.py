@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime, timezone
 
 # Base URL from environment - use the public URL
-BASE_URL = "https://search-ui-debug.preview.emergentagent.com"
+BASE_URL = "https://shimmer-loading.preview.emergentagent.com"
 
 
 class TestBusinessProfilePublicEndpoints:

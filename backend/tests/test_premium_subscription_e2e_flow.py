@@ -10,7 +10,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://search-ui-debug.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://shimmer-loading.preview.emergentagent.com')
 
 # Use existing test credentials
 TEST_USER_EMAIL = "testuser@test.com"

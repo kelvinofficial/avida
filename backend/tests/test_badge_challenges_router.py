@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime
 
 # Get base URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://search-ui-debug.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://shimmer-loading.preview.emergentagent.com').rstrip('/')
 
 
 class TestBadgeChallengesSetup:
