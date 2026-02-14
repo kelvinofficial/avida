@@ -11,6 +11,7 @@
 
 export { ImagePlaceholder } from './ImagePlaceholder';
 export { OptimizedImage } from './OptimizedImage';
+export { ImageWithSkeleton } from './ImageWithSkeleton';
 export { TouchableScale } from './TouchableScale';
 export { EnhancedRefreshControl } from './EnhancedRefreshControl';
 export { OfflineBanner } from './OfflineBanner';
