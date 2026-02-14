@@ -9,6 +9,7 @@
  * - OfflineBanner: Network status indicator
  * - FavoriteToast: Toast notification for favorites
  * - FavoriteNotificationProvider: WebSocket-based favorite notifications
+ * - SocialShareButtons: Social media share buttons (WhatsApp, Facebook, Twitter)
  */
 
 export { ImagePlaceholder } from './ImagePlaceholder';
@@ -20,3 +21,4 @@ export { OfflineBanner } from './OfflineBanner';
 export { FavoriteToast } from './FavoriteToast';
 export type { FavoriteToastProps } from './FavoriteToast';
 export { FavoriteNotificationProvider, useFavoriteNotification } from './FavoriteNotificationProvider';
+export { SocialShareButtons } from './SocialShareButtons';
