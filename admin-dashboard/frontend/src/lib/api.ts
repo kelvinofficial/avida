@@ -1500,6 +1500,50 @@ class ApiClient {
     const { data } = await this.client.get('/users/search', { params: { q: query } });
     return data;
   }
+
+  // ==========================================================================
+  // SEO PERFORMANCE ANALYTICS
+  // ==========================================================================
+
+  async getSEOAnalyticsOverview(days: number = 30) {
+    const { data } = await axios.get(`${this.getMainApiUrl()}/seo-analytics/admin/overview`, {
+      params: { days },
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
+
+  async getSEOAnalyticsForListing(listingId: string, days: number = 30) {
+    const { data } = await axios.get(`${this.getMainApiUrl()}/seo-analytics/admin/listing/${listingId}`, {
+      params: { days },
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
+
+  async getSEOAnalyticsForSeller(sellerId: string, days: number = 30) {
+    const { data } = await axios.get(`${this.getMainApiUrl()}/seo-analytics/admin/seller/${sellerId}`, {
+      params: { days },
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
+
+  async trackSEOEvent(event: {
+    listing_id: string;
+    event_type: 'impression' | 'click' | 'share' | 'external_click';
+    source?: string;
+    keyword?: string;
+    position?: number;
+    referrer?: string;
+    device_type?: string;
+    country_code?: string;
+  }) {
+    const { data } = await axios.post(`${this.getMainApiUrl()}/seo-analytics/track`, event, {
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
 }
 
 export const api = new ApiClient();
