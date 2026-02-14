@@ -491,28 +491,6 @@ class OfflineStorageService {
     
     return clientId;
   }
-
-  // ============ OFFLINE STATE ============
-
-  async getOfflineState(): Promise<{
-    isOnline: boolean;
-    lastSyncTime: number | null;
-    pendingActions: number;
-    cachedListingsCount: number;
-  }> {
-    const [lastSync, queue, listings] = await Promise.all([
-      this.getLastSync(),
-      this.getActionQueue(),
-      this.getCachedListings()
-    ]);
-
-    return {
-      isOnline: true, // This should be determined by NetInfo in the hook
-      lastSyncTime: lastSync,
-      pendingActions: queue.length,
-      cachedListingsCount: listings.length
-    };
-  }
 }
 
 export const offlineStorage = OfflineStorageService.getInstance();
