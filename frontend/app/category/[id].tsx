@@ -1467,6 +1467,16 @@ export default function CategoryScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {/* SEO Tags for Category Page (Mobile) */}
+      <CategorySEO 
+        categoryName={mainCategory?.name || categoryId} 
+        categorySlug={categoryId}
+        listingCount={total}
+      />
+      <BreadcrumbSchema items={[
+        { name: 'Home', url: '/' },
+        { name: mainCategory?.name || categoryId, url: `/category/${categoryId}` },
+      ]} />
       {/* Navigation Header - Stays sticky */}
       <View style={styles.navHeader}>
         <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.backButton}>
