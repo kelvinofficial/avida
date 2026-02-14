@@ -1323,49 +1323,58 @@ export default function HomeScreen() {
             )}
           </View>
           
-          {/* Autocomplete Dropdown */}
+          {/* Autocomplete Dropdown - Horizontal Chips */}
           {showSearchSuggestions && (searchSuggestions.recent.length > 0 || searchSuggestions.trending.length > 0) && (
             <View style={styles.suggestionsDropdown}>
-              {/* Recent Searches */}
+              {/* Recent Searches - Horizontal Chips */}
               {searchSuggestions.recent.length > 0 && (
                 <View style={styles.suggestionSection}>
                   <View style={styles.suggestionHeader}>
                     <Ionicons name="time-outline" size={14} color="#666" />
-                    <Text style={styles.suggestionHeaderText}>Recent Searches</Text>
+                    <Text style={styles.suggestionHeaderText}>Recent</Text>
                   </View>
-                  {searchSuggestions.recent.slice(0, 3).map((query, idx) => (
-                    <TouchableOpacity
-                      key={`recent-${idx}`}
-                      style={styles.suggestionItem}
-                      onPress={() => handleSuggestionClick(query)}
-                    >
-                      <Ionicons name="search-outline" size={16} color="#999" />
-                      <Text style={styles.suggestionText}>{query}</Text>
-                    </TouchableOpacity>
-                  ))}
+                  <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.suggestionChipsContainer}
+                  >
+                    {searchSuggestions.recent.slice(0, 5).map((query, idx) => (
+                      <TouchableOpacity
+                        key={`recent-${idx}`}
+                        style={styles.suggestionChip}
+                        onPress={() => handleSuggestionClick(query)}
+                      >
+                        <Ionicons name="time-outline" size={14} color="#666" />
+                        <Text style={styles.suggestionChipText} numberOfLines={1}>{query}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
                 </View>
               )}
               
-              {/* Trending Searches */}
+              {/* Trending Searches - Horizontal Chips */}
               {searchSuggestions.trending.length > 0 && (
                 <View style={styles.suggestionSection}>
                   <View style={styles.suggestionHeader}>
                     <Ionicons name="trending-up" size={14} color="#F57C00" />
                     <Text style={[styles.suggestionHeaderText, { color: '#F57C00' }]}>Trending</Text>
                   </View>
-                  {searchSuggestions.trending.slice(0, 4).map((item, idx) => (
-                    <TouchableOpacity
-                      key={`trending-${idx}`}
-                      style={styles.suggestionItem}
-                      onPress={() => handleSuggestionClick(item.query)}
-                    >
-                      <View style={styles.trendingRank}>
-                        <Text style={styles.trendingRankText}>{idx + 1}</Text>
-                      </View>
-                      <Text style={styles.suggestionText}>{item.query}</Text>
-                      <Text style={styles.trendingCount}>{item.count}</Text>
-                    </TouchableOpacity>
-                  ))}
+                  <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.suggestionChipsContainer}
+                  >
+                    {searchSuggestions.trending.slice(0, 6).map((item, idx) => (
+                      <TouchableOpacity
+                        key={`trending-${idx}`}
+                        style={[styles.suggestionChip, styles.trendingChip]}
+                        onPress={() => handleSuggestionClick(item.query)}
+                      >
+                        <Ionicons name="flame" size={14} color="#F57C00" />
+                        <Text style={styles.suggestionChipText} numberOfLines={1}>{item.query}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
                 </View>
               )}
             </View>
