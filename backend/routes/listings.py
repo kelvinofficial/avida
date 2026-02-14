@@ -179,6 +179,36 @@ def create_listings_router(
                     "coordinates": [location_data['lng'], location_data['lat']]  # GeoJSON is [lng, lat]
                 }
         
+        # Get category name for SEO
+        category_name = None
+        try:
+            category_doc = await db.categories.find_one({"id": category_id})
+            if category_doc:
+                category_name = category_doc.get("name")
+        except Exception:
+            pass
+        
+        # Auto-generate SEO data
+        seo_data = {}
+        try:
+            from utils.seo_generator import generate_full_seo_data
+            seo_data = generate_full_seo_data(
+                listing_id=listing_id,
+                title=listing.title,
+                description=listing.description,
+                price=listing.price,
+                currency=listing.currency,
+                location=location_text,
+                location_data=location_data,
+                condition=listing.condition,
+                category_name=category_name,
+                subcategory=listing.subcategory,
+                images=listing.images[:10],
+                attributes=listing.attributes
+            )
+        except Exception as e:
+            logger.debug(f"SEO generation failed: {e}")
+        
         new_listing = {
             "id": listing_id,
             "user_id": user.user_id,
@@ -201,6 +231,8 @@ def create_listings_router(
             "contact_methods": listing.contact_methods,
             "whatsapp_number": listing.whatsapp_number,
             "phone_number": listing.phone_number,
+            # SEO Data (auto-generated)
+            "seo_data": seo_data,
             "status": "active",
             "featured": False,
             "views": 0,
