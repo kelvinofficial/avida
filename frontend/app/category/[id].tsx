@@ -33,6 +33,7 @@ import {
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { Footer } from '../../src/components/layout';
 import { CategoryPageSkeleton } from '../../src/components/skeletons';
+import { CategorySEO, BreadcrumbSchema, ItemListSchema } from '../../src/components/seo';
 
 const COLORS = {
   primary: '#2E7D32',
