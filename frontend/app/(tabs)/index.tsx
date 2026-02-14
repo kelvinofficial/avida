@@ -86,77 +86,7 @@ const FULL_CATEGORIES = [
   { id: 'friendship_dating', name: 'Friendship & Dating', icon: 'heart-outline' },
 ];
 
-// ============ CATEGORY ICON COMPONENT - Match Publishing Page Design ============
-interface CategoryIconProps {
-  id: string;
-  name: string;
-  icon: string;
-  onPress: () => void;
-  selected?: boolean;
-}
-
-const CategoryIcon = memo<CategoryIconProps>(({ id, name, icon, onPress, selected }) => {
-  return (
-    <TouchableOpacity 
-      style={categoryStyles.item} 
-      onPress={onPress}
-      activeOpacity={0.7}
-      accessibilityLabel={`${name} category`}
-      accessibilityRole="button"
-    >
-      <View style={[
-        categoryStyles.iconContainer,
-        selected && categoryStyles.iconContainerSelected,
-      ]}>
-        <Ionicons 
-          name={icon as any} 
-          size={28} 
-          color={selected ? '#fff' : COLORS_CATEGORY.primary} 
-        />
-      </View>
-      <Text style={[
-        categoryStyles.label,
-        selected && categoryStyles.labelSelected
-      ]} numberOfLines={2}>
-        {name}
-      </Text>
-    </TouchableOpacity>
-  );
-});
-
-const categoryStyles = StyleSheet.create({
-  item: {
-    alignItems: 'center',
-    width: CATEGORY_ITEM_WIDTH,
-    marginBottom: 4,
-  },
-  iconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS_CATEGORY.primaryLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  iconContainerSelected: {
-    backgroundColor: COLORS_CATEGORY.primary,
-  },
-  label: {
-    fontSize: 11,
-    color: COLORS_CATEGORY.text,
-    textAlign: 'center',
-    fontWeight: '500',
-    lineHeight: 14,
-    height: 28,
-  },
-  labelSelected: {
-    color: COLORS_CATEGORY.primary,
-    fontWeight: '600',
-  },
-});
-
-// ============ ANIMATED CHIP COMPONENT ============
+// ============ SEARCH SUGGESTIONS COMPONENT ============
 interface AnimatedChipProps {
   onPress: () => void;
   icon: string;
