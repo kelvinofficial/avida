@@ -123,6 +123,7 @@ const menuItems = [
   { text: 'Data Privacy', icon: <Security />, path: '/dashboard/compliance' },
   { text: 'Config Manager', icon: <SettingsApplications />, path: '/dashboard/config-manager' },
   { text: 'SEO Tools', icon: <Language />, path: '/dashboard/seo-tools' },
+  { text: 'SEO A/B Testing', icon: <Science />, path: '/dashboard/seo-ab-testing' },
   { text: 'Polls & Surveys', icon: <Poll />, path: '/dashboard/polls-surveys' },
   { text: 'Cookie Consent', icon: <Cookie />, path: '/dashboard/cookie-consent' },
   { text: 'URL Shortener', icon: <Link />, path: '/dashboard/url-shortener' },
