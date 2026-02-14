@@ -2675,6 +2675,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#EBEBEB',
+    position: 'relative',
+    zIndex: 100,
+    marginTop: -1,
   },
   suggestionSection: {
     paddingVertical: 4,
