@@ -29,7 +29,7 @@
     "frontend": "Not tested (backend only testing requested)"
   },
   "test_credentials": {
-    "api_base": "https://classified-ai-tools.preview.emergentagent.com"
+    "api_base": "https://seo-performance-10.preview.emergentagent.com"
   },
   "seed_data_creation": "None - Tests use test product details",
   "retest_needed": false,

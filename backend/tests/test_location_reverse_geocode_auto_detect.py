@@ -9,7 +9,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://classified-ai-tools.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://seo-performance-10.preview.emergentagent.com')
 
 class TestReverseGeocode:
     """Tests for reverse geocoding API - GET /api/admin/locations/reverse-geocode"""
