@@ -407,7 +407,7 @@ def create_badges_router(db, get_current_user, badge_service=None):
                 "title": og_title,
                 "description": og_description,
                 "type": "profile",
-                "url": f"https://shimmer-loading-1.preview.emergentagent.com/profile/{user_id}/badges",
+                "url": f"https://mobile-classifieds.preview.emergentagent.com/profile/{user_id}/badges",
             }
         }
 

@@ -31,7 +31,7 @@
     "frontend": "N/A - Backend only testing requested"
   },
   "test_credentials": {
-    "api_base": "https://shimmer-loading-1.preview.emergentagent.com"
+    "api_base": "https://mobile-classifieds.preview.emergentagent.com"
   },
   "seed_data_creation": "None - Tests use nonexistent IDs to verify 404 responses",
   "retest_needed": false,
