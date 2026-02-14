@@ -1405,18 +1405,15 @@ export default function HomeScreen() {
               {/* Recent Searches - Horizontal Chips */}
               {searchSuggestions.recent.length > 0 && (
                 <View style={styles.suggestionSection}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 8 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Ionicons name="time-outline" size={14} color="#666" />
-                      <Text style={styles.suggestionHeaderText}>Recent</Text>
-                    </View>
+                  <View style={styles.suggestionHeader}>
+                    <Ionicons name="time-outline" size={14} color="#666" />
+                    <Text style={styles.suggestionHeaderText}>Recent</Text>
                     <TouchableOpacity 
                       onPress={clearRecentSearches}
-                      style={{ backgroundColor: '#E8F5E9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}
+                      style={{ marginLeft: 'auto', backgroundColor: '#E8F5E9', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 }}
                       data-testid="clear-recent-searches-btn"
-                      activeOpacity={0.7}
                     >
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: '#2E7D32' }}>Clear</Text>
+                      <Text style={{ fontSize: 11, fontWeight: '600', color: '#2E7D32' }}>Clear</Text>
                     </TouchableOpacity>
                   </View>
                   <ScrollView 
