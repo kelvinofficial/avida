@@ -1283,14 +1283,22 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* ROW 2: SEARCH + LOCATION */}
+      {/* ROW 2: LOCATION + SEARCH */}
       <View style={styles.row2}>
+        {/* Location Selector Row */}
+        <TouchableOpacity style={styles.locationRow} activeOpacity={0.7} onPress={() => setShowLocationModal(true)}>
+          <Ionicons name="location" size={18} color="#2E7D32" />
+          <Text style={styles.locationRowText}>{currentCity}</Text>
+          <Ionicons name="chevron-down" size={16} color="#666" />
+        </TouchableOpacity>
+        
+        {/* Search Field Row */}
         <View style={styles.searchFieldWrapper}>
           <View style={styles.searchField}>
             <Ionicons name="search" size={20} color="#666" />
             <TextInput
               style={styles.searchInput}
-              placeholder={`Search in ${currentCity === 'Select Location' ? 'all areas' : currentCity}`}
+              placeholder="Search for anything..."
               placeholderTextColor="#999"
               value={homeSearchQuery}
               onChangeText={(text) => {
@@ -1363,11 +1371,6 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
-        <TouchableOpacity style={styles.locationChip} activeOpacity={0.7} onPress={() => setShowLocationModal(true)}>
-          <Ionicons name="location" size={16} color="#2E7D32" />
-          <Text style={styles.locationText} numberOfLines={1}>{currentCity}</Text>
-          <Ionicons name="chevron-down" size={14} color="#666" />
-        </TouchableOpacity>
       </View>
 
       {/* FULL-WIDTH DIVIDER */}
