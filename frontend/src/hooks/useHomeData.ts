@@ -369,7 +369,7 @@ export function useHomeData(): UseHomeDataReturn {
       // Fetch user-specific data if authenticated
       if (isAuthenticated && token) {
         try {
-          const favoritesResponse = await favoritesApi.getFavorites();
+          const favoritesResponse = await favoritesApi.getAll();
           const favoriteIds = new Set((favoritesResponse || []).map((f: any) => f.listing_id || f.id));
           setFavorites(favoriteIds);
         } catch (err) {
