@@ -113,6 +113,7 @@ export default function AdminAnalyticsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [analytics, setAnalytics] = useState<AnalyticsData>(defaultAnalytics);
+  const [searchAnalytics, setSearchAnalytics] = useState<SearchAnalyticsData | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [authError, setAuthError] = useState(false);
 
