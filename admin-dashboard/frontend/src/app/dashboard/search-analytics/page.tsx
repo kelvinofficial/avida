@@ -24,6 +24,10 @@ import {
   Link,
   Skeleton,
   alpha,
+  Button,
+  Stack,
+  Autocomplete,
+  TextField,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {
@@ -37,6 +41,8 @@ import {
   Map,
   QueryStats,
   Insights,
+  FilterList,
+  Clear,
 } from '@mui/icons-material';
 import {
   BarChart,
