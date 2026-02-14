@@ -2470,10 +2470,14 @@ const styles = StyleSheet.create({
 
   // ROW 2
   row2: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'column',
     paddingHorizontal: HORIZONTAL_PADDING,
     paddingBottom: 12,
+    gap: 10,
+  },
+  row2Top: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 10,
   },
   searchField: {
