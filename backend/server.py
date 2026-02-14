@@ -1713,29 +1713,98 @@ else:
 @app.get("/api/sitemap.xml")
 @app.get("/sitemap.xml")
 async def get_sitemap():
-    """Generate XML sitemap for all public business profiles"""
+    """Generate comprehensive XML sitemap including categories, listings, and business profiles"""
     from fastapi.responses import Response
     
     base_url = os.environ.get("SITE_URL", "https://marketplace-meta.preview.emergentagent.com")
-    
-    # Get all active, verified business profiles
-    profiles = await db.business_profiles.find(
-        {"is_active": True, "verification_status": {"$in": ["verified", "premium"]}},
-        {"slug": 1, "updated_at": 1, "is_premium": 1}
-    ).to_list(length=10000)
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     # Build XML sitemap
     xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     
-    # Add homepage
+    # Add homepage (highest priority)
     xml_content += f'''  <url>
     <loc>{base_url}/</loc>
+    <lastmod>{today}</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>\n'''
     
-    # Add business profiles
+    # Add static pages
+    static_pages = [
+        ("/search", "daily", "0.9"),
+        ("/sellers", "weekly", "0.8"),
+        ("/faq", "monthly", "0.5"),
+        ("/safety-tips", "monthly", "0.5"),
+        ("/contact", "monthly", "0.4"),
+    ]
+    for path, freq, priority in static_pages:
+        xml_content += f'''  <url>
+    <loc>{base_url}{path}</loc>
+    <changefreq>{freq}</changefreq>
+    <priority>{priority}</priority>
+  </url>\n'''
+    
+    # Add categories
+    categories = await db.categories.find({}, {"id": 1, "name": 1, "subcategories": 1}).to_list(length=100)
+    for cat in categories:
+        cat_id = cat.get("id", "")
+        if not cat_id:
+            continue
+        xml_content += f'''  <url>
+    <loc>{base_url}/category/{cat_id}</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>\n'''
+        
+        # Add subcategories
+        subcategories = cat.get("subcategories", [])
+        for subcat in subcategories:
+            if isinstance(subcat, dict):
+                subcat_id = subcat.get("id", subcat.get("name", "")).lower().replace(" ", "-")
+            else:
+                subcat_id = str(subcat).lower().replace(" ", "-")
+            if subcat_id:
+                xml_content += f'''  <url>
+    <loc>{base_url}/category/{cat_id}/{subcat_id}</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>\n'''
+    
+    # Add active listings (limit to most recent 5000 for performance)
+    listings = await db.listings.find(
+        {"status": "active"},
+        {"id": 1, "updated_at": 1, "featured": 1}
+    ).sort("updated_at", -1).limit(5000).to_list(length=5000)
+    
+    for listing in listings:
+        listing_id = listing.get("id", "")
+        if not listing_id:
+            continue
+        
+        updated = listing.get("updated_at", datetime.now(timezone.utc))
+        if isinstance(updated, datetime):
+            lastmod = updated.strftime("%Y-%m-%d")
+        else:
+            lastmod = today
+        
+        # Featured listings get higher priority
+        priority = "0.7" if listing.get("featured") else "0.6"
+        
+        xml_content += f'''  <url>
+    <loc>{base_url}/listing/{listing_id}</loc>
+    <lastmod>{lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>{priority}</priority>
+  </url>\n'''
+    
+    # Add verified business profiles
+    profiles = await db.business_profiles.find(
+        {"is_active": True, "verification_status": {"$in": ["verified", "premium"]}},
+        {"slug": 1, "updated_at": 1, "is_premium": 1}
+    ).to_list(length=10000)
+    
     for profile in profiles:
         slug = profile.get("slug", "")
         if not slug:
@@ -1745,7 +1814,7 @@ async def get_sitemap():
         if isinstance(updated, datetime):
             lastmod = updated.strftime("%Y-%m-%d")
         else:
-            lastmod = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            lastmod = today
         
         # Premium profiles get higher priority
         priority = "0.9" if profile.get("is_premium") else "0.7"
