@@ -1148,10 +1148,13 @@ export default function CategoryScreen() {
           categoryName={mainCategory?.name || categoryId} 
           categorySlug={categoryId}
           listingCount={total}
+          subcategory={selectedSubcategory || undefined}
+          subcategoryName={subcategories.find(s => s.id === selectedSubcategory)?.name || selectedSubcategory || undefined}
         />
         <BreadcrumbSchema items={[
           { name: 'Home', url: '/' },
           { name: mainCategory?.name || categoryId, url: `/category/${categoryId}` },
+          ...(selectedSubcategory ? [{ name: subcategories.find(s => s.id === selectedSubcategory)?.name || selectedSubcategory, url: `/category/${categoryId}/${selectedSubcategory}` }] : []),
         ]} />
         {listings.length > 0 && (
           <ItemListSchema
