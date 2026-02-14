@@ -15,6 +15,7 @@ export type { FeaturedSeller, FeaturedListing } from './FeaturedSellersSection';
 export { SubcategoryModal } from './SubcategoryModal';
 export { MobileHeader } from './MobileHeader';
 export { HomeDesktopHeader } from './HomeDesktopHeader';
+export { ListingsGrid } from './ListingsGrid';
 export { 
   styles, 
   desktopStyles, 
