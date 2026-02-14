@@ -521,203 +521,32 @@ export default function HomeScreen() {
     setLocationRegions([]);
   };
 
-  // ============ HEADER COMPONENT ============
-  const renderHeader = () => (
-    <View style={styles.headerWrapper}>
-      {/* ROW 1: BRAND + NOTIFICATIONS */}
-      <View style={styles.row1}>
-        <Text style={styles.logo}>avida</Text>
-        <TouchableOpacity
-          style={styles.notificationButton}
-          onPress={() => router.push('/notifications')}
-          accessibilityLabel="Notifications"
-        >
-          <Ionicons name="notifications-outline" size={ICON_SIZE} color="#333" />
-          {notificationCount > 0 && (
-            <View style={styles.notificationBadge}>
-              <Text style={styles.notificationBadgeText}>{notificationCount > 99 ? '99+' : notificationCount}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
-
-      {/* ROW 2: LOCATION + SEARCH */}
-      <View style={styles.row2}>
-        {/* Location Selector Row */}
-        <TouchableOpacity style={styles.locationRow} activeOpacity={0.7} onPress={() => setShowLocationModal(true)}>
-          <Ionicons name="location" size={18} color="#2E7D32" />
-          <Text style={styles.locationRowText}>{currentCity}</Text>
-          <Ionicons name="chevron-down" size={16} color="#666" />
-        </TouchableOpacity>
-        
-        {/* Search Field Row */}
-        <View style={styles.searchFieldWrapper}>
-          <View style={styles.searchField}>
-            <Ionicons name="search" size={20} color="#666" />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search for anything..."
-              placeholderTextColor="#999"
-              value={homeSearchQuery}
-              onChangeText={handleSearchInputChange}
-              onFocus={() => setShowSearchSuggestions(true)}
-              onBlur={() => {
-                // Delay hiding to allow click events on suggestions
-                setTimeout(() => setShowSearchSuggestions(false), 200);
-              }}
-              onSubmitEditing={handleSearchSubmit}
-              returnKeyType="search"
-              data-testid="home-search-input"
-            />
-            {homeSearchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => { setHomeSearchQuery(''); setSearchSuggestions(prev => ({ ...prev, autocomplete: [] })); }} style={styles.clearSearchBtn}>
-                <Ionicons name="close-circle" size={18} color="#999" />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      </View>
-
-      {/* Search Suggestions Section - Shows autocomplete when typing, or recent/trending when empty */}
-      {showSearchSuggestions && (homeSearchQuery.length > 0 && searchSuggestions.autocomplete.length > 0) ? (
-        <View style={styles.suggestionsSection}>
-          {/* Autocomplete Suggestions - Vertical List */}
-          <View style={styles.suggestionSection}>
-            <View style={styles.suggestionHeader}>
-              <Ionicons name="search" size={14} color="#2E7D32" />
-              <Text style={[styles.suggestionHeaderText, { color: '#2E7D32' }]}>Suggestions</Text>
-            </View>
-            <View style={styles.autocompleteList}>
-              {searchSuggestions.autocomplete.map((item, idx) => (
-                <TouchableOpacity
-                  key={`autocomplete-${idx}`}
-                  style={styles.autocompleteItem}
-                  onPress={() => handleSuggestionClick(item.query)}
-                  data-testid={`autocomplete-item-${idx}`}
-                >
-                  <Ionicons name="search-outline" size={16} color="#666" style={{ marginRight: 12 }} />
-                  <Text style={styles.autocompleteText} numberOfLines={1}>{item.query}</Text>
-                  {item.count > 0 && (
-                    <View style={styles.autocompleteCount}>
-                      <Text style={styles.autocompleteCountText}>{item.count}</Text>
-                    </View>
-                  )}
-                  <Ionicons name="arrow-forward" size={14} color="#999" style={{ marginLeft: 'auto' }} />
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        </View>
-      ) : showSearchSuggestions && (searchSuggestions.recent.length > 0 || searchSuggestions.trending.length > 0) ? (
-        <View style={styles.suggestionsSection}>
-          {/* Recent Searches - Horizontal Chips */}
-          {searchSuggestions.recent.length > 0 && (
-            <View style={styles.suggestionSection}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8 }}>
-                <Ionicons name="time-outline" size={14} color="#666" />
-                <Text style={[styles.suggestionHeaderText, { marginLeft: 6 }]}>Recent</Text>
-                <TouchableOpacity 
-                  onPress={clearRecentSearches}
-                  style={{ marginLeft: 'auto', backgroundColor: '#E8F5E9', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 }}
-                  data-testid="clear-recent-searches-btn"
-                >
-                  <Text style={{ fontSize: 11, fontWeight: '600', color: '#2E7D32' }}>Clear</Text>
-                </TouchableOpacity>
-              </View>
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.suggestionChipsContainer}
-              >
-                {searchSuggestions.recent.slice(0, 5).map((query, idx) => (
-                  <AnimatedChip
-                    key={`recent-${idx}`}
-                    icon="time-outline"
-                    iconColor="#666"
-                    text={query}
-                    onPress={() => handleSuggestionClick(query)}
-                    testID={`recent-search-chip-${idx}`}
-                  />
-                ))}
-              </ScrollView>
-            </View>
-          )}
-          
-          {/* Trending Searches - Horizontal Chips */}
-          {searchSuggestions.trending.length > 0 && (
-            <View style={styles.suggestionSection}>
-              <View style={styles.suggestionHeader}>
-                <Ionicons name="trending-up" size={14} color="#F57C00" />
-                <Text style={[styles.suggestionHeaderText, { color: '#F57C00' }]}>Trending</Text>
-              </View>
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.suggestionChipsContainer}
-              >
-                {searchSuggestions.trending.slice(0, 6).map((item, idx) => (
-                  <AnimatedChip
-                    key={`trending-${idx}`}
-                    icon="flame"
-                    iconColor="#F57C00"
-                    text={item.query}
-                    onPress={() => handleSuggestionClick(item.query)}
-                    style={styles.trendingChip}
-                    testID={`trending-search-chip-${idx}`}
-                  />
-                ))}
-              </ScrollView>
-            </View>
-          )}
-        </View>
-      ) : (
-        <>
-          {/* FULL-WIDTH DIVIDER */}
-          <View style={styles.divider} />
-
-          {/* CATEGORY ICONS - CIRCULAR DESIGN */}
-          <View style={styles.categoriesSection}>
-            <ScrollView
-              horizontal={true}
-              showsHorizontalScrollIndicator={false}
-              style={styles.categoriesScroll}
-              contentContainerStyle={styles.categoriesContent}
-            >
-              {FULL_CATEGORIES.map((cat) => (
-                <CategoryIcon
-                  key={cat.id}
-                  id={cat.id}
-                  name={cat.name}
-                  icon={cat.icon}
-                  selected={selectedCategory === cat.id}
-                  onPress={() => handleCategoryPress(cat.id)}
-                />
-              ))}
-            </ScrollView>
-          </View>
-        </>
-      )}
-
-      {/* FEATURED SELLERS SECTION */}
-      <FeaturedSellersSection 
-        featuredListings={featuredListings}
-        featuredSellers={featuredSellers}
-        loadingFeatured={loadingFeatured}
-      />
-
-      {/* SECTION TITLE */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>
-          {selectedCategory ? FULL_CATEGORIES.find(c => c.id === selectedCategory)?.name || 'Listings' : (expandedSearch ? 'Nearby Listings' : 'Recent Listings')}
-        </Text>
-        {selectedCategory && (
-          <TouchableOpacity onPress={() => { setSelectedCategory(null); }}>
-            <Text style={styles.clearFilter}>Clear</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
-  );
+  // ============ MOBILE HEADER PROPS ============
+  const mobileHeaderProps = {
+    notificationCount,
+    currentCity,
+    onLocationPress: () => setShowLocationModal(true),
+    homeSearchQuery,
+    showSearchSuggestions,
+    searchSuggestions,
+    onSearchInputChange: handleSearchInputChange,
+    onSearchFocus: () => setShowSearchSuggestions(true),
+    onSearchBlur: () => setTimeout(() => setShowSearchSuggestions(false), 200),
+    onSearchSubmit: handleSearchSubmit,
+    onSuggestionClick: handleSuggestionClick,
+    onClearSearch: () => { 
+      setHomeSearchQuery(''); 
+      // Clear autocomplete when search is cleared
+    },
+    onClearRecentSearches: clearRecentSearches,
+    selectedCategory,
+    onCategoryPress: handleCategoryPress,
+    onClearCategory: () => setSelectedCategory(null),
+    featuredListings,
+    featuredSellers,
+    loadingFeatured,
+    expandedSearch,
+  };
 
   // Calculate dynamic columns based on screen size
   const { isMobile, isTablet, isDesktop, width: screenWidth } = useResponsive();
