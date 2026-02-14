@@ -1056,6 +1056,70 @@ class ApiClient {
   }
 
   // =========================================================================
+  // SEO SETTINGS (Enhanced Management)
+  // =========================================================================
+
+  async getSeoSettingsGlobal() {
+    const { data } = await this.client.get('/seo-settings/global');
+    return data;
+  }
+
+  async updateSeoSettingsGlobal(settings: Record<string, any>) {
+    const { data } = await this.client.put('/seo-settings/global', settings);
+    return data;
+  }
+
+  async getSeoOverrides() {
+    const { data } = await this.client.get('/seo-settings/overrides');
+    return data;
+  }
+
+  async getSeoOverridesByType(pageType: string) {
+    const { data } = await this.client.get(`/seo-settings/overrides/${pageType}`);
+    return data;
+  }
+
+  async createSeoOverride(override: Record<string, any>) {
+    const { data } = await this.client.post('/seo-settings/overrides', override);
+    return data;
+  }
+
+  async updateSeoOverride(overrideId: string, override: Record<string, any>) {
+    const { data } = await this.client.put(`/seo-settings/overrides/${overrideId}`, override);
+    return data;
+  }
+
+  async deleteSeoOverride(overrideId: string) {
+    const { data } = await this.client.delete(`/seo-settings/overrides/${overrideId}`);
+    return data;
+  }
+
+  async getAllCategorySeo() {
+    const { data } = await this.client.get('/seo-settings/categories');
+    return data;
+  }
+
+  async getCategorySeo(categoryId: string) {
+    const { data } = await this.client.get(`/seo-settings/categories/${categoryId}`);
+    return data;
+  }
+
+  async updateCategorySeo(categoryId: string, seoData: Record<string, any>) {
+    const { data } = await this.client.put(`/seo-settings/categories/${categoryId}`, seoData);
+    return data;
+  }
+
+  async bulkUpdateCategorySeo(updates: Array<Record<string, any>>) {
+    const { data } = await this.client.post('/seo-settings/bulk-update-categories', updates);
+    return data;
+  }
+
+  async previewSeoTags(pageType: string, pageId: string) {
+    const { data } = await this.client.get(`/seo-settings/preview/${pageType}/${pageId}`);
+    return data;
+  }
+
+  // =========================================================================
   // POLLS & SURVEYS
   // =========================================================================
 
