@@ -184,7 +184,7 @@ def create_seo_settings_router(db, get_current_user):
         """Update a page SEO override (admin only)"""
         try:
             obj_id = ObjectId(override_id)
-        except:
+        except Exception:
             raise HTTPException(status_code=400, detail="Invalid override ID")
         
         update_data = request_body.dict()
@@ -206,7 +206,7 @@ def create_seo_settings_router(db, get_current_user):
         """Delete a page SEO override (admin only)"""
         try:
             obj_id = ObjectId(override_id)
-        except:
+        except Exception:
             raise HTTPException(status_code=400, detail="Invalid override ID")
         
         result = await seo_page_overrides_collection.delete_one({"_id": obj_id})
