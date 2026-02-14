@@ -172,6 +172,14 @@ export default function HomeScreen() {
   const [featuredSellers, setFeaturedSellers] = useState<FeaturedSeller[]>([]);
   const [featuredListings, setFeaturedListings] = useState<FeaturedListing[]>([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
+  
+  // Desktop Location Dropdown State
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const [locationDropdownStep, setLocationDropdownStep] = useState<'countries' | 'regions'>('countries');
+  const [locationCountries, setLocationCountries] = useState<Array<{ code: string; name: string; flag: string }>>([]);
+  const [locationRegions, setLocationRegions] = useState<Array<{ country_code: string; region_code: string; name: string; lat?: number; lng?: number }>>([]);
+  const [selectedCountryForDropdown, setSelectedCountryForDropdown] = useState<{ code: string; name: string; flag: string } | null>(null);
+  const [locationDropdownLoading, setLocationDropdownLoading] = useState(false);
 
   // Load saved location on mount
   useEffect(() => {
