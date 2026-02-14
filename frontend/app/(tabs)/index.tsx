@@ -56,9 +56,6 @@ const RECENT_SUBCATEGORIES_KEY = '@avida_recent_subcategories';
 // ============ LAYOUT CONSTANTS - Material 3 ============
 const HORIZONTAL_PADDING = 16;
 const COLUMN_GAP = 12;
-const CARD_WIDTH = (width - HORIZONTAL_PADDING * 2 - COLUMN_GAP) / 2;
-const CARD_IMAGE_HEIGHT = CARD_WIDTH * 0.9;
-const BORDER_RADIUS = 12;
 
 // Header constants
 const ROW_1_HEIGHT = 52;
@@ -70,15 +67,6 @@ const CATEGORY_ICON_SIZE = 48;
 const CATEGORY_ICON_RADIUS = 24; // Full circle
 const CATEGORY_INNER_ICON = 22;
 const CATEGORY_GAP = 4;
-const CATEGORY_ITEM_WIDTH = 80;
-
-// ============ CATEGORY COLORS - Match Publishing Page ============
-const COLORS_CATEGORY = {
-  primary: '#2E7D32',
-  primaryLight: '#E8F5E9',
-  surface: '#FFFFFF',
-  text: '#1A1A1A',
-};
 
 // ============ CATEGORIES DATA - Match backend DEFAULT_CATEGORIES ============
 const FULL_CATEGORIES = [
