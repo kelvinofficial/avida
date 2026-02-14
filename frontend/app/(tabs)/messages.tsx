@@ -29,6 +29,7 @@ import { useSandbox } from '../../src/utils/sandboxContext';
 import { formatDistanceToNow, isToday, isYesterday, format } from 'date-fns';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { DesktopHeader, DesktopPageLayout } from '../../src/components/layout';
+import { MessagesSkeleton } from '../../src/components/skeletons';
 import { io, Socket } from 'socket.io-client';
 import Constants from 'expo-constants';
 
