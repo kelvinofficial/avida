@@ -7,6 +7,44 @@ Build a local marketplace application (Avida) with:
 3. Premium subscription tiers with payment integration
 
 
+### 2026-02-14: Major Refactoring Session - P1/P2/P3 Complete
+**COMPLETED** ✅
+
+#### P1: Extract Remaining UI Components (473 lines final)
+- **Extracted `LocationModal`** into `/app/frontend/src/components/home/LocationModal.tsx`
+- **Extracted `useSubcategoryModal` hook** into `/app/frontend/src/hooks/useSubcategoryModal.ts`
+- Manages subcategory modal state, recent subcategories, counts fetching
+- `index.tsx` reduced from 657 → 473 lines (~28% reduction)
+- **Total reduction from original**: 2946 → 473 lines (~84% total reduction)
+
+#### P2: Shimmer Loading Added to All Pages
+- Category page: `CategoryPageSkeleton`
+- Profile page: `ProfileSkeleton`
+- Messages page: `MessagesSkeleton`
+- Sellers page: `BusinessDirectorySkeleton` (already done)
+
+#### P3: Performance Optimizations
+- `ListingCard`: Added custom `areEqual` comparison function to React.memo
+- `ListingsGrid`: Added `useMemo` for rows calculation, `useCallback` for handlers
+- Memoized user location calculation
+
+#### Files Created
+- `/app/frontend/src/components/home/LocationModal.tsx`
+- `/app/frontend/src/hooks/useSubcategoryModal.ts`
+
+#### Files Modified
+- `/app/frontend/app/(tabs)/index.tsx` - 473 lines
+- `/app/frontend/src/components/home/ListingCard.tsx` - Custom memo comparison
+- `/app/frontend/src/components/home/ListingsGrid.tsx` - useMemo/useCallback optimizations
+- `/app/frontend/app/category/[id].tsx` - CategoryPageSkeleton
+- `/app/frontend/app/(tabs)/profile.tsx` - ProfileSkeleton
+- `/app/frontend/app/(tabs)/messages.tsx` - MessagesSkeleton
+
+#### Test Report
+- `/app/test_reports/iteration_143.json` - 100% frontend pass rate (12/12 features)
+
+---
+
 ### 2026-02-14: Three Refactoring Tasks Completed
 **COMPLETED** ✅
 
