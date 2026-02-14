@@ -361,8 +361,8 @@ export function useHomeData(): UseHomeDataReturn {
 
       // Fetch categories
       const categoriesResponse = await (isSandboxMode
-        ? sandboxAwareCategoriesApi.getCategories()
-        : categoriesApi.getCategories()
+        ? sandboxAwareCategoriesApi.getAll()
+        : categoriesApi.getAll()
       );
       setCategories(categoriesResponse || []);
 
