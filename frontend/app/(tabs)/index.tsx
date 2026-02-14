@@ -586,6 +586,14 @@ export default function HomeScreen() {
     }
   };
 
+  // Clear all recent searches
+  const clearRecentSearches = useCallback(() => {
+    if (Platform.OS === 'web') {
+      localStorage.removeItem('recent_searches');
+    }
+    setSearchSuggestions(prev => ({ ...prev, recent: [] }));
+  }, []);
+
   const loadSavedLocation = async () => {
     try {
       const saved = await Storage.getItem('@selected_city');
