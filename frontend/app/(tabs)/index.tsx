@@ -301,6 +301,11 @@ export default function HomeScreen() {
 
   return (
     <ResponsiveLayout showSidebar={false}>
+      {/* SEO Meta Tags (Web Only) */}
+      <HomeSEO />
+      <OrganizationSchema />
+      <WebsiteSearchSchema />
+      
       <SafeAreaView style={styles.container} edges={isMobile ? ['top'] : []}>
         {mainContent}
 
