@@ -65,16 +65,49 @@ def create_ai_seo_router(db, get_current_user):
     listings_collection = db.listings
     categories_collection = db.categories
     ai_seo_history_collection = db.ai_seo_history
+    admin_users_collection = db.admin_users
     
     async def require_admin(request: Request):
-        """Require admin access for AI SEO endpoints"""
+        """Require admin access for AI SEO endpoints - supports both user tokens and admin JWT"""
+        # First try regular user auth
         user = await get_current_user(request)
-        if not user:
-            raise HTTPException(status_code=401, detail="Authentication required")
-        admin_emails = ["admin@marketplace.com", "admin@example.com", "admin@test.com"]
-        if user.email not in admin_emails and not getattr(user, 'is_admin', False):
-            raise HTTPException(status_code=403, detail="Admin access required")
-        return user
+        if user:
+            admin_emails = ["admin@marketplace.com", "admin@example.com", "admin@test.com"]
+            if user.email in admin_emails or getattr(user, 'is_admin', False):
+                return {
+                    "admin_id": user.user_id,
+                    "email": user.email,
+                    "name": user.name,
+                    "is_admin": True
+                }
+        
+        # Try admin JWT token (from admin dashboard)
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+            try:
+                # Try to decode as admin JWT
+                payload = pyjwt.decode(token, ADMIN_JWT_SECRET, algorithms=[ADMIN_JWT_ALGORITHM])
+                admin_id = payload.get("sub")
+                email = payload.get("email")
+                role = payload.get("role")
+                
+                if admin_id and role in ["super_admin", "admin", "moderator"]:
+                    # Verify admin exists in admin collection
+                    admin_doc = await admin_users_collection.find_one({"id": admin_id})
+                    if admin_doc and admin_doc.get("is_active", True):
+                        return {
+                            "admin_id": admin_id,
+                            "email": email,
+                            "name": admin_doc.get("name", "Admin"),
+                            "role": role,
+                            "is_admin": True
+                        }
+            except Exception as jwt_error:
+                logger.debug(f"JWT decode failed: {jwt_error}")
+                pass
+        
+        raise HTTPException(status_code=401, detail="Authentication required")
     
     @router.post("/generate")
     async def generate_seo(request: GenerateSEORequest, admin=Depends(require_admin)):
