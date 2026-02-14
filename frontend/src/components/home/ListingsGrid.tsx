@@ -1,9 +1,10 @@
 /**
  * ListingsGrid Component
  * Responsive grid layout for displaying listings with banner injection
+ * Optimized with React.memo and useMemo for performance
  */
 
-import React from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Listing } from '../../types';
