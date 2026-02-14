@@ -3014,6 +3014,15 @@ if ADMIN_TOOLS_AVAILABLE:
     webp_router = create_webp_router(db, get_current_user)
     invoice_pdf_router = create_invoice_pdf_router(db, get_current_user)
     
+    # SEO Settings router (enhanced admin management)
+    try:
+        from routes.seo_settings import create_seo_settings_router
+        seo_settings_router = create_seo_settings_router(db, get_current_user)
+        app.include_router(seo_settings_router, prefix="/api")
+        print("SEO Settings routes loaded successfully")
+    except Exception as e:
+        print(f"Failed to load SEO settings routes: {e}")
+    
     app.include_router(seo_router, prefix="/api")
     app.include_router(url_masking_router, prefix="/api")
     app.include_router(polls_router, prefix="/api")
