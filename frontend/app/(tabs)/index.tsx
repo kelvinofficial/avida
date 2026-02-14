@@ -2536,6 +2536,9 @@ const styles = StyleSheet.create({
     // NO border radius, NO margin - spans full width edge to edge
     marginHorizontal: 0,
     borderRadius: 0,
+    zIndex: 10000,
+    position: 'relative',
+    ...(Platform.OS === 'web' ? { overflow: 'visible' } : {}),
   },
 
   // ROW 1
