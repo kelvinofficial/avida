@@ -2036,7 +2036,7 @@ const desktopStyles = StyleSheet.create({
   searchFieldWrapper: {
     flex: 1,
     position: 'relative',
-    zIndex: 100,
+    zIndex: 9999,
     ...(Platform.OS === 'web' ? { overflow: 'visible' } : {}),
   },
   searchField: {
@@ -2598,7 +2598,7 @@ const styles = StyleSheet.create({
   searchFieldWrapper: {
     flex: 1,
     position: 'relative',
-    zIndex: 100,
+    zIndex: 9999,
     ...(Platform.OS === 'web' ? { overflow: 'visible' } : {}),
   },
   searchField: {
