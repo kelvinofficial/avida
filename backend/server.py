@@ -1001,6 +1001,19 @@ async def notify_stats_update(user_id: str):
         except Exception as e:
             logger.error(f"Error sending stats update: {e}")
 
+async def notify_new_favorite(seller_id: str, favorited_by_name: str, listing_title: str, listing_id: str):
+    """Notify a seller when someone favorites their listing via WebSocket"""
+    if seller_id in user_stats_sockets:
+        try:
+            await sio.emit("new_favorite", {
+                "user_name": favorited_by_name,
+                "listing_title": listing_title,
+                "listing_id": listing_id
+            }, room=user_stats_sockets[seller_id])
+            logger.debug(f"Sent new_favorite notification to seller {seller_id}")
+        except Exception as e:
+            logger.error(f"Error sending new_favorite notification: {e}")
+
 @sio.event
 async def admin_subscribe_alerts(sid, data):
     """Subscribe admin to real-time QA alerts"""
