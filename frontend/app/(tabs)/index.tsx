@@ -1401,9 +1401,6 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Debug: Show state */}
-      <Text style={{ backgroundColor: 'yellow', padding: 4, fontSize: 10 }}>show: {showSearchSuggestions ? 'T' : 'F'} | recent: {searchSuggestions.recent.length} | trend: {searchSuggestions.trending.length}</Text>
-
       {/* Search Suggestions Section - Replaces categories when showing */}
       {showSearchSuggestions && (searchSuggestions.recent.length > 0 || searchSuggestions.trending.length > 0) ? (
         <View style={styles.suggestionsSection}>
