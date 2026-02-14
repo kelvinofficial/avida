@@ -1405,9 +1405,18 @@ export default function HomeScreen() {
               {/* Recent Searches - Horizontal Chips */}
               {searchSuggestions.recent.length > 0 && (
                 <View style={styles.suggestionSection}>
-                  <View style={styles.suggestionHeader}>
-                    <Ionicons name="time-outline" size={14} color="#666" />
-                    <Text style={styles.suggestionHeaderText}>Recent</Text>
+                  <View style={styles.suggestionHeaderRow}>
+                    <View style={styles.suggestionHeader}>
+                      <Ionicons name="time-outline" size={14} color="#666" />
+                      <Text style={styles.suggestionHeaderText}>Recent</Text>
+                    </View>
+                    <TouchableOpacity 
+                      onPress={clearRecentSearches}
+                      style={styles.clearAllBtn}
+                      data-testid="clear-recent-searches-btn"
+                    >
+                      <Text style={styles.clearAllText}>Clear All</Text>
+                    </TouchableOpacity>
                   </View>
                   <ScrollView 
                     horizontal 
@@ -1415,14 +1424,14 @@ export default function HomeScreen() {
                     contentContainerStyle={styles.suggestionChipsContainer}
                   >
                     {searchSuggestions.recent.slice(0, 5).map((query, idx) => (
-                      <TouchableOpacity
+                      <AnimatedChip
                         key={`recent-${idx}`}
-                        style={styles.suggestionChip}
+                        icon="time-outline"
+                        iconColor="#666"
+                        text={query}
                         onPress={() => handleSuggestionClick(query)}
-                      >
-                        <Ionicons name="time-outline" size={14} color="#666" />
-                        <Text style={styles.suggestionChipText} numberOfLines={1}>{query}</Text>
-                      </TouchableOpacity>
+                        testID={`recent-search-chip-${idx}`}
+                      />
                     ))}
                   </ScrollView>
                 </View>
@@ -1441,14 +1450,15 @@ export default function HomeScreen() {
                     contentContainerStyle={styles.suggestionChipsContainer}
                   >
                     {searchSuggestions.trending.slice(0, 6).map((item, idx) => (
-                      <TouchableOpacity
+                      <AnimatedChip
                         key={`trending-${idx}`}
-                        style={[styles.suggestionChip, styles.trendingChip]}
+                        icon="flame"
+                        iconColor="#F57C00"
+                        text={item.query}
                         onPress={() => handleSuggestionClick(item.query)}
-                      >
-                        <Ionicons name="flame" size={14} color="#F57C00" />
-                        <Text style={styles.suggestionChipText} numberOfLines={1}>{item.query}</Text>
-                      </TouchableOpacity>
+                        style={styles.trendingChip}
+                        testID={`trending-search-chip-${idx}`}
+                      />
                     ))}
                   </ScrollView>
                 </View>
