@@ -1474,6 +1474,37 @@ export default function ListingDetailScreen() {
   // ============ MOBILE VIEW ============
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {/* SEO Tags for Listing Page */}
+      <ListingSEO
+        title={listing.title}
+        description={listing.description || ''}
+        price={listing.price}
+        currency={listing.currency || 'EUR'}
+        image={images[0]}
+        listingId={listing.id}
+        category={category?.name || listing.category_id}
+        location={listing.location}
+      />
+      <ProductSchema
+        name={listing.title}
+        description={listing.description || ''}
+        image={images[0] || ''}
+        price={listing.price}
+        currency={listing.currency || 'EUR'}
+        availability={listing.status === 'sold' ? 'OutOfStock' : 'InStock'}
+        condition={listing.condition === 'new' ? 'NewCondition' : 'UsedCondition'}
+        sku={listing.id}
+        seller={{
+          name: sellerName,
+          url: `/profile/${listing.seller_id}`,
+        }}
+      />
+      <BreadcrumbSchema items={[
+        { name: 'Home', url: '/' },
+        { name: category?.name || 'Category', url: `/category/${listing.category_id}` },
+        { name: listing.title, url: `/listing/${listing.id}` },
+      ]} />
+      
       {/* Header Actions (floating - outside ScrollView) */}
       <View style={styles.floatingHeader}>
         <TouchableOpacity style={styles.headerBtn} onPress={() => safeGoBack(router)}>
