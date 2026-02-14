@@ -19,7 +19,7 @@ import io
 from datetime import datetime
 
 # Base URL from environment
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://shimmer-loading.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://item-exchange-36.preview.emergentagent.com')
 
 @pytest.fixture
 def api_client():

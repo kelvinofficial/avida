@@ -30,7 +30,7 @@
     "backend": "100% (28/28 Phase 3 tests passed, 31/31 Phase 2 tests passed, 24/24 Phase 1 tests passed)"
   },
   "test_credentials": {
-    "api_base": "https://shimmer-loading.preview.emergentagent.com",
+    "api_base": "https://item-exchange-36.preview.emergentagent.com",
     "test_user": "seller@test.com / test1234"
   },
   "seed_data_creation": "Test templates and campaigns created during pytest execution with TEST_ prefix were cleaned up after tests.",

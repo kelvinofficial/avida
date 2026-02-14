@@ -12,7 +12,7 @@ import time
 from datetime import datetime, timedelta
 
 # Get the base URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://shimmer-loading.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://item-exchange-36.preview.emergentagent.com').rstrip('/')
 
 # ==============================================================================
 # HELPER FUNCTIONS
