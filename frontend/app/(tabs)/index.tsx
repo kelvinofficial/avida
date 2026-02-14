@@ -41,12 +41,15 @@ import {
   ListingCard, 
   SkeletonCard, 
   AnimatedChip,
+  FeaturedSellersSection,
+  SubcategoryModal,
   COLORS_CATEGORY,
   CARD_WIDTH,
   CARD_IMAGE_HEIGHT,
   BORDER_RADIUS,
   CATEGORY_ITEM_WIDTH
 } from '../../src/components/home';
+import type { FeaturedSeller, FeaturedListing } from '../../src/components/home';
 
 const { width } = Dimensions.get('window');
 
