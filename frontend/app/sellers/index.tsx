@@ -237,9 +237,7 @@ export default function BusinessDirectoryScreen() {
 
       {/* Business List */}
       {loading ? (
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
+        <BusinessDirectorySkeleton isDesktop={isLargeScreen} />
       ) : businesses.length === 0 ? (
         <View style={styles.emptyState}>
           <Ionicons name="storefront-outline" size={64} color={COLORS.textLight} />
