@@ -31,8 +31,6 @@ const COLUMN_GAP = 12;
 // ============ MAIN HOME SCREEN ============
 export default function HomeScreen() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
-  const { isSandboxMode } = useSandbox();
   
   // Global location store - used by DesktopHeader
   const locationStore = useLocationStore();
@@ -55,7 +53,6 @@ export default function HomeScreen() {
   const {
     // Listings data
     listings,
-    categories,
     loading,
     initialLoadDone,
     refreshing,
@@ -69,17 +66,12 @@ export default function HomeScreen() {
     // User data
     favorites,
     notificationCount,
-    creditBalance,
-    unviewedBadgeCount,
     
     // Location state
     selectedCity,
     currentCity,
     selectedLocationFilter,
-    includeNearbyCities,
-    searchRadius,
     expandedSearch,
-    expandedSearchMessage,
     
     // Search state
     homeSearchQuery,
@@ -90,7 +82,6 @@ export default function HomeScreen() {
     selectedCategory,
     
     // Actions
-    fetchData,
     handleRefresh: onRefresh,
     loadMore,
     toggleFavorite,
@@ -104,25 +95,10 @@ export default function HomeScreen() {
     setCurrentCity,
     saveSelectedCity,
     handleClearLocationFilter,
-    
-    // Additional setters for desktop location dropdown
-    setPage,
-    setHasMore,
-    setSelectedCity,
-    setExpandedSearch,
-    setExpandedSearchMessage,
   } = useHomeData();
   
   // ============ UI-SPECIFIC STATE (not in hooks) ============
   const [showLocationModal, setShowLocationModal] = useState(false);
-  
-  // Desktop Location Dropdown State
-  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-  const [locationDropdownStep, setLocationDropdownStep] = useState<'countries' | 'regions'>('countries');
-  const [locationCountries, setLocationCountries] = useState<Array<{ code: string; name: string; flag: string }>>([]);
-  const [locationRegions, setLocationRegions] = useState<Array<{ country_code: string; region_code: string; name: string; lat?: number; lng?: number }>>([]);
-  const [selectedCountryForDropdown, setSelectedCountryForDropdown] = useState<{ code: string; name: string; flag: string } | null>(null);
-  const [locationDropdownLoading, setLocationDropdownLoading] = useState(false);
 
   // Sync with global location store for DesktopHeader
   useEffect(() => {
