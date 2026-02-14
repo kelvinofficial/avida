@@ -13,8 +13,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Storage } from '../../src/utils/storage';
 import { categoriesApi, locationsApi } from '../../src/utils/api';
-import { Listing } from '../../src/types';
-import { EmptyState } from '../../src/components/EmptyState';
 import { useAuthStore } from '../../src/store/authStore';
 import { useLocationStore } from '../../src/store/locationStore';
 import { useSandbox } from '../../src/utils/sandboxContext';
@@ -22,11 +20,8 @@ import { getSubcategories, SubcategoryConfig } from '../../src/config/subcategor
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { useHomeData } from '../../src/hooks/useHomeData';
 import { ResponsiveLayout, Footer } from '../../src/components/layout';
-import { FeedBanner } from '../../src/components/BannerSlot';
 import { LocationPicker, LocationData } from '../../src/components/LocationPicker';
-import { ImageWithSkeleton } from '../../src/components/common';
 import { 
-  ListingCard,
   FeaturedSellersSection,
   SubcategoryModal,
   MobileHeader,
