@@ -61,6 +61,11 @@ def create_favorites_router(db, require_auth, notify_stats_update=None, create_n
         
         # Don't notify if user favorites their own listing
         if seller_id and seller_id != user.user_id:
+            # Get user info for notification message
+            user_info = await db.users.find_one({"user_id": user.user_id}, {"_id": 0, "name": 1})
+            user_name = user_info.get("name", "Someone") if user_info else "Someone"
+            listing_title = listing.get("title", "your listing")
+            
             # Notify seller of stats update via WebSocket (real-time favorite notification)
             if notify_stats_update:
                 try:
@@ -69,22 +74,26 @@ def create_favorites_router(db, require_auth, notify_stats_update=None, create_n
                 except Exception as e:
                     logger.debug(f"Stats notification failed: {e}")
             
+            # Send real-time favorite toast notification via WebSocket
+            if notify_new_favorite:
+                try:
+                    import asyncio
+                    asyncio.create_task(notify_new_favorite(seller_id, user_name, listing_title, listing_id))
+                except Exception as e:
+                    logger.debug(f"New favorite notification failed: {e}")
+            
             # Create in-app notification for the seller
             if create_notification:
                 try:
-                    # Get user info for notification message
-                    user_info = await db.users.find_one({"user_id": user.user_id}, {"_id": 0, "name": 1})
-                    user_name = user_info.get("name", "Someone") if user_info else "Someone"
-                    
                     await create_notification(
                         user_id=seller_id,
                         notification_type="favorite",
                         title="New Favorite!",
-                        message=f"{user_name} saved your listing \"{listing.get('title', 'your listing')}\"",
+                        message=f"{user_name} saved your listing \"{listing_title}\"",
                         data={
                             "listing_id": listing_id,
                             "favorited_by": user.user_id,
-                            "listing_title": listing.get("title")
+                            "listing_title": listing_title
                         }
                     )
                 except Exception as e:
