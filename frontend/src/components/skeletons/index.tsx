@@ -713,6 +713,26 @@ const listingSkeleton = StyleSheet.create({
   actionBtnPrimary: { flex: 2, height: 48, backgroundColor: COLORS.skeleton, borderRadius: 8 },
 });
 
+const categorySkeleton = StyleSheet.create({
+  mobileHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, paddingVertical: 8 },
+  subcategoryChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
+  filterRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  desktopLayout: { flexDirection: 'row', gap: 24 },
+  sidebar: { width: 240, borderRadius: 12, padding: 16 },
+  sidebarItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
+  breadcrumb: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
+  filterBar: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
+});
+
+const businessSkeleton = StyleSheet.create({
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
+  card: { width: '48%', borderRadius: 12, overflow: 'hidden', marginBottom: 8 },
+  logoContainer: { marginTop: -30, marginLeft: 16, marginBottom: 8 },
+  cardContent: { padding: 16, paddingTop: 0, gap: 8 },
+  statsRow: { flexDirection: 'row', gap: 16, marginVertical: 4 },
+});
+
 export default {
   HomepageSkeleton,
   SearchPageSkeleton,
@@ -720,6 +740,8 @@ export default {
   MessagesSkeleton,
   ProfileSkeleton,
   ListingDetailSkeleton,
+  CategoryPageSkeleton,
+  BusinessDirectorySkeleton,
   ShimmerThemeProvider,
   useShimmerTheme,
 };
