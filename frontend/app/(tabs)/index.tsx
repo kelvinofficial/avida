@@ -570,7 +570,7 @@ export default function HomeScreen() {
           <HomeDesktopHeader {...homeDesktopHeaderProps} />
         ) : <MobileHeader {...mobileHeaderProps} />}
         <View style={[styles.listContent, (isDesktop || isTablet) && { paddingHorizontal: 0, alignItems: 'center' }]}>
-          {renderGrid()}
+          <ListingsGrid {...listingsGridProps} />
         </View>
       </View>
       {/* Footer for Desktop & Tablet */}
