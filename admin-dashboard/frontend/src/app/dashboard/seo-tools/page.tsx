@@ -355,6 +355,7 @@ export default function SeoToolsPage() {
       {success && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>{success}</Alert>}
 
       <Tabs value={currentTab} onChange={(_, v) => setCurrentTab(v)} sx={{ mb: 3 }}>
+        <Tab label="AI SEO" icon={<AutoAwesome />} iconPosition="start" />
         <Tab label="Meta Tags" icon={<Code />} iconPosition="start" />
         <Tab label="Global Settings" icon={<Language />} iconPosition="start" />
         <Tab label="Category SEO" icon={<Category />} iconPosition="start" />
@@ -365,8 +366,326 @@ export default function SeoToolsPage() {
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>
       ) : (
         <>
-          {/* Meta Tags Tab */}
+          {/* AI SEO Tab */}
           {currentTab === 0 && (
+            <Box>
+              {/* AI SEO Stats Cards */}
+              <Grid container spacing={3} sx={{ mb: 3 }}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Card>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <AutoAwesome color="primary" />
+                        <Typography variant="subtitle2" color="text.secondary">Total Generations</Typography>
+                      </Box>
+                      <Typography variant="h4" fontWeight={700}>{aiSeoStats?.total_generations || 0}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Card>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <CheckCircle color="success" />
+                        <Typography variant="subtitle2" color="text.secondary">Applied</Typography>
+                      </Box>
+                      <Typography variant="h4" fontWeight={700}>{aiSeoStats?.total_applied || 0}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Card>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <TrendingUp color="info" />
+                        <Typography variant="subtitle2" color="text.secondary">Last 24h</Typography>
+                      </Box>
+                      <Typography variant="h4" fontWeight={700}>{aiSeoStats?.last_24h_generations || 0}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Card>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <Psychology color="secondary" />
+                        <Typography variant="subtitle2" color="text.secondary">AI-Enhanced Listings</Typography>
+                      </Box>
+                      <Typography variant="h4" fontWeight={700}>{aiSeoStats?.listings_with_ai_seo || 0}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+
+              <Grid container spacing={3}>
+                {/* AI Test Generator */}
+                <Grid size={{ xs: 12, md: 5 }}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Psychology color="primary" /> AI SEO Generator
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                        Test AI-powered SEO generation with custom listing data
+                      </Typography>
+                      
+                      <Grid container spacing={2}>
+                        <Grid size={{ xs: 12 }}>
+                          <TextField
+                            fullWidth
+                            label="Listing Title"
+                            value={aiTestForm.title}
+                            onChange={e => setAiTestForm({...aiTestForm, title: e.target.value})}
+                            placeholder="e.g., iPhone 15 Pro Max 256GB"
+                            required
+                          />
+                        </Grid>
+                        <Grid size={{ xs: 12 }}>
+                          <TextField
+                            fullWidth
+                            multiline
+                            rows={2}
+                            label="Description"
+                            value={aiTestForm.description}
+                            onChange={e => setAiTestForm({...aiTestForm, description: e.target.value})}
+                            placeholder="Brief description of the item..."
+                          />
+                        </Grid>
+                        <Grid size={{ xs: 6 }}>
+                          <TextField
+                            fullWidth
+                            label="Price"
+                            type="number"
+                            value={aiTestForm.price}
+                            onChange={e => setAiTestForm({...aiTestForm, price: e.target.value})}
+                            required
+                          />
+                        </Grid>
+                        <Grid size={{ xs: 6 }}>
+                          <FormControl fullWidth>
+                            <InputLabel>Currency</InputLabel>
+                            <Select
+                              value={aiTestForm.currency}
+                              label="Currency"
+                              onChange={e => setAiTestForm({...aiTestForm, currency: e.target.value})}
+                            >
+                              <MenuItem value="EUR">EUR (€)</MenuItem>
+                              <MenuItem value="USD">USD ($)</MenuItem>
+                              <MenuItem value="GBP">GBP (£)</MenuItem>
+                              <MenuItem value="KES">KES (KSh)</MenuItem>
+                              <MenuItem value="NGN">NGN (₦)</MenuItem>
+                              <MenuItem value="TZS">TZS (TSh)</MenuItem>
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                        <Grid size={{ xs: 6 }}>
+                          <FormControl fullWidth>
+                            <InputLabel>Category</InputLabel>
+                            <Select
+                              value={aiTestForm.category}
+                              label="Category"
+                              onChange={e => setAiTestForm({...aiTestForm, category: e.target.value})}
+                            >
+                              <MenuItem value="">None</MenuItem>
+                              {CATEGORIES.map(cat => (
+                                <MenuItem key={cat.id} value={cat.name}>{cat.icon} {cat.name}</MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                        <Grid size={{ xs: 6 }}>
+                          <FormControl fullWidth>
+                            <InputLabel>Condition</InputLabel>
+                            <Select
+                              value={aiTestForm.condition}
+                              label="Condition"
+                              onChange={e => setAiTestForm({...aiTestForm, condition: e.target.value})}
+                            >
+                              <MenuItem value="">Not specified</MenuItem>
+                              <MenuItem value="new">New</MenuItem>
+                              <MenuItem value="like_new">Like New</MenuItem>
+                              <MenuItem value="used">Used</MenuItem>
+                              <MenuItem value="refurbished">Refurbished</MenuItem>
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                        <Grid size={{ xs: 12 }}>
+                          <TextField
+                            fullWidth
+                            label="Location"
+                            value={aiTestForm.location}
+                            onChange={e => setAiTestForm({...aiTestForm, location: e.target.value})}
+                            placeholder="e.g., Dar es Salaam, Tanzania"
+                          />
+                        </Grid>
+                        <Grid size={{ xs: 12 }}>
+                          <Button
+                            variant="contained"
+                            fullWidth
+                            size="large"
+                            startIcon={aiGenerating ? <CircularProgress size={20} color="inherit" /> : <AutoAwesome />}
+                            onClick={handleGenerateAISeo}
+                            disabled={aiGenerating || !aiTestForm.title || !aiTestForm.price}
+                          >
+                            {aiGenerating ? 'Generating...' : 'Generate AI SEO'}
+                          </Button>
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+
+                {/* AI Suggestions Result */}
+                <Grid size={{ xs: 12, md: 7 }}>
+                  <Card sx={{ height: '100%' }}>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Lightbulb color="warning" /> AI Suggestions
+                      </Typography>
+                      
+                      {!aiSuggestions ? (
+                        <Box sx={{ 
+                          display: 'flex', 
+                          flexDirection: 'column', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          minHeight: 300,
+                          bgcolor: 'grey.50',
+                          borderRadius: 2,
+                          p: 4
+                        }}>
+                          <AutoAwesome sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
+                          <Typography color="text.secondary">
+                            Enter listing details and click &quot;Generate AI SEO&quot; to see suggestions
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Box>
+                          {aiSuggestions.error ? (
+                            <Alert severity="error">{aiSuggestions.error}</Alert>
+                          ) : (
+                            <>
+                              <Paper sx={{ p: 2, mb: 2, bgcolor: 'primary.50' }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                  <Typography variant="subtitle2" fontWeight={600}>Meta Title</Typography>
+                                  <Tooltip title="Copy">
+                                    <IconButton size="small" onClick={() => handleCopyToClipboard(aiSuggestions.meta_title, 'Meta Title')}>
+                                      <ContentCopy fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                </Box>
+                                <Typography variant="body2">{aiSuggestions.meta_title}</Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {aiSuggestions.meta_title?.length || 0} characters
+                                </Typography>
+                              </Paper>
+
+                              <Paper sx={{ p: 2, mb: 2, bgcolor: 'success.50' }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                  <Typography variant="subtitle2" fontWeight={600}>Meta Description</Typography>
+                                  <Tooltip title="Copy">
+                                    <IconButton size="small" onClick={() => handleCopyToClipboard(aiSuggestions.meta_description, 'Meta Description')}>
+                                      <ContentCopy fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                </Box>
+                                <Typography variant="body2">{aiSuggestions.meta_description}</Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {aiSuggestions.meta_description?.length || 0} characters
+                                </Typography>
+                              </Paper>
+
+                              <Paper sx={{ p: 2, mb: 2, bgcolor: 'info.50' }}>
+                                <Typography variant="subtitle2" fontWeight={600} gutterBottom>Keywords</Typography>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                  {(aiSuggestions.keywords || []).map((keyword: string, i: number) => (
+                                    <Chip key={i} label={keyword} size="small" variant="outlined" />
+                                  ))}
+                                </Box>
+                              </Paper>
+
+                              {aiSuggestions.improvements && aiSuggestions.improvements.length > 0 && (
+                                <Paper sx={{ p: 2, bgcolor: 'warning.50' }}>
+                                  <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                                    Improvement Suggestions
+                                  </Typography>
+                                  <ul style={{ margin: 0, paddingLeft: 20 }}>
+                                    {aiSuggestions.improvements.map((tip: string, i: number) => (
+                                      <li key={i}><Typography variant="body2">{tip}</Typography></li>
+                                    ))}
+                                  </ul>
+                                </Paper>
+                              )}
+                            </>
+                          )}
+                        </Box>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+
+              {/* Listings for AI SEO */}
+              <Card sx={{ mt: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>Generate AI SEO for Listings</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Select a listing to generate and apply AI-optimized SEO
+                  </Typography>
+                  
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Title</TableCell>
+                          <TableCell>Category</TableCell>
+                          <TableCell>Price</TableCell>
+                          <TableCell>Has AI SEO</TableCell>
+                          <TableCell align="right">Action</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {listings.slice(0, 10).map((listing: any) => (
+                          <TableRow key={listing.id}>
+                            <TableCell>
+                              <Typography noWrap sx={{ maxWidth: 250 }}>{listing.title}</Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Chip label={listing.category_id} size="small" variant="outlined" />
+                            </TableCell>
+                            <TableCell>
+                              {listing.currency} {listing.price?.toLocaleString()}
+                            </TableCell>
+                            <TableCell>
+                              {listing.seo_data?.ai_generated ? (
+                                <Chip label="Yes" size="small" color="success" />
+                              ) : (
+                                <Chip label="No" size="small" variant="outlined" />
+                              )}
+                            </TableCell>
+                            <TableCell align="right">
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                startIcon={<AutoAwesome />}
+                                onClick={() => handleGenerateAISeoForListing(listing)}
+                                disabled={aiGenerating}
+                              >
+                                Generate
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </CardContent>
+              </Card>
+            </Box>
+          )}
+
+          {/* Meta Tags Tab */}
+          {currentTab === 1 && (
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
