@@ -1120,6 +1120,73 @@ class ApiClient {
   }
 
   // =========================================================================
+  // AI SEO
+  // =========================================================================
+
+  async generateAISeo(listingData: {
+    title: string;
+    description: string;
+    price: number;
+    currency?: string;
+    category?: string;
+    subcategory?: string;
+    condition?: string;
+    location?: string;
+    attributes?: Record<string, any>;
+  }) {
+    const { data } = await this.client.post('/ai-seo/generate', listingData);
+    return data;
+  }
+
+  async generateAISeoForListing(listingId: string) {
+    const { data } = await this.client.post(`/ai-seo/generate-for-listing/${listingId}`);
+    return data;
+  }
+
+  async optimizeAISeo(seoData: {
+    current_meta_title: string;
+    current_meta_description: string;
+    listing_title: string;
+    listing_description: string;
+    price: number;
+    currency?: string;
+  }) {
+    const { data } = await this.client.post('/ai-seo/optimize', seoData);
+    return data;
+  }
+
+  async applyAISeo(listingId: string, seoData: {
+    listing_id: string;
+    meta_title: string;
+    meta_description: string;
+    og_title?: string;
+    og_description?: string;
+    keywords?: string[];
+  }) {
+    const { data } = await this.client.post(`/ai-seo/apply/${listingId}`, seoData);
+    return data;
+  }
+
+  async generateCategoryAISeo(categoryData: {
+    category_name: string;
+    category_id: string;
+    listing_count?: number;
+  }) {
+    const { data } = await this.client.post('/ai-seo/generate-category', categoryData);
+    return data;
+  }
+
+  async getAISeoHistory(listingId: string) {
+    const { data } = await this.client.get(`/ai-seo/history/${listingId}`);
+    return data;
+  }
+
+  async getAISeoStats() {
+    const { data } = await this.client.get('/ai-seo/stats');
+    return data;
+  }
+
+  // =========================================================================
   // POLLS & SURVEYS
   // =========================================================================
 
