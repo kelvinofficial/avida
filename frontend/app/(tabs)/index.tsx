@@ -31,6 +31,7 @@ import {
   SubcategoryModal,
   MobileHeader,
   HomeDesktopHeader,
+  ListingsGrid,
 } from '../../src/components/home';
 import type { FeaturedSeller, FeaturedListing } from '../../src/components/home';
 import { 
