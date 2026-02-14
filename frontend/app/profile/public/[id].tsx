@@ -522,7 +522,11 @@ export default function PublicProfileScreen() {
               <View style={desktopStyles.profileSidebar}>
                 <View style={desktopStyles.profileCard}>
                   {profile?.picture ? (
-                    <Image source={{ uri: profile.picture }} style={desktopStyles.avatar} />
+                    <ImageWithSkeleton 
+                      source={{ uri: profile.picture }} 
+                      style={desktopStyles.avatar} 
+                      skeletonStyle={{ borderRadius: 60 }}
+                    />
                   ) : (
                     <View style={desktopStyles.avatarPlaceholder}>
                       <Text style={desktopStyles.avatarInitials}>{getInitials(profile?.name)}</Text>
