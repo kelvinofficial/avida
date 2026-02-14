@@ -42,6 +42,7 @@ import {
   FeaturedSellersSection,
   SubcategoryModal,
   MobileHeader,
+  HomeDesktopHeader,
   COLORS_CATEGORY,
   CARD_WIDTH,
   CARD_IMAGE_HEIGHT,
