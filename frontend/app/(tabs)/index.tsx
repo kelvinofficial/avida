@@ -2584,6 +2584,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: HORIZONTAL_PADDING,
     paddingBottom: 12,
     gap: 10,
+    zIndex: 9999,
+    position: 'relative',
   },
   locationRow: {
     flexDirection: 'row',
