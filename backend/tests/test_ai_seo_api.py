@@ -290,18 +290,21 @@ class TestAISeoCategorySeo:
 
 
 # Fixtures
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def api_client():
-    """Shared requests session without auth"""
+    """Fresh requests session without auth for each test"""
     session = requests.Session()
     session.headers.update({"Content-Type": "application/json"})
     return session
 
 
 @pytest.fixture(scope="module")
-def admin_token(api_client):
+def admin_token():
     """Get admin JWT token"""
-    response = api_client.post(f"{ADMIN_BASE_URL}/auth/login", json={
+    session = requests.Session()
+    session.headers.update({"Content-Type": "application/json"})
+    
+    response = session.post(f"{ADMIN_BASE_URL}/auth/login", json={
         "email": ADMIN_EMAIL,
         "password": ADMIN_PASSWORD
     })
@@ -317,19 +320,28 @@ def admin_token(api_client):
     return token
 
 
-@pytest.fixture(scope="module")
-def admin_client(api_client, admin_token):
-    """Session with admin auth header"""
+@pytest.fixture(scope="function")
+def admin_client(admin_token):
+    """Session with admin auth header - fresh for each test"""
+    session = requests.Session()
+    session.headers.update({"Content-Type": "application/json"})
     if admin_token:
-        api_client.headers.update({"Authorization": f"Bearer {admin_token}"})
-    return api_client
+        session.headers.update({"Authorization": f"Bearer {admin_token}"})
+    return session
 
 
 @pytest.fixture(scope="module")
-def test_listing_id(admin_client):
+def test_listing_id(admin_token):
     """Get a test listing ID for testing"""
     try:
-        response = admin_client.get(f"{ADMIN_BASE_URL}/listings?limit=1")
+        session = requests.Session()
+        session.headers.update({
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {admin_token}"
+        })
+        
+        # Try main API listings first
+        response = session.get(f"{MAIN_API_URL}/listings?limit=1")
         if response.status_code == 200:
             data = response.json()
             listings = data.get("listings", [])
