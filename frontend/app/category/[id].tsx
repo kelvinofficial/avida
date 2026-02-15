@@ -2253,9 +2253,11 @@ const styles = StyleSheet.create({
   },
   backButton: {
     width: 44,
-    height: 52,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#F0F0F0',
+    borderRadius: 22,
   },
   headerCenter: {
     flex: 1,
