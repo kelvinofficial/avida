@@ -225,16 +225,31 @@ const localStyles = StyleSheet.create({
   categoryPillTextActive: {
     color: '#fff',
   },
-  modalOverlay: {
-    flex: 1,
+  // Fixed position dropdown overlay for web compatibility
+  dropdownOverlay: {
+    position: Platform.OS === 'web' ? 'fixed' as any : 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 99999,
+  },
+  modalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   dropdownContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: Platform.OS === 'web' ? [{ translateX: '-50%' }, { translateY: '-50%' }] as any : [],
     backgroundColor: '#fff',
     borderRadius: 16,
-    width: '90%',
+    width: Platform.OS === 'web' ? 400 : '90%',
     maxWidth: 400,
     maxHeight: '70%',
     ...(Platform.OS === 'web' ? {
