@@ -55,6 +55,12 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
   listings,
 }) => {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const { width } = useWindowDimensions();
+  
+  // Split categories into rows based on screen width
+  const needsTwoRows = width < 1200;
+  const row1Categories = needsTwoRows ? ALL_ICON_CATEGORIES.slice(0, 10) : ALL_ICON_CATEGORIES;
+  const row2Categories = needsTwoRows ? ALL_ICON_CATEGORIES.slice(10) : [];
 
   const handleAllPress = () => {
     setShowCategoryDropdown(true);
@@ -69,6 +75,32 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
     }
   };
 
+  const renderCategoryItem = (cat: typeof ALL_ICON_CATEGORIES[0]) => (
+    <TouchableOpacity
+      key={`icon-${cat.id}`}
+      style={localStyles.iconCategoryItem}
+      onPress={() => onCategoryPress(cat.id)}
+      data-testid={`category-icon-${cat.id}`}
+    >
+      <View style={[
+        localStyles.iconContainer,
+        selectedCategory === cat.id && localStyles.iconContainerSelected
+      ]}>
+        <Ionicons 
+          name={cat.icon as any} 
+          size={28} 
+          color={selectedCategory === cat.id ? '#fff' : '#2E7D32'} 
+        />
+      </View>
+      <Text style={[
+        localStyles.iconLabel,
+        selectedCategory === cat.id && localStyles.iconLabelSelected
+      ]} numberOfLines={2}>
+        {cat.name}
+      </Text>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={desktopStyles.headerWrapper}>
       {/* Shared Desktop Header for Rows 1-2 */}
@@ -77,12 +109,16 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
       {/* Row 3: Icon Style Categories Only */}
       <View style={localStyles.categoryRowWrapper}>
         <View style={localStyles.categoryRowInner}>
-        {/* Icon Style Row - All categories - wraps on smaller screens */}
-        <View style={localStyles.iconCategoryRow}>
-          {ALL_ICON_CATEGORIES.map((cat) => (
-            <TouchableOpacity
-              key={`icon-${cat.id}`}
-              style={localStyles.iconCategoryItem}
+          {/* First row of categories */}
+          <View style={localStyles.iconCategoryRow}>
+            {row1Categories.map(renderCategoryItem)}
+          </View>
+          {/* Second row of categories (only on smaller screens) */}
+          {needsTwoRows && row2Categories.length > 0 && (
+            <View style={[localStyles.iconCategoryRow, { marginTop: 16 }]}>
+              {row2Categories.map(renderCategoryItem)}
+            </View>
+          )}
               onPress={() => onCategoryPress(cat.id)}
               data-testid={`category-icon-${cat.id}`}
             >
