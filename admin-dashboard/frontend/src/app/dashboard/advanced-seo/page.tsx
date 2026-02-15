@@ -195,12 +195,7 @@ export default function AdvancedSeoPage() {
     try {
       const res = await fetch(`${API_BASE}/growth/advanced-seo/social/generate-posts?content_id=${selectedBlogId}&content_type=blog&platforms=${selectedPlatforms.join(',')}`, {
         method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          content_id: selectedBlogId,
-          content_type: 'blog',
-          platforms: selectedPlatforms
-        })
+        headers: getAuthHeaders()
       });
       if (res.ok) {
         const data = await res.json();
