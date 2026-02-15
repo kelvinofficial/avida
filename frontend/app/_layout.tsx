@@ -74,6 +74,7 @@ const FontLoadingSkeleton = () => {
 
 export default function RootLayout() {
   const { loadStoredAuth, setUser, setToken, isAuthenticated, user } = useAuthStore();
+  const fetchFeatureSettings = useFeatureSettingsStore(state => state.fetchSettings);
   const [processingAuth, setProcessingAuth] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [fontsReady, setFontsReady] = useState(false);
