@@ -9,7 +9,7 @@ import os
 from datetime import datetime
 
 # Get API base URL from environment - admin dashboard uses NEXT_PUBLIC_MAIN_API_URL
-BASE_URL = "https://listing-ab-test-hub.preview.emergentagent.com/api"
+BASE_URL = "https://admin-fixes-test.preview.emergentagent.com/api"
 
 
 class TestCohortAnalyticsEngagement:

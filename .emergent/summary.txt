@@ -1,272 +1,126 @@
 <analysis>**original_problem_statement**:
-The user's initial request was to build a full-stack classifieds application. The application has since evolved with multiple feature additions, including a comprehensive SEO suite, an AI-powered SEO tool, offline mode support, and SEO performance analytics.
+The user's initial goal was to build a full-stack classifieds application. The project has since expanded to include an SEO suite, AI tools, deep linking, and A/B testing features.
 
-The latest requests were to:
-1.  Implement **Mobile App Deep Linking**.
-2.  Implement **A/B Testing for Meta Descriptions**.
-3.  A final user message reported an **admin dashboard access issue** which is now the top priority.
+This session began by resolving a critical P0 admin dashboard access issue. After this was fixed, the user provided a comprehensive list of new feature requests and bug fixes for the frontend and admin panel.
+
+**PRODUCT REQUIREMENTS (from user's latest feedback)**:
+1.  **Category UI**:
+    *   Fix missing sub-categories for SEO and Location.
+    *   The ALL button in the category list should be a dropdown, not static.
+    *   For desktop, display category icons in 2 rows.
+2.  **Listing Display**:
+    *   Ensure listing card sizes are uniform, regardless of image height or title length.
+    *   Fix images not displaying on category pages.
+    *   Move the heart (save) icon to the top right of the content column in Similar Listings.
+3.  **Location Feature**:
+    *   Fix the non-functional location picker on category pages.
+    *   Restrict the location to a single country (Tanzania).
+    *   Admin should control location granularity (show region, districts, or cities).
+4.  **Search UI**:
+    *   Double the height of the search field and improve its UI.
+5.  **Admin Controls**:
+    *   Create a page for admins to enable/disable features like view counts, save stats, etc.
+6.  **SEO**:
+    *   Implement SEO optimizations for the app, mobile site, tablet, and web versions.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack classifieds application featuring a React Native/Expo frontend for users and a separate Next.js admin dashboard. The backend is built with FastAPI and uses MongoDB.
+A full-stack classifieds application with a React Native/Expo frontend, a FastAPI backend, and a separate Next.js admin dashboard.
 
-In this session, the agent successfully implemented two new features:
-1.  **Mobile App Deep Linking**: Configured the main application to handle deep links, allowing users to open specific content (like listings) directly in the app. This included backend routes for redirecting shareable URLs.
-2.  **A/B Testing for Meta Descriptions**: Built a new section in the admin dashboard for creating, managing, and analyzing A/B tests on listing meta descriptions to optimize for click-through rates. This included the necessary backend APIs and database models.
+In this session, the agent first successfully resolved a critical admin login issue by creating a new admin user with the correct password hash () and database schema.
 
-After implementation and testing of these features, the user reported an access issue with the admin dashboard, which is the current focus.
+Following that, the agent addressed several user requests:
+-   **Homepage UI**: The category list on the desktop is now in two rows, and the All button functions as a dropdown modal. The search bar's height was doubled and its UI was updated.
+-   **Listing Card UI**: The listing card was modified for a uniform size, and the heart icon on similar listings was repositioned.
+-   **Mobile Sub-categories**: An issue where some categories didn't show sub-categories was fixed by updating the frontend configuration.
+-   **Admin Feature Toggles**: A backend API () and a corresponding (currently inaccessible due to a session bug) admin page were created to manage feature flags.
 
 **Last working item**:
-The agent was about to conclude the session after successfully implementing and testing the Deep Linking and A/B Testing features. However, the user reported a new issue, admin dashboard access issue, which the agent acknowledged and was about to begin investigating.
+The agent was fixing an issue where some categories did not display their subcategories in the mobile app. This was traced to missing definitions in the frontend configuration.
 
--   **Last item agent was working**: Starting the investigation of a newly reported admin dashboard access issue.
--   **Status**: IN PROGRESS
--   **Agent Testing Done**: Y (for A/B testing and deep linking features, before the new issue was reported)
--   **Which testing method agent to use?**: manual testing by curl/ screenshot tool. The agent should first attempt to reproduce the issue by logging into the admin dashboard and taking a screenshot.
+-   **Last item agent was working**: Adding missing category and sub-category definitions to .
+-   **Status**: USER VERIFICATION PENDING (Agent verified the fix with a screenshot)
+-   **Agent Testing Done**: Y
+-   **Which testing method agent to use?**: testing_agent_v3_fork. This is recommended to run a regression test on all the recent UI and backend changes, and to verify the new admin functionality once the session issue is resolved.
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Admin dashboard access issue (P0)
+-   Issue 1: Admin dashboard session instability (P0)
+-   Issue 2: Listing images not loading on category pages (P1)
+-   Issue 3: All button dropdown not implemented on mobile header (P2)
 
 **Issues Detail**:
--   **Issue 1**:
-    -   **Description**: The user reported admin dashboard access issue without providing details. This occurred right after the agent completed the A/B testing feature, which involved significant changes to admin-side authentication and UI. The issue could be a login failure, a 404 error, or an authentication error on a specific page.
-    -   **Attempted fixes**: None. Investigation has not yet started.
+-   **Issue 1**: Admin dashboard session instability
+    -   **Description**: After a user logs into the admin dashboard (), any subsequent navigation or page refresh redirects them to the main application's root URL. This blocks access to all admin pages, including the newly created Feature Settings page. It appears to be an authentication state or session loss issue within the Next.js admin frontend.
+    -   **Attempted fixes**: Restarting the  service. The backend API for settings is confirmed to be working via .
     -   **Next debug checklist**:
-        1.  Attempt to log into the admin dashboard at the  path using the credentials  / .
-        2.  Take a screenshot of the result to verify if the login page loads and if login is successful.
-        3.  Check the supervisor logs for both  and  for any errors that occur during the access attempt: ==> /var/log/supervisor/backend.err.log <==
-INFO:     connection closed
-INFO:     ('10.64.133.200', 59998) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=gzvGZKJ4u_bguXxDGjvSW" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.133.74', 60366) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=gzvGZKJ4u_bguXxDGjvSW" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.130.12', 55720) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=gzvGZKJ4u_bguXxDGjvSW" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.130.12', 55724) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=u9HGvjln-pyYEM0oa3oCv" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.130.12', 55732) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=u9HGvjln-pyYEM0oa3oCv" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.132.108', 48512) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=u9HGvjln-pyYEM0oa3oCv" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.133.200', 60014) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=u9HGvjln-pyYEM0oa3oCv" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.133.200', 47410) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=u9HGvjln-pyYEM0oa3oCv" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.130.12', 55744) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=u9HGvjln-pyYEM0oa3oCv" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.132.108', 48526) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=u9HGvjln-pyYEM0oa3oCv" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.132.108', 36126) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=u9HGvjln-pyYEM0oa3oCv" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.133.200', 40370) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=u9HGvjln-pyYEM0oa3oCv" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.132.108', 46354) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=q0jiSSEn8kz0ZAorS9HpL" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.132.108', 46366) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=q0jiSSEn8kz0ZAorS9HpL" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.133.200', 35852) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=q0jiSSEn8kz0ZAorS9HpL" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.133.200', 35862) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=q0jiSSEn8kz0ZAorS9HpL" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.132.108', 58042) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=q0jiSSEn8kz0ZAorS9HpL" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.133.74', 33454) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=NDsg2RbBeJJOrq7oardNm" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.133.200', 57210) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=NDsg2RbBeJJOrq7oardNm" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.133.74', 33494) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=NDsg2RbBeJJOrq7oardNm" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.132.108', 58092) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=NDsg2RbBeJJOrq7oardNm" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.132.108', 43074) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=APflzpQS_msr9RzVcj85o" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.133.200', 50190) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=APflzpQS_msr9RzVcj85o" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.133.200', 50200) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=APflzpQS_msr9RzVcj85o" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.133.74', 35026) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=APflzpQS_msr9RzVcj85o" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.133.200', 50268) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=APflzpQS_msr9RzVcj85o" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.133.74', 35066) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=9mUmR30FSyYlia3nSdNyT" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.132.108', 51458) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=9mUmR30FSyYlia3nSdNyT" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.130.12', 55194) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=9mUmR30FSyYlia3nSdNyT" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.132.108', 51474) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=9mUmR30FSyYlia3nSdNyT" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.133.200', 39638) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=9mUmR30FSyYlia3nSdNyT" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     ('10.64.132.108', 51490) - "WebSocket /api/admin-ui/_next/webpack-hmr?id=9mUmR30FSyYlia3nSdNyT" 403
-INFO:     connection rejected (403 Forbidden)
-INFO:     connection closed
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [109] using WatchFiles
-
-==> /var/log/supervisor/backend.out.log <==
-INFO:     10.64.132.108:43088 - "GET /api/admin-ui/_next/static/chunks/turbopack-_b5ba0eba._.js HTTP/1.1" 200 OK
-INFO:     10.64.133.74:35038 - "GET /api/admin-ui/_next/static/chunks/node_modules_next_dist_f3530cac._.js HTTP/1.1" 200 OK
-INFO:     10.64.132.108:51454 - "GET /api/admin-ui/_next/static/chunks/node_modules_45628c8d._.js HTTP/1.1" 200 OK
-INFO:     10.64.132.108:43094 - "GET /api/admin-ui/_next/static/chunks/node_modules_next_dist_client_17643121._.js HTTP/1.1" 200 OK
-INFO:     10.64.132.108:43094 - "GET /api/admin-ui/_next/static/chunks/src_app_layout_tsx_1cf6b850._.js HTTP/1.1" 200 OK
-INFO:     10.64.133.74:35052 - "GET /api/admin-ui/_next/static/chunks/src_d5c286ff._.js HTTP/1.1" 200 OK
-INFO:     10.64.133.74:35048 - "GET /api/admin-ui/_next/static/chunks/src_7f546a44._.js HTTP/1.1" 200 OK
-INFO:     10.64.133.200:50262 - "GET /api/admin-ui/_next/static/chunks/node_modules_axios_lib_99e19c7d._.js HTTP/1.1" 200 OK
-INFO:     10.64.130.12:50522 - "GET /api/admin-ui/_next/static/chunks/node_modules_%40popperjs_core_lib_ce7e5cb7._.js HTTP/1.1" 200 OK
-INFO:     10.64.133.74:35054 - "GET /api/admin-ui/_next/static/chunks/node_modules_c07e2199._.js HTTP/1.1" 200 OK
-INFO:     10.64.132.108:43088 - "GET /api/admin-ui/_next/static/chunks/node_modules_%40mui_material_esm_704ba014._.js HTTP/1.1" 200 OK
-INFO:     10.64.133.200:50262 - "GET /api/admin-ui/_next/static/chunks/src_app_dashboard_seo-ab-testing_page_tsx_debb1936._.js HTTP/1.1" 200 OK
-INFO:     10.64.132.108:43088 - "GET /api/admin-ui/_next/static/chunks/src_app_dashboard_layout_tsx_2c5da308._.js HTTP/1.1" 200 OK
-INFO:     10.64.133.74:35068 - "GET /api/admin-ui/_next/static/chunks/node_modules_next_dist_client_components_builtin_global-error_1cf6b850.js HTTP/1.1" 200 OK
-INFO:     10.64.133.200:50228 - "GET /api/admin-ui/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_c8c997ce._.js HTTP/1.1" 200 OK
-INFO:     10.64.133.74:35052 - "GET /api/admin-ui/_next/static/chunks/src_app_dashboard_seo-ab-testing_page_tsx_587ac673._.js HTTP/1.1" 200 OK
-INFO:     10.64.133.74:35048 - "GET /api/admin-ui/_next/static/chunks/node_modules_%40mui_28ddf845._.js HTTP/1.1" 200 OK
-INFO:     10.64.133.200:50228 - "GET /api/admin-ui/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_c7192189._.js HTTP/1.1" 200 OK
-INFO:     10.64.133.200:50228 - "GET /api/team/approvals?status=pending&limit=5 HTTP/1.1" 200 OK
-INFO:     10.64.133.74:35068 - "GET /api/team/tasks?status=open&limit=5 HTTP/1.1" 200 OK
-INFO:     10.64.133.74:35052 - "GET /api/admin/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.133.200:50262 - "GET /api/team/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.130.12:50522 - "GET /api/team/tasks?status=open&limit=5 HTTP/1.1" 200 OK
-INFO:     10.64.132.108:43094 - "GET /api/team/approvals?status=pending&limit=5 HTTP/1.1" 200 OK
-INFO:     10.64.132.108:43088 - "GET /api/admin/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.133.200:50262 - "GET /api/team/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.132.108:43088 - "GET /api/team/tasks?status=open&limit=5 HTTP/1.1" 200 OK
-INFO:     10.64.133.74:35068 - "GET /api/team/approvals?status=pending&limit=5 HTTP/1.1" 200 OK
-INFO:     10.64.133.74:35052 - "GET /api/admin/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.133.74:37486 - "GET /api/team/dashboard HTTP/1.1" 200 OK
-INFO:     10.64.133.200:50262 - "GET /api/seo-ab/experiments HTTP/1.1" 200 OK
-INFO:     10.64.133.200:50228 - "GET /api/seo-ab/overview HTTP/1.1" 200 OK
-INFO:     10.64.133.200:50228 - "GET /api/seo-ab/experiments HTTP/1.1" 200 OK
-INFO:     10.64.132.108:43088 - "GET /api/seo-ab/overview HTTP/1.1" 200 OK
-INFO:     10.64.133.74:37498 - "GET /api/seo-ab/experiments/17efc59a-86df-4ce8-a4f8-03bad9d17722 HTTP/1.1" 200 OK
-INFO:     10.64.133.200:49062 - "GET /api/locations/countries HTTP/1.1" 200 OK
-INFO:     10.64.133.200:48974 - "GET /api/listings/64916ff7-79eb-48d5-8125-cdb14a2ec462 HTTP/1.1" 200 OK
-INFO:     10.64.132.108:59518 - "GET /api/categories/electronics HTTP/1.1" 200 OK
-INFO:     10.64.132.108:59518 - "GET /api/analytics/badges/seller/user_9e0b70cbc405 HTTP/1.1" 200 OK
-INFO:     10.64.133.200:48974 - "GET /api/safety-tips/public/electronics HTTP/1.1" 200 OK
-INFO:     10.64.133.200:48990 - "GET /api/listings/similar/64916ff7-79eb-48d5-8125-cdb14a2ec462?limit=20&include_sponsored=true HTTP/1.1" 200 OK
-INFO:     10.64.132.108:59518 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.133.200:48990 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.133.200:48974 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.132.108:59528 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.133.200:48990 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.132.108:59518 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.133.74:36574 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.133.74:36588 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.133.200:48996 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.133.74:36602 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.133.200:49012 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.130.12:46182 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.133.200:48990 - "GET /api/escrow/seller/user_9e0b70cbc405/can-sell-online HTTP/1.1" 200 OK
-INFO:     10.64.130.12:46166 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.133.74:36612 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.133.200:49014 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.132.108:59536 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.132.108:59518 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.132.108:59546 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.132.108:59528 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.133.200:49012 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.133.200:48974 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.133.74:36588 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.133.74:36574 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.132.108:59556 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.133.200:49014 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.132.108:59570 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.130.12:46190 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.64.133.200:49012 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.130.12:46166 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.132.108:59574 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.132.108:59578 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.132.108:59588 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.133.200:49018 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.133.74:36618 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.132.108:59546 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.130.12:46190 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.133.200:49014 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.133.200:49018 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.132.108:59574 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.133.74:36588 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.133.74:39468 - "GET /api/searches/popular?category_id=auto_vehicles&limit=5 HTTP/1.1" 200 OK
-INFO:     10.64.132.108:39508 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     10.64.133.74:39470 - "GET /api/listings?category=auto_vehicles&page=1&limit=20&sort=newest HTTP/1.1" 200 OK
-INFO:     10.64.132.108:39508 - "GET /api/listings?category=auto_vehicles&page=1&limit=20&sort=newest HTTP/1.1" 200 OK
-INFO:     10.64.132.108:39510 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     10.64.130.12:55746 - "GET /api/fonts/MaterialCommunityIcons.ttf HTTP/1.1" 200 OK
-INFO:     10.64.132.108:33168 - "GET /api/fonts/MaterialIcons.ttf HTTP/1.1" 200 OK
-INFO:     10.64.132.108:33182 - "GET /api/fonts/FontAwesome.ttf HTTP/1.1" 200 OK
-INFO:     10.64.130.12:55756 - "GET /api/fonts/FontAwesome5_Solid.ttf HTTP/1.1" 200 OK
-INFO:     10.64.133.200:48482 - "GET /api/fonts/Feather.ttf HTTP/1.1" 200 OK
-INFO:     10.64.133.200:48478 - "GET /api/fonts/Ionicons.ttf HTTP/1.1" 200 OK
-INFO:     10.64.132.108:33168 - "GET /api/searches/popular?limit=5 HTTP/1.1" 200 OK
-INFO:     10.64.132.108:33182 - "GET /api/listings/featured-verified?limit=12 HTTP/1.1" 200 OK
-INFO:     10.64.133.200:48478 - "GET /api/listings?page=1&limit=20 HTTP/1.1" 200 OK
-INFO:     10.64.133.200:48482 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.64.132.108:33182 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     10.64.133.74:54438 - "GET /api/banners/display/feed_after_10?device=mobile HTTP/1.1" 200 OK
-INFO:     10.64.132.108:40406 - "GET /api/admin-ui HTTP/1.1" 307 Temporary Redirect and .
-        4.  If login fails, review the admin authentication logic, starting with the  dependency in  (which is known to work) and comparing it to other admin routes.
-        5.  Review the API client at  to ensure the  is being loaded from localStorage and sent correctly in API headers.
-    -   **Why fix this issue and what will be achieved with the fix?**: The admin dashboard is critical for managing the application. Resolving this will unblock the user and allow them to use the newly implemented A/B testing feature and other admin functionalities.
+        1.  Examine the admin dashboard's authentication logic, likely in a layout or context provider file in .
+        2.  Check browser developer tools (console logs, network tab, application storage) to see how the  is stored (e.g., localStorage) and if it's being cleared or ignored on navigation.
+        3.  Review the Next.js routing middleware or page-level / functions for any logic that could be causing the redirect.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a P0 blocker. The user cannot access any admin functionality, including the new feature toggles. Fixing this is essential for managing the application.
     -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: Y (Potentially). The agent fixed a similar admin authentication issue on the new A/B testing page during development. This might be a regression or a related problem.
-    -   **Should Test frontend/backend/both after fix?**: Both.
+    -   **Is recurring issue?**: Y (Session and auth issues in the admin panel have occurred before).
+    -   **Should Test frontend/backend/both after fix?**: Frontend.
+    -   **Blocked on other issue**: None.
+
+-   **Issue 2**: Listing images not loading on category pages
+    -   **Description**: On category pages, some listings show a placeholder instead of an image. The investigation revealed that some listings use  URLs while others use  image data. While the  component is intended to handle both, it's failing for some listings.
+    -   **Attempted fixes**: The agent verified that the image data exists in the database and that the  component code appears correct. The root cause is still unclear.
+    -   **Next debug checklist**:
+        1.  In , log the full  object being passed to  to confirm the structure of the  array for a failing item.
+        2.  Add logging inside the  component () to inspect the  prop being received.
+        3.  Check if there's a size or format issue with the  data that the React Native  component is rejecting.
+    -   **Why fix this issue and what will be achieved with the fix?**: Broken images degrade the user experience and make the platform look unprofessional.
+    -   **Status**: IN PROGRESS
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Frontend.
+    -   **Blocked on other issue**: None.
+
+-   **Issue 3**: All button dropdown not implemented on mobile header
+    -   **Description**: The user requested the All categories button to be a dropdown. The agent implemented this for the desktop header but did not apply the same fix to the mobile header component.
+    -   **Attempted fixes**: None.
+    -   **Next debug checklist**:
+        1.  Locate the mobile header component, likely .
+        2.  Replicate the modal/dropdown logic from .
+        3.  Ensure the state management () and modal components are correctly implemented for the mobile view.
+    -   **Why fix this issue and what will be achieved with the fix?**: To ensure feature parity and a consistent user experience between desktop and mobile.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Frontend.
     -   **Blocked on other issue**: None.
 
 **In progress Task List**:
--   There are no in-progress tasks. The work has shifted to resolving the blocking issue above.
+-   **Task 1**: Wire up admin feature settings to the frontend (P1)
+    -   **Where to resume**: This task is blocked by the admin session issue. Once fixed, the main frontend application needs to be updated.
+    -   **What will be achieved with this?**: The frontend will dynamically show/hide features like view counts, save stats, etc., based on the settings configured by the admin.
+    -   **Status**: BLOCKED
+    -   **Should Test frontend/backend/both after fix?**: Both.
+    -   **Blocked on something**: Issue 1: Admin dashboard session instability.
 
 **Upcoming and Future Tasks**
-The following features were implemented in this session but are pending final user verification, which is currently blocked by the admin access issue.
--   **(P1) Verify Mobile App Deep Linking**: Confirm the deep linking configuration works as expected on a device/emulator.
--   **(P1) Verify A/B Testing for Meta Descriptions**: User to test the creation and management of A/B tests from the admin dashboard.
+-   **(P1) Fix Location Picker**: The location picker on category pages is non-functional. It needs to be wired up to filter listings.
+-   **(P1) Implement Tanzania-only Location Logic**: Implement the backend logic and frontend UI to restrict locations to Tanzania and allow admin control over the display granularity (region/city). The backend route  is a starting point.
+-   **(P2) SEO Optimization**: Conduct a full SEO audit and implement optimizations. This includes adding dynamic meta tags, structured data (JSON-LD) for listings, and potentially generating a sitemap.
+-   **(P2) User Verification for UI Fixes**: User needs to verify the following completed changes:
+    -   Uniform listing card size.
+    -   Repositioned heart icon on Similar Listings.
+    -   Increased search field height and new UI.
 
 **Completed work in this session**
--   **Implemented A/B Testing for Meta Descriptions (Full Stack)**:
-    -   **Backend**: Created  with endpoints for experiment management and event tracking. Replicated a robust admin authentication pattern from an existing route to secure the new endpoints.
-    -   **Frontend (Admin Dashboard)**: Developed a new UI at  for managing A/B tests. Updated the API client at .
--   **Implemented Mobile App Deep Linking**:
-    -   **Backend**: Added  to handle URL redirection for shareable links and configured  in the environment for dynamic link generation.
-    -   **Frontend (Main App)**: Updated  to configure the URL scheme. Created  to generate links.
--   **Testing**: Executed , which passed for both new features prior to the user reporting the admin access issue. Also performed manual  tests for all new endpoints.
--   **Documentation**: Updated  to reflect the completion of the new features.
+-   **Admin Access Restored**: Fixed the critical admin login issue by creating a user with the correct credentials () and  password hash.
+-   **Desktop Homepage UI Overhaul**:
+    -   Implemented the All category button as a dropdown modal ().
+    -   Arranged category icons into two rows for better visibility.
+-   **Mobile Sub-category Fix**: Resolved an issue where sub-categories were not appearing by adding missing definitions in .
+-   **Admin Feature Toggles (Backend)**: Created API endpoints to get and update feature settings ().
+-   **Admin Feature Settings (Frontend)**: Created a new page for managing settings in the admin dashboard ().
+-   **Listing Card Polish**:
+    -   Adjusted  and  for uniform card heights.
+    -   Moved the heart icon in  to the top-right of the content area.
 
 **Earlier issues found/mentioned but not fixed**
--   None.
+-   None other than those listed in the pending issues section.
 
 **Known issue recurrence from previous fork**
 -   None.
@@ -275,58 +129,54 @@ The following features were implemented in this session but are pending final us
 
 
 **Key Technical Concepts**
--   **Expo Deep Linking**: Configuration is managed in  using a custom  and the .
--   **FastAPI Admin Authentication Pattern**: A robust pattern for securing admin routes was identified in  and replicated for the new A/B testing feature. It involves creating a self-contained  dependency within the router factory to ensure correct token validation. This is a key area to review for the current bug.
--   **Dynamic URL Generation**: The backend was updated to use an  environment variable for creating deep links, removing hardcoded values.
+-   **Next.js Authentication**: The admin dashboard's session instability points to challenges with managing auth state (tokens) across page navigations in a Next.js environment.
+-   **FastAPI Backend Routers**: New, self-contained API routers were created for managing feature and location settings, secured with admin authentication.
+-   **Password Hashing**: The admin login fix required understanding and using  with the  hashing scheme.
+-   **React Native Styling**: UI fixes involved modifying styles for both web (using  with TailwindCSS) and native (using ) within React Native components.
 
 **key DB schema**
--   ****: (New) Stores A/B test configurations. Fields include , ,  ('draft', 'running', 'finished'), .
--   ****: (New) Stores impression and click events for A/B test variants. Fields include , , .
+-   **** (New Collection/Document): Stores global feature flags.
+    -   : boolean
+    -   : boolean
+    -   : string ('country', 'region', 'city')
+    -   : string (e.g., 'USD', 'TZS')
 
 **changes in tech stack**
--   No new technologies or major libraries were added.
+-   None.
 
 **All files of reference**
--    (New: A/B testing backend logic)
--    (New: Deep link redirection endpoint)
--    (New: Admin UI for A/B testing)
--    (Modified: Deep linking configuration)
--    (Modified: Registered new routers)
--    (Test report for the implemented features)
+-    (New admin UI page)
+-    (New backend route for feature toggles)
+-    (Modified for 2-row categories and dropdown)
+-    (Modified to fix missing sub-categories)
+-    (Modified to add feature settings API calls)
 -    (Updated with latest progress)
 
 **Areas that need refactoring**:
--   None identified.
+-   The authentication and session management flow in the Next.js admin dashboard needs to be reviewed and potentially refactored to prevent state loss on navigation.
 
 **key api endpoints**
--   : Create a new SEO A/B test. (Admin Auth)
--   : Get all SEO A/B tests. (Admin Auth)
--   : Start an A/B test. (Admin Auth)
--   : Track an A/B test event (impression/click). (No Auth)
--   : Redirect endpoint for deep links.
+-   : Admin user authentication.
+-   : (Admin Auth) Retrieve current application feature settings.
+-   : (Admin Auth) Update application feature settings.
 
 **Critical Info for New Agent**
--   **Your immediate and highest priority is to investigate and fix the admin dashboard access issue reported by the user.** All other tasks are blocked until this is resolved.
--   Admin authentication has been a sensitive area. A working authentication pattern exists in . Use this as a reference when debugging.
--   Remember that the admin dashboard is served from the  path, not the root URL. The login page is at .
+-   **Your immediate priority is fixing the admin dashboard session issue.** This is a P0 blocker preventing the user from managing the app and verifying new features.
+-   After resolving the blocker, tackle the remaining high-priority user requests: fixing the location picker, implementing the Tanzania-only location logic, and ensuring listing images load correctly.
+-   The user has provided a long list of requests. Adhere to the priorities identified in this summary and communicate the plan clearly before implementing.
+-   The admin user credentials are  / .
 
 **documents and test reports created in this job**
 -   
--   
+-   A test was run by  (see message #177), which identified several UI issues that were subsequently worked on.
 
 **Last 10 User Messages and any pending HUMAN messages**
--   **User**: 
-    -   **Summary**: The user reported a critical blocking issue preventing access to the admin dashboard.
-    -   **Status**: IN PROGRESS. This is the current P0 issue.
--   **User**: 
-    -   **Summary**: User gave approval to finish the session after the agent completed the planned features.
-    -   **Status**: SUPERSEDED by the subsequent critical issue report.
--   **User**: 
-    -   **Summary**: The user chose the priorities for the session: implement Mobile App Deep Linking and A/B Testing.
-    -   **Status**: COMPLETED (pending final verification).
+-   **User**:  (and other tasks) - Status: IN PROGRESS. This initiated the current batch of work.
+-   **User**:  - Status: COMPLETED. User provided clarification on requirements.
+-   **User**:  - Status: IN PROGRESS. This was the large list of feedback that the agent has been working through. The agent has completed several items from this list.
 
 **Project Health Check:**
--   **Broken**: Admin Dashboard Access. The user is unable to access the admin panel, which is a critical failure.
+-   **Broken**: Admin Dashboard Session/Routing. The admin panel is currently unusable beyond the login page due to a session loss bug.
 -   **Mocked**: None
 
 **3rd Party Integrations**
@@ -339,14 +189,16 @@ The following features were implemented in this session but are pending final us
 -   
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (for Deep Linking and A/B testing features).
+-   **Testing agent used after significant changes**: YES. It was used to evaluate UI fixes and identified issues with the category dropdown.
 -   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**: 
--   **Known regressions**: A potential regression in admin dashboard access has been reported by the user.
+-   **Test files created**: None.
+-   **Known regressions**: The admin dashboard session handling is a new regression that appeared during this session.
 
 **Credentials to test flow:**
 -   **Admin User**:  / 
 -   **Regular User**:  / 
 
 **What agent forgot to execute**
--   The agent did not forget to execute any planned tasks. The session was interrupted by a new, high-priority bug report from the user just before finishing. The next action must be to address this bug.</analysis>
+-   The agent did not implement the All category dropdown on the **mobile** header, only on desktop.
+-   The agent did not start work on fixing the non-functional location picker.
+-   The agent did not wire up the new backend feature toggles to the frontend components, as this was blocked by the admin session bug.</analysis>

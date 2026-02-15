@@ -21,7 +21,7 @@ import uuid
 from datetime import datetime
 
 # Base URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://listing-ab-test-hub.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://admin-fixes-test.preview.emergentagent.com').rstrip('/')
 
 # Test constants
 TEST_ENVIRONMENT = "staging"  # Use staging to avoid production data pollution

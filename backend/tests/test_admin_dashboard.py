@@ -8,7 +8,7 @@ import requests
 import os
 
 # Use the public URL for testing
-BASE_URL = "https://listing-ab-test-hub.preview.emergentagent.com"
+BASE_URL = "https://admin-fixes-test.preview.emergentagent.com"
 
 # Test credentials
 ADMIN_EMAIL = "admin@marketplace.com"
