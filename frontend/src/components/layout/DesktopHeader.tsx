@@ -225,8 +225,16 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
                     <TouchableOpacity 
                       style={[styles.navLink, pathname === '/messages' && styles.navLinkActive]}
                       onPress={() => router.push('/messages')}
+                      data-testid="header-messages-btn"
                     >
-                      <Ionicons name="chatbubbles-outline" size={18} color={pathname === '/messages' ? COLORS.primary : COLORS.textSecondary} />
+                      <View style={{ position: 'relative' }}>
+                        <Ionicons name="chatbubbles-outline" size={18} color={pathname === '/messages' ? COLORS.primary : COLORS.textSecondary} />
+                        {unreadMessageCount > 0 && (
+                          <View style={styles.navBadge}>
+                            <Text style={styles.navBadgeText}>{unreadMessageCount > 99 ? '99+' : unreadMessageCount}</Text>
+                          </View>
+                        )}
+                      </View>
                       <Text style={[styles.navLinkText, pathname === '/messages' && styles.navLinkTextActive]}>Messages</Text>
                     </TouchableOpacity>
                     <TouchableOpacity 
