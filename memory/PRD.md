@@ -11,7 +11,20 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 
 ## What's Been Implemented
 
-### Session: February 15, 2026 (Latest)
+### Session: February 15, 2026 - Part 2 (Latest)
+
+**1. Mobile Category UI Fix - COMPLETED & VERIFIED**
+- Fixed mobile homepage categories to match desktop (14 categories including "Friendship & Dating")
+- Changed category IDs from hyphenated format (`auto-vehicles`) to underscore format (`auto_vehicles`)
+- This fix enables proper subcategory lookup when clicking a category on mobile
+- File changed: `/app/frontend/src/components/home/MobileHeader.tsx` (line 21-38)
+- **Issues Resolved**:
+  - "Friendship & Dating" category now visible in mobile "All" dropdown
+  - Clicking any category now correctly opens the subcategory modal
+  - Category list matches desktop (`HomeDesktopHeader.tsx`)
+- **Testing Status**: Verified with testing agent - 100% pass rate (see `/app/test_reports/iteration_152.json`)
+
+### Session: February 15, 2026 - Part 1
 
 **1. Admin-Controlled Location Granularity - VERIFIED WORKING**
 - Feature allows admin to control location filter detail level: region, district, or city
