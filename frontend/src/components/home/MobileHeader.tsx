@@ -199,26 +199,87 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
         </TouchableOpacity>
       </View>
 
-      {/* ROW 2: FULL-WIDTH SEARCH BAR */}
+      {/* ROW 2: FULL-WIDTH SEARCH BAR WITH DROPDOWN */}
       <View style={newHeaderStyles.row2}>
-        <View style={newHeaderStyles.searchField}>
-          <Ionicons name="search" size={20} color="#666" />
-          <TextInput
-            style={newHeaderStyles.searchInput}
-            placeholder="Search for anything..."
-            placeholderTextColor="#999"
-            value={homeSearchQuery}
-            onChangeText={onSearchInputChange}
-            onFocus={onSearchFocus}
-            onBlur={onSearchBlur}
-            onSubmitEditing={onSearchSubmit}
-            returnKeyType="search"
-            data-testid="home-search-input"
-          />
-          {homeSearchQuery.length > 0 && (
-            <TouchableOpacity onPress={onClearSearch} style={newHeaderStyles.searchIconBtn}>
-              <Ionicons name="close-circle" size={20} color="#999" />
-            </TouchableOpacity>
+        <View style={newHeaderStyles.searchContainer}>
+          <View style={newHeaderStyles.searchField}>
+            <Ionicons name="search" size={20} color="#666" />
+            <TextInput
+              style={newHeaderStyles.searchInput}
+              placeholder="Search for anything..."
+              placeholderTextColor="#999"
+              value={homeSearchQuery}
+              onChangeText={onSearchInputChange}
+              onFocus={onSearchFocus}
+              onBlur={onSearchBlur}
+              onSubmitEditing={onSearchSubmit}
+              returnKeyType="search"
+              data-testid="home-search-input"
+            />
+            {homeSearchQuery.length > 0 && (
+              <TouchableOpacity onPress={onClearSearch} style={newHeaderStyles.searchIconBtn}>
+                <Ionicons name="close-circle" size={20} color="#999" />
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          {/* Search Suggestions Dropdown */}
+          {showSearchSuggestions && (
+            <View style={newHeaderStyles.suggestionsDropdown}>
+              {/* Autocomplete suggestions when typing */}
+              {homeSearchQuery.length > 0 && searchSuggestions.autocomplete.length > 0 ? (
+                <>
+                  {searchSuggestions.autocomplete.slice(0, 6).map((item, idx) => (
+                    <TouchableOpacity
+                      key={`autocomplete-${idx}`}
+                      style={newHeaderStyles.suggestionItem}
+                      onPress={() => onSuggestionClick(item.query)}
+                      data-testid={`suggestion-item-${idx}`}
+                    >
+                      <Ionicons name="search-outline" size={18} color="#666" />
+                      <Text style={newHeaderStyles.suggestionText} numberOfLines={1}>{item.query}</Text>
+                      {item.count > 0 && (
+                        <Text style={newHeaderStyles.suggestionCount}>{item.count} results</Text>
+                      )}
+                      <Ionicons name="arrow-forward" size={16} color="#ccc" />
+                    </TouchableOpacity>
+                  ))}
+                </>
+              ) : searchSuggestions.recent.length > 0 ? (
+                /* Recent searches when not typing */
+                <>
+                  <View style={newHeaderStyles.suggestionHeader}>
+                    <View style={newHeaderStyles.suggestionHeaderLeft}>
+                      <Ionicons name="time-outline" size={16} color="#666" />
+                      <Text style={newHeaderStyles.suggestionHeaderText}>Recent Searches</Text>
+                    </View>
+                    <TouchableOpacity 
+                      onPress={onClearRecentSearches}
+                      data-testid="clear-recent-btn"
+                    >
+                      <Text style={newHeaderStyles.clearText}>Clear</Text>
+                    </TouchableOpacity>
+                  </View>
+                  {searchSuggestions.recent.slice(0, 5).map((query, idx) => (
+                    <TouchableOpacity
+                      key={`recent-${idx}`}
+                      style={newHeaderStyles.suggestionItem}
+                      onPress={() => onSuggestionClick(query)}
+                      data-testid={`recent-item-${idx}`}
+                    >
+                      <Ionicons name="time-outline" size={18} color="#999" />
+                      <Text style={newHeaderStyles.suggestionText} numberOfLines={1}>{query}</Text>
+                      <Ionicons name="arrow-forward" size={16} color="#ccc" />
+                    </TouchableOpacity>
+                  ))}
+                </>
+              ) : (
+                <View style={newHeaderStyles.noSuggestions}>
+                  <Ionicons name="search-outline" size={24} color="#ccc" />
+                  <Text style={newHeaderStyles.noSuggestionsText}>Start typing to search</Text>
+                </View>
+              )}
+            </View>
           )}
         </View>
       </View>
