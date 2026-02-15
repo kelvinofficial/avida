@@ -133,6 +133,64 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
             </TouchableOpacity>
           ))}
         </View>
+        
+        {/* Icon Style Row 1 */}
+        <View style={localStyles.iconCategoryRow}>
+          {ICON_ROW1_CATEGORIES.map((cat) => (
+            <TouchableOpacity
+              key={`icon-${cat.id}`}
+              style={localStyles.iconCategoryItem}
+              onPress={() => onCategoryPress(cat.id)}
+              data-testid={`category-icon-${cat.id}`}
+            >
+              <View style={[
+                localStyles.iconContainer,
+                selectedCategory === cat.id && localStyles.iconContainerSelected
+              ]}>
+                <Ionicons 
+                  name={cat.icon as any} 
+                  size={28} 
+                  color={selectedCategory === cat.id ? '#fff' : '#2E7D32'} 
+                />
+              </View>
+              <Text style={[
+                localStyles.iconLabel,
+                selectedCategory === cat.id && localStyles.iconLabelSelected
+              ]} numberOfLines={2}>
+                {cat.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        
+        {/* Icon Style Row 2 */}
+        <View style={localStyles.iconCategoryRow}>
+          {ICON_ROW2_CATEGORIES.map((cat) => (
+            <TouchableOpacity
+              key={`icon-${cat.id}`}
+              style={localStyles.iconCategoryItem}
+              onPress={() => onCategoryPress(cat.id)}
+              data-testid={`category-icon-${cat.id}`}
+            >
+              <View style={[
+                localStyles.iconContainer,
+                selectedCategory === cat.id && localStyles.iconContainerSelected
+              ]}>
+                <Ionicons 
+                  name={cat.icon as any} 
+                  size={28} 
+                  color={selectedCategory === cat.id ? '#fff' : '#2E7D32'} 
+                />
+              </View>
+              <Text style={[
+                localStyles.iconLabel,
+                selectedCategory === cat.id && localStyles.iconLabelSelected
+              ]} numberOfLines={2}>
+                {cat.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
         </View>
       </View>
 
