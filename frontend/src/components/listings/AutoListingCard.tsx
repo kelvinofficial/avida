@@ -47,19 +47,13 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
 
   const attributes = listing.attributes || {};
   const year = attributes.year;
-  const mileage = attributes.mileage || attributes.km;
+  const mileage = attributes.mileage || attributes.km || attributes.miles;
   const transmission = attributes.transmission;
 
-  const formatMileage = (km: number) => {
-    if (km >= 1000) return `${Math.round(km / 1000)}k km`;
-    return `${km} km`;
+  const formatMileage = (value: number) => {
+    if (value >= 1000) return `${Math.round(value / 1000)}k`;
+    return `${value}`;
   };
-
-  // Build highlights array (max 3)
-  const highlights: string[] = [];
-  if (year) highlights.push(String(year));
-  if (mileage) highlights.push(formatMileage(mileage));
-  if (transmission) highlights.push(transmission);
 
   return (
     <TouchableScale 
