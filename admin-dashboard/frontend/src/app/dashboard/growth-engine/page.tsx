@@ -42,6 +42,12 @@ import {
 
 const API_BASE = process.env.NEXT_PUBLIC_MAIN_API_URL || '';
 
+// Helper to get auth header
+const getAuthHeaders = () => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null;
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+};
+
 interface DashboardData {
   overview: {
     total_blog_posts: number;
