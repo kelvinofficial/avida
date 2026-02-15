@@ -77,6 +77,7 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
       
       {/* Row 3: Category Icons in 2 Rows */}
       <View style={localStyles.categoryRowWrapper}>
+        <View style={localStyles.categoryRowInner}>
         {/* Row 1 with All dropdown */}
         <View style={localStyles.categoryRow}>
           <TouchableOpacity
@@ -127,6 +128,7 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
               </Text>
             </TouchableOpacity>
           ))}
+        </View>
         </View>
       </View>
 
