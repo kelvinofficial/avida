@@ -83,7 +83,7 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
           alt={listing.title}
           style={{
             width: '100%',
-            height: 253,
+            height: '253px',
             objectFit: 'cover',
           }}
           loading="lazy"
