@@ -181,7 +181,7 @@ export default function AdminAnalyticsScreen() {
   const openAdminDashboard = () => {
     const url = Platform.OS === 'web' 
       ? '/api/admin-ui/dashboard/analytics'
-      : 'https://festive-goldberg-1.preview.emergentagent.com/api/admin-ui/dashboard/analytics';
+      : 'https://marketplace-preview-7.preview.emergentagent.com/api/admin-ui/dashboard/analytics';
     Linking.openURL(url);
   };
 

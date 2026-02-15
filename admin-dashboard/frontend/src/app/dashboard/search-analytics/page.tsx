@@ -60,7 +60,7 @@ import {
 } from 'recharts';
 
 // Main backend API URL
-const MAIN_API_URL = process.env.NEXT_PUBLIC_MAIN_API_URL || 'https://festive-goldberg-1.preview.emergentagent.com/api';
+const MAIN_API_URL = process.env.NEXT_PUBLIC_MAIN_API_URL || 'https://marketplace-preview-7.preview.emergentagent.com/api';
 
 // Theme colors - consistent with admin dashboard
 const THEME = {
