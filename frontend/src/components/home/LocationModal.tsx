@@ -70,7 +70,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({
         
         <View style={styles.locationPickerContent}>
           <Text style={styles.locationPickerHint}>
-            Select a location to filter listings. Choose a country, then narrow down to region, district, and city.
+            Filter listings by region in Tanzania.
           </Text>
           
           <LocationPicker
