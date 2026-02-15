@@ -819,7 +819,9 @@ export default function SearchScreen() {
             style={styles.backBtn}
             data-testid="search-back-button"
           >
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+            <View style={styles.backBtnCircle}>
+              <Ionicons name="arrow-back" size={22} color={COLORS.text} />
+            </View>
           </TouchableOpacity>
           <View style={styles.mobileSearchContainer}>
             <Ionicons name="search" size={20} color={COLORS.textSecondary} />
