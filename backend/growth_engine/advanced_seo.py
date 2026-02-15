@@ -164,7 +164,10 @@ def create_advanced_seo_router(db, get_current_user):
                     
                     # Location match
                     location = listing.get("location", {})
-                    city = location.get("city", "").lower()
+                    if isinstance(location, dict):
+                        city = location.get("city", "").lower()
+                    else:
+                        city = str(location).lower() if location else ""
                     if city and city in post_content:
                         score += 0.2
                     
