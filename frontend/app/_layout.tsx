@@ -231,6 +231,8 @@ export default function RootLayout() {
                   <Stack.Screen name="challenges" options={{ presentation: 'card', contentStyle: { backgroundColor: '#F5F5F5' } }} />
                   <Stack.Screen name="profile/[id]/badges" options={{ presentation: 'card', contentStyle: { backgroundColor: '#F5F5F5' } }} />
                   <Stack.Screen name="badges" options={{ headerShown: false }} />
+                  <Stack.Screen name="blog/index" options={{ headerShown: false, contentStyle: { backgroundColor: '#F9FAFB' } }} />
+                  <Stack.Screen name="blog/[slug]" options={{ headerShown: false, contentStyle: { backgroundColor: '#F9FAFB' } }} />
                 </Stack>
               </ErrorBoundary>
             </FavoriteNotificationProvider>
