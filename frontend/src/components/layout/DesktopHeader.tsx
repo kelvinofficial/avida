@@ -315,7 +315,10 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
           <View style={styles.globalHeaderInner}>
             {showSearch && (
               <View style={styles.searchContainer}>
-                <View style={styles.searchField}>
+                <View 
+                  style={styles.searchField} 
+                  ref={searchFieldRef as any}
+                >
                   <Ionicons name="search" size={20} color={COLORS.textSecondary} />
                   <TextInput
                     style={styles.searchInput}
@@ -323,7 +326,10 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
                     placeholderTextColor={COLORS.textSecondary}
                     value={searchQuery}
                     onChangeText={handleSearchInputChange}
-                    onFocus={() => setShowSearchSuggestions(true)}
+                    onFocus={() => {
+                      measureSearchField();
+                      setShowSearchSuggestions(true);
+                    }}
                     onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
                     onSubmitEditing={handleSearchSubmit}
                     returnKeyType="search"
@@ -338,36 +344,6 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
                     </TouchableOpacity>
                   )}
                 </View>
-                {/* Search Suggestions Dropdown */}
-                {showSearchSuggestions && searchQuery.length > 0 && (
-                  <View style={styles.suggestionsDropdown}>
-                    {searchSuggestions.length > 0 ? (
-                      searchSuggestions.slice(0, 6).map((item, idx) => (
-                        <TouchableOpacity
-                          key={`suggestion-${idx}`}
-                          style={styles.suggestionItem}
-                          onPress={() => handleSuggestionClick(item.query)}
-                          data-testid={`desktop-suggestion-${idx}`}
-                        >
-                          <Ionicons name="search-outline" size={18} color="#666" />
-                          <Text style={styles.suggestionText} numberOfLines={1}>{item.query}</Text>
-                          {item.count > 0 && (
-                            <Text style={styles.suggestionCount}>{item.count} results</Text>
-                          )}
-                          <Ionicons name="arrow-forward" size={16} color="#ccc" />
-                        </TouchableOpacity>
-                      ))
-                    ) : searchQuery.length >= 2 ? (
-                      <View style={styles.noSuggestions}>
-                        <Text style={styles.noSuggestionsText}>No suggestions found</Text>
-                      </View>
-                    ) : (
-                      <View style={styles.noSuggestions}>
-                        <Text style={styles.noSuggestionsText}>Keep typing to see suggestions</Text>
-                      </View>
-                    )}
-                  </View>
-                )}
               </View>
             )}
             {showLocationSelector && (
