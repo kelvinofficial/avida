@@ -1387,10 +1387,25 @@ export default function CategoryScreen() {
                 </View>
               )}
             </View>
-            <TouchableOpacity style={desktopStyles.locationChip} activeOpacity={0.7}>
-              <Ionicons name="location" size={18} color="#2E7D32" />
-              <Text style={desktopStyles.locationText}>All Locations</Text>
-              <Ionicons name="chevron-down" size={16} color="#666" />
+            <TouchableOpacity 
+              style={[desktopStyles.locationChip, selectedRegion && desktopStyles.locationChipActive]} 
+              activeOpacity={0.7}
+              onPress={() => setShowLocationModal(true)}
+              data-testid="location-picker-desktop"
+            >
+              <Ionicons name="location" size={18} color={selectedRegion ? "#fff" : "#2E7D32"} />
+              <Text style={[desktopStyles.locationText, selectedRegion && desktopStyles.locationTextActive]}>
+                {selectedRegionName || 'All Tanzania'}
+              </Text>
+              <Ionicons name="chevron-down" size={16} color={selectedRegion ? "#fff" : "#666"} />
+              {selectedRegion && (
+                <TouchableOpacity 
+                  onPress={(e) => { e.stopPropagation(); clearLocationFilter(); }}
+                  style={desktopStyles.locationClearBtn}
+                >
+                  <Ionicons name="close-circle" size={16} color="#fff" />
+                </TouchableOpacity>
+              )}
             </TouchableOpacity>
           </View>
         </View>
