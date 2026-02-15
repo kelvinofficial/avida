@@ -429,11 +429,47 @@ export default function CategoryScreen() {
     }
   }, [API_URL, isAuthenticated, loadSavedFilters]);
   
+  // Load Tanzania regions for location picker
+  const loadRegions = useCallback(async () => {
+    setLoadingLocations(true);
+    try {
+      const response = await fetch(`${API_URL}/api/locations/regions?country_code=TZ`);
+      if (response.ok) {
+        const data = await response.json();
+        setRegions(data);
+      }
+    } catch (error) {
+      console.log('Error loading regions:', error);
+    } finally {
+      setLoadingLocations(false);
+    }
+  }, [API_URL]);
+  
+  // Handle region selection
+  const handleRegionSelect = useCallback((regionCode: string, regionName: string) => {
+    if (regionCode === selectedRegion) {
+      // Deselect if already selected
+      setSelectedRegion('');
+      setSelectedRegionName('');
+    } else {
+      setSelectedRegion(regionCode);
+      setSelectedRegionName(regionName);
+    }
+    setShowLocationModal(false);
+  }, [selectedRegion]);
+  
+  // Clear location filter
+  const clearLocationFilter = useCallback(() => {
+    setSelectedRegion('');
+    setSelectedRegionName('');
+  }, []);
+  
   // Load recent searches on mount
   useEffect(() => {
     loadRecentSearches();
     loadPopularSearches();
     loadSavedFilters();
+    loadRegions();
   }, [categoryId, isAuthenticated]);
 
   // Get subcategories for this category
