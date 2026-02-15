@@ -174,26 +174,26 @@ const localStyles = StyleSheet.create({
     borderBottomColor: '#E0E0E0',
     zIndex: 100,
     alignItems: 'center',
+    width: '100%',
   },
   categoryRowInner: {
     width: '100%',
     maxWidth: 1280,
+    display: 'flex',
   },
   // Icon style category rows
   iconCategoryRow: {
+    display: 'flex',
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignItems: 'flex-start',
     width: '100%',
-    rowGap: 16,
-    columnGap: 8,
+    gap: 12,
   },
   iconCategoryItem: {
     alignItems: 'center',
     width: 80,
-    minWidth: 80,
-    flexShrink: 0,
   },
   iconContainer: {
     width: 56,
