@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
   metaRow: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    marginTop: 4,
+    marginTop: 2,
   },
   time: { 
     fontSize: 10, 
