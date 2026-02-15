@@ -92,7 +92,9 @@ export default function ASOEnginePage() {
 
   const fetchMetadata = async () => {
     try {
-      const res = await fetch(`${API_BASE}/growth/aso/metadata`);
+      const res = await fetch(`${API_BASE}/growth/aso/metadata`, {
+        headers: getAuthHeaders()
+      });
       if (res.ok) {
         const data = await res.json();
         setMetadata(data.metadata || []);
@@ -104,7 +106,9 @@ export default function ASOEnginePage() {
 
   const fetchAnalytics = async () => {
     try {
-      const res = await fetch(`${API_BASE}/growth/aso/analytics/summary`);
+      const res = await fetch(`${API_BASE}/growth/aso/analytics/summary`, {
+        headers: getAuthHeaders()
+      });
       if (res.ok) {
         const data = await res.json();
         setAnalytics(data);
@@ -116,7 +120,9 @@ export default function ASOEnginePage() {
 
   const fetchKeywords = async (regionCode: string) => {
     try {
-      const res = await fetch(`${API_BASE}/growth/aso/keywords/${regionCode}`);
+      const res = await fetch(`${API_BASE}/growth/aso/keywords/${regionCode}`, {
+        headers: getAuthHeaders()
+      });
       if (res.ok) {
         const data = await res.json();
         setRegionKeywords(data);
@@ -128,7 +134,9 @@ export default function ASOEnginePage() {
 
   const fetchCompetitorAnalysis = async (regionCode: string) => {
     try {
-      const res = await fetch(`${API_BASE}/growth/aso/competitor-analysis/${regionCode}`);
+      const res = await fetch(`${API_BASE}/growth/aso/competitor-analysis/${regionCode}`, {
+        headers: getAuthHeaders()
+      });
       if (res.ok) {
         const data = await res.json();
         setCompetitorAnalysis(data);
@@ -144,7 +152,7 @@ export default function ASOEnginePage() {
     try {
       const res = await fetch(`${API_BASE}/growth/aso/google-play/generate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           platform: 'google_play',
           region,
@@ -176,7 +184,7 @@ export default function ASOEnginePage() {
     try {
       const res = await fetch(`${API_BASE}/growth/aso/app-store/generate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           platform: 'app_store',
           region,
