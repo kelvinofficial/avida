@@ -14,7 +14,7 @@ from datetime import datetime, timezone, timedelta
 import uuid
 
 # Get BASE_URL from environment - without /api suffix (added in requests)
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://marketplace-ai-tools.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://marketplace-ai-tools-1.preview.emergentagent.com").rstrip("/")
 
 
 class TestPhase5SupportedLanguages:
