@@ -1381,6 +1381,17 @@ const styles = StyleSheet.create({
     gap: 12,
     backgroundColor: '#FFFFFF',
   },
+  locationBtn: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E8F5E9',
+    borderRadius: 12,
+  },
+  locationBtnActive: {
+    backgroundColor: COLORS.primary,
+  },
   mobileSearchContainer: {
     flex: 1,
     flexDirection: 'row',
