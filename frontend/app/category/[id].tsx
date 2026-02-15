@@ -224,10 +224,9 @@ export default function CategoryScreen() {
   const [selectedCityName, setSelectedCityName] = useState<string>('');
   const [loadingLocations, setLoadingLocations] = useState(false);
   
-  // Feature settings for location mode - subscribe to the whole store to ensure re-renders
-  const featureSettings = useFeatureSettingsStore(state => state.settings);
+  // Feature settings for location mode - subscribe directly to location_mode for immediate updates
+  const locationMode = useFeatureSettingsStore(state => state.settings.location_mode);
   const fetchSettings = useFeatureSettingsStore(state => state.fetchSettings);
-  const locationMode = featureSettings.location_mode;
   
   // Ensure feature settings are loaded
   useEffect(() => {
