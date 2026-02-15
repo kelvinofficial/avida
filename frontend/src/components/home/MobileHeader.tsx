@@ -616,10 +616,15 @@ const newHeaderStyles = StyleSheet.create({
     fontWeight: '700',
   },
   
-  // Row 2: Full-width search bar
+  // Row 2: Full-width search bar with dropdown
   row2: {
     paddingHorizontal: 16,
     paddingBottom: 14,
+    zIndex: 1000,
+  },
+  searchContainer: {
+    position: 'relative',
+    zIndex: 1000,
   },
   searchField: {
     flexDirection: 'row',
@@ -652,6 +657,79 @@ const newHeaderStyles = StyleSheet.create({
     borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  
+  // Search suggestions dropdown
+  suggestionsDropdown: {
+    position: 'absolute',
+    top: 56,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 8,
+    zIndex: 1001,
+    maxHeight: 320,
+    overflow: 'hidden',
+  },
+  suggestionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    backgroundColor: '#FAFAFA',
+  },
+  suggestionHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  suggestionHeaderText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#666',
+  },
+  clearText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#2E7D32',
+  },
+  suggestionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F5F5F5',
+  },
+  suggestionText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#333',
+  },
+  suggestionCount: {
+    fontSize: 12,
+    color: '#999',
+  },
+  noSuggestions: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 32,
+    gap: 8,
+  },
+  noSuggestionsText: {
+    fontSize: 14,
+    color: '#999',
   },
 });
 
