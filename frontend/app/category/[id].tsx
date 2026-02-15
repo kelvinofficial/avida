@@ -214,9 +214,18 @@ export default function CategoryScreen() {
   // Location picker state
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [regions, setRegions] = useState<Array<{country_code: string, region_code: string, name: string, lat?: number, lng?: number}>>([]);
+  const [districts, setDistricts] = useState<Array<{country_code: string, region_code: string, district_code: string, name: string}>>([]);
+  const [cities, setCities] = useState<Array<{country_code: string, region_code: string, district_code: string, city_code: string, name: string}>>([]);
   const [selectedRegion, setSelectedRegion] = useState<string>('');
   const [selectedRegionName, setSelectedRegionName] = useState<string>('');
+  const [selectedDistrict, setSelectedDistrict] = useState<string>('');
+  const [selectedDistrictName, setSelectedDistrictName] = useState<string>('');
+  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [selectedCityName, setSelectedCityName] = useState<string>('');
   const [loadingLocations, setLoadingLocations] = useState(false);
+  
+  // Feature settings for location mode
+  const { settings: featureSettings } = useFeatureSettingsStore();
 
   const categoryId = id as string;
   
