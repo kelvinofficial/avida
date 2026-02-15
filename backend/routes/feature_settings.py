@@ -64,6 +64,9 @@ def create_feature_settings_router(db, require_auth):
         location_mode: Optional[str] = Body(None),
         default_country: Optional[str] = Body(None),
         allow_country_change: Optional[bool] = Body(None),
+        currency: Optional[str] = Body(None),
+        currency_symbol: Optional[str] = Body(None),
+        currency_position: Optional[str] = Body(None),
     ):
         """Update feature settings (admin only)"""
         # Build update document with only provided fields
@@ -92,6 +95,14 @@ def create_feature_settings_router(db, require_auth):
             update_fields["default_country"] = default_country
         if allow_country_change is not None:
             update_fields["allow_country_change"] = allow_country_change
+        if currency is not None:
+            update_fields["currency"] = currency
+        if currency_symbol is not None:
+            update_fields["currency_symbol"] = currency_symbol
+        if currency_position is not None:
+            if currency_position not in ["before", "after"]:
+                raise HTTPException(status_code=400, detail="Invalid currency_position. Must be before or after")
+            update_fields["currency_position"] = currency_position
         
         if not update_fields:
             raise HTTPException(status_code=400, detail="No fields to update")
