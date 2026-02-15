@@ -887,27 +887,44 @@ export default function SearchScreen() {
                 </TouchableOpacity>
               </View>
 
-              {/* Category Icons Row */}
+              {/* Category Icons Row - Responsive: 1 row on large screens, 2 rows on smaller */}
               <View style={styles.categoryIconsRow}>
-                <ScrollView 
-                  horizontal 
-                  showsHorizontalScrollIndicator={false} 
-                  contentContainerStyle={styles.categoryIconsScroll}
-                >
-                  {categories.map((cat) => (
-                    <TouchableOpacity
-                      key={cat.id}
-                      style={styles.categoryIconItem}
-                      onPress={() => handleCategoryPress(cat.id)}
-                      data-testid={`search-category-${cat.id}`}
-                    >
-                      <View style={styles.categoryIconCircle}>
-                        <Ionicons name={cat.icon as any} size={24} color={COLORS.primary} />
-                      </View>
-                      <Text style={styles.categoryIconText} numberOfLines={2}>{cat.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
+                <View style={styles.categoryIconsInner}>
+                  {/* First row of categories */}
+                  <View style={styles.categoryIconsFlexRow}>
+                    {(needsTwoRows ? categories.slice(0, Math.ceil(categories.length / 2)) : categories).map((cat) => (
+                      <TouchableOpacity
+                        key={cat.id}
+                        style={styles.categoryIconItem}
+                        onPress={() => handleCategoryPress(cat.id)}
+                        data-testid={`search-category-${cat.id}`}
+                      >
+                        <View style={styles.categoryIconCircle}>
+                          <Ionicons name={cat.icon as any} size={24} color={COLORS.primary} />
+                        </View>
+                        <Text style={styles.categoryIconText} numberOfLines={2}>{cat.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                  {/* Second row (only on smaller screens) */}
+                  {needsTwoRows && categories.length > Math.ceil(categories.length / 2) && (
+                    <View style={[styles.categoryIconsFlexRow, { marginTop: 16 }]}>
+                      {categories.slice(Math.ceil(categories.length / 2)).map((cat) => (
+                        <TouchableOpacity
+                          key={cat.id}
+                          style={styles.categoryIconItem}
+                          onPress={() => handleCategoryPress(cat.id)}
+                          data-testid={`search-category-${cat.id}`}
+                        >
+                          <View style={styles.categoryIconCircle}>
+                            <Ionicons name={cat.icon as any} size={24} color={COLORS.primary} />
+                          </View>
+                          <Text style={styles.categoryIconText} numberOfLines={2}>{cat.name}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+                </View>
               </View>
 
               {/* Results/Browse Area - Full Width */}
