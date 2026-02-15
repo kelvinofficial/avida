@@ -1945,7 +1945,7 @@ export default function CategoryScreen() {
                 <View style={styles.recentSearchesTitleRowMobile}>
                   <Ionicons name="flame-outline" size={14} color="#FF6B35" />
                   <Text style={styles.recentSearchesTitleMobile}>
-                    {popularSearches.category.length > 0 ? 'Popular' : 'Trending'}
+                    {popularSearches.category.length > 0 ? 'Popular' : 'Popular'}
                   </Text>
                 </View>
               </View>
