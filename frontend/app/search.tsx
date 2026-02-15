@@ -526,41 +526,94 @@ export default function SearchScreen() {
     </TouchableOpacity>
   );
 
-  const renderListing = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      style={styles.listingCard}
-      onPress={() => router.push(getListingRoute(item))}
-      data-testid={`listing-${item.id}`}
-    >
-      <ImageWithSkeleton
-        source={item.images?.[0] ? { uri: item.images[0] } : null}
-        style={styles.listingImage}
-        skeletonStyle={{ borderRadius: 8 }}
-        placeholderIcon="image-outline"
-        placeholderIconSize={28}
-        placeholderIconColor="#CCC"
-      />
-      <View style={styles.listingContent}>
-        <Text style={styles.listingPrice}>{formatPrice(item.price, item.currency)}</Text>
-        <Text style={styles.listingTitle} numberOfLines={2}>{item.title}</Text>
-        <View style={styles.locationRow}>
-          <Ionicons name="location-outline" size={12} color={COLORS.textSecondary} />
-          <Text style={styles.listingLocation} numberOfLines={1}>{item.location}</Text>
-        </View>
-      </View>
+  const renderListing = ({ item }: { item: any }) => {
+    const imageCount = item.images?.length || 0;
+    const isNegotiable = item.negotiable || item.priceNegotiable;
+    const isFeatured = item.featured || item.boosted;
+    
+    return (
       <TouchableOpacity
-        style={styles.favoriteBtn}
-        onPress={() => handleFavorite(item.id)}
-        data-testid={`favorite-${item.id}`}
+        style={mobileCardStyles.card}
+        onPress={() => router.push(getListingRoute(item))}
+        data-testid={`listing-${item.id}`}
       >
-        <Ionicons
-          name={favorites.has(item.id) ? 'heart' : 'heart-outline'}
-          size={22}
-          color={favorites.has(item.id) ? '#E53935' : COLORS.textSecondary}
-        />
+        {/* LEFT: Image */}
+        <View style={mobileCardStyles.imageContainer}>
+          <ImageWithSkeleton
+            source={item.images?.[0] ? { uri: item.images[0] } : null}
+            style={mobileCardStyles.image}
+            skeletonStyle={{ borderRadius: 0 }}
+            placeholderIcon="image-outline"
+            placeholderIconSize={28}
+            placeholderIconColor="#CCC"
+          />
+          
+          {/* Featured Badge */}
+          {isFeatured && (
+            <View style={mobileCardStyles.featuredBadge}>
+              <Ionicons name="star" size={10} color="#fff" />
+            </View>
+          )}
+          
+          {/* Image Count Badge */}
+          {imageCount > 1 && (
+            <View style={mobileCardStyles.imageCountBadge}>
+              <Ionicons name="camera" size={10} color="#fff" />
+              <Text style={mobileCardStyles.imageCountText}>{imageCount}</Text>
+            </View>
+          )}
+        </View>
+        
+        {/* RIGHT: Content */}
+        <View style={mobileCardStyles.content}>
+          {/* Heart Icon - Top Right of Content */}
+          <TouchableOpacity
+            style={mobileCardStyles.heartButton}
+            onPress={(e) => {
+              e.stopPropagation?.();
+              handleFavorite(item.id);
+            }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            data-testid={`favorite-${item.id}`}
+          >
+            <Ionicons
+              name={favorites.has(item.id) ? 'heart' : 'heart-outline'}
+              size={20}
+              color={favorites.has(item.id) ? '#E53935' : COLORS.textSecondary}
+            />
+          </TouchableOpacity>
+          
+          {/* Price Row */}
+          <View style={mobileCardStyles.priceRow}>
+            <Text style={mobileCardStyles.price}>{formatPrice(item.price, item.currency)}</Text>
+            {isNegotiable && (
+              <View style={mobileCardStyles.negotiableBadge}>
+                <Text style={mobileCardStyles.negotiableText}>Negotiable</Text>
+              </View>
+            )}
+          </View>
+          
+          {/* Title */}
+          <Text style={mobileCardStyles.title} numberOfLines={2}>{item.title}</Text>
+          
+          {/* Location */}
+          <View style={mobileCardStyles.locationRow}>
+            <Ionicons name="location-outline" size={12} color={COLORS.textSecondary} />
+            <Text style={mobileCardStyles.locationText} numberOfLines={1}>
+              {item.location || 'Unknown location'}
+            </Text>
+          </View>
+          
+          {/* Condition Badge */}
+          {item.condition && (
+            <View style={mobileCardStyles.conditionBadge}>
+              <Text style={mobileCardStyles.conditionText}>{item.condition}</Text>
+            </View>
+          )}
+        </View>
       </TouchableOpacity>
-    </TouchableOpacity>
-  );
+    );
+  };
 
   // Desktop Layout
   if (isLargeScreen) {
