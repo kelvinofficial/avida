@@ -2252,8 +2252,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 52,
     alignItems: 'center',
     justifyContent: 'center',
   },
