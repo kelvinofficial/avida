@@ -103,9 +103,68 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
 }) => {
   const router = useRouter();
   const ICON_SIZE = 24;
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+
+  // Handle category selection from dropdown
+  const handleCategoryDropdownSelect = (categoryId: string | null) => {
+    if (categoryId === null || categoryId === 'all') {
+      onClearCategory();
+    } else {
+      onCategoryPress(categoryId);
+    }
+    setShowCategoryDropdown(false);
+  };
 
   return (
     <View style={styles.headerWrapper}>
+      {/* Category Dropdown Modal */}
+      <Modal
+        visible={showCategoryDropdown}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setShowCategoryDropdown(false)}
+      >
+        <TouchableOpacity 
+          style={mobileDropdownStyles.modalBackdrop}
+          activeOpacity={1}
+          onPress={() => setShowCategoryDropdown(false)}
+        >
+          <View style={mobileDropdownStyles.dropdownContainer}>
+            <View style={mobileDropdownStyles.dropdownHeader}>
+              <Text style={mobileDropdownStyles.dropdownTitle}>Select Category</Text>
+              <TouchableOpacity onPress={() => setShowCategoryDropdown(false)}>
+                <Ionicons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={mobileDropdownStyles.dropdownScroll} showsVerticalScrollIndicator={true}>
+              <TouchableOpacity
+                style={[mobileDropdownStyles.dropdownItem, !selectedCategory && mobileDropdownStyles.dropdownItemActive]}
+                onPress={() => handleCategoryDropdownSelect(null)}
+                data-testid="mobile-category-all"
+              >
+                <Ionicons name="apps-outline" size={20} color={!selectedCategory ? '#2E7D32' : '#666'} />
+                <Text style={[mobileDropdownStyles.dropdownItemText, !selectedCategory && mobileDropdownStyles.dropdownItemTextActive]}>
+                  All Categories
+                </Text>
+              </TouchableOpacity>
+              {ICON_CATEGORIES.map((cat) => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={[mobileDropdownStyles.dropdownItem, selectedCategory === cat.id && mobileDropdownStyles.dropdownItemActive]}
+                  onPress={() => handleCategoryDropdownSelect(cat.id)}
+                  data-testid={`mobile-category-${cat.id}`}
+                >
+                  <Ionicons name={cat.icon as any} size={20} color={selectedCategory === cat.id ? '#2E7D32' : '#666'} />
+                  <Text style={[mobileDropdownStyles.dropdownItemText, selectedCategory === cat.id && mobileDropdownStyles.dropdownItemTextActive]}>
+                    {cat.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       {/* ROW 1: BRAND + NOTIFICATIONS */}
       <View style={styles.row1}>
         <Text style={styles.logo}>avida</Text>
