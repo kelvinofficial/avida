@@ -87,9 +87,14 @@ export const useFeatureSettingsStore = create<FeatureSettingsState>((set, get) =
       }
 
       const data = await response.json();
+      console.log('[FeatureSettingsStore] Received data:', JSON.stringify(data));
+      console.log('[FeatureSettingsStore] location_mode:', data.location_mode);
+      
+      const newSettings = { ...DEFAULT_SETTINGS, ...data };
+      console.log('[FeatureSettingsStore] New settings:', JSON.stringify(newSettings));
       
       set({
-        settings: { ...DEFAULT_SETTINGS, ...data },
+        settings: newSettings,
         isLoading: false,
         lastFetched: Date.now(),
       });
