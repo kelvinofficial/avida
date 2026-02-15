@@ -49,7 +49,7 @@ const PropertyListingCard = memo<ListingCardProps>(({ listing, onPress, onFavori
   const attributes = listing.attributes || {};
   const bedrooms = attributes.bedrooms || attributes.rooms;
   const bathrooms = attributes.bathrooms;
-  const size = attributes.size || attributes.area;
+  const size = attributes.size || attributes.area || attributes.size_sqm;
   const propertyType = attributes.property_type || listing.subcategory?.replace(/_/g, ' ');
 
   return (
