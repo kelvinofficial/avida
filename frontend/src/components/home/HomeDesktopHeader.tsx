@@ -58,9 +58,10 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
   const { width } = useWindowDimensions();
   
   // Split categories into rows based on screen width
-  const needsTwoRows = width < 1200;
-  const row1Categories = needsTwoRows ? ALL_ICON_CATEGORIES.slice(0, 10) : ALL_ICON_CATEGORIES;
-  const row2Categories = needsTwoRows ? ALL_ICON_CATEGORIES.slice(10) : [];
+  // At narrower widths (< 1300px), split into two rows
+  const needsTwoRows = width < 1300;
+  const row1Categories = needsTwoRows ? ALL_ICON_CATEGORIES.slice(0, 7) : ALL_ICON_CATEGORIES;
+  const row2Categories = needsTwoRows ? ALL_ICON_CATEGORIES.slice(7) : [];
 
   const handleAllPress = () => {
     setShowCategoryDropdown(true);
