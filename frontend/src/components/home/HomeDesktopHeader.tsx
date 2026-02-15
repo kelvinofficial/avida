@@ -212,6 +212,12 @@ const localStyles = StyleSheet.create({
     gap: 8,
     justifyContent: 'flex-start',
   },
+  categoryRowFirst: {
+    flexDirection: 'row',
+    flexWrap: 'nowrap',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
   categoryPill: {
     flexDirection: 'row',
     alignItems: 'center',
