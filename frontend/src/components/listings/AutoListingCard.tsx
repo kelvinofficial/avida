@@ -11,6 +11,7 @@ import { TouchableScale, OptimizedImage } from '../common';
 
 const COLORS = {
   primary: '#2E7D32',
+  primaryLight: '#E8F5E9',
   background: '#F5F5F5',
   surface: '#FFFFFF',
   text: '#1A1A1A',
@@ -37,8 +38,8 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
       
       if (diffDays === 0) return 'Today';
       if (diffDays === 1) return 'Yesterday';
-      if (diffDays < 7) return `${diffDays}d ago`;
-      if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+      if (diffDays < 7) return `${diffDays} days ago`;
+      if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
       return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
     } catch {
       return '';
@@ -49,6 +50,7 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
   const year = attributes.year;
   const mileage = attributes.mileage || attributes.km || attributes.miles;
   const transmission = attributes.transmission;
+  const vehicleType = attributes.body_type || listing.subcategory?.replace(/_/g, ' ');
 
   const formatMileage = (value: number) => {
     if (value >= 1000) return `${Math.round(value / 1000)}k`;
@@ -62,77 +64,20 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
       hapticFeedback="light"
       testID={`auto-card-${listing._id || listing.id}`}
     >
-      <View style={styles.autoCardRow}>
-        {/* Left: Image */}
-        <View style={styles.autoImageContainer}>
-          <OptimizedImage
-            uri={listing.images?.[0]}
-            style={styles.autoImage}
-            placeholderType="listing"
-            placeholderSize="medium"
-            priority={listing.featured ? 'high' : 'normal'}
-          />
-          {listing.featured && (
-            <View style={styles.autoFeaturedBadge}>
-              <Text style={styles.autoFeaturedText}>TOP</Text>
-            </View>
-          )}
-          {listing.images?.length > 1 && (
-            <View style={styles.autoImageCount}>
-              <Ionicons name="camera-outline" size={10} color="#fff" />
-              <Text style={styles.autoImageCountText}>{listing.images.length}</Text>
-            </View>
-          )}
-          {/* Views Counter - Bottom Right */}
-          <View style={styles.viewsContainer}>
-            <Ionicons name="eye-outline" size={10} color="#fff" />
-            <Text style={styles.viewsText}>{listing.views || 0}</Text>
+      {/* Image on Top */}
+      <View style={styles.autoImageContainer}>
+        <OptimizedImage
+          uri={listing.images?.[0]}
+          style={styles.autoImage}
+          placeholderType="listing"
+          placeholderSize="large"
+          priority={listing.featured ? 'high' : 'normal'}
+        />
+        {listing.featured && (
+          <View style={styles.autoFeaturedBadge}>
+            <Text style={styles.autoFeaturedText}>FEATURED</Text>
           </View>
-        </View>
-
-        {/* Right: Content */}
-        <View style={styles.autoCardContent}>
-          {/* Price */}
-          <Text style={styles.autoPrice}>{formatPrice(listing.price)}</Text>
-
-          {/* Title */}
-          <Text style={styles.autoTitle} numberOfLines={2}>{listing.title}</Text>
-
-          {/* Features Row: Mileage | Year | Transmission */}
-          <View style={styles.autoFeatures}>
-            {mileage && (
-              <View style={styles.featureItem}>
-                <Ionicons name="speedometer-outline" size={12} color={COLORS.textSecondary} />
-                <Text style={styles.featureText}>{formatMileage(mileage)} mi</Text>
-              </View>
-            )}
-            {mileage && (year || transmission) && <View style={styles.featureDivider} />}
-            {year && (
-              <View style={styles.featureItem}>
-                <Ionicons name="calendar-outline" size={12} color={COLORS.textSecondary} />
-                <Text style={styles.featureText}>{year}</Text>
-              </View>
-            )}
-            {year && transmission && <View style={styles.featureDivider} />}
-            {transmission && (
-              <View style={styles.featureItem}>
-                <Ionicons name="cog-outline" size={12} color={COLORS.textSecondary} />
-                <Text style={styles.featureText}>{transmission}</Text>
-              </View>
-            )}
-          </View>
-
-          {/* Location */}
-          <View style={styles.autoLocationRow}>
-            <Ionicons name="location-outline" size={11} color={COLORS.textLight} />
-            <Text style={styles.autoLocation} numberOfLines={1}>{listing.location}</Text>
-          </View>
-
-          {/* Date */}
-          <Text style={styles.autoDate}>{formatDate(listing.created_at)}</Text>
-        </View>
-
-        {/* Favorite Button */}
+        )}
         <TouchableOpacity
           style={styles.autoFavoriteButton}
           onPress={(e) => { e.stopPropagation(); onFavorite(); }}
@@ -140,10 +85,76 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
         >
           <Ionicons
             name={isFavorited ? 'heart' : 'heart-outline'}
-            size={18}
-            color={isFavorited ? '#E53935' : COLORS.textSecondary}
+            size={20}
+            color={isFavorited ? '#E53935' : '#FFFFFF'}
           />
         </TouchableOpacity>
+        {listing.images?.length > 1 && (
+          <View style={styles.imageCountBadge}>
+            <Ionicons name="camera-outline" size={11} color="#fff" />
+            <Text style={styles.imageCountText}>{listing.images.length}</Text>
+          </View>
+        )}
+        {vehicleType && (
+          <View style={styles.vehicleTypeBadge}>
+            <Text style={styles.vehicleTypeBadgeText}>{vehicleType}</Text>
+          </View>
+        )}
+        {/* Views Counter - Bottom Right */}
+        <View style={styles.viewsContainer}>
+          <Ionicons name="eye-outline" size={11} color="#fff" />
+          <Text style={styles.viewsText}>{listing.views || 0}</Text>
+        </View>
+      </View>
+
+      {/* Content Below */}
+      <View style={styles.autoCardContent}>
+        {/* Price Row */}
+        <View style={styles.autoPriceRow}>
+          <Text style={styles.autoPrice}>{formatPrice(listing.price)}</Text>
+          {listing.negotiable && (
+            <Text style={styles.negotiableTag}>Negotiable</Text>
+          )}
+        </View>
+
+        {/* Title */}
+        <Text style={styles.autoTitle} numberOfLines={1}>{listing.title}</Text>
+
+        {/* Features Row: Mileage | Year | Transmission */}
+        <View style={styles.autoFeatures}>
+          {mileage && (
+            <View style={styles.featureItem}>
+              <Ionicons name="speedometer-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.featureText}>{formatMileage(mileage)} mi</Text>
+            </View>
+          )}
+          {mileage && (year || transmission) && <View style={styles.featureDivider} />}
+          {year && (
+            <View style={styles.featureItem}>
+              <Ionicons name="calendar-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.featureText}>{year}</Text>
+            </View>
+          )}
+          {year && transmission && <View style={styles.featureDivider} />}
+          {transmission && (
+            <View style={styles.featureItem}>
+              <Ionicons name="cog-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.featureText}>{transmission}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Bottom Row: Location & Date */}
+        <View style={styles.autoBottomRow}>
+          <View style={styles.autoLocationRow}>
+            <Ionicons name="location-outline" size={12} color={COLORS.textLight} />
+            <Text style={styles.autoLocation} numberOfLines={1}>{listing.location}</Text>
+          </View>
+          <View style={styles.dateContainer}>
+            <Ionicons name="time-outline" size={11} color={COLORS.textLight} />
+            <Text style={styles.dateText}>{formatDate(listing.created_at)}</Text>
+          </View>
+        </View>
       </View>
     </TouchableScale>
   );
@@ -152,26 +163,22 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
 const styles = StyleSheet.create({
   autoCard: {
     backgroundColor: COLORS.surface,
-    borderRadius: 10,
-    marginBottom: 10,
+    borderRadius: 12,
+    marginBottom: 12,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
   },
   autoCardFeatured: {
     borderWidth: 2,
     borderColor: COLORS.primary,
   },
-  autoCardRow: {
-    flexDirection: 'row',
-    position: 'relative',
-  },
   autoImageContainer: {
-    width: 150,
-    height: 115,
+    width: '100%',
+    height: 140,
     position: 'relative',
   },
   autoImage: {
@@ -181,118 +188,157 @@ const styles = StyleSheet.create({
   },
   autoFeaturedBadge: {
     position: 'absolute',
-    top: 6,
-    left: 6,
+    top: 10,
+    left: 10,
     backgroundColor: COLORS.primary,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderRadius: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
   autoFeaturedText: {
     color: '#fff',
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: '700',
+    letterSpacing: 0.5,
   },
-  autoImageCount: {
+  autoFavoriteButton: {
     position: 'absolute',
-    bottom: 6,
-    left: 6,
+    top: 10,
+    right: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imageCountBadge: {
+    position: 'absolute',
+    bottom: 10,
+    left: 50,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
     backgroundColor: 'rgba(0,0,0,0.6)',
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
-  autoImageCountText: {
+  imageCountText: {
     color: '#fff',
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '600',
   },
   viewsContainer: {
     position: 'absolute',
-    bottom: 6,
-    right: 6,
+    bottom: 10,
+    right: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingHorizontal: 5,
-    paddingVertical: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 4,
   },
   viewsText: {
     color: '#fff',
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '600',
   },
+  vehicleTypeBadge: {
+    position: 'absolute',
+    bottom: 10,
+    left: 10,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  vehicleTypeBadgeText: {
+    fontSize: 10,
+    color: COLORS.text,
+    fontWeight: '600',
+    textTransform: 'capitalize',
+  },
   autoCardContent: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingLeft: 10,
-    paddingRight: 36,
+    padding: 12,
+  },
+  autoPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
   },
   autoPrice: {
-    fontSize: 14,
+    fontSize: 17,
     fontWeight: '700',
     color: COLORS.primary,
-    marginBottom: 2,
+  },
+  negotiableTag: {
+    fontSize: 10,
+    color: COLORS.primary,
+    fontWeight: '600',
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
   autoTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
     color: COLORS.text,
+    marginBottom: 8,
     lineHeight: 18,
-    marginBottom: 4,
   },
   autoFeatures: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
-    flexWrap: 'wrap',
+    marginBottom: 8,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
   },
   featureDivider: {
     width: 1,
-    height: 10,
+    height: 14,
     backgroundColor: COLORS.border,
-    marginHorizontal: 6,
+    marginHorizontal: 10,
   },
   featureText: {
-    fontSize: 10,
+    fontSize: 12,
     color: COLORS.textSecondary,
     fontWeight: '500',
+  },
+  autoBottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   autoLocationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    marginBottom: 2,
-  },
-  autoLocation: {
-    fontSize: 10,
-    color: COLORS.textLight,
+    gap: 4,
     flex: 1,
   },
-  autoDate: {
-    fontSize: 9,
-    color: COLORS.textLight,
+  autoLocation: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    flex: 1,
   },
-  autoFavoriteButton: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: COLORS.background,
+  dateContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 4,
+  },
+  dateText: {
+    fontSize: 11,
+    color: COLORS.textLight,
   },
 });
 
