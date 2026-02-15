@@ -524,6 +524,197 @@ export default function SearchScreen() {
     }).format(price);
   };
 
+  // Location functions
+  const fetchRegions = async () => {
+    try {
+      setLocationLoading(true);
+      const data = await locationsApi.getRegions('TZ');
+      setRegions(data);
+    } catch (error) {
+      console.error('Error fetching regions:', error);
+    } finally {
+      setLocationLoading(false);
+    }
+  };
+
+  const fetchDistricts = async (regionCode: string) => {
+    try {
+      setLocationLoading(true);
+      const data = await locationsApi.getDistricts(regionCode);
+      setDistricts(data);
+    } catch (error) {
+      console.error('Error fetching districts:', error);
+    } finally {
+      setLocationLoading(false);
+    }
+  };
+
+  const fetchCities = async (districtCode: string) => {
+    try {
+      setLocationLoading(true);
+      const data = await locationsApi.getCities(districtCode);
+      setCities(data);
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+    } finally {
+      setLocationLoading(false);
+    }
+  };
+
+  const handleRegionSelect = (regionCode: string) => {
+    setSelectedRegion(regionCode);
+    setSelectedDistrict(null);
+    setSelectedCity(null);
+    setDistricts([]);
+    setCities([]);
+    fetchDistricts(regionCode);
+  };
+
+  const handleDistrictSelect = (districtCode: string) => {
+    setSelectedDistrict(districtCode);
+    setSelectedCity(null);
+    setCities([]);
+    fetchCities(districtCode);
+  };
+
+  const handleCitySelect = (cityCode: string) => {
+    setSelectedCity(cityCode);
+  };
+
+  const clearLocationFilter = () => {
+    setSelectedRegion(null);
+    setSelectedDistrict(null);
+    setSelectedCity(null);
+    setDistricts([]);
+    setCities([]);
+  };
+
+  const applyLocationFilter = () => {
+    setShowLocationModal(false);
+    // Re-run search with location filter
+    if (searchQuery) {
+      handleSearch();
+    }
+  };
+
+  // Fetch regions when modal opens
+  useEffect(() => {
+    if (showLocationModal && regions.length === 0) {
+      fetchRegions();
+    }
+  }, [showLocationModal]);
+
+  // Location modal renderer
+  const renderLocationModal = () => {
+    const hasLocationFilter = selectedRegion || selectedDistrict || selectedCity;
+    
+    return (
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showLocationModal}
+        onRequestClose={() => setShowLocationModal(false)}
+      >
+        <View style={locationModalStyles.overlay}>
+          <View style={locationModalStyles.content}>
+            <View style={locationModalStyles.header}>
+              <Text style={locationModalStyles.title}>Select Location</Text>
+              <TouchableOpacity onPress={() => setShowLocationModal(false)}>
+                <Ionicons name="close" size={24} color={COLORS.text} />
+              </TouchableOpacity>
+            </View>
+            
+            {locationLoading && (
+              <View style={locationModalStyles.loadingContainer}>
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              </View>
+            )}
+            
+            {/* Regions */}
+            <Text style={locationModalStyles.sectionTitle}>Region</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={locationModalStyles.chipScroll}>
+              {regions.map((region: any) => (
+                <TouchableOpacity
+                  key={region.code}
+                  style={[
+                    locationModalStyles.chip,
+                    selectedRegion === region.code && locationModalStyles.chipSelected
+                  ]}
+                  onPress={() => handleRegionSelect(region.code)}
+                >
+                  <Text style={[
+                    locationModalStyles.chipText,
+                    selectedRegion === region.code && locationModalStyles.chipTextSelected
+                  ]}>{region.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            
+            {/* Districts */}
+            {districts.length > 0 && (
+              <>
+                <Text style={locationModalStyles.sectionTitle}>District</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={locationModalStyles.chipScroll}>
+                  {districts.map((district: any) => (
+                    <TouchableOpacity
+                      key={district.code}
+                      style={[
+                        locationModalStyles.chip,
+                        selectedDistrict === district.code && locationModalStyles.chipSelected
+                      ]}
+                      onPress={() => handleDistrictSelect(district.code)}
+                    >
+                      <Text style={[
+                        locationModalStyles.chipText,
+                        selectedDistrict === district.code && locationModalStyles.chipTextSelected
+                      ]}>{district.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            )}
+            
+            {/* Cities */}
+            {cities.length > 0 && (
+              <>
+                <Text style={locationModalStyles.sectionTitle}>City</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={locationModalStyles.chipScroll}>
+                  {cities.map((city: any) => (
+                    <TouchableOpacity
+                      key={city.code}
+                      style={[
+                        locationModalStyles.chip,
+                        selectedCity === city.code && locationModalStyles.chipSelected
+                      ]}
+                      onPress={() => handleCitySelect(city.code)}
+                    >
+                      <Text style={[
+                        locationModalStyles.chipText,
+                        selectedCity === city.code && locationModalStyles.chipTextSelected
+                      ]}>{city.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            )}
+            
+            {/* Actions */}
+            <View style={locationModalStyles.actions}>
+              {hasLocationFilter && (
+                <TouchableOpacity style={locationModalStyles.clearBtn} onPress={clearLocationFilter}>
+                  <Text style={locationModalStyles.clearBtnText}>Clear</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity style={locationModalStyles.applyBtn} onPress={applyLocationFilter}>
+                <Text style={locationModalStyles.applyBtnText}>Apply</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   const renderCategory = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={styles.categoryCard}
