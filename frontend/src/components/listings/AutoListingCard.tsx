@@ -98,10 +98,29 @@ const AutoListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, 
           {/* Title */}
           <Text style={styles.autoTitle} numberOfLines={2}>{listing.title}</Text>
 
-          {/* Highlights Row (no icons) */}
-          {highlights.length > 0 && (
-            <Text style={styles.autoHighlights}>{highlights.join(' • ')}</Text>
-          )}
+          {/* Features Row: Mileage | Year | Transmission */}
+          <View style={styles.autoFeatures}>
+            {mileage && (
+              <View style={styles.featureItem}>
+                <Ionicons name="speedometer-outline" size={12} color={COLORS.textSecondary} />
+                <Text style={styles.featureText}>{formatMileage(mileage)} mi</Text>
+              </View>
+            )}
+            {mileage && (year || transmission) && <View style={styles.featureDivider} />}
+            {year && (
+              <View style={styles.featureItem}>
+                <Ionicons name="calendar-outline" size={12} color={COLORS.textSecondary} />
+                <Text style={styles.featureText}>{year}</Text>
+              </View>
+            )}
+            {year && transmission && <View style={styles.featureDivider} />}
+            {transmission && (
+              <View style={styles.featureItem}>
+                <Ionicons name="cog-outline" size={12} color={COLORS.textSecondary} />
+                <Text style={styles.featureText}>{transmission}</Text>
+              </View>
+            )}
+          </View>
 
           {/* Location */}
           <View style={styles.autoLocationRow}>
