@@ -827,7 +827,7 @@ export default function SearchScreen() {
   if (isLargeScreen) {
     return (
       <View style={styles.desktopContainer}>
-        <DesktopHeader showNavLinks showSearch={false} showLocationSelector={true} />
+        <DesktopHeader showNavLinks showSearch={false} showLocationSelector={false} />
         
         <ScrollView 
           style={styles.desktopScrollView} 
@@ -835,177 +835,171 @@ export default function SearchScreen() {
           contentContainerStyle={styles.desktopScrollContent}
         >
           <View style={styles.desktopContent}>
-            <View style={styles.desktopInner}>
-              {/* Sidebar */}
-              <View style={styles.sidebar}>
-                <SearchStatsCard 
-                  stats={searchStats} 
-                  onSearchClick={(q) => handleSearch(q)}
-                  onClearRecent={clearRecentSearches}
-                />
-                
-                {/* Categories Quick Access */}
-                <View style={styles.sidebarCard}>
-                  <Text style={styles.sidebarCardTitle}>Categories</Text>
-                  <View style={styles.categoryList}>
-                    {categories.slice(0, 8).map((cat) => (
-                      <TouchableOpacity
-                        key={cat.id}
-                        style={styles.categoryListItem}
-                        onPress={() => handleCategoryPress(cat.id)}
-                      >
-                        <View style={styles.categoryListIcon}>
-                          <Ionicons name={cat.icon as any} size={18} color={COLORS.primary} />
-                        </View>
-                        <Text style={styles.categoryListText}>{cat.name}</Text>
-                        <Ionicons name="chevron-forward" size={16} color={COLORS.textSecondary} />
-                      </TouchableOpacity>
-                    ))}
-                  </View>
+            <View style={styles.desktopInnerFullWidth}>
+              {/* Search Header Row with Location */}
+              <View style={styles.searchHeaderRow}>
+                <View style={styles.searchInputContainerNew}>
+                  <Ionicons name="search" size={22} color={COLORS.textSecondary} />
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search for anything..."
+                    placeholderTextColor={COLORS.textSecondary}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    onSubmitEditing={() => handleSearch()}
+                    returnKeyType="search"
+                    autoFocus={!params.q}
+                    data-testid="search-input"
+                  />
+                  {searchQuery.length > 0 && (
+                    <TouchableOpacity onPress={() => setSearchQuery('')}>
+                      <Ionicons name="close-circle" size={20} color={COLORS.textSecondary} />
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity 
+                    style={styles.searchBtn}
+                    onPress={() => handleSearch()}
+                    data-testid="search-button"
+                  >
+                    <Text style={styles.searchBtnText}>Search</Text>
+                  </TouchableOpacity>
                 </View>
+                
+                {/* Location Selector */}
+                <TouchableOpacity 
+                  style={styles.locationSelectorBtn}
+                  onPress={() => {
+                    const { setShowLocationModal } = useLocationStore.getState();
+                    setShowLocationModal(true);
+                  }}
+                  data-testid="search-location-selector"
+                >
+                  <Ionicons name="location" size={20} color={COLORS.primary} />
+                  <Text style={styles.locationText} numberOfLines={1}>
+                    {selectedLocationFilter?.city_name || selectedLocationFilter?.district_name || selectedLocationFilter?.region_name || 'All Locations'}
+                  </Text>
+                  <Ionicons name="chevron-down" size={18} color={COLORS.textSecondary} />
+                </TouchableOpacity>
               </View>
 
-              {/* Main Content */}
-              <View style={styles.mainContent}>
-                {/* Search Header */}
-                <View style={styles.searchHeader}>
-                  <View style={styles.searchInputContainer}>
-                    <Ionicons name="search" size={22} color={COLORS.textSecondary} />
-                    <TextInput
-                      style={styles.searchInput}
-                      placeholder="Search for anything..."
-                      placeholderTextColor={COLORS.textSecondary}
-                      value={searchQuery}
-                      onChangeText={setSearchQuery}
-                      onSubmitEditing={() => handleSearch()}
-                      returnKeyType="search"
-                      autoFocus={!params.q}
-                      data-testid="search-input"
-                    />
-                    {searchQuery.length > 0 && (
-                      <TouchableOpacity onPress={() => setSearchQuery('')}>
-                        <Ionicons name="close-circle" size={20} color={COLORS.textSecondary} />
-                      </TouchableOpacity>
-                    )}
-                    <TouchableOpacity 
-                      style={styles.searchBtn}
-                      onPress={() => handleSearch()}
-                      data-testid="search-button"
+              {/* Category Icons Row */}
+              <View style={styles.categoryIconsRow}>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false} 
+                  contentContainerStyle={styles.categoryIconsScroll}
+                >
+                  {categories.map((cat) => (
+                    <TouchableOpacity
+                      key={cat.id}
+                      style={styles.categoryIconItem}
+                      onPress={() => handleCategoryPress(cat.id)}
+                      data-testid={`search-category-${cat.id}`}
                     >
-                      <Text style={styles.searchBtnText}>Search</Text>
+                      <View style={styles.categoryIconCircle}>
+                        <Ionicons name={cat.icon as any} size={24} color={COLORS.primary} />
+                      </View>
+                      <Text style={styles.categoryIconText} numberOfLines={2}>{cat.name}</Text>
                     </TouchableOpacity>
-                  </View>
-                </View>
+                  ))}
+                </ScrollView>
+              </View>
 
-                {/* Results/Browse Area */}
-                <View style={styles.resultsArea}>
-                  {loading ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator size="large" color={COLORS.primary} />
-                      <Text style={styles.loadingText}>Searching...</Text>
-                    </View>
-                  ) : hasSearched ? (
-                    <View style={styles.resultsContainer}>
-                      <Text style={styles.resultsText}>
-                        {listings.length} {listings.length === 1 ? 'result' : 'results'} for "{searchQuery}"
-                      </Text>
-                      {listings.length === 0 ? (
-                        <View style={styles.emptyState}>
-                          <Ionicons name="search-outline" size={48} color={COLORS.textSecondary} />
-                          <Text style={styles.emptyTitle}>No results found</Text>
-                          <Text style={styles.emptySubtitle}>Try different keywords or browse categories</Text>
-                        </View>
-                      ) : (
-                        <View style={styles.listingsContainer}>
-                          {listings.map((item) => (
-                            <TouchableOpacity
-                              key={item.id}
-                              style={styles.horizontalCard}
-                              onPress={() => router.push(getListingRoute(item))}
-                              data-testid={`listing-${item.id}`}
-                            >
-                              {/* Image on Left */}
-                              <View style={styles.cardImageWrapper}>
-                                {item.images?.[0] ? (
-                                  <Image
-                                    source={{ uri: item.images[0] }}
-                                    style={styles.cardImage}
-                                  />
-                                ) : (
-                                  <ImagePlaceholder size="medium" />
-                                )}
-                              </View>
-                              
-                              {/* Content on Right */}
-                              <View style={styles.cardContentWrapper}>
-                                <View style={styles.cardPriceRow}>
-                                  <Text style={styles.cardPrice}>{formatPrice(item.price, item.currency)}</Text>
-                                  {item.negotiable && (
-                                    <View style={styles.negotiableBadge}>
-                                      <Text style={styles.negotiableText}>Negotiable</Text>
-                                    </View>
-                                  )}
-                                </View>
-                                <Text style={styles.cardTitle} numberOfLines={2}>{item.title}</Text>
-                                <Text style={styles.cardDescription} numberOfLines={2}>
-                                  {item.description || 'No description provided'}
-                                </Text>
-                                <View style={styles.cardMeta}>
-                                  <View style={styles.metaItem}>
-                                    <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
-                                    <Text style={styles.metaText}>{typeof item.location === 'object' ? (item.location?.city || item.location?.country || 'Unknown') : (item.location || 'Unknown')}</Text>
-                                  </View>
-                                  <View style={styles.metaItem}>
-                                    <Ionicons name="time-outline" size={14} color={COLORS.textSecondary} />
-                                    <Text style={styles.metaText}>
-                                      {new Date(item.created_at).toLocaleDateString()}
-                                    </Text>
-                                  </View>
-                                  {item.condition && (
-                                    <View style={styles.conditionBadge}>
-                                      <Text style={styles.conditionText}>{item.condition}</Text>
-                                    </View>
-                                  )}
-                                </View>
-                              </View>
-                              
+              {/* Results/Browse Area - Full Width */}
+              <View style={styles.resultsAreaFullWidth}>
+                {loading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={COLORS.primary} />
+                    <Text style={styles.loadingText}>Searching...</Text>
+                  </View>
+                ) : hasSearched ? (
+                  <View style={styles.resultsContainer}>
+                    <Text style={styles.resultsText}>
+                      {listings.length} {listings.length === 1 ? 'result' : 'results'} for "{searchQuery}"
+                      {selectedLocationFilter && ` in ${selectedLocationFilter.city_name || selectedLocationFilter.district_name || selectedLocationFilter.region_name}`}
+                    </Text>
+                    {listings.length === 0 ? (
+                      <View style={styles.emptyState}>
+                        <Ionicons name="search-outline" size={48} color={COLORS.textSecondary} />
+                        <Text style={styles.emptyTitle}>No results found</Text>
+                        <Text style={styles.emptySubtitle}>Try different keywords or browse categories</Text>
+                      </View>
+                    ) : (
+                      <View style={styles.listingsGridNew}>
+                        {listings.map((item) => (
+                          <TouchableOpacity
+                            key={item.id}
+                            style={styles.listingCardNew}
+                            onPress={() => router.push(getListingRoute(item))}
+                            data-testid={`listing-${item.id}`}
+                          >
+                            {/* Image */}
+                            <View style={styles.listingImageWrapper}>
+                              {item.images?.[0] ? (
+                                <Image
+                                  source={{ uri: item.images[0] }}
+                                  style={styles.listingImage}
+                                />
+                              ) : (
+                                <ImagePlaceholder size="medium" />
+                              )}
                               {/* Favorite Button */}
                               <TouchableOpacity
-                                style={styles.horizontalFavoriteBtn}
-                                onPress={() => handleFavorite(item.id)}
+                                style={styles.listingFavoriteBtn}
+                                onPress={(e) => {
+                                  e.stopPropagation?.();
+                                  handleFavorite(item.id);
+                                }}
                                 data-testid={`favorite-${item.id}`}
                               >
                                 <Ionicons
                                   name={favorites.has(item.id) ? 'heart' : 'heart-outline'}
-                                  size={22}
-                                  color={favorites.has(item.id) ? '#E53935' : COLORS.textSecondary}
+                                  size={20}
+                                  color={favorites.has(item.id) ? '#E53935' : '#fff'}
                                 />
                               </TouchableOpacity>
-                            </TouchableOpacity>
-                          ))}
-                        </View>
-                      )}
-                    </View>
-                  ) : (
-                    <View>
-                      <Text style={styles.browseTitle}>Browse Categories</Text>
-                      <View style={styles.categoriesGrid}>
-                        {categories.map((cat) => (
-                          <TouchableOpacity
-                            key={cat.id}
-                            style={styles.categoryCardLarge}
-                            onPress={() => handleCategoryPress(cat.id)}
-                          >
-                            <View style={styles.categoryIconLarge}>
-                              <Ionicons name={cat.icon as any} size={32} color={COLORS.primary} />
+                              {item.negotiable && (
+                                <View style={styles.listingNegotiableBadge}>
+                                  <Text style={styles.listingNegotiableText}>Negotiable</Text>
+                                </View>
+                              )}
                             </View>
-                            <Text style={styles.categoryNameLarge}>{cat.name}</Text>
+                            
+                            {/* Content */}
+                            <View style={styles.listingContent}>
+                              <Text style={styles.listingPrice}>{formatPrice(item.price, item.currency)}</Text>
+                              <Text style={styles.listingTitle} numberOfLines={2}>{item.title}</Text>
+                              <View style={styles.listingLocationRow}>
+                                <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
+                                <Text style={styles.listingLocationText} numberOfLines={1}>
+                                  {typeof item.location === 'object' ? (item.location?.city || item.location?.country || 'Unknown') : (item.location || 'Unknown')}
+                                </Text>
+                              </View>
+                            </View>
                           </TouchableOpacity>
                         ))}
                       </View>
+                    )}
+                  </View>
+                ) : (
+                  <View>
+                    <Text style={styles.browseTitle}>Browse by Category</Text>
+                    <View style={styles.categoriesGridNew}>
+                      {categories.map((cat) => (
+                        <TouchableOpacity
+                          key={cat.id}
+                          style={styles.categoryCardLargeNew}
+                          onPress={() => handleCategoryPress(cat.id)}
+                        >
+                          <View style={styles.categoryIconLargeNew}>
+                            <Ionicons name={cat.icon as any} size={32} color={COLORS.primary} />
+                          </View>
+                          <Text style={styles.categoryNameLargeNew}>{cat.name}</Text>
+                        </TouchableOpacity>
+                      ))}
                     </View>
-                  )}
-                </View>
+                  </View>
+                )}
               </View>
             </View>
           </View>
