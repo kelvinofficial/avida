@@ -76,8 +76,21 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
       {/* Row 3: Icon Style Categories Only */}
       <View style={localStyles.categoryRowWrapper}>
         <View style={localStyles.categoryRowInner}>
-        {/* Icon Style Row - All categories */}
-        <View style={[localStyles.iconCategoryRow, Platform.OS === 'web' && { display: 'flex', flexWrap: 'wrap' } as any]}>
+        {/* Icon Style Row - All categories - with flex wrap for responsiveness */}
+        <View 
+          style={localStyles.iconCategoryRow}
+          {...(Platform.OS === 'web' ? { 
+            // @ts-ignore - Web-specific CSS property
+            style: {
+              ...localStyles.iconCategoryRow,
+              display: 'flex',
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: 12,
+            }
+          } : {})}
+        >
           {ALL_ICON_CATEGORIES.map((cat) => (
             <TouchableOpacity
               key={`icon-${cat.id}`}
