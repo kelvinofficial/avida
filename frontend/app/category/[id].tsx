@@ -1645,6 +1645,14 @@ export default function CategoryScreen() {
             )}
           </View>
         </View>
+        {/* Mobile Location Picker */}
+        <TouchableOpacity 
+          style={[styles.mobileLocationBtn, selectedRegion && styles.mobileLocationBtnActive]}
+          onPress={() => setShowLocationModal(true)}
+          data-testid="location-picker-mobile"
+        >
+          <Ionicons name="location" size={20} color={selectedRegion ? "#fff" : COLORS.primary} />
+        </TouchableOpacity>
       </View>
       
       {/* Mobile Recent & Popular Searches */}
