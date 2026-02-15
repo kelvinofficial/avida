@@ -292,7 +292,7 @@ export default function BusinessProfileScreen() {
   const handleShare = async () => {
     if (!profile) return;
     
-    const baseUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://avida-seo-hub.preview.emergentagent.com';
+    const baseUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://content-optimizer-30.preview.emergentagent.com';
     const profileUrl = `${baseUrl.replace('/api', '')}/business/${slug}`;
     
     try {

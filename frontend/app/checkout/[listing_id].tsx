@@ -255,7 +255,7 @@ export default function CheckoutScreen() {
         });
         
         const order = orderResponse.data.order;
-        const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://avida-seo-hub.preview.emergentagent.com';
+        const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://content-optimizer-30.preview.emergentagent.com';
         
         // Create payment
         let paymentResponse;

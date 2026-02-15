@@ -7,7 +7,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://avida-seo-hub.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://content-optimizer-30.preview.emergentagent.com')
 
 class TestLocationCountriesAPI:
     """Test /api/locations/countries endpoint"""

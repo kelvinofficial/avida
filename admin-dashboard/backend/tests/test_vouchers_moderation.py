@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime, timedelta
 
 # Use the public URL from environment
-BASE_URL = "https://avida-seo-hub.preview.emergentagent.com/api/admin"
+BASE_URL = "https://content-optimizer-30.preview.emergentagent.com/api/admin"
 
 # Test credentials
 ADMIN_EMAIL = "admin@marketplace.com"
