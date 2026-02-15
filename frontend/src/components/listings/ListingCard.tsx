@@ -127,13 +127,13 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
               <Text style={styles.badgeText}>Just Listed</Text>
             </View>
           )}
-          {listing.is_featured && (
+          {settings.show_featured_badge && listing.is_featured && (
             <View style={styles.featuredBadge}>
               <Ionicons name="star" size={10} color="#fff" />
               <Text style={styles.badgeText}>Featured</Text>
             </View>
           )}
-          {(listing.is_top || listing.featured) && (
+          {settings.show_featured_badge && (listing.is_top || listing.featured) && (
             <View style={styles.topBadge}>
               <Ionicons name="arrow-up" size={10} color="#fff" />
               <Text style={styles.badgeText}>TOP</Text>
