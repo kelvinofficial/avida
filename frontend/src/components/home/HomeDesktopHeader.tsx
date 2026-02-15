@@ -188,10 +188,10 @@ const localStyles = StyleSheet.create({
     paddingHorizontal: 24,
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
-    zIndex: 100,
+    zIndex: 1,
     alignItems: 'center',
     width: '100%',
-    ...(Platform.OS === 'web' ? { overflow: 'hidden' } as any : {}),
+    position: 'relative',
   },
   categoryRowInner: {
     width: '100%',
