@@ -43,8 +43,8 @@ const ROW1_CATEGORIES = FULL_CATEGORIES.slice(0, 8);
 const ROW2_CATEGORIES = FULL_CATEGORIES.slice(8);
 
 // Icon style rows - same categories but displayed with icons
-const ICON_ROW1_CATEGORIES = FULL_CATEGORIES.slice(0, 7);
-const ICON_ROW2_CATEGORIES = FULL_CATEGORIES.slice(7);
+const ICON_ROW1_CATEGORIES = FULL_CATEGORIES.slice(0, 10);
+const ICON_ROW2_CATEGORIES = FULL_CATEGORIES.slice(10);
 
 interface HomeDesktopHeaderProps {
   selectedCategory: string | null;
