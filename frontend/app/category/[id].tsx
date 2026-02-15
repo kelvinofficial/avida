@@ -31,6 +31,7 @@ import {
   AutoListingCard,
 } from '../../src/components/listings';
 import { useResponsive } from '../../src/hooks/useResponsive';
+import { useFeatureSettingsStore } from '../../src/store/featureSettingsStore';
 import { Footer } from '../../src/components/layout';
 import { CategoryPageSkeleton } from '../../src/components/skeletons';
 import { CategorySEO, BreadcrumbSchema, ItemListSchema } from '../../src/components/seo';
