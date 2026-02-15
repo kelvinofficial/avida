@@ -429,6 +429,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
+    zIndex: 1000,
+    ...(Platform.OS === 'web' ? { overflow: 'visible' } as any : {}),
   },
   globalHeaderRow1: {
     paddingVertical: 12,
