@@ -225,7 +225,12 @@ export default function CategoryScreen() {
   const [loadingLocations, setLoadingLocations] = useState(false);
   
   // Feature settings for location mode
-  const { settings: featureSettings } = useFeatureSettingsStore();
+  const { settings: featureSettings, fetchSettings } = useFeatureSettingsStore();
+  
+  // Ensure feature settings are loaded
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
 
   const categoryId = id as string;
   
