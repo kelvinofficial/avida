@@ -11,7 +11,18 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 
 ## What's Been Implemented
 
-### Session: February 15, 2026 - Part 10 (Latest)
+### Session: February 15, 2026 - Part 11 (Latest)
+
+**1. Category Menu Styling Consistency - COMPLETED & VERIFIED**
+- **Request**: Make the category menu on search results page match the homepage design
+- **Issue**: Search page category row had rounded corners (`borderRadius: 12`) and border on all sides, while homepage had full-width row with only bottom border
+- **Solution**: Updated `categoryIconsRow` style in `search.tsx` to match homepage's `categoryRowWrapper` style:
+  - Removed `borderRadius: 12`
+  - Changed from `borderWidth: 1` + `borderColor` to `borderBottomWidth: 1` + `borderBottomColor`
+- **File changed**: `/app/frontend/app/search.tsx` - Lines 1181-1188
+- **Testing Status**: Verified via screenshots - both pages now have consistent full-width category rows with bottom border only
+
+### Session: February 15, 2026 - Part 10
 
 **1. Search Results Page Image Sizing Fix - COMPLETED & VERIFIED**
 - **Issue**: Images on search results page were not taking 100% width of their container
