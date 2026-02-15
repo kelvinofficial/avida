@@ -6,23 +6,50 @@ Build a local marketplace application (Avida) with:
 2. Business Profile feature for verified sellers
 3. Premium subscription tiers with payment integration
 
+### 2026-02-15: UI/UX Improvements & Feature Settings
+**IN PROGRESS** 🟡
 
-### 2026-02-15: Admin Dashboard Access Fix
-**COMPLETED** ✅
+#### Completed Items:
+1. **Admin Dashboard Access Fix** ✅
+   - Created admin user `admin@marketplace.com` with bcrypt password hash
+   - Credentials: `admin@marketplace.com` / `Admin@123456`
 
-**Issue**: User reported admin dashboard access issue with credentials `admin@marketplace.com` / `Admin@123456`
+2. **Desktop Category Icons in 2 Rows** ✅
+   - Updated `HomeDesktopHeader.tsx` to display 14 categories in 2 rows
+   - Row 1: All, Auto & Vehicles, Properties, Electronics, Phones & Tablets, Home & Furniture, Fashion & Beauty, Jobs & Services
+   - Row 2: Kids & Baby, Sports & Hobbies, Pets, Agriculture & Food, Commercial Equipment, Repair & Construction, Friendship & Dating
 
-**Root Cause**: The admin user `admin@marketplace.com` did not exist in the database. The handoff mentioned `admin@test.com` but user expected `admin@marketplace.com`.
+3. **Search Field Height Doubled** ✅
+   - Updated `homeStyles.ts` with new search field styling
+   - Height increased from 52px to 56px with white background and border
 
-**Fix Applied**:
-1. Created admin user `admin@marketplace.com` in `admin_users` collection
-2. Used bcrypt password hash (required by admin backend's passlib integration)
-3. Added required `id` field (UUID format) expected by the admin backend token generation
+4. **Similar Listings Heart Icon Position** ✅
+   - Moved heart icon from image container to content column (top-right)
+   - Updated `SimilarListings.tsx`
 
-**Credentials Working**:
-- Email: `admin@marketplace.com`
-- Password: `Admin@123456`
-- Role: `super_admin`
+5. **Uniform Listing Card Size** ✅
+   - Fixed card height to 280px with consistent image and title heights
+   - Updated `ListingCard.tsx` in home components
+
+6. **Feature Settings API (Admin Toggles)** ✅
+   - Created `/api/feature-settings` endpoint
+   - Supports: show_view_count, show_save_count, show_listing_stats, show_seller_stats, show_distance, show_time_ago, show_negotiable_badge, show_featured_badge
+   - Location settings: location_mode (region/district/city), default_country (TZ), allow_country_change (false)
+
+7. **All Button Category Dropdown** ✅
+   - Added dropdown modal when clicking "All" button
+   - Includes chevron-down indicator
+
+#### In Progress / Pending:
+1. **Mobile App Subcategories** - Some categories not showing subcategories (needs investigation)
+2. **Location Picker in Category Pages** - Needs verification
+3. **SEO Optimization** - Full implementation for app/mobile/tablet/web
+4. **Admin UI for Feature Toggles** - Create admin dashboard page
+
+#### Location Configuration:
+- **Default Country**: Tanzania (TZ)
+- **Allow Country Change**: No
+- **Location Mode**: Admin can control showing region, district, or city level
 
 ### 2026-02-14: Mobile Deep Linking & SEO A/B Testing
 **COMPLETED** ✅
