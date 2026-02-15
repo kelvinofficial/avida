@@ -430,7 +430,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   content: { 
-    padding: 10,
+    paddingTop: 10,
+    paddingHorizontal: 10,
+    paddingBottom: 7,
   },
   locationRow: { 
     flexDirection: 'row', 
