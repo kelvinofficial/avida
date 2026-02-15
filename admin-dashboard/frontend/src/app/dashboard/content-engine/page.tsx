@@ -125,7 +125,9 @@ export default function ContentEnginePage() {
 
   const fetchPosts = async () => {
     try {
-      const res = await fetch(`${API_BASE}/growth/content/posts?limit=50`);
+      const res = await fetch(`${API_BASE}/growth/content/posts?limit=50`, {
+        headers: getAuthHeaders()
+      });
       if (res.ok) {
         const data = await res.json();
         setPosts(data.posts || []);
@@ -137,7 +139,9 @@ export default function ContentEnginePage() {
 
   const fetchSuggestions = async () => {
     try {
-      const res = await fetch(`${API_BASE}/growth/content/suggestions`);
+      const res = await fetch(`${API_BASE}/growth/content/suggestions`, {
+        headers: getAuthHeaders()
+      });
       if (res.ok) {
         const data = await res.json();
         setSuggestions(data.suggestions || []);
@@ -149,7 +153,9 @@ export default function ContentEnginePage() {
 
   const fetchAnalytics = async () => {
     try {
-      const res = await fetch(`${API_BASE}/growth/content/analytics`);
+      const res = await fetch(`${API_BASE}/growth/content/analytics`, {
+        headers: getAuthHeaders()
+      });
       if (res.ok) {
         const data = await res.json();
         setAnalytics(data);
@@ -161,7 +167,9 @@ export default function ContentEnginePage() {
 
   const fetchAeoQuestions = async () => {
     try {
-      const res = await fetch(`${API_BASE}/growth/content/aeo-questions`);
+      const res = await fetch(`${API_BASE}/growth/content/aeo-questions`, {
+        headers: getAuthHeaders()
+      });
       if (res.ok) {
         const data = await res.json();
         setAeoQuestions(data.questions || []);
@@ -177,7 +185,7 @@ export default function ContentEnginePage() {
     try {
       const res = await fetch(`${API_BASE}/growth/content/generate-post`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           ...generateForm,
           keywords: generateForm.keywords.split(',').map(k => k.trim()).filter(Boolean),
