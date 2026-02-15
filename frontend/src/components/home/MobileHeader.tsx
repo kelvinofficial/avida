@@ -240,25 +240,53 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           {/* FULL-WIDTH DIVIDER */}
           <View style={styles.divider} />
 
-          {/* CATEGORY ICONS - CIRCULAR DESIGN */}
+          {/* CATEGORY ICONS - WITH ALL DROPDOWN */}
           <View style={styles.categoriesSection}>
-            <ScrollView
-              horizontal={true}
-              showsHorizontalScrollIndicator={false}
-              style={styles.categoriesScroll}
-              contentContainerStyle={styles.categoriesContent}
-            >
-              {FULL_CATEGORIES.map((cat) => (
-                <CategoryIcon
-                  key={cat.id}
-                  id={cat.id}
-                  name={cat.name}
-                  icon={cat.icon}
-                  selected={selectedCategory === cat.id}
-                  onPress={() => onCategoryPress(cat.id)}
+            <View style={mobileDropdownStyles.categoriesRow}>
+              {/* All Button as Dropdown Trigger */}
+              <TouchableOpacity 
+                style={[
+                  mobileDropdownStyles.allButton,
+                  selectedCategory === null && mobileDropdownStyles.allButtonActive
+                ]}
+                onPress={() => setShowCategoryDropdown(true)}
+                data-testid="mobile-all-dropdown-trigger"
+              >
+                <Ionicons 
+                  name="apps" 
+                  size={18} 
+                  color={selectedCategory === null ? '#fff' : '#2E7D32'} 
                 />
-              ))}
-            </ScrollView>
+                <Text style={[
+                  mobileDropdownStyles.allButtonText,
+                  selectedCategory === null && mobileDropdownStyles.allButtonTextActive
+                ]}>All</Text>
+                <Ionicons 
+                  name="chevron-down" 
+                  size={14} 
+                  color={selectedCategory === null ? '#fff' : '#666'} 
+                />
+              </TouchableOpacity>
+              
+              {/* Other Category Icons */}
+              <ScrollView
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+                style={mobileDropdownStyles.categoriesScroll}
+                contentContainerStyle={styles.categoriesContent}
+              >
+                {ICON_CATEGORIES.map((cat) => (
+                  <CategoryIcon
+                    key={cat.id}
+                    id={cat.id}
+                    name={cat.name}
+                    icon={cat.icon}
+                    selected={selectedCategory === cat.id}
+                    onPress={() => onCategoryPress(cat.id)}
+                  />
+                ))}
+              </ScrollView>
+            </View>
           </View>
         </>
       )}
