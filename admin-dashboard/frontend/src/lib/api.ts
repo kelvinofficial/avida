@@ -37,8 +37,11 @@ class ApiClient {
         if (error.response?.status === 401) {
           this.clearToken();
           if (typeof window !== 'undefined') {
-            // Use the full path including basePath for window.location.href
-            window.location.href = '/api/admin-ui/';
+            // Only redirect to login if we're not already there
+            const currentPath = window.location.pathname;
+            if (!currentPath.endsWith('/api/admin-ui/') && !currentPath.endsWith('/api/admin-ui')) {
+              window.location.href = '/api/admin-ui/';
+            }
           }
         }
         return Promise.reject(error);
