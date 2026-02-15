@@ -79,7 +79,7 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
         <View style={localStyles.categoryRowInner}>
         {/* Icon Style Row - All categories */}
         <View style={localStyles.iconCategoryRow}>
-          {ICON_ROW1_CATEGORIES.map((cat) => (
+          {ALL_ICON_CATEGORIES.map((cat) => (
             <TouchableOpacity
               key={`icon-${cat.id}`}
               style={localStyles.iconCategoryItem}
