@@ -2502,6 +2502,28 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontWeight: '600',
   },
+  locationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: COLORS.background,
+    marginBottom: 8,
+  },
+  locationItemActive: {
+    backgroundColor: COLORS.primaryLight,
+  },
+  locationItemText: {
+    fontSize: 15,
+    color: COLORS.text,
+    flex: 1,
+  },
+  locationItemTextActive: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
 });
 
 // Desktop Styles
