@@ -47,6 +47,7 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [unviewedBadgeCount, setUnviewedBadgeCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
