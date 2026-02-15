@@ -819,7 +819,7 @@ export default function SearchScreen() {
             style={styles.backBtn}
             data-testid="search-back-button"
           >
-            <Feather name="chevron-left" size={28} color="#1A1A1A" />
+            <Text style={{ fontSize: 24, color: '#1A1A1A', marginLeft: -2 }}>‹</Text>
           </TouchableOpacity>
           <View style={styles.mobileSearchContainer}>
             <Ionicons name="search" size={20} color={COLORS.textSecondary} />
