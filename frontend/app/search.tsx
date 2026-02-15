@@ -1199,7 +1199,7 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontWeight: '500',
   },
-  // Category icons row - transparent background, responsive layout
+  // Category icons row - transparent background, responsive layout, left-aligned
   categoryIconsRow: {
     marginBottom: 24,
     paddingVertical: 16,
@@ -1216,7 +1216,7 @@ const styles = StyleSheet.create({
   categoryIconsFlexRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'flex-start',
     width: '100%',
     gap: 12,
