@@ -1665,6 +1665,19 @@ class ApiClient {
     const { data } = await axios.get(`${this.getMainApiUrl()}/deep-links/config`);
     return data;
   }
+
+  // Feature Settings API
+  async getFeatureSettings() {
+    const { data } = await axios.get(`${this.getMainApiUrl()}/feature-settings`);
+    return data;
+  }
+
+  async updateFeatureSettings(settings: any) {
+    const { data } = await axios.put(`${this.getMainApiUrl()}/feature-settings`, settings, {
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+    return data;
+  }
 }
 
 export const api = new ApiClient();
