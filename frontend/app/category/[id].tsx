@@ -504,8 +504,6 @@ export default function CategoryScreen() {
   
   // Handle region selection
   const handleRegionSelect = useCallback((regionCode: string, regionName: string) => {
-    const locationMode = featureSettings.location_mode;
-    
     if (regionCode === '') {
       // Clear all selections
       setSelectedRegion('');
@@ -551,7 +549,7 @@ export default function CategoryScreen() {
         loadDistricts(regionCode);
       }
     }
-  }, [selectedRegion, featureSettings.location_mode, loadDistricts]);
+  }, [selectedRegion, locationMode, loadDistricts]);
   
   // Handle district selection
   const handleDistrictSelect = useCallback((districtCode: string, districtName: string) => {
