@@ -12,11 +12,18 @@ Build a full-stack classifieds application with admin dashboard, SEO suite, AI t
 ## What's Been Implemented
 
 ### Session: February 15, 2026
+
 **P0 Admin Dashboard Session Fix - COMPLETED**
 - Fixed admin user `is_active` field (was `None`, now `True`)
-- Enhanced API client token loading from localStorage
+- Enhanced API client token loading from localStorage on each request
 - Smart 401 handling to prevent redirect loops
 - Admin login and session now working correctly
+
+**P1 Listing Images Fix - COMPLETED**
+- Root cause: React Native Web's Image component styling issues
+- Solution: Used native `<img>` tag for web with explicit height
+- File modified: `/app/frontend/src/components/listings/ListingCard.tsx`
+- Both base64 and HTTP URL images now display correctly
 
 **Previous Session Work:**
 - Admin Access Restored (bcrypt password hash fix)
@@ -28,25 +35,13 @@ Build a full-stack classifieds application with admin dashboard, SEO suite, AI t
 ## Pending Issues (Prioritized)
 
 ### P1 - High Priority
-1. **Listing images not loading on category pages**
-   - Some listings show placeholder instead of image
-   - Mix of HTTP URLs and base64 data causing issues
-
-2. **Location picker non-functional**
-   - On category pages, location picker doesn't filter
-
-3. **Wire feature settings to frontend**
-   - Feature toggles created but not connected to main app
+1. **Location picker non-functional** - On category pages, doesn't filter listings
 
 ### P2 - Medium Priority
-1. **"All" dropdown on mobile header**
-   - Only implemented on desktop, not mobile
-
-2. **Tanzania-only location logic**
-   - Admin control over location granularity
-
-3. **SEO Optimization**
-   - Meta tags, structured data, sitemap
+1. **"All" dropdown on mobile header** - Only implemented on desktop
+2. **Tanzania-only location logic** - Admin control over granularity
+3. **Wire feature settings to frontend** - Connect toggles to main app
+4. **SEO Optimization** - Meta tags, structured data, sitemap
 
 ## User Verification Pending
 - Uniform listing card size
@@ -58,6 +53,7 @@ Build a full-stack classifieds application with admin dashboard, SEO suite, AI t
 - `GET /api/admin/auth/me` - Get current admin (requires `is_active: True`)
 - `GET /api/feature-settings` - Retrieve feature settings
 - `PUT /api/feature-settings` - Update feature settings
+- `GET /api/listings?category=X&location=Y` - Get listings with filters
 
 ## Database Configuration
 - Main app: Uses `biashara_db` or configured via `DB_NAME` env var
@@ -71,6 +67,8 @@ Build a full-stack classifieds application with admin dashboard, SEO suite, AI t
 ## Key Files Modified (Latest Session)
 - `/app/admin-dashboard/frontend/src/lib/api.ts` - Token loading fixes
 - `/app/admin-dashboard/frontend/src/app/dashboard/layout.tsx` - Auth flow
+- `/app/frontend/src/components/listings/ListingCard.tsx` - Native img tag for web
+- `/app/frontend/src/components/common/OptimizedImage.tsx` - Style fixes
 - MongoDB `classifieds_db.admin_users` - is_active field fixed
 
 ## Third-Party Integrations
