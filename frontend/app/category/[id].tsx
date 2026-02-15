@@ -209,6 +209,13 @@ export default function CategoryScreen() {
   const [showSaveFilterModal, setShowSaveFilterModal] = useState(false);
   const [newFilterName, setNewFilterName] = useState('');
   const [showSavedFiltersMenu, setShowSavedFiltersMenu] = useState(false);
+  
+  // Location picker state
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [regions, setRegions] = useState<Array<{country_code: string, region_code: string, name: string, lat?: number, lng?: number}>>([]);
+  const [selectedRegion, setSelectedRegion] = useState<string>('');
+  const [selectedRegionName, setSelectedRegionName] = useState<string>('');
+  const [loadingLocations, setLoadingLocations] = useState(false);
 
   const categoryId = id as string;
   
