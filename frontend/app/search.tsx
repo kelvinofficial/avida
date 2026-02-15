@@ -615,6 +615,9 @@ export default function SearchScreen() {
     );
   };
 
+  // Debug: Check if isLargeScreen is correct
+  console.log('Search Screen - isLargeScreen:', isLargeScreen, 'isDesktop:', isDesktop, 'isTablet:', isTablet);
+
   // Desktop Layout
   if (isLargeScreen) {
     return (
