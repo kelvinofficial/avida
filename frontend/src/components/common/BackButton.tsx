@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
+import { TouchableOpacity, StyleSheet, ViewStyle, Text, Platform, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { safeGoBack } from '../../utils/navigation';
@@ -66,7 +66,13 @@ export const BackButton: React.FC<BackButtonProps> = ({
       accessibilityRole="button"
       data-testid={testID}
     >
-      <Ionicons name="arrow-back" size={size} color={color} />
+      {Platform.OS === 'web' ? (
+        <View style={styles.iconContainer}>
+          <Text style={[styles.arrowText, { color, fontSize: size }]}>←</Text>
+        </View>
+      ) : (
+        <Ionicons name="arrow-back" size={size} color={color} />
+      )}
     </TouchableOpacity>
   );
 };
@@ -77,6 +83,16 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  arrowText: {
+    fontWeight: '400',
+    lineHeight: 24,
   },
 });
 
