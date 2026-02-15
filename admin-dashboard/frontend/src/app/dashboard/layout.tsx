@@ -143,6 +143,7 @@ const menuItems = [
   { text: 'Growth Engine', icon: <RocketLaunch />, path: '/dashboard/growth-engine' },
   { text: 'Content Engine', icon: <AutoAwesome />, path: '/dashboard/content-engine' },
   { text: 'ASO Engine', icon: <TrendingUp />, path: '/dashboard/aso-engine' },
+  { text: 'Advanced SEO', icon: <LinkIcon />, path: '/dashboard/advanced-seo' },
   { text: 'Settings', icon: <Settings />, path: '/dashboard/settings' },
   { text: 'Audit Logs', icon: <History />, path: '/dashboard/audit-logs' },
 ];
