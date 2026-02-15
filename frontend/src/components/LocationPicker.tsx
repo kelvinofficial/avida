@@ -84,6 +84,13 @@ type SelectionStep = 'country' | 'region';
 const RECENT_LOCATIONS_KEY = '@recent_locations';
 const MAX_RECENT_LOCATIONS = 5;
 
+// Tanzania-only configuration - restrict location to Tanzania
+const TANZANIA_COUNTRY: Country = {
+  code: 'TZ',
+  name: 'Tanzania',
+  flag: '🇹🇿',
+};
+
 export const LocationPicker: React.FC<LocationPickerProps> = ({
   value,
   onChange,
