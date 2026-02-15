@@ -6,8 +6,8 @@ Build a local marketplace application (Avida) with:
 2. Business Profile feature for verified sellers
 3. Premium subscription tiers with payment integration
 
-### 2026-02-15: UI/UX Improvements & Feature Settings
-**IN PROGRESS** 🟡
+### 2026-02-15: UI/UX Improvements & Admin Feature Settings
+**COMPLETED** ✅
 
 #### Completed Items:
 1. **Admin Dashboard Access Fix** ✅
@@ -19,37 +19,51 @@ Build a local marketplace application (Avida) with:
    - Row 1: All, Auto & Vehicles, Properties, Electronics, Phones & Tablets, Home & Furniture, Fashion & Beauty, Jobs & Services
    - Row 2: Kids & Baby, Sports & Hobbies, Pets, Agriculture & Food, Commercial Equipment, Repair & Construction, Friendship & Dating
 
-3. **Search Field Height Doubled** ✅
-   - Updated `homeStyles.ts` with new search field styling
-   - Height increased from 52px to 56px with white background and border
+3. **All Button Category Dropdown** ✅
+   - Fixed dropdown modal using fixed positioning for web compatibility
+   - Shows all categories with icons and checkmarks for selection
 
-4. **Similar Listings Heart Icon Position** ✅
+4. **Search Field Height Doubled** ✅
+   - Updated `homeStyles.ts` with new search field styling
+   - Height increased from 52px to 56px with white background, border, and shadow
+
+5. **Similar Listings Heart Icon Position** ✅
    - Moved heart icon from image container to content column (top-right)
    - Updated `SimilarListings.tsx`
 
-5. **Uniform Listing Card Size** ✅
+6. **Uniform Listing Card Size** ✅
    - Fixed card height to 280px with consistent image and title heights
    - Updated `ListingCard.tsx` in home components
 
-6. **Feature Settings API (Admin Toggles)** ✅
-   - Created `/api/feature-settings` endpoint
-   - Supports: show_view_count, show_save_count, show_listing_stats, show_seller_stats, show_distance, show_time_ago, show_negotiable_badge, show_featured_badge
-   - Location settings: location_mode (region/district/city), default_country (TZ), allow_country_change (false)
+7. **Feature Settings Admin Page** ✅
+   - Created `/app/admin-dashboard/frontend/src/app/dashboard/feature-settings/page.tsx`
+   - Toggles for: view_count, save_count, listing_stats, seller_stats, distance, time_ago, negotiable_badge, featured_badge
+   - Location settings: location_mode (region/district/city), default_country (TZ), allow_country_change
+   - Currency settings: currency, currency_symbol, currency_position
 
-7. **All Button Category Dropdown** ✅
-   - Added dropdown modal when clicking "All" button
-   - Includes chevron-down indicator
+8. **Feature Settings Backend API** ✅
+   - Created `/app/backend/routes/feature_settings.py`
+   - GET `/api/feature-settings` - Get current settings
+   - PUT `/api/feature-settings` - Update settings
 
-#### In Progress / Pending:
-1. **Mobile App Subcategories** - Some categories not showing subcategories (needs investigation)
-2. **Location Picker in Category Pages** - Needs verification
-3. **SEO Optimization** - Full implementation for app/mobile/tablet/web
-4. **Admin UI for Feature Toggles** - Create admin dashboard page
+9. **Missing Category Subcategories Added** ✅
+   - Added `AGRICULTURE_CATEGORY` with subcategories: Farm Equipment, Livestock, Seeds & Plants, Farm Produce
+   - Added `COMMERCIAL_EQUIPMENT_CATEGORY` with subcategories: Office Equipment, Restaurant Equipment, Industrial Machinery, Retail Equipment
+   - Added `REPAIR_CONSTRUCTION_CATEGORY` with subcategories: Construction Materials, Tools, Repair Services, Heavy Equipment
 
 #### Location Configuration:
 - **Default Country**: Tanzania (TZ)
 - **Allow Country Change**: No
 - **Location Mode**: Admin can control showing region, district, or city level
+
+#### Currency Configuration:
+- **Default Currency**: TZS (Tanzanian Shilling)
+- **Symbol**: TSh
+- **Position**: Before amount
+
+#### Pending Items:
+1. **SEO Optimization** - Full implementation for app/mobile/tablet/web (requires further planning)
+2. **Admin Feature Settings Page Access** - Session handling needs improvement for direct URL access
 
 ### 2026-02-14: Mobile Deep Linking & SEO A/B Testing
 **COMPLETED** ✅
