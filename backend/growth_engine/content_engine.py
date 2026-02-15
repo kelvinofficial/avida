@@ -302,6 +302,9 @@ Your content should:
         
         await blog_posts_collection.insert_one(blog_post)
         
+        # Remove MongoDB _id from response
+        blog_post.pop("_id", None)
+        
         return {
             "success": True,
             "post": blog_post
