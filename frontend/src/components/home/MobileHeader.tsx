@@ -419,4 +419,89 @@ const RecentAndTrendingSuggestions: React.FC<{
   </View>
 );
 
+// Mobile dropdown styles
+const mobileDropdownStyles = StyleSheet.create({
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  dropdownContainer: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '70%',
+    paddingBottom: 20,
+  },
+  dropdownHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  dropdownTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  dropdownScroll: {
+    paddingHorizontal: 8,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    marginHorizontal: 12,
+    marginTop: 8,
+    borderRadius: 12,
+    gap: 12,
+    backgroundColor: '#f8f8f8',
+  },
+  dropdownItemActive: {
+    backgroundColor: '#E8F5E9',
+  },
+  dropdownItemText: {
+    fontSize: 15,
+    color: '#333',
+    flex: 1,
+  },
+  dropdownItemTextActive: {
+    color: '#2E7D32',
+    fontWeight: '600',
+  },
+  // Categories row with All button
+  categoriesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 16,
+  },
+  allButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 20,
+    gap: 6,
+    marginRight: 8,
+  },
+  allButtonActive: {
+    backgroundColor: '#2E7D32',
+  },
+  allButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2E7D32',
+  },
+  allButtonTextActive: {
+    color: '#fff',
+  },
+  categoriesScroll: {
+    flex: 1,
+  },
+});
+
 export default MobileHeader;
