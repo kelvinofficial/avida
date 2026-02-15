@@ -140,6 +140,29 @@ def create_conversations_router(db, require_auth, check_rate_limit, sio, create_
         conversation.pop("_id", None)
         return conversation
     
+    @router.get("/unread-count")
+    async def get_unread_message_count(request: Request):
+        """Get total unread message count across all conversations"""
+        user = await require_auth(request)
+        
+        # Find all conversations where user is buyer or seller
+        conversations = await db.conversations.find({
+            "$or": [
+                {"buyer_id": user.user_id},
+                {"seller_id": user.user_id}
+            ]
+        }, {"_id": 0, "buyer_id": 1, "seller_id": 1, "buyer_unread": 1, "seller_unread": 1}).to_list(1000)
+        
+        # Sum up unread counts based on user's role in each conversation
+        total_unread = 0
+        for conv in conversations:
+            if conv.get("buyer_id") == user.user_id:
+                total_unread += conv.get("buyer_unread", 0)
+            else:
+                total_unread += conv.get("seller_unread", 0)
+        
+        return {"count": total_unread}
+    
     @router.get("")
     async def get_conversations(request: Request):
         """Get user's conversations"""
