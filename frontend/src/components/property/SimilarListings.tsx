@@ -252,6 +252,24 @@ const HorizontalListingCard = memo(({
 
       {/* RIGHT: Content */}
       <View style={[cardStyles.content, isDesktop && desktopCardStyles.content]}>
+        {/* Heart Icon - Top Right of Content */}
+        {onFavorite && (
+          <TouchableOpacity
+            style={cardStyles.heartButtonContent}
+            onPress={(e) => {
+              e.stopPropagation?.();
+              onFavorite();
+            }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons
+              name={isFavorited ? 'heart' : 'heart-outline'}
+              size={22}
+              color={isFavorited ? COLORS.error : COLORS.textSecondary}
+            />
+          </TouchableOpacity>
+        )}
+
         {/* Price Row */}
         <View style={cardStyles.priceRow}>
           <Text style={[cardStyles.price, isDesktop && desktopCardStyles.price]}>{formatPrice(listing.price || 0)}</Text>
