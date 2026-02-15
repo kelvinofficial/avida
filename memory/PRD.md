@@ -7,6 +7,23 @@ Build a local marketplace application (Avida) with:
 3. Premium subscription tiers with payment integration
 
 
+### 2026-02-15: Admin Dashboard Access Fix
+**COMPLETED** ✅
+
+**Issue**: User reported admin dashboard access issue with credentials `admin@marketplace.com` / `Admin@123456`
+
+**Root Cause**: The admin user `admin@marketplace.com` did not exist in the database. The handoff mentioned `admin@test.com` but user expected `admin@marketplace.com`.
+
+**Fix Applied**:
+1. Created admin user `admin@marketplace.com` in `admin_users` collection
+2. Used bcrypt password hash (required by admin backend's passlib integration)
+3. Added required `id` field (UUID format) expected by the admin backend token generation
+
+**Credentials Working**:
+- Email: `admin@marketplace.com`
+- Password: `Admin@123456`
+- Role: `super_admin`
+
 ### 2026-02-14: Mobile Deep Linking & SEO A/B Testing
 **COMPLETED** ✅
 
