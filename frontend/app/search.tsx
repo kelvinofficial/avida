@@ -1017,25 +1017,7 @@ export default function SearchScreen() {
                       </View>
                     )}
                   </View>
-                ) : (
-                  <View>
-                    <Text style={styles.browseTitle}>Browse by Category</Text>
-                    <View style={styles.categoriesGridNew}>
-                      {categories.map((cat) => (
-                        <TouchableOpacity
-                          key={cat.id}
-                          style={styles.categoryCardLargeNew}
-                          onPress={() => handleCategoryPress(cat.id)}
-                        >
-                          <View style={styles.categoryIconLargeNew}>
-                            <Ionicons name={cat.icon as any} size={32} color={COLORS.primary} />
-                          </View>
-                          <Text style={styles.categoryNameLargeNew}>{cat.name}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </View>
-                )}
+                ) : null}
               </View>
             </View>
           </View>
