@@ -26,7 +26,20 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 - **Note**: Modal requires scrolling to see districts after selecting a region (minor UX issue, not a bug)
 - **Testing Status**: Verified working via screenshots and console logs
 
-**2. Subcategories - VERIFIED WORKING**
+**2. ListingCard Component Refactoring - COMPLETED**
+- Merged duplicate `ListingCard` components from `/home/` and `/listings/` directories
+- Created unified component at `/app/frontend/src/components/shared/ListingCard.tsx`
+- Updated exports in `home/index.ts` and `listings/index.ts` for backwards compatibility
+- Fixed direct import in `ListingsGrid.tsx`
+- Removed old duplicate files
+- **Features of unified component**:
+  - Supports both `compact` and `full` variants
+  - Distance calculation from user location
+  - Feature settings integration (view count, time ago, featured badge visibility)
+  - Platform-specific image rendering (native `<img>` for web)
+  - Negotiable badge, image count badge, views overlay
+
+**3. Subcategories - VERIFIED WORKING**
 - All categories have subcategories defined in `/app/frontend/src/config/subcategories.ts`
 - Categories verified: Electronics, Fashion & Beauty, Jobs & Services
 - Subcategory modal appears on mobile when clicking category icons
