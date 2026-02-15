@@ -1413,6 +1413,11 @@ const mobileCardStyles = StyleSheet.create({
     color: COLORS.textSecondary,
     flex: 1,
   },
+  bottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 'auto',
+  },
   conditionBadge: {
     backgroundColor: '#F3F4F6',
     paddingHorizontal: 6,
