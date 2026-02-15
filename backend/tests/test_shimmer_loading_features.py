@@ -9,7 +9,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://content-optimizer-30.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://growth-hub-preview.preview.emergentagent.com')
 
 class TestAdminSearchAnalyticsFilters:
     """Tests for Admin Search Analytics page location filters"""
