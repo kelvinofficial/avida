@@ -22,3 +22,4 @@ export { FavoriteToast } from './FavoriteToast';
 export type { FavoriteToastProps } from './FavoriteToast';
 export { FavoriteNotificationProvider, useFavoriteNotification } from './FavoriteNotificationProvider';
 export { SocialShareButtons } from './SocialShareButtons';
+export { BackButton } from './BackButton';
