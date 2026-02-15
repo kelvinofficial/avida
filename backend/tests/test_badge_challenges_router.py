@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime
 
 # Get base URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://back-button-fix-2.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://classifieds-suite.preview.emergentagent.com').rstrip('/')
 
 
 class TestBadgeChallengesSetup:
