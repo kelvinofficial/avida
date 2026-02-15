@@ -32,8 +32,8 @@ class ApiClient {
         if (error.response?.status === 401) {
           this.clearToken();
           if (typeof window !== 'undefined') {
-            // Use relative path '/' which Next.js will resolve with basePath
-            window.location.href = '/';
+            // Use the full path including basePath for window.location.href
+            window.location.href = '/api/admin-ui/';
           }
         }
         return Promise.reject(error);
