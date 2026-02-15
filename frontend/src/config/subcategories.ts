@@ -1254,6 +1254,134 @@ export const FRIENDSHIP_DATING_CATEGORY: MainCategoryConfig = {
   ]
 };
 
+// ============ AGRICULTURE & FOOD ============
+export const AGRICULTURE_CATEGORY: MainCategoryConfig = {
+  id: 'agriculture',
+  name: 'Agriculture & Food',
+  icon: 'leaf-outline',
+  subcategories: [
+    {
+      id: 'farm_equipment',
+      name: 'Farm Equipment',
+      conditionOptions: ['New', 'Like New', 'Used - Good', 'Used - Fair'],
+      attributes: [
+        { name: 'equipment_type', label: 'Equipment Type', type: 'select', options: ['Tractors', 'Harvesters', 'Ploughs', 'Seeders', 'Irrigation', 'Sprayers', 'Other'], required: true, icon: 'construct-outline' },
+        { name: 'brand', label: 'Brand', type: 'text', placeholder: 'e.g., John Deere', icon: 'ribbon-outline' },
+      ]
+    },
+    {
+      id: 'livestock',
+      name: 'Livestock',
+      attributes: [
+        { name: 'animal_type', label: 'Animal Type', type: 'select', options: ['Cattle', 'Goats', 'Sheep', 'Pigs', 'Poultry', 'Other'], required: true, icon: 'paw-outline' },
+        { name: 'quantity', label: 'Quantity', type: 'number', placeholder: 'Number of animals', icon: 'calculator-outline' },
+      ]
+    },
+    {
+      id: 'seeds_plants',
+      name: 'Seeds & Plants',
+      attributes: [
+        { name: 'plant_type', label: 'Type', type: 'select', options: ['Seeds', 'Seedlings', 'Mature Plants', 'Fertilizer', 'Other'], required: true, icon: 'leaf-outline' },
+        { name: 'crop', label: 'Crop/Plant Name', type: 'text', placeholder: 'e.g., Maize, Tomatoes', icon: 'flower-outline' },
+      ]
+    },
+    {
+      id: 'farm_produce',
+      name: 'Farm Produce',
+      attributes: [
+        { name: 'produce_type', label: 'Produce Type', type: 'select', options: ['Grains', 'Vegetables', 'Fruits', 'Dairy', 'Other'], required: true, icon: 'nutrition-outline' },
+        { name: 'quantity', label: 'Quantity (kg)', type: 'number', placeholder: 'Amount in kg', icon: 'scale-outline' },
+      ]
+    },
+  ]
+};
+
+// ============ COMMERCIAL EQUIPMENT ============
+export const COMMERCIAL_EQUIPMENT_CATEGORY: MainCategoryConfig = {
+  id: 'commercial_equipment',
+  name: 'Commercial Equipment',
+  icon: 'construct-outline',
+  subcategories: [
+    {
+      id: 'office_equipment',
+      name: 'Office Equipment',
+      conditionOptions: ['New', 'Like New', 'Used - Good', 'Used - Fair'],
+      attributes: [
+        { name: 'equipment_type', label: 'Equipment Type', type: 'select', options: ['Printers', 'Copiers', 'Scanners', 'Projectors', 'Furniture', 'Other'], required: true, icon: 'print-outline' },
+      ]
+    },
+    {
+      id: 'restaurant_equipment',
+      name: 'Restaurant Equipment',
+      conditionOptions: ['New', 'Like New', 'Used - Good', 'Used - Fair'],
+      attributes: [
+        { name: 'equipment_type', label: 'Equipment Type', type: 'select', options: ['Ovens', 'Refrigerators', 'Grills', 'Dishwashers', 'Coffee Machines', 'Other'], required: true, icon: 'restaurant-outline' },
+      ]
+    },
+    {
+      id: 'industrial_machinery',
+      name: 'Industrial Machinery',
+      conditionOptions: ['New', 'Like New', 'Used - Good', 'Used - Fair'],
+      attributes: [
+        { name: 'machinery_type', label: 'Machinery Type', type: 'select', options: ['Manufacturing', 'Packaging', 'Welding', 'Lifting', 'Other'], required: true, icon: 'cog-outline' },
+        { name: 'power', label: 'Power (kW)', type: 'number', placeholder: 'Power rating', icon: 'flash-outline' },
+      ]
+    },
+    {
+      id: 'retail_equipment',
+      name: 'Retail Equipment',
+      conditionOptions: ['New', 'Like New', 'Used - Good', 'Used - Fair'],
+      attributes: [
+        { name: 'equipment_type', label: 'Equipment Type', type: 'select', options: ['POS Systems', 'Display Units', 'Shelving', 'Cash Registers', 'Other'], required: true, icon: 'storefront-outline' },
+      ]
+    },
+  ]
+};
+
+// ============ REPAIR & CONSTRUCTION ============
+export const REPAIR_CONSTRUCTION_CATEGORY: MainCategoryConfig = {
+  id: 'repair_construction',
+  name: 'Repair & Construction',
+  icon: 'hammer-outline',
+  subcategories: [
+    {
+      id: 'construction_materials',
+      name: 'Construction Materials',
+      conditionOptions: ['New', 'Surplus'],
+      attributes: [
+        { name: 'material_type', label: 'Material Type', type: 'select', options: ['Cement', 'Sand', 'Gravel', 'Bricks', 'Steel', 'Timber', 'Roofing', 'Other'], required: true, icon: 'cube-outline' },
+        { name: 'quantity', label: 'Quantity', type: 'text', placeholder: 'e.g., 50 bags, 100kg', icon: 'calculator-outline' },
+      ]
+    },
+    {
+      id: 'tools',
+      name: 'Tools',
+      conditionOptions: ['New', 'Like New', 'Used - Good', 'Used - Fair'],
+      attributes: [
+        { name: 'tool_type', label: 'Tool Type', type: 'select', options: ['Power Tools', 'Hand Tools', 'Measuring Tools', 'Safety Equipment', 'Other'], required: true, icon: 'hammer-outline' },
+        { name: 'brand', label: 'Brand', type: 'text', placeholder: 'e.g., DeWalt, Makita', icon: 'ribbon-outline' },
+      ]
+    },
+    {
+      id: 'repair_services',
+      name: 'Repair Services',
+      attributes: [
+        { name: 'service_type', label: 'Service Type', type: 'select', options: ['Plumbing', 'Electrical', 'Carpentry', 'Painting', 'Roofing', 'General Handyman', 'Other'], required: true, icon: 'build-outline' },
+        { name: 'experience', label: 'Years of Experience', type: 'number', placeholder: 'Years', icon: 'time-outline' },
+      ]
+    },
+    {
+      id: 'heavy_equipment',
+      name: 'Heavy Equipment',
+      conditionOptions: ['New', 'Like New', 'Used - Good', 'Used - Fair'],
+      attributes: [
+        { name: 'equipment_type', label: 'Equipment Type', type: 'select', options: ['Excavators', 'Bulldozers', 'Cranes', 'Loaders', 'Cement Mixers', 'Other'], required: true, icon: 'construct-outline' },
+        { name: 'brand', label: 'Brand', type: 'text', placeholder: 'e.g., Caterpillar', icon: 'ribbon-outline' },
+      ]
+    },
+  ]
+};
+
 // ============ COMMUNITY ============
 export const COMMUNITY_CATEGORY: MainCategoryConfig = {
   id: 'community',
