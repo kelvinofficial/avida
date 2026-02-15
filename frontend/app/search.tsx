@@ -927,98 +927,98 @@ export default function SearchScreen() {
                 </View>
               </View>
 
-              {/* Results/Browse Area - Full Width */}
-              <View style={styles.resultsAreaFullWidth}>
-                {loading ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={COLORS.primary} />
-                    <Text style={styles.loadingText}>Searching...</Text>
-                  </View>
-                ) : hasSearched ? (
-                  <View style={styles.resultsContainer}>
-                    <Text style={styles.resultsText}>
-                      {listings.length} {listings.length === 1 ? 'result' : 'results'} for "{searchQuery}"
-                      {selectedLocationFilter && ` in ${selectedLocationFilter.city_name || selectedLocationFilter.district_name || selectedLocationFilter.region_name}`}
-                    </Text>
-                    {listings.length === 0 ? (
-                      <View style={styles.emptyState}>
-                        <Ionicons name="search-outline" size={48} color={COLORS.textSecondary} />
-                        <Text style={styles.emptyTitle}>No results found</Text>
-                        <Text style={styles.emptySubtitle}>Try different keywords or browse categories</Text>
-                      </View>
-                    ) : (
-                      <View style={styles.listingsGridNew}>
-                        {listings.map((item) => (
-                          <TouchableOpacity
-                            key={item.id}
-                            style={styles.listingCardNew}
-                            onPress={() => router.push(getListingRoute(item))}
-                            data-testid={`listing-${item.id}`}
-                          >
-                            {/* Image */}
-                            <View style={styles.listingImageWrapper}>
-                              {item.images?.[0] ? (
-                                Platform.OS === 'web' ? (
-                                  <img
-                                    src={item.images[0]}
-                                    style={{
-                                      width: '100%',
-                                      height: '100%',
-                                      objectFit: 'cover',
-                                      display: 'block',
-                                    }}
-                                    alt={item.title}
-                                  />
-                                ) : (
-                                  <Image
-                                    source={{ uri: item.images[0] }}
-                                    style={styles.listingImage}
-                                    resizeMode="cover"
-                                  />
-                                )
-                              ) : (
-                                <ImagePlaceholder size="medium" />
-                              )}
-                              {/* Favorite Button */}
-                              <TouchableOpacity
-                                style={styles.listingFavoriteBtn}
-                                onPress={(e) => {
-                                  e.stopPropagation?.();
-                                  handleFavorite(item.id);
-                                }}
-                                data-testid={`favorite-${item.id}`}
-                              >
-                                <Ionicons
-                                  name={favorites.has(item.id) ? 'heart' : 'heart-outline'}
-                                  size={20}
-                                  color={favorites.has(item.id) ? '#E53935' : '#fff'}
+          {/* Results/Browse Area - Full Width */}
+          <View style={styles.resultsRowWrapper}>
+            <View style={styles.resultsRowInner}>
+              {loading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={COLORS.primary} />
+                  <Text style={styles.loadingText}>Searching...</Text>
+                </View>
+              ) : hasSearched ? (
+                <View style={styles.resultsContainer}>
+                  <Text style={styles.resultsText}>
+                    {listings.length} {listings.length === 1 ? 'result' : 'results'} for "{searchQuery}"
+                    {selectedLocationFilter && ` in ${selectedLocationFilter.city_name || selectedLocationFilter.district_name || selectedLocationFilter.region_name}`}
+                  </Text>
+                  {listings.length === 0 ? (
+                    <View style={styles.emptyState}>
+                      <Ionicons name="search-outline" size={48} color={COLORS.textSecondary} />
+                      <Text style={styles.emptyTitle}>No results found</Text>
+                      <Text style={styles.emptySubtitle}>Try different keywords or browse categories</Text>
+                    </View>
+                  ) : (
+                    <View style={styles.listingsGridNew}>
+                      {listings.map((item) => (
+                        <TouchableOpacity
+                          key={item.id}
+                          style={styles.listingCardNew}
+                          onPress={() => router.push(getListingRoute(item))}
+                          data-testid={`listing-${item.id}`}
+                        >
+                          {/* Image */}
+                          <View style={styles.listingImageWrapper}>
+                            {item.images?.[0] ? (
+                              Platform.OS === 'web' ? (
+                                <img
+                                  src={item.images[0]}
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    display: 'block',
+                                  }}
+                                  alt={item.title}
                                 />
-                              </TouchableOpacity>
-                              {item.negotiable && (
-                                <View style={styles.listingNegotiableBadge}>
-                                  <Text style={styles.listingNegotiableText}>Negotiable</Text>
-                                </View>
-                              )}
-                            </View>
-                            
-                            {/* Content */}
-                            <View style={styles.listingContent}>
-                              <Text style={styles.listingPrice}>{formatPrice(item.price, item.currency)}</Text>
-                              <Text style={styles.listingTitle} numberOfLines={2}>{item.title}</Text>
-                              <View style={styles.listingLocationRow}>
-                                <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
-                                <Text style={styles.listingLocationText} numberOfLines={1}>
-                                  {typeof item.location === 'object' ? (item.location?.city || item.location?.country || 'Unknown') : (item.location || 'Unknown')}
-                                </Text>
+                              ) : (
+                                <Image
+                                  source={{ uri: item.images[0] }}
+                                  style={styles.listingImage}
+                                  resizeMode="cover"
+                                />
+                              )
+                            ) : (
+                              <ImagePlaceholder size="medium" />
+                            )}
+                            {/* Favorite Button */}
+                            <TouchableOpacity
+                              style={styles.listingFavoriteBtn}
+                              onPress={(e) => {
+                                e.stopPropagation?.();
+                                handleFavorite(item.id);
+                              }}
+                              data-testid={`favorite-${item.id}`}
+                            >
+                              <Ionicons
+                                name={favorites.has(item.id) ? 'heart' : 'heart-outline'}
+                                size={20}
+                                color={favorites.has(item.id) ? '#E53935' : '#fff'}
+                              />
+                            </TouchableOpacity>
+                            {item.negotiable && (
+                              <View style={styles.listingNegotiableBadge}>
+                                <Text style={styles.listingNegotiableText}>Negotiable</Text>
                               </View>
+                            )}
+                          </View>
+                          
+                          {/* Content */}
+                          <View style={styles.listingContent}>
+                            <Text style={styles.listingPrice}>{formatPrice(item.price, item.currency)}</Text>
+                            <Text style={styles.listingTitle} numberOfLines={2}>{item.title}</Text>
+                            <View style={styles.listingLocationRow}>
+                              <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
+                              <Text style={styles.listingLocationText} numberOfLines={1}>
+                                {typeof item.location === 'object' ? (item.location?.city || item.location?.country || 'Unknown') : (item.location || 'Unknown')}
+                              </Text>
                             </View>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    )}
-                  </View>
-                ) : null}
-              </View>
+                          </View>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              ) : null}
             </View>
           </View>
 
