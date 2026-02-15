@@ -247,10 +247,14 @@ def create_advanced_seo_router(db, get_current_user):
     async def generate_social_posts(
         content_id: str,
         content_type: str = "blog",
-        platforms: List[str] = ["twitter", "linkedin", "facebook"],
+        platforms: str = "twitter,linkedin,facebook",
         admin=Depends(require_admin)
     ):
         """Generate social media posts from content"""
+        # Parse platforms from comma-separated string
+        platforms_list = [p.strip() for p in platforms.split(",") if p.strip()]
+        if not platforms_list:
+            platforms_list = ["twitter", "linkedin", "facebook"]
         
         # Get the content
         if content_type == "blog":
