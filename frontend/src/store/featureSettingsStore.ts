@@ -1,7 +1,6 @@
 import { create } from 'zustand';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.backendUrl || process.env.EXPO_PUBLIC_BACKEND_URL || '';
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
 // Feature settings interface matching backend response
 export interface FeatureSettings {
