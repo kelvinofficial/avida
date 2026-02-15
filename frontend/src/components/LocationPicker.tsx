@@ -526,10 +526,26 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                         }}
                         data-testid={`region-${region.region_code}`}
                       >
-                        <View style={styles.iconContainer}>
+                        <div style={{ 
+                          width: 32, 
+                          height: 32, 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          backgroundColor: theme.colors.primaryContainer,
+                          borderRadius: 8,
+                          flexShrink: 0,
+                        }}>
                           <Ionicons name="map-outline" size={20} color={theme.colors.primary} />
-                        </View>
-                        <span style={{ flex: 1, fontSize: 16, color: theme.colors.onSurface }}>{region.name}</span>
+                        </div>
+                        <span style={{ 
+                          flex: 1, 
+                          fontSize: 16, 
+                          color: theme.colors.onSurface,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}>{region.name}</span>
                       </div>
                     ) : (
                       <TouchableOpacity
