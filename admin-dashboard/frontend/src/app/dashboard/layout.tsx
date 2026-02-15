@@ -140,6 +140,9 @@ const menuItems = [
   { text: 'Feature Settings', icon: <SettingsApplications />, path: '/dashboard/feature-settings' },
   { text: 'API Integrations', icon: <Settings />, path: '/dashboard/integrations' },
   { text: 'AI Analyzer', icon: <AutoAwesome />, path: '/dashboard/ai-analyzer' },
+  { text: 'Growth Engine', icon: <RocketLaunch />, path: '/dashboard/growth-engine' },
+  { text: 'Content Engine', icon: <AutoAwesome />, path: '/dashboard/content-engine' },
+  { text: 'ASO Engine', icon: <TrendingUp />, path: '/dashboard/aso-engine' },
   { text: 'Settings', icon: <Settings />, path: '/dashboard/settings' },
   { text: 'Audit Logs', icon: <History />, path: '/dashboard/audit-logs' },
 ];
