@@ -183,6 +183,15 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
     }
   };
 
+  const fetchUnreadMessageCount = async () => {
+    try {
+      const res = await api.get('/conversations/unread-count');
+      setUnreadMessageCount(res.data?.count ?? 0);
+    } catch (err) {
+      console.error('Failed to fetch unread message count:', err);
+    }
+  };
+
   return (
     <View style={styles.globalHeader}>
       {/* Row 1: Logo + Nav + Auth + Post Listing */}
