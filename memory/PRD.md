@@ -72,7 +72,7 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 ## Pending Issues
 
 ### P1 - High Priority
-1. **Tanzania-only location logic** - Admin control over display granularity (region/city)
+1. **Location Granularity Control - PARTIAL**: Frontend code is in place but Zustand store caching prevents immediate UI updates when admin changes `location_mode`. Needs investigation into why the store selector isn't re-rendering components.
 
 ### P2 - Medium Priority
 1. **SEO Optimization** - Meta tags, structured data, sitemap
