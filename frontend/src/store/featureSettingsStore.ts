@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+// Helper to get API URL at runtime
+const getApiUrl = () => process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
 // Feature settings interface matching backend response
 export interface FeatureSettings {
