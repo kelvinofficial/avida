@@ -516,6 +516,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                           gap: '12px',
                           cursor: 'pointer',
                           backgroundColor: 'transparent',
+                          position: 'relative',
+                          overflow: 'hidden',
                         }}
                         onClick={() => handleRegionSelect(region)}
                         onMouseEnter={(e) => {
