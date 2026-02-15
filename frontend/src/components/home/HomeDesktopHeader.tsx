@@ -175,15 +175,15 @@ const localStyles = StyleSheet.create({
     zIndex: 100,
     alignItems: 'center',
     width: '100%',
+    ...(Platform.OS === 'web' ? { overflow: 'hidden' } as any : {}),
   },
   categoryRowInner: {
     width: '100%',
     maxWidth: 1280,
-    display: 'flex',
+    ...(Platform.OS === 'web' ? { overflow: 'visible' } as any : {}),
   },
   // Icon style category rows
   iconCategoryRow: {
-    display: 'flex',
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
