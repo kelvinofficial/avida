@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, FlatList, ActivityIndicator, TextInput, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, FlatList, ActivityIndicator, TextInput, Platform, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
 import { useAuthStore } from '../../store/authStore';
@@ -53,6 +53,25 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState<{ query: string; count: number }[]>([]);
   const autocompleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Ref for dropdown positioning
+  const searchFieldRef = useRef<View>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+
+  // Measure search field position for fixed dropdown
+  const measureSearchField = useCallback(() => {
+    if (Platform.OS === 'web' && searchFieldRef.current) {
+      const node = searchFieldRef.current as any;
+      if (node && node.getBoundingClientRect) {
+        const rect = node.getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom + window.scrollY,
+          left: rect.left + window.scrollX,
+          width: rect.width,
+        });
+      }
+    }
+  }, []);
 
   // Fetch autocomplete suggestions
   const fetchAutocompleteSuggestions = useCallback(async (query: string) => {
