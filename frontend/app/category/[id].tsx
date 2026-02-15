@@ -1815,13 +1815,29 @@ export default function CategoryScreen() {
                   <View style={desktopStyles.listingsGrid}>
                     {listings.map((item) => (
                       <View key={item.id} style={[desktopStyles.cardWrapper, { width: cardWidth }]}>
-                        <ListingCard
-                          listing={item}
-                          onPress={() => router.push(getListingRoute(item))}
-                          onFavorite={() => handleFavorite(item.id)}
-                          isFavorited={favorites.has(item.id)}
-                          imageHeight={118}
-                        />
+                        {isPropertyCategory ? (
+                          <PropertyListingCard
+                            listing={item}
+                            onPress={() => router.push(getListingRoute(item))}
+                            onFavorite={() => handleFavorite(item.id)}
+                            isFavorited={favorites.has(item.id)}
+                          />
+                        ) : isAutoCategory ? (
+                          <AutoListingCard
+                            listing={item}
+                            onPress={() => router.push(getListingRoute(item))}
+                            onFavorite={() => handleFavorite(item.id)}
+                            isFavorited={favorites.has(item.id)}
+                          />
+                        ) : (
+                          <ListingCard
+                            listing={item}
+                            onPress={() => router.push(getListingRoute(item))}
+                            onFavorite={() => handleFavorite(item.id)}
+                            isFavorited={favorites.has(item.id)}
+                            imageHeight={118}
+                          />
+                        )}
                       </View>
                     ))}
                   </View>
