@@ -78,61 +78,9 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
       {/* Shared Desktop Header for Rows 1-2 */}
       <DesktopHeader showNavLinks={true} showSearch={true} showLocationSelector={true} />
       
-      {/* Row 3: Category Icons in 2 Rows */}
+      {/* Row 3: Icon Style Categories Only */}
       <View style={localStyles.categoryRowWrapper}>
         <View style={localStyles.categoryRowInner}>
-        {/* Row 1 with All dropdown */}
-        <View style={localStyles.categoryRowFirst}>
-          <TouchableOpacity
-            style={[localStyles.categoryPill, !selectedCategory && localStyles.categoryPillActive]}
-            onPress={handleAllPress}
-            data-testid="category-all-btn"
-          >
-            <Ionicons name="apps" size={16} color={!selectedCategory ? '#fff' : '#666'} />
-            <Text style={[localStyles.categoryPillText, !selectedCategory && localStyles.categoryPillTextActive]}>
-              All
-            </Text>
-            <Ionicons name="chevron-down" size={14} color={!selectedCategory ? '#fff' : '#666'} />
-          </TouchableOpacity>
-          {ROW1_CATEGORIES.map((cat) => (
-            <TouchableOpacity
-              key={cat.id}
-              style={[localStyles.categoryPill, selectedCategory === cat.id && localStyles.categoryPillActive]}
-              onPress={() => onCategoryPress(cat.id)}
-              data-testid={`category-${cat.id}-btn`}
-            >
-              <Ionicons 
-                name={cat.icon as any} 
-                size={16} 
-                color={selectedCategory === cat.id ? '#fff' : '#666'} 
-              />
-              <Text style={[localStyles.categoryPillText, selectedCategory === cat.id && localStyles.categoryPillTextActive]}>
-                {cat.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        {/* Row 2 */}
-        <View style={localStyles.categoryRow}>
-          {ROW2_CATEGORIES.map((cat) => (
-            <TouchableOpacity
-              key={cat.id}
-              style={[localStyles.categoryPill, selectedCategory === cat.id && localStyles.categoryPillActive]}
-              onPress={() => onCategoryPress(cat.id)}
-              data-testid={`category-${cat.id}-btn`}
-            >
-              <Ionicons 
-                name={cat.icon as any} 
-                size={16} 
-                color={selectedCategory === cat.id ? '#fff' : '#666'} 
-              />
-              <Text style={[localStyles.categoryPillText, selectedCategory === cat.id && localStyles.categoryPillTextActive]}>
-                {cat.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        
         {/* Icon Style Row - All categories */}
         <View style={localStyles.iconCategoryRow}>
           {ICON_ROW1_CATEGORIES.map((cat) => (
