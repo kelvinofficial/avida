@@ -3153,6 +3153,39 @@ if ADMIN_TOOLS_AVAILABLE:
         import traceback
         traceback.print_exc()
     
+    # Growth Engine - AI SEO Growth Engine (Content, ASO, Analytics)
+    try:
+        from growth_engine.seo_core import create_seo_core_router
+        from growth_engine.content_engine import create_content_engine_router
+        from growth_engine.aso_engine import create_aso_router
+        from growth_engine.analytics_dashboard import create_growth_analytics_router
+        
+        # SEO Core (sitemap, robots.txt, schema.org)
+        seo_core_router = create_seo_core_router(db, get_current_user)
+        app.include_router(seo_core_router, prefix="/api")
+        print("Growth Engine - SEO Core routes loaded successfully")
+        
+        # AI Content Engine (blog, AEO)
+        content_engine_router = create_content_engine_router(db, get_current_user)
+        app.include_router(content_engine_router, prefix="/api")
+        print("Growth Engine - Content Engine routes loaded successfully")
+        
+        # ASO Engine (Google Play, App Store)
+        aso_engine_router = create_aso_router(db, get_current_user)
+        app.include_router(aso_engine_router, prefix="/api")
+        print("Growth Engine - ASO Engine routes loaded successfully")
+        
+        # Growth Analytics Dashboard
+        growth_analytics_router = create_growth_analytics_router(db, get_current_user)
+        app.include_router(growth_analytics_router, prefix="/api")
+        print("Growth Engine - Analytics Dashboard routes loaded successfully")
+        
+        logger.info("AI SEO Growth Engine fully loaded (SEO Core, Content, ASO, Analytics)")
+    except Exception as e:
+        print(f"Failed to load Growth Engine routes: {e}")
+        import traceback
+        traceback.print_exc()
+    
     # Feature Settings router for admin feature toggles
     try:
         from routes.feature_settings import create_feature_settings_router
