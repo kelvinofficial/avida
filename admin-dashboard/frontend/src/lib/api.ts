@@ -1673,13 +1673,23 @@ class ApiClient {
 
   // Feature Settings API
   async getFeatureSettings() {
-    const { data } = await axios.get(`${this.getMainApiUrl()}/feature-settings`);
+    // Load token from localStorage if not already set
+    if (!this.accessToken && typeof window !== 'undefined') {
+      this.accessToken = localStorage.getItem('admin_token');
+    }
+    const { data } = await axios.get(`${this.getMainApiUrl()}/feature-settings`, {
+      headers: this.getAuthHeaders()
+    });
     return data;
   }
 
   async updateFeatureSettings(settings: any) {
+    // Load token from localStorage if not already set
+    if (!this.accessToken && typeof window !== 'undefined') {
+      this.accessToken = localStorage.getItem('admin_token');
+    }
     const { data } = await axios.put(`${this.getMainApiUrl()}/feature-settings`, settings, {
-      headers: { Authorization: `Bearer ${this.accessToken}` }
+      headers: this.getAuthHeaders()
     });
     return data;
   }
