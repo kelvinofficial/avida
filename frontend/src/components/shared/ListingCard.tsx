@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
     fontSize: 14, 
     fontWeight: '500', 
     color: COLORS.text, 
-    marginBottom: 6, 
+    marginBottom: 2, 
     lineHeight: 18,
   },
   titleCompact: {
