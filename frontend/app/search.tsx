@@ -819,9 +819,7 @@ export default function SearchScreen() {
             style={styles.backBtn}
             data-testid="search-back-button"
           >
-            <View style={styles.backBtnCircle}>
-              <Ionicons name="arrow-back" size={22} color={COLORS.text} />
-            </View>
+            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
           </TouchableOpacity>
           <View style={styles.mobileSearchContainer}>
             <Ionicons name="search" size={20} color={COLORS.textSecondary} />
@@ -1168,16 +1166,6 @@ const styles = StyleSheet.create({
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  backBtnCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#E8F5E9',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.primary,
   },
   mobileSearchContainer: {
     flex: 1,
