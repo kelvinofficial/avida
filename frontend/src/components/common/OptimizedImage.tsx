@@ -126,10 +126,10 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
   } : {};
 
   return (
-    <View style={[styles.container, containerStyle]}>
+    <View style={[styles.container, containerStyle, style]}>
       <Image
         source={{ uri }}
-        style={[styles.image, style]}
+        style={styles.image}
         resizeMode={resizeMode}
         onLoadStart={handleLoadStart}
         onLoadEnd={handleLoadEnd}
