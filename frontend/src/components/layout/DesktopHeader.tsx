@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
   globalHeaderRow2: {
     paddingVertical: 12,
     paddingHorizontal: 24,
-    zIndex: 1000,
+    zIndex: 9999,
     position: 'relative',
     ...(Platform.OS === 'web' ? { overflow: 'visible' } as any : {}),
   },
