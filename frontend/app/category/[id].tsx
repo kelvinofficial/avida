@@ -1649,7 +1649,9 @@ export default function CategoryScreen() {
         <TouchableOpacity 
           style={[styles.mobileLocationBtn, selectedRegion && styles.mobileLocationBtnActive]}
           onPress={() => setShowLocationModal(true)}
-          data-testid="location-picker-mobile"
+          testID="location-picker-mobile"
+          accessibilityRole="button"
+          accessibilityLabel="Select location"
         >
           <Ionicons name="location" size={20} color={selectedRegion ? "#fff" : COLORS.primary} />
         </TouchableOpacity>
