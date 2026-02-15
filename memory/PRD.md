@@ -13,9 +13,20 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 
 ### Session: February 15, 2026 (Continued)
 
+**6. Hierarchical Location Picker Implementation - PARTIAL**
+- Backend infrastructure complete: APIs for regions, districts, cities
+- Frontend code complete: location picker supports region → district → city selection based on admin `location_mode` setting
+- Admin dashboard has Feature Settings page with "Location Detail Level" selector
+- Known issue: Frontend Zustand store caching prevents immediate UI update when admin changes location_mode
+- Current default: Region-only mode (working)
+- Files modified: 
+  - `/app/frontend/app/category/[id].tsx` (hierarchical selection logic)
+  - `/app/frontend/src/store/featureSettingsStore.ts` (added location_mode subscription)
+
 **5. Duplicate Dodoma Region Fix - COMPLETED**
 - Removed duplicate "DMA" region entry from `location_regions` collection
 - Updated "DOD" region with coordinates (lat: -6.173, lng: 35.741)
+- Added Mbeya coordinates (lat: -8.9, lng: 33.45)
 - Tanzania now has 5 unique regions: Arusha, Dar es Salaam, Dodoma, Mbeya, Mwanza
 - Backend Python script used for data cleanup
 
