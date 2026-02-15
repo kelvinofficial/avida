@@ -19,7 +19,8 @@ export const desktopStyles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E8E8E8',
     width: '100%',
-    ...(Platform.OS === 'web' ? { overflow: 'hidden' } as any : {}),
+    zIndex: 1000,
+    ...(Platform.OS === 'web' ? { overflow: 'visible' } as any : {}),
   },
   // Row 1: Logo + Nav Links + Auth + Post Listing
   headerRow1: {
