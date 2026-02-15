@@ -1711,12 +1711,12 @@ export default function CategoryScreen() {
               onPress={() => setShowLocationModal(true)}
               data-testid="location-picker-desktop"
             >
-              <Ionicons name="location" size={18} color={selectedRegion ? "#fff" : "#2E7D32"} />
-              <Text style={[desktopStyles.locationText, selectedRegion && desktopStyles.locationTextActive]}>
-                {selectedRegionName || 'All Tanzania'}
+              <Ionicons name="location" size={18} color={(selectedRegion || selectedDistrict || selectedCity) ? "#fff" : "#2E7D32"} />
+              <Text style={[desktopStyles.locationText, (selectedRegion || selectedDistrict || selectedCity) && desktopStyles.locationTextActive]}>
+                {getLocationDisplayText()}
               </Text>
-              <Ionicons name="chevron-down" size={16} color={selectedRegion ? "#fff" : "#666"} />
-              {selectedRegion && (
+              <Ionicons name="chevron-down" size={16} color={(selectedRegion || selectedDistrict || selectedCity) ? "#fff" : "#666"} />
+              {(selectedRegion || selectedDistrict || selectedCity) && (
                 <TouchableOpacity 
                   onPress={(e) => { e.stopPropagation(); clearLocationFilter(); }}
                   style={desktopStyles.locationClearBtn}
