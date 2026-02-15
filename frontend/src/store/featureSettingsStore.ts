@@ -13,7 +13,7 @@ export interface FeatureSettings {
   show_time_ago: boolean;
   show_negotiable_badge: boolean;
   show_featured_badge: boolean;
-  location_mode: 'country' | 'region' | 'city';
+  location_mode: 'region' | 'district' | 'city';
   default_country: string;
   allow_country_change: boolean;
   currency: string;
