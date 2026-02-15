@@ -37,12 +37,12 @@ interface BackButtonProps {
 }
 
 /**
- * SVG Back Arrow Icon - Clean left-pointing arrow with horizontal line
+ * SVG Back Arrow Icon - Simple chevron pointing left
  */
 const BackArrowIcon: React.FC<{ size: number; color: string }> = ({ size, color }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path
-      d="M19 12H5M5 12L12 19M5 12L12 5"
+      d="M15 19L8 12L15 5"
       stroke={color}
       strokeWidth={2}
       strokeLinecap="round"
