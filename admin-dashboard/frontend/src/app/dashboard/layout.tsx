@@ -239,8 +239,8 @@ export default function DashboardLayout({
         const data = await api.getMe();
         setAdmin(data);
       } catch {
-        // Redirect to admin login page, not main app
-        router.push('/api/admin-ui');
+        // Redirect to admin login page (use relative path since basePath is configured)
+        router.push('/');
       } finally {
         setLoading(false);
       }
@@ -250,8 +250,8 @@ export default function DashboardLayout({
 
   const handleLogout = async () => {
     await api.logout();
-    // Redirect to admin login page, not main app
-    router.push('/api/admin-ui');
+    // Redirect to admin login page (use relative path since basePath is configured)
+    router.push('/');
   };
 
   const getRoleColor = (role: string) => {
