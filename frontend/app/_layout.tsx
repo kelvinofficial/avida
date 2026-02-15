@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { View, Platform, ActivityIndicator, StyleSheet, Animated, useWindowDimensions } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useAuthStore, saveUserData } from '../src/store/authStore';
+import { useFeatureSettingsStore } from '../src/store/featureSettingsStore';
 import { authApi } from '../src/utils/api';
 import { theme } from '../src/utils/theme';
 import { useNotificationDeepLinking, registerForPushNotifications } from '../src/utils/notifications';
