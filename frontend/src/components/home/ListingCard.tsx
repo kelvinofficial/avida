@@ -41,19 +41,6 @@ export interface ListingCardProps {
   userLocation?: { lat: number; lng: number } | null;
 }
 
-// Custom comparison function for memo - only re-render when relevant props change
-const areEqual = (prevProps: ListingCardProps, nextProps: ListingCardProps) => {
-  return (
-    prevProps.listing.id === nextProps.listing.id &&
-    prevProps.listing.price === nextProps.listing.price &&
-    prevProps.listing.title === nextProps.listing.title &&
-    prevProps.listing.views === nextProps.listing.views &&
-    prevProps.isFavorited === nextProps.isFavorited &&
-    prevProps.userLocation?.lat === nextProps.userLocation?.lat &&
-    prevProps.userLocation?.lng === nextProps.userLocation?.lng
-  );
-};
-
 export const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFavorited = false, userLocation = null }) => {
   // Get feature settings
   const { settings } = useFeatureSettingsStore();
