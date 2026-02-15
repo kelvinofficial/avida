@@ -239,7 +239,8 @@ export default function DashboardLayout({
         const data = await api.getMe();
         setAdmin(data);
       } catch {
-        router.push('/');
+        // Redirect to admin login page, not main app
+        router.push('/api/admin-ui');
       } finally {
         setLoading(false);
       }
@@ -249,7 +250,8 @@ export default function DashboardLayout({
 
   const handleLogout = async () => {
     await api.logout();
-    router.push('/');
+    // Redirect to admin login page, not main app
+    router.push('/api/admin-ui');
   };
 
   const getRoleColor = (role: string) => {
