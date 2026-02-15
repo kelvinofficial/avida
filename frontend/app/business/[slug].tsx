@@ -292,7 +292,7 @@ export default function BusinessProfileScreen() {
   const handleShare = async () => {
     if (!profile) return;
     
-    const baseUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://classifieds-tz.preview.emergentagent.com';
+    const baseUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://classifieds-ui-fix.preview.emergentagent.com';
     const profileUrl = `${baseUrl.replace('/api', '')}/business/${slug}`;
     
     try {
