@@ -839,60 +839,60 @@ export default function SearchScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.desktopScrollContent}
         >
-          <View style={styles.desktopContent}>
-            <View style={styles.desktopInnerFullWidth}>
-              {/* Search Header Row with Location */}
-              <View style={styles.searchHeaderRow}>
-                <View style={styles.searchInputContainerNew}>
-                  <Ionicons name="search" size={22} color={COLORS.textSecondary} />
-                  <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search for anything..."
-                    placeholderTextColor={COLORS.textSecondary}
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    onSubmitEditing={() => handleSearch()}
-                    returnKeyType="search"
-                    autoFocus={!params.q}
-                    data-testid="search-input"
-                  />
-                  {searchQuery.length > 0 && (
-                    <TouchableOpacity onPress={() => setSearchQuery('')}>
-                      <Ionicons name="close-circle" size={20} color={COLORS.textSecondary} />
-                    </TouchableOpacity>
-                  )}
-                  <TouchableOpacity 
-                    style={styles.searchBtn}
-                    onPress={() => handleSearch()}
-                    data-testid="search-button"
-                  >
-                    <Text style={styles.searchBtnText}>Search</Text>
+          {/* Search Header Row - Full width container with centered content */}
+          <View style={styles.searchRowWrapper}>
+            <View style={styles.searchRowInner}>
+              <View style={styles.searchInputContainerNew}>
+                <Ionicons name="search" size={22} color={COLORS.textSecondary} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search for anything..."
+                  placeholderTextColor={COLORS.textSecondary}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  onSubmitEditing={() => handleSearch()}
+                  returnKeyType="search"
+                  autoFocus={!params.q}
+                  data-testid="search-input"
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity onPress={() => setSearchQuery('')}>
+                    <Ionicons name="close-circle" size={20} color={COLORS.textSecondary} />
                   </TouchableOpacity>
-                </View>
-                
-                {/* Location Selector */}
+                )}
                 <TouchableOpacity 
-                  style={styles.locationSelectorBtn}
-                  onPress={() => {
-                    const { setShowLocationModal } = useLocationStore.getState();
-                    setShowLocationModal(true);
-                  }}
-                  data-testid="search-location-selector"
+                  style={styles.searchBtn}
+                  onPress={() => handleSearch()}
+                  data-testid="search-button"
                 >
-                  <Ionicons name="location" size={20} color={COLORS.primary} />
-                  <Text style={styles.locationText} numberOfLines={1}>
-                    {selectedLocationFilter?.city_name || selectedLocationFilter?.district_name || selectedLocationFilter?.region_name || 'All Locations'}
-                  </Text>
-                  <Ionicons name="chevron-down" size={18} color={COLORS.textSecondary} />
+                  <Text style={styles.searchBtnText}>Search</Text>
                 </TouchableOpacity>
               </View>
+              
+              {/* Location Selector */}
+              <TouchableOpacity 
+                style={styles.locationSelectorBtn}
+                onPress={() => {
+                  const { setShowLocationModal } = useLocationStore.getState();
+                  setShowLocationModal(true);
+                }}
+                data-testid="search-location-selector"
+              >
+                <Ionicons name="location" size={20} color={COLORS.primary} />
+                <Text style={styles.locationText} numberOfLines={1}>
+                  {selectedLocationFilter?.city_name || selectedLocationFilter?.district_name || selectedLocationFilter?.region_name || 'All Locations'}
+                </Text>
+                <Ionicons name="chevron-down" size={18} color={COLORS.textSecondary} />
+              </TouchableOpacity>
+            </View>
+          </View>
 
-              {/* Category Icons Row - Responsive: 1 row on large screens, 2 rows on smaller */}
-              <View style={styles.categoryIconsRow}>
-                <View style={styles.categoryIconsInner}>
-                  {/* First row of categories */}
-                  <View style={styles.categoryIconsFlexRow}>
-                    {(needsTwoRows ? categories.slice(0, Math.ceil(categories.length / 2)) : categories).map((cat) => (
+          {/* Category Icons Row */}
+          <View style={styles.categoryIconsRow}>
+            <View style={styles.categoryIconsInner}>
+              {/* First row of categories */}
+              <View style={styles.categoryIconsFlexRow}>
+                {(needsTwoRows ? categories.slice(0, Math.ceil(categories.length / 2)) : categories).map((cat) => (
                       <TouchableOpacity
                         key={cat.id}
                         style={styles.categoryIconItem}
