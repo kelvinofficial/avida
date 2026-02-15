@@ -1177,14 +1177,13 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontWeight: '500',
   },
-  // Category icons row
+  // Category icons row - consistent with homepage design
   categoryIconsRow: {
     marginBottom: 24,
     backgroundColor: COLORS.surface,
-    borderRadius: 12,
     paddingVertical: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
   categoryIconsScroll: {
     paddingHorizontal: 16,
