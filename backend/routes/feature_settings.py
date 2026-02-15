@@ -28,6 +28,9 @@ def create_feature_settings_router(db, require_auth):
         "location_mode": "region",  # region, district, city
         "default_country": "TZ",
         "allow_country_change": False,
+        "currency": "TZS",
+        "currency_symbol": "TSh",
+        "currency_position": "before",
     }
     
     @router.get("")
