@@ -208,14 +208,16 @@ const styles = StyleSheet.create({
     width: '100%', 
     backgroundColor: '#fff', 
     borderRadius: BORDER_RADIUS, 
-    overflow: 'hidden' 
+    overflow: 'hidden',
+    // Uniform card height
+    height: 280,
   },
   cardFeatured: { 
     borderWidth: 2, 
     borderColor: '#2E7D32' 
   },
   imageContainer: { 
-    height: CARD_IMAGE_HEIGHT, 
+    height: 140, // Fixed image height for uniform cards
     position: 'relative' 
   },
   compactImageContainer: { 
