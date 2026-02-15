@@ -415,6 +415,55 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
           </TouchableOpacity>
         </View>
       </Modal>
+
+      {/* Fixed Position Search Suggestions Dropdown (Web Only) */}
+      {Platform.OS === 'web' && showSearchSuggestions && searchQuery.length > 0 && (
+        <>
+          {/* Invisible backdrop to catch clicks outside dropdown */}
+          <Pressable 
+            style={styles.dropdownBackdrop}
+            onPress={() => setShowSearchSuggestions(false)}
+          />
+          <View 
+            style={[
+              styles.fixedSuggestionsDropdown,
+              {
+                top: dropdownPosition.top + 8,
+                left: dropdownPosition.left,
+                width: dropdownPosition.width || 'auto',
+                minWidth: 300,
+              }
+            ]}
+            data-testid="search-suggestions-dropdown"
+          >
+            {searchSuggestions.length > 0 ? (
+              searchSuggestions.slice(0, 6).map((item, idx) => (
+                <TouchableOpacity
+                  key={`suggestion-${idx}`}
+                  style={styles.suggestionItem}
+                  onPress={() => handleSuggestionClick(item.query)}
+                  data-testid={`desktop-suggestion-${idx}`}
+                >
+                  <Ionicons name="search-outline" size={18} color="#666" />
+                  <Text style={styles.suggestionText} numberOfLines={1}>{item.query}</Text>
+                  {item.count > 0 && (
+                    <Text style={styles.suggestionCount}>{item.count} results</Text>
+                  )}
+                  <Ionicons name="arrow-forward" size={16} color="#ccc" />
+                </TouchableOpacity>
+              ))
+            ) : searchQuery.length >= 2 ? (
+              <View style={styles.noSuggestions}>
+                <Text style={styles.noSuggestionsText}>No suggestions found</Text>
+              </View>
+            ) : (
+              <View style={styles.noSuggestions}>
+                <Text style={styles.noSuggestionsText}>Keep typing to see suggestions</Text>
+              </View>
+            )}
+          </View>
+        </>
+      )}
     </View>
   );
 };
