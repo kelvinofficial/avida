@@ -245,6 +245,16 @@ export default function SearchScreen() {
   const [hasSearched, setHasSearched] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   
+  // Location modal state
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [regions, setRegions] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [cities, setCities] = useState<any[]>([]);
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+  
   // Search stats state
   const [searchStats, setSearchStats] = useState<SearchStats>({
     recentSearches: [],
