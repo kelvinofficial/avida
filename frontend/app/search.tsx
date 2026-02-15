@@ -1166,13 +1166,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   backBtn: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 4,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 22,
   },
   mobileSearchContainer: {
     flex: 1,
