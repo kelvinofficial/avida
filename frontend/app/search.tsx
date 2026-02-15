@@ -816,10 +816,10 @@ export default function SearchScreen() {
         <View style={styles.header}>
           <TouchableOpacity 
             onPress={() => safeGoBack(router)} 
-            style={styles.backBtn}
+            style={[styles.backBtn, { backgroundColor: '#f0f0f0', borderRadius: 20 }]}
             data-testid="search-back-button"
           >
-            <Ionicons name="chevron-back" size={28} color="#1A1A1A" />
+            <Ionicons name="chevron-back" size={26} color="#222" />
           </TouchableOpacity>
           <View style={styles.mobileSearchContainer}>
             <Ionicons name="search" size={20} color={COLORS.textSecondary} />
