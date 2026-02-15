@@ -1166,6 +1166,7 @@ const styles = StyleSheet.create({
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 4,
   },
   mobileSearchContainer: {
     flex: 1,
