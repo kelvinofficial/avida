@@ -1029,21 +1029,15 @@ export default function SearchScreen() {
             data-testid="search-back-button"
             accessibilityLabel="Go back"
           >
-            {Platform.OS === 'web' ? (
-              <View style={styles.backArrowIcon}>
-                <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-                  <Path 
-                    d="M19 12H5M5 12L12 19M5 12L12 5" 
-                    stroke="#1A1A1A" 
-                    strokeWidth={2} 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                  />
-                </Svg>
-              </View>
-            ) : (
-              <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
-            )}
+            <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+              <Path 
+                d="M19 12H5M5 12L12 19M5 12L12 5" 
+                stroke="#1A1A1A" 
+                strokeWidth={2.5} 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </Svg>
           </TouchableOpacity>
           <View style={styles.mobileSearchContainer}>
             <Ionicons name="search" size={20} color={COLORS.textSecondary} />
