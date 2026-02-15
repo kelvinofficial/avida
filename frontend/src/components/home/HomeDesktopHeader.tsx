@@ -179,14 +179,16 @@ const localStyles = StyleSheet.create({
   categoryRowInner: {
     width: '100%',
     maxWidth: 1280,
+    overflow: 'hidden',
   },
   // Icon style category rows
   iconCategoryRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     width: '100%',
-    rowGap: 16,
+    rowGap: 20,
+    columnGap: 4,
   },
   iconCategoryItem: {
     alignItems: 'center',
