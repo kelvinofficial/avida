@@ -308,9 +308,9 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   const getStepTitle = () => {
     switch (currentStep) {
       case 'country':
-        return 'Select Country';
+        return 'Select Region in Tanzania';
       case 'region':
-        return `Select Region in ${selectedCountry?.name || ''}`;
+        return 'Select Region in Tanzania';
     }
   };
 
