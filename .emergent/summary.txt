@@ -24,123 +24,199 @@ The user's initial goal was to build a full-stack classifieds application. The p
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack classifieds application with a React Native/Expo frontend, a FastAPI backend, and a Next.js admin dashboard.
+A full-stack classifieds application with a React Native/Expo frontend, a FastAPI backend, and a Next.js admin dashboard. The application has a functional location filter (currently locked to regions), a mobile category dropdown, and feature flag integration via a Zustand global store.
 
-In this session, the agent implemented several key frontend features:
-1.  **Functional Location Picker**: A location filter has been added to the category page for both desktop and mobile views. It fetches regions from , allows users to filter listings, and is hardcoded to Tanzania.
-2.  **Mobile Category Dropdown**: The static All category button on the mobile homepage header is now a dropdown menu, matching the desktop functionality.
-3.  **Feature Flag Integration**: A global state management store () was created to fetch feature flags from the  endpoint. Components like  now use this store to conditionally render UI elements (view counts, time since posting, featured badges, and currency).
-4.  **Currency Consistency Fix**: A bug causing prices to show in EUR on the homepage and TSh on other pages was fixed by ensuring all  components use the currency from the new feature settings store.
+In the last session, the agent fixed a data issue causing duplicate locations to appear in the location filter. The agent also implemented the frontend and backend logic for an admin-controlled location granularity feature (allowing admins to switch the filter between regions, districts, and cities). However, this new feature is currently blocked by a bug.
 
 **Last working item**:
-The agent just finished fixing a currency inconsistency bug where the homepage showed prices in EUR instead of TSh.
+The agent was implementing the Admin Control for Location Granularity feature. This involved updating the category page to fetch the  from the feature settings store and render a hierarchical location picker (Region -> District -> City).
 
-- **Last item agent was working**: Fixing the currency format on the homepage by updating . This involved integrating the  and removing a  with a custom comparison function that was preventing the component from re-rendering with the correct currency from the global store.
-- **Status**: COMPLETED
-- **Agent Testing Done**: Y
-- **Which testing method agent to use?**: NA
+- **Last item agent was working**: Debugging an issue where the frontend category page does not update its UI based on the  setting fetched from the backend. The component seems to be using a stale or default value ('region') from the Zustand store, even when the API returns 'district'. The agent suspects a caching issue, an environment variable resolution problem within the store, or a React re-rendering problem.
+- **Status**: BLOCKED
+- **Agent Testing Done**: Y (Revealed the bug)
+- **Which testing method agent to use?**: Troubleshoot agent or manual debugging. This is a complex state management issue. The agent will need to use screenshots with browser console capture to inspect logs and state.
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Mobile location picker clickability in test environment (P2)
--   Issue 2: Duplicate Dodoma region in location data (P2)
+-   Issue 1: Admin-controlled location granularity feature is not working (P0)
+-   Issue 2: Mobile location picker clickability in test environment (P2)
+-   Issue 3: Clarification needed on missing sub-categories (P2)
 
 **Issues Detail**:
--   **Issue 1**: Mobile location picker clickability in test environment
-    -   **Description**: The testing agent reported that the mobile location picker button on the category page was visible but not clickable. The agent investigated and believes this is an environment-specific issue with how React Native Web handles programmatic clicks in tests, and that it should work for a manual user.
+-   **Issue 1**: Admin-controlled location granularity feature is not working
+    -   **Description**: The frontend UI on the category page fails to adapt to the  ('region', 'district', 'city') set in the admin dashboard. It remains stuck displaying the region picker, even when the backend API confirms the setting has been changed to 'district'. This blocks the core functionality of the new feature.
+    -   **Attempted fixes**:
+        -   Reduced the Zustand store's cache duration to near-zero to force re-fetches.
+        -   Refactored the component to use more specific Zustand selectors and  to ensure re-renders on state change.
+        -   Attempted to debug the resolution of the  environment variable within the store, suspecting it might be unavailable at module load time.
+        -   Added  hooks to trigger store initialization within the component.
+        -   Temporarily reverted the  setting to 'region' on the backend to keep the live location picker functional.
     -   **Next debug checklist**:
-        1.  Ask the user to manually test the location picker button (green circle icon in the top right) on the mobile view of a category page.
-        2.  If it fails, investigate alternative touchable components or styling () that might be interfering.
+        1.  In the backend (), use the  client to set  collection's  to  to enable testing.
+        2.  Add extensive  statements inside  to trace the  function: log the API URL being used, the raw API response, and the data being passed to BASH=/bin/bash
+BASHOPTS=checkwinsize:cmdhist:complete_fullquote:extquote:force_fignore:globasciiranges:globskipdots:hostcomplete:interactive_comments:patsub_replacement:progcomp:promptvars:sourcepath
+BASH_ALIASES=()
+BASH_ARGC=()
+BASH_ARGV=()
+BASH_CMDS=()
+BASH_EXECUTION_STRING=$'mkdir -p /app/.emergent && echo "<analysis>**original_problem_statement**:\nThe user\'s initial goal was to build a full-stack classifieds application. The project has since expanded to include an SEO suite, AI tools, deep linking, and A/B testing features.\n\n**PRODUCT REQUIREMENTS (from user\'s latest feedback)**:\n1.  **Category UI**:\n    *   Fix missing sub-categories for SEO and Location.\n    *   The "ALL" button in the category list should be a dropdown, not static.\n    *   For desktop, display category icons in 2 rows.\n2.  **Listing Display**:\n    *   Ensure listing card sizes are uniform, regardless of image height or title length.\n    *   Fix images not displaying on category pages.\n    *   Move the "heart" (save) icon to the top right of the content column in "Similar Listings".\n3.  **Location Feature**:\n    *   Fix the non-functional location picker on category pages.\n    *   Restrict the location to a single country (Tanzania).\n    *   Admin should control location granularity (show region, districts, or cities).\n4.  **Search UI**:\n    *   Double the height of the search field and improve its UI.\n5.  **Admin Controls**:\n    *   Create a page for admins to enable/disable features like view counts, save stats, etc.\n6.  **SEO**:\n    *   Implement SEO optimizations for the app, mobile site, tablet, and web versions.\n\n**User\'s preferred language**: English\n\n**what currently exists?**\nA full-stack classifieds application with a React Native/Expo frontend, a FastAPI backend, and a Next.js admin dashboard. The application has a functional location filter (currently locked to regions), a mobile category dropdown, and feature flag integration via a Zustand global store.\n\nIn the last session, the agent fixed a data issue causing duplicate locations to appear in the location filter. The agent also implemented the frontend and backend logic for an admin-controlled location granularity feature (allowing admins to switch the filter between regions, districts, and cities). However, this new feature is currently blocked by a bug.\n\n**Last working item**:\nThe agent was implementing the "Admin Control for Location Granularity" feature. This involved updating the category page to fetch the `location_mode` from the feature settings store and render a hierarchical location picker (Region -> District -> City).\n\n- **Last item agent was working**: Debugging an issue where the frontend category page does not update its UI based on the `location_mode` setting fetched from the backend. The component seems to be using a stale or default value (\'region\') from the Zustand store, even when the API returns \'district\'. The agent suspects a caching issue, an environment variable resolution problem within the store, or a React re-rendering problem.\n- **Status**: BLOCKED\n- **Agent Testing Done**: Y (Revealed the bug)\n- **Which testing method agent to use?**: Troubleshoot agent or manual debugging. This is a complex state management issue. The agent will need to use screenshots with browser console capture to inspect logs and state.\n- **User Testing Done**: N\n\n**All Pending/In progress Issue list**:\n-   Issue 1: Admin-controlled location granularity feature is not working (P0)\n-   Issue 2: Mobile location picker clickability in test environment (P2)\n-   Issue 3: Clarification needed on "missing sub-categories" (P2)\n\n**Issues Detail**:\n-   **Issue 1**: Admin-controlled location granularity feature is not working\n    -   **Description**: The frontend UI on the category page fails to adapt to the `location_mode` (\'region\', \'district\', \'city\') set in the admin dashboard. It remains stuck displaying the region picker, even when the backend API confirms the setting has been changed to \'district\'. This blocks the core functionality of the new feature.\n    -   **Attempted fixes**:\n        -   Reduced the Zustand store\'s cache duration to near-zero to force re-fetches.\n        -   Refactored the component to use more specific Zustand selectors and `useCallback` to ensure re-renders on state change.\n        -   Attempted to debug the resolution of the `EXPO_PUBLIC_BACKEND_URL` environment variable within the store, suspecting it might be unavailable at module load time.\n        -   Added `useEffect` hooks to trigger store initialization within the component.\n        -   Temporarily reverted the `location_mode` setting to \'region\' on the backend to keep the live location picker functional.\n    -   **Next debug checklist**:\n        1.  In the backend (`/app/backend/main.py`), use the `mongo` client to set `feature_settings` collection\'s `location_mode` to `"district"` to enable testing.\n        2.  Add extensive `console.log` statements inside `frontend/src/lib/store/feature-settings.ts` to trace the `fetchFeatureSettings` function: log the API URL being used, the raw API response, and the data being passed to `set`.\n        3.  In `frontend/src/app/(app)/category/[id].tsx`, log the value of `locationMode` on every render to confirm if the component is re-rendering with stale data or not re-rendering at all.\n        4.  Review the Zustand selectors again. The issue might be that the component is subscribed to a broad `settings` object, and Zustand\'s shallow comparison doesn\'t detect the nested `location_mode` change.\n    -   **Why fix this issue and what will be achieved with the fix?**: This is a core part of the user\'s request for admin-controlled features. Fixing it will allow admins to control the level of detail in the location filter.\n    -   **Status**: BLOCKED\n    -   **Is recurring issue?**: N\n    -   **Should Test frontend/backend/both after fix?**: Both. Backend to change the setting, frontend to verify the UI updates and functions correctly.\n    -   **Blocked on other issue**: No.\n\n-   **Issue 2**: Mobile location picker clickability in test environment\n    -   **Description**: The testing agent reported that the mobile location picker button on the category page was visible but not clickable. The previous agent believed this might be an environment-specific testing issue.\n    -   **Next debug checklist**: Ask the user to manually test the button. If it fails, investigate React Native Web touchable components or `z-index` conflicts.\n    -   **Status**: USER VERIFICATION PENDING\n    -   **Is recurring issue?**: N\n    -   **Should Test frontend/backend/both after fix?**: Frontend\n\n-   **Issue 3**: Clarification needed on "missing sub-categories"\n    -   **Description**: A user requirement is to "Fix missing sub-categories for SEO and Location." The agent investigated the category data and found that all categories, including what appear to be "SEO" and "Location" related ones, have sub-categories in the database.\n    -   **Next debug checklist**: Ask the user to provide a screenshot or more specific steps to reproduce where they are seeing missing sub-categories.\n    -   **Status**: BLOCKED (on user feedback)\n    -   **Is recurring issue?**: N\n    -   **Should Test frontend/backend/both after fix?**: Frontend\n\n**In progress Task List**:\n-   **Task 1**: Implement Admin Control for Location Granularity\n    -   **Where to resume**: The task is currently blocked by the "Location granularity feature is not working" issue. The immediate next step is to debug the Zustand store and component re-rendering.\n    -   **What will be achieved with this?**: Admins will be able to control whether users filter by region, district, or city.\n    -   **Status**: BLOCKED\n    -   **Should Test frontend/backend/both after fix?**: Both.\n    -   **Blocked on something**: Blocked on Issue #1.\n\n**Upcoming and Future Tasks**\n-   **(P1) Refactor `ListingCard` Components**: Merge the two separate `ListingCard.tsx` components from `components/home/` and `components/listings/` into a single, reusable component to reduce code duplication and prevent future bugs.\n-   **(P2) SEO Optimization**: Conduct a full SEO audit and implement optimizations like dynamic meta tags, structured data (JSON-LD), and a sitemap.\n-   **(P2) User Verification for Past UI Fixes**: The user still needs to verify several completed UI changes from previous sessions:\n    -   Uniform listing card size.\n    -   Repositioned heart icon on "Similar Listings".\n    -   Increased search field height and new UI.\n-   **(P3) Fix Images on Category Pages**: Address the original requirement to fix images not displaying on category pages (if still an issue after recent fixes).\n\n**Completed work in this session**\n-   **Duplicate Location Data Fixed**: Investigated and removed a duplicate "Dodoma" entry from the locations collection in the database.\n-   **Missing Coordinates Added**: Added geographic coordinates for the "Mbeya" region to ensure all regions are complete.\n-   **Location Granularity Feature (Partial)**: Implemented the backend and frontend code for the admin-controlled location feature. The work is complete but blocked by a bug.\n-   **Requested User Clarification**: Prepared a summary for the user asking for more details on the "missing sub-categories" issue.\n\n**Earlier issues found/mentioned but not fixed**\n-   **Issue 1: Missing Sub-categories for SEO and Location**\n    -   **Debug checklist**: The database shows sub-categories exist. Need a screenshot or steps from the user to understand what is "missing" in the UI.\n    -   **Why to solve this issue and what will be achieved with this?**: To fulfill a specific user requirement and ensure the category navigation is complete.\n    -   **Should Test frontend/backend/both after fix**: Frontend\n    -   **Is recurring issue?**: N\n\n**Known issue recurrence from previous fork**\n-   None. The previous admin authentication instability issue did not recur.\n\n**Code Architecture**\n```\n/app\n├── admin-dashboard\n│   └── src/pages/FeatureSettings.tsx   # VIEWED\n├── backend\n│   └── src\n│       ├── routes\n│       │   ├── feature_settings.py     # VIEWED\n│       │   └── locations.py            # VIEWED\n│       └── services\n│           └── location_system.py      # VIEWED\n└── frontend\n    └── src\n        ├── app\n        │   └── (app)\n        │       └── category\n        │           └── [id].tsx          # HEAVILY MODIFIED\n        └── lib\n            └── store\n                └── feature-settings.ts   # HEAVILY MODIFIED\n```\n\n**Key Technical Concepts**\n-   **Zustand State Management**: Heavy use of Zustand for global state, but encountered significant debugging challenges related to caching, selectors, and component re-rendering in a React Native Web environment.\n-   **Hierarchical UI**: Implemented a multi-level selection modal (Region -> District -> City) that dynamically fetches data based on user selections and admin settings.\n-   **Direct Database Manipulation**: Used `execute_bash` to run `mongo` shell commands for data cleanup (deleting and updating documents).\n-   **Environment Variable Debugging**: Investigated issues with `process.env` variables in an Expo/Next.js web build, where variables might not be available at module load time.\n\n**key DB schema**\n-   **`locations`**: {`id`: string, `name`: string, `code`: string, `parent_code`: string, `level`: string, `coordinates`: object}\n-   **`feature_settings`**: {`id`: string, `show_view_count`: boolean, `location_mode`: string, `currency`: string, ...}\n\n**changes in tech stack**\n-   None.\n\n**All files of reference**\n-   `/app/frontend/src/app/(app)/category/[id].tsx`: Heavily modified to implement the hierarchical location picker logic, state, and UI. This is where the main bug resides.\n-   `/app/frontend/src/lib/store/feature-settings.ts`: Modified multiple times to debug caching and API URL issues. This store is central to the blocked feature.\n-   `/app/backend/routes/locations.py`: Viewed to understand the APIs for fetching districts and cities.\n-   `/app/admin-dashboard/src/pages/FeatureSettings.tsx`: Viewed to confirm that the UI for changing `location_mode` already exists.\n\n**Areas that need refactoring**:\n-   **Duplicate `ListingCard` Components**: The two similar `ListingCard.tsx` components in `/frontend/src/components/home/` and `/frontend/src/components/listings/` should be merged.\n\n**key api endpoints**\n-   `PUT /api/feature-settings`: To change the `location_mode` from the admin dashboard.\n-   `GET /api/feature-settings`: Fetches the current `location_mode` for the frontend.\n-   `GET /api/locations/districts/{region_code}`: Fetches districts for a given region.\n-   `GET /api/locations/cities/{district_code}`: Fetches cities for a given district.\n\n**Critical Info for New Agent**\n-   **TOP PRIORITY**: You are blocked. You must first solve the Zustand store bug in `feature-settings.ts` and `category/[id].tsx`. The UI is not reacting to the `location_mode` change from the backend. Review the "Next debug checklist" for Issue #1.\n-   **You must manually change the `location_mode` in the database to "district" or "city" to reproduce and test the bug.** The previous agent reset it to "region".\n-   The user still needs to provide clarification on the "missing sub-categories" requirement. Do not attempt to fix it until you receive more information.\n\n**documents and test reports created in this job**\n-   `/app/memory/PRD.md` (updated)\n\n**Last 10 User Messages and any pending HUMAN messages**\n-   User approved the agent\'s plan which included fixing data issues and implementing location granularity. (COMPLETED)\n-   User repeatedly confirmed to "proceed" with the implemented plan. (COMPLETED)\n\n**Project Health Check:**\n-   **Broken**: The Admin-controlled location granularity feature is implemented but non-functional due to a state management bug.\n-   **Mocked**: None.\n\n**3rd Party Integrations**\n-   **Emergent LLM (GPT-5.2)**: Integrated via `emergentintegrations` library. Uses the Emergent LLM Key.\n-   `@dnd-kit/core` & `@dnd-kit/sortable`\n-   `zustand`\n-   `@expo/vector-icons`\n-   `python-socketio` / `socket.io-client`\n-   `@react-native-community/netinfo`\n\n**Testing status**\n-   **Testing agent used after significant changes**: NO (Agent performed manual testing which revealed the blocker)\n-   **Troubleshoot agent used after agent stuck in loop**: NO\n-   **Test files created**: None\n-   **Known regressions**: None.\n\n**Credentials to test flow:**\n-   **Admin User**: `admin@marketplace.com` / `Admin@123456`\n-   **Regular User**: `testuser@test.com` / `password`\n\n**What agent forgot to execute**\n-   The agent did not forget to execute tasks but was blocked on the highest priority item (Location Granularity). The planned refactoring of `ListingCard` and resolving the ambiguity of "missing sub-categories" were correctly deferred.</analysis>" > /app/.emergent/summary.txt'
+BASH_LINENO=()
+BASH_LOADABLES_PATH=/usr/local/lib/bash:/usr/lib/bash:/opt/local/lib/bash:/usr/pkg/lib/bash:/opt/pkg/lib/bash:.
+BASH_SOURCE=()
+BASH_VERSINFO=([0]="5" [1]="2" [2]="15" [3]="1" [4]="release" [5]="aarch64-unknown-linux-gnu")
+BASH_VERSION='5.2.15(1)-release'
+DEBIAN_FRONTEND=noninteractive
+DIRSTACK=()
+ENABLE_RELOAD=true
+EUID=0
+GPG_KEY=A035C8C19219BA821ECEA86B64E628F8D684696D
+GROUPS=()
+HOME=/root
+HOSTNAME=agent-env-598036e2-ffcb-4bd6-9c07-6e1437f6c92d
+HOSTTYPE=aarch64
+IFS=$' \t\n'
+KUBERNETES_PORT=tcp://34.118.224.1:443
+KUBERNETES_PORT_443_TCP=tcp://34.118.224.1:443
+KUBERNETES_PORT_443_TCP_ADDR=34.118.224.1
+KUBERNETES_PORT_443_TCP_PORT=443
+KUBERNETES_PORT_443_TCP_PROTO=tcp
+KUBERNETES_SERVICE_HOST=34.118.224.1
+KUBERNETES_SERVICE_PORT=443
+KUBERNETES_SERVICE_PORT_HTTPS=443
+LANG=C.UTF-8
+MACHTYPE=aarch64-unknown-linux-gnu
+NEXT_TELEMETRY_DISABLED=1
+NODE_VERSION=20
+OLDPWD=/app
+OPTERR=1
+OPTIND=1
+OSTYPE=linux-gnu
+PATH=/root/.venv/bin:/opt/plugins-venv/bin:/opt/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+PIPESTATUS=([0]="0")
+PIP_NO_INPUT=1
+PLAYWRIGHT_BROWSERS_PATH=/pw-browsers
+PLUGIN_VENV_PATH=/opt/plugins-venv
+PPID=70
+PS4='+ '
+PWD=/app/frontend
+PYTHONUNBUFFERED=1
+PYTHON_SHA256=8d3ed8ec5c88c1c95f5e558612a725450d2452813ddad5e58fdb1a53b1209b78
+PYTHON_VERSION=3.11.14
+SHELL=/bin/bash
+SHELLOPTS=braceexpand:hashall:interactive-comments
+SHLVL=1
+STRIPE_API_KEY=sk_test_emergent
+TERM=dumb
+UID=0
+UV_COMPILE_BYTECODE=1
+VIRTUAL_ENV=/root/.venv
+_=/app/.emergent
+base_url=https://demobackend.emergentagent.com
+code_server_password=b5a386a4
+integration_proxy_url=https://integrations.emergentagent.com
+monitor_polling_interval=1
+preview_endpoint=https://zustand-store-test.preview.emergentagent.com
+run_id=zustand-store-test.
+        3.  In , log the value of  on every render to confirm if the component is re-rendering with stale data or not re-rendering at all.
+        4.  Review the Zustand selectors again. The issue might be that the component is subscribed to a broad  object, and Zustand's shallow comparison doesn't detect the nested  change.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a core part of the user's request for admin-controlled features. Fixing it will allow admins to control the level of detail in the location filter.
+    -   **Status**: BLOCKED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Both. Backend to change the setting, frontend to verify the UI updates and functions correctly.
+    -   **Blocked on other issue**: No.
+
+-   **Issue 2**: Mobile location picker clickability in test environment
+    -   **Description**: The testing agent reported that the mobile location picker button on the category page was visible but not clickable. The previous agent believed this might be an environment-specific testing issue.
+    -   **Next debug checklist**: Ask the user to manually test the button. If it fails, investigate React Native Web touchable components or  conflicts.
     -   **Status**: USER VERIFICATION PENDING
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Frontend
--   **Issue 2**: Duplicate Dodoma region in location data
-    -   **Description**: The location picker modal shows the Dodoma region twice. This was discovered during manual testing and is a data issue, not a frontend bug.
-    -   **Next debug checklist**:
-        1.  Investigate the backend  endpoint.
-        2.  Check the source of the location data (likely a database collection) for duplicate entries.
-        3.  Clean up the data source to remove the duplicate Dodoma entry.
-    -   **Status**: NOT STARTED
+
+-   **Issue 3**: Clarification needed on missing sub-categories
+    -   **Description**: A user requirement is to Fix missing sub-categories for SEO and Location. The agent investigated the category data and found that all categories, including what appear to be SEO and Location related ones, have sub-categories in the database.
+    -   **Next debug checklist**: Ask the user to provide a screenshot or more specific steps to reproduce where they are seeing missing sub-categories.
+    -   **Status**: BLOCKED (on user feedback)
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Backend
+    -   **Should Test frontend/backend/both after fix?**: Frontend
 
 **In progress Task List**:
--   None.
+-   **Task 1**: Implement Admin Control for Location Granularity
+    -   **Where to resume**: The task is currently blocked by the Location granularity feature is not working issue. The immediate next step is to debug the Zustand store and component re-rendering.
+    -   **What will be achieved with this?**: Admins will be able to control whether users filter by region, district, or city.
+    -   **Status**: BLOCKED
+    -   **Should Test frontend/backend/both after fix?**: Both.
+    -   **Blocked on something**: Blocked on Issue #1.
 
 **Upcoming and Future Tasks**
--   **(P1) Admin Control for Location Granularity**: Implement the admin UI and backend logic to allow administrators to control whether the location filter shows regions, districts, or cities. The frontend picker is already built.
--   **(P2) SEO Optimization**: Conduct a full SEO audit and implement optimizations, including dynamic meta tags, structured data (JSON-LD) for listings, and a sitemap.
--   **(P2) User Verification for Past UI Fixes**: User still needs to verify the following completed changes from previous sessions:
+-   **(P1) Refactor  Components**: Merge the two separate  components from  and  into a single, reusable component to reduce code duplication and prevent future bugs.
+-   **(P2) SEO Optimization**: Conduct a full SEO audit and implement optimizations like dynamic meta tags, structured data (JSON-LD), and a sitemap.
+-   **(P2) User Verification for Past UI Fixes**: The user still needs to verify several completed UI changes from previous sessions:
     -   Uniform listing card size.
     -   Repositioned heart icon on Similar Listings.
     -   Increased search field height and new UI.
--   **(P2) Fix Missing Sub-categories**: Investigate and fix the UI for missing sub-categories under the SEO and Location main categories.
+-   **(P3) Fix Images on Category Pages**: Address the original requirement to fix images not displaying on category pages (if still an issue after recent fixes).
 
 **Completed work in this session**
--   **Location Picker Implemented**: Added a functional location picker on category pages for both mobile and desktop. ()
--   **Mobile All Category Dropdown**: Converted the All category button on the mobile header into a dropdown modal. ()
--   **Feature Settings Integration**: Created a global  store for feature flags and integrated it to conditionally render UI elements. ()
--   **Currency Inconsistency Fixed**: Resolved a bug causing different currency symbols on the homepage vs. other pages by unifying logic in all  components. ()
+-   **Duplicate Location Data Fixed**: Investigated and removed a duplicate Dodoma entry from the locations collection in the database.
+-   **Missing Coordinates Added**: Added geographic coordinates for the Mbeya region to ensure all regions are complete.
+-   **Location Granularity Feature (Partial)**: Implemented the backend and frontend code for the admin-controlled location feature. The work is complete but blocked by a bug.
+-   **Requested User Clarification**: Prepared a summary for the user asking for more details on the missing sub-categories issue.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1: Duplicate Dodoma region in location data**
-    -   Debug checklist: Check the backend  endpoint and the underlying database collection for duplicate entries.
-    -   Why to solve this issue and what will be achieved with this?: To provide a clean and accurate user experience in the location filter.
-    -   Should Test frontend/backend/both after fix: Backend
-    -   Is recurring issue?: N
+-   **Issue 1: Missing Sub-categories for SEO and Location**
+    -   **Debug checklist**: The database shows sub-categories exist. Need a screenshot or steps from the user to understand what is missing in the UI.
+    -   **Why to solve this issue and what will be achieved with this?**: To fulfill a specific user requirement and ensure the category navigation is complete.
+    -   **Should Test frontend/backend/both after fix**: Frontend
+    -   **Is recurring issue?**: N
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork**: Admin session/authentication instability.
--   **Recurrence count**: 2+
--   **Status**: RESOLVED. This issue did not recur in the current session.
+-   None. The previous admin authentication instability issue did not recur.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Global State Management**: Using  to create a global store () for fetching and providing application-wide settings.
--   **Conditional Rendering**: Using data from the Zustand store to conditionally show/hide UI elements like view counts, featured badges, and format currency.
--   **React Component **: Debugged an issue where  with a custom comparison function prevented a component from re-rendering in response to updates from a  store.
--   **React Native Web**: Implemented features and styles intended for both native and web platforms, including interactive modals and handling .
+-   **Zustand State Management**: Heavy use of Zustand for global state, but encountered significant debugging challenges related to caching, selectors, and component re-rendering in a React Native Web environment.
+-   **Hierarchical UI**: Implemented a multi-level selection modal (Region -> District -> City) that dynamically fetches data based on user selections and admin settings.
+-   **Direct Database Manipulation**: Used  to run  shell commands for data cleanup (deleting and updating documents).
+-   **Environment Variable Debugging**: Investigated issues with  variables in an Expo/Next.js web build, where variables might not be available at module load time.
 
 **key DB schema**
--   ****: {uid=0(root) gid=0(root) groups=0(root): string, : string, : string, : boolean, : boolean}
--   ****: {uid=0(root) gid=0(root) groups=0(root): string, : boolean, : boolean, : string, ...}
+-   ****: {uid=0(root) gid=0(root) groups=0(root): string, : string, : string, : string, : string, : object}
+-   ****: {uid=0(root) gid=0(root) groups=0(root): string, : boolean, : string, : string, ...}
 
 **changes in tech stack**
 -   None.
 
 **All files of reference**
--   : Modified to add the state, UI, and logic for the location picker modal.
--   : Modified to add a category selection modal triggered by the All button.
--   : New file created to manage global feature settings using Zustand.
--   : Modified to initialize the feature settings store on app load.
--   : Modified to consume the feature settings store for conditional rendering.
--   : Modified to fix a currency bug by consuming the feature settings store and removing a problematic .
+-   : Heavily modified to implement the hierarchical location picker logic, state, and UI. This is where the main bug resides.
+-   : Modified multiple times to debug caching and API URL issues. This store is central to the blocked feature.
+-   : Viewed to understand the APIs for fetching districts and cities.
+-   : Viewed to confirm that the UI for changing  already exists.
 
 **Areas that need refactoring**:
--   **Duplicate  Components**: There are two similar but separate  components in  and . These should be merged into a single, reusable component to reduce code duplication and ensure consistency.
+-   **Duplicate  Components**: The two similar  components in  and  should be merged.
 
 **key api endpoints**
--   : Fetches application-wide feature toggles and settings.
--   : Fetches location data for the location picker.
--   : Fetches listings, can be filtered by .
+-   : To change the  from the admin dashboard.
+-   : Fetches the current  for the frontend.
+-   : Fetches districts for a given region.
+-   : Fetches cities for a given district.
 
 **Critical Info for New Agent**
--   The three highest-priority tasks from the last user request (image fix, location picker, mobile All dropdown) have been implemented.
--   A  run was performed. The agent addressed the critical currency inconsistency issue found by the test agent. Two minor issues remain (see All Pending/In progress Issue list).
--   There are two different  components in the codebase. This is a source of bugs (like the currency issue) and should be refactored into a single component.
--   The next set of tasks should be drawn from the Upcoming and Future Tasks list, starting with admin controls for location and user verification of past fixes.
+-   **TOP PRIORITY**: You are blocked. You must first solve the Zustand store bug in  and . The UI is not reacting to the  change from the backend. Review the Next debug checklist for Issue #1.
+-   **You must manually change the  in the database to district or city to reproduce and test the bug.** The previous agent reset it to region.
+-   The user still needs to provide clarification on the missing sub-categories requirement. Do not attempt to fix it until you receive more information.
 
 **documents and test reports created in this job**
--   
--   
+-    (updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
--   User confirmed the agent's initial plan, which included investigating the image issue, fixing the location picker, and implementing the mobile All dropdown. (COMPLETED)
+-   User approved the agent's plan which included fixing data issues and implementing location granularity. (COMPLETED)
+-   User repeatedly confirmed to proceed with the implemented plan. (COMPLETED)
 
 **Project Health Check:**
--   **Broken**: None.
+-   **Broken**: The Admin-controlled location granularity feature is implemented but non-functional due to a state management bug.
 -   **Mocked**: None.
 
 **3rd Party Integrations**
@@ -152,7 +228,7 @@ The agent just finished fixing a currency inconsistency bug where the homepage s
 -   
 
 **Testing status**
--   **Testing agent used after significant changes**: YES
+-   **Testing agent used after significant changes**: NO (Agent performed manual testing which revealed the blocker)
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None
 -   **Known regressions**: None.
@@ -162,4 +238,4 @@ The agent just finished fixing a currency inconsistency bug where the homepage s
 -   **Regular User**:  / 
 
 **What agent forgot to execute**
--   The agent successfully completed the planned batch of work. The remaining items from the original Product Requirements are not forgotten but are now ready to be prioritized as Upcoming Tasks. This includes Admin control for location granularity, SEO optimizations, and user verification of several past UI fixes.</analysis>
+-   The agent did not forget to execute tasks but was blocked on the highest priority item (Location Granularity). The planned refactoring of  and resolving the ambiguity of missing sub-categories were correctly deferred.</analysis>

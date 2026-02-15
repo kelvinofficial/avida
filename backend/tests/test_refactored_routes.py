@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime
 
 # Base URL from environment
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://marketplace-ai-tools-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://zustand-store-test.preview.emergentagent.com')
 
 # Test user credentials
 TEST_EMAIL = f"test_refactor_{uuid.uuid4().hex[:8]}@test.com"
