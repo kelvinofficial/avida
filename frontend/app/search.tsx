@@ -1162,10 +1162,11 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 24,
   },
-  // New search header row with location
+  // New search header row with location - aligned with header
   searchHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     gap: 16,
     marginBottom: 24,
   },
