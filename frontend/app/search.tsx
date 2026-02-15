@@ -1145,7 +1145,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   headerWrapper: {
-    backgroundColor: '#FF0000',
+    backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
     paddingTop: 8,
@@ -1160,7 +1160,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
-    backgroundColor: '#E0E0FF',
+    backgroundColor: '#FFFFFF',
   },
   backBtn: {
     width: 40,
