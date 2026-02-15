@@ -438,6 +438,8 @@ const styles = StyleSheet.create({
   globalHeaderRow2: {
     paddingVertical: 12,
     paddingHorizontal: 24,
+    zIndex: 100,
+    ...(Platform.OS === 'web' ? { overflow: 'visible' } as any : {}),
   },
   globalHeaderInner: {
     flexDirection: 'row',
@@ -446,6 +448,7 @@ const styles = StyleSheet.create({
     maxWidth: 1280,
     width: '100%',
     alignSelf: 'center',
+    ...(Platform.OS === 'web' ? { overflow: 'visible' } as any : {}),
   },
   logoContainer: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   logoIcon: {
