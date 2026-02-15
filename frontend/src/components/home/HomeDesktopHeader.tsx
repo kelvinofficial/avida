@@ -200,6 +200,7 @@ const localStyles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
     gap: 10,
+    zIndex: 100,
   },
   categoryRow: {
     flexDirection: 'row',
@@ -215,6 +216,7 @@ const localStyles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: '#F5F5F5',
     gap: 6,
+    ...(Platform.OS === 'web' ? { cursor: 'pointer' } as any : {}),
   },
   categoryPillActive: {
     backgroundColor: '#2E7D32',
