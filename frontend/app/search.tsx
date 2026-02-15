@@ -1041,8 +1041,25 @@ export default function SearchScreen() {
               </TouchableOpacity>
             )}
           </View>
+          {/* Location Button */}
+          <TouchableOpacity 
+            style={[styles.locationBtn, (selectedRegion || selectedDistrict || selectedCity) && styles.locationBtnActive]}
+            onPress={() => setShowLocationModal(true)}
+            testID="search-location-picker"
+            accessibilityRole="button"
+            accessibilityLabel="Select location"
+          >
+            <Ionicons 
+              name="location" 
+              size={20} 
+              color={(selectedRegion || selectedDistrict || selectedCity) ? "#fff" : COLORS.primary} 
+            />
+          </TouchableOpacity>
         </View>
       </View>
+
+      {/* Location Modal */}
+      {renderLocationModal()}
 
       <View style={styles.contentWrapper}>
         {loading ? (
