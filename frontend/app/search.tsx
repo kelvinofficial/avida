@@ -1299,3 +1299,120 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 });
+
+// Mobile Card Styles - Similar to SimilarListings design
+const mobileCardStyles = StyleSheet.create({
+  card: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    marginBottom: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  imageContainer: {
+    width: 130,
+    height: 130,
+    backgroundColor: COLORS.background,
+    position: 'relative',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  featuredBadge: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageCountBadge: {
+    position: 'absolute',
+    bottom: 6,
+    left: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 4,
+    gap: 2,
+  },
+  imageCountText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  content: {
+    flex: 1,
+    padding: 12,
+    justifyContent: 'space-between',
+    position: 'relative',
+  },
+  heartButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    zIndex: 10,
+    padding: 4,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+    paddingRight: 30, // Space for heart button
+  },
+  price: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  negotiableBadge: {
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  negotiableText: {
+    fontSize: 10,
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  title: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: COLORS.text,
+    lineHeight: 17,
+    marginBottom: 4,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginBottom: 4,
+  },
+  locationText: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    flex: 1,
+  },
+  conditionBadge: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+  },
+  conditionText: {
+    fontSize: 10,
+    color: '#4B5563',
+    fontWeight: '500',
+  },
+});
