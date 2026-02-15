@@ -301,6 +301,44 @@ const localStyles = StyleSheet.create({
   categoryPillTextActive: {
     color: '#fff',
   },
+  // Icon style category rows
+  iconCategoryRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    gap: 24,
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E8E8E8',
+  },
+  iconCategoryItem: {
+    alignItems: 'center',
+    width: 80,
+  },
+  iconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#E8F5E9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  iconContainerSelected: {
+    backgroundColor: '#2E7D32',
+  },
+  iconLabel: {
+    fontSize: 11,
+    color: '#333',
+    textAlign: 'center',
+    fontWeight: '500',
+    lineHeight: 14,
+    height: 28,
+  },
+  iconLabelSelected: {
+    color: '#2E7D32',
+    fontWeight: '600',
+  },
   // Fixed position dropdown overlay for web compatibility
   dropdownOverlay: {
     position: Platform.OS === 'web' ? 'fixed' as any : 'absolute',
