@@ -79,7 +79,7 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
       <View style={localStyles.categoryRowWrapper}>
         <View style={localStyles.categoryRowInner}>
         {/* Row 1 with All dropdown */}
-        <View style={localStyles.categoryRow}>
+        <View style={localStyles.categoryRowFirst}>
           <TouchableOpacity
             style={[localStyles.categoryPill, !selectedCategory && localStyles.categoryPillActive]}
             onPress={handleAllPress}
