@@ -296,7 +296,7 @@ Your content should:
             "internal_links": [],
             "status": "draft",
             "ai_generated": True,
-            "created_at": datetime.now(timezone.utc),
+            "created_at": datetime.now(timezone.utc).isoformat(),
             "created_by": admin["admin_id"]
         }
         
