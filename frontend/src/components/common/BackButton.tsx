@@ -64,7 +64,7 @@ export const BackButton: React.FC<BackButtonProps> = ({
       activeOpacity={0.7}
       accessibilityLabel="Go back"
       accessibilityRole="button"
-      data-testid={testID}
+      testID={testID}
     >
       {Platform.OS === 'web' ? (
         <View style={styles.iconContainer}>
