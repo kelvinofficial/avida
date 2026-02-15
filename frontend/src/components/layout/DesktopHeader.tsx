@@ -76,6 +76,7 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   // Handle search input change with debounce
   const handleSearchInputChange = useCallback((text: string) => {
     setSearchQuery(text);
+    setShowSearchSuggestions(true); // Keep suggestions visible while typing
     
     if (autocompleteTimeoutRef.current) {
       clearTimeout(autocompleteTimeoutRef.current);
