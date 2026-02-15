@@ -180,40 +180,6 @@ const localStyles = StyleSheet.create({
   categoryRowInner: {
     width: '100%',
     maxWidth: 1280,
-    gap: 10,
-  },
-  categoryRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    justifyContent: 'flex-start',
-  },
-  categoryRowFirst: {
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  categoryPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#F5F5F5',
-    gap: 6,
-    ...(Platform.OS === 'web' ? { cursor: 'pointer' } as any : {}),
-  },
-  categoryPillActive: {
-    backgroundColor: '#2E7D32',
-  },
-  categoryPillText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#666',
-  },
-  categoryPillTextActive: {
-    color: '#fff',
   },
   // Icon style category rows
   iconCategoryRow: {
