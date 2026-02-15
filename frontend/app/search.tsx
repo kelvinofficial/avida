@@ -936,11 +936,24 @@ export default function SearchScreen() {
                             {/* Image */}
                             <View style={styles.listingImageWrapper}>
                               {item.images?.[0] ? (
-                                <Image
-                                  source={{ uri: item.images[0] }}
-                                  style={styles.listingImage}
-                                  resizeMode="cover"
-                                />
+                                Platform.OS === 'web' ? (
+                                  <img
+                                    src={item.images[0]}
+                                    style={{
+                                      width: '100%',
+                                      height: '100%',
+                                      objectFit: 'cover',
+                                      display: 'block',
+                                    }}
+                                    alt={item.title}
+                                  />
+                                ) : (
+                                  <Image
+                                    source={{ uri: item.images[0] }}
+                                    style={styles.listingImage}
+                                    resizeMode="cover"
+                                  />
+                                )
                               ) : (
                                 <ImagePlaceholder size="medium" />
                               )}
