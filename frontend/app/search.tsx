@@ -234,7 +234,11 @@ export default function SearchScreen() {
   const { isAuthenticated } = useAuthStore();
   const { selectedLocationFilter } = useLocationStore();
   const { isDesktop, isTablet } = useResponsive();
+  const { width: screenWidth } = useWindowDimensions();
   const isLargeScreen = isDesktop || isTablet;
+  
+  // Responsive category rows - single row for wide screens, two rows for narrower
+  const needsTwoRows = screenWidth < 1300;
   
   // Ref to track the last query that was searched (prevents duplicate searches)
   const initialSearchHandled = useRef<string>('');
