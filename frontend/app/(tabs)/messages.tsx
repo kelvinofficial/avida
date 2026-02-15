@@ -1506,7 +1506,7 @@ const styles = StyleSheet.create({
 // Desktop-specific styles
 const desktopStyles = StyleSheet.create({
   container: {
-    backgroundColor: '#1A1A1A', // Dark footer background
+    backgroundColor: '#F5F5F5', // Light background matching app theme
   },
   
   // Global Header
