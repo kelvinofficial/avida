@@ -529,7 +529,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                         <View style={styles.iconContainer}>
                           <Ionicons name="map-outline" size={20} color={theme.colors.primary} />
                         </View>
-                        <Text style={[styles.itemText, { flex: 1 }]}>{region.name}</Text>
+                        <span style={{ flex: 1, fontSize: 16, color: theme.colors.onSurface }}>{region.name}</span>
                       </div>
                     ) : (
                       <TouchableOpacity
