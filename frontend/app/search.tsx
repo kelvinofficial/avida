@@ -586,11 +586,6 @@ export default function SearchScreen() {
           {/* Price Row */}
           <View style={mobileCardStyles.priceRow}>
             <Text style={mobileCardStyles.price}>{formatPrice(item.price, item.currency)}</Text>
-            {isNegotiable && (
-              <View style={mobileCardStyles.negotiableBadge}>
-                <Text style={mobileCardStyles.negotiableText}>Negotiable</Text>
-              </View>
-            )}
           </View>
           
           {/* Title */}
@@ -604,12 +599,23 @@ export default function SearchScreen() {
             </Text>
           </View>
           
-          {/* Condition Badge */}
-          {item.condition && (
-            <View style={mobileCardStyles.conditionBadge}>
-              <Text style={mobileCardStyles.conditionText}>{item.condition}</Text>
-            </View>
-          )}
+          {/* Bottom Row: Condition + Negotiable Badge */}
+          <View style={mobileCardStyles.bottomRow}>
+            {/* Condition Badge */}
+            {item.condition && (
+              <View style={mobileCardStyles.conditionBadge}>
+                <Text style={mobileCardStyles.conditionText}>{item.condition}</Text>
+              </View>
+            )}
+            {/* Spacer */}
+            <View style={{ flex: 1 }} />
+            {/* Negotiable Badge - Bottom Right */}
+            {isNegotiable && (
+              <View style={mobileCardStyles.negotiableBadge}>
+                <Text style={mobileCardStyles.negotiableText}>Negotiable</Text>
+              </View>
+            )}
+          </View>
         </View>
       </TouchableOpacity>
     );
