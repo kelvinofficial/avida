@@ -546,6 +546,39 @@ const mobileDropdownStyles = StyleSheet.create({
   },
 });
 
+// All Icon Styles - Matching CategoryIcon design
+const allIconStyles = StyleSheet.create({
+  item: {
+    alignItems: 'center',
+    width: 72,
+    marginBottom: 4,
+  },
+  iconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#E8F5E9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  iconContainerSelected: {
+    backgroundColor: '#2E7D32',
+  },
+  label: {
+    fontSize: 11,
+    color: '#333',
+    textAlign: 'center',
+    fontWeight: '500',
+    lineHeight: 14,
+    height: 28,
+  },
+  labelSelected: {
+    color: '#2E7D32',
+    fontWeight: '600',
+  },
+});
+
 // NEW Header Styles - Two-tier layout matching mockup
 const newHeaderStyles = StyleSheet.create({
   // Row 1: Logo + Location (center) + Icons (right)
