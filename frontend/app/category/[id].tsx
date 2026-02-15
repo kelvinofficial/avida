@@ -1140,7 +1140,6 @@ export default function CategoryScreen() {
 
   // Location Picker Modal
   const renderLocationModal = () => {
-    const locationMode = featureSettings.location_mode;
     const showDistricts = locationMode === 'district' || locationMode === 'city';
     const showCities = locationMode === 'city';
     
