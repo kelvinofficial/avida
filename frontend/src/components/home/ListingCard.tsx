@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
 import { ImageWithSkeleton } from '../common';
+import { useFeatureSettingsStore } from '../../store/featureSettingsStore';
 
 // Constants
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
