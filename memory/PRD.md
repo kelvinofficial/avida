@@ -11,7 +11,30 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 
 ## What's Been Implemented
 
-### Session: February 15, 2026 - Part 12 (Latest)
+### Session: February 15, 2026 - Part 13 (Latest)
+
+**1. Unread Message Count Badge on Header - COMPLETED & VERIFIED**
+- **Request**: Add a red alert notification or number of unread messages on the message icon in the header
+- **Backend Implementation**: 
+  - Created new endpoint `GET /api/conversations/unread-count`
+  - Aggregates `buyer_unread` and `seller_unread` from conversations collection
+  - Returns `{"count": <integer>}` format
+  - Requires authentication (returns 401 without auth)
+- **Frontend Implementation**:
+  - Added `unreadMessageCount` state to DesktopHeader
+  - Added `fetchUnreadMessageCount()` function that calls the new endpoint
+  - Wrapped Messages icon in a View with `position: 'relative'` to position badge
+  - Added red badge (`navBadge` style) showing count when > 0
+  - Badge displays "99+" for counts over 99
+- **Files changed**:
+  - `/app/backend/routes/conversations.py` - Added `get_unread_message_count` endpoint (lines 143-164)
+  - `/app/frontend/src/components/layout/DesktopHeader.tsx` - Added state, fetch function, badge rendering, and styles
+- **Testing Status**: 100% pass rate (backend + frontend) - See `/app/test_reports/iteration_160.json`
+- **Test Accounts**:
+  - `testuser@test.com / password` - Has 1 unread message (shows badge "1")
+  - `testbuyer@test.com / password` - Has 0 unread messages (no badge)
+
+### Session: February 15, 2026 - Part 12
 
 **1. Auto & Vehicle Listing Card Enhancement - COMPLETED & VERIFIED**
 - **Request**: Display miles, year, and transmission with icons on Auto & Vehicle category listing cards, with image on top
