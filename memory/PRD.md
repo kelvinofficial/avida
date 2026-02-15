@@ -11,7 +11,15 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 
 ## What's Been Implemented
 
-### Session: February 15, 2026 (Current)
+### Session: February 15, 2026 (Continued)
+
+**5. Duplicate Dodoma Region Fix - COMPLETED**
+- Removed duplicate "DMA" region entry from `location_regions` collection
+- Updated "DOD" region with coordinates (lat: -6.173, lng: 35.741)
+- Tanzania now has 5 unique regions: Arusha, Dar es Salaam, Dodoma, Mbeya, Mwanza
+- Backend Python script used for data cleanup
+
+### Session: February 15, 2026 (Previous)
 
 **1. Location Picker on Category Pages - COMPLETED**
 - Added functional location picker for Tanzania regions
