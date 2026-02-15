@@ -1144,6 +1144,21 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 24,
   },
+  // Search row wrapper - matches header alignment
+  searchRowWrapper: {
+    width: '100%',
+    paddingVertical: 24,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  searchRowInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+    maxWidth: MAX_WIDTH,
+    width: '100%',
+  },
   // New search header row with location - aligned with header
   searchHeaderRow: {
     flexDirection: 'row',
