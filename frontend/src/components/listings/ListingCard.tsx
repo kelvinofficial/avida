@@ -67,6 +67,40 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
     }).format(price);
   };
 
+  // Create web-compatible image component
+  const renderImage = () => {
+    const imageUri = listing.images?.[0];
+    
+    if (!imageUri) {
+      return <ImagePlaceholder type="listing" size="large" showText={false} />;
+    }
+
+    // Use native img tag for web for better compatibility
+    if (Platform.OS === 'web') {
+      return (
+        <img 
+          src={imageUri}
+          alt={listing.title}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+          loading="lazy"
+        />
+      );
+    }
+
+    // Use React Native Image for native platforms
+    return (
+      <Image
+        source={{ uri: imageUri }}
+        style={styles.image}
+        resizeMode="cover"
+      />
+    );
+  };
+
   return (
     <TouchableScale 
       style={[styles.card, listing.featured && styles.cardFeatured]} 
@@ -75,13 +109,7 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
       testID={`listing-card-${listing._id || listing.id}`}
     >
       <View style={styles.imageContainer}>
-        <OptimizedImage
-          uri={listing.images?.[0]}
-          style={styles.image}
-          placeholderType="listing"
-          placeholderSize="large"
-          priority={listing.featured ? 'high' : 'normal'}
-        />
+        {renderImage()}
         {/* Badges - Just Listed, Featured & TOP */}
         <View style={styles.badgesContainer}>
           {isJustListed(listing.created_at) && (
