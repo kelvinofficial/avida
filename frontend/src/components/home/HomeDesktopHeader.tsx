@@ -38,12 +38,8 @@ const FULL_CATEGORIES = [
   { id: 'friendship_dating', name: 'Friendship & Dating', icon: 'heart-outline' },
 ];
 
-// Split categories into 2 rows for desktop (pill style)
-const ROW1_CATEGORIES = FULL_CATEGORIES.slice(0, 8);
-const ROW2_CATEGORIES = FULL_CATEGORIES.slice(8);
-
-// Icon style rows - all categories in single row
-const ICON_ROW1_CATEGORIES = FULL_CATEGORIES;
+// All categories in single icon row
+const ALL_ICON_CATEGORIES = FULL_CATEGORIES;
 
 interface HomeDesktopHeaderProps {
   selectedCategory: string | null;
