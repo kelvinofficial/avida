@@ -2662,10 +2662,19 @@ const desktopStyles = StyleSheet.create({
     borderRadius: 8,
     gap: 8,
   },
+  locationChipActive: {
+    backgroundColor: COLORS.primary,
+  },
   locationText: {
     fontSize: 14,
     color: '#333',
     fontWeight: '500',
+  },
+  locationTextActive: {
+    color: '#fff',
+  },
+  locationClearBtn: {
+    marginLeft: 4,
   },
   // Search Field Container for dropdown positioning
   searchFieldContainer: {
