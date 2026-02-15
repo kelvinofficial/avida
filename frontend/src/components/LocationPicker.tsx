@@ -298,11 +298,9 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   };
 
   const goBack = () => {
-    if (currentStep === 'region') {
-      setCurrentStep('country');
-      setSelectedCountry(null);
-      setRegions([]);
-    }
+    // In Tanzania-only mode, going back should close the modal
+    // since we don't show country selection
+    closeModal();
   };
 
   const getStepTitle = () => {
