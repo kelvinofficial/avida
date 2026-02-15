@@ -282,7 +282,7 @@ def create_advanced_seo_router(db, get_current_user):
         
         social_posts = []
         
-        for platform in platforms:
+        for platform in platforms_list:
             config = SOCIAL_PLATFORMS.get(platform, {"max_length": 280, "hashtag_limit": 5})
             
             if platform == "twitter":
