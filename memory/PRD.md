@@ -74,7 +74,6 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 
 ### P2 - Medium Priority
 1. **SEO Optimization** - Meta tags, structured data, sitemap
-2. **ListingCard Refactoring** - Merge duplicate components in `/home/` and `/listings/`
 
 ### P3 - Lower Priority
 1. **Location Modal UX** - Auto-scroll to show districts/cities when loaded (minor improvement)
