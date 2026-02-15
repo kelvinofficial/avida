@@ -680,6 +680,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
   },
+  // Fixed position dropdown for web
+  dropdownBackdrop: {
+    position: 'fixed' as any,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 99998,
+  },
+  fixedSuggestionsDropdown: {
+    position: 'fixed' as any,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    zIndex: 99999,
+    maxHeight: 320,
+    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+  },
   locationChip: {
     flexDirection: 'row',
     alignItems: 'center',
