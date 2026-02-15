@@ -60,12 +60,20 @@ export interface ListingCardProps {
 }
 
 const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFavorited = false }) => {
+  // Get feature settings
+  const { settings } = useFeatureSettingsStore();
+  
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('de-DE', {
-      style: 'currency',
-      currency: listing.currency || 'EUR',
+    // Use settings for currency formatting
+    const { currency_symbol, currency_position, currency } = settings;
+    const formattedNumber = new Intl.NumberFormat('de-DE', {
       minimumFractionDigits: 0,
     }).format(price);
+    
+    if (currency_position === 'before') {
+      return `${currency_symbol} ${formattedNumber}`;
+    }
+    return `${formattedNumber} ${currency_symbol}`;
   };
 
   // Create web-compatible image component
