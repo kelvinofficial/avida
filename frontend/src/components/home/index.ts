@@ -6,8 +6,9 @@
 export { SearchSuggestions, AnimatedChip, useSearchSuggestions } from './SearchSuggestions';
 export { CategoryIcon, COLORS_CATEGORY, CATEGORY_ITEM_WIDTH } from './CategoryIcon';
 export type { CategoryIconProps } from './CategoryIcon';
-export { ListingCard, CARD_WIDTH, CARD_IMAGE_HEIGHT, BORDER_RADIUS } from './ListingCard';
-export type { Listing, ListingCardProps } from './ListingCard';
+// Re-export from shared component for backwards compatibility
+export { ListingCard, CARD_WIDTH, CARD_IMAGE_HEIGHT, BORDER_RADIUS } from '../shared/ListingCard';
+export type { Listing, ListingCardProps } from '../shared/ListingCard';
 export { SkeletonCard } from './SkeletonCard';
 export type { SkeletonCardProps } from './SkeletonCard';
 export { FeaturedSellersSection } from './FeaturedSellersSection';
