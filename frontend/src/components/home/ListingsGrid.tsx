@@ -10,7 +10,7 @@ import { useRouter } from 'expo-router';
 import { Listing } from '../../types';
 import { EmptyState } from '../EmptyState';
 import { FeedBanner } from '../BannerSlot';
-import { ListingCard } from './ListingCard';
+import { ListingCard } from '../shared/ListingCard';
 import { styles } from './homeStyles';
 
 // Layout constants
