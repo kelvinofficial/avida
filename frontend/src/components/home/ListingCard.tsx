@@ -55,11 +55,22 @@ const areEqual = (prevProps: ListingCardProps, nextProps: ListingCardProps) => {
 };
 
 export const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFavorited = false, userLocation = null }) => {
+  // Get feature settings
+  const { settings } = useFeatureSettingsStore();
+  
   // Determine if this is an auto or property category
   const isAutoOrProperty = listing.category_id === 'auto_vehicles' || listing.category_id === 'properties';
   
-  const formatPrice = (price: number) => 
-    new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
+  const formatPrice = (price: number) => {
+    // Use settings for currency formatting
+    const { currency_symbol, currency_position } = settings;
+    const formattedNumber = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 0 }).format(price);
+    
+    if (currency_position === 'before') {
+      return `${currency_symbol} ${formattedNumber}`;
+    }
+    return `${formattedNumber} ${currency_symbol}`;
+  };
 
   const getTimeAgo = (date: string) => {
     try { return formatDistanceToNow(new Date(date), { addSuffix: false }); } catch { return ''; }
