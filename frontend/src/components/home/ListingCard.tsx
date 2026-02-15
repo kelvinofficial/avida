@@ -359,7 +359,8 @@ const styles = StyleSheet.create({
     fontWeight: '500', 
     color: '#333', 
     marginBottom: 6, 
-    lineHeight: 17 
+    lineHeight: 17,
+    height: 34, // Fixed height for 2 lines
   },
   priceRow: { 
     flexDirection: 'row', 
