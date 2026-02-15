@@ -604,6 +604,23 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fff',
   },
+  navBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -6,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: COLORS.red,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 3,
+  },
+  navBadgeText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#fff',
+  },
   signInHeaderBtn: {
     paddingHorizontal: 16,
     paddingVertical: 10,
