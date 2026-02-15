@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
   TextInput,
+  Modal,
+  StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -33,6 +35,9 @@ const FULL_CATEGORIES = [
   { id: 'education', name: 'Education', icon: 'school' },
   { id: 'other', name: 'Other', icon: 'ellipsis-horizontal' },
 ];
+
+// Categories to show as icons (excluding All which is a dropdown)
+const ICON_CATEGORIES = FULL_CATEGORIES.filter(c => c.id !== 'all');
 
 interface SearchSuggestions {
   recent: string[];
