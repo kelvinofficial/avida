@@ -939,6 +939,7 @@ export default function SearchScreen() {
                                 <Image
                                   source={{ uri: item.images[0] }}
                                   style={styles.listingImage}
+                                  resizeMode="cover"
                                 />
                               ) : (
                                 <ImagePlaceholder size="medium" />
