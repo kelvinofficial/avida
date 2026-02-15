@@ -407,7 +407,7 @@ def create_badges_router(db, get_current_user, badge_service=None):
                 "title": og_title,
                 "description": og_description,
                 "type": "profile",
-                "url": f"https://zustand-store-test.preview.emergentagent.com/profile/{user_id}/badges",
+                "url": f"https://marketplace-hub-264.preview.emergentagent.com/profile/{user_id}/badges",
             }
         }
 
