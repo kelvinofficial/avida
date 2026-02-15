@@ -1890,16 +1890,6 @@ export default function CategoryScreen() {
             )}
           </View>
         </View>
-        {/* Mobile Location Picker */}
-        <TouchableOpacity 
-          style={[styles.mobileLocationBtn, (selectedRegion || selectedDistrict || selectedCity) && styles.mobileLocationBtnActive]}
-          onPress={() => setShowLocationModal(true)}
-          testID="location-picker-mobile"
-          accessibilityRole="button"
-          accessibilityLabel="Select location"
-        >
-          <Ionicons name="location" size={20} color={(selectedRegion || selectedDistrict || selectedCity) ? "#fff" : COLORS.primary} />
-        </TouchableOpacity>
       </View>
       
       {/* Mobile Recent & Popular Searches */}
