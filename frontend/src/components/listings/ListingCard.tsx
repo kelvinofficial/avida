@@ -174,7 +174,8 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
         {settings.show_time_ago && (
           <Text style={styles.timePosted}>
             {formatTimeAgo(listing.created_at)}
-        </Text>
+          </Text>
+        )}
       </View>
     </TouchableScale>
   );
