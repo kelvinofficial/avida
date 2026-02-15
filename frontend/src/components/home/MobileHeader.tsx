@@ -181,33 +181,22 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           <Ionicons name="chevron-down" size={14} color="#666" />
         </TouchableOpacity>
         
-        {/* Right Icons - Notification + Profile */}
-        <View style={newHeaderStyles.rightIcons}>
-          <TouchableOpacity
-            style={newHeaderStyles.iconButton}
-            onPress={() => router.push('/notifications')}
-            accessibilityLabel="Notifications"
-            data-testid="mobile-notifications-btn"
-          >
-            <Ionicons name="notifications-outline" size={22} color="#2E7D32" />
-            {notificationCount > 0 && (
-              <View style={newHeaderStyles.notificationBadge}>
-                <Text style={newHeaderStyles.notificationBadgeText}>
-                  {notificationCount > 99 ? '99+' : notificationCount}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={newHeaderStyles.iconButton}
-            onPress={() => router.push('/profile')}
-            accessibilityLabel="Profile"
-            data-testid="mobile-profile-btn"
-          >
-            <Ionicons name="person-circle-outline" size={24} color="#2E7D32" />
-          </TouchableOpacity>
-        </View>
+        {/* Right Icon - Notification only */}
+        <TouchableOpacity
+          style={newHeaderStyles.iconButton}
+          onPress={() => router.push('/notifications')}
+          accessibilityLabel="Notifications"
+          data-testid="mobile-notifications-btn"
+        >
+          <Ionicons name="notifications-outline" size={22} color="#2E7D32" />
+          {notificationCount > 0 && (
+            <View style={newHeaderStyles.notificationBadge}>
+              <Text style={newHeaderStyles.notificationBadgeText}>
+                {notificationCount > 99 ? '99+' : notificationCount}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
 
       {/* ROW 2: FULL-WIDTH SEARCH BAR */}
@@ -226,27 +215,10 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
             returnKeyType="search"
             data-testid="home-search-input"
           />
-          {homeSearchQuery.length > 0 ? (
+          {homeSearchQuery.length > 0 && (
             <TouchableOpacity onPress={onClearSearch} style={newHeaderStyles.searchIconBtn}>
               <Ionicons name="close-circle" size={20} color="#999" />
             </TouchableOpacity>
-          ) : (
-            <>
-              <TouchableOpacity 
-                style={newHeaderStyles.searchIconBtn}
-                accessibilityLabel="Voice search"
-                data-testid="voice-search-btn"
-              >
-                <Ionicons name="mic-outline" size={20} color="#2E7D32" />
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={newHeaderStyles.searchIconBtn}
-                accessibilityLabel="Image search"
-                data-testid="image-search-btn"
-              >
-                <Ionicons name="camera-outline" size={20} color="#2E7D32" />
-              </TouchableOpacity>
-            </>
           )}
         </View>
       </View>
