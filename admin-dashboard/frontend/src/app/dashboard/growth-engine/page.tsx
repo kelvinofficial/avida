@@ -88,7 +88,9 @@ export default function GrowthEnginePage() {
 
   const fetchDashboard = async () => {
     try {
-      const res = await fetch(`${API_BASE}/growth/analytics/dashboard`);
+      const res = await fetch(`${API_BASE}/growth/analytics/dashboard`, {
+        headers: getAuthHeaders()
+      });
       if (res.ok) {
         const data = await res.json();
         setDashboardData(data);
@@ -102,7 +104,9 @@ export default function GrowthEnginePage() {
 
   const fetchTargets = async () => {
     try {
-      const res = await fetch(`${API_BASE}/growth/analytics/targets`);
+      const res = await fetch(`${API_BASE}/growth/analytics/targets`, {
+        headers: getAuthHeaders()
+      });
       if (res.ok) {
         const data = await res.json();
         setTargets(data);
@@ -114,7 +118,9 @@ export default function GrowthEnginePage() {
 
   const fetchAudit = async () => {
     try {
-      const res = await fetch(`${API_BASE}/growth/analytics/seo-audit`);
+      const res = await fetch(`${API_BASE}/growth/analytics/seo-audit`, {
+        headers: getAuthHeaders()
+      });
       if (res.ok) {
         const data = await res.json();
         setAuditResult(data);
@@ -129,6 +135,7 @@ export default function GrowthEnginePage() {
       setLoading(true);
       const res = await fetch(`${API_BASE}/growth/analytics/seo-audit/run`, {
         method: 'POST',
+        headers: getAuthHeaders()
       });
       if (res.ok) {
         const data = await res.json();
