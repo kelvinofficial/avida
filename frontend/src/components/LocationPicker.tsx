@@ -281,11 +281,14 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   const openModal = () => {
     if (disabled) return;
     setModalVisible(true);
-    setCurrentStep('country');
-    setSelectedCountry(null);
+    // Start directly with region selection (Tanzania only)
+    setCurrentStep('region');
+    setSelectedCountry(TANZANIA_COUNTRY);
     setSelectedRegion(null);
     setSelectedDistrict(null);
     setSearchQuery('');
+    // Reload regions for Tanzania
+    loadRegions(TANZANIA_COUNTRY.code);
   };
 
   const closeModal = () => {
