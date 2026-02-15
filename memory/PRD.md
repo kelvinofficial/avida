@@ -11,7 +11,21 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 
 ## What's Been Implemented
 
-### Session: February 15, 2026 - Part 9 (Latest)
+### Session: February 15, 2026 - Part 10 (Latest)
+
+**1. Search Results Page Image Sizing Fix - COMPLETED & VERIFIED**
+- **Issue**: Images on search results page were not taking 100% width of their container
+- **Root cause**: React Native Web's Image component doesn't properly fill containers with percentage dimensions
+- **Solution**: Used native HTML `<img>` tags with inline styles for web platform
+- **Implementation**: 
+  - Added `Platform.OS === 'web'` conditional rendering
+  - Web uses: `<img style={{ width: '100%', height: '100%', objectFit: 'cover' }}>`
+  - Native uses: React Native `<Image>` component
+- Files changed: `/app/frontend/app/search.tsx` - Lines 936-959 (image rendering), 1218-1237 (image styles)
+- **Testing Status**: Verified by testing agent (iteration_158.json) - Images now display at 291px x 180px filling their containers completely
+- **Note**: Requires `sudo supervisorctl restart expo` after code changes due to caching
+
+### Session: February 15, 2026 - Part 9
 
 **1. Search Results Page Redesign - COMPLETED & VERIFIED**
 - **Sidebar removed** - Full width layout for more content space
