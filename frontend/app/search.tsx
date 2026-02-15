@@ -815,16 +815,7 @@ export default function SearchScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.headerWrapper}>
         <View style={styles.header}>
-          <TouchableOpacity 
-            onPress={() => safeGoBack(router)} 
-            style={styles.backBtn}
-            data-testid="search-back-button"
-            activeOpacity={0.7}
-          >
-            <View style={{ width: 24, height: 24, justifyContent: 'center', alignItems: 'center' }}>
-              <Ionicons name="arrow-back-outline" size={22} color="#1A1A1A" />
-            </View>
-          </TouchableOpacity>
+          <BackButton testID="search-back-button" />
           <View style={styles.mobileSearchContainer}>
             <Ionicons name="search" size={20} color={COLORS.textSecondary} />
             <TextInput
