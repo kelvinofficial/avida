@@ -287,53 +287,50 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
       {/* FULL-WIDTH DIVIDER */}
       <View style={styles.divider} />
 
-      {/* CATEGORY ICONS - WITH ALL DROPDOWN */}
+      {/* CATEGORY ICONS - ALL BUTTON INCLUDED IN SCROLL */}
       <View style={styles.categoriesSection}>
-        <View style={mobileDropdownStyles.categoriesRow}>
-          {/* All Button as Dropdown Trigger */}
+        <ScrollView
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoriesContent}
+        >
+          {/* All Button - Same style as category icons */}
           <TouchableOpacity 
-            style={[
-              mobileDropdownStyles.allButton,
-              selectedCategory === null && mobileDropdownStyles.allButtonActive
-            ]}
+            style={allIconStyles.item}
             onPress={() => setShowCategoryDropdown(true)}
+            activeOpacity={0.7}
+            accessibilityLabel="All categories"
+            accessibilityRole="button"
             data-testid="mobile-all-dropdown-trigger"
           >
-            <Ionicons 
-              name="apps" 
-              size={18} 
-              color={selectedCategory === null ? '#fff' : '#2E7D32'} 
-            />
+            <View style={[
+              allIconStyles.iconContainer,
+              selectedCategory === null && allIconStyles.iconContainerSelected,
+            ]}>
+              <Ionicons 
+                name="apps" 
+                size={28} 
+                color={selectedCategory === null ? '#fff' : '#2E7D32'} 
+              />
+            </View>
             <Text style={[
-              mobileDropdownStyles.allButtonText,
-              selectedCategory === null && mobileDropdownStyles.allButtonTextActive
+              allIconStyles.label,
+              selectedCategory === null && allIconStyles.labelSelected
             ]}>All</Text>
-            <Ionicons 
-              name="chevron-down" 
-              size={14} 
-              color={selectedCategory === null ? '#fff' : '#666'} 
-            />
           </TouchableOpacity>
           
-          {/* Other Category Icons */}
-          <ScrollView
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            style={mobileDropdownStyles.categoriesScroll}
-            contentContainerStyle={styles.categoriesContent}
-          >
-            {ICON_CATEGORIES.map((cat) => (
-              <CategoryIcon
-                key={cat.id}
-                id={cat.id}
-                name={cat.name}
-                icon={cat.icon}
-                selected={selectedCategory === cat.id}
-                onPress={() => onCategoryPress(cat.id)}
-              />
-            ))}
-          </ScrollView>
-        </View>
+          {/* Category Icons */}
+          {ICON_CATEGORIES.map((cat) => (
+            <CategoryIcon
+              key={cat.id}
+              id={cat.id}
+              name={cat.name}
+              icon={cat.icon}
+              selected={selectedCategory === cat.id}
+              onPress={() => onCategoryPress(cat.id)}
+            />
+          ))}
+        </ScrollView>
       </View>
 
       {/* FEATURED SELLERS SECTION */}
