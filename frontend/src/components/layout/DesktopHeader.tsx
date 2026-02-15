@@ -47,6 +47,66 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [unviewedBadgeCount, setUnviewedBadgeCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(0);
+  
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+  const [searchSuggestions, setSearchSuggestions] = useState<{ query: string; count: number }[]>([]);
+  const autocompleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch autocomplete suggestions
+  const fetchAutocompleteSuggestions = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setSearchSuggestions([]);
+      return;
+    }
+    try {
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/searches/suggestions?q=${encodeURIComponent(query)}&limit=8`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setSearchSuggestions(data.suggestions || []);
+      }
+    } catch (e) {
+      console.log('Could not fetch autocomplete suggestions');
+    }
+  }, []);
+
+  // Handle search input change with debounce
+  const handleSearchInputChange = useCallback((text: string) => {
+    setSearchQuery(text);
+    
+    if (autocompleteTimeoutRef.current) {
+      clearTimeout(autocompleteTimeoutRef.current);
+    }
+    
+    if (text.length === 0) {
+      setSearchSuggestions([]);
+    } else {
+      autocompleteTimeoutRef.current = setTimeout(() => {
+        fetchAutocompleteSuggestions(text);
+      }, 300);
+    }
+  }, [fetchAutocompleteSuggestions]);
+
+  // Handle search submit
+  const handleSearchSubmit = useCallback(() => {
+    if (searchQuery.trim()) {
+      const searchUrl = `/search?q=${encodeURIComponent(searchQuery.trim())}`;
+      router.push(searchUrl as any);
+      setSearchQuery('');
+      setShowSearchSuggestions(false);
+    }
+  }, [searchQuery, router]);
+
+  // Handle suggestion click
+  const handleSuggestionClick = useCallback((query: string) => {
+    const searchUrl = `/search?q=${encodeURIComponent(query)}`;
+    router.push(searchUrl as any);
+    setSearchQuery('');
+    setShowSearchSuggestions(false);
+  }, [router]);
 
   // Fetch credit balance, badge count, and notifications when authenticated
   useEffect(() => {
