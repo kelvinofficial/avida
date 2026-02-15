@@ -164,60 +164,90 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
         </TouchableOpacity>
       </Modal>
 
-      {/* ROW 1: BRAND + NOTIFICATIONS */}
-      <View style={styles.row1}>
-        <Text style={styles.logo}>avida</Text>
-        <TouchableOpacity
-          style={styles.notificationButton}
-          onPress={() => router.push('/notifications')}
-          accessibilityLabel="Notifications"
-        >
-          <Ionicons name="notifications-outline" size={ICON_SIZE} color="#333" />
-          {notificationCount > 0 && (
-            <View style={styles.notificationBadge}>
-              <Text style={styles.notificationBadgeText}>
-                {notificationCount > 99 ? '99+' : notificationCount}
-              </Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
-
-      {/* ROW 2: LOCATION + SEARCH */}
-      <View style={styles.row2}>
-        {/* Location Selector Row */}
+      {/* ROW 1: LOGO + LOCATION (center) + NOTIFICATIONS + PROFILE */}
+      <View style={newHeaderStyles.row1}>
+        {/* Logo - Left */}
+        <Text style={newHeaderStyles.logo} data-testid="mobile-header-logo">avida</Text>
+        
+        {/* Location - Center */}
         <TouchableOpacity 
-          style={styles.locationRow} 
+          style={newHeaderStyles.locationChip} 
           activeOpacity={0.7} 
           onPress={onLocationPress}
+          data-testid="mobile-location-selector"
         >
-          <Ionicons name="location" size={18} color="#2E7D32" />
-          <Text style={styles.locationRowText}>{currentCity}</Text>
-          <Ionicons name="chevron-down" size={16} color="#666" />
+          <Ionicons name="location" size={16} color="#2E7D32" />
+          <Text style={newHeaderStyles.locationText} numberOfLines={1}>{currentCity}</Text>
+          <Ionicons name="chevron-down" size={14} color="#666" />
         </TouchableOpacity>
         
-        {/* Search Field Row */}
-        <View style={styles.searchFieldWrapper}>
-          <View style={styles.searchField}>
-            <Ionicons name="search" size={20} color="#666" />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search for anything..."
-              placeholderTextColor="#999"
-              value={homeSearchQuery}
-              onChangeText={onSearchInputChange}
-              onFocus={onSearchFocus}
-              onBlur={onSearchBlur}
-              onSubmitEditing={onSearchSubmit}
-              returnKeyType="search"
-              data-testid="home-search-input"
-            />
-            {homeSearchQuery.length > 0 && (
-              <TouchableOpacity onPress={onClearSearch} style={styles.clearSearchBtn}>
-                <Ionicons name="close-circle" size={18} color="#999" />
-              </TouchableOpacity>
+        {/* Right Icons - Notification + Profile */}
+        <View style={newHeaderStyles.rightIcons}>
+          <TouchableOpacity
+            style={newHeaderStyles.iconButton}
+            onPress={() => router.push('/notifications')}
+            accessibilityLabel="Notifications"
+            data-testid="mobile-notifications-btn"
+          >
+            <Ionicons name="notifications-outline" size={22} color="#2E7D32" />
+            {notificationCount > 0 && (
+              <View style={newHeaderStyles.notificationBadge}>
+                <Text style={newHeaderStyles.notificationBadgeText}>
+                  {notificationCount > 99 ? '99+' : notificationCount}
+                </Text>
+              </View>
             )}
-          </View>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={newHeaderStyles.iconButton}
+            onPress={() => router.push('/profile')}
+            accessibilityLabel="Profile"
+            data-testid="mobile-profile-btn"
+          >
+            <Ionicons name="person-circle-outline" size={24} color="#2E7D32" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* ROW 2: FULL-WIDTH SEARCH BAR */}
+      <View style={newHeaderStyles.row2}>
+        <View style={newHeaderStyles.searchField}>
+          <Ionicons name="search" size={20} color="#666" />
+          <TextInput
+            style={newHeaderStyles.searchInput}
+            placeholder="Search for anything..."
+            placeholderTextColor="#999"
+            value={homeSearchQuery}
+            onChangeText={onSearchInputChange}
+            onFocus={onSearchFocus}
+            onBlur={onSearchBlur}
+            onSubmitEditing={onSearchSubmit}
+            returnKeyType="search"
+            data-testid="home-search-input"
+          />
+          {homeSearchQuery.length > 0 ? (
+            <TouchableOpacity onPress={onClearSearch} style={newHeaderStyles.searchIconBtn}>
+              <Ionicons name="close-circle" size={20} color="#999" />
+            </TouchableOpacity>
+          ) : (
+            <>
+              <TouchableOpacity 
+                style={newHeaderStyles.searchIconBtn}
+                accessibilityLabel="Voice search"
+                data-testid="voice-search-btn"
+              >
+                <Ionicons name="mic-outline" size={20} color="#2E7D32" />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={newHeaderStyles.searchIconBtn}
+                accessibilityLabel="Image search"
+                data-testid="image-search-btn"
+              >
+                <Ionicons name="camera-outline" size={20} color="#2E7D32" />
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       </View>
 
