@@ -204,6 +204,9 @@ export default function HomeScreen() {
       location_text: location.location_text,
     };
     await saveSelectedCity(locationData);
+    
+    // Sync to global store for persistence across pages
+    locationStore.setLocation(displayName, location as any);
   };
 
   // ============ MOBILE HEADER PROPS ============
