@@ -1022,7 +1022,6 @@ export default function SearchScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.headerWrapper}>
         <View style={styles.header}>
-          <BackButton testID="search-back-button" />
           <View style={styles.mobileSearchContainer}>
             <Ionicons name="search" size={20} color={COLORS.textSecondary} />
             <TextInput
@@ -1041,25 +1040,8 @@ export default function SearchScreen() {
               </TouchableOpacity>
             )}
           </View>
-          {/* Location Button */}
-          <TouchableOpacity 
-            style={[styles.locationBtn, (selectedRegion || selectedDistrict || selectedCity) && styles.locationBtnActive]}
-            onPress={() => setShowLocationModal(true)}
-            testID="search-location-picker"
-            accessibilityRole="button"
-            accessibilityLabel="Select location"
-          >
-            <Ionicons 
-              name="location" 
-              size={20} 
-              color={(selectedRegion || selectedDistrict || selectedCity) ? "#fff" : COLORS.primary} 
-            />
-          </TouchableOpacity>
         </View>
       </View>
-
-      {/* Location Modal */}
-      {renderLocationModal()}
 
       <View style={styles.contentWrapper}>
         {loading ? (
