@@ -2058,6 +2058,18 @@ const styles = StyleSheet.create({
   mobileSearchWrapper: {
     flex: 1,
   },
+  mobileLocationBtn: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.primaryLight,
+    borderRadius: 8,
+    marginLeft: 8,
+  },
+  mobileLocationBtnActive: {
+    backgroundColor: COLORS.primary,
+  },
   // Mobile Recent Searches
   mobileRecentSearches: {
     backgroundColor: COLORS.surface,
