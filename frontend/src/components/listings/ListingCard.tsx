@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { TouchableScale, OptimizedImage, ImagePlaceholder } from '../common';
+import { useFeatureSettingsStore } from '../../store/featureSettingsStore';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
