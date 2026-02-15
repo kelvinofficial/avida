@@ -11,11 +11,41 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 
 ## What's Been Implemented
 
-### Session: February 15, 2026 - Part 5 (Latest)
+### Session: February 15, 2026 - Part 6 (Latest)
+
+**1. Back Button Icon Update - COMPLETED & VERIFIED**
+- Updated BackButton component to use SVG chevron icon instead of Unicode arrow
+- Changed from `←` character to clean SVG chevron pointing left
+- Matches user's design reference (simple angle bracket style)
+- File changed: `/app/frontend/src/components/common/BackButton.tsx`
+- **Testing Status**: Verified via testing agent (iteration 155)
+
+**2. Negotiable Badge Repositioning - COMPLETED & VERIFIED**
+- Moved "Negotiable" badge from price row to bottom right of listing cards
+- Added new `bottomRow` layout style with flex spacer
+- Condition badge on left, Negotiable badge on right
+- File changed: `/app/frontend/app/search.tsx` (renderListing function, mobileCardStyles)
+- **Testing Status**: Verified - 10 badges verified at bottom-right position
+
+**3. Category Page Search Height Fix - COMPLETED & VERIFIED**
+- Updated search field height from 44px to 52px to match homepage
+- Updated border-radius from 24 to 28
+- Updated shadow and gap values to match homepage design
+- File changed: `/app/frontend/app/category/[id].tsx` (mobileSearchContainer styles)
+- **Testing Status**: Verified via code review
+
+**4. Location Icon Functionality on Search Page - COMPLETED & VERIFIED**
+- Added location button to search results page header
+- Implemented full location modal with region/district/city selection
+- Uses Tanzania (TZ) location data from API
+- File changed: `/app/frontend/app/search.tsx` (added Modal import, location state, fetch functions, modal render)
+- **Testing Status**: Verified - modal opens showing Tanzania regions
+
+### Session: February 15, 2026 - Part 5
 
 **1. Reusable BackButton Component - COMPLETED & VERIFIED**
 - Created new reusable `BackButton` component at `/app/frontend/src/components/common/BackButton.tsx`
-- Uses Unicode arrow character (`←`) on web platform to avoid Ionicons font loading issues in preview environment
+- Uses SVG chevron icon on web platform
 - Uses Ionicons for native platforms
 - Exported from `/app/frontend/src/components/common/index.ts`
 - Props: `fallbackRoute`, `color`, `size`, `style`, `testID`, `onPress`
@@ -23,7 +53,7 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 
 **2. Back Button Visual Fix on Search Results - COMPLETED & VERIFIED**
 - Updated `/app/frontend/app/search.tsx` to use the new `BackButton` component
-- Back button now displays a visible arrow icon instead of the dark circle
+- Back button now displays a visible chevron icon
 - Navigation works correctly (verified by clicking - navigates to homepage)
 - Cleaned up unused imports (Feather, safeGoBack) and styles (backBtn)
 - **Testing Status**: Verified via testing agent
