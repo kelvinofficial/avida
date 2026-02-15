@@ -203,7 +203,7 @@ def create_url_masking_router(db, get_current_user):
         
         await db.short_urls.insert_one(short_url)
         
-        base_url = "https://seo-classifieds.preview.emergentagent.com"
+        base_url = "https://classified-inbox.preview.emergentagent.com"
         
         return {
             "short_url": f"{base_url}/s/{code}",
