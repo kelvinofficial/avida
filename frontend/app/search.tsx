@@ -1199,13 +1199,27 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontWeight: '500',
   },
-  // Category icons row - consistent with homepage design
+  // Category icons row - transparent background, responsive layout
   categoryIconsRow: {
     marginBottom: 24,
-    backgroundColor: COLORS.surface,
     paddingVertical: 16,
+    paddingHorizontal: 24,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
+    alignItems: 'center',
+    width: '100%',
+  },
+  categoryIconsInner: {
+    width: '100%',
+    maxWidth: MAX_WIDTH,
+  },
+  categoryIconsFlexRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    width: '100%',
+    gap: 12,
   },
   categoryIconsScroll: {
     paddingHorizontal: 16,
@@ -1214,12 +1228,11 @@ const styles = StyleSheet.create({
   categoryIconItem: {
     alignItems: 'center',
     width: 80,
-    marginRight: 12,
   },
   categoryIconCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: '#E8F5E9',
     alignItems: 'center',
     justifyContent: 'center',
