@@ -1656,13 +1656,13 @@ export default function CategoryScreen() {
                     </>
                   )}
                   
-                  {/* Trending Overall Section */}
+                  {/* Popular Overall Section */}
                   {popularSearches.global.length > 0 && popularSearches.category.length === 0 && (
                     <>
                       <View style={[desktopStyles.recentSearchesHeader, recentSearches.length > 0 && { marginTop: 4 }]}>
                         <View style={desktopStyles.recentSearchesTitleRow}>
-                          <Ionicons name="trending-up" size={16} color="#2E7D32" />
-                          <Text style={desktopStyles.recentSearchesTitle}>Trending Searches</Text>
+                          <Ionicons name="flame-outline" size={16} color="#FF6B35" />
+                          <Text style={desktopStyles.recentSearchesTitle}>Popular Searches</Text>
                         </View>
                       </View>
                       {popularSearches.global.slice(0, 4).map((query, index) => (
@@ -1671,7 +1671,7 @@ export default function CategoryScreen() {
                           style={desktopStyles.recentSearchItem}
                           onPress={() => applyRecentSearch(query)}
                         >
-                          <Ionicons name="trending-up" size={16} color="#2E7D32" />
+                          <Ionicons name="flame-outline" size={16} color="#FF6B35" />
                           <Text style={desktopStyles.recentSearchItemText}>{query}</Text>
                         </TouchableOpacity>
                       ))}
