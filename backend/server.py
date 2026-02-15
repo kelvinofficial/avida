@@ -3153,6 +3153,17 @@ if ADMIN_TOOLS_AVAILABLE:
         import traceback
         traceback.print_exc()
     
+    # Feature Settings router for admin feature toggles
+    try:
+        from routes.feature_settings import create_feature_settings_router
+        feature_settings_router = create_feature_settings_router(db, get_current_user)
+        app.include_router(feature_settings_router, prefix="/api")
+        print("Feature Settings routes loaded successfully")
+    except Exception as e:
+        print(f"Failed to load Feature Settings routes: {e}")
+        import traceback
+        traceback.print_exc()
+    
     app.include_router(seo_router, prefix="/api")
     app.include_router(url_masking_router, prefix="/api")
     app.include_router(polls_router, prefix="/api")
