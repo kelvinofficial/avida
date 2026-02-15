@@ -17,27 +17,26 @@ import { FeaturedSellersSection } from './FeaturedSellersSection';
 import type { FeaturedSeller, FeaturedListing } from './FeaturedSellersSection';
 import { Category } from '../../types';
 
-// Full categories list
+// Full categories list - Must match backend DEFAULT_CATEGORIES and HomeDesktopHeader.tsx
 const FULL_CATEGORIES = [
-  { id: 'all', name: 'All', icon: 'apps' },
-  { id: 'auto-vehicles', name: 'Auto & Vehicles', icon: 'car' },
-  { id: 'properties', name: 'Properties', icon: 'home' },
-  { id: 'electronics', name: 'Electronics', icon: 'tv' },
-  { id: 'phones-tablets', name: 'Phones & Tablets', icon: 'phone-portrait' },
-  { id: 'home-furniture', name: 'Home & Furniture', icon: 'bed' },
-  { id: 'fashion-beauty', name: 'Fashion & Beauty', icon: 'shirt' },
-  { id: 'jobs-services', name: 'Jobs & Services', icon: 'briefcase' },
-  { id: 'kids-babies', name: 'Kids & Babies', icon: 'people' },
-  { id: 'sports-hobbies', name: 'Sports & Hobbies', icon: 'football' },
-  { id: 'pets', name: 'Pets', icon: 'paw' },
-  { id: 'food-agriculture', name: 'Food & Agriculture', icon: 'leaf' },
-  { id: 'health-wellness', name: 'Health & Wellness', icon: 'fitness' },
-  { id: 'education', name: 'Education', icon: 'school' },
-  { id: 'other', name: 'Other', icon: 'ellipsis-horizontal' },
+  { id: 'auto_vehicles', name: 'Auto & Vehicles', icon: 'car-outline' },
+  { id: 'properties', name: 'Properties', icon: 'business-outline' },
+  { id: 'electronics', name: 'Electronics', icon: 'laptop-outline' },
+  { id: 'phones_tablets', name: 'Phones & Tablets', icon: 'phone-portrait-outline' },
+  { id: 'home_furniture', name: 'Home & Furniture', icon: 'home-outline' },
+  { id: 'fashion_beauty', name: 'Fashion & Beauty', icon: 'shirt-outline' },
+  { id: 'jobs_services', name: 'Jobs & Services', icon: 'briefcase-outline' },
+  { id: 'kids_baby', name: 'Kids & Baby', icon: 'people-outline' },
+  { id: 'sports_hobbies', name: 'Sports & Hobbies', icon: 'football-outline' },
+  { id: 'pets', name: 'Pets', icon: 'paw-outline' },
+  { id: 'agriculture', name: 'Agriculture & Food', icon: 'leaf-outline' },
+  { id: 'commercial_equipment', name: 'Commercial Equipment', icon: 'construct-outline' },
+  { id: 'repair_construction', name: 'Repair & Construction', icon: 'hammer-outline' },
+  { id: 'friendship_dating', name: 'Friendship & Dating', icon: 'heart-outline' },
 ];
 
-// Categories to show as icons (excluding All which is a dropdown)
-const ICON_CATEGORIES = FULL_CATEGORIES.filter(c => c.id !== 'all');
+// All categories for the icon scroll (same list without filter)
+const ICON_CATEGORIES = FULL_CATEGORIES;
 
 interface SearchSuggestions {
   recent: string[];
