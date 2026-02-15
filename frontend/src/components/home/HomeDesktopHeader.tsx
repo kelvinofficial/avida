@@ -4,7 +4,7 @@
  * Wraps the shared DesktopHeader and adds category row + section title
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,6 @@ import {
   Pressable,
   Platform,
   StyleSheet,
-  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { DesktopHeader } from '../layout';
