@@ -112,16 +112,17 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 ├── content_engine.py     # AI blog generation
 ├── aso_engine.py         # App store optimization
 ├── analytics_dashboard.py # Growth analytics
-└── advanced_seo.py       # NEW: Internal linking, social, predictive SEO
+└── advanced_seo.py       # Internal linking, social, predictive SEO
 
 /app/frontend/app/blog/
-├── index.tsx             # NEW: Blog listing page
-└── [slug].tsx            # NEW: Individual blog post page
+├── index.tsx             # Blog listing page
+└── [slug].tsx            # Individual blog post page
 
 /app/admin-dashboard/frontend/src/app/dashboard/
-├── growth-engine/page.tsx
-├── content-engine/page.tsx
-└── aso-engine/page.tsx
+├── growth-engine/page.tsx    # Growth analytics dashboard
+├── content-engine/page.tsx   # AI content generation UI
+├── aso-engine/page.tsx       # App store optimization UI
+└── advanced-seo/page.tsx     # NEW: Advanced SEO UI (Internal linking, Social, Trending)
 ```
 
 ## Third-Party Integrations
