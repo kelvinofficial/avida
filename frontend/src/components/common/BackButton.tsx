@@ -1,7 +1,8 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, ViewStyle, Text, Platform, View } from 'react-native';
+import { TouchableOpacity, StyleSheet, ViewStyle, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import Svg, { Path } from 'react-native-svg';
 import { safeGoBack } from '../../utils/navigation';
 
 interface BackButtonProps {
@@ -36,6 +37,21 @@ interface BackButtonProps {
 }
 
 /**
+ * SVG Back Arrow Icon - Clean left-pointing arrow with horizontal line
+ */
+const BackArrowIcon: React.FC<{ size: number; color: string }> = ({ size, color }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M19 12H5M5 12L12 19M5 12L12 5"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
+
+/**
  * Reusable BackButton component with consistent styling across the app.
  * Uses safeGoBack to navigate back or fallback to a specified route.
  */
@@ -67,9 +83,7 @@ export const BackButton: React.FC<BackButtonProps> = ({
       testID={testID}
     >
       {Platform.OS === 'web' ? (
-        <View style={styles.iconContainer}>
-          <Text style={[styles.arrowText, { color, fontSize: size }]}>←</Text>
-        </View>
+        <BackArrowIcon size={size} color={color} />
       ) : (
         <Ionicons name="arrow-back" size={size} color={color} />
       )}
@@ -83,16 +97,6 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  arrowText: {
-    fontWeight: '400',
-    lineHeight: 24,
   },
 });
 
