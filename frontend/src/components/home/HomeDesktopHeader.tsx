@@ -119,28 +119,6 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
               {row2Categories.map(renderCategoryItem)}
             </View>
           )}
-              onPress={() => onCategoryPress(cat.id)}
-              data-testid={`category-icon-${cat.id}`}
-            >
-              <View style={[
-                localStyles.iconContainer,
-                selectedCategory === cat.id && localStyles.iconContainerSelected
-              ]}>
-                <Ionicons 
-                  name={cat.icon as any} 
-                  size={28} 
-                  color={selectedCategory === cat.id ? '#fff' : '#2E7D32'} 
-                />
-              </View>
-              <Text style={[
-                localStyles.iconLabel,
-                selectedCategory === cat.id && localStyles.iconLabelSelected
-              ]} numberOfLines={2}>
-                {cat.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
         </View>
       </View>
 
