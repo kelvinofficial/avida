@@ -152,11 +152,13 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
             color={isFavorited ? '#E53935' : '#FFFFFF'}
           />
         </TouchableOpacity>
-        {/* Views Counter - Bottom Right */}
-        <View style={styles.viewsContainer}>
-          <Ionicons name="eye-outline" size={12} color="#fff" />
-          <Text style={styles.viewsText}>{listing.views || 0}</Text>
-        </View>
+        {/* Views Counter - Bottom Right (conditional) */}
+        {settings.show_view_count && (
+          <View style={styles.viewsContainer}>
+            <Ionicons name="eye-outline" size={12} color="#fff" />
+            <Text style={styles.viewsText}>{listing.views || 0}</Text>
+          </View>
+        )}
       </View>
       <View style={styles.cardContent}>
         <Text style={styles.price}>{formatPrice(listing.price)}</Text>
@@ -168,9 +170,10 @@ const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorite, isFa
             {listing.location?.city || listing.location || 'Unknown'}
           </Text>
         </View>
-        {/* Time Posted */}
-        <Text style={styles.timePosted}>
-          {formatTimeAgo(listing.created_at)}
+        {/* Time Posted (conditional) */}
+        {settings.show_time_ago && (
+          <Text style={styles.timePosted}>
+            {formatTimeAgo(listing.created_at)}
         </Text>
       </View>
     </TouchableScale>
