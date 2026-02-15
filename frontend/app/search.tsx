@@ -84,8 +84,8 @@ const SearchStatsCard: React.FC<{
       {stats.popularSearches.length > 0 && (
         <View style={statsStyles.section}>
           <View style={statsStyles.sectionTitleRow}>
-            <Ionicons name="trending-up" size={16} color="#F57C00" />
-            <Text style={statsStyles.sectionTitle}>Trending</Text>
+            <Ionicons name="flame" size={16} color="#F57C00" />
+            <Text style={statsStyles.sectionTitle}>Popular</Text>
           </View>
           {stats.popularSearches.slice(0, 5).map((item, idx) => (
             <TouchableOpacity 
