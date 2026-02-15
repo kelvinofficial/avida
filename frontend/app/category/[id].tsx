@@ -1136,7 +1136,12 @@ export default function CategoryScreen() {
   );
 
   // Location Picker Modal
-  const renderLocationModal = () => (
+  const renderLocationModal = () => {
+    const locationMode = featureSettings.location_mode;
+    const showDistricts = locationMode === 'district' || locationMode === 'city';
+    const showCities = locationMode === 'city';
+    
+    return (
     <Modal
       visible={showLocationModal}
       animationType="fade"
@@ -1144,7 +1149,7 @@ export default function CategoryScreen() {
       onRequestClose={() => setShowLocationModal(false)}
     >
       <View style={styles.saveModalOverlay}>
-        <View style={[styles.saveModalContent, { maxHeight: '70%', width: Platform.OS === 'web' ? 400 : '90%' }]}>
+        <View style={[styles.saveModalContent, { maxHeight: '80%', width: Platform.OS === 'web' ? 450 : '90%' }]}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <Text style={styles.saveModalTitle}>Select Location</Text>
             <TouchableOpacity onPress={() => setShowLocationModal(false)}>
@@ -1152,7 +1157,7 @@ export default function CategoryScreen() {
             </TouchableOpacity>
           </View>
           <Text style={[styles.saveModalSubtitle, { marginBottom: 12 }]}>
-            Filter listings by region in Tanzania
+            Filter listings by {locationMode === 'region' ? 'region' : locationMode === 'district' ? 'district' : 'city'} in Tanzania
           </Text>
           
           {/* All Tanzania option */}
@@ -1175,12 +1180,14 @@ export default function CategoryScreen() {
             ]}>All Tanzania</Text>
           </TouchableOpacity>
           
-          {loadingLocations ? (
+          {loadingLocations && regions.length === 0 ? (
             <View style={{ padding: 20, alignItems: 'center' }}>
-              <Text style={{ color: COLORS.textSecondary }}>Loading regions...</Text>
+              <Text style={{ color: COLORS.textSecondary }}>Loading locations...</Text>
             </View>
           ) : (
-            <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={true}>
+            <ScrollView style={{ maxHeight: 350 }} showsVerticalScrollIndicator={true}>
+              {/* Regions */}
+              <Text style={styles.locationSectionHeader}>Regions</Text>
               {regions.map((region) => (
                 <TouchableOpacity 
                   key={region.region_code}
@@ -1192,7 +1199,7 @@ export default function CategoryScreen() {
                   data-testid={`location-region-${region.region_code}`}
                 >
                   <Ionicons 
-                    name={selectedRegion === region.region_code ? "radio-button-on" : "radio-button-off"} 
+                    name={selectedRegion === region.region_code ? (showDistricts ? "chevron-down" : "radio-button-on") : "chevron-forward"} 
                     size={20} 
                     color={selectedRegion === region.region_code ? COLORS.primary : COLORS.textSecondary} 
                   />
@@ -1200,14 +1207,101 @@ export default function CategoryScreen() {
                     styles.locationItemText,
                     selectedRegion === region.region_code && styles.locationItemTextActive
                   ]}>{region.name}</Text>
+                  {!showDistricts && selectedRegion === region.region_code && (
+                    <Ionicons name="checkmark" size={20} color={COLORS.primary} style={{ marginLeft: 'auto' }} />
+                  )}
                 </TouchableOpacity>
               ))}
+              
+              {/* Districts (shown when region is selected and mode allows) */}
+              {showDistricts && selectedRegion && districts.length > 0 && (
+                <>
+                  <Text style={[styles.locationSectionHeader, { marginTop: 12 }]}>Districts in {selectedRegionName}</Text>
+                  {districts.map((district) => (
+                    <TouchableOpacity 
+                      key={district.district_code}
+                      style={[
+                        styles.locationItem, 
+                        styles.locationItemIndented,
+                        selectedDistrict === district.district_code && styles.locationItemActive
+                      ]}
+                      onPress={() => handleDistrictSelect(district.district_code, district.name)}
+                      data-testid={`location-district-${district.district_code}`}
+                    >
+                      <Ionicons 
+                        name={selectedDistrict === district.district_code ? (showCities ? "chevron-down" : "radio-button-on") : "chevron-forward"} 
+                        size={18} 
+                        color={selectedDistrict === district.district_code ? COLORS.primary : COLORS.textSecondary} 
+                      />
+                      <Text style={[
+                        styles.locationItemText,
+                        selectedDistrict === district.district_code && styles.locationItemTextActive
+                      ]}>{district.name}</Text>
+                      {!showCities && selectedDistrict === district.district_code && (
+                        <Ionicons name="checkmark" size={18} color={COLORS.primary} style={{ marginLeft: 'auto' }} />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </>
+              )}
+              
+              {/* Cities (shown when district is selected and mode allows) */}
+              {showCities && selectedDistrict && cities.length > 0 && (
+                <>
+                  <Text style={[styles.locationSectionHeader, { marginTop: 12 }]}>Cities in {selectedDistrictName}</Text>
+                  {cities.map((city) => (
+                    <TouchableOpacity 
+                      key={city.city_code}
+                      style={[
+                        styles.locationItem, 
+                        styles.locationItemDoubleIndented,
+                        selectedCity === city.city_code && styles.locationItemActive
+                      ]}
+                      onPress={() => handleCitySelect(city.city_code, city.name)}
+                      data-testid={`location-city-${city.city_code}`}
+                    >
+                      <Ionicons 
+                        name={selectedCity === city.city_code ? "radio-button-on" : "radio-button-off"} 
+                        size={16} 
+                        color={selectedCity === city.city_code ? COLORS.primary : COLORS.textSecondary} 
+                      />
+                      <Text style={[
+                        styles.locationItemText,
+                        selectedCity === city.city_code && styles.locationItemTextActive
+                      ]}>{city.name}</Text>
+                      {selectedCity === city.city_code && (
+                        <Ionicons name="checkmark" size={16} color={COLORS.primary} style={{ marginLeft: 'auto' }} />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </>
+              )}
+              
+              {/* Loading indicator for districts/cities */}
+              {loadingLocations && (selectedRegion || selectedDistrict) && (
+                <View style={{ padding: 12, alignItems: 'center' }}>
+                  <Text style={{ color: COLORS.textSecondary, fontSize: 12 }}>Loading...</Text>
+                </View>
+              )}
+              
+              {/* Empty state for districts/cities */}
+              {showDistricts && selectedRegion && districts.length === 0 && !loadingLocations && (
+                <View style={{ padding: 12, alignItems: 'center' }}>
+                  <Text style={{ color: COLORS.textSecondary, fontSize: 12 }}>No districts available</Text>
+                </View>
+              )}
+              {showCities && selectedDistrict && cities.length === 0 && !loadingLocations && (
+                <View style={{ padding: 12, alignItems: 'center' }}>
+                  <Text style={{ color: COLORS.textSecondary, fontSize: 12 }}>No cities available</Text>
+                </View>
+              )}
             </ScrollView>
           )}
         </View>
       </View>
     </Modal>
   );
+  };
 
   // Remove initial loading state - render immediately with empty content
   const mainCategory = getMainCategory(categoryId);
