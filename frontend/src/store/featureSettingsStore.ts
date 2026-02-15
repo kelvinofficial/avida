@@ -80,7 +80,7 @@ export const useFeatureSettingsStore = create<FeatureSettingsState>((set, get) =
     set({ isLoading: true, error: null });
 
     try {
-      const response = await fetch(`${API_URL}/api/feature-settings`);
+      const response = await fetch(`${getApiUrl()}/api/feature-settings`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch feature settings');
