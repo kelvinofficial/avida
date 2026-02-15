@@ -39,8 +39,8 @@ const FULL_CATEGORIES = [
 ];
 
 // Split categories into 2 rows for desktop
-const ROW1_CATEGORIES = FULL_CATEGORIES.slice(0, 7);
-const ROW2_CATEGORIES = FULL_CATEGORIES.slice(7);
+const ROW1_CATEGORIES = FULL_CATEGORIES.slice(0, 8);
+const ROW2_CATEGORIES = FULL_CATEGORIES.slice(8);
 
 interface HomeDesktopHeaderProps {
   selectedCategory: string | null;
