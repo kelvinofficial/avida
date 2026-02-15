@@ -15,11 +15,19 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 
 **1. Desktop Homepage Category Cleanup - COMPLETED & VERIFIED**
 - Removed the text-based "pill" style category rows from the desktop homepage
-- Now only displays a single row of icon-based categories below the search bar
+- Now only displays icon-based categories below the search bar
 - Cleaned up unused styles (categoryRow, categoryRowFirst, categoryPill styles)
 - Removed unused imports (useRef, useEffect, Dimensions)
 - File changed: `/app/frontend/src/components/home/HomeDesktopHeader.tsx`
 - **Testing Status**: Verified via screenshot - pills removed, icons remain
+
+**2. Responsive Category Rows - COMPLETED & VERIFIED**
+- Categories now adapt to screen width using `useWindowDimensions`
+- **Width >= 1300px**: All 14 categories displayed in a single row
+- **Width < 1300px**: Categories split into two rows (7 categories each)
+- Breakpoint chosen to ensure categories fit without horizontal overflow
+- File changed: `/app/frontend/src/components/home/HomeDesktopHeader.tsx`
+- **Testing Status**: Verified via screenshots at 1000px (2 rows) and 1400px (1 row)
 
 ### Session: February 15, 2026 - Part 7
 
