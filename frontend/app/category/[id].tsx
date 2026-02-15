@@ -526,6 +526,9 @@ export default function CategoryScreen() {
           condition: selectedCondition || undefined,
           sort: sortBy,
           filters: filtersJson,
+          // Location filters - Tanzania only
+          country_code: selectedRegion ? 'TZ' : undefined,
+          region_code: selectedRegion || undefined,
         }),
         categoriesApi.getAll(),
       ]);
