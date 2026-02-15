@@ -415,19 +415,15 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         <View style={styles.modalContainer}>
           {/* Header */}
           <View style={styles.modalHeader}>
-            {currentStep !== 'country' && (
-              <TouchableOpacity onPress={goBack} style={styles.backButton}>
-                <Ionicons name="chevron-back" size={24} color={theme.colors.onSurface} />
-              </TouchableOpacity>
-            )}
+            {/* No back button in Tanzania-only mode */}
             <Text style={styles.modalTitle}>{getStepTitle()}</Text>
             <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
               <Ionicons name="close" size={24} color={theme.colors.onSurface} />
             </TouchableOpacity>
           </View>
 
-          {/* Recent Locations - Only show on country step */}
-          {showRecentLocations && currentStep === 'country' && recentLocations.length > 0 && (
+          {/* Recent Locations - Always show in Tanzania-only mode */}
+          {showRecentLocations && recentLocations.length > 0 && (
             <View style={styles.recentSection}>
               <View style={styles.recentHeader}>
                 <Text style={styles.recentTitle}>Recent Locations</Text>
