@@ -24,6 +24,16 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
   - Category list matches desktop (`HomeDesktopHeader.tsx`)
 - **Testing Status**: Verified with testing agent - 100% pass rate (see `/app/test_reports/iteration_152.json`)
 
+**2. Location Selector Tanzania-Only Restriction - COMPLETED & VERIFIED**
+- Restricted location picker to show only Tanzania regions (no country selection)
+- File changed: `/app/frontend/src/components/LocationPicker.tsx`
+- Key changes:
+  - Pre-selected Tanzania as the country
+  - Removed country selection step completely
+  - Modal title now shows "Select Region in Tanzania"
+  - Updated hint text: "Filter listings by region in Tanzania"
+- **Testing Status**: Verified via screenshot on both desktop and mobile
+
 ### Session: February 15, 2026 - Part 1
 
 **1. Admin-Controlled Location Granularity - VERIFIED WORKING**
