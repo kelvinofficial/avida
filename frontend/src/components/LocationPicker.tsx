@@ -488,19 +488,19 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             </View>
           )}
 
-          {/* List */}
+          {/* List - Tanzania-only mode: always show regions */}
           {loading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
-          ) : currentStep === 'region' ? (
+          ) : (
             /* Use ScrollView for region list with web-compatible click handling */
             <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.listContent}>
               {getFilteredRegions().length === 0 ? (
                 <View style={styles.emptyContainer}>
                   <Ionicons name="location-outline" size={48} color={theme.colors.outline} />
                   <Text style={styles.emptyText}>
-                    {searchQuery.length > 0 ? 'No regions found' : 'No regions available'}
+                    {searchQuery.length > 0 ? 'No regions found' : 'Loading regions...'}
                   </Text>
                 </View>
               ) : (
