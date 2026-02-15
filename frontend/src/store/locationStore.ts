@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import { Platform } from 'react-native';
 
 interface LocationFilter {
@@ -29,22 +29,33 @@ interface LocationState {
   clearLocation: () => void;
 }
 
-// Custom storage that only works on web
-const webStorage = {
-  getItem: (name: string) => {
-    if (Platform.OS !== 'web' || typeof window === 'undefined') return null;
-    const str = localStorage.getItem(name);
-    return str ? JSON.parse(str) : null;
+// Simple localStorage wrapper that works on web
+const getStorage = () => ({
+  getItem: (name: string): string | null => {
+    if (Platform.OS !== 'web') return null;
+    try {
+      return localStorage.getItem(name);
+    } catch {
+      return null;
+    }
   },
-  setItem: (name: string, value: any) => {
-    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
-    localStorage.setItem(name, JSON.stringify(value));
+  setItem: (name: string, value: string): void => {
+    if (Platform.OS !== 'web') return;
+    try {
+      localStorage.setItem(name, value);
+    } catch {
+      // Ignore errors
+    }
   },
-  removeItem: (name: string) => {
-    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
-    localStorage.removeItem(name);
+  removeItem: (name: string): void => {
+    if (Platform.OS !== 'web') return;
+    try {
+      localStorage.removeItem(name);
+    } catch {
+      // Ignore errors
+    }
   },
-};
+});
 
 export const useLocationStore = create<LocationState>()(
   persist(
@@ -71,7 +82,7 @@ export const useLocationStore = create<LocationState>()(
     }),
     {
       name: 'avida-location-storage',
-      storage: createJSONStorage(() => webStorage),
+      storage: getStorage(),
       // Only persist these fields
       partialize: (state) => ({
         currentCity: state.currentCity,
