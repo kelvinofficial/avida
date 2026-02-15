@@ -1230,7 +1230,7 @@ const styles = StyleSheet.create({
   },
   listingImageWrapper: {
     width: '100%',
-    aspectRatio: 4 / 3,
+    height: 180,
     position: 'relative',
     backgroundColor: COLORS.background,
     overflow: 'hidden',
