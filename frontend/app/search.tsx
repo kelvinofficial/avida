@@ -953,7 +953,7 @@ export default function SearchScreen() {
                                 <View style={styles.cardMeta}>
                                   <View style={styles.metaItem}>
                                     <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
-                                    <Text style={styles.metaText}>{item.location || 'Unknown'}</Text>
+                                    <Text style={styles.metaText}>{typeof item.location === 'object' ? (item.location?.city || item.location?.country || 'Unknown') : (item.location || 'Unknown')}</Text>
                                   </View>
                                   <View style={styles.metaItem}>
                                     <Ionicons name="time-outline" size={14} color={COLORS.textSecondary} />
