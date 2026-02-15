@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   cardCompact: {
-    // No fixed height - let content determine size
+    height: 220,
   },
   cardFeatured: { 
     borderWidth: 2, 
