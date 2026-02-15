@@ -550,29 +550,6 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                 ))
               )}
             </ScrollView>
-          ) : (
-            <FlatList
-              key={`list-${currentStep}`}
-              data={getData()}
-              keyExtractor={(item) => {
-                switch (currentStep) {
-                  case 'country':
-                    return item.code;
-                  case 'region':
-                    return `${item.country_code}-${item.region_code}`;
-                }
-              }}
-              renderItem={renderItem}
-              contentContainerStyle={styles.listContent}
-              ItemSeparatorComponent={() => <View style={styles.separator} />}
-              extraData={currentStep}
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Ionicons name="location-outline" size={48} color={theme.colors.outline} />
-                  <Text style={styles.emptyText}>No locations available</Text>
-                </View>
-              }
-            />
           )}
         </View>
       </Modal>
