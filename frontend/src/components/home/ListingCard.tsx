@@ -213,7 +213,7 @@ export const ListingCard = memo<ListingCardProps>(({ listing, onPress, onFavorit
       </View>
     </TouchableOpacity>
   );
-}, areEqual);
+});
 
 const styles = StyleSheet.create({
   card: { 
