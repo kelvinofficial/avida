@@ -65,7 +65,7 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 
 ### P2 - Medium Priority
 1. **SEO Optimization** - Meta tags, structured data, sitemap
-2. **Duplicate region data** - "Dodoma" appears twice in location picker (data cleanup)
+2. **ListingCard Refactoring** - Merge duplicate components in `/home/` and `/listings/`
 
 ### P3 - Lower Priority
 1. **Mobile location picker testing** - Touch interaction works but automated testing had issues
