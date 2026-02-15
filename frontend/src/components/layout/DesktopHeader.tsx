@@ -129,12 +129,13 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
     setShowSearchSuggestions(false);
   }, [router]);
 
-  // Fetch credit balance, badge count, and notifications when authenticated
+  // Fetch credit balance, badge count, notifications, and unread messages when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       fetchCreditBalance();
       fetchUnviewedBadgeCount();
       fetchNotificationCount();
+      fetchUnreadMessageCount();
     }
   }, [isAuthenticated]);
 
