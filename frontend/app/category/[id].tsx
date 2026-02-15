@@ -2791,6 +2791,23 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: '600',
   },
+  locationSectionHeader: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
+    marginBottom: 8,
+    marginTop: 4,
+    paddingHorizontal: 4,
+  },
+  locationItemIndented: {
+    marginLeft: 16,
+    paddingVertical: 12,
+  },
+  locationItemDoubleIndented: {
+    marginLeft: 32,
+    paddingVertical: 10,
+  },
 });
 
 // Desktop Styles
