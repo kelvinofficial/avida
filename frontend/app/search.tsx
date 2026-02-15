@@ -1386,11 +1386,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  backArrowText: {
-    fontSize: 24,
-    color: '#1A1A1A',
-    fontWeight: '400',
-  },
   locationBtn: {
     width: 44,
     height: 44,
