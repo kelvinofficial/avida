@@ -14,15 +14,21 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 ### Session: February 15, 2026 - Part 12 (Latest)
 
 **1. Auto & Vehicle Listing Card Enhancement - COMPLETED & VERIFIED**
-- **Request**: Display miles, year, and transmission with icons on Auto & Vehicle category listing cards
-- **Implementation**: Updated `AutoListingCard.tsx` to display vehicle attributes with icons:
-  - **Mileage**: Speedometer icon (`speedometer-outline`) with value in miles format (e.g., "10k mi", "500 mi")
-  - **Year**: Calendar icon (`calendar-outline`) with the year value
-  - **Transmission**: Cog/gear icon (`cog-outline`) with transmission type (Automatic/Manual)
-- **Layout**: Features displayed in a row after the title, separated by dividers (matching PropertyListingCard style)
-- **Attribute sources**: `attributes.mileage`, `attributes.km`, `attributes.miles`, `attributes.year`, `attributes.transmission`
+- **Request**: Display miles, year, and transmission with icons on Auto & Vehicle category listing cards, with image on top
+- **Implementation**: Completely redesigned `AutoListingCard.tsx` to match PropertyListingCard layout:
+  - **Image on top** (vertical layout instead of horizontal)
+  - **Vehicle type badge** (SUV, Coupe, Sedan, etc.) on image
+  - **Favorite button** moved to top-right of image with dark overlay
+  - **View count badge** on bottom-right of image
+  - **Image count badge** showing number of photos
+  - **Features row with icons**: 
+    - Mileage: Speedometer icon (`speedometer-outline`)
+    - Year: Calendar icon (`calendar-outline`)
+    - Transmission: Cog icon (`cog-outline`)
+  - **Bottom row**: Location with icon + Date with time icon
+- **Attribute sources**: `attributes.mileage`, `attributes.km`, `attributes.miles`, `attributes.year`, `attributes.transmission`, `attributes.body_type`
 - **File changed**: `/app/frontend/src/components/listings/AutoListingCard.tsx`
-- **Testing Status**: Verified via screenshot - icons displaying correctly on Auto & Vehicles category page
+- **Testing Status**: Verified via screenshot - vertical card layout with image on top now displaying correctly
 
 ### Session: February 15, 2026 - Part 11
 
