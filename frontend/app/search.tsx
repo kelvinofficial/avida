@@ -1383,7 +1383,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   backButton: {
-    padding: 4,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backArrowContainer: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   backArrowIcon: {
     width: 24,
