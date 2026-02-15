@@ -553,8 +553,6 @@ export default function CategoryScreen() {
   
   // Handle district selection
   const handleDistrictSelect = useCallback((districtCode: string, districtName: string) => {
-    const locationMode = featureSettings.location_mode;
-    
     if (districtCode === selectedDistrict) {
       // Deselect if already selected
       setSelectedDistrict('');
@@ -580,7 +578,7 @@ export default function CategoryScreen() {
         loadCities(selectedRegion, districtCode);
       }
     }
-  }, [selectedDistrict, selectedRegion, featureSettings.location_mode, loadCities]);
+  }, [selectedDistrict, selectedRegion, locationMode, loadCities]);
   
   // Handle city selection
   const handleCitySelect = useCallback((cityCode: string, cityName: string) => {
