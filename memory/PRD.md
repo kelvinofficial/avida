@@ -22,8 +22,19 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
   - Web uses: `<img style={{ width: '100%', height: '100%', objectFit: 'cover' }}>`
   - Native uses: React Native `<Image>` component
 - Files changed: `/app/frontend/app/search.tsx` - Lines 936-959 (image rendering), 1218-1237 (image styles)
-- **Testing Status**: Verified by testing agent (iteration_158.json) - Images now display at 291px x 180px filling their containers completely
+- **Testing Status**: Verified by testing agent (iteration_158.json, iteration_159.json) - Images now display at 291px x 180px filling their containers completely
 - **Note**: Requires `sudo supervisorctl restart expo` after code changes due to caching
+
+**2. Location Picker Overlapping Elements Fix - COMPLETED & VERIFIED**
+- **Issue**: Region list items in location picker were not clickable due to overlapping elements
+- **Root cause**: React Native Web renders child elements with excessive width (1844px) due to `flex: 1` style, causing elements to extend beyond their visual bounds and intercept clicks
+- **Solution**: Added `overflow: 'hidden'` and `position: 'relative'` to parent div container to clip overflowing children
+- **Implementation**:
+  - Modified web-specific region list items in LocationPicker.tsx
+  - Parent div now has: `{ position: 'relative', overflow: 'hidden' }`
+  - Also replaced React Native View/Text with native HTML div/span for better web compatibility
+- Files changed: `/app/frontend/src/components/LocationPicker.tsx` - Lines 507-560
+- **Testing Status**: Verified by testing agent (iteration_159.json) - Full flow tested: modal open → region list display → region selection → modal close → location displayed in header
 
 ### Session: February 15, 2026 - Part 9
 
