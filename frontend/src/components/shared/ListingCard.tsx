@@ -466,7 +466,6 @@ const styles = StyleSheet.create({
   titleCompact: {
     fontSize: 13,
     lineHeight: 17,
-    height: 34,
   },
   priceRow: { 
     flexDirection: 'row', 
