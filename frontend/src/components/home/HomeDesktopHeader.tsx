@@ -224,10 +224,6 @@ const localStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E8E8E8',
   },
   iconCategoryItem: {
     alignItems: 'center',
