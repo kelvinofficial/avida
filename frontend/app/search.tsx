@@ -542,7 +542,7 @@ export default function SearchScreen() {
           <ImageWithSkeleton
             source={item.images?.[0] ? { uri: item.images[0] } : null}
             style={mobileCardStyles.image}
-            skeletonStyle={{ borderRadius: 0 }}
+            containerStyle={mobileCardStyles.image}
             placeholderIcon="image-outline"
             placeholderIconSize={28}
             placeholderIconColor="#CCC"
