@@ -561,11 +561,11 @@ export default function CategoryScreen() {
       setRefreshing(false);
       setInitialLoadDone(true);
     }
-  }, [categoryId, page, isAuthenticated, selectedSubcategory, priceRange, selectedCondition, sortBy, activeFilters, searchQuery]);
+  }, [categoryId, page, isAuthenticated, selectedSubcategory, priceRange, selectedCondition, sortBy, activeFilters, searchQuery, selectedRegion]);
 
   useEffect(() => {
     fetchData(true);
-  }, [categoryId, selectedSubcategory, selectedCondition, sortBy]);
+  }, [categoryId, selectedSubcategory, selectedCondition, sortBy, selectedRegion]);
   
   // Handle search with debounce
   const handleSearch = useCallback((query: string) => {
