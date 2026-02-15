@@ -184,14 +184,14 @@ const localStyles = StyleSheet.create({
   iconCategoryRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     width: '100%',
-    gap: 8,
     rowGap: 16,
   },
   iconCategoryItem: {
     alignItems: 'center',
-    width: 80,
+    width: 85,
+    marginBottom: 4,
   },
   iconContainer: {
     width: 56,
