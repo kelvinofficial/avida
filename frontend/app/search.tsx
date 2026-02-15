@@ -1199,17 +1199,29 @@ const styles = StyleSheet.create({
   },
   // Category icons row - transparent background, responsive layout, left-aligned
   categoryIconsRow: {
-    marginBottom: 24,
+    width: '100%',
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
     alignItems: 'center',
-    width: '100%',
   },
   categoryIconsInner: {
     width: '100%',
     maxWidth: MAX_WIDTH,
+  },
+  // Results row wrapper - matches header alignment
+  resultsRowWrapper: {
+    width: '100%',
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+    alignItems: 'center',
+    flex: 1,
+  },
+  resultsRowInner: {
+    maxWidth: MAX_WIDTH,
+    width: '100%',
+    minHeight: 400,
   },
   categoryIconsFlexRow: {
     flexDirection: 'row',
