@@ -122,8 +122,11 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   const [selectedDistrict, setSelectedDistrict] = useState<District | null>(null);
 
   // Load countries and recent locations on mount
+  // For Tanzania-only restriction, we automatically set Tanzania and load regions
   useEffect(() => {
-    loadCountries();
+    // Auto-select Tanzania and load regions directly
+    setSelectedCountry(TANZANIA_COUNTRY);
+    loadRegions(TANZANIA_COUNTRY.code);
     loadRecentLocations();
   }, []);
 
