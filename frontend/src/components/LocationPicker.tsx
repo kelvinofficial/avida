@@ -102,11 +102,12 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 }) => {
   // Modal state
   const [modalVisible, setModalVisible] = useState(false);
-  const [currentStep, setCurrentStep] = useState<SelectionStep>('country');
+  // Tanzania-only mode: always start at region step
+  const [currentStep, setCurrentStep] = useState<SelectionStep>('region');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Selection state
+  // Selection state - countries not needed in Tanzania-only mode
   const [countries, setCountries] = useState<Country[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -116,8 +117,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   // Recent locations
   const [recentLocations, setRecentLocations] = useState<LocationData[]>([]);
 
-  // Current selections
-  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  // Current selections - Tanzania pre-selected
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(TANZANIA_COUNTRY);
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
   const [selectedDistrict, setSelectedDistrict] = useState<District | null>(null);
 
