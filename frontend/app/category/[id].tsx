@@ -455,24 +455,164 @@ export default function CategoryScreen() {
     }
   }, [API_URL]);
   
+  // Load districts for a selected region
+  const loadDistricts = useCallback(async (regionCode: string) => {
+    if (!regionCode) {
+      setDistricts([]);
+      return;
+    }
+    setLoadingLocations(true);
+    try {
+      const response = await fetch(`${API_URL}/api/locations/districts?country_code=TZ&region_code=${regionCode}`);
+      if (response.ok) {
+        const data = await response.json();
+        setDistricts(data);
+      }
+    } catch (error) {
+      console.log('Error loading districts:', error);
+    } finally {
+      setLoadingLocations(false);
+    }
+  }, [API_URL]);
+  
+  // Load cities for a selected district
+  const loadCities = useCallback(async (regionCode: string, districtCode: string) => {
+    if (!regionCode || !districtCode) {
+      setCities([]);
+      return;
+    }
+    setLoadingLocations(true);
+    try {
+      const response = await fetch(`${API_URL}/api/locations/cities?country_code=TZ&region_code=${regionCode}&district_code=${districtCode}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCities(data);
+      }
+    } catch (error) {
+      console.log('Error loading cities:', error);
+    } finally {
+      setLoadingLocations(false);
+    }
+  }, [API_URL]);
+  
   // Handle region selection
   const handleRegionSelect = useCallback((regionCode: string, regionName: string) => {
+    const locationMode = featureSettings.location_mode;
+    
+    if (regionCode === '') {
+      // Clear all selections
+      setSelectedRegion('');
+      setSelectedRegionName('');
+      setSelectedDistrict('');
+      setSelectedDistrictName('');
+      setSelectedCity('');
+      setSelectedCityName('');
+      setDistricts([]);
+      setCities([]);
+      setShowLocationModal(false);
+      return;
+    }
+    
     if (regionCode === selectedRegion) {
       // Deselect if already selected
       setSelectedRegion('');
       setSelectedRegionName('');
+      setSelectedDistrict('');
+      setSelectedDistrictName('');
+      setSelectedCity('');
+      setSelectedCityName('');
+      setDistricts([]);
+      setCities([]);
+      if (locationMode === 'region') {
+        setShowLocationModal(false);
+      }
     } else {
       setSelectedRegion(regionCode);
       setSelectedRegionName(regionName);
+      // Reset child selections
+      setSelectedDistrict('');
+      setSelectedDistrictName('');
+      setSelectedCity('');
+      setSelectedCityName('');
+      setCities([]);
+      
+      if (locationMode === 'region') {
+        // For region-only mode, close modal after selection
+        setShowLocationModal(false);
+      } else {
+        // For district or city mode, load districts
+        loadDistricts(regionCode);
+      }
+    }
+  }, [selectedRegion, featureSettings.location_mode, loadDistricts]);
+  
+  // Handle district selection
+  const handleDistrictSelect = useCallback((districtCode: string, districtName: string) => {
+    const locationMode = featureSettings.location_mode;
+    
+    if (districtCode === selectedDistrict) {
+      // Deselect if already selected
+      setSelectedDistrict('');
+      setSelectedDistrictName('');
+      setSelectedCity('');
+      setSelectedCityName('');
+      setCities([]);
+      if (locationMode === 'district') {
+        setShowLocationModal(false);
+      }
+    } else {
+      setSelectedDistrict(districtCode);
+      setSelectedDistrictName(districtName);
+      // Reset city selection
+      setSelectedCity('');
+      setSelectedCityName('');
+      
+      if (locationMode === 'district') {
+        // For district mode, close modal after selection
+        setShowLocationModal(false);
+      } else {
+        // For city mode, load cities
+        loadCities(selectedRegion, districtCode);
+      }
+    }
+  }, [selectedDistrict, selectedRegion, featureSettings.location_mode, loadCities]);
+  
+  // Handle city selection
+  const handleCitySelect = useCallback((cityCode: string, cityName: string) => {
+    if (cityCode === selectedCity) {
+      // Deselect if already selected
+      setSelectedCity('');
+      setSelectedCityName('');
+    } else {
+      setSelectedCity(cityCode);
+      setSelectedCityName(cityName);
     }
     setShowLocationModal(false);
-  }, [selectedRegion]);
+  }, [selectedCity]);
   
   // Clear location filter
   const clearLocationFilter = useCallback(() => {
     setSelectedRegion('');
     setSelectedRegionName('');
+    setSelectedDistrict('');
+    setSelectedDistrictName('');
+    setSelectedCity('');
+    setSelectedCityName('');
+    setDistricts([]);
+    setCities([]);
   }, []);
+  
+  // Get current location display text
+  const getLocationDisplayText = useCallback(() => {
+    if (selectedCityName) {
+      return selectedCityName;
+    } else if (selectedDistrictName) {
+      return selectedDistrictName;
+    } else if (selectedRegionName) {
+      return selectedRegionName;
+    }
+    return 'All Tanzania';
+  }, [selectedRegionName, selectedDistrictName, selectedCityName]);
   
   // Load recent searches on mount
   useEffect(() => {
