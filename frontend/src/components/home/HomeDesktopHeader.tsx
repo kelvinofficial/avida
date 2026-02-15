@@ -168,32 +168,32 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
 const localStyles = StyleSheet.create({
   categoryRowWrapper: {
     backgroundColor: '#fff',
-    paddingVertical: 12,
+    paddingVertical: 16,
     paddingHorizontal: 24,
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
-    gap: 10,
     zIndex: 100,
     alignItems: 'center',
   },
   categoryRowInner: {
     width: '100%',
     maxWidth: 1280,
-    overflow: 'hidden',
   },
   // Icon style category rows
   iconCategoryRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
+    alignItems: 'flex-start',
     width: '100%',
-    rowGap: 20,
-    columnGap: 4,
+    rowGap: 16,
+    columnGap: 8,
   },
   iconCategoryItem: {
     alignItems: 'center',
-    width: 85,
-    marginBottom: 4,
+    width: 80,
+    minWidth: 80,
+    flexShrink: 0,
   },
   iconContainer: {
     width: 56,
