@@ -274,8 +274,8 @@ const localStyles = StyleSheet.create({
   // Icon style category rows
   iconCategoryRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    gap: 24,
+    justifyContent: 'space-between',
+    width: '100%',
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
