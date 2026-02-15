@@ -22,6 +22,21 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 - **File changed**: `/app/frontend/app/search.tsx` - Lines 1181-1188
 - **Testing Status**: Verified via screenshots - both pages now have consistent full-width category rows with bottom border only
 
+**2. Category Menu Transparent Background & Responsive Rows - COMPLETED & VERIFIED**
+- **Request**: Remove white background, show all categories in 1 row on wide screens, 2 rows on smaller screens
+- **Changes made**:
+  - Removed `backgroundColor: COLORS.surface` (white) from category row
+  - Added `useWindowDimensions` hook to detect screen width
+  - Replaced horizontal `ScrollView` with flex-wrap layout
+  - Categories now split into 2 rows when `screenWidth < 1300px`
+  - All 14 categories visible without horizontal scrolling
+- **Files changed**: `/app/frontend/app/search.tsx`
+  - Added `useWindowDimensions` to imports
+  - Added `needsTwoRows` calculation based on screen width
+  - Replaced ScrollView with flex row layout with conditional second row
+  - Updated styles: removed backgroundColor, added categoryIconsInner and categoryIconsFlexRow
+- **Testing Status**: Verified via screenshots at 1920px (2 rows with wrapping) and 1200px (2 rows split evenly)
+
 ### Session: February 15, 2026 - Part 10
 
 **1. Search Results Page Image Sizing Fix - COMPLETED & VERIFIED**
