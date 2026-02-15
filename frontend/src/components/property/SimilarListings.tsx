@@ -427,6 +427,13 @@ const cardStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  heartButtonContent: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    zIndex: 10,
+    padding: 4,
+  },
   stickersRow: {
     flexDirection: 'row',
     gap: 4,
