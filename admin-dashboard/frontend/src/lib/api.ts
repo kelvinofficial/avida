@@ -32,13 +32,8 @@ class ApiClient {
         if (error.response?.status === 401) {
           this.clearToken();
           if (typeof window !== 'undefined') {
-            // Redirect to admin login page, not main app
-            const currentPath = window.location.pathname;
-            if (currentPath.startsWith('/api/admin-ui')) {
-              window.location.href = '/api/admin-ui';
-            } else {
-              window.location.href = '/';
-            }
+            // Use relative path '/' which Next.js will resolve with basePath
+            window.location.href = '/';
           }
         }
         return Promise.reject(error);
