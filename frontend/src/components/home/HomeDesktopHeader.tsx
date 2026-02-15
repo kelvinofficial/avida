@@ -130,18 +130,13 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
         </View>
       </View>
 
-      {/* Category Dropdown Modal */}
-      <Modal
-        visible={showCategoryDropdown}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowCategoryDropdown(false)}
-      >
-        <TouchableOpacity 
-          style={localStyles.modalOverlay} 
-          activeOpacity={1} 
-          onPress={() => setShowCategoryDropdown(false)}
-        >
+      {/* Category Dropdown Overlay - Uses fixed positioning for web compatibility */}
+      {showCategoryDropdown && (
+        <View style={localStyles.dropdownOverlay}>
+          <Pressable 
+            style={localStyles.modalBackdrop} 
+            onPress={() => setShowCategoryDropdown(false)}
+          />
           <View style={localStyles.dropdownContainer}>
             <View style={localStyles.dropdownHeader}>
               <Text style={localStyles.dropdownTitle}>Select Category</Text>
@@ -175,8 +170,8 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
               ))}
             </ScrollView>
           </View>
-        </TouchableOpacity>
-      </Modal>
+        </View>
+      )}
 
       {/* Section Title */}
       <View style={desktopStyles.sectionHeaderWrapper}>
