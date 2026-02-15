@@ -1157,10 +1157,10 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
-    backgroundColor: '#fff',
+    backgroundColor: '#E0E0FF',
   },
   backBtn: {
     width: 40,
