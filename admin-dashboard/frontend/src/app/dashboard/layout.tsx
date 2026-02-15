@@ -80,6 +80,7 @@ import {
   InterestsOutlined,
   GppGood,
   PhotoCamera,
+  Link as LinkIcon,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
