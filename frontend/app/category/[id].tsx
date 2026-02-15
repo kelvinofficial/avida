@@ -1593,6 +1593,7 @@ export default function CategoryScreen() {
 
         {renderFiltersModal()}
         {renderSaveFilterModal()}
+        {renderLocationModal()}
       </View>
     );
   }
