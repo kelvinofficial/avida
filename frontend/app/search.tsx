@@ -1216,13 +1216,18 @@ const styles = StyleSheet.create({
   },
   listingImageWrapper: {
     width: '100%',
-    height: 180,
+    aspectRatio: 4 / 3,
     position: 'relative',
+    backgroundColor: COLORS.background,
   },
   listingImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
   },
   listingFavoriteBtn: {
     position: 'absolute',
