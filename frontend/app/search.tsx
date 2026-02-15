@@ -1173,9 +1173,11 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#E8F5E9',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.primary,
   },
   mobileSearchContainer: {
     flex: 1,
