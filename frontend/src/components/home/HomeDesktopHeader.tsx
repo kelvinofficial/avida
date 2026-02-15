@@ -197,6 +197,7 @@ const localStyles = StyleSheet.create({
     borderBottomColor: '#E0E0E0',
     gap: 10,
     zIndex: 100,
+    alignItems: 'flex-start',
   },
   categoryRow: {
     flexDirection: 'row',
