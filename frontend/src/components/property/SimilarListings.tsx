@@ -223,24 +223,6 @@ const HorizontalListingCard = memo(({
           </View>
         )}
 
-        {/* Heart Icon - Top Right */}
-        {onFavorite && (
-          <TouchableOpacity
-            style={cardStyles.heartButton}
-            onPress={(e) => {
-              e.stopPropagation?.();
-              onFavorite();
-            }}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Ionicons
-              name={isFavorited ? 'heart' : 'heart-outline'}
-              size={20}
-              color={isFavorited ? COLORS.error : '#fff'}
-            />
-          </TouchableOpacity>
-        )}
-
         {/* Image Count Badge */}
         {imageCount > 1 && (
           <View style={cardStyles.imageCountBadge}>
