@@ -597,7 +597,7 @@ Your content should be:
         # Recent posts
         recent = await blog_posts_collection.find(
             {},
-            {"id": 1, "title": 1, "status": 1, "created_at": 1}
+            {"_id": 0, "id": 1, "title": 1, "status": 1, "created_at": 1}
         ).sort("created_at", -1).limit(10).to_list(10)
         
         return {
