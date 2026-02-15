@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { Platform } from 'react-native';
 
 interface LocationFilter {
@@ -27,67 +26,78 @@ interface LocationState {
   setSelectedLocationFilter: (filter: LocationFilter | null) => void;
   setLocation: (city: string, filter: LocationFilter | null) => void;
   clearLocation: () => void;
+  // Hydrate from localStorage
+  hydrate: () => void;
 }
 
-// Simple localStorage wrapper that works on web
-const getStorage = () => ({
-  getItem: (name: string): string | null => {
-    if (Platform.OS !== 'web') return null;
+// Helper to save to localStorage
+const saveToStorage = (currentCity: string, filter: LocationFilter | null) => {
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
     try {
-      return localStorage.getItem(name);
-    } catch {
-      return null;
+      localStorage.setItem('avida-location', JSON.stringify({ currentCity, selectedLocationFilter: filter }));
+    } catch (e) {
+      // Ignore
     }
-  },
-  setItem: (name: string, value: string): void => {
-    if (Platform.OS !== 'web') return;
-    try {
-      localStorage.setItem(name, value);
-    } catch {
-      // Ignore errors
-    }
-  },
-  removeItem: (name: string): void => {
-    if (Platform.OS !== 'web') return;
-    try {
-      localStorage.removeItem(name);
-    } catch {
-      // Ignore errors
-    }
-  },
-});
+  }
+};
 
-export const useLocationStore = create<LocationState>()(
-  persist(
-    (set) => ({
-      currentCity: 'Select Location',
-      showLocationModal: false,
+// Helper to load from localStorage
+const loadFromStorage = (): { currentCity: string; selectedLocationFilter: LocationFilter | null } | null => {
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('avida-location');
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (e) {
+      // Ignore
+    }
+  }
+  return null;
+};
+
+export const useLocationStore = create<LocationState>()((set) => ({
+  currentCity: 'Select Location',
+  showLocationModal: false,
+  selectedLocationFilter: null,
+
+  setCurrentCity: (city) => set({ currentCity: city }),
+  setShowLocationModal: (show) => set({ showLocationModal: show }),
+  setSelectedLocationFilter: (filter) => set({ selectedLocationFilter: filter }),
+  
+  setLocation: (city, filter) => {
+    saveToStorage(city, filter);
+    set({ 
+      currentCity: city, 
+      selectedLocationFilter: filter,
+      showLocationModal: false 
+    });
+  },
+  
+  clearLocation: () => {
+    saveToStorage('All Locations', null);
+    set({ 
+      currentCity: 'All Locations', 
       selectedLocationFilter: null,
-
-      setCurrentCity: (city) => set({ currentCity: city }),
-      setShowLocationModal: (show) => set({ showLocationModal: show }),
-      setSelectedLocationFilter: (filter) => set({ selectedLocationFilter: filter }),
-      
-      setLocation: (city, filter) => set({ 
-        currentCity: city, 
-        selectedLocationFilter: filter,
-        showLocationModal: false 
-      }),
-      
-      clearLocation: () => set({ 
-        currentCity: 'All Locations', 
-        selectedLocationFilter: null,
-        showLocationModal: false 
-      }),
-    }),
-    {
-      name: 'avida-location-storage',
-      storage: getStorage(),
-      // Only persist these fields
-      partialize: (state) => ({
-        currentCity: state.currentCity,
-        selectedLocationFilter: state.selectedLocationFilter,
-      }),
+      showLocationModal: false 
+    });
+  },
+  
+  hydrate: () => {
+    const stored = loadFromStorage();
+    if (stored) {
+      set({
+        currentCity: stored.currentCity,
+        selectedLocationFilter: stored.selectedLocationFilter,
+      });
     }
-  )
-);
+  },
+}));
+
+// Auto-hydrate on load (only on web)
+if (Platform.OS === 'web' && typeof window !== 'undefined') {
+  // Use setTimeout to ensure this runs after the store is created
+  setTimeout(() => {
+    useLocationStore.getState().hydrate();
+  }, 0);
+}
