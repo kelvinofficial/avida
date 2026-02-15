@@ -214,6 +214,7 @@ export default function ContentEnginePage() {
     try {
       const res = await fetch(`${API_BASE}/growth/content/generate-aeo-content?topic=${encodeURIComponent(topic)}`, {
         method: 'POST',
+        headers: getAuthHeaders(),
       });
       
       if (res.ok) {
@@ -234,6 +235,7 @@ export default function ContentEnginePage() {
     try {
       const res = await fetch(`${API_BASE}/growth/content/posts/${postId}/publish`, {
         method: 'POST',
+        headers: getAuthHeaders(),
       });
       if (res.ok) {
         setSuccess('Post published!');
@@ -250,6 +252,7 @@ export default function ContentEnginePage() {
     try {
       const res = await fetch(`${API_BASE}/growth/content/posts/${postId}`, {
         method: 'DELETE',
+        headers: getAuthHeaders(),
       });
       if (res.ok) {
         setSuccess('Post deleted!');
