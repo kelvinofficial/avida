@@ -547,7 +547,7 @@ export default function BusinessProfileEditScreen() {
     if (!hasProfile || !profileId) { Alert.alert('Error', 'Please save your business profile first'); return; }
     setProcessingPayment(true);
     try {
-      const originUrl = Platform.OS === 'web' ? window.location.origin : 'https://admin-fixes-test.preview.emergentagent.com';
+      const originUrl = Platform.OS === 'web' ? window.location.origin : 'https://marketplace-ai-tools.preview.emergentagent.com';
       const response = await api.post('/premium-subscription/stripe/checkout', {
         package_id: selectedPackage,
         origin_url: originUrl,
@@ -572,7 +572,7 @@ export default function BusinessProfileEditScreen() {
     if (!hasProfile || !profileId) { Alert.alert('Error', 'Please save your business profile first'); return; }
     setProcessingPayment(true);
     try {
-      const originUrl = Platform.OS === 'web' ? window.location.origin : 'https://admin-fixes-test.preview.emergentagent.com';
+      const originUrl = Platform.OS === 'web' ? window.location.origin : 'https://marketplace-ai-tools.preview.emergentagent.com';
       const response = await api.post('/premium-subscription/paypal/checkout', {
         package_id: selectedPackage,
         origin_url: originUrl,

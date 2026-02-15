@@ -1716,7 +1716,7 @@ async def get_sitemap():
     """Generate comprehensive XML sitemap including categories, listings, and business profiles"""
     from fastapi.responses import Response
     
-    base_url = os.environ.get("SITE_URL", "https://admin-fixes-test.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://marketplace-ai-tools.preview.emergentagent.com")
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     # Build XML sitemap
@@ -1836,7 +1836,7 @@ async def get_robots():
     """Generate robots.txt with sitemap reference"""
     from fastapi.responses import PlainTextResponse
     
-    base_url = os.environ.get("SITE_URL", "https://admin-fixes-test.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://marketplace-ai-tools.preview.emergentagent.com")
     
     robots_content = f"""User-agent: *
 Allow: /
@@ -1878,7 +1878,7 @@ async def get_business_profile_og_meta(slug: str):
     """Get OG meta tags for a business profile for social media sharing"""
     from fastapi.responses import HTMLResponse
     
-    base_url = os.environ.get("SITE_URL", "https://admin-fixes-test.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://marketplace-ai-tools.preview.emergentagent.com")
     
     # Find profile by slug or identifier
     profile = await db.business_profiles.find_one(

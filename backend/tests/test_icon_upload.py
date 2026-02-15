@@ -16,7 +16,7 @@ import os
 import io
 
 # Get the API base URL from environment
-BASE_URL = "https://admin-fixes-test.preview.emergentagent.com/api/admin"
+BASE_URL = "https://marketplace-ai-tools.preview.emergentagent.com/api/admin"
 
 # Test credentials from main agent
 ADMIN_EMAIL = "admin@example.com"

@@ -9,7 +9,7 @@ import requests
 import os
 import json
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://admin-fixes-test.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://marketplace-ai-tools.preview.emergentagent.com')
 
 
 class TestExecutiveSummaryAPI:
