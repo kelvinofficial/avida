@@ -985,6 +985,80 @@ export default function CategoryScreen() {
     </Modal>
   );
 
+  // Location Picker Modal
+  const renderLocationModal = () => (
+    <Modal
+      visible={showLocationModal}
+      animationType="fade"
+      transparent={true}
+      onRequestClose={() => setShowLocationModal(false)}
+    >
+      <View style={styles.saveModalOverlay}>
+        <View style={[styles.saveModalContent, { maxHeight: '70%', width: Platform.OS === 'web' ? 400 : '90%' }]}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <Text style={styles.saveModalTitle}>Select Location</Text>
+            <TouchableOpacity onPress={() => setShowLocationModal(false)}>
+              <Ionicons name="close" size={24} color={COLORS.text} />
+            </TouchableOpacity>
+          </View>
+          <Text style={[styles.saveModalSubtitle, { marginBottom: 12 }]}>
+            Filter listings by region in Tanzania
+          </Text>
+          
+          {/* All Tanzania option */}
+          <TouchableOpacity 
+            style={[
+              styles.locationItem, 
+              !selectedRegion && styles.locationItemActive
+            ]}
+            onPress={() => handleRegionSelect('', '')}
+            data-testid="location-all-tanzania"
+          >
+            <Ionicons 
+              name={!selectedRegion ? "radio-button-on" : "radio-button-off"} 
+              size={20} 
+              color={!selectedRegion ? COLORS.primary : COLORS.textSecondary} 
+            />
+            <Text style={[
+              styles.locationItemText,
+              !selectedRegion && styles.locationItemTextActive
+            ]}>All Tanzania</Text>
+          </TouchableOpacity>
+          
+          {loadingLocations ? (
+            <View style={{ padding: 20, alignItems: 'center' }}>
+              <Text style={{ color: COLORS.textSecondary }}>Loading regions...</Text>
+            </View>
+          ) : (
+            <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={true}>
+              {regions.map((region) => (
+                <TouchableOpacity 
+                  key={region.region_code}
+                  style={[
+                    styles.locationItem, 
+                    selectedRegion === region.region_code && styles.locationItemActive
+                  ]}
+                  onPress={() => handleRegionSelect(region.region_code, region.name)}
+                  data-testid={`location-region-${region.region_code}`}
+                >
+                  <Ionicons 
+                    name={selectedRegion === region.region_code ? "radio-button-on" : "radio-button-off"} 
+                    size={20} 
+                    color={selectedRegion === region.region_code ? COLORS.primary : COLORS.textSecondary} 
+                  />
+                  <Text style={[
+                    styles.locationItemText,
+                    selectedRegion === region.region_code && styles.locationItemTextActive
+                  ]}>{region.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+        </View>
+      </View>
+    </Modal>
+  );
+
   // Remove initial loading state - render immediately with empty content
   const mainCategory = getMainCategory(categoryId);
 
