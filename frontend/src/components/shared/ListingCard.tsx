@@ -462,10 +462,12 @@ const styles = StyleSheet.create({
     color: COLORS.text, 
     marginBottom: 2, 
     lineHeight: 18,
+    minHeight: 36,
   },
   titleCompact: {
     fontSize: 13,
     lineHeight: 17,
+    minHeight: 34,
   },
   priceRow: { 
     flexDirection: 'row', 
