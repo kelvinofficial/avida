@@ -503,7 +503,6 @@ export default function CategoryScreen() {
   
   // Handle region selection
   const handleRegionSelect = useCallback((regionCode: string, regionName: string) => {
-    console.log('[handleRegionSelect] Called with:', regionCode, regionName, 'locationMode:', locationMode);
     if (regionCode === '') {
       // Clear all selections
       setSelectedRegion('');
@@ -519,7 +518,6 @@ export default function CategoryScreen() {
     }
     
     if (regionCode === selectedRegion) {
-      console.log('[handleRegionSelect] Region already selected, deselecting');
       // Deselect if already selected
       setSelectedRegion('');
       setSelectedRegionName('');
@@ -533,7 +531,6 @@ export default function CategoryScreen() {
         setShowLocationModal(false);
       }
     } else {
-      console.log('[handleRegionSelect] Selecting new region');
       setSelectedRegion(regionCode);
       setSelectedRegionName(regionName);
       // Reset child selections
@@ -544,11 +541,9 @@ export default function CategoryScreen() {
       setCities([]);
       
       if (locationMode === 'region') {
-        console.log('[handleRegionSelect] Region mode, closing modal');
         // For region-only mode, close modal after selection
         setShowLocationModal(false);
       } else {
-        console.log('[handleRegionSelect] District/City mode, loading districts for:', regionCode);
         // For district or city mode, load districts
         loadDistricts(regionCode);
       }
