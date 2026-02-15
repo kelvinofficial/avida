@@ -14,7 +14,12 @@ class ApiClient {
       },
     });
 
+    // Auto-load token from localStorage on every request if not already set
     this.client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+      // Always try to load token from localStorage if accessToken is null
+      if (!this.accessToken && typeof window !== 'undefined') {
+        this.accessToken = localStorage.getItem('admin_token');
+      }
       if (this.accessToken) {
         config.headers.Authorization = `Bearer ${this.accessToken}`;
       }
