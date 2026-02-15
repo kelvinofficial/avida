@@ -121,6 +121,8 @@ export default function RootLayout() {
   useEffect(() => {
     setMounted(true);
     loadStoredAuth();
+    // Fetch feature settings on app mount
+    fetchFeatureSettings();
   }, []);
 
   // Register for push notifications when user is authenticated
