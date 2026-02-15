@@ -246,11 +246,27 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginBottom: 4,
   },
-  autoHighlights: {
+  autoFeatures: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+    flexWrap: 'wrap',
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  featureDivider: {
+    width: 1,
+    height: 10,
+    backgroundColor: COLORS.border,
+    marginHorizontal: 6,
+  },
+  featureText: {
     fontSize: 10,
     color: COLORS.textSecondary,
     fontWeight: '500',
-    marginBottom: 6,
   },
   autoLocationRow: {
     flexDirection: 'row',
