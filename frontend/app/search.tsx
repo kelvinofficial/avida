@@ -1382,16 +1382,6 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     fontWeight: '400',
   },
-  backArrowContainer: {
-    width: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backArrowIcon: {
-    width: 24,
-    height: 24,
-  },
   locationBtn: {
     width: 44,
     height: 44,
