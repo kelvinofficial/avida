@@ -101,24 +101,30 @@ export default function HomeScreen() {
   // ============ UI-SPECIFIC STATE (not in hooks) ============
   const [showLocationModal, setShowLocationModal] = useState(false);
 
-  // Sync with global location store for DesktopHeader
+  // Sync local state FROM global location store (one-way sync)
+  // This ensures local state reflects what's in the global store
   useEffect(() => {
-    // When global location changes (from DesktopHeader), sync local state
-    if (locationStore.selectedLocationFilter) {
-      setSelectedLocationFilter(locationStore.selectedLocationFilter);
-      setCurrentCity(locationStore.currentCity);
-    } else if (locationStore.currentCity === 'All Locations') {
-      setSelectedLocationFilter(null);
-      setCurrentCity('All Locations');
+    // Only sync if the global store values are different from local
+    const globalFilter = locationStore.selectedLocationFilter;
+    const globalCity = locationStore.currentCity;
+    
+    // Check if values are actually different before updating
+    const filterChanged = JSON.stringify(globalFilter) !== JSON.stringify(selectedLocationFilter);
+    const cityChanged = globalCity !== currentCity;
+    
+    if (filterChanged || cityChanged) {
+      if (globalFilter) {
+        setSelectedLocationFilter(globalFilter);
+        setCurrentCity(globalCity);
+      } else if (globalCity === 'All Locations' || globalCity === 'Select Location') {
+        setSelectedLocationFilter(null);
+        setCurrentCity(globalCity);
+      }
     }
   }, [locationStore.selectedLocationFilter, locationStore.currentCity]);
 
-  // Sync local location changes to global store
-  useEffect(() => {
-    if (selectedLocationFilter) {
-      locationStore.setLocation(currentCity, selectedLocationFilter);
-    }
-  }, [selectedLocationFilter, currentCity, locationStore]);
+  // When local location changes (from this page's location picker), update global store
+  // This is called directly from the location picker handlers, not via useEffect
 
   // Handle suggestion click with navigation (wraps hook function)
   const handleSuggestionClick = (query: string) => {
