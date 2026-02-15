@@ -57,8 +57,8 @@ interface FeatureSettingsState {
   formatPrice: (price: number) => string;
 }
 
-// Cache duration: 5 minutes
-const CACHE_DURATION = 5 * 60 * 1000;
+// Cache duration: 1 minute
+const CACHE_DURATION = 1 * 60 * 1000;
 
 export const useFeatureSettingsStore = create<FeatureSettingsState>((set, get) => ({
   settings: DEFAULT_SETTINGS,
