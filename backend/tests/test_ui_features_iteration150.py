@@ -7,7 +7,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://marketplace-preview-7.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://listing-images-bug.preview.emergentagent.com')
 
 class TestFeatureSettings:
     """Tests for Feature Settings API"""
