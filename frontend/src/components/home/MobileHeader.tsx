@@ -533,4 +533,110 @@ const mobileDropdownStyles = StyleSheet.create({
   },
 });
 
+// NEW Header Styles - Two-tier layout matching mockup
+const newHeaderStyles = StyleSheet.create({
+  // Row 1: Logo + Location (center) + Icons (right)
+  row1: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 10,
+  },
+  logo: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#2E7D32',
+    letterSpacing: -0.5,
+  },
+  locationChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+    maxWidth: 160,
+  },
+  locationText: {
+    fontSize: 13,
+    color: '#333',
+    fontWeight: '500',
+    flexShrink: 1,
+  },
+  rightIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: '#E53935',
+    borderRadius: 10,
+    minWidth: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: '#fff',
+  },
+  notificationBadgeText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '700',
+  },
+  
+  // Row 2: Full-width search bar
+  row2: {
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+  },
+  searchField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 28,
+    height: 52,
+    paddingLeft: 16,
+    paddingRight: 8,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    // Shadow for elevated look
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#333',
+    paddingVertical: 0,
+    height: '100%',
+  },
+  searchIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+
 export default MobileHeader;
