@@ -11,7 +11,32 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 
 ## What's Been Implemented
 
-### Session: February 15, 2026 - Part 8 (Latest)
+### Session: February 15, 2026 - Part 9 (Latest)
+
+**1. Search Results Page Redesign - COMPLETED & VERIFIED**
+- **Sidebar removed** - Full width layout for more content space
+- **Category icons displayed** - Horizontal scrollable row below search bar (same style as homepage)
+- **Search box + location in same row** - Search input with Search button on left, "All Locations" dropdown on right
+- **Grid layout for results** - 4-5 column card-based grid layout (responsive)
+- Files changed: `/app/frontend/app/search.tsx` - Complete desktop layout redesign
+- **Testing Status**: Verified by testing agent - UI layout working correctly
+
+**2. Location Persistence Across Pages - COMPLETED & VERIFIED**
+- Location selection now persists using localStorage
+- When user sets location (e.g., Dar es Salaam) on homepage, it shows everywhere in the app
+- Location stored in global Zustand store + localStorage
+- Auto-hydrates on page load
+- Files changed: `/app/frontend/src/store/locationStore.ts` - Added localStorage persistence
+- **Testing Status**: Verified - no infinite loop crash, location persists
+
+**3. Fixed Critical Bug: Infinite Loop on Location Selection - COMPLETED**
+- **Root cause**: Circular useEffect dependencies in homepage (`/app/frontend/app/(tabs)/index.tsx`)
+- Two useEffects were syncing in opposite directions causing infinite updates
+- **Fix**: Removed circular dependency, added value comparison guards
+- Also updated `handleLocationSelect` to sync to global store
+- **Testing Status**: Location modal opens without crash
+
+### Session: February 15, 2026 - Part 8
 
 **1. Desktop Homepage Category Cleanup - COMPLETED & VERIFIED**
 - Removed the text-based "pill" style category rows from the desktop homepage
