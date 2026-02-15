@@ -95,3 +95,7 @@ admin-dashboard/frontend/.next/dev/cache/turbopack/23c46498/00000072.sst
 *.env
 *.env.*
 admin-dashboard/frontend/.next/dev/cache/turbopack/23c46498/00000057.sst
+-e 
+# Environment files
+*.env
+*.env.*
