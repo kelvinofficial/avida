@@ -463,20 +463,15 @@ export default function CategoryScreen() {
   
   // Load districts for a selected region
   const loadDistricts = useCallback(async (regionCode: string) => {
-    console.log('[loadDistricts] Called with regionCode:', regionCode);
     if (!regionCode) {
       setDistricts([]);
       return;
     }
     setLoadingLocations(true);
     try {
-      const url = `${API_URL}/api/locations/districts?country_code=TZ&region_code=${regionCode}`;
-      console.log('[loadDistricts] Fetching URL:', url);
-      const response = await fetch(url);
-      console.log('[loadDistricts] Response status:', response.status);
+      const response = await fetch(`${API_URL}/api/locations/districts?country_code=TZ&region_code=${regionCode}`);
       if (response.ok) {
         const data = await response.json();
-        console.log('[loadDistricts] Received data:', data.length, 'districts');
         setDistricts(data);
       }
     } catch (error) {
