@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { Platform } from 'react-native';
 
 interface LocationFilter {
   country_code?: string;
@@ -27,24 +29,54 @@ interface LocationState {
   clearLocation: () => void;
 }
 
-export const useLocationStore = create<LocationState>()((set) => ({
-  currentCity: 'Select Location',
-  showLocationModal: false,
-  selectedLocationFilter: null,
+// Custom storage that only works on web
+const webStorage = {
+  getItem: (name: string) => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return null;
+    const str = localStorage.getItem(name);
+    return str ? JSON.parse(str) : null;
+  },
+  setItem: (name: string, value: any) => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    localStorage.setItem(name, JSON.stringify(value));
+  },
+  removeItem: (name: string) => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    localStorage.removeItem(name);
+  },
+};
 
-  setCurrentCity: (city) => set({ currentCity: city }),
-  setShowLocationModal: (show) => set({ showLocationModal: show }),
-  setSelectedLocationFilter: (filter) => set({ selectedLocationFilter: filter }),
-  
-  setLocation: (city, filter) => set({ 
-    currentCity: city, 
-    selectedLocationFilter: filter,
-    showLocationModal: false 
-  }),
-  
-  clearLocation: () => set({ 
-    currentCity: 'All Locations', 
-    selectedLocationFilter: null,
-    showLocationModal: false 
-  }),
-}));
+export const useLocationStore = create<LocationState>()(
+  persist(
+    (set) => ({
+      currentCity: 'Select Location',
+      showLocationModal: false,
+      selectedLocationFilter: null,
+
+      setCurrentCity: (city) => set({ currentCity: city }),
+      setShowLocationModal: (show) => set({ showLocationModal: show }),
+      setSelectedLocationFilter: (filter) => set({ selectedLocationFilter: filter }),
+      
+      setLocation: (city, filter) => set({ 
+        currentCity: city, 
+        selectedLocationFilter: filter,
+        showLocationModal: false 
+      }),
+      
+      clearLocation: () => set({ 
+        currentCity: 'All Locations', 
+        selectedLocationFilter: null,
+        showLocationModal: false 
+      }),
+    }),
+    {
+      name: 'avida-location-storage',
+      storage: createJSONStorage(() => webStorage),
+      // Only persist these fields
+      partialize: (state) => ({
+        currentCity: state.currentCity,
+        selectedLocationFilter: state.selectedLocationFilter,
+      }),
+    }
+  )
+);
