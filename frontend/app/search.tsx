@@ -600,7 +600,7 @@ export default function SearchScreen() {
           <View style={mobileCardStyles.locationRow}>
             <Ionicons name="location-outline" size={12} color={COLORS.textSecondary} />
             <Text style={mobileCardStyles.locationText} numberOfLines={1}>
-              {item.location || 'Unknown location'}
+              {typeof item.location === 'object' ? (item.location?.city || item.location?.country || 'Unknown location') : (item.location || 'Unknown location')}
             </Text>
           </View>
           
