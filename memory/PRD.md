@@ -11,7 +11,17 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 
 ## What's Been Implemented
 
-### Session: February 15, 2026 - Part 7 (Latest)
+### Session: February 15, 2026 - Part 8 (Latest)
+
+**1. Desktop Homepage Category Cleanup - COMPLETED & VERIFIED**
+- Removed the text-based "pill" style category rows from the desktop homepage
+- Now only displays a single row of icon-based categories below the search bar
+- Cleaned up unused styles (categoryRow, categoryRowFirst, categoryPill styles)
+- Removed unused imports (useRef, useEffect, Dimensions)
+- File changed: `/app/frontend/src/components/home/HomeDesktopHeader.tsx`
+- **Testing Status**: Verified via screenshot - pills removed, icons remain
+
+### Session: February 15, 2026 - Part 7
 
 **1. Back Button Added to Search Results Page - COMPLETED & VERIFIED**
 - Added a back button with left-pointing arrow icon (←) to the search results page header
