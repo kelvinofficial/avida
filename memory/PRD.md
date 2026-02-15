@@ -1,7 +1,7 @@
 # Product Requirements Document - Avida Marketplace
 
 ## Original Problem Statement
-Build a full-stack classifieds application with admin dashboard, SEO suite, AI tools, deep linking, and A/B testing features.
+Build a full-stack classifieds application for Tanzania with admin dashboard, SEO suite, AI tools, deep linking, and A/B testing features.
 
 ## Core Architecture
 - **Frontend**: React Native/Expo web application
@@ -11,49 +11,71 @@ Build a full-stack classifieds application with admin dashboard, SEO suite, AI t
 
 ## What's Been Implemented
 
-### Session: February 15, 2026
+### Session: February 15, 2026 (Current)
 
-**P0 Admin Dashboard Session Fix - COMPLETED**
-- Fixed admin user `is_active` field (was `None`, now `True`)
-- Enhanced API client token loading from localStorage on each request
-- Smart 401 handling to prevent redirect loops
-- Admin login and session now working correctly
+**1. Location Picker on Category Pages - COMPLETED**
+- Added functional location picker for Tanzania regions
+- Modal shows all Tanzania regions (Arusha, Dar es Salaam, Dodoma, Mbeya, Mwanza, etc.)
+- Filters listings by selected region using `country_code=TZ` and `region_code` params
+- Clear button to reset filter
+- Files: `/app/frontend/app/category/[id].tsx` (state, modal, API integration)
 
-**P1 Listing Images Fix - COMPLETED**
-- Root cause: React Native Web's Image component styling issues
-- Solution: Used native `<img>` tag for web with explicit height
-- File modified: `/app/frontend/src/components/listings/ListingCard.tsx`
-- Both base64 and HTTP URL images now display correctly
+**2. Mobile "All" Category Dropdown - COMPLETED**
+- Added dropdown functionality to mobile header
+- Modal shows all categories with icons
+- Category selection works correctly
+- Files: `/app/frontend/src/components/home/MobileHeader.tsx`
 
-**Previous Session Work:**
-- Admin Access Restored (bcrypt password hash fix)
+**3. Feature Settings Integration - COMPLETED**
+- Created Zustand store: `/app/frontend/src/store/featureSettingsStore.ts`
+- Fetches settings from `/api/feature-settings` on app mount
+- ListingCard components now use settings for:
+  - Currency display (TSh - Tanzanian Shilling)
+  - View count visibility
+  - Time ago visibility
+  - Featured badge visibility
+- Files modified:
+  - `/app/frontend/app/_layout.tsx` (store initialization)
+  - `/app/frontend/src/components/listings/ListingCard.tsx` (conditional rendering)
+  - `/app/frontend/src/components/home/ListingCard.tsx` (currency format)
+
+**4. Currency Consistency Fix - COMPLETED**
+- All listings now display prices in TSh format
+- Example: TSh 50.000.000, TSh 1.999, TSh 200
+
+### Previous Session Work:
+- P0 Admin Dashboard Session Fix (is_active field)
+- P1 Listing Images Fix (React Native Web styling)
 - Desktop Homepage UI: 2-row categories, "All" dropdown modal
-- Mobile Sub-category Fix: Added missing category definitions
-- Admin Feature Toggles: Backend API + Frontend page created
-- Listing Card Polish: Uniform heights, repositioned heart icon
+- Mobile Sub-category Fix
+- Admin Feature Toggles: Backend API + Frontend page
 
-## Pending Issues (Prioritized)
+## Pending Issues
 
 ### P1 - High Priority
-1. **Location picker non-functional** - On category pages, doesn't filter listings
+1. **Tanzania-only location logic** - Admin control over display granularity (region/city)
 
 ### P2 - Medium Priority
-1. **"All" dropdown on mobile header** - Only implemented on desktop
-2. **Tanzania-only location logic** - Admin control over granularity
-3. **Wire feature settings to frontend** - Connect toggles to main app
-4. **SEO Optimization** - Meta tags, structured data, sitemap
+1. **SEO Optimization** - Meta tags, structured data, sitemap
+2. **Duplicate region data** - "Dodoma" appears twice in location picker (data cleanup)
+
+### P3 - Lower Priority
+1. **Mobile location picker testing** - Touch interaction works but automated testing had issues
 
 ## User Verification Pending
-- Uniform listing card size
-- Repositioned heart icon on Similar Listings
-- Increased search field height
+- Location picker functionality on category pages
+- Mobile "All" dropdown
+- Currency showing as TSh
+- Uniform listing card size (previous session)
+- Repositioned heart icon on Similar Listings (previous session)
 
 ## Key API Endpoints
 - `POST /api/admin/auth/login` - Admin authentication
-- `GET /api/admin/auth/me` - Get current admin (requires `is_active: True`)
+- `GET /api/admin/auth/me` - Get current admin
 - `GET /api/feature-settings` - Retrieve feature settings
 - `PUT /api/feature-settings` - Update feature settings
-- `GET /api/listings?category=X&location=Y` - Get listings with filters
+- `GET /api/listings?category=X&country_code=TZ&region_code=Y` - Get listings with location filter
+- `GET /api/locations/regions?country_code=TZ` - Get Tanzania regions
 
 ## Database Configuration
 - Main app: Uses `biashara_db` or configured via `DB_NAME` env var
@@ -64,12 +86,13 @@ Build a full-stack classifieds application with admin dashboard, SEO suite, AI t
 - **Admin**: `admin@marketplace.com` / `Admin@123456`
 - **Test User**: `testuser@test.com` / `password`
 
-## Key Files Modified (Latest Session)
-- `/app/admin-dashboard/frontend/src/lib/api.ts` - Token loading fixes
-- `/app/admin-dashboard/frontend/src/app/dashboard/layout.tsx` - Auth flow
-- `/app/frontend/src/components/listings/ListingCard.tsx` - Native img tag for web
-- `/app/frontend/src/components/common/OptimizedImage.tsx` - Style fixes
-- MongoDB `classifieds_db.admin_users` - is_active field fixed
+## Key Files Modified (This Session)
+- `/app/frontend/app/category/[id].tsx` - Location picker modal and filtering
+- `/app/frontend/src/components/home/MobileHeader.tsx` - Category dropdown
+- `/app/frontend/src/store/featureSettingsStore.ts` - NEW: Feature settings Zustand store
+- `/app/frontend/src/components/listings/ListingCard.tsx` - Feature settings integration
+- `/app/frontend/src/components/home/ListingCard.tsx` - Currency formatting
+- `/app/frontend/app/_layout.tsx` - Store initialization
 
 ## Third-Party Integrations
 - Emergent LLM (GPT-5.2) via `emergentintegrations`
@@ -77,3 +100,6 @@ Build a full-stack classifieds application with admin dashboard, SEO suite, AI t
 - zustand (state management)
 - python-socketio / socket.io-client
 - @react-native-community/netinfo
+
+## Test Reports
+- `/app/test_reports/iteration_151.json` - Latest test run
