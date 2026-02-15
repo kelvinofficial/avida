@@ -1389,6 +1389,10 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 4,
   },
+  backArrowIcon: {
+    width: 24,
+    height: 24,
+  },
   locationBtn: {
     width: 44,
     height: 44,
