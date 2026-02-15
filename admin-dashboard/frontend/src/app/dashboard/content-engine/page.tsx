@@ -52,6 +52,12 @@ import {
 
 const API_BASE = process.env.NEXT_PUBLIC_MAIN_API_URL || '';
 
+// Helper to get auth headers
+const getAuthHeaders = (): Record<string, string> => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null;
+  return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+};
+
 const COUNTRIES = [
   { code: 'DE', name: 'Germany' },
   { code: 'TZ', name: 'Tanzania' },
