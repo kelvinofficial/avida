@@ -79,28 +79,29 @@ export default function ShareBadgesScreen() {
   const { isDesktop, isTablet } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
 
-  const [profile, setProfile] = useState<BadgeProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!userId) return;
-      
-      try {
-        setLoading(true);
-        const response = await api.get(`/badges/share/${userId}`);
-        setProfile(response.data);
-      } catch (err: any) {
-        console.error('Error fetching badge profile:', err);
-        setError(err.response?.data?.detail || 'Failed to load profile');
-      } finally {
-        setLoading(false);
-      }
-    };
+  // CACHE-FIRST: Use cache-first hook for badge profile
+  const { 
+    data: profile, 
+    error,
+    refresh: refreshProfile 
+  } = useCacheFirst<BadgeProfile | null>({
+    cacheKey: `badge_profile_${userId}`,
+    fetcher: async () => {
+      const response = await api.get(`/badges/share/${userId}`);
+      return response.data;
+    },
+    fallbackData: null,
+    enabled: !!userId,
+    deps: [userId],
+  });
 
-    fetchProfile();
-  }, [userId]);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refreshProfile();
+    setRefreshing(false);
+  }, [refreshProfile]);
 
   const handleShare = async () => {
     if (!profile) return;
