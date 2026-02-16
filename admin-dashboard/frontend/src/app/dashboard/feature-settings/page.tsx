@@ -146,7 +146,7 @@ export default function FeatureSettingsPage() {
   return (
     <Box sx={{ p: 3, position: 'relative' }}>
       {/* CACHE-FIRST: Show LinearProgress for background fetch instead of blocking CircularProgress */}
-      {loading && (
+      {(loading || saving) && (
         <LinearProgress sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, zIndex: 10 }} />
       )}
       {/* Header */}
@@ -157,6 +157,7 @@ export default function FeatureSettingsPage() {
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Control which features are visible to users across the platform
+            {saving && <Chip label="Saving..." size="small" color="primary" sx={{ ml: 1 }} />}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
@@ -173,6 +174,7 @@ export default function FeatureSettingsPage() {
             onClick={handleSave}
             disabled={saving}
             color="primary"
+            data-testid="save-settings-btn"
           >
             Save Changes
           </Button>
@@ -182,11 +184,11 @@ export default function FeatureSettingsPage() {
       {/* Alerts */}
       <Snackbar
         open={!!success}
-        autoHideDuration={4000}
+        autoHideDuration={2000}
         onClose={() => setSuccess('')}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <Alert severity="success" onClose={() => setSuccess('')}>{success}</Alert>
+        <Alert severity="success" icon={<CheckCircle />} onClose={() => setSuccess('')}>{success}</Alert>
       </Snackbar>
       
       {error && (
