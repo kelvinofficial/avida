@@ -5,7 +5,7 @@ import {
   Box, Card, CardContent, Typography, Button, TextField, Switch,
   FormControlLabel, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, IconButton, Dialog, DialogTitle, DialogContent,
-  DialogActions, CircularProgress, Alert, Chip, Select, MenuItem,
+  DialogActions, Alert, Chip, Select, MenuItem,
   FormControl, InputLabel, Tabs, Tab, LinearProgress,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
@@ -14,6 +14,7 @@ import {
   Download, Visibility, RemoveCircle, AddCircle,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
+import { getCachedData, setCachedData } from '@/hooks/useCacheFirst';
 
 interface PollOption {
   id: string;
