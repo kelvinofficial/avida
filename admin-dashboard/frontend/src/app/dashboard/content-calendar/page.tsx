@@ -540,7 +540,7 @@ export default function ContentCalendarPage() {
             {/* Day headers */}
             <Grid container>
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <Grid item xs key={day} sx={{ p: 1, borderBottom: 1, borderColor: 'divider', textAlign: 'center' }}>
+                <Grid size={{ xs: 12 }} key={day} sx={{ p: 1, borderBottom: 1, borderColor: 'divider', textAlign: 'center' }}>
                   <Typography variant="body2" fontWeight="bold" color="text.secondary">{day}</Typography>
                 </Grid>
               ))}

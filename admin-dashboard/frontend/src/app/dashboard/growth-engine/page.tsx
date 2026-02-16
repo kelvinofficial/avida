@@ -535,7 +535,7 @@ export default function GrowthEnginePage() {
           Quick Actions
         </Typography>
         <Grid container spacing={2}>
-          <Grid item>
+          <Grid>
             <Button
               variant="contained"
               color="primary"
@@ -545,7 +545,7 @@ export default function GrowthEnginePage() {
               Generate Blog Post
             </Button>
           </Grid>
-          <Grid item>
+          <Grid>
             <Button
               variant="contained"
               color="secondary"
@@ -555,7 +555,7 @@ export default function GrowthEnginePage() {
               Optimize App Store
             </Button>
           </Grid>
-          <Grid item>
+          <Grid>
             <Button
               variant="outlined"
               startIcon={<OpenInNew />}
@@ -565,7 +565,7 @@ export default function GrowthEnginePage() {
               View Sitemap
             </Button>
           </Grid>
-          <Grid item>
+          <Grid>
             <Button
               variant="outlined"
               startIcon={<Language />}

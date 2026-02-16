@@ -333,7 +333,7 @@ export default function AuthorityBuildingPage() {
           {!selectedCampaign ? (
             <Grid container spacing={2}>
               {campaigns.map(campaign => (
-                <Grid item xs={12} md={6} lg={4} key={campaign.id}>
+                <Grid size={{ xs: 12, md: 6, lg: 4 }} key={campaign.id}>
                   <Card sx={{ cursor: 'pointer', '&:hover': { boxShadow: 4 } }} onClick={() => fetchCampaignContacts(campaign.id)}>
                     <CardContent>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>

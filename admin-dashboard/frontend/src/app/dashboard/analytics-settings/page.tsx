@@ -392,7 +392,7 @@ export default function AnalyticsSettingsPage() {
             <Typography variant="h6" gutterBottom>Users by Country (Target Markets)</Typography>
             <Grid container spacing={2}>
               {geoData.map((geo, idx) => (
-                <Grid item xs={12} sm={6} md={4} key={idx}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={idx}>
                   <Paper sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Typography variant="h4">{geo.flag}</Typography>
                     <Box sx={{ flex: 1 }}>
@@ -458,7 +458,7 @@ export default function AnalyticsSettingsPage() {
               <Typography variant="h6" gutterBottom>Citations by AI Source</Typography>
               <Grid container spacing={2}>
                 {aiCitations.citations_by_source?.map((source: AICitation, idx: number) => (
-                  <Grid item xs={12} sm={6} md={4} key={idx}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={idx}>
                     <Paper sx={{ p: 2 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
                         <Typography variant="h4">{source.icon}</Typography>
