@@ -112,6 +112,8 @@ export default function NotificationPreferencesScreen() {
     setSaving(true);
     try {
       await api.put('/notifications/preferences', preferences);
+      // Update cache on successful save
+      setCacheSync(NOTIFICATION_PREFS_CACHE_KEY, preferences);
       Alert.alert('Success', 'Notification preferences saved!');
     } catch (error) {
       Alert.alert('Error', 'Failed to save preferences. Please try again.');
