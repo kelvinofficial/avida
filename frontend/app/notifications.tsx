@@ -731,14 +731,7 @@ export default function NotificationsScreen() {
       </View>
 
       {/* Notifications List */}
-      {loading ? (
-        <FlatList
-          data={[1, 2, 3, 4, 5]}
-          keyExtractor={(item) => item.toString()}
-          renderItem={() => <SkeletonItem />}
-          contentContainerStyle={styles.listContent}
-        />
-      ) : notifications.length === 0 ? (
+      {notifications.length === 0 ? (
         <EmptyState type={activeTab} />
       ) : (
         <FlatList
