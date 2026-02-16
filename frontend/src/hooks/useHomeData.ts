@@ -120,20 +120,26 @@ export function useHomeData(): UseHomeDataReturn {
   const { isAuthenticated, token, user } = useAuthStore();
   const { isSandboxMode } = useSandbox();
   
-  // Listings state
-  const [listings, setListings] = useState<Listing[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  // CACHE-FIRST: Initialize with cached data immediately (no loading state)
+  const cachedListings = getCachedSync<Listing[]>(CACHE_KEYS.HOME_LISTINGS) ?? [];
+  const cachedCategories = getCachedSync<Category[]>(CACHE_KEYS.HOME_CATEGORIES) ?? [];
+  const cachedFeaturedListings = getCachedSync<FeaturedListing[]>(CACHE_KEYS.FEATURED_LISTINGS) ?? [];
+  const cachedFeaturedSellers = getCachedSync<FeaturedSeller[]>(CACHE_KEYS.FEATURED_SELLERS) ?? [];
+  
+  // Listings state - initialized with cache
+  const [listings, setListings] = useState<Listing[]>(cachedListings);
+  const [categories, setCategories] = useState<Category[]>(cachedCategories);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [initialLoadDone, setInitialLoadDone] = useState(false);
+  // REMOVED loading state - cache-first means we always have data to show
+  const [initialLoadDone, setInitialLoadDone] = useState(cachedListings.length > 0);
   const [refreshing, setRefreshing] = useState(false);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   
-  // Featured state
-  const [featuredSellers, setFeaturedSellers] = useState<FeaturedSeller[]>([]);
-  const [featuredListings, setFeaturedListings] = useState<FeaturedListing[]>([]);
-  const [loadingFeatured, setLoadingFeatured] = useState(true);
+  // Featured state - initialized with cache
+  const [featuredSellers, setFeaturedSellers] = useState<FeaturedSeller[]>(cachedFeaturedSellers);
+  const [featuredListings, setFeaturedListings] = useState<FeaturedListing[]>(cachedFeaturedListings);
   
   // User state
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
