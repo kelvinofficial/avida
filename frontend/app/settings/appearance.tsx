@@ -47,18 +47,27 @@ const APPEARANCE_OPTIONS = [
 
 export default function AppearanceScreen() {
   const router = useRouter();
-  const [selectedMode, setSelectedMode] = useState('system');
-  const [loading, setLoading] = useState(true);
+  
+  // Cache key for appearance settings
+  const APPEARANCE_CACHE_KEY = 'settings_appearance';
+  
+  // Cache-first: Initialize with cached data for instant render
+  const cachedMode = getCachedSync<string>(APPEARANCE_CACHE_KEY);
+  const [selectedMode, setSelectedMode] = useState(cachedMode || 'system');
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const fetchSettings = useCallback(async () => {
     try {
+      setIsFetchingInBackground(true);
       const response = await api.get('/settings');
-      setSelectedMode(response.data.app_preferences?.dark_mode || 'system');
+      const mode = response.data.app_preferences?.dark_mode || 'system';
+      setSelectedMode(mode);
+      setCacheSync(APPEARANCE_CACHE_KEY, mode);
     } catch (error) {
       console.error('Error fetching settings:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   }, []);
 
@@ -69,6 +78,7 @@ export default function AppearanceScreen() {
   const handleSelectMode = async (mode: string) => {
     setSaving(true);
     setSelectedMode(mode);
+    setCacheSync(APPEARANCE_CACHE_KEY, mode);
     try {
       await api.put('/settings', { app_preferences: { dark_mode: mode } });
     } catch (error) {
@@ -78,23 +88,6 @@ export default function AppearanceScreen() {
     }
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Appearance</Text>
-          <View style={{ width: 24 }} />
-        </View>
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
@@ -102,7 +95,7 @@ export default function AppearanceScreen() {
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Appearance</Text>
-        {saving && <ActivityIndicator size="small" color={COLORS.primary} />}
+        {saving && <Ionicons name="sync" size={20} color={COLORS.primary} />}
         {!saving && <View style={{ width: 24 }} />}
       </View>
 
