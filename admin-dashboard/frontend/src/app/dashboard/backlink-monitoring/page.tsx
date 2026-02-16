@@ -160,7 +160,7 @@ export default function BacklinkMonitoringPage() {
       {/* Overview Cards */}
       {backlinkChanges && (
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card sx={{ bgcolor: 'success.dark', color: 'white' }}>
               <CardContent sx={{ textAlign: 'center', py: 2 }}>
                 <NewReleases sx={{ fontSize: 32, mb: 1 }} />
@@ -169,7 +169,7 @@ export default function BacklinkMonitoringPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card sx={{ bgcolor: 'error.dark', color: 'white' }}>
               <CardContent sx={{ textAlign: 'center', py: 2 }}>
                 <LinkOff sx={{ fontSize: 32, mb: 1 }} />
@@ -178,7 +178,7 @@ export default function BacklinkMonitoringPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 2 }}>
                 {backlinkChanges.summary?.net_change >= 0 ? (
@@ -193,7 +193,7 @@ export default function BacklinkMonitoringPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 2 }}>
                 <EmojiEvents sx={{ fontSize: 32, mb: 1, color: 'primary.main' }} />
@@ -212,7 +212,7 @@ export default function BacklinkMonitoringPage() {
             <Typography variant="h6" gutterBottom>Alerts</Typography>
             <Grid container spacing={1}>
               {backlinkChanges.alerts.map((alert: any, idx: number) => (
-                <Grid item xs={12} md={6} lg={4} key={idx}>
+                <Grid size={{ xs: 12, md: 6, lg: 4 }} key={idx}>
                   <Paper sx={{ p: 1.5, display: 'flex', alignItems: 'flex-start', gap: 1 }}>
                     {getAlertIcon(alert.type)}
                     <Box>
@@ -285,7 +285,7 @@ export default function BacklinkMonitoringPage() {
             <>
               {/* Summary */}
               <Grid container spacing={2} sx={{ mb: 3 }}>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Card>
                     <CardContent sx={{ textAlign: 'center' }}>
                       <Typography variant="h4" color="primary">{gapAnalysis.summary?.total_gap_opportunities}</Typography>
@@ -293,7 +293,7 @@ export default function BacklinkMonitoringPage() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Card>
                     <CardContent sx={{ textAlign: 'center' }}>
                       <Typography variant="h4" color="info.main">{gapAnalysis.summary?.common_link_opportunities}</Typography>
@@ -301,7 +301,7 @@ export default function BacklinkMonitoringPage() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Card>
                     <CardContent sx={{ textAlign: 'center' }}>
                       <Typography variant="h4" color="success.main">{gapAnalysis.summary?.easy_wins_count}</Typography>
@@ -309,7 +309,7 @@ export default function BacklinkMonitoringPage() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Card>
                     <CardContent sx={{ textAlign: 'center' }}>
                       <Typography variant="h4" color="warning.main">{gapAnalysis.summary?.high_priority_count}</Typography>
@@ -453,7 +453,7 @@ export default function BacklinkMonitoringPage() {
       {/* Backlink Changes Tab */}
       {tabValue === 2 && backlinkChanges && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ color: 'success.main' }}>
@@ -485,7 +485,7 @@ export default function BacklinkMonitoringPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ color: 'error.main' }}>
