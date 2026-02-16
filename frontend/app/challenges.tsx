@@ -103,24 +103,29 @@ export default function ChallengesScreen() {
   const { isDesktop, isTablet } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
 
-  const [challenges, setChallenges] = useState<Challenge[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Cache-first: Initialize with cached data for instant render
+  const cachedChallenges = getCachedSync<Challenge[]>(CACHE_KEYS.CHALLENGES) || [];
+  const [challenges, setChallenges] = useState<Challenge[]>(cachedChallenges);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<ChallengeDetail | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [joiningChallenge, setJoiningChallenge] = useState<string | null>(null);
 
   const fetchChallenges = useCallback(async (refresh: boolean = false) => {
-    try {
-      if (refresh) setRefreshing(true);
-      else setLoading(true);
+    setIsFetchingInBackground(true);
+    if (refresh) setRefreshing(true);
 
+    try {
       const response = await api.get('/challenges');
       setChallenges(response.data.challenges || []);
+      // Update cache
+      setCacheSync(CACHE_KEYS.CHALLENGES, response.data.challenges || []);
     } catch (error) {
       console.error('Error fetching challenges:', error);
+      // Keep showing cached data on error
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
       setRefreshing(false);
     }
   }, []);
