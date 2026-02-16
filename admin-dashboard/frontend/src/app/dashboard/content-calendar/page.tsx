@@ -163,6 +163,8 @@ export default function ContentCalendarPage() {
     platform: '',
     tags: [] as string[],
     notes: '',
+    recurrence: 'none',
+    recurrence_end_date: '',
   });
 
   useEffect(() => {
