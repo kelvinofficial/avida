@@ -173,10 +173,15 @@ function StatCard({ title, value, change, icon, color }: StatCardProps) {
 }
 
 export default function AnalyticsPage() {
-  const [loading, setLoading] = useState(true);
-  const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
-  const [categoryData, setCategoryData] = useState<{ category_name: string; count: number }[]>([]);
-  const [userGrowth, setUserGrowth] = useState<{ date: string; count: number }[]>([]);
+  // CACHE-FIRST: Initialize with cached data for instant render
+  const cachedOverview = getCachedData<AnalyticsOverview>('admin_analytics_overview');
+  const cachedCategoryData = getCachedData<{ category_name: string; count: number }[]>('admin_category_data');
+  const cachedUserGrowth = getCachedData<{ date: string; count: number }[]>('admin_user_growth');
+  
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
+  const [overview, setOverview] = useState<AnalyticsOverview | null>(cachedOverview);
+  const [categoryData, setCategoryData] = useState<{ category_name: string; count: number }[]>(cachedCategoryData || []);
+  const [userGrowth, setUserGrowth] = useState<{ date: string; count: number }[]>(cachedUserGrowth || []);
   const [timeRange, setTimeRange] = useState(30);
   const [chartType, setChartType] = useState<'line' | 'area' | 'bar'>('area');
   const [tabValue, setTabValue] = useState(0);
@@ -191,7 +196,7 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      setLoading(true);
+      setIsFetchingInBackground(true);
       try {
         const [overviewData, categories, growth] = await Promise.all([
           api.getAnalyticsOverview(),
@@ -201,10 +206,16 @@ export default function AnalyticsPage() {
         setOverview(overviewData);
         setCategoryData(categories.slice(0, 8));
         setUserGrowth(growth);
+        // Update cache
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('admin_cache_admin_analytics_overview', JSON.stringify({ data: overviewData, timestamp: Date.now() }));
+          localStorage.setItem('admin_cache_admin_category_data', JSON.stringify({ data: categories.slice(0, 8), timestamp: Date.now() }));
+          localStorage.setItem('admin_cache_admin_user_growth', JSON.stringify({ data: growth, timestamp: Date.now() }));
+        }
       } catch (error) {
         console.error('Failed to load analytics:', error);
       } finally {
-        setLoading(false);
+        setIsFetchingInBackground(false);
       }
     };
     loadData();
