@@ -395,8 +395,8 @@ export default function IconsManagementPage() {
           },
         }}
       >
-        {/* @ts-expect-error ion-icon is a web component */}
-        {/* @ts-expect-error */}<ion-icon name={name} style={{ color: color || '#2E7D32', fontSize: size }}></ion-icon>
+        
+        <ion-icon name={name} style={{ color: color || '#2E7D32', fontSize: size }}></ion-icon>
       </Box>
     );
   };
@@ -609,8 +609,8 @@ export default function IconsManagementPage() {
                             height: 40,
                           }}
                         >
-                          {/* @ts-expect-error ion-icon is a web component */}
-                          {/* @ts-expect-error */}<ion-icon name={icon.ionicon_name} style={{ fontSize: 24 }}></ion-icon>
+                          
+                          <ion-icon name={icon.ionicon_name} style={{ fontSize: 24 }}></ion-icon>
                         </Avatar>
                       </TableCell>
                       <TableCell>
@@ -738,8 +738,8 @@ export default function IconsManagementPage() {
                     height: 56,
                   }}
                 >
-                  {/* @ts-expect-error ion-icon is a web component */}
-                  {/* @ts-expect-error */}<ion-icon name={formData.ionicon_name} style={{ fontSize: 32 }}></ion-icon>
+                  
+                  <ion-icon name={formData.ionicon_name} style={{ fontSize: 32 }}></ion-icon>
                 </Avatar>
                 <Box sx={{ flex: 1 }}>
                   <TextField
@@ -917,8 +917,8 @@ export default function IconsManagementPage() {
                   '&:hover': { bgcolor: 'action.hover' },
                 }}
               >
-                {/* @ts-expect-error ion-icon is a web component */}
-                {/* @ts-expect-error */}<ion-icon 
+                
+                <ion-icon 
                   name={iconName} 
                   style={{ 
                     fontSize: 28,
