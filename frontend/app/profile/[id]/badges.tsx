@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   Share,
   Platform,
 } from 'react-native';
@@ -15,6 +14,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import Head from 'expo-router/head';
 import api from '../../../src/utils/api';
 import { useResponsive } from '../../../src/hooks/useResponsive';
+import { getCachedSync, setCacheSync } from '../../../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',

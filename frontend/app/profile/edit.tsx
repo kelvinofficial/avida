@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
-  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -19,6 +18,7 @@ import * as ImagePicker from 'expo-image-picker';
 import api from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
 import { safeGoBack } from '../../src/utils/navigation';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',
