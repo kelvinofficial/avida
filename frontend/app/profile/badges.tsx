@@ -158,13 +158,22 @@ export default function BadgesScreen() {
   const { goToLogin } = useLoginRedirect();
   const isLargeScreen = isDesktop || isTablet;
 
-  const [loading, setLoading] = useState(true);
+  // Cache-first: Initialize with cached data for instant render
+  interface BadgesCache {
+    earned: BadgeProgress[];
+    available: BadgeProgress[];
+    totalPoints: number;
+  }
+  const cachedBadges = getCachedSync<BadgesCache>(CACHE_KEYS.BADGES);
+  
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [earnedBadges, setEarnedBadges] = useState<BadgeProgress[]>([]);
-  const [availableBadges, setAvailableBadges] = useState<BadgeProgress[]>([]);
-  const [totalPoints, setTotalPoints] = useState(0);
+  const [earnedBadges, setEarnedBadges] = useState<BadgeProgress[]>(cachedBadges?.earned || []);
+  const [availableBadges, setAvailableBadges] = useState<BadgeProgress[]>(cachedBadges?.available || []);
+  const [totalPoints, setTotalPoints] = useState(cachedBadges?.totalPoints || 0);
 
   const fetchBadges = useCallback(async () => {
+    setIsFetchingInBackground(true);
     try {
       const response = await api.get('/badges/progress');
       const data = response.data;
@@ -175,10 +184,12 @@ export default function BadgesScreen() {
       setEarnedBadges(earned);
       setAvailableBadges(available);
       setTotalPoints(data.total_points || 0);
+      // Update cache
+      setCacheSync(CACHE_KEYS.BADGES, { earned, available, totalPoints: data.total_points || 0 });
     } catch (error) {
       console.error('Error fetching badges:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
       setRefreshing(false);
     }
   }, []);
@@ -186,8 +197,6 @@ export default function BadgesScreen() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchBadges();
-    } else {
-      setLoading(false);
     }
   }, [isAuthenticated, fetchBadges]);
 
@@ -197,11 +206,8 @@ export default function BadgesScreen() {
   };
 
   if (!isReady) {
-    return (
-      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-      </SafeAreaView>
-    );
+    // Show minimal placeholder instead of spinner during responsive check
+    return null;
   }
 
   // Desktop Layout
