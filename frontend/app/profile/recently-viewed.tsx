@@ -187,12 +187,9 @@ export default function RecentlyViewedScreen() {
     );
   };
 
+  // CACHE-FIRST: No loading spinner for isReady
   if (!isReady) {
-    return (
-      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-      </SafeAreaView>
-    );
+    return <View style={{ flex: 1, backgroundColor: COLORS.background }} />;
   }
 
   // Desktop Layout
