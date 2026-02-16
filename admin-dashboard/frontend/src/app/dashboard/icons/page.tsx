@@ -1,14 +1,5 @@
 'use client';
 
-// Declare ion-icon web component for TypeScript
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'ion-icon': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & { name?: string }, HTMLElement>;
-    }
-  }
-}
-
 import { useState, useEffect, useCallback } from 'react';
 import {
   Box,
