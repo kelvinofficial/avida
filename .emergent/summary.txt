@@ -1,0 +1,200 @@
+<analysis>**original_problem_statement**:
+The initial goal was to build a multi-faceted AI SEO Growth Engine. However, the user has introduced a new, non-negotiable, top-priority requirement: a complete performance overhaul of the entire application (web, mobile, admin) to eliminate 100% of loading indicators (skeletons, spinners, etc.). This must be replaced with a cache-first, instant-rendering architecture.
+
+**PRODUCT REQUIREMENTS**:
+1.  **Eliminate All Loaders**: Remove every skeleton, shimmer, spinner, and progress bar from the mobile app, website, and admin dashboard.
+2.  **Implement Cache-First Rendering**: Use a unified caching layer to render cached data instantly, then fetch fresh data in the background.
+3.  **Adopt Optimistic UI**: User actions should update the UI instantly and sync in the background.
+4.  **Achieve PageSpeed 90+**: Target Core Web Vitals (LCP < 2.5s, INP < 200ms, CLS < 0.1).
+5.  **Mobile App Instant Feel**: Enforce a Zero loaders policy.
+6.  **Systematically Refactor**: Delete all loader components and their dependencies.
+7.  **Deliverables**: Provide updated code, CDN/cache configs, Lighthouse reports, and a Performance Playbook document.
+
+**User's preferred language**: English
+
+**what currently exists?**
+Phase 1 of the performance overhaul has been completed for the public-facing frontend (). A unified caching utility () and a cache-first data fetching hook () have been implemented. Loading skeletons have been successfully removed from the main layout, home page, sellers page, and recently viewed page, which now render data instantly from the cache before fetching fresh data in the background. A scaffolding for a similar cache hook for the admin dashboard () has also been created.
+
+**Last working item**:
+- **Last item agent was working**: The agent was beginning **Phase 2** of the performance overhaul. After getting user approval, the agent started exploring the current image handling in the public frontend to plan for optimization (e.g., WebP/AVIF conversion, ).
+- **Status**: IN PROGRESS
+- **Agent Testing Done**: N
+- **Which testing method agent to use?**: frontend testing agent
+- **User Testing Done**: N
+
+**All Pending/In progress Issue list**:
+- **Issue 1**: (P1) The Social Distribution page () required significant debugging in a previous session. It should be monitored for regressions, although this is a lower priority than the performance mandate.
+    - Status: RESOLVED
+    - Note: This was a previous issue. While resolved, it's worth noting as a sensitive area if changes are made to the admin dashboard. The current priority is the performance overhaul.
+
+**In progress Task List**:
+- **Task 1**: Performance Overhaul - Phase 2: Web Performance Optimization
+    - **Where to resume**: The agent just began investigating image components in . The next step is to analyze how images are currently being rendered (e.g., in ) and devise a strategy for optimization.
+    - **What will be achieved with this?**: Improved Core Web Vitals (especially LCP) by serving optimized, next-gen image formats and implementing responsive image techniques.
+    - **Status**: IN PROGRESS
+    - **Should Test frontend/backend/both after fix?**: frontend
+
+**Upcoming and Future Tasks**
+**Upcoming Tasks**:
+*   **Performance Overhaul - Phase 2: Web Performance Optimization (P0)**
+    *   **Task**: Implement a comprehensive image optimization pipeline (WebP/AVIF, , lazy loading) for the public frontend.
+    *   **Task**: Implement Service Worker caching for the web version of the public app to improve offline access and load times.
+    *   **Task**: Audit and defer all non-critical third-party scripts.
+*   **Performance Overhaul - Phase 3: Admin Dashboard & QA (P0)**
+    *   **Task**: Implement the cache-first, zero-loader architecture in the Next.js admin dashboard using the  hook.
+    *   **Task**: Convert critical user actions in the admin panel to use Optimistic UI patterns.
+    *   **Task**: Enforce the Zero loaders policy on the mobile app.
+    *   **Task**: Set up performance logging and generate Lighthouse reports to validate a score of 90+.
+
+**Future Tasks**:
+*   **Full API Integrations**: (DEFERRED) Connect demo-mode features to live APIs (Google Analytics, Ahrefs/Semrush, social media platforms).
+*   **Multi-Language Content Generation**: (DEFERRED) Adapt the AI content engine for German and Swahili.
+
+**Completed work in this session**
+- **Performance Overhaul - Phase 1 (DONE)**:
+  - Implemented a cache-first architecture for the public-facing frontend.
+  - Created a unified cache utility at .
+  - Refactored  to use the cache-first pattern, immediately returning cached data and fetching updates in the background.
+  - Removed skeleton loaders from key pages: , , , and .
+  - Created a placeholder cache hook for the admin dashboard at .
+  - Verified the changes with the testing agent, which confirmed the instant rendering and absence of loaders.
+  - Created  to document the strategy.
+
+**Earlier issues found/mentioned but not fixed**
+- None. The testing agent found skeleton loaders on the  page, which were subsequently fixed in the same session.
+
+**Known issue recurrence from previous fork**
+- None.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+- **Frontend (Public)**: Expo, React Native, Zustand
+- **Frontend (Admin)**: Next.js, Material-UI (MUI v7)
+- **Backend**: FastAPI, MongoDB
+- **Caching Strategy**: Implemented a cache-first rendering pattern using a custom utility with AsyncStorage for the public frontend. Planning to use an SWR-like pattern for the admin dashboard.
+
+**key DB schema**
+- No changes made to the database schema in this session.
+
+**changes in tech stack**
+- No new technologies were added, but a significant architectural pattern (cache-first rendering) was introduced on the frontend.
+
+**All files of reference**
+- **Created Files**:
+  - : Provides , BASH=/bin/bash
+BASHOPTS=checkwinsize:cmdhist:complete_fullquote:extquote:force_fignore:globasciiranges:globskipdots:hostcomplete:interactive_comments:patsub_replacement:progcomp:promptvars:sourcepath
+BASH_ALIASES=()
+BASH_ARGC=()
+BASH_ARGV=()
+BASH_CMDS=()
+BASH_EXECUTION_STRING=$'mkdir -p /app/.emergent && echo "<analysis>**original_problem_statement**:\nThe initial goal was to build a multi-faceted "AI SEO Growth Engine." However, the user has introduced a new, non-negotiable, top-priority requirement: a complete performance overhaul of the entire application (web, mobile, admin) to eliminate 100% of loading indicators (skeletons, spinners, etc.). This must be replaced with a cache-first, instant-rendering architecture.\n\n**PRODUCT REQUIREMENTS**:\n1.  **Eliminate All Loaders**: Remove every skeleton, shimmer, spinner, and progress bar from the mobile app, website, and admin dashboard.\n2.  **Implement Cache-First Rendering**: Use a unified caching layer to render cached data instantly, then fetch fresh data in the background.\n3.  **Adopt Optimistic UI**: User actions should update the UI instantly and sync in the background.\n4.  **Achieve PageSpeed 90+**: Target Core Web Vitals (LCP < 2.5s, INP < 200ms, CLS < 0.1).\n5.  **Mobile App "Instant Feel"**: Enforce a "Zero loaders" policy.\n6.  **Systematically Refactor**: Delete all loader components and their dependencies.\n7.  **Deliverables**: Provide updated code, CDN/cache configs, Lighthouse reports, and a "Performance Playbook" document.\n\n**User\'s preferred language**: English\n\n**what currently exists?**\nPhase 1 of the performance overhaul has been completed for the public-facing frontend (`/app/frontend`). A unified caching utility (`/app/frontend/src/utils/cache.ts`) and a cache-first data fetching hook (`useHomeData.ts`) have been implemented. Loading skeletons have been successfully removed from the main layout, home page, sellers page, and recently viewed page, which now render data instantly from the cache before fetching fresh data in the background. A scaffolding for a similar cache hook for the admin dashboard (`useAdminCache.ts`) has also been created.\n\n**Last working item**:\n- **Last item agent was working**: The agent was beginning **Phase 2** of the performance overhaul. After getting user approval, the agent started exploring the current image handling in the public frontend to plan for optimization (e.g., WebP/AVIF conversion, `srcset`).\n- **Status**: IN PROGRESS\n- **Agent Testing Done**: N\n- **Which testing method agent to use?**: frontend testing agent\n- **User Testing Done**: N\n\n**All Pending/In progress Issue list**:\n- **Issue 1**: (P1) The Social Distribution page (`/app/admin-dashboard/frontend/src/app/dashboard/social-distribution/page.tsx`) required significant debugging in a previous session. It should be monitored for regressions, although this is a lower priority than the performance mandate.\n    - Status: RESOLVED\n    - Note: This was a previous issue. While resolved, it\'s worth noting as a sensitive area if changes are made to the admin dashboard. The current priority is the performance overhaul.\n\n**In progress Task List**:\n- **Task 1**: Performance Overhaul - Phase 2: Web Performance Optimization\n    - **Where to resume**: The agent just began investigating image components in `/app/frontend/src/components/`. The next step is to analyze how images are currently being rendered (e.g., in `ListingCard.tsx`) and devise a strategy for optimization.\n    - **What will be achieved with this?**: Improved Core Web Vitals (especially LCP) by serving optimized, next-gen image formats and implementing responsive image techniques.\n    - **Status**: IN PROGRESS\n    - **Should Test frontend/backend/both after fix?**: frontend\n\n**Upcoming and Future Tasks**\n**Upcoming Tasks**:\n*   **Performance Overhaul - Phase 2: Web Performance Optimization (P0)**\n    *   **Task**: Implement a comprehensive image optimization pipeline (WebP/AVIF, `srcset`, lazy loading) for the public frontend.\n    *   **Task**: Implement Service Worker caching for the web version of the public app to improve offline access and load times.\n    *   **Task**: Audit and defer all non-critical third-party scripts.\n*   **Performance Overhaul - Phase 3: Admin Dashboard & QA (P0)**\n    *   **Task**: Implement the cache-first, zero-loader architecture in the Next.js admin dashboard using the `useAdminCache.ts` hook.\n    *   **Task**: Convert critical user actions in the admin panel to use Optimistic UI patterns.\n    *   **Task**: Enforce the "Zero loaders" policy on the mobile app.\n    *   **Task**: Set up performance logging and generate Lighthouse reports to validate a score of 90+.\n\n**Future Tasks**:\n*   **Full API Integrations**: (DEFERRED) Connect demo-mode features to live APIs (Google Analytics, Ahrefs/Semrush, social media platforms).\n*   **Multi-Language Content Generation**: (DEFERRED) Adapt the AI content engine for German and Swahili.\n\n**Completed work in this session**\n- **Performance Overhaul - Phase 1 (DONE)**:\n  - Implemented a cache-first architecture for the public-facing frontend.\n  - Created a unified cache utility at `/app/frontend/src/utils/cache.ts`.\n  - Refactored `/app/frontend/src/hooks/useHomeData.ts` to use the cache-first pattern, immediately returning cached data and fetching updates in the background.\n  - Removed skeleton loaders from key pages: `_layout.tsx`, `(tabs)/index.tsx`, `sellers/index.tsx`, and `(tabs)/recently-viewed.tsx`.\n  - Created a placeholder cache hook for the admin dashboard at `/app/admin-dashboard/frontend/src/hooks/useAdminCache.ts`.\n  - Verified the changes with the testing agent, which confirmed the instant rendering and absence of loaders.\n  - Created `PERFORMANCE_PLAYBOOK.md` to document the strategy.\n\n**Earlier issues found/mentioned but not fixed**\n- None. The testing agent found skeleton loaders on the `recently-viewed.tsx` page, which were subsequently fixed in the same session.\n\n**Known issue recurrence from previous fork**\n- None.\n\n**Code Architecture**\n```\n/app\n├── admin-dashboard\n│   └── frontend\n│       ├── next.config.js\n│       └── src\n│           ├── app/dashboard/\n│           └── hooks/\n│               └── useAdminCache.ts      // CREATED: Scaffolding for admin cache hook\n├── backend\n│   └── ...\n└── frontend/\n    ├── src/\n    │   ├── app/\n    │   │   ├── (tabs)/\n    │   │   │   ├── _layout.tsx           // MODIFIED: Removed font loading check\n    │   │   │   ├── index.tsx\n    │   │   │   └── recently-viewed.tsx   // MODIFIED: Removed skeleton loaders\n    │   │   └── sellers/\n    │   │       └── index.tsx             // MODIFIED: Removed skeleton loaders\n    │   ├── hooks/\n    │   │   └── useHomeData.ts            // MODIFIED: Implemented cache-first logic\n    │   └── utils/\n    │       └── cache.ts                  // CREATED: Unified cache utility\n    └── ...\n```\n\n**Key Technical Concepts**\n- **Frontend (Public)**: Expo, React Native, Zustand\n- **Frontend (Admin)**: Next.js, Material-UI (MUI v7)\n- **Backend**: FastAPI, MongoDB\n- **Caching Strategy**: Implemented a cache-first rendering pattern using a custom utility with AsyncStorage for the public frontend. Planning to use an SWR-like pattern for the admin dashboard.\n\n**key DB schema**\n- No changes made to the database schema in this session.\n\n**changes in tech stack**\n- No new technologies were added, but a significant architectural pattern (cache-first rendering) was introduced on the frontend.\n\n**All files of reference**\n- **Created Files**:\n  - `/app/frontend/src/utils/cache.ts`: Provides `get`, `set`, and `remove` functions for AsyncStorage.\n  - `/app/admin-dashboard/frontend/src/hooks/useAdminCache.ts`: Placeholder hook for implementing caching in the admin panel.\n  - `/app/PERFORMANCE_PLAYBOOK.md`: Document outlining the performance overhaul strategy.\n- **Updated Files**:\n  - `/app/frontend/src/hooks/useHomeData.ts`: Refactored to be cache-first.\n  - `/app/frontend/src/app/(tabs)/_layout.tsx`: Removed font-loading skeletons.\n  - `/app/frontend/src/app/sellers/index.tsx`: Removed skeleton components.\n  - `/app/frontend/src/app/(tabs)/recently-viewed.tsx`: Removed skeleton components.\n  - `/app/memory/PRD.md`: Updated to reflect Phase 1 completion.\n- **Test Report**: `/app/test_reports/iteration_10.json`\n\n**Areas that need refactoring**:\n- The Next.js admin dashboard (`/app/admin-dashboard`) still requires the full implementation of the cache-first, zero-loader architecture.\n- The `loading` variable is still destructured in `/app/frontend/src/app/(tabs)/index.tsx` from `useHomeData` but is no longer used to show a loading state. It could be cleaned up for clarity.\n\n**key api endpoints**\n- No changes were made to API endpoints in this session.\n\n**Critical Info for New Agent**\n- **TOP PRIORITY**: The performance overhaul is the only active task. All feature work is deferred. The user\'s directive is to eliminate 100% of loading indicators.\n- **Phase 1 is Complete (Public Frontend)**: The core cache-first logic is implemented in `/app/frontend`. Use `cache.ts` and the pattern in `useHomeData.ts` as a reference.\n- **Next Step is Phase 2**: The immediate task is to continue with Phase 2, starting with image optimization for the public-facing application, followed by implementing a service worker.\n- **Admin Dashboard is Next**: After the public frontend is fully optimized, the same zero-loader strategy must be applied to the Next.js admin dashboard. The `useAdminCache.ts` file is the intended starting point.\n\n**documents and test reports created in this job**\n- `/app/PERFORMANCE_PLAYBOOK.md`\n- `/app/test_reports/iteration_10.json`\n- `/app/memory/PRD.md` (Updated)\n\n**Last 10 User Messages and any pending HUMAN messages**\n1.  **`proceed`**: User approved the agent\'s plan to start Phase 2 (Image Optimization & Service Worker).\n2.  **`1c, 2c, 3 yes`**: User approved the agent\'s high-level plan for the performance overhaul, confirming priorities for loader removal, cache-first implementation, and optimistic UI.\n\n**Project Health Check:**\n- **Broken**: None.\n- **Mocked**: Google Analytics, Authority Building, and Smart Content Distribution features remain as advanced mocks with simulated data.\n- **Working**: All core components are functional. The public frontend is now significantly faster, with instant rendering on key pages. The admin dashboard is stable.\n\n**3rd Party Integrations**\n- **OpenAI GPT-5.2**: Used for the AI Content Engine, accessed via the `emergentintegrations` library with the Emergent LLM Key.\n\n**Testing status**\n- **Testing agent used after significant changes**: YES. The testing agent was successfully used to verify the Phase 1 implementation. The report at `/app/test_reports/iteration_10.json` confirms that loading skeletons were removed and pages render instantly.\n- **Troubleshoot agent used after agent stuck in loop**: NO.\n- **Test files created**: None.\n- **Known regressions**: None.\n\n**Credentials to test flow:**\n- **Admin Panel User**: `admin@marketplace.com` / `Admin@123456`\n\n**What agent forgot to execute**\n- The agent correctly noted that SSR/SSG is not applicable for the Expo/React Native frontend and adjusted the plan to focus on image optimization and Service Workers for the web portion, which is a correct and necessary pivot. Nothing was forgotten.</analysis>" > /app/.emergent/summary.txt'
+BASH_LINENO=()
+BASH_LOADABLES_PATH=/usr/local/lib/bash:/usr/lib/bash:/opt/local/lib/bash:/usr/pkg/lib/bash:/opt/pkg/lib/bash:.
+BASH_SOURCE=()
+BASH_VERSINFO=([0]="5" [1]="2" [2]="15" [3]="1" [4]="release" [5]="aarch64-unknown-linux-gnu")
+BASH_VERSION='5.2.15(1)-release'
+DEBIAN_FRONTEND=noninteractive
+DIRSTACK=()
+ENABLE_RELOAD=true
+EUID=0
+GPG_KEY=A035C8C19219BA821ECEA86B64E628F8D684696D
+GROUPS=()
+HOME=/root
+HOSTNAME=agent-env-02e49090-9d19-4028-8050-b2808e052410
+HOSTTYPE=aarch64
+IFS=$' \t\n'
+KUBERNETES_PORT=tcp://34.118.224.1:443
+KUBERNETES_PORT_443_TCP=tcp://34.118.224.1:443
+KUBERNETES_PORT_443_TCP_ADDR=34.118.224.1
+KUBERNETES_PORT_443_TCP_PORT=443
+KUBERNETES_PORT_443_TCP_PROTO=tcp
+KUBERNETES_SERVICE_HOST=34.118.224.1
+KUBERNETES_SERVICE_PORT=443
+KUBERNETES_SERVICE_PORT_HTTPS=443
+LANG=C.UTF-8
+MACHTYPE=aarch64-unknown-linux-gnu
+NEXT_TELEMETRY_DISABLED=1
+NODE_VERSION=20
+OLDPWD=/app
+OPTERR=1
+OPTIND=1
+OSTYPE=linux-gnu
+PATH=/root/.venv/bin:/opt/plugins-venv/bin:/opt/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+PIPESTATUS=([0]="0")
+PIP_NO_INPUT=1
+PLAYWRIGHT_BROWSERS_PATH=/pw-browsers
+PLUGIN_VENV_PATH=/opt/plugins-venv
+PPID=70
+PS4='+ '
+PWD=/app/frontend
+PYTHONUNBUFFERED=1
+PYTHON_SHA256=8d3ed8ec5c88c1c95f5e558612a725450d2452813ddad5e58fdb1a53b1209b78
+PYTHON_VERSION=3.11.14
+SHELL=/bin/bash
+SHELLOPTS=braceexpand:hashall:interactive-comments
+SHLVL=1
+STRIPE_API_KEY=sk_test_emergent
+TERM=dumb
+UID=0
+UV_COMPILE_BYTECODE=1
+VIRTUAL_ENV=/root/.venv
+_=/app/.emergent
+base_url=https://demobackend.emergentagent.com
+code_server_password=5b642908
+integration_proxy_url=https://integrations.emergentagent.com
+monitor_polling_interval=1
+preview_endpoint=https://zero-loader.preview.emergentagent.com
+run_id=zero-loader, and  functions for AsyncStorage.
+  - : Placeholder hook for implementing caching in the admin panel.
+  - : Document outlining the performance overhaul strategy.
+- **Updated Files**:
+  - : Refactored to be cache-first.
+  - : Removed font-loading skeletons.
+  - : Removed skeleton components.
+  - : Removed skeleton components.
+  - : Updated to reflect Phase 1 completion.
+- **Test Report**: 
+
+**Areas that need refactoring**:
+- The Next.js admin dashboard () still requires the full implementation of the cache-first, zero-loader architecture.
+- The  variable is still destructured in  from  but is no longer used to show a loading state. It could be cleaned up for clarity.
+
+**key api endpoints**
+- No changes were made to API endpoints in this session.
+
+**Critical Info for New Agent**
+- **TOP PRIORITY**: The performance overhaul is the only active task. All feature work is deferred. The user's directive is to eliminate 100% of loading indicators.
+- **Phase 1 is Complete (Public Frontend)**: The core cache-first logic is implemented in . Use  and the pattern in  as a reference.
+- **Next Step is Phase 2**: The immediate task is to continue with Phase 2, starting with image optimization for the public-facing application, followed by implementing a service worker.
+- **Admin Dashboard is Next**: After the public frontend is fully optimized, the same zero-loader strategy must be applied to the Next.js admin dashboard. The  file is the intended starting point.
+
+**documents and test reports created in this job**
+- 
+- 
+-  (Updated)
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  ****: User approved the agent's plan to start Phase 2 (Image Optimization & Service Worker).
+2.  ****: User approved the agent's high-level plan for the performance overhaul, confirming priorities for loader removal, cache-first implementation, and optimistic UI.
+
+**Project Health Check:**
+- **Broken**: None.
+- **Mocked**: Google Analytics, Authority Building, and Smart Content Distribution features remain as advanced mocks with simulated data.
+- **Working**: All core components are functional. The public frontend is now significantly faster, with instant rendering on key pages. The admin dashboard is stable.
+
+**3rd Party Integrations**
+- **OpenAI GPT-5.2**: Used for the AI Content Engine, accessed via the  library with the Emergent LLM Key.
+
+**Testing status**
+- **Testing agent used after significant changes**: YES. The testing agent was successfully used to verify the Phase 1 implementation. The report at  confirms that loading skeletons were removed and pages render instantly.
+- **Troubleshoot agent used after agent stuck in loop**: NO.
+- **Test files created**: None.
+- **Known regressions**: None.
+
+**Credentials to test flow:**
+- **Admin Panel User**:  / 
+
+**What agent forgot to execute**
+- The agent correctly noted that SSR/SSG is not applicable for the Expo/React Native frontend and adjusted the plan to focus on image optimization and Service Workers for the web portion, which is a correct and necessary pivot. Nothing was forgotten.</analysis>

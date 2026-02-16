@@ -7,7 +7,7 @@ import requests
 import os
 
 ADMIN_BASE_URL = os.environ.get('ADMIN_BACKEND_URL', 'http://localhost:8002/api/admin')
-MAIN_BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://instant-avida.preview.emergentagent.com')
+MAIN_BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://zero-loader.preview.emergentagent.com')
 
 # Test credentials
 TEST_EMAIL = "admin@admin.com"

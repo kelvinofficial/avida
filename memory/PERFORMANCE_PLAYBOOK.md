@@ -152,7 +152,7 @@ Same pattern as public frontend, adapted for Next.js.
 ### Performance Testing
 ```bash
 # Lighthouse CLI
-npx lighthouse https://instant-avida.preview.emergentagent.com --view
+npx lighthouse https://zero-loader.preview.emergentagent.com --view
 
 # Web Vitals
 # Check browser DevTools → Performance
