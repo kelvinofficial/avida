@@ -197,7 +197,7 @@ export default function ShareBadgesScreen() {
         <meta property="og:description" content={profile.og_meta?.description || 'Check out this badge collection'} />
         <meta property="og:type" content={profile.og_meta?.type || 'profile'} />
         <meta property="og:url" content={profile.og_meta?.url || ''} />
-        <meta property="og:image" content="https://loader-free.preview.emergentagent.com/badge-share-preview.png" />
+        <meta property="og:image" content="https://loader-less-launch.preview.emergentagent.com/badge-share-preview.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={profile.og_meta?.title || 'Badge Profile'} />
         <meta name="twitter:description" content={profile.og_meta?.description || 'Check out this badge collection'} />

@@ -11,7 +11,7 @@ import requests
 import os
 from datetime import datetime
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://loader-free.preview.emergentagent.com")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://loader-less-launch.preview.emergentagent.com")
 if BASE_URL.endswith("/"):
     BASE_URL = BASE_URL.rstrip("/")
 
