@@ -87,9 +87,17 @@ export default function StreakLeaderboardScreen() {
   const { isDesktop, isTablet } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
 
-  const [leaderboard, setLeaderboard] = useState<StreakEntry[]>([]);
-  const [myStreak, setMyStreak] = useState<MyStreak | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Cache keys
+  const STREAK_LEADERBOARD_CACHE_KEY = 'streak_leaderboard';
+  const MY_STREAK_CACHE_KEY = 'my_streak';
+  
+  // Cache-first: Initialize with cached data for instant render
+  const cachedLeaderboard = getCachedSync<StreakEntry[]>(STREAK_LEADERBOARD_CACHE_KEY);
+  const cachedMyStreak = getCachedSync<MyStreak>(MY_STREAK_CACHE_KEY);
+
+  const [leaderboard, setLeaderboard] = useState<StreakEntry[]>(cachedLeaderboard || []);
+  const [myStreak, setMyStreak] = useState<MyStreak | null>(cachedMyStreak);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -98,17 +106,21 @@ export default function StreakLeaderboardScreen() {
     try {
       if (refresh) {
         setRefreshing(true);
-      } else if (pageNum === 1) {
-        setLoading(true);
+      } else if (pageNum === 1 && !cachedLeaderboard) {
+        setIsFetchingInBackground(true);
       }
 
       const response = await api.get(`/streaks/leaderboard?page=${pageNum}&limit=20`);
       const data = response.data;
+      const newLeaderboard = data.leaderboard || [];
 
       if (refresh || pageNum === 1) {
-        setLeaderboard(data.leaderboard || []);
+        setLeaderboard(newLeaderboard);
+        if (pageNum === 1) {
+          setCacheSync(STREAK_LEADERBOARD_CACHE_KEY, newLeaderboard);
+        }
       } else {
-        setLeaderboard(prev => [...prev, ...(data.leaderboard || [])]);
+        setLeaderboard(prev => [...prev, ...newLeaderboard]);
       }
 
       setHasMore(pageNum < (data.pagination?.pages || 0));
@@ -116,10 +128,10 @@ export default function StreakLeaderboardScreen() {
     } catch (error) {
       console.error('Error fetching streak leaderboard:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [cachedLeaderboard]);
 
   const fetchMyStreak = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -127,6 +139,7 @@ export default function StreakLeaderboardScreen() {
     try {
       const response = await api.get('/streaks/my-streak');
       setMyStreak(response.data);
+      setCacheSync(MY_STREAK_CACHE_KEY, response.data);
     } catch (error) {
       console.error('Error fetching my streak:', error);
     }
