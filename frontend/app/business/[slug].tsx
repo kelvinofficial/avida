@@ -427,23 +427,23 @@ export default function BusinessProfileScreen() {
                   <Ionicons 
                     name={profile?.is_premium ? "diamond" : "checkmark-circle"} 
                     size={18} 
-                    color={profile.is_premium ? '#FF8F00' : COLORS.verified} 
+                    color={profile?.is_premium ? '#FF8F00' : COLORS.verified} 
                   />
                   <Text style={[
                     styles.verifiedText,
-                    profile.is_premium && styles.premiumText
+                    profile?.is_premium && styles.premiumText
                   ]}>
-                    {profile.is_premium ? 'Premium' : 'Verified'}
+                    {profile?.is_premium ? 'Premium' : 'Verified'}
                   </Text>
                 </View>
               )}
             </View>
 
-            {profile.city && (
+            {profile?.city && (
               <View style={styles.locationRow}>
                 <Ionicons name="location-outline" size={16} color={COLORS.textSecondary} />
                 <Text style={styles.locationText}>
-                  {profile.city}{profile.country ? `, ${profile.country}` : ''}
+                  {profile?.city}{profile?.country ? `, ${profile.country}` : ''}
                 </Text>
               </View>
             )}
@@ -451,23 +451,23 @@ export default function BusinessProfileScreen() {
             {/* Stats */}
             <View style={styles.statsRow}>
               <View style={styles.stat}>
-                <Text style={styles.statValue}>{profile.total_listings}</Text>
+                <Text style={styles.statValue}>{profile?.total_listings || 0}</Text>
                 <Text style={styles.statLabel}>Listings</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.stat}>
-                <Text style={styles.statValue}>{profile.total_views || 0}</Text>
+                <Text style={styles.statValue}>{profile?.total_views || 0}</Text>
                 <Text style={styles.statLabel}>Views</Text>
               </View>
-              {profile.user?.rating > 0 && (
+              {profile?.user?.rating > 0 && (
                 <>
                   <View style={styles.statDivider} />
                   <View style={styles.stat}>
                     <View style={styles.ratingRow}>
                       <Ionicons name="star" size={14} color="#FFB300" />
-                      <Text style={styles.statValue}>{profile.user.rating.toFixed(1)}</Text>
+                      <Text style={styles.statValue}>{profile?.user?.rating?.toFixed(1)}</Text>
                     </View>
-                    <Text style={styles.statLabel}>{profile.user.total_ratings} reviews</Text>
+                    <Text style={styles.statLabel}>{profile?.user?.total_ratings} reviews</Text>
                   </View>
                 </>
               )}
@@ -476,7 +476,7 @@ export default function BusinessProfileScreen() {
         </View>
 
         {/* Description */}
-        {profile.description && (
+        {profile?.description && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>About</Text>
             <Text style={styles.descriptionText}>{profile.description}</Text>
@@ -484,9 +484,9 @@ export default function BusinessProfileScreen() {
         )}
 
         {/* Contact Buttons */}
-        {(profile.phone || profile.email) && (
+        {(profile?.phone || profile?.email) && (
           <View style={styles.contactButtons}>
-            {profile.phone && (
+            {profile?.phone && (
               <TouchableOpacity 
                 style={[styles.contactBtn, { backgroundColor: brandColor }]} 
                 onPress={handleCall}
@@ -496,7 +496,7 @@ export default function BusinessProfileScreen() {
                 <Text style={styles.contactBtnText}>Call</Text>
               </TouchableOpacity>
             )}
-            {profile.email && (
+            {profile?.email && (
               <TouchableOpacity 
                 style={[styles.contactBtn, styles.contactBtnOutline, { borderColor: brandColor }]} 
                 onPress={handleEmail}
@@ -510,7 +510,7 @@ export default function BusinessProfileScreen() {
         )}
 
         {/* Categories Filter */}
-        {profile.primary_categories && profile.primary_categories.length > 0 && (
+        {profile?.primary_categories && profile?.primary_categories.length > 0 && (
           <View style={styles.categoriesSection}>
             <ScrollView 
               horizontal 
@@ -522,7 +522,7 @@ export default function BusinessProfileScreen() {
                 isActive={selectedCategory === null}
                 onPress={() => handleCategorySelect(null)}
               />
-              {profile.primary_categories.map((cat) => (
+              {profile?.primary_categories.map((cat) => (
                 <CategoryChip
                   key={cat}
                   name={CATEGORY_NAMES[cat] || cat}
