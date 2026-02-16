@@ -256,8 +256,6 @@ export default function SettingsScreen() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchSettings();
-    } else {
-      setLoading(false);
     }
   }, [isAuthenticated, fetchSettings]);
 
