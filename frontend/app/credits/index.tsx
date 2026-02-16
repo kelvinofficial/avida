@@ -94,10 +94,54 @@ export default function CreditsPage() {
   const { isDesktop, isTablet, isReady } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
   
-  const [loading, setLoading] = useState(true);
-  const [packages, setPackages] = useState<CreditPackage[]>([]);
-  const [credits, setCredits] = useState<SellerCredits | null>(null);
-  const [history, setHistory] = useState<CreditTransaction[]>([]);
+  // CACHE-FIRST: Use cache-first hook for packages - eliminates page-level loader
+  const { 
+    data: packages, 
+    isFetching: isFetchingPackages,
+    refresh: refreshPackages 
+  } = useCacheFirst<CreditPackage[]>({
+    cacheKey: 'credit_packages',
+    fetcher: async () => {
+      const data = await boostApi.getPackages();
+      return data || [];
+    },
+    fallbackData: [],
+  });
+
+  const { 
+    data: credits, 
+    refresh: refreshCredits 
+  } = useCacheFirst<SellerCredits>({
+    cacheKey: `user_credits_${user?.user_id}`,
+    fetcher: async () => {
+      try {
+        return await boostApi.getMyCredits();
+      } catch {
+        return { balance: 0, total_purchased: 0, total_spent: 0 };
+      }
+    },
+    fallbackData: { balance: 0, total_purchased: 0, total_spent: 0 },
+    enabled: !!user?.user_id,
+    deps: [user?.user_id],
+  });
+
+  const { 
+    data: history, 
+    refresh: refreshHistory 
+  } = useCacheFirst<CreditTransaction[]>({
+    cacheKey: `credit_history_${user?.user_id}`,
+    fetcher: async () => {
+      try {
+        return await boostApi.getCreditHistory(20);
+      } catch {
+        return [];
+      }
+    },
+    fallbackData: [],
+    enabled: !!user?.user_id,
+    deps: [user?.user_id],
+  });
+
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [providers, setProviders] = useState<PaymentProvider[]>([]);
@@ -106,53 +150,39 @@ export default function CreditsPage() {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [mobileNetwork, setMobileNetwork] = useState<string>('MTN');
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   
   // Animation values for selected package
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const glowAnim = useRef(new Animated.Value(0)).current;
 
-  const loadData = useCallback(async () => {
-    try {
-      // Load packages and payment providers (public endpoints)
-      const [packagesData, providersData] = await Promise.all([
-        boostApi.getPackages(),
-        boostApi.getPaymentProviders()
-      ]);
-      console.log('Loaded packages:', packagesData);
-      setPackages(packagesData || []);
-      setProviders(providersData || []);
-      
-      // Set default provider to first available
-      const availableProvider = providersData?.find((p: PaymentProvider) => p.available);
-      if (availableProvider) {
-        setSelectedProvider(availableProvider.id);
-      }
-      
-      // Try to load user-specific data (may fail if not authenticated)
+  // Load payment providers
+  useEffect(() => {
+    const loadProviders = async () => {
       try {
-        const [creditsData, historyData] = await Promise.all([
-          boostApi.getMyCredits(),
-          boostApi.getCreditHistory(20)
-        ]);
-        setCredits(creditsData);
-        setHistory(historyData);
-      } catch (authError) {
-        // User not authenticated - use defaults
-        console.log('User not authenticated, using default credits');
-        setCredits({ balance: 0, total_purchased: 0, total_spent: 0 });
-        setHistory([]);
+        const providersData = await boostApi.getPaymentProviders();
+        setProviders(providersData || []);
+        const availableProvider = providersData?.find((p: PaymentProvider) => p.available);
+        if (availableProvider) {
+          setSelectedProvider(availableProvider.id);
+        }
+      } catch (error) {
+        console.error('Failed to load providers:', error);
       }
-    } catch (error) {
-      console.error('Failed to load packages:', error);
-      setPackages([]);
-    } finally {
-      setLoading(false);
-    }
+    };
+    loadProviders();
   }, []);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  // Pull to refresh handler
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([
+      refreshPackages(),
+      refreshCredits(),
+      refreshHistory(),
+    ]);
+    setRefreshing(false);
+  }, [refreshPackages, refreshCredits, refreshHistory]);
 
   const handlePackageSelect = (packageId: string) => {
     setSelectedPackage(packageId);
