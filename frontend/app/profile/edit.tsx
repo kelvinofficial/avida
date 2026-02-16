@@ -110,14 +110,43 @@ const inputStyles = StyleSheet.create({
 export default function EditProfileScreen() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [location, setLocation] = useState('');
-  const [bio, setBio] = useState('');
-  const [picture, setPicture] = useState<string | undefined>();
+  // CACHE-FIRST: Use cache-first hook for profile data
+  const { 
+    data: profileData, 
+    isFetching: isFetchingProfile,
+    refresh: refreshProfile 
+  } = useCacheFirst<{ name: string; phone: string; location: string; bio: string; picture?: string }>({
+    cacheKey: `user_profile_${user?.user_id}`,
+    fetcher: async () => {
+      const response = await api.get('/profile');
+      return response.data;
+    },
+    fallbackData: { name: '', phone: '', location: '', bio: '', picture: undefined },
+    enabled: !!isAuthenticated,
+    deps: [user?.user_id],
+  });
+
+  const [saving, setSaving] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  
+  // Local form state (initialized from cache)
+  const [name, setName] = useState(profileData?.name || '');
+  const [phone, setPhone] = useState(profileData?.phone || '');
+  const [location, setLocation] = useState(profileData?.location || '');
+  const [bio, setBio] = useState(profileData?.bio || '');
+  const [picture, setPicture] = useState<string | undefined>(profileData?.picture);
+
+  // Sync form state when profile data loads/updates
+  useEffect(() => {
+    if (profileData) {
+      setName(profileData.name || '');
+      setPhone(profileData.phone || '');
+      setLocation(profileData.location || '');
+      setBio(profileData.bio || '');
+      setPicture(profileData.picture);
+    }
+  }, [profileData]);
 
   // Check authentication on mount
   useEffect(() => {
@@ -130,33 +159,12 @@ export default function EditProfileScreen() {
     }
   }, [isAuthenticated]);
 
-  const fetchProfile = useCallback(async () => {
-    if (!isAuthenticated) {
-      setLoading(false);
-      return;
-    }
-    try {
-      const response = await api.get('/profile');
-      const profile = response.data;
-      setName(profile.name || '');
-      setPhone(profile.phone || '');
-      setLocation(profile.location || '');
-      setBio(profile.bio || '');
-      setPicture(profile.picture);
-    } catch (error: any) {
-      console.error('Error fetching profile:', error);
-      if (error.response?.status === 401) {
-        Alert.alert('Session Expired', 'Please sign in again');
-        router.replace('/login');
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+  // Pull to refresh handler
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refreshProfile();
+    setRefreshing(false);
+  }, [refreshProfile]);
 
   const handleSave = async () => {
     if (!isAuthenticated) {
