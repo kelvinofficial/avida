@@ -195,6 +195,9 @@ export default function PollsSurveysPage() {
       {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
       {success && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>{success}</Alert>}
 
+      {/* CACHE-FIRST: Show LinearProgress for background fetch instead of blocking CircularProgress */}
+      {isFetchingInBackground && <LinearProgress sx={{ mb: 2 }} />}
+
       <Tabs value={currentTab} onChange={(_, v) => setCurrentTab(v)} sx={{ mb: 3 }}>
         <Tab label="All" icon={<Assessment />} iconPosition="start" />
         <Tab label="Feedback" icon={<Feedback />} iconPosition="start" />
@@ -203,9 +206,7 @@ export default function PollsSurveysPage() {
 
       <Card>
         <TableContainer>
-          {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>
-          ) : polls.length === 0 ? (
+          {polls.length === 0 ? (
             <Box sx={{ textAlign: 'center', p: 4 }}>
               <Typography color="text.secondary">No polls or surveys found</Typography>
             </Box>
