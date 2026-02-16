@@ -459,7 +459,7 @@ export default function AdvancedSeoPage() {
       {tabValue === 1 && (
         <Box data-testid="social-distribution-section">
           <Grid container spacing={3}>
-            <Grid item xs={12} md={5}>
+            <Grid size={{ xs: 12, md: 5 }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -517,7 +517,7 @@ export default function AdvancedSeoPage() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={7}>
+            <Grid size={{ xs: 12, md: 7 }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -697,7 +697,7 @@ export default function AdvancedSeoPage() {
             </Grid>
 
             {contentGaps && (
-              <Grid item xs={12} md={5}>
+              <Grid size={{ xs: 12, md: 5 }}>
                 <Card>
                   <CardContent>
                     <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -783,7 +783,7 @@ export default function AdvancedSeoPage() {
 
           <Grid container spacing={2}>
             {backlinkOpportunities.map((opp, idx) => (
-              <Grid item xs={12} md={6} lg={4} key={idx}>
+              <Grid size={{ xs: 12, md: 6, lg: 4 }} key={idx}>
                 <Card sx={{ height: '100%' }}>
                   <CardContent>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
@@ -836,7 +836,7 @@ export default function AdvancedSeoPage() {
         <Box data-testid="multilang-section">
           {multiLangStatus && (
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Card>
                   <CardContent>
                     <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -844,7 +844,7 @@ export default function AdvancedSeoPage() {
                     </Typography>
                     <Grid container spacing={3}>
                       {Object.entries(multiLangStatus.languages || {}).map(([code, lang]: [string, any]) => (
-                        <Grid item xs={12} sm={4} key={code}>
+                        <Grid size={{ xs: 12, sm: 4 }} key={code}>
                           <Box 
                             sx={{ 
                               p: 3, 
@@ -883,7 +883,7 @@ export default function AdvancedSeoPage() {
                 </Card>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card>
                   <CardContent>
                     <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -899,7 +899,7 @@ export default function AdvancedSeoPage() {
                 </Card>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card>
                   <CardContent>
                     <Typography variant="h6" fontWeight="bold" gutterBottom>
