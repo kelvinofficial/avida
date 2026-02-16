@@ -80,8 +80,12 @@ export default function CheckoutSuccessScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.content}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
+          {/* Branded verification state instead of generic spinner */}
+          <View style={styles.verifyingIcon}>
+            <Ionicons name="shield-checkmark-outline" size={64} color={COLORS.primary} />
+          </View>
           <Text style={styles.loadingText}>Verifying payment...</Text>
+          <Text style={styles.loadingSubtext}>Please wait while we confirm your transaction</Text>
         </View>
       </SafeAreaView>
     );
