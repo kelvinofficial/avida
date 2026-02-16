@@ -61,10 +61,16 @@ const trackEvent = (eventName: string, data?: any) => {
 export default function AutoCategoryScreen() {
   const router = useRouter();
   
+  // Cache keys
+  const AUTO_LISTINGS_CACHE_KEY = 'auto_listings';
+  
+  // Cache-first: Initialize with cached data
+  const cachedListings = getCachedSync<AutoListing[]>(AUTO_LISTINGS_CACHE_KEY);
+  
   // State - now fetching from real backend
   const [activeTab, setActiveTab] = useState('motors');
-  const [allListings, setAllListings] = useState<AutoListing[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [allListings, setAllListings] = useState<AutoListing[]>(cachedListings || []);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState<AutoFilters>({});
   const [searchQuery, setSearchQuery] = useState('');
@@ -93,7 +99,7 @@ export default function AutoCategoryScreen() {
   // Fetch listings from backend API
   const fetchListings = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsFetchingInBackground(true);
       
       // Build query params based on current filters
       const params: Record<string, any> = {
@@ -117,15 +123,19 @@ export default function AutoCategoryScreen() {
       if (filters.verifiedSeller) params.verified_seller = true;
       
       const response = await api.get('/auto/listings', { params });
-      setAllListings(response.data.listings || []);
+      const listings = response.data.listings || [];
+      setAllListings(listings);
+      setCacheSync(AUTO_LISTINGS_CACHE_KEY, listings);
     } catch (error) {
       console.error('Error fetching auto listings:', error);
-      Alert.alert('Error', 'Failed to load listings. Please try again.');
+      if (!cachedListings || cachedListings.length === 0) {
+        Alert.alert('Error', 'Failed to load listings. Please try again.');
+      }
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
       setRefreshing(false);
     }
-  }, [sortBy, selectedBrand, selectedModel, selectedCity, filters]);
+  }, [sortBy, selectedBrand, selectedModel, selectedCity, filters, cachedListings]);
 
   // Initial fetch and refetch when filters change
   useEffect(() => {
