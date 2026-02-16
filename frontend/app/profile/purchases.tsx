@@ -353,20 +353,26 @@ export default function PurchasesScreen() {
   const { goToLogin } = useLoginRedirect();
   const isLargeScreen = isDesktop || isTablet;
   
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Cache-first: Initialize with cached data for instant render
+  const cachedOrders = getCachedSync<Order[]>(CACHE_KEYS.PURCHASES);
+  const [orders, setOrders] = useState<Order[]>(cachedOrders || []);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [processing, setProcessing] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'completed'>('all');
 
   const fetchOrders = useCallback(async (refresh: boolean = false) => {
+    setIsFetchingInBackground(true);
     try {
       const response = await api.get('/escrow/buyer/orders');
-      setOrders(response.data.orders || []);
+      const newOrders = response.data.orders || [];
+      setOrders(newOrders);
+      // Update cache
+      setCacheSync(CACHE_KEYS.PURCHASES, newOrders);
     } catch (error) {
       console.error('Error fetching orders:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
       setRefreshing(false);
     }
   }, []);
@@ -374,8 +380,6 @@ export default function PurchasesScreen() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchOrders(true);
-    } else {
-      setLoading(false);
     }
   }, [isAuthenticated, fetchOrders]);
 
@@ -451,11 +455,8 @@ export default function PurchasesScreen() {
   });
 
   if (!isReady) {
-    return (
-      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-      </SafeAreaView>
-    );
+    // Show minimal placeholder instead of spinner during responsive check
+    return null;
   }
 
   // Desktop Tabs Component
@@ -531,7 +532,7 @@ export default function PurchasesScreen() {
           </Text>
         </View>
 
-        {loading && !refreshing ? (
+        {isFetchingInBackground && orders.length === 0 ? (
           <View style={desktopStyles.listContainer}>
             {[1, 2, 3].map((i) => (
               <View key={i} style={desktopStyles.skeletonCard}>
@@ -626,7 +627,7 @@ export default function PurchasesScreen() {
         </Text>
       </View>
 
-      {loading && !refreshing ? (
+      {isFetchingInBackground && orders.length === 0 ? (
         <FlatList
           data={[1, 2, 3, 4, 5]}
           keyExtractor={(item) => item.toString()}
