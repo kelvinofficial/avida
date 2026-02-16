@@ -821,11 +821,7 @@ export default function OffersScreen() {
       </View>
 
       {/* Offers List */}
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
-      ) : offers.length === 0 ? (
+      {offers.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="pricetag-outline" size={64} color={COLORS.textLight} />
           <Text style={styles.emptyTitle}>
