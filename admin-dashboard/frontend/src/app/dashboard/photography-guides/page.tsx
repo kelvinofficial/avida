@@ -181,7 +181,11 @@ function SortableTableRow({ guide, getCategoryName, handleOpenDialog, handleDele
       </TableCell>
       <TableCell>
         <Avatar sx={{ bgcolor: 'primary.light', width: 40, height: 40 }}>
-          <ion-icon name={guide.icon} style={{ fontSize: '20px' }}></ion-icon>
+          <Box
+            component="span"
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            dangerouslySetInnerHTML={{ __html: `<ion-icon name="${guide.icon}" style="font-size: 20px;"></ion-icon>` }}
+          />
         </Avatar>
       </TableCell>
       <TableCell>
