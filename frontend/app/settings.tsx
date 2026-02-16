@@ -209,17 +209,21 @@ export default function SettingsScreen() {
   }, []);
 
   const fetchSettings = useCallback(async () => {
+    setIsFetchingInBackground(true);
     try {
       const response = await api.get('/settings');
       setSettings(response.data);
+      // Update cache
+      setCacheSync(CACHE_KEYS.USER_SETTINGS, response.data);
       // Load default location if exists
       if (response.data?.default_location) {
         setDefaultLocation(response.data.default_location);
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
+      // Keep showing cached data on error
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   }, []);
 
