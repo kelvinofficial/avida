@@ -267,7 +267,7 @@ export default function InvoicesPage() {
           />
         }
       >
-        {loading ? (
+        {isFetchingInBackground && invoices.length === 0 ? (
           <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
         ) : invoices.length === 0 ? (
           <EmptyState />
