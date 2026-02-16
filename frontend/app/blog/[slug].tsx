@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,12 @@ import {
   TouchableOpacity,
   Platform,
   useWindowDimensions,
-  ActivityIndicator,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../src/utils/theme';
 import { DesktopHeader } from '../../src/components/layout/DesktopHeader';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const API_BASE = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 

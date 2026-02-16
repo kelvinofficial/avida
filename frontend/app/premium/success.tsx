@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import api from '../../src/utils/api';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',

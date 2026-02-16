@@ -32,6 +32,7 @@ import { DesktopHeader, DesktopPageLayout } from '../../src/components/layout';
 import { MessagesSkeleton } from '../../src/components/skeletons';
 import { io, Socket } from 'socket.io-client';
 import Constants from 'expo-constants';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
