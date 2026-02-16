@@ -1663,17 +1663,6 @@ export default function PropertyDetailScreen() {
     }
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loading}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading property...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   if (!property) {
     return (
       <SafeAreaView style={styles.container}>
