@@ -406,16 +406,13 @@ export default function QAReliabilityPage() {
     );
   };
 
-  if (loading && !health) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  // CACHE-FIRST: No longer block rendering - show LinearProgress for background fetch
 
   return (
     <Box>
+      {/* CACHE-FIRST: Show LinearProgress for background fetch */}
+      {isFetchingInBackground && <LinearProgress sx={{ mb: 2 }} />}
+      
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
