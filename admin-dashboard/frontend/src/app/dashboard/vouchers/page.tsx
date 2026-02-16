@@ -333,12 +333,12 @@ export default function VouchersPage() {
     }
   };
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: string): React.ReactElement | undefined => {
     switch (type) {
       case 'amount': return <AttachMoney fontSize="small" />;
       case 'percent': return <Percent fontSize="small" />;
       case 'credit': return <CardGiftcard fontSize="small" />;
-      default: return null;
+      default: return undefined;
     }
   };
 
