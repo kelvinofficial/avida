@@ -242,9 +242,7 @@ export default function BusinessDirectoryScreen() {
       </ScrollView>
 
       {/* Business List */}
-      {loading ? (
-        <BusinessDirectorySkeleton isDesktop={isLargeScreen} />
-      ) : businesses.length === 0 ? (
+      {businesses.length === 0 && !loading ? (
         <View style={styles.emptyState}>
           <Ionicons name="storefront-outline" size={64} color={COLORS.textLight} />
           <Text style={styles.emptyTitle}>No businesses found</Text>
