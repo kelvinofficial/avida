@@ -23,11 +23,11 @@ class TestHelpers:
     def get_admin_token():
         """Get admin authentication token"""
         response = requests.post(
-            f"{BASE_URL}/admin/login",
+            f"{BASE_URL}/admin/auth/login",
             json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
         )
         if response.status_code == 200:
-            return response.json().get("token")
+            return response.json().get("access_token")
         return None
     
     @staticmethod
