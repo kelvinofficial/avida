@@ -181,15 +181,17 @@ export default function BoostListingPage() {
     return listing?.boosts?.[boostType]?.is_active;
   };
 
-  if (loading || !isReady) {
+  // CACHE-FIRST: Only minimal auth readiness check, no data loading spinners
+  if (!isReady) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4CAF50" />
+        <Ionicons name="flash-outline" size={48} color="#4CAF50" />
       </View>
     );
   }
 
-  if (!listing) {
+  // CACHE-FIRST: Show error state only when there's truly no listing and we've tried
+  if (!listing && listing_id) {
     return (
       <View style={styles.errorContainer}>
         <Ionicons name="alert-circle-outline" size={64} color="#333" />
@@ -205,7 +207,7 @@ export default function BoostListingPage() {
   const rightAction = (
     <TouchableOpacity onPress={() => router.push('/credits')} style={styles.desktopCreditsButton}>
       <Ionicons name="wallet" size={20} color="#4CAF50" />
-      <Text style={styles.desktopCreditsText}>{credits} credits</Text>
+      <Text style={styles.desktopCreditsText}>{credits || 0} credits</Text>
     </TouchableOpacity>
   );
 
