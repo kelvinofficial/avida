@@ -53,7 +53,6 @@ const COUNTRIES = [
 
 export default function FeatureSettingsPage() {
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [settings, setSettings] = useState<FeatureSettings>({
@@ -73,44 +72,60 @@ export default function FeatureSettingsPage() {
     currency_position: 'before',
   });
 
+  // Optimistic update hook for instant UI feedback
+  const { execute: executeOptimistic, isPending: saving } = useOptimisticUpdate<FeatureSettings>({
+    onSuccess: () => setSuccess('Settings saved successfully!'),
+    onError: (err) => setError('Failed to save: ' + err.message),
+  });
+
   useEffect(() => {
     fetchSettings();
   }, []);
 
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.getFeatureSettings();
       setSettings(prev => ({ ...prev, ...response }));
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError('Failed to load settings');
       console.error(err);
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // OPTIMISTIC SAVE: Updates UI instantly, then syncs in background
+  const handleSave = async () => {
+    setError('');
+    await executeOptimistic({
+      apiCall: () => api.updateFeatureSettings(settings),
+      optimisticData: settings,
+      setState: setSettings,
+      currentState: settings,
+    });
   };
 
-  const handleSave = async () => {
+  // OPTIMISTIC TOGGLE: Instant toggle with background sync
+  const handleToggle = async (key: keyof FeatureSettings) => {
+    const newSettings = { ...settings, [key]: !settings[key] };
+    setError('');
+    
+    // Update UI instantly
+    setSettings(newSettings);
+    
+    // Sync in background
     try {
-      setSaving(true);
-      setError('');
-      await api.updateFeatureSettings(settings);
-      setSuccess('Settings saved successfully!');
-    } catch (err: any) {
-      setError('Failed to save settings: ' + (err.message || 'Unknown error'));
-    } finally {
-      setSaving(false);
+      await api.updateFeatureSettings(newSettings);
+      setSuccess(`${key.replace(/_/g, ' ')} updated!`);
+    } catch (err: unknown) {
+      // Rollback on failure
+      setSettings(settings);
+      setError('Failed to update setting');
     }
   };
 
-  const handleToggle = (key: keyof FeatureSettings) => {
-    setSettings(prev => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
-
-  const handleChange = (key: keyof FeatureSettings, value: any) => {
+  const handleChange = (key: keyof FeatureSettings, value: unknown) => {
     setSettings(prev => ({
       ...prev,
       [key]: value,
