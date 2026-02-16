@@ -99,8 +99,11 @@ export default function HelpSupportScreen() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [tickets, setTickets] = useState<any[]>([]);
-  const [loadingTickets, setLoadingTickets] = useState(false);
+  
+  // Cache-first: Initialize with cached tickets for instant render
+  const cachedTickets = getCachedSync<any[]>(CACHE_KEYS.SUPPORT_TICKETS);
+  const [tickets, setTickets] = useState<any[]>(cachedTickets || []);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
 
   // Update active tab when URL param changes (e.g., from notification deep link)
   useEffect(() => {
@@ -111,14 +114,17 @@ export default function HelpSupportScreen() {
 
   const fetchTickets = useCallback(async () => {
     if (!isAuthenticated) return;
-    setLoadingTickets(true);
+    setIsFetchingInBackground(true);
     try {
       const response = await api.get('/support/tickets');
-      setTickets(response.data.tickets || []);
+      const newTickets = response.data.tickets || [];
+      setTickets(newTickets);
+      // Update cache
+      setCacheSync(CACHE_KEYS.SUPPORT_TICKETS, newTickets);
     } catch (error) {
       console.error('Error fetching tickets:', error);
     } finally {
-      setLoadingTickets(false);
+      setIsFetchingInBackground(false);
     }
   }, [isAuthenticated]);
 
@@ -257,7 +263,7 @@ export default function HelpSupportScreen() {
             <Text style={styles.signInBtnText}>Sign In</Text>
           </TouchableOpacity>
         </View>
-      ) : loadingTickets ? (
+      ) : isFetchingInBackground && tickets.length === 0 ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
