@@ -12,13 +12,17 @@ import {
   Platform,
   Share,
   Alert,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import api from '../../src/utils/api';
 import { safeGoBack } from '../../src/utils/navigation';
-import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
+import { getCachedSync, setCacheSync, CACHE_KEYS } from '../../src/utils/cacheManager';
+import { useCacheFirst } from '../../src/hooks/useCacheFirst';
+
+// CACHE-FIRST: No page-level loading spinners - render instantly with cached data
 
 const COLORS = {
   primary: '#2E7D32',
