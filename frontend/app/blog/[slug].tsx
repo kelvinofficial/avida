@@ -73,26 +73,27 @@ export default function BlogPostPage() {
   const { width } = useWindowDimensions();
   const isDesktop = Platform.OS === 'web' && width >= 1024;
   
-  const [post, setPost] = useState<BlogPost | null>(null);
+  // Cache key for blog post
+  const BLOG_POST_CACHE_KEY = `blog_post_${slug}`;
+  
+  // Cache-first: Initialize with cached data for instant render
+  const cachedPost = getCachedSync<BlogPost>(BLOG_POST_CACHE_KEY);
+  
+  const [post, setPost] = useState<BlogPost | null>(cachedPost);
   const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (slug) {
-      fetchPost();
-    }
-  }, [slug]);
-
-  const fetchPost = async () => {
+  const fetchPost = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsFetchingInBackground(true);
       setError(null);
       
       const res = await fetch(`${API_BASE}/api/growth/content/posts/${slug}`);
       if (res.ok) {
         const data = await res.json();
         setPost(data);
+        setCacheSync(BLOG_POST_CACHE_KEY, data);
         
         // Update page title for SEO (web only)
         if (Platform.OS === 'web' && typeof document !== 'undefined') {
@@ -108,15 +109,21 @@ export default function BlogPostPage() {
         // Fetch related posts
         fetchRelatedPosts(data.category);
       } else {
-        setError('Article not found');
+        if (!cachedPost) setError('Article not found');
       }
     } catch (err) {
       console.error('Failed to fetch blog post:', err);
-      setError('Failed to load article');
+      if (!cachedPost) setError('Failed to load article');
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
-  };
+  }, [slug, BLOG_POST_CACHE_KEY, cachedPost]);
+
+  useEffect(() => {
+    if (slug) {
+      fetchPost();
+    }
+  }, [slug, fetchPost]);
 
   const fetchRelatedPosts = async (category: string) => {
     try {
