@@ -1585,15 +1585,23 @@ export default function PropertyScreen() {
   const [searchRadius, setSearchRadius] = useState(10);
   const [selectedType, setSelectedType] = useState<PropertyType | null>(null);
   
+  // Cache keys
+  const PROPERTIES_CACHE_KEY = `property_list_${purpose}`;
+  const TYPE_COUNTS_CACHE_KEY = `property_type_counts_${purpose}`;
+  
+  // Cache-first: Initialize with cached data for instant render
+  const cachedProperties = getCachedSync<Property[]>(PROPERTIES_CACHE_KEY);
+  const cachedTypeCounts = getCachedSync<Record<string, number>>(TYPE_COUNTS_CACHE_KEY);
+  
   // API state
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [typeCounts, setTypeCounts] = useState<Record<string, number>>({});
+  const [properties, setProperties] = useState<Property[]>(cachedProperties || []);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
+  const [typeCounts, setTypeCounts] = useState<Record<string, number>>(cachedTypeCounts || {});
 
   // Fetch properties from API
   const fetchProperties = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsFetchingInBackground(true);
       const params: Record<string, any> = {
         purpose,
         limit: 50,
@@ -1611,13 +1619,15 @@ export default function PropertyScreen() {
       if (selectedArea) params.area = selectedArea;
       
       const response = await api.get('/property/listings', { params });
-      setProperties(response.data.listings || []);
+      const fetchedProperties = response.data.listings || [];
+      setProperties(fetchedProperties);
+      setCacheSync(PROPERTIES_CACHE_KEY, fetchedProperties);
     } catch (error) {
       console.error('Error fetching properties:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
-  }, [purpose, filters, searchQuery, selectedType, selectedCity, selectedArea]);
+  }, [purpose, filters, searchQuery, selectedType, selectedCity, selectedArea, PROPERTIES_CACHE_KEY]);
 
   // Fetch type counts
   const fetchTypeCounts = useCallback(async () => {
@@ -1625,11 +1635,13 @@ export default function PropertyScreen() {
       const response = await api.get('/property/type-counts', {
         params: { purpose }
       });
-      setTypeCounts(response.data || {});
+      const counts = response.data || {};
+      setTypeCounts(counts);
+      setCacheSync(TYPE_COUNTS_CACHE_KEY, counts);
     } catch (error) {
       console.error('Error fetching type counts:', error);
     }
-  }, [purpose]);
+  }, [purpose, TYPE_COUNTS_CACHE_KEY]);
 
   // Initial fetch and refetch on changes
   useEffect(() => {
