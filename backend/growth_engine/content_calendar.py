@@ -3,28 +3,25 @@ Content Calendar Module
 Schedule and manage blog posts, social media campaigns, and SEO milestones
 """
 
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, Header
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Callable
 from datetime import datetime, timezone, timedelta
 from bson import ObjectId
 import uuid
 
-router = APIRouter(prefix="/calendar", tags=["Content Calendar"])
-
-# Will be set by server.py
-db = None
-
-def set_db(database):
-    global db
-    db = database
-
-# Dependency to check admin auth
-async def require_admin(authorization: str = None):
-    """Simple admin check - in production use proper JWT validation"""
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Admin access required")
-    return True
+def create_content_calendar_router(db, get_current_user: Callable):
+    """Create the content calendar router with database and auth dependencies"""
+    
+    router = APIRouter(prefix="/growth/calendar", tags=["Content Calendar"])
+    
+    # Admin check dependency
+    async def require_admin(authorization: str = Header(None)):
+        """Check for admin authorization"""
+        if not authorization:
+            raise HTTPException(status_code=401, detail="Admin access required")
+        # In a real app, validate the JWT token here
+        return True
 
 # Pydantic Models
 class CalendarEventCreate(BaseModel):
