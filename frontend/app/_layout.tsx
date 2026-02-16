@@ -34,15 +34,9 @@ export default function RootLayout() {
   const fetchFeatureSettings = useFeatureSettingsStore(state => state.fetchSettings);
   const [processingAuth, setProcessingAuth] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [fontsReady, setFontsReady] = useState(false);
   
   // Network status for offline banner
   const { isOffline } = useNetworkStatus();
-  
-  // Get current pathname and screen dimensions for skeleton selection
-  const pathname = usePathname();
-  const { width: windowWidth } = useWindowDimensions();
-  const isDesktop = Platform.OS === 'web' && windowWidth >= 1024;
 
   // Check if fonts are loaded via document.fonts API (web only)
   useEffect(() => {
