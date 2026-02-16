@@ -189,6 +189,10 @@ export const ADMIN_CACHE_KEYS = {
 - [x] Image components show static placeholder (no shimmer)
 - [x] Service worker registered and active on web platform
 - [x] Admin dashboard key pages render with cached data (listings, commission, analytics)
+- [x] Admin SEO tools page - cache-first rendering
+- [x] Admin polls-surveys page - cache-first rendering
+- [x] Admin photography-guides page - cache-first rendering
+- [x] Admin qa-reliability page - cache-first rendering
 - [ ] Remaining admin dashboard pages use cache-first pattern
 - [ ] Third-party scripts deferred
 - [ ] Lighthouse score >= 90
