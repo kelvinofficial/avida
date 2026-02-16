@@ -27,49 +27,63 @@ const COLORS = {
 export default function PremiumSuccessScreen() {
   const router = useRouter();
   const { session_id } = useLocalSearchParams<{ session_id: string }>();
-  const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<'checking' | 'success' | 'pending' | 'error'>('checking');
-  const [expiresAt, setExpiresAt] = useState<string | null>(null);
+  
+  // Cache key for premium status
+  const PREMIUM_STATUS_CACHE_KEY = `premium_status_${session_id}`;
+  
+  // Cache-first: Initialize with cached status for instant render
+  const cachedStatus = getCachedSync<{ status: string; expiresAt: string | null }>(PREMIUM_STATUS_CACHE_KEY);
+  
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
+  const [status, setStatus] = useState<'checking' | 'success' | 'pending' | 'error'>(
+    cachedStatus?.status === 'success' ? 'success' : 
+    cachedStatus?.status === 'pending' ? 'pending' : 'checking'
+  );
+  const [expiresAt, setExpiresAt] = useState<string | null>(cachedStatus?.expiresAt || null);
+
+  const checkPaymentStatus = useCallback(async () => {
+    if (!session_id) {
+      setStatus('error');
+      return;
+    }
+
+    try {
+      setIsFetchingInBackground(true);
+      const response = await api.get(`/premium-subscription/stripe/status/${session_id}`);
+      
+      if (response.data.payment_status === 'paid') {
+        setStatus('success');
+        // Fetch updated profile to get expiry date
+        const profileRes = await api.get('/premium-subscription/my-subscription');
+        const expiry = profileRes.data.premium_expires_at 
+          ? new Date(profileRes.data.premium_expires_at).toLocaleDateString() 
+          : null;
+        setExpiresAt(expiry);
+        setCacheSync(PREMIUM_STATUS_CACHE_KEY, { status: 'success', expiresAt: expiry });
+      } else if (response.data.status === 'open' || response.data.payment_status === 'unpaid') {
+        setStatus('pending');
+        setCacheSync(PREMIUM_STATUS_CACHE_KEY, { status: 'pending', expiresAt: null });
+      } else {
+        setStatus('error');
+      }
+    } catch (error) {
+      console.error('Error checking payment status:', error);
+      if (!cachedStatus) setStatus('error');
+    } finally {
+      setIsFetchingInBackground(false);
+    }
+  }, [session_id, PREMIUM_STATUS_CACHE_KEY, cachedStatus]);
 
   useEffect(() => {
-    const checkPaymentStatus = async () => {
-      if (!session_id) {
-        setStatus('error');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await api.get(`/premium-subscription/stripe/status/${session_id}`);
-        
-        if (response.data.payment_status === 'paid') {
-          setStatus('success');
-          // Fetch updated profile to get expiry date
-          const profileRes = await api.get('/premium-subscription/my-subscription');
-          if (profileRes.data.premium_expires_at) {
-            setExpiresAt(new Date(profileRes.data.premium_expires_at).toLocaleDateString());
-          }
-        } else if (response.data.status === 'open' || response.data.payment_status === 'unpaid') {
-          setStatus('pending');
-        } else {
-          setStatus('error');
-        }
-      } catch (error) {
-        console.error('Error checking payment status:', error);
-        setStatus('error');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     checkPaymentStatus();
-  }, [session_id]);
+  }, [checkPaymentStatus]);
 
-  if (loading) {
+  // Show instant UI based on cached or default state
+  if (status === 'checking' && !cachedStatus) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.content}>
-          <ActivityIndicator size="large" color={COLORS.premium} />
+          <Ionicons name="hourglass-outline" size={48} color={COLORS.premium} />
           <Text style={styles.loadingText}>Verifying payment...</Text>
         </View>
       </SafeAreaView>
