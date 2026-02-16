@@ -495,23 +495,26 @@ export default function AutoListingDetailScreen() {
     }
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loading}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading vehicle...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (error || !listing) {
+  if (!listing && error) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loading}>
           <Ionicons name="car-outline" size={48} color={COLORS.textSecondary} />
           <Text style={styles.loadingText}>{error || 'Listing not found'}</Text>
+          <TouchableOpacity style={styles.backButton} onPress={() => safeGoBack(router)}>
+            <Text style={styles.backButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!listing) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loading}>
+          <Ionicons name="car-outline" size={48} color={COLORS.textSecondary} />
+          <Text style={styles.loadingText}>Vehicle not found</Text>
           <TouchableOpacity style={styles.backButton} onPress={() => safeGoBack(router)}>
             <Text style={styles.backButtonText}>Go Back</Text>
           </TouchableOpacity>
