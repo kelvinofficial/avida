@@ -10,7 +10,6 @@ import {
   Alert,
   ScrollView,
   Platform,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,6 +22,7 @@ import { useLoginRedirect } from '../../src/hooks/useLoginRedirect';
 import { useBadgeCelebration } from '../../src/context/BadgeCelebrationContext';
 import { useMilestones } from '../../src/context/MilestoneContext';
 import { ImagePlaceholder } from '../../src/components/common/ImagePlaceholder';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',

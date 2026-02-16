@@ -8,7 +8,6 @@ import {
   Image,
   Alert,
   RefreshControl,
-  ActivityIndicator,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,6 +20,7 @@ import { useResponsive } from '../../src/hooks/useResponsive';
 import { BadgeIcon, Badge } from '../../src/components/SellerBadges';
 import { DesktopHeader, Footer, DesktopPageLayout } from '../../src/components/layout';
 import { ProfileSkeleton } from '../../src/components/skeletons';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',

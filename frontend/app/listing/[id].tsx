@@ -11,7 +11,6 @@ import {
   Share,
   Modal,
   FlatList,
-  ActivityIndicator,
   Linking,
   TextInput,
   KeyboardAvoidingView,
@@ -40,6 +39,7 @@ import { useAttributeIcons, ICON_COLOR } from '../../src/hooks/useAttributeIcons
 import { ImageWithSkeleton } from '../../src/components/common';
 import { ListingSEO, ProductSchema, BreadcrumbSchema } from '../../src/components/seo';
 import { SocialShareButtons } from '../../src/components/common/SocialShareButtons';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
