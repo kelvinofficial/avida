@@ -3,13 +3,14 @@ import {
   View,
   Text,
   StyleSheet,
-  ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import api from '../../src/utils/api';
+
+// CACHE-FIRST: Payment verification has legitimate loading state - show branded animation instead of spinner
 
 const COLORS = {
   primary: '#2E7D32',
