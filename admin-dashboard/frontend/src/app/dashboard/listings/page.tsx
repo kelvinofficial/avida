@@ -242,7 +242,7 @@ export default function ListingsPage() {
   };
 
   const loadListings = useCallback(async () => {
-    setLoading(true);
+    setIsFetchingInBackground(true);
     try {
       const response = await api.getListings({
         page: page + 1,
@@ -253,10 +253,15 @@ export default function ListingsPage() {
       });
       setListings(response.items);
       setTotal(response.total);
+      // Update cache
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('admin_cache_admin_listings', JSON.stringify({ data: response.items, timestamp: Date.now() }));
+      }
     } catch (err) {
       console.error('Failed to load listings:', err);
+      // Keep showing cached data on error
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   }, [page, rowsPerPage, search, statusFilter, categoryFilter]);
 
@@ -264,6 +269,10 @@ export default function ListingsPage() {
     try {
       const cats = await api.getCategories(true, true);
       setCategories(cats);
+      // Update cache
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('admin_cache_admin_categories', JSON.stringify({ data: cats, timestamp: Date.now() }));
+      }
     } catch (err) {
       console.error('Failed to load categories:', err);
     }
