@@ -270,10 +270,13 @@ export default function CreditsPage() {
     return amount > 0 ? '#4CAF50' : '#FF5252';
   };
 
-  if (loading || !isReady) {
+  // CACHE-FIRST: Only show minimal waiting state for auth readiness (not data)
+  if (!isReady) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4CAF50" />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Ionicons name="wallet-outline" size={48} color="#4CAF50" />
+        </View>
       </View>
     );
   }
