@@ -741,58 +741,57 @@ export default function ProfileScreen() {
   const { isDesktop, isTablet } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
   
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [creditBalance, setCreditBalance] = useState<number | null>(null);
-  const [unviewedBadgeCount, setUnviewedBadgeCount] = useState(0);
-
-  const fetchProfile = useCallback(async () => {
-    try {
+  // CACHE-FIRST: Use cache-first hook for profile data
+  const { 
+    data: profile, 
+    isFetching: isFetchingProfile,
+    refresh: refreshProfile 
+  } = useCacheFirst<UserProfile | null>({
+    cacheKey: `user_profile_${user?.user_id}`,
+    fetcher: async () => {
       const response = await api.get('/profile');
-      setProfile(response.data);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+      return response.data;
+    },
+    fallbackData: null,
+    enabled: isAuthenticated,
+    deps: [user?.user_id],
+  });
 
-  const fetchCreditBalance = useCallback(async () => {
-    try {
+  const { 
+    data: creditBalance, 
+    refresh: refreshCredits 
+  } = useCacheFirst<number>({
+    cacheKey: `credit_balance_${user?.user_id}`,
+    fetcher: async () => {
       const response = await api.get('/boost/credits/balance');
-      setCreditBalance(response.data?.balance ?? 0);
-    } catch (error) {
-      console.error('Error fetching credit balance:', error);
-      setCreditBalance(0);
-    }
-  }, []);
+      return response.data?.balance ?? 0;
+    },
+    fallbackData: 0,
+    enabled: isAuthenticated,
+    deps: [user?.user_id],
+  });
 
-  const fetchUnviewedBadgeCount = useCallback(async () => {
-    try {
+  const { 
+    data: unviewedBadgeCount, 
+    refresh: refreshBadgeCount 
+  } = useCacheFirst<number>({
+    cacheKey: `unviewed_badges_${user?.user_id}`,
+    fetcher: async () => {
       const response = await api.get('/badges/unviewed-count');
-      setUnviewedBadgeCount(response.data?.unviewed_count ?? 0);
-    } catch (error) {
-      console.error('Error fetching unviewed badge count:', error);
-      setUnviewedBadgeCount(0);
-    }
-  }, []);
+      return response.data?.unviewed_count ?? 0;
+    },
+    fallbackData: 0,
+    enabled: isAuthenticated,
+    deps: [user?.user_id],
+  });
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchProfile();
-      fetchCreditBalance();
-      fetchUnviewedBadgeCount();
-    } else {
-      setLoading(false);
-    }
-  }, [isAuthenticated, fetchProfile, fetchCreditBalance, fetchUnviewedBadgeCount]);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    fetchProfile();
-  };
+    await Promise.all([refreshProfile(), refreshCredits(), refreshBadgeCount()]);
+    setRefreshing(false);
+  }, [refreshProfile, refreshCredits, refreshBadgeCount]);
 
   const handleLogout = async () => {
     if (Platform.OS === 'web') {
