@@ -117,18 +117,24 @@ export default function InvoicesPage() {
   const { goToLogin } = useLoginRedirect();
   const isLargeScreen = isDesktop || isTablet;
   
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Cache-first: Initialize with cached data for instant render
+  const cachedInvoices = getCachedSync<Invoice[]>(CACHE_KEYS.INVOICES);
+  const [invoices, setInvoices] = useState<Invoice[]>(cachedInvoices || []);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchInvoices = useCallback(async () => {
+    setIsFetchingInBackground(true);
     try {
       const response = await api.get('/invoices?limit=50');
-      setInvoices(response.data.invoices || []);
+      const newInvoices = response.data.invoices || [];
+      setInvoices(newInvoices);
+      // Update cache
+      setCacheSync(CACHE_KEYS.INVOICES, newInvoices);
     } catch (error: any) {
       console.error('Error fetching invoices:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
       setRefreshing(false);
     }
   }, []);
@@ -136,8 +142,6 @@ export default function InvoicesPage() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchInvoices();
-    } else {
-      setLoading(false);
     }
   }, [isAuthenticated, fetchInvoices]);
 
@@ -162,11 +166,8 @@ export default function InvoicesPage() {
   };
 
   if (!isReady) {
-    return (
-      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-      </SafeAreaView>
-    );
+    // Show minimal placeholder instead of spinner during responsive check
+    return null;
   }
 
   // Desktop Layout
@@ -196,10 +197,10 @@ export default function InvoicesPage() {
         subtitle={`${invoices.length} invoices`}
         icon="receipt-outline"
       >
-        {loading ? (
+        {isFetchingInBackground && invoices.length === 0 ? (
           <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
         ) : invoices.length === 0 ? (
-          <EmptyState isDesktop />
+          <EmptyState />
         ) : (
           <View style={styles.invoiceList}>
             {/* Table Header */}
