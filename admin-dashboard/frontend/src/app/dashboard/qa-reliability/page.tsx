@@ -229,7 +229,7 @@ export default function QAReliabilityPage() {
     } catch (err) {
       setError('Failed to fetch QA data');
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   }, []);
 
