@@ -17,7 +17,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  CircularProgress,
+  LinearProgress,
   Table,
   TableBody,
   TableCell,
@@ -54,6 +54,7 @@ import { api } from '@/lib/api';
 import { Listing, Category } from '@/types';
 import CSVImportDialog from '@/components/CSVImportDialog';
 import { useLocale } from '@/components/LocaleProvider';
+import { getCachedData } from '@/hooks/useCacheFirst';
 
 export default function ListingsPage() {
   const { t } = useLocale();
