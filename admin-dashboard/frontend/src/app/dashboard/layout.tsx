@@ -56,7 +56,6 @@ import {
   FilterList,
   Palette,
   Security,
-  Analytics,
   Handshake,
   SettingsApplications,
   Groups,
