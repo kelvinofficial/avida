@@ -189,8 +189,9 @@ export default function BusinessDirectoryScreen() {
     </TouchableOpacity>
   );
 
+  // CACHE-FIRST: No skeleton for isReady check
   if (!isReady) {
-    return <BusinessDirectorySkeleton isDesktop={false} />;
+    return <View style={{ flex: 1, backgroundColor: COLORS.background }} />;
   }
 
   const content = (
