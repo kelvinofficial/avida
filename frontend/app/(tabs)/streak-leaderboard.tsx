@@ -329,17 +329,7 @@ export default function StreakLeaderboardScreen() {
     );
   };
 
-  if (loading && page === 1) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.fire} />
-          <Text style={styles.loadingText}>Loading streak leaderboard...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
+  // Show content instantly with cached data
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
