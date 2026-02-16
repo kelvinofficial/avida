@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View, Platform, ActivityIndicator, StyleSheet, Animated, useWindowDimensions } from 'react-native';
+import { View, Platform, StyleSheet, useWindowDimensions } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useAuthStore, saveUserData } from '../src/store/authStore';
 import { useFeatureSettingsStore } from '../src/store/featureSettingsStore';
@@ -23,17 +23,8 @@ if (typeof window !== 'undefined' || Platform.OS !== 'web') {
   setupGlobalErrorHandler();
 }
 
-// Import page-specific skeletons
-import { 
-  HomepageSkeleton, 
-  SearchPageSkeleton, 
-  SettingsSkeleton, 
-  MessagesSkeleton, 
-  ProfileSkeleton, 
-  ListingDetailSkeleton,
-  CategoryPageSkeleton,
-  BusinessDirectorySkeleton
-} from '../src/components/skeletons';
+// CACHE-FIRST ARCHITECTURE: Removed all skeleton imports
+// We no longer show loading skeletons - pages render with cached data immediately
 
 // Route-based skeleton selector
 const getSkeletonForRoute = (pathname: string, isDesktop: boolean) => {
