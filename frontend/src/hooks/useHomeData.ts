@@ -166,25 +166,32 @@ export function useHomeData(): UseHomeDataReturn {
   });
   const autocompleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch featured listings from verified sellers
+  // Fetch featured listings from verified sellers - CACHE-FIRST
   const fetchFeaturedListings = useCallback(async () => {
     try {
-      setLoadingFeatured(true);
+      // Don't set loading state - cache-first pattern
       const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/listings/featured-verified?limit=12`);
       if (response.ok) {
         const data = await response.json();
-        setFeaturedListings(data.listings || []);
+        const newFeaturedListings = data.listings || [];
+        setFeaturedListings(newFeaturedListings);
+        // Cache the result
+        setCacheSync(CACHE_KEYS.FEATURED_LISTINGS, newFeaturedListings);
+        CacheManager.setCache(CACHE_KEYS.FEATURED_LISTINGS, newFeaturedListings);
       } else {
         const sellersResponse = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/business-profiles/featured?limit=8`);
         if (sellersResponse.ok) {
           const data = await sellersResponse.json();
-          setFeaturedSellers(data.sellers || []);
+          const newFeaturedSellers = data.sellers || [];
+          setFeaturedSellers(newFeaturedSellers);
+          // Cache the result
+          setCacheSync(CACHE_KEYS.FEATURED_SELLERS, newFeaturedSellers);
+          CacheManager.setCache(CACHE_KEYS.FEATURED_SELLERS, newFeaturedSellers);
         }
       }
     } catch (error) {
       console.error('Error fetching featured listings:', error);
-    } finally {
-      setLoadingFeatured(false);
+      // Keep showing cached data on error - no state change
     }
   }, []);
 
