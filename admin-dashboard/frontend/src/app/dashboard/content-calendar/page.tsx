@@ -116,6 +116,9 @@ interface CalendarEvent {
   tags: string[];
   color: string;
   recurrence?: string;
+  recurrence_end_date?: string;
+  parent_event_id?: string;
+  is_recurring?: boolean;
   assigned_to?: string;
   notes?: string;
 }
