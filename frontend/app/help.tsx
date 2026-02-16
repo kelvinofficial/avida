@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   FlatList,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -517,7 +518,7 @@ export default function HelpSupportScreen() {
                 <Text style={styles.signInBtnText}>Sign In</Text>
               </TouchableOpacity>
             </View>
-          ) : loadingTickets ? (
+          ) : isFetchingInBackground && tickets.length === 0 ? (
             <View style={styles.centerContent}>
               <ActivityIndicator size="large" color={COLORS.primary} />
             </View>
