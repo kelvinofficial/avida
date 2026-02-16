@@ -60,15 +60,17 @@ export default function PollsSurveysPage() {
   });
 
   const loadData = async () => {
-    setLoading(true);
+    setIsFetchingInBackground(true);
     try {
       const pollType = currentTab === 0 ? undefined : currentTab === 1 ? 'feedback' : 'survey';
       const res = await api.getPolls({ poll_type: pollType });
-      setPolls(res.polls || []);
+      const newPolls = res.polls || [];
+      setPolls(newPolls);
+      setCachedData('admin_polls', newPolls);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load polls');
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   };
 
