@@ -147,6 +147,26 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 
 ## Changelog
 
+### February 16, 2026 (Session 6 - Final Feature Batch)
+- **Recurring Events UI Enhancement** - Content Calendar now shows visual indicators (🔄) for recurring events in both grid and list views
+- **Multi-Language SEO** - Full module for managing content in English, German, and Swahili
+  - Language cards with coverage statistics (blog posts, localizations, pending translations)
+  - Translation Tasks tab for queuing AI translations
+  - SEO Keywords tab with translations per language
+  - Regional Keywords tab with location-specific keyword suggestions (TZ, KE, DE)
+  - Hreflang Generator for proper language tag generation
+- **Social Distribution** - Complete social media scheduling and management system
+  - Supports Twitter/X, LinkedIn, Facebook, Instagram
+  - Post creation with platform selection, scheduling, hashtags
+  - Templates library for different content types (blog promotion, listing highlight, tips, engagement)
+  - Analytics dashboard with post counts by status
+  - Queue view for upcoming scheduled posts
+  - Platform-specific guidelines (character limits, best posting times, feature support)
+- New API Endpoints:
+  - `/api/growth/multilang/*` - Multi-language SEO endpoints (languages, status, translations, keywords, hreflang)
+  - `/api/growth/social/*` - Social distribution endpoints (platforms, posts, analytics, templates, queue)
+- Latest test report: `/app/test_reports/iteration_168.json` - 100% pass rate (19/19 backend, all frontend)
+
 ### February 16, 2026 (Session 5 - P1 Enhancements)
 - **Enhanced Analytics Settings Dashboard** - Full analytics dashboard with demo data
   - Dashboard tab: Real-time users, traffic metrics (Users, Pageviews, Sessions, Bounce Rate, New Users %), daily traffic chart
