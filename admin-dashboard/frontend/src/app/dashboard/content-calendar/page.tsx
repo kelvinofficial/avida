@@ -363,6 +363,8 @@ export default function ContentCalendarPage() {
       platform: '',
       tags: [],
       notes: '',
+      recurrence: 'none',
+      recurrence_end_date: '',
     });
   };
 
