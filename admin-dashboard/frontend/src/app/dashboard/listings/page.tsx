@@ -58,9 +58,14 @@ import { getCachedData } from '@/hooks/useCacheFirst';
 
 export default function ListingsPage() {
   const { t } = useLocale();
-  const [loading, setLoading] = useState(true);
-  const [listings, setListings] = useState<Listing[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  
+  // CACHE-FIRST: Initialize with cached data for instant render
+  const cachedListings = getCachedData<Listing[]>('admin_listings');
+  const cachedCategories = getCachedData<Category[]>('admin_categories');
+  
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
+  const [listings, setListings] = useState<Listing[]>(cachedListings || []);
+  const [categories, setCategories] = useState<Category[]>(cachedCategories || []);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
