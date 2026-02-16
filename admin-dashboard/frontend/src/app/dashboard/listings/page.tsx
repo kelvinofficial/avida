@@ -376,7 +376,11 @@ export default function ListingsPage() {
   };
 
   return (
-    <Box>
+    <Box sx={{ position: 'relative' }}>
+      {/* Subtle background fetch indicator */}
+      {isFetchingInBackground && (
+        <LinearProgress sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, zIndex: 10 }} />
+      )}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
           <Typography variant="h4" fontWeight={600} gutterBottom>
