@@ -79,31 +79,38 @@ const DEFAULT_CONSENT: SmartNotificationConsent = {
 export default function SmartNotificationPreferencesScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
-  const [loading, setLoading] = useState(true);
+  
+  // Cache-first: Initialize with cached data for instant render
+  const cachedConsent = getCachedSync<SmartNotificationConsent>(CACHE_KEYS.SMART_ALERTS);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [consent, setConsent] = useState<SmartNotificationConsent>(DEFAULT_CONSENT);
+  const [consent, setConsent] = useState<SmartNotificationConsent>(cachedConsent || DEFAULT_CONSENT);
 
   useEffect(() => {
     fetchConsent();
   }, []);
 
   const fetchConsent = async () => {
+    setIsFetchingInBackground(true);
     try {
       const response = await api.get('/smart-notifications/consent');
       if (response.data) {
-        setConsent({
+        const newConsent = {
           ...DEFAULT_CONSENT,
           ...response.data,
           trigger_preferences: {
             ...DEFAULT_CONSENT.trigger_preferences,
             ...response.data.trigger_preferences,
           },
-        });
+        };
+        setConsent(newConsent);
+        // Update cache
+        setCacheSync(CACHE_KEYS.SMART_ALERTS, newConsent);
       }
     } catch (error) {
       console.log('Using default smart notification consent');
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   };
 
@@ -154,15 +161,8 @@ export default function SmartNotificationPreferencesScreen() {
     );
   }
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // Remove page-level loading blocker - show content immediately
+  // The default settings are already in state
 
   return (
     <SafeAreaView style={styles.container}>
