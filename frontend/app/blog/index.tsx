@@ -282,12 +282,7 @@ export default function BlogIndexPage() {
           </View>
 
           {/* Blog Posts Grid */}
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-              <Text style={styles.loadingText}>Loading articles...</Text>
-            </View>
-          ) : filteredPosts.length === 0 ? (
+          {filteredPosts.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Ionicons name="newspaper-outline" size={64} color={theme.colors.outline} />
               <Text style={styles.emptyTitle}>No Articles Found</Text>
