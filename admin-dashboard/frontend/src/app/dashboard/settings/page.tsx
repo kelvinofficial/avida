@@ -503,10 +503,24 @@ export default function SettingsPage() {
     setSnackbar({ open: true, message: 'Deeplink URL copied to clipboard', severity: 'success' });
   };
 
-  // Auth Settings Handlers
-  const handleAuthSettingChange = (key: keyof AuthSettings, value: boolean | number | string[]) => {
-    if (authSettings) {
-      setAuthSettings({ ...authSettings, [key]: value });
+  // Auth Settings Handlers - OPTIMISTIC: Toggle instantly, sync in background
+  const handleAuthSettingChange = async (key: keyof AuthSettings, value: boolean | number | string[]) => {
+    if (!authSettings) return;
+    
+    const previousSettings = { ...authSettings };
+    const newSettings = { ...authSettings, [key]: value };
+    
+    // Update UI instantly
+    setAuthSettings(newSettings);
+    
+    // Sync in background (auto-save on change)
+    try {
+      await api.updateAuthSettings(newSettings as unknown as Record<string, unknown>);
+      setSnackbar({ open: true, message: 'Setting updated', severity: 'success' });
+    } catch (err) {
+      // Rollback on failure
+      setAuthSettings(previousSettings);
+      setSnackbar({ open: true, message: 'Failed to update setting', severity: 'error' });
     }
   };
 
