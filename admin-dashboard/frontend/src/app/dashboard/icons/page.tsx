@@ -738,6 +738,7 @@ export default function IconsManagementPage() {
                     height: 56,
                   }}
                 >
+                  {/* @ts-expect-error ion-icon is a web component */}
                   <ion-icon name={formData.ionicon_name} style={{ fontSize: 32 }}></ion-icon>
                 </Avatar>
                 <Box sx={{ flex: 1 }}>
