@@ -241,15 +241,17 @@ const filterStyles = StyleSheet.create({
 export default function AdminBusinessProfilesScreen() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [profiles, setProfiles] = useState<BusinessProfile[]>([]);
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [stats, setStats] = useState({ total: 0, verified: 0, premium: 0, pending: 0 });
 
-  const fetchProfiles = useCallback(async () => {
-    try {
+  // CACHE-FIRST: Use cache-first hooks for data
+  const { 
+    data: profiles, 
+    refresh: refreshProfiles 
+  } = useCacheFirst<BusinessProfile[]>({
+    cacheKey: `admin_business_profiles_${filter}_${searchQuery}`,
+    fetcher: async () => {
       const params = new URLSearchParams();
       if (filter !== 'all') {
         if (filter === 'pending') params.append('verification_status', 'pending');
@@ -257,31 +259,34 @@ export default function AdminBusinessProfilesScreen() {
         else if (filter === 'premium') params.append('is_premium', 'true');
       }
       if (searchQuery) params.append('search', searchQuery);
-      
       const response = await api.get(`/admin/business-profiles/?${params.toString()}`);
-      setProfiles(response.data.profiles || []);
-      
-      // Fetch stats
-      const statsResponse = await api.get('/admin/business-profiles/stats/overview');
-      setStats(statsResponse.data);
-    } catch (error: any) {
-      console.error('Error fetching profiles:', error);
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        Alert.alert('Access Denied', 'You do not have permission to access this page');
-        router.back();
-      }
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [filter, searchQuery]);
+      return response.data.profiles || [];
+    },
+    fallbackData: [],
+    enabled: isAuthenticated,
+    deps: [filter, searchQuery],
+  });
 
-  useEffect(() => { fetchProfiles(); }, [fetchProfiles]);
+  const { 
+    data: stats, 
+    refresh: refreshStats 
+  } = useCacheFirst<{ total: number; verified: number; premium: number; pending: number }>({
+    cacheKey: 'admin_business_profiles_stats',
+    fetcher: async () => {
+      const response = await api.get('/admin/business-profiles/stats/overview');
+      return response.data;
+    },
+    fallbackData: { total: 0, verified: 0, premium: 0, pending: 0 },
+    enabled: isAuthenticated,
+  });
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    fetchProfiles();
-  };
+    await Promise.all([refreshProfiles(), refreshStats()]);
+    setRefreshing(false);
+  }, [refreshProfiles, refreshStats]);
+
+  const fetchProfiles = handleRefresh; // Alias for action handlers
 
   const handleVerify = async (profileId: string) => {
     Alert.alert('Approve Profile', 'Grant Verified Business status to this profile?', [
