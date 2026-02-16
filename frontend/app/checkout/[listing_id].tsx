@@ -143,12 +143,15 @@ export default function CheckoutScreen() {
         }
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to load listing');
-      router.back();
+      console.error('Error fetching listing:', error);
+      if (!cachedListing) {
+        Alert.alert('Error', 'Failed to load listing');
+        router.back();
+      }
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
-  };
+  }, [listing_id, CHECKOUT_LISTING_CACHE_KEY, cachedListing]);
   
   const calculatePrice = async () => {
     if (!listing) return;
