@@ -26,42 +26,8 @@ if (typeof window !== 'undefined' || Platform.OS !== 'web') {
 // CACHE-FIRST ARCHITECTURE: Removed all skeleton imports
 // We no longer show loading skeletons - pages render with cached data immediately
 
-// Route-based skeleton selector
-const getSkeletonForRoute = (pathname: string, isDesktop: boolean) => {
-  // Normalize pathname
-  const route = pathname?.toLowerCase() || '/';
-  
-  if (route.includes('/search')) {
-    return <SearchPageSkeleton isDesktop={isDesktop} />;
-  }
-  if (route.includes('/settings') || route.includes('/notification-preferences')) {
-    return <SettingsSkeleton isDesktop={isDesktop} />;
-  }
-  if (route.includes('/messages') || route.includes('/chat')) {
-    return <MessagesSkeleton isDesktop={isDesktop} />;
-  }
-  if (route.includes('/profile')) {
-    return <ProfileSkeleton isDesktop={isDesktop} />;
-  }
-  if (route.includes('/listing/')) {
-    return <ListingDetailSkeleton isDesktop={isDesktop} />;
-  }
-  if (route.includes('/category/')) {
-    return <CategoryPageSkeleton isDesktop={isDesktop} />;
-  }
-  if (route.includes('/sellers') || route.includes('/business-directory')) {
-    return <BusinessDirectorySkeleton isDesktop={isDesktop} />;
-  }
-  // Default to homepage skeleton for /, /index, or unknown routes
-  return <HomepageSkeleton isDesktop={isDesktop} />;
-};
-
-// Skeleton shimmer animation component for font loading (kept for backward compatibility)
-const FontLoadingSkeleton = () => {
-  return <HomepageSkeleton isDesktop={false} />;
-};
-
-// Removed old skeletonStyles - now using HomepageSkeleton from src/components/skeletons
+// CACHE-FIRST ARCHITECTURE: No skeleton functions needed
+// Pages render with cached data immediately, no loading states
 
 export default function RootLayout() {
   const { loadStoredAuth, setUser, setToken, isAuthenticated, user } = useAuthStore();
