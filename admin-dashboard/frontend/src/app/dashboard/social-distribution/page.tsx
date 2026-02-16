@@ -469,7 +469,7 @@ export default function SocialDistributionPage() {
                         <Typography variant="h6">{post.title}</Typography>
                         <Box sx={{ display: 'flex', gap: 0.5 }}>
                           {post.platforms.map(p => (
-                            <Box key={p} sx={{ color: PLATFORM_COLORS[p] }}>{PLATFORM_ICONS[p]}</Box>
+                            <Box key={p} sx={{ color: PLATFORM_COLORS[p] }}>{getPlatformIcon(p)}</Box>
                           ))}
                         </Box>
                       </Box>
