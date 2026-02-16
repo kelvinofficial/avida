@@ -554,8 +554,7 @@ export default function ContentCalendarPage() {
                 const dayEvents = getEventsForDate(day.date);
                 return (
                   <Grid
-                    item
-                    xs
+                    size={{ xs: 'grow' }}
                     key={idx}
                     sx={{
                       minHeight: 100,
