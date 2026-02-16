@@ -510,16 +510,12 @@ export default function ListingsPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {loading ? (
+              {listings.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
-                    <CircularProgress size={32} />
-                  </TableCell>
-                </TableRow>
-              ) : listings.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
-                    <Typography color="text.secondary">No listings found</Typography>
+                    <Typography color="text.secondary">
+                      {isFetchingInBackground ? 'Fetching listings...' : 'No listings found'}
+                    </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
