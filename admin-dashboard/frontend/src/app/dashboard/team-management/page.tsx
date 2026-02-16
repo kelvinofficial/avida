@@ -728,7 +728,14 @@ export default function TeamManagementPage() {
     }
   };
 
+  // OPTIMISTIC UPDATE: Update task status instantly, sync in background
   const handleUpdateTaskStatus = async (taskId: string, status: string) => {
+    // Update UI instantly
+    const previousTasks = [...tasks];
+    setTasks(prev => prev.map(t => 
+      t.id === taskId ? { ...t, status, updated_at: new Date().toISOString() } : t
+    ));
+    
     try {
       const response = await fetch(`${API_BASE}/team/tasks/${taskId}`, {
         method: 'PUT',
@@ -738,15 +745,33 @@ export default function TeamManagementPage() {
       
       if (response.ok) {
         setSnackbar({ open: true, message: 'Task updated', severity: 'success' });
-        fetchTasks();
         fetchDashboard();
+      } else {
+        // Rollback
+        setTasks(previousTasks);
+        setSnackbar({ open: true, message: 'Failed to update task', severity: 'error' });
       }
     } catch (error) {
+      // Rollback
+      setTasks(previousTasks);
       setSnackbar({ open: true, message: 'Failed to update task', severity: 'error' });
     }
   };
 
+  // OPTIMISTIC ASSIGN: Update task assignment instantly, sync in background
   const handleAssignTask = async (taskId: string, memberId: string) => {
+    // Update UI instantly
+    const previousTasks = [...tasks];
+    const assignedMember = members.find(m => m.id === memberId);
+    setTasks(prev => prev.map(t => 
+      t.id === taskId ? { 
+        ...t, 
+        assigned_to: memberId,
+        assigned_to_name: assignedMember?.name || 'Unknown',
+        updated_at: new Date().toISOString() 
+      } : t
+    ));
+    
     try {
       const response = await fetch(`${API_BASE}/team/tasks/${taskId}/assign`, {
         method: 'POST',
@@ -756,9 +781,14 @@ export default function TeamManagementPage() {
       
       if (response.ok) {
         setSnackbar({ open: true, message: 'Task assigned', severity: 'success' });
-        fetchTasks();
+      } else {
+        // Rollback
+        setTasks(previousTasks);
+        setSnackbar({ open: true, message: 'Failed to assign task', severity: 'error' });
       }
     } catch (error) {
+      // Rollback
+      setTasks(previousTasks);
       setSnackbar({ open: true, message: 'Failed to assign task', severity: 'error' });
     }
   };
