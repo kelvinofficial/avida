@@ -141,42 +141,60 @@ const pricingStyles = StyleSheet.create({
 export default function BoostPropertyScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const [property, setProperty] = useState<Property | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [boostPrices, setBoostPrices] = useState<PricingOption[]>([]);
-  const [featurePrices, setFeaturePrices] = useState<PricingOption[]>([]);
-  const [selectedBoost, setSelectedBoost] = useState<number | null>(null);
-  const [selectedFeature, setSelectedFeature] = useState<number | null>(null);
+  
+  // Cache keys
+  const BOOST_PROPERTY_CACHE_KEY = `boost_property_${id}`;
+  const BOOST_PRICES_CACHE_KEY = 'boost_prices';
+  
+  // Cache-first: Initialize with cached data
+  const cachedProperty = getCachedSync<Property>(BOOST_PROPERTY_CACHE_KEY);
+  const cachedPrices = getCachedSync<{ boost: PricingOption[]; feature: PricingOption[] }>(BOOST_PRICES_CACHE_KEY);
+  
+  const [property, setProperty] = useState<Property | null>(cachedProperty);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
+  const [boostPrices, setBoostPrices] = useState<PricingOption[]>(cachedPrices?.boost || []);
+  const [featurePrices, setFeaturePrices] = useState<PricingOption[]>(cachedPrices?.feature || []);
+  const [selectedBoost, setSelectedBoost] = useState<number | null>(
+    cachedPrices?.boost && cachedPrices.boost.length > 1 ? cachedPrices.boost[1].days : null
+  );
+  const [selectedFeature, setSelectedFeature] = useState<number | null>(
+    cachedPrices?.feature && cachedPrices.feature.length > 1 ? cachedPrices.feature[1].days : null
+  );
   const [activeTab, setActiveTab] = useState<'boost' | 'feature'>('boost');
   const [processing, setProcessing] = useState(false);
 
   // Fetch property and prices
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsFetchingInBackground(true);
       const [propertyRes, pricesRes] = await Promise.all([
         api.get(`/property/listings/${id}`),
         api.get('/property/boost-prices'),
       ]);
       
       setProperty(propertyRes.data);
+      setCacheSync(BOOST_PROPERTY_CACHE_KEY, propertyRes.data);
+      
       setBoostPrices(pricesRes.data.boost);
       setFeaturePrices(pricesRes.data.feature);
+      setCacheSync(BOOST_PRICES_CACHE_KEY, pricesRes.data);
       
       // Pre-select popular option
-      if (pricesRes.data.boost.length > 1) {
+      if (!cachedPrices && pricesRes.data.boost.length > 1) {
         setSelectedBoost(pricesRes.data.boost[1].days);
       }
-      if (pricesRes.data.feature.length > 1) {
+      if (!cachedPrices && pricesRes.data.feature.length > 1) {
         setSelectedFeature(pricesRes.data.feature[1].days);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-      Alert.alert('Error', 'Failed to load data');
+      if (!cachedProperty) {
+        Alert.alert('Error', 'Failed to load data');
+      }
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
-  }, [id]);
+  }, [id, BOOST_PROPERTY_CACHE_KEY, cachedProperty, cachedPrices]);
 
   useEffect(() => {
     if (id) {
