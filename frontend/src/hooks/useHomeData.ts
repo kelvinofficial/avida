@@ -505,16 +505,19 @@ export function useHomeData(): UseHomeDataReturn {
     // Listings data
     listings,
     categories,
-    loading,
+    // CACHE-FIRST: loading is always false - we show cached data immediately
+    loading: false,
     initialLoadDone,
     refreshing,
     page,
     hasMore,
+    isFetchingInBackground,
     
     // Featured data
     featuredSellers,
     featuredListings,
-    loadingFeatured,
+    // CACHE-FIRST: loadingFeatured is always false - we show cached data immediately
+    loadingFeatured: false,
     
     // User data
     favorites,
