@@ -255,7 +255,7 @@ export default function BadgesScreen() {
         icon="ribbon-outline"
         headerContent={headerContent}
       >
-        {loading ? (
+        {isFetchingInBackground && earnedBadges.length === 0 && availableBadges.length === 0 ? (
           <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
         ) : earnedBadges.length === 0 && availableBadges.length === 0 ? (
           <EmptyState isDesktop />
