@@ -131,11 +131,17 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 - OpenAI GPT-5.2 via `emergentintegrations` library (Emergent LLM Key)
 
 ## Future Enhancements
-1. Real Google Analytics integration (user needs GA4 ID)
-2. Automated social media posting (requires platform API keys)
-3. Real-time backlink monitoring
+1. Real Google Analytics API integration (requires GA4 credentials and API setup)
+2. Automated social media posting (requires platform API keys - Twitter, LinkedIn, Facebook)
+3. Real-time backlink monitoring (requires external API like Ahrefs, Moz)
 4. German and Swahili content generation
 5. A/B testing for blog titles and CTAs
+6. Recurring events UI enhancements (visual indicators for recurring events in calendar)
+
+## What's MOCKED (Demo Data)
+- Analytics dashboard uses simulated/demo data until GA4 credentials are connected
+- Competitor backlink analysis returns simulated data for demo purposes
+- Domain authority checks are simulated (would need Moz/Ahrefs API for real data)
 
 ---
 
