@@ -549,12 +549,12 @@ export default function AnalyticsPage() {
 
       {/* Tab 1: Seller Analytics Settings */}
       {tabValue === 1 && (
-        <Box>
-          {settingsLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress />
-            </Box>
-          ) : analyticsSettings ? (
+        <Box sx={{ position: 'relative' }}>
+          {/* CACHE-FIRST: Show LinearProgress for background fetch instead of blocking CircularProgress */}
+          {settingsLoading && (
+            <LinearProgress sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, zIndex: 10 }} />
+          )}
+          {analyticsSettings ? (
             <Grid container spacing={3}>
               {/* Main Toggle */}
               <Grid size={{ xs: 12 }}>
@@ -709,12 +709,12 @@ export default function AnalyticsPage() {
 
       {/* Tab 2: Engagement Notifications */}
       {tabValue === 2 && (
-        <Box>
-          {settingsLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress />
-            </Box>
-          ) : engagementConfig ? (
+        <Box sx={{ position: 'relative' }}>
+          {/* CACHE-FIRST: Show LinearProgress for background fetch instead of blocking CircularProgress */}
+          {settingsLoading && (
+            <LinearProgress sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, zIndex: 10 }} />
+          )}
+          {engagementConfig ? (
             <Grid container spacing={3}>
               {/* Main Toggle */}
               <Grid size={{ xs: 12 }}>
