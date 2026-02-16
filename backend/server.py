@@ -3210,7 +3210,13 @@ if ADMIN_TOOLS_AVAILABLE:
         app.include_router(multilang_router, prefix="/api")
         print("Growth Engine - Multi-Language SEO routes loaded successfully")
         
-        logger.info("AI SEO Growth Engine fully loaded (SEO Core, Content, ASO, Analytics, Advanced SEO, Calendar, Analytics Settings, Authority Building, Multi-Language)")
+        # Social Distribution
+        from growth_engine.social_distribution import create_social_distribution_router
+        social_router = create_social_distribution_router(db, get_current_user)
+        app.include_router(social_router, prefix="/api")
+        print("Growth Engine - Social Distribution routes loaded successfully")
+        
+        logger.info("AI SEO Growth Engine fully loaded (SEO Core, Content, ASO, Analytics, Advanced SEO, Calendar, Analytics Settings, Authority Building, Multi-Language, Social Distribution)")
     except Exception as e:
         print(f"Failed to load Growth Engine routes: {e}")
         import traceback
