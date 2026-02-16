@@ -1,53 +1,48 @@
-import React, { useRef, useEffect, useMemo, createContext, useContext } from 'react';
-import { View, StyleSheet, Animated, Dimensions, Platform } from 'react-native';
+import React, { memo, createContext, useContext, useMemo } from 'react';
+import { View, StyleSheet, Dimensions } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// ============ SHIMMER THEME CONTEXT ============
-interface ShimmerTheme {
+// ============ THEME CONTEXT (Simplified - No Animation) ============
+interface PlaceholderTheme {
   baseColor: string;
-  shimmerColor: string;
   backgroundColor: string;
   surfaceColor: string;
-  duration: number;
 }
 
-const defaultTheme: ShimmerTheme = {
-  baseColor: '#E0E0E0',
-  shimmerColor: '#F5F5F5',
+const defaultTheme: PlaceholderTheme = {
+  baseColor: '#E8E8E8',
   backgroundColor: '#F5F5F5',
   surfaceColor: '#FFFFFF',
-  duration: 1500,
 };
 
-const ShimmerThemeContext = createContext<ShimmerTheme>(defaultTheme);
+const PlaceholderThemeContext = createContext<PlaceholderTheme>(defaultTheme);
 
 // Export provider for customization
 export const ShimmerThemeProvider: React.FC<{
   children: React.ReactNode;
-  theme?: Partial<ShimmerTheme>;
+  theme?: Partial<PlaceholderTheme>;
 }> = ({ children, theme }) => {
   const mergedTheme = useMemo(() => ({ ...defaultTheme, ...theme }), [theme]);
   return (
-    <ShimmerThemeContext.Provider value={mergedTheme}>
+    <PlaceholderThemeContext.Provider value={mergedTheme}>
       {children}
-    </ShimmerThemeContext.Provider>
+    </PlaceholderThemeContext.Provider>
   );
 };
 
-export const useShimmerTheme = () => useContext(ShimmerThemeContext);
+export const useShimmerTheme = () => useContext(PlaceholderThemeContext);
 
 // Legacy COLORS object for backward compatibility
 const COLORS = {
-  skeleton: '#E0E0E0',
+  skeleton: '#E8E8E8',
   skeletonLight: '#F5F5F5',
   background: '#F5F5F5',
   surface: '#FFFFFF',
 };
 
-// ============ SHIMMER BOX COMPONENT ============
-// A polished shimmer component with gradient animation
-interface ShimmerBoxProps {
+// ============ PLACEHOLDER BOX (Static - No Animation) ============
+interface PlaceholderBoxProps {
   width?: number | string;
   height?: number | string;
   borderRadius?: number;
@@ -55,7 +50,11 @@ interface ShimmerBoxProps {
   aspectRatio?: number;
 }
 
-const ShimmerBox: React.FC<ShimmerBoxProps> = ({
+/**
+ * PlaceholderBox - ZERO LOADER VERSION
+ * Static placeholder without any shimmer animation
+ */
+const PlaceholderBox: React.FC<PlaceholderBoxProps> = ({
   width = '100%',
   height = 20,
   borderRadius = 4,
@@ -63,46 +62,7 @@ const ShimmerBox: React.FC<ShimmerBoxProps> = ({
   aspectRatio,
 }) => {
   const theme = useShimmerTheme();
-  const shimmerAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.timing(shimmerAnim, {
-        toValue: 1,
-        duration: theme.duration,
-        useNativeDriver: Platform.OS !== 'web',
-      })
-    );
-    animation.start();
-    return () => animation.stop();
-  }, [theme.duration]);
-
-  // For web, use data attribute to apply CSS shimmer animation (defined in +html.tsx)
-  if (Platform.OS === 'web') {
-    return (
-      <View
-        // @ts-ignore - data attribute for CSS styling
-        dataSet={{ shimmer: true }}
-        style={[
-          {
-            width,
-            height: aspectRatio ? undefined : height,
-            aspectRatio,
-            borderRadius,
-            overflow: 'hidden',
-          },
-          style,
-        ]}
-      />
-    );
-  }
-
-  // For native, use Animated.View with translateX
-  const translateX = shimmerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-300, 300],
-  });
-
+  
   return (
     <View
       style={[
@@ -112,48 +72,17 @@ const ShimmerBox: React.FC<ShimmerBoxProps> = ({
           aspectRatio,
           borderRadius,
           backgroundColor: theme.baseColor,
-          overflow: 'hidden',
         },
         style,
       ]}
-    >
-      <Animated.View
-        style={{
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          width: 150,
-          backgroundColor: theme.shimmerColor,
-          opacity: 0.5,
-          transform: [{ translateX }, { skewX: '-20deg' }],
-        }}
-      />
-    </View>
+    />
   );
 };
 
-// Shorthand for legacy opacity-based shimmer (kept for transition)
-const useShimmer = () => {
-  const shimmerAnim = useRef(new Animated.Value(0)).current;
-  
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmerAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
-        Animated.timing(shimmerAnim, { toValue: 0, duration: 1000, useNativeDriver: true }),
-      ])
-    );
-    animation.start();
-    return () => animation.stop();
-  }, []);
-  
-  return shimmerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.3, 0.7],
-  });
-};
+// Alias for backward compatibility
+const ShimmerBox = PlaceholderBox;
 
-// ============ HOMEPAGE SKELETON ============
+// ============ HOMEPAGE SKELETON (Static) ============
 export const HomepageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
   const theme = useShimmerTheme();
   
@@ -162,40 +91,35 @@ export const HomepageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop 
   
   return (
     <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor }, isDesktop && { maxWidth: 1280, alignSelf: 'center' as const, width: '100%' }]}>
-      {/* Header skeleton */}
       <View style={skeletonBase.header}>
-        <ShimmerBox width={100} height={36} borderRadius={4} />
+        <PlaceholderBox width={100} height={36} borderRadius={4} />
         <View style={skeletonBase.headerRight}>
-          <ShimmerBox width={60} height={36} borderRadius={8} />
-          <ShimmerBox width={60} height={36} borderRadius={8} />
-          <ShimmerBox width={120} height={40} borderRadius={8} />
+          <PlaceholderBox width={60} height={36} borderRadius={8} />
+          <PlaceholderBox width={60} height={36} borderRadius={8} />
+          <PlaceholderBox width={120} height={40} borderRadius={8} />
         </View>
       </View>
       
-      {/* Search bar skeleton */}
       <View style={skeletonBase.searchRow}>
-        <ShimmerBox height={48} borderRadius={24} style={{ flex: 1 }} />
-        <ShimmerBox width={150} height={48} borderRadius={24} />
+        <PlaceholderBox height={48} borderRadius={24} style={{ flex: 1 }} />
+        <PlaceholderBox width={150} height={48} borderRadius={24} />
       </View>
       
-      {/* Category pills skeleton */}
       <View style={skeletonBase.categories}>
         {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-          <ShimmerBox key={i} width={100} height={40} borderRadius={20} />
+          <PlaceholderBox key={i} width={100} height={40} borderRadius={20} />
         ))}
       </View>
       
-      {/* Section title */}
-      <ShimmerBox width={150} height={22} borderRadius={4} style={{ marginBottom: 16 }} />
+      <PlaceholderBox width={150} height={22} borderRadius={4} style={{ marginBottom: 16 }} />
       
-      {/* Grid skeleton */}
       <View style={skeletonBase.grid}>
         {Array(cardCount).fill(0).map((_, i) => (
           <View key={i} style={[skeletonBase.card, { width: cardWidth, backgroundColor: theme.surfaceColor }]}>
-            <ShimmerBox aspectRatio={1} borderRadius={8} style={{ marginBottom: 8 }} />
-            <ShimmerBox width="40%" height={12} borderRadius={4} style={{ marginBottom: 4 }} />
-            <ShimmerBox width="80%" height={16} borderRadius={4} style={{ marginBottom: 6 }} />
-            <ShimmerBox width="50%" height={20} borderRadius={4} />
+            <PlaceholderBox aspectRatio={1} borderRadius={8} style={{ marginBottom: 8 }} />
+            <PlaceholderBox width="40%" height={12} borderRadius={4} style={{ marginBottom: 4 }} />
+            <PlaceholderBox width="80%" height={16} borderRadius={4} style={{ marginBottom: 6 }} />
+            <PlaceholderBox width="50%" height={20} borderRadius={4} />
           </View>
         ))}
       </View>
@@ -203,27 +127,22 @@ export const HomepageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop 
   );
 };
 
-// ============ SEARCH PAGE SKELETON ============
+// ============ SEARCH PAGE SKELETON (Static) ============
 export const SearchPageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
   const theme = useShimmerTheme();
   
   if (!isDesktop) {
     return (
       <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor }]}>
-        {/* Search header */}
-        <ShimmerBox height={48} borderRadius={8} style={{ marginBottom: 16 }} />
-        
-        {/* Results count */}
-        <ShimmerBox width={120} height={16} borderRadius={4} style={{ marginBottom: 16 }} />
-        
-        {/* Result items */}
+        <PlaceholderBox height={48} borderRadius={8} style={{ marginBottom: 16 }} />
+        <PlaceholderBox width={120} height={16} borderRadius={4} style={{ marginBottom: 16 }} />
         {Array(4).fill(0).map((_, i) => (
           <View key={i} style={[searchSkeleton.resultItem, { backgroundColor: theme.surfaceColor }]}>
-            <ShimmerBox width={100} height={100} borderRadius={8} />
+            <PlaceholderBox width={100} height={100} borderRadius={8} />
             <View style={searchSkeleton.resultContent}>
-              <ShimmerBox width="60%" height={18} borderRadius={4} />
-              <ShimmerBox width="40%" height={14} borderRadius={4} />
-              <ShimmerBox width="30%" height={20} borderRadius={4} />
+              <PlaceholderBox width="60%" height={18} borderRadius={4} />
+              <PlaceholderBox width="40%" height={14} borderRadius={4} />
+              <PlaceholderBox width="30%" height={20} borderRadius={4} />
             </View>
           </View>
         ))}
@@ -233,35 +152,31 @@ export const SearchPageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDeskto
   
   return (
     <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor, maxWidth: 1280, alignSelf: 'center' as const, width: '100%' }]}>
-      {/* Header */}
       <View style={skeletonBase.header}>
-        <ShimmerBox width={100} height={36} borderRadius={4} />
-        <ShimmerBox width={500} height={44} borderRadius={22} style={{ marginHorizontal: 24 }} />
+        <PlaceholderBox width={100} height={36} borderRadius={4} />
+        <PlaceholderBox width={500} height={44} borderRadius={22} style={{ marginHorizontal: 24 }} />
         <View style={skeletonBase.headerRight}>
-          <ShimmerBox width={120} height={40} borderRadius={8} />
+          <PlaceholderBox width={120} height={40} borderRadius={8} />
         </View>
       </View>
       
-      {/* Main content */}
       <View style={searchSkeleton.desktopLayout}>
-        {/* Sidebar */}
         <View style={[searchSkeleton.sidebar, { backgroundColor: theme.surfaceColor }]}>
-          <ShimmerBox width="70%" height={20} borderRadius={4} style={{ marginBottom: 12 }} />
-          <ShimmerBox height={150} borderRadius={8} style={{ marginBottom: 20 }} />
-          <ShimmerBox width="70%" height={20} borderRadius={4} style={{ marginBottom: 12 }} />
-          <ShimmerBox height={200} borderRadius={8} style={{ marginBottom: 20 }} />
+          <PlaceholderBox width="70%" height={20} borderRadius={4} style={{ marginBottom: 12 }} />
+          <PlaceholderBox height={150} borderRadius={8} style={{ marginBottom: 20 }} />
+          <PlaceholderBox width="70%" height={20} borderRadius={4} style={{ marginBottom: 12 }} />
+          <PlaceholderBox height={200} borderRadius={8} style={{ marginBottom: 20 }} />
         </View>
         
-        {/* Results grid */}
         <View style={searchSkeleton.resultsArea}>
-          <ShimmerBox width={150} height={20} borderRadius={4} style={{ marginBottom: 20 }} />
+          <PlaceholderBox width={150} height={20} borderRadius={4} style={{ marginBottom: 20 }} />
           <View style={skeletonBase.grid}>
             {Array(6).fill(0).map((_, i) => (
               <View key={i} style={[skeletonBase.card, { width: '31%', backgroundColor: theme.surfaceColor }]}>
-                <ShimmerBox aspectRatio={1} borderRadius={8} style={{ marginBottom: 8 }} />
-                <ShimmerBox width="40%" height={12} borderRadius={4} style={{ marginBottom: 4 }} />
-                <ShimmerBox width="80%" height={16} borderRadius={4} style={{ marginBottom: 6 }} />
-                <ShimmerBox width="50%" height={20} borderRadius={4} />
+                <PlaceholderBox aspectRatio={1} borderRadius={8} style={{ marginBottom: 8 }} />
+                <PlaceholderBox width="40%" height={12} borderRadius={4} style={{ marginBottom: 4 }} />
+                <PlaceholderBox width="80%" height={16} borderRadius={4} style={{ marginBottom: 6 }} />
+                <PlaceholderBox width="50%" height={20} borderRadius={4} />
               </View>
             ))}
           </View>
@@ -271,35 +186,33 @@ export const SearchPageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDeskto
   );
 };
 
-// ============ SETTINGS PAGE SKELETON ============
+// ============ SETTINGS PAGE SKELETON (Static) ============
 export const SettingsSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
   const theme = useShimmerTheme();
   
   const SettingsRow = () => (
     <View style={settingsSkeleton.row}>
-      <ShimmerBox width={24} height={24} borderRadius={12} />
+      <PlaceholderBox width={24} height={24} borderRadius={12} />
       <View style={settingsSkeleton.rowContent}>
-        <ShimmerBox width="50%" height={16} borderRadius={4} />
-        <ShimmerBox width="30%" height={12} borderRadius={4} />
+        <PlaceholderBox width="50%" height={16} borderRadius={4} />
+        <PlaceholderBox width="30%" height={12} borderRadius={4} />
       </View>
-      <ShimmerBox width={50} height={28} borderRadius={14} />
+      <PlaceholderBox width={50} height={28} borderRadius={14} />
     </View>
   );
   
   if (!isDesktop) {
     return (
       <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor }]}>
-        {/* Header */}
         <View style={settingsSkeleton.mobileHeader}>
-          <ShimmerBox width={24} height={24} borderRadius={4} />
-          <ShimmerBox width={100} height={20} borderRadius={4} />
+          <PlaceholderBox width={24} height={24} borderRadius={4} />
+          <PlaceholderBox width={100} height={20} borderRadius={4} />
           <View style={{ width: 24 }} />
         </View>
         
-        {/* Settings sections */}
         {Array(3).fill(0).map((_, section) => (
           <View key={section} style={settingsSkeleton.section}>
-            <ShimmerBox width={120} height={16} borderRadius={4} style={{ marginBottom: 12, marginLeft: 16 }} />
+            <PlaceholderBox width={120} height={16} borderRadius={4} style={{ marginBottom: 12, marginLeft: 16 }} />
             <View style={[settingsSkeleton.sectionContent, { backgroundColor: theme.surfaceColor }]}>
               {Array(4).fill(0).map((_, i) => <SettingsRow key={i} />)}
             </View>
@@ -311,29 +224,25 @@ export const SettingsSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop 
   
   return (
     <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor, maxWidth: 1280, alignSelf: 'center' as const, width: '100%' }]}>
-      {/* Header */}
       <View style={skeletonBase.header}>
-        <ShimmerBox width={100} height={36} borderRadius={4} />
+        <PlaceholderBox width={100} height={36} borderRadius={4} />
         <View style={skeletonBase.headerRight}>
-          <ShimmerBox width={120} height={40} borderRadius={8} />
+          <PlaceholderBox width={120} height={40} borderRadius={8} />
         </View>
       </View>
       
-      {/* Main content */}
       <View style={settingsSkeleton.desktopLayout}>
-        {/* Sidebar */}
         <View style={[settingsSkeleton.desktopSidebar, { backgroundColor: theme.surfaceColor }]}>
-          <ShimmerBox width="80%" height={24} borderRadius={4} style={{ marginBottom: 20 }} />
+          <PlaceholderBox width="80%" height={24} borderRadius={4} style={{ marginBottom: 20 }} />
           {Array(6).fill(0).map((_, i) => (
-            <ShimmerBox key={i} height={44} borderRadius={8} style={{ marginBottom: 8 }} />
+            <PlaceholderBox key={i} height={44} borderRadius={8} style={{ marginBottom: 8 }} />
           ))}
         </View>
         
-        {/* Content */}
         <View style={settingsSkeleton.desktopContent}>
           <View style={[settingsSkeleton.desktopCard, { backgroundColor: theme.surfaceColor }]}>
-            <ShimmerBox width={200} height={24} borderRadius={4} style={{ marginBottom: 8 }} />
-            <ShimmerBox width="60%" height={16} borderRadius={4} style={{ marginBottom: 24 }} />
+            <PlaceholderBox width={200} height={24} borderRadius={4} style={{ marginBottom: 8 }} />
+            <PlaceholderBox width="60%" height={16} borderRadius={4} style={{ marginBottom: 24 }} />
             {Array(5).fill(0).map((_, i) => <SettingsRow key={i} />)}
           </View>
         </View>
@@ -342,73 +251,67 @@ export const SettingsSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop 
   );
 };
 
-// ============ MESSAGES PAGE SKELETON ============
+// ============ MESSAGES PAGE SKELETON (Static) ============
 export const MessagesSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
   const theme = useShimmerTheme();
   
   const MessageItem = () => (
     <View style={[messagesSkeleton.item, { backgroundColor: theme.surfaceColor }]}>
-      <ShimmerBox width={50} height={50} borderRadius={25} />
+      <PlaceholderBox width={50} height={50} borderRadius={25} />
       <View style={messagesSkeleton.content}>
-        <ShimmerBox width="50%" height={16} borderRadius={4} />
-        <ShimmerBox width="80%" height={14} borderRadius={4} />
+        <PlaceholderBox width="50%" height={16} borderRadius={4} />
+        <PlaceholderBox width="80%" height={14} borderRadius={4} />
       </View>
-      <ShimmerBox width={40} height={12} borderRadius={4} />
+      <PlaceholderBox width={40} height={12} borderRadius={4} />
     </View>
   );
   
   return (
     <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor }]}>
-      {/* Header */}
       <View style={settingsSkeleton.mobileHeader}>
-        <ShimmerBox width={24} height={24} borderRadius={4} />
-        <ShimmerBox width={100} height={20} borderRadius={4} />
-        <ShimmerBox width={24} height={24} borderRadius={4} />
+        <PlaceholderBox width={24} height={24} borderRadius={4} />
+        <PlaceholderBox width={100} height={20} borderRadius={4} />
+        <PlaceholderBox width={24} height={24} borderRadius={4} />
       </View>
       
-      {/* Search bar */}
-      <ShimmerBox height={44} borderRadius={22} style={{ marginBottom: 16 }} />
+      <PlaceholderBox height={44} borderRadius={22} style={{ marginBottom: 16 }} />
       
-      {/* Tabs */}
       <View style={messagesSkeleton.tabs}>
-        <ShimmerBox height={40} borderRadius={8} style={{ flex: 1 }} />
-        <ShimmerBox height={40} borderRadius={8} style={{ flex: 1 }} />
+        <PlaceholderBox height={40} borderRadius={8} style={{ flex: 1 }} />
+        <PlaceholderBox height={40} borderRadius={8} style={{ flex: 1 }} />
       </View>
       
-      {/* Message list */}
       {Array(6).fill(0).map((_, i) => <MessageItem key={i} />)}
     </View>
   );
 };
 
-// ============ PROFILE PAGE SKELETON ============
+// ============ PROFILE PAGE SKELETON (Static) ============
 export const ProfileSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
   const theme = useShimmerTheme();
   
   return (
     <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor }]}>
-      {/* Profile header */}
       <View style={[profileSkeleton.header, { backgroundColor: theme.surfaceColor }]}>
-        <ShimmerBox width={80} height={80} borderRadius={40} />
-        <ShimmerBox width={150} height={24} borderRadius={4} />
-        <ShimmerBox width={100} height={16} borderRadius={4} />
+        <PlaceholderBox width={80} height={80} borderRadius={40} />
+        <PlaceholderBox width={150} height={24} borderRadius={4} />
+        <PlaceholderBox width={100} height={16} borderRadius={4} />
         <View style={profileSkeleton.stats}>
           {Array(3).fill(0).map((_, i) => (
             <View key={i} style={profileSkeleton.statItem}>
-              <ShimmerBox width={40} height={24} borderRadius={4} />
-              <ShimmerBox width={60} height={12} borderRadius={4} />
+              <PlaceholderBox width={40} height={24} borderRadius={4} />
+              <PlaceholderBox width={60} height={12} borderRadius={4} />
             </View>
           ))}
         </View>
       </View>
       
-      {/* Menu items */}
       <View style={[profileSkeleton.menu, { backgroundColor: theme.surfaceColor }]}>
         {Array(6).fill(0).map((_, i) => (
           <View key={i} style={profileSkeleton.menuItem}>
-            <ShimmerBox width={24} height={24} borderRadius={4} />
-            <ShimmerBox height={18} borderRadius={4} style={{ flex: 1, marginLeft: 12 }} />
-            <ShimmerBox width={20} height={20} borderRadius={4} />
+            <PlaceholderBox width={24} height={24} borderRadius={4} />
+            <PlaceholderBox height={18} borderRadius={4} style={{ flex: 1, marginLeft: 12 }} />
+            <PlaceholderBox width={20} height={20} borderRadius={4} />
           </View>
         ))}
       </View>
@@ -416,49 +319,44 @@ export const ProfileSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop =
   );
 };
 
-// ============ LISTING DETAIL SKELETON ============
+// ============ LISTING DETAIL SKELETON (Static) ============
 export const ListingDetailSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
   const theme = useShimmerTheme();
   
   return (
     <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor, padding: 0 }]}>
-      {/* Image carousel */}
-      <ShimmerBox aspectRatio={1} borderRadius={0} />
+      <PlaceholderBox aspectRatio={1} borderRadius={0} />
       
-      {/* Price and title */}
       <View style={listingSkeleton.infoSection}>
-        <ShimmerBox width={120} height={32} borderRadius={4} />
-        <ShimmerBox width="90%" height={24} borderRadius={4} />
-        <ShimmerBox width="60%" height={16} borderRadius={4} />
+        <PlaceholderBox width={120} height={32} borderRadius={4} />
+        <PlaceholderBox width="90%" height={24} borderRadius={4} />
+        <PlaceholderBox width="60%" height={16} borderRadius={4} />
       </View>
       
-      {/* Seller info */}
       <View style={[listingSkeleton.sellerSection, { backgroundColor: theme.surfaceColor }]}>
-        <ShimmerBox width={48} height={48} borderRadius={24} />
+        <PlaceholderBox width={48} height={48} borderRadius={24} />
         <View style={{ flex: 1, gap: 4 }}>
-          <ShimmerBox width="50%" height={18} borderRadius={4} />
-          <ShimmerBox width="30%" height={14} borderRadius={4} />
+          <PlaceholderBox width="50%" height={18} borderRadius={4} />
+          <PlaceholderBox width="30%" height={14} borderRadius={4} />
         </View>
       </View>
       
-      {/* Description */}
       <View style={listingSkeleton.descSection}>
-        <ShimmerBox width={100} height={20} borderRadius={4} style={{ marginBottom: 12 }} />
-        <ShimmerBox height={14} borderRadius={4} />
-        <ShimmerBox height={14} borderRadius={4} />
-        <ShimmerBox width="70%" height={14} borderRadius={4} />
+        <PlaceholderBox width={100} height={20} borderRadius={4} style={{ marginBottom: 12 }} />
+        <PlaceholderBox height={14} borderRadius={4} />
+        <PlaceholderBox height={14} borderRadius={4} />
+        <PlaceholderBox width="70%" height={14} borderRadius={4} />
       </View>
       
-      {/* Action buttons */}
       <View style={listingSkeleton.actions}>
-        <ShimmerBox height={48} borderRadius={8} style={{ flex: 1 }} />
-        <ShimmerBox height={48} borderRadius={8} style={{ flex: 2 }} />
+        <PlaceholderBox height={48} borderRadius={8} style={{ flex: 1 }} />
+        <PlaceholderBox height={48} borderRadius={8} style={{ flex: 2 }} />
       </View>
     </View>
   );
 };
 
-// ============ CATEGORY PAGE SKELETON ============
+// ============ CATEGORY PAGE SKELETON (Static) ============
 export const CategoryPageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
   const theme = useShimmerTheme();
   
@@ -468,38 +366,33 @@ export const CategoryPageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesk
   if (!isDesktop) {
     return (
       <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor }]}>
-        {/* Header */}
         <View style={categorySkeleton.mobileHeader}>
-          <ShimmerBox width={24} height={24} borderRadius={4} />
-          <ShimmerBox width={150} height={24} borderRadius={4} />
-          <ShimmerBox width={24} height={24} borderRadius={4} />
+          <PlaceholderBox width={24} height={24} borderRadius={4} />
+          <PlaceholderBox width={150} height={24} borderRadius={4} />
+          <PlaceholderBox width={24} height={24} borderRadius={4} />
         </View>
         
-        {/* Subcategory chips */}
         <View style={categorySkeleton.subcategoryChips}>
           {Array(5).fill(0).map((_, i) => (
-            <ShimmerBox key={i} width={100} height={36} borderRadius={18} />
+            <PlaceholderBox key={i} width={100} height={36} borderRadius={18} />
           ))}
         </View>
         
-        {/* Quick filters */}
         <View style={categorySkeleton.filterRow}>
-          <ShimmerBox width={80} height={32} borderRadius={16} />
-          <ShimmerBox width={80} height={32} borderRadius={16} />
-          <ShimmerBox width={80} height={32} borderRadius={16} />
+          <PlaceholderBox width={80} height={32} borderRadius={16} />
+          <PlaceholderBox width={80} height={32} borderRadius={16} />
+          <PlaceholderBox width={80} height={32} borderRadius={16} />
         </View>
         
-        {/* Results count */}
-        <ShimmerBox width={100} height={16} borderRadius={4} style={{ marginBottom: 16, marginLeft: 4 }} />
+        <PlaceholderBox width={100} height={16} borderRadius={4} style={{ marginBottom: 16, marginLeft: 4 }} />
         
-        {/* Listing grid */}
         <View style={skeletonBase.grid}>
           {Array(cardCount).fill(0).map((_, i) => (
             <View key={i} style={[skeletonBase.card, { width: cardWidth, backgroundColor: theme.surfaceColor }]}>
-              <ShimmerBox aspectRatio={1} borderRadius={8} style={{ marginBottom: 8 }} />
-              <ShimmerBox width="40%" height={12} borderRadius={4} style={{ marginBottom: 4 }} />
-              <ShimmerBox width="80%" height={16} borderRadius={4} style={{ marginBottom: 6 }} />
-              <ShimmerBox width="50%" height={20} borderRadius={4} />
+              <PlaceholderBox aspectRatio={1} borderRadius={8} style={{ marginBottom: 8 }} />
+              <PlaceholderBox width="40%" height={12} borderRadius={4} style={{ marginBottom: 4 }} />
+              <PlaceholderBox width="80%" height={16} borderRadius={4} style={{ marginBottom: 6 }} />
+              <PlaceholderBox width="50%" height={20} borderRadius={4} />
             </View>
           ))}
         </View>
@@ -509,67 +402,58 @@ export const CategoryPageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesk
   
   return (
     <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor, maxWidth: 1280, alignSelf: 'center' as const, width: '100%' }]}>
-      {/* Desktop Header */}
       <View style={skeletonBase.header}>
-        <ShimmerBox width={100} height={36} borderRadius={4} />
-        <ShimmerBox width={500} height={44} borderRadius={22} style={{ marginHorizontal: 24 }} />
+        <PlaceholderBox width={100} height={36} borderRadius={4} />
+        <PlaceholderBox width={500} height={44} borderRadius={22} style={{ marginHorizontal: 24 }} />
         <View style={skeletonBase.headerRight}>
-          <ShimmerBox width={120} height={40} borderRadius={8} />
+          <PlaceholderBox width={120} height={40} borderRadius={8} />
         </View>
       </View>
       
-      {/* Main layout */}
       <View style={categorySkeleton.desktopLayout}>
-        {/* Left sidebar - Categories */}
         <View style={[categorySkeleton.sidebar, { backgroundColor: theme.surfaceColor }]}>
-          <ShimmerBox width={120} height={20} borderRadius={4} style={{ marginBottom: 16 }} />
+          <PlaceholderBox width={120} height={20} borderRadius={4} style={{ marginBottom: 16 }} />
           {Array(10).fill(0).map((_, i) => (
             <View key={i} style={categorySkeleton.sidebarItem}>
-              <ShimmerBox width={20} height={20} borderRadius={4} />
-              <ShimmerBox width={100} height={16} borderRadius={4} />
+              <PlaceholderBox width={20} height={20} borderRadius={4} />
+              <PlaceholderBox width={100} height={16} borderRadius={4} />
             </View>
           ))}
         </View>
         
-        {/* Main content */}
         <View style={{ flex: 1 }}>
-          {/* Breadcrumb */}
           <View style={categorySkeleton.breadcrumb}>
-            <ShimmerBox width={50} height={14} borderRadius={4} />
-            <ShimmerBox width={80} height={14} borderRadius={4} />
-            <ShimmerBox width={100} height={14} borderRadius={4} />
+            <PlaceholderBox width={50} height={14} borderRadius={4} />
+            <PlaceholderBox width={80} height={14} borderRadius={4} />
+            <PlaceholderBox width={100} height={14} borderRadius={4} />
           </View>
           
-          {/* Title and count */}
           <View style={categorySkeleton.titleRow}>
-            <ShimmerBox width={200} height={28} borderRadius={4} />
-            <ShimmerBox width={100} height={16} borderRadius={4} />
+            <PlaceholderBox width={200} height={28} borderRadius={4} />
+            <PlaceholderBox width={100} height={16} borderRadius={4} />
           </View>
           
-          {/* Subcategory chips */}
           <View style={categorySkeleton.subcategoryChips}>
             {Array(8).fill(0).map((_, i) => (
-              <ShimmerBox key={i} width={110} height={36} borderRadius={18} />
+              <PlaceholderBox key={i} width={110} height={36} borderRadius={18} />
             ))}
           </View>
           
-          {/* Filter bar */}
           <View style={categorySkeleton.filterBar}>
-            <ShimmerBox width={120} height={40} borderRadius={8} />
-            <ShimmerBox width={120} height={40} borderRadius={8} />
-            <ShimmerBox width={120} height={40} borderRadius={8} />
+            <PlaceholderBox width={120} height={40} borderRadius={8} />
+            <PlaceholderBox width={120} height={40} borderRadius={8} />
+            <PlaceholderBox width={120} height={40} borderRadius={8} />
             <View style={{ flex: 1 }} />
-            <ShimmerBox width={100} height={40} borderRadius={8} />
+            <PlaceholderBox width={100} height={40} borderRadius={8} />
           </View>
           
-          {/* Listing grid */}
           <View style={skeletonBase.grid}>
             {Array(cardCount).fill(0).map((_, i) => (
               <View key={i} style={[skeletonBase.card, { width: cardWidth, backgroundColor: theme.surfaceColor }]}>
-                <ShimmerBox aspectRatio={1} borderRadius={8} style={{ marginBottom: 8 }} />
-                <ShimmerBox width="40%" height={12} borderRadius={4} style={{ marginBottom: 4 }} />
-                <ShimmerBox width="80%" height={16} borderRadius={4} style={{ marginBottom: 6 }} />
-                <ShimmerBox width="50%" height={20} borderRadius={4} />
+                <PlaceholderBox aspectRatio={1} borderRadius={8} style={{ marginBottom: 8 }} />
+                <PlaceholderBox width="40%" height={12} borderRadius={4} style={{ marginBottom: 4 }} />
+                <PlaceholderBox width="80%" height={16} borderRadius={4} style={{ marginBottom: 6 }} />
+                <PlaceholderBox width="50%" height={20} borderRadius={4} />
               </View>
             ))}
           </View>
@@ -579,7 +463,7 @@ export const CategoryPageSkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesk
   );
 };
 
-// ============ BUSINESS DIRECTORY SKELETON ============
+// ============ BUSINESS DIRECTORY SKELETON (Static) ============
 export const BusinessDirectorySkeleton: React.FC<{ isDesktop?: boolean }> = ({ isDesktop = false }) => {
   const theme = useShimmerTheme();
   
@@ -587,44 +471,37 @@ export const BusinessDirectorySkeleton: React.FC<{ isDesktop?: boolean }> = ({ i
   
   return (
     <View style={[skeletonBase.container, { backgroundColor: theme.backgroundColor }]}>
-      {/* Header */}
       <View style={categorySkeleton.mobileHeader}>
-        <ShimmerBox width={24} height={24} borderRadius={4} />
-        <ShimmerBox width={180} height={24} borderRadius={4} />
-        <ShimmerBox width={24} height={24} borderRadius={4} />
+        <PlaceholderBox width={24} height={24} borderRadius={4} />
+        <PlaceholderBox width={180} height={24} borderRadius={4} />
+        <PlaceholderBox width={24} height={24} borderRadius={4} />
       </View>
       
-      {/* Search bar */}
-      <ShimmerBox height={48} borderRadius={24} style={{ marginBottom: 16 }} />
+      <PlaceholderBox height={48} borderRadius={24} style={{ marginBottom: 16 }} />
       
-      {/* Category filter chips */}
       <View style={categorySkeleton.subcategoryChips}>
         {Array(6).fill(0).map((_, i) => (
-          <ShimmerBox key={i} width={90} height={36} borderRadius={18} />
+          <PlaceholderBox key={i} width={90} height={36} borderRadius={18} />
         ))}
       </View>
       
-      {/* Business cards grid */}
       <View style={businessSkeleton.grid}>
         {Array(cardCount).fill(0).map((_, i) => (
           <View key={i} style={[businessSkeleton.card, { backgroundColor: theme.surfaceColor }]}>
-            {/* Cover image */}
-            <ShimmerBox height={80} borderRadius={0} />
+            <PlaceholderBox height={80} borderRadius={0} />
             
-            {/* Logo */}
             <View style={businessSkeleton.logoContainer}>
-              <ShimmerBox width={60} height={60} borderRadius={30} />
+              <PlaceholderBox width={60} height={60} borderRadius={30} />
             </View>
             
-            {/* Content */}
             <View style={businessSkeleton.cardContent}>
-              <ShimmerBox width="70%" height={18} borderRadius={4} />
-              <ShimmerBox width="50%" height={14} borderRadius={4} />
+              <PlaceholderBox width="70%" height={18} borderRadius={4} />
+              <PlaceholderBox width="50%" height={14} borderRadius={4} />
               <View style={businessSkeleton.statsRow}>
-                <ShimmerBox width={60} height={12} borderRadius={4} />
-                <ShimmerBox width={60} height={12} borderRadius={4} />
+                <PlaceholderBox width={60} height={12} borderRadius={4} />
+                <PlaceholderBox width={60} height={12} borderRadius={4} />
               </View>
-              <ShimmerBox width={80} height={24} borderRadius={12} style={{ alignSelf: 'flex-start' }} />
+              <PlaceholderBox width={80} height={24} borderRadius={12} style={{ alignSelf: 'flex-start' }} />
             </View>
           </View>
         ))}
@@ -637,65 +514,41 @@ export const BusinessDirectorySkeleton: React.FC<{ isDesktop?: boolean }> = ({ i
 const skeletonBase = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background, padding: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingVertical: 8 },
-  logo: { width: 100, height: 36, backgroundColor: COLORS.skeleton, borderRadius: 4 },
   headerRight: { flexDirection: 'row', gap: 12, alignItems: 'center' },
-  textBtn: { width: 60, height: 36, backgroundColor: COLORS.skeleton, borderRadius: 8 },
-  primaryBtn: { width: 120, height: 40, backgroundColor: COLORS.skeleton, borderRadius: 8 },
   searchRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
-  searchBar: { flex: 1, height: 48, backgroundColor: COLORS.skeleton, borderRadius: 24 },
-  locationChip: { width: 150, height: 48, backgroundColor: COLORS.skeleton, borderRadius: 24 },
   categories: { flexDirection: 'row', gap: 8, marginBottom: 24, flexWrap: 'wrap' },
-  categoryPill: { width: 100, height: 40, backgroundColor: COLORS.skeleton, borderRadius: 20 },
-  sectionTitle: { width: 150, height: 22, backgroundColor: COLORS.skeleton, borderRadius: 4 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
   card: { backgroundColor: COLORS.surface, borderRadius: 12, padding: 8, marginBottom: 8 },
-  cardImage: { width: '100%', aspectRatio: 1, backgroundColor: COLORS.skeleton, borderRadius: 8, marginBottom: 8 },
-  cardLocation: { width: '40%', height: 12, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 4 },
-  cardTitle: { width: '80%', height: 16, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 6 },
-  cardPrice: { width: '50%', height: 20, backgroundColor: COLORS.skeleton, borderRadius: 4 },
 });
 
 const searchSkeleton = StyleSheet.create({
-  mobileSearchBar: { height: 48, backgroundColor: COLORS.skeleton, borderRadius: 8, marginBottom: 16 },
-  desktopSearchBar: { flex: 1, maxWidth: 500, height: 44, backgroundColor: COLORS.skeleton, borderRadius: 22, marginHorizontal: 24 },
   desktopLayout: { flexDirection: 'row', gap: 24 },
   sidebar: { width: 280, backgroundColor: COLORS.surface, borderRadius: 12, padding: 16 },
-  sidebarSection: { width: '70%', height: 20, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 12 },
-  sidebarList: { width: '100%', height: 150, backgroundColor: COLORS.skeleton, borderRadius: 8, marginBottom: 20 },
   resultsArea: { flex: 1 },
   resultItem: { flexDirection: 'row', backgroundColor: COLORS.surface, borderRadius: 12, padding: 12, marginBottom: 12, gap: 12 },
-  resultImage: { width: 100, height: 100, backgroundColor: COLORS.skeleton, borderRadius: 8 },
   resultContent: { flex: 1, gap: 8, justifyContent: 'center' },
 });
 
 const settingsSkeleton = StyleSheet.create({
   mobileHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, paddingVertical: 8 },
   section: { marginBottom: 24 },
-  sectionTitle: { width: 120, height: 16, backgroundColor: COLORS.skeleton, borderRadius: 4, marginBottom: 12, marginLeft: 16 },
   sectionContent: { backgroundColor: COLORS.surface, borderRadius: 12 },
   row: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12, borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
-  rowIcon: { width: 24, height: 24, backgroundColor: COLORS.skeleton, borderRadius: 12 },
   rowContent: { flex: 1, gap: 4 },
-  toggle: { width: 50, height: 28, backgroundColor: COLORS.skeleton, borderRadius: 14 },
   desktopLayout: { flexDirection: 'row', gap: 24 },
   desktopSidebar: { width: 280, backgroundColor: COLORS.surface, borderRadius: 12, padding: 20 },
-  desktopNavItem: { width: '100%', height: 44, backgroundColor: COLORS.skeleton, borderRadius: 8, marginBottom: 8 },
   desktopContent: { flex: 1 },
   desktopCard: { backgroundColor: COLORS.surface, borderRadius: 12, padding: 24 },
 });
 
 const messagesSkeleton = StyleSheet.create({
-  searchBar: { height: 44, backgroundColor: COLORS.skeleton, borderRadius: 22, marginBottom: 16 },
   tabs: { flexDirection: 'row', gap: 8, marginBottom: 16 },
-  tab: { flex: 1, height: 40, backgroundColor: COLORS.skeleton, borderRadius: 8 },
   item: { flexDirection: 'row', alignItems: 'center', padding: 16, backgroundColor: COLORS.surface, borderRadius: 12, marginBottom: 8, gap: 12 },
-  avatar: { width: 50, height: 50, backgroundColor: COLORS.skeleton, borderRadius: 25 },
   content: { flex: 1, gap: 6 },
 });
 
 const profileSkeleton = StyleSheet.create({
   header: { alignItems: 'center', paddingVertical: 24, backgroundColor: COLORS.surface, borderRadius: 12, marginBottom: 16, gap: 8 },
-  avatar: { width: 80, height: 80, backgroundColor: COLORS.skeleton, borderRadius: 40 },
   stats: { flexDirection: 'row', gap: 32, marginTop: 16 },
   statItem: { alignItems: 'center', gap: 4 },
   menu: { backgroundColor: COLORS.surface, borderRadius: 12 },
@@ -703,14 +556,10 @@ const profileSkeleton = StyleSheet.create({
 });
 
 const listingSkeleton = StyleSheet.create({
-  mainImage: { width: '100%', aspectRatio: 1, backgroundColor: COLORS.skeleton, borderRadius: 0 },
   infoSection: { padding: 16, gap: 8 },
   sellerSection: { flexDirection: 'row', alignItems: 'center', padding: 16, backgroundColor: COLORS.surface, marginHorizontal: 16, borderRadius: 12, gap: 12 },
-  sellerAvatar: { width: 48, height: 48, backgroundColor: COLORS.skeleton, borderRadius: 24 },
   descSection: { padding: 16, gap: 8 },
   actions: { flexDirection: 'row', padding: 16, gap: 12 },
-  actionBtn: { flex: 1, height: 48, backgroundColor: COLORS.skeleton, borderRadius: 8 },
-  actionBtnPrimary: { flex: 2, height: 48, backgroundColor: COLORS.skeleton, borderRadius: 8 },
 });
 
 const categorySkeleton = StyleSheet.create({
