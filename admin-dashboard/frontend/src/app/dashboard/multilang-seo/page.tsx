@@ -211,7 +211,7 @@ export default function MultilangSeoPage() {
       {/* Language Coverage Overview */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {Object.entries(languageStats).map(([code, lang]) => (
-          <Grid item xs={12} md={4} key={code}>
+          <Grid size={{ xs: 12, md: 4 }} key={code}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -242,15 +242,15 @@ export default function MultilangSeoPage() {
                 </Box>
                 
                 <Grid container spacing={1}>
-                  <Grid item xs={4}>
+                  <Grid size={{ xs: 4 }}>
                     <Typography variant="h5" color="primary" textAlign="center">{lang.blog_posts || 0}</Typography>
                     <Typography variant="caption" color="text.secondary" display="block" textAlign="center">Blog Posts</Typography>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={{ xs: 4 }}>
                     <Typography variant="h5" color="info.main" textAlign="center">{lang.localizations || 0}</Typography>
                     <Typography variant="caption" color="text.secondary" display="block" textAlign="center">Localizations</Typography>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={{ xs: 4 }}>
                     <Typography variant="h5" color="warning.main" textAlign="center">{lang.pending_translations || 0}</Typography>
                     <Typography variant="caption" color="text.secondary" display="block" textAlign="center">Pending</Typography>
                   </Grid>
@@ -394,7 +394,7 @@ export default function MultilangSeoPage() {
       {tabValue === 2 && regionalKeywords && (
         <Grid container spacing={3}>
           {Object.entries(regionalKeywords).map(([region, data]: [string, any]) => (
-            <Grid item xs={12} md={4} key={region}>
+            <Grid size={{ xs: 12, md: 4 }} key={region}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -437,7 +437,7 @@ export default function MultilangSeoPage() {
             </Typography>
             
             <Grid container spacing={2} sx={{ mb: 3 }}>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <FormControl fullWidth>
                   <InputLabel>Content Type</InputLabel>
                   <Select
@@ -451,7 +451,7 @@ export default function MultilangSeoPage() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Content ID"
                   value={formData.content_id}
@@ -460,7 +460,7 @@ export default function MultilangSeoPage() {
                   placeholder="e.g., how-to-sell-car-online"
                 />
               </Grid>
-              <Grid item xs={12} md={2}>
+              <Grid size={{ xs: 12, md: 2 }}>
                 <Button 
                   variant="contained" 
                   onClick={generateHreflangTags}

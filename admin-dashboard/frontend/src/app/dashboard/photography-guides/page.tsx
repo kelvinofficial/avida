@@ -584,7 +584,7 @@ export default function PhotographyGuidesPage() {
 
       {/* Stats Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography color="text.secondary" gutterBottom>Total Guides</Typography>
@@ -592,7 +592,7 @@ export default function PhotographyGuidesPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography color="text.secondary" gutterBottom>Active</Typography>
@@ -600,7 +600,7 @@ export default function PhotographyGuidesPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography color="text.secondary" gutterBottom>With Images</Typography>
@@ -608,7 +608,7 @@ export default function PhotographyGuidesPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography color="text.secondary" gutterBottom>Categories</Typography>
@@ -823,7 +823,7 @@ export default function PhotographyGuidesPage() {
             </Box>
 
             <Grid container spacing={2}>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <TextField
                   label="Display Order"
                   type="number"
@@ -834,7 +834,7 @@ export default function PhotographyGuidesPage() {
                   helperText="Lower = displayed first"
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <FormControlLabel
                   control={
                     <Switch

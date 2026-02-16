@@ -185,7 +185,7 @@ export default function GrowthEnginePage() {
 
       {/* Overview Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card sx={{ bgcolor: '#e3f2fd', height: '100%' }}>
             <CardContent>
               <Box display="flex" alignItems="center" mb={1}>
@@ -204,7 +204,7 @@ export default function GrowthEnginePage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card sx={{ bgcolor: '#e8f5e9', height: '100%' }}>
             <CardContent>
               <Box display="flex" alignItems="center" mb={1}>
@@ -223,7 +223,7 @@ export default function GrowthEnginePage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card sx={{ bgcolor: '#fff3e0', height: '100%' }}>
             <CardContent>
               <Box display="flex" alignItems="center" mb={1}>
@@ -242,7 +242,7 @@ export default function GrowthEnginePage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card sx={{ bgcolor: '#f3e5f5', height: '100%' }}>
             <CardContent>
               <Box display="flex" alignItems="center" mb={1}>
@@ -273,7 +273,7 @@ export default function GrowthEnginePage() {
       {tabValue === 0 && (
         <Grid container spacing={3}>
           {/* Keyword Targets */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -317,9 +317,9 @@ export default function GrowthEnginePage() {
           </Grid>
 
           {/* Other Targets */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Grid container spacing={2}>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Card>
                   <CardContent>
                     <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
@@ -340,7 +340,7 @@ export default function GrowthEnginePage() {
                 </Card>
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Card>
                   <CardContent>
                     <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
@@ -366,7 +366,7 @@ export default function GrowthEnginePage() {
                 </Card>
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Card>
                   <CardContent>
                     <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
@@ -398,7 +398,7 @@ export default function GrowthEnginePage() {
 
       {tabValue === 1 && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Card>
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -448,7 +448,7 @@ export default function GrowthEnginePage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" fontWeight="bold" gutterBottom>

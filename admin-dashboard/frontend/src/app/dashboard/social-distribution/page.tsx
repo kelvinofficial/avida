@@ -331,7 +331,7 @@ export default function SocialDistributionPage() {
       {/* Analytics Summary */}
       {analytics && (
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 2 }}>
                 <Typography variant="h4" color="primary" fontWeight="bold">{analytics.summary?.total_posts || 0}</Typography>
@@ -339,7 +339,7 @@ export default function SocialDistributionPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 2 }}>
                 <Typography variant="h4" color="success.main" fontWeight="bold">{analytics.summary?.published || 0}</Typography>
@@ -347,7 +347,7 @@ export default function SocialDistributionPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 2 }}>
                 <Typography variant="h4" color="warning.main" fontWeight="bold">{analytics.summary?.scheduled || 0}</Typography>
@@ -355,7 +355,7 @@ export default function SocialDistributionPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 2 }}>
                 <Typography variant="h4" color="info.main" fontWeight="bold">{analytics.summary?.drafts || 0}</Typography>
@@ -462,7 +462,7 @@ export default function SocialDistributionPage() {
           {queue.length > 0 ? (
             <Grid container spacing={2}>
               {queue.map(post => (
-                <Grid item xs={12} md={6} key={post.id}>
+                <Grid size={{ xs: 12, md: 6 }} key={post.id}>
                   <Card>
                     <CardContent>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -502,7 +502,7 @@ export default function SocialDistributionPage() {
       {tabValue === 2 && templates && (
         <Grid container spacing={2}>
           {Object.entries(templates).map(([type, platformTemplates]: [string, any]) => (
-            <Grid item xs={12} key={type}>
+            <Grid size={{ xs: 12 }} key={type}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom sx={{ textTransform: 'capitalize' }}>
@@ -510,7 +510,7 @@ export default function SocialDistributionPage() {
                   </Typography>
                   <Grid container spacing={2}>
                     {Object.entries(platformTemplates).map(([platform, template]: [string, any]) => (
-                      <Grid item xs={12} md={4} key={platform}>
+                      <Grid size={{ xs: 12, md: 4 }} key={platform}>
                         <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                             <Box sx={{ color: PLATFORM_COLORS[platform] }}>{getPlatformIcon(platform)}</Box>
@@ -537,7 +537,7 @@ export default function SocialDistributionPage() {
       {tabValue === 3 && analytics && (
         <Grid container spacing={2}>
           {Object.entries(platforms).map(([key, platform]) => (
-            <Grid item xs={12} md={6} lg={3} key={key}>
+            <Grid size={{ xs: 12, md: 6, lg: 3 }} key={key}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -627,7 +627,7 @@ export default function SocialDistributionPage() {
             </Box>
             
             <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>Content Type</InputLabel>
                   <Select
@@ -641,7 +641,7 @@ export default function SocialDistributionPage() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Schedule Time"
                   type="datetime-local"

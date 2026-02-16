@@ -174,7 +174,7 @@ export default function SEOAnalyticsPage() {
 
       {/* Overview Stats */}
       <Grid container spacing={3} mb={3}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card sx={{ bgcolor: '#E8F5E9', border: '1px solid #A5D6A7' }}>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1} mb={1}>
@@ -193,7 +193,7 @@ export default function SEOAnalyticsPage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card sx={{ bgcolor: '#E3F2FD', border: '1px solid #90CAF9' }}>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1} mb={1}>
@@ -212,7 +212,7 @@ export default function SEOAnalyticsPage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card sx={{ bgcolor: '#FFF3E0', border: '1px solid #FFCC80' }}>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1} mb={1}>
@@ -231,7 +231,7 @@ export default function SEOAnalyticsPage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card sx={{ bgcolor: '#F3E5F5', border: '1px solid #CE93D8' }}>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1} mb={1}>
@@ -372,7 +372,7 @@ export default function SEOAnalyticsPage() {
               </Typography>
               {data?.by_source && data.by_source.length > 0 ? (
                 <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <ResponsiveContainer width="100%" height={300}>
                       <PieChart>
                         <Pie
@@ -392,7 +392,7 @@ export default function SEOAnalyticsPage() {
                       </PieChart>
                     </ResponsiveContainer>
                   </Grid>
-                  <Grid item xs={12} md={6}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <TableContainer component={Paper} variant="outlined">
                       <Table size="small">
                         <TableHead>
@@ -500,7 +500,7 @@ export default function SEOAnalyticsPage() {
               </Typography>
               {data?.by_category && data.by_category.length > 0 ? (
                 <Grid container spacing={3}>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <ResponsiveContainer width="100%" height={300}>
                       <BarChart data={data.by_category}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -513,7 +513,7 @@ export default function SEOAnalyticsPage() {
                       </BarChart>
                     </ResponsiveContainer>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <TableContainer component={Paper} variant="outlined">
                       <Table>
                         <TableHead>

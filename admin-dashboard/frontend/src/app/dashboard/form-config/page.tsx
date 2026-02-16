@@ -913,7 +913,7 @@ export default function FormConfigPage() {
 
       {/* Stats Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography color="text.secondary" gutterBottom>Total Configs</Typography>
@@ -921,7 +921,7 @@ export default function FormConfigPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography color="text.secondary" gutterBottom>Active</Typography>
@@ -929,7 +929,7 @@ export default function FormConfigPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography color="text.secondary" gutterBottom>Categories Configured</Typography>
@@ -937,7 +937,7 @@ export default function FormConfigPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography color="text.secondary" gutterBottom>Config Types</Typography>
@@ -1086,7 +1086,7 @@ export default function FormConfigPage() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 1 }}>
             {/* Basic Settings */}
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormControl fullWidth disabled={!!editingConfig}>
                   <InputLabel>Category</InputLabel>
                   <Select
@@ -1100,7 +1100,7 @@ export default function FormConfigPage() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   label="Subcategory ID (optional)"
                   value={formData.subcategory_id}
@@ -1111,7 +1111,7 @@ export default function FormConfigPage() {
                   helperText="Leave empty for category-level config"
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormControl fullWidth disabled={!!editingConfig}>
                   <InputLabel>Configuration Type</InputLabel>
                   <Select
@@ -1135,7 +1135,7 @@ export default function FormConfigPage() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={3}>
+              <Grid size={{ xs: 12, sm: 3 }}>
                 <TextField
                   label="Priority"
                   type="number"
@@ -1145,7 +1145,7 @@ export default function FormConfigPage() {
                   helperText="Higher = more priority"
                 />
               </Grid>
-              <Grid item xs={12} sm={3}>
+              <Grid size={{ xs: 12, sm: 3 }}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -1374,7 +1374,7 @@ export default function FormConfigPage() {
                     Active Configuration Summary
                   </Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="caption" color="text.secondary">Placeholder Config</Typography>
                       <Typography variant="body2">
                         {configs.find(c => c.config_type === 'placeholder' && c.category_id === previewCategory && c.is_active) 
@@ -1384,7 +1384,7 @@ export default function FormConfigPage() {
                             : '❌ Not configured'}
                       </Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="caption" color="text.secondary">Seller Type Config</Typography>
                       <Typography variant="body2">
                         {configs.find(c => c.config_type === 'seller_type' && c.category_id === previewCategory && c.is_active) 
@@ -1394,7 +1394,7 @@ export default function FormConfigPage() {
                             : '❌ Not configured'}
                       </Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="caption" color="text.secondary">Preferences Config</Typography>
                       <Typography variant="body2">
                         {configs.find(c => c.config_type === 'preference' && c.category_id === previewCategory && c.is_active) 
@@ -1402,7 +1402,7 @@ export default function FormConfigPage() {
                           : '⚪ Using defaults'}
                       </Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Typography variant="caption" color="text.secondary">Visibility Rules</Typography>
                       <Typography variant="body2">
                         {preview.visibility.hidePrice || preview.visibility.chatOnly || preview.visibility.hideCondition

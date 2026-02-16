@@ -244,14 +244,14 @@ export default function AuthorityBuildingPage() {
         <Card sx={{ mb: 3, bgcolor: healthScore.grade === 'A' ? 'success.dark' : healthScore.grade === 'B' ? 'info.dark' : healthScore.grade === 'C' ? 'warning.dark' : 'error.dark', color: 'white' }}>
           <CardContent>
             <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} md={3}>
+              <Grid size={{ xs: 12, md: 3 }}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Assessment sx={{ fontSize: 48 }} />
                   <Typography variant="h2" fontWeight="bold">{healthScore.overall_score}</Typography>
                   <Chip label={`Grade ${healthScore.grade}`} sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }} />
                 </Box>
               </Grid>
-              <Grid item xs={12} md={5}>
+              <Grid size={{ xs: 12, md: 5 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1 }}>Performance Breakdown</Typography>
                 {Object.entries(healthScore.components || {}).map(([key, value]: [string, any]) => (
                   <Box key={key} sx={{ mb: 0.5 }}>
@@ -263,7 +263,7 @@ export default function AuthorityBuildingPage() {
                   </Box>
                 ))}
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1 }}>Top Recommendations</Typography>
                 {healthScore.recommendations?.slice(0, 3).map((rec: any, idx: number) => (
                   <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
@@ -280,25 +280,25 @@ export default function AuthorityBuildingPage() {
       {/* Dashboard Stats */}
       {dashboard && (
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card><CardContent sx={{ textAlign: 'center', py: 2 }}>
               <Typography variant="h4" color="primary" fontWeight="bold">{dashboard.campaigns?.total || 0}</Typography>
               <Typography variant="body2" color="text.secondary">Campaigns</Typography>
             </CardContent></Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card><CardContent sx={{ textAlign: 'center', py: 2 }}>
               <Typography variant="h4" color="info.main" fontWeight="bold">{dashboard.outreach?.total_contacts || 0}</Typography>
               <Typography variant="body2" color="text.secondary">Contacts</Typography>
             </CardContent></Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card><CardContent sx={{ textAlign: 'center', py: 2 }}>
               <Typography variant="h4" color="success.main" fontWeight="bold">{dashboard.outreach?.by_status?.linked || 0}</Typography>
               <Typography variant="body2" color="text.secondary">Links Won</Typography>
             </CardContent></Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card><CardContent sx={{ textAlign: 'center', py: 2 }}>
               <Typography variant="h4" color="warning.main" fontWeight="bold">{dashboard.backlinks?.total || 0}</Typography>
               <Typography variant="body2" color="text.secondary">Backlinks</Typography>
@@ -350,7 +350,7 @@ export default function AuthorityBuildingPage() {
                 </Grid>
               ))}
               {campaigns.length === 0 && (
-                <Grid item xs={12}><Card><CardContent sx={{ textAlign: 'center', py: 4 }}>
+                <Grid size={{ xs: 12 }}><Card><CardContent sx={{ textAlign: 'center', py: 4 }}>
                   <Campaign sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
                   <Typography color="text.secondary">No campaigns yet. Create your first campaign!</Typography>
                 </CardContent></Card></Grid>
@@ -397,7 +397,7 @@ export default function AuthorityBuildingPage() {
         <Box>
           <Grid container spacing={3}>
             {/* Backlink Opportunities */}
-            <Grid item xs={12} md={8}>
+            <Grid size={{ xs: 12, md: 8 }}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -452,7 +452,7 @@ export default function AuthorityBuildingPage() {
             </Grid>
 
             {/* PR Opportunities */}
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>PR Opportunities</Typography>
@@ -513,7 +513,7 @@ export default function AuthorityBuildingPage() {
               </Alert>
               
               <Grid container spacing={3}>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Card>
                     <CardContent>
                       <Typography variant="h6" gutterBottom>Summary</Typography>
@@ -532,7 +532,7 @@ export default function AuthorityBuildingPage() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} md={8}>
+                <Grid size={{ xs: 12, md: 8 }}>
                   <Card>
                     <CardContent>
                       <Typography variant="h6" gutterBottom>Backlink Sources (Opportunities for You)</Typography>
@@ -602,7 +602,7 @@ export default function AuthorityBuildingPage() {
       {tabValue === 4 && (
         <Grid container spacing={2}>
           {templates.map(template => (
-            <Grid item xs={12} md={6} key={template.id}>
+            <Grid size={{ xs: 12, md: 6 }} key={template.id}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>

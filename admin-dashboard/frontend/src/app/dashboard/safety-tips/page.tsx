@@ -409,7 +409,7 @@ export default function SafetyTipsPage() {
       {/* Stats Cards */}
       {stats && (
         <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -424,7 +424,7 @@ export default function SafetyTipsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -439,7 +439,7 @@ export default function SafetyTipsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -454,7 +454,7 @@ export default function SafetyTipsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -516,7 +516,7 @@ export default function SafetyTipsPage() {
             if (categoryTips.length === 0 && selectedCategory) return null;
             
             return (
-              <Grid item xs={12} md={6} key={catId}>
+              <Grid size={{ xs: 12, md: 6 }} key={catId}>
                 <Card>
                   <CardContent>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -667,7 +667,7 @@ export default function SafetyTipsPage() {
         </DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControl fullWidth>
                 <InputLabel>Category</InputLabel>
                 <Select
@@ -683,7 +683,7 @@ export default function SafetyTipsPage() {
               </FormControl>
             </Grid>
             
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 multiline
@@ -696,7 +696,7 @@ export default function SafetyTipsPage() {
               />
             </Grid>
             
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -707,7 +707,7 @@ export default function SafetyTipsPage() {
               />
             </Grid>
             
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <FormControlLabel
                 control={
                   <Switch

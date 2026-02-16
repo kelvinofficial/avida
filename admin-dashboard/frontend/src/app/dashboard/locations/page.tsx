@@ -768,7 +768,7 @@ export default function LocationsPage() {
       {/* Stats Cards */}
       {stats && (
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
                 <CountryIcon sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
@@ -777,7 +777,7 @@ export default function LocationsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
                 <RegionIcon sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
@@ -786,7 +786,7 @@ export default function LocationsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
                 <CityIcon sx={{ fontSize: 40, color: 'warning.main', mb: 1 }} />
@@ -795,7 +795,7 @@ export default function LocationsPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
                 <PlaceIcon sx={{ fontSize: 40, color: 'error.main', mb: 1 }} />

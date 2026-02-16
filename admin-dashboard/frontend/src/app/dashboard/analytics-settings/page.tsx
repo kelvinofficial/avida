@@ -238,7 +238,7 @@ export default function AnalyticsSettingsPage() {
           {/* Key Metrics */}
           {trafficData && (
             <Grid container spacing={2} sx={{ mb: 3 }}>
-              <Grid item xs={6} sm={4} md={2}>
+              <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                 <Card>
                   <CardContent sx={{ textAlign: 'center', py: 2 }}>
                     <PeopleAlt color="primary" />
@@ -247,7 +247,7 @@ export default function AnalyticsSettingsPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={6} sm={4} md={2}>
+              <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                 <Card>
                   <CardContent sx={{ textAlign: 'center', py: 2 }}>
                     <Pageview color="info" />
@@ -256,7 +256,7 @@ export default function AnalyticsSettingsPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={6} sm={4} md={2}>
+              <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                 <Card>
                   <CardContent sx={{ textAlign: 'center', py: 2 }}>
                     <Typography variant="h5" fontWeight="bold" color="success.main">{trafficData.summary.pages_per_session}</Typography>
@@ -264,7 +264,7 @@ export default function AnalyticsSettingsPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={6} sm={4} md={2}>
+              <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                 <Card>
                   <CardContent sx={{ textAlign: 'center', py: 2 }}>
                     <AccessTime color="warning" />
@@ -273,7 +273,7 @@ export default function AnalyticsSettingsPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={6} sm={4} md={2}>
+              <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                 <Card>
                   <CardContent sx={{ textAlign: 'center', py: 2 }}>
                     <Typography variant="h5" fontWeight="bold" color="error.main">{trafficData.summary.avg_bounce_rate}%</Typography>
@@ -281,7 +281,7 @@ export default function AnalyticsSettingsPage() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={6} sm={4} md={2}>
+              <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                 <Card>
                   <CardContent sx={{ textAlign: 'center', py: 2 }}>
                     <Typography variant="h5" fontWeight="bold" color="info.main">{trafficData.summary.new_users_percentage}%</Typography>
@@ -331,7 +331,7 @@ export default function AnalyticsSettingsPage() {
       {tabValue === 1 && (
         <Box>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={8}>
+            <Grid size={{ xs: 12, md: 8 }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>Traffic Sources</Typography>
@@ -358,7 +358,7 @@ export default function AnalyticsSettingsPage() {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>Source Breakdown</Typography>
@@ -419,7 +419,7 @@ export default function AnalyticsSettingsPage() {
           </Alert>
 
           <Grid container spacing={3}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Card sx={{ bgcolor: 'success.dark', color: 'white' }}>
                 <CardContent sx={{ textAlign: 'center' }}>
                   <SmartToy sx={{ fontSize: 48, mb: 1 }} />
@@ -429,7 +429,7 @@ export default function AnalyticsSettingsPage() {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Card>
                 <CardContent sx={{ textAlign: 'center' }}>
                   <Typography variant="h3" fontWeight="bold" color="primary">{aiCitations.aeo_score}</Typography>
@@ -438,7 +438,7 @@ export default function AnalyticsSettingsPage() {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Card>
                 <CardContent>
                   <Typography variant="subtitle2" gutterBottom>Top Cited Content</Typography>
@@ -480,7 +480,7 @@ export default function AnalyticsSettingsPage() {
       {/* Settings Tab */}
       {tabValue === 4 && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -508,12 +508,12 @@ export default function AnalyticsSettingsPage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom><Analytics sx={{ mr: 1, verticalAlign: 'middle' }} />Google Analytics 4</Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={12} md={8}>
+                  <Grid size={{ xs: 12, md: 8 }}>
                     <TextField
                       label="GA4 Measurement ID"
                       value={settings.ga4_measurement_id || ''}
@@ -523,7 +523,7 @@ export default function AnalyticsSettingsPage() {
                       helperText="Found in GA4 Admin > Data Streams > Web"
                     />
                   </Grid>
-                  <Grid item xs={12} md={4}>
+                  <Grid size={{ xs: 12, md: 4 }}>
                     <FormControlLabel
                       control={<Switch checked={settings.ga4_enabled} onChange={(e) => setSettings({ ...settings, ga4_enabled: e.target.checked })} disabled={!settings.ga4_measurement_id} />}
                       label="Enable GA4"
@@ -542,7 +542,7 @@ export default function AnalyticsSettingsPage() {
                     { key: 'track_conversions', label: 'Conversions' },
                     { key: 'anonymize_ip', label: 'Anonymize IP' },
                   ].map((opt) => (
-                    <Grid item xs={6} md={4} key={opt.key}>
+                    <Grid size={{ xs: 6, md: 4 }} key={opt.key}>
                       <FormControlLabel
                         control={<Switch checked={(settings as any)[opt.key]} onChange={(e) => setSettings({ ...settings, [opt.key]: e.target.checked })} />}
                         label={opt.label}

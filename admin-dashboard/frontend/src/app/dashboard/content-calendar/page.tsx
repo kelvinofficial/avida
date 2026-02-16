@@ -468,7 +468,7 @@ export default function ContentCalendarPage() {
       {/* Stats Overview */}
       {stats && (
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 2 }}>
                 <Typography variant="h4" color="primary" fontWeight="bold">{stats.total_events}</Typography>
@@ -476,7 +476,7 @@ export default function ContentCalendarPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 2 }}>
                 <Typography variant="h4" color="info.main" fontWeight="bold">{stats.upcoming_this_week}</Typography>
@@ -484,7 +484,7 @@ export default function ContentCalendarPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 2 }}>
                 <Typography variant="h4" color="error.main" fontWeight="bold">{stats.overdue}</Typography>
@@ -492,7 +492,7 @@ export default function ContentCalendarPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 2 }}>
                 <Typography variant="h4" color="success.main" fontWeight="bold">{stats.by_status?.completed || 0}</Typography>
@@ -740,7 +740,7 @@ export default function ContentCalendarPage() {
               rows={2}
             />
             <Grid container spacing={2}>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>Event Type</InputLabel>
                   <Select
@@ -756,7 +756,7 @@ export default function ContentCalendarPage() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <TextField
                   label="Scheduled Date"
                   type="datetime-local"
@@ -770,7 +770,7 @@ export default function ContentCalendarPage() {
               </Grid>
             </Grid>
             <Grid container spacing={2}>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>Status</InputLabel>
                   <Select
@@ -785,7 +785,7 @@ export default function ContentCalendarPage() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>Priority</InputLabel>
                   <Select
@@ -802,7 +802,7 @@ export default function ContentCalendarPage() {
               </Grid>
             </Grid>
             <Grid container spacing={2}>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>Region</InputLabel>
                   <Select
@@ -817,7 +817,7 @@ export default function ContentCalendarPage() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 {formData.event_type === 'social' && (
                   <FormControl fullWidth>
                     <InputLabel>Platform</InputLabel>
@@ -838,7 +838,7 @@ export default function ContentCalendarPage() {
             </Grid>
             {/* Recurrence Section */}
             <Grid container spacing={2}>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>Repeat</InputLabel>
                   <Select
@@ -854,7 +854,7 @@ export default function ContentCalendarPage() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 {formData.recurrence !== 'none' && (
                   <TextField
                     label="Repeat Until"
@@ -905,7 +905,7 @@ export default function ContentCalendarPage() {
         <DialogContent>
           <Grid container spacing={2} sx={{ pt: 1 }}>
             {templates.map(template => (
-              <Grid item xs={6} key={template.id}>
+              <Grid size={{ xs: 6 }} key={template.id}>
                 <Card
                   sx={{
                     cursor: 'pointer',

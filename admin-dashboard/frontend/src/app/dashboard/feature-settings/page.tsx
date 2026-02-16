@@ -185,7 +185,7 @@ export default function FeatureSettingsPage() {
 
       <Grid container spacing={3}>
         {/* Listing Display Settings */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -272,7 +272,7 @@ export default function FeatureSettingsPage() {
         </Grid>
 
         {/* Badges & Labels */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -331,7 +331,7 @@ export default function FeatureSettingsPage() {
         </Grid>
 
         {/* Location Settings */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -425,7 +425,7 @@ export default function FeatureSettingsPage() {
         </Grid>
 
         {/* Currency Settings */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>

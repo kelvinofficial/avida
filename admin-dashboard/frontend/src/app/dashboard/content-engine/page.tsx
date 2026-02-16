@@ -280,7 +280,7 @@ export default function ContentEnginePage() {
 
       {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography variant="subtitle2" color="text.secondary">Total Posts</Typography>
@@ -288,7 +288,7 @@ export default function ContentEnginePage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography variant="subtitle2" color="text.secondary">Published</Typography>
@@ -298,7 +298,7 @@ export default function ContentEnginePage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography variant="subtitle2" color="text.secondary">Drafts</Typography>
@@ -308,7 +308,7 @@ export default function ContentEnginePage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography variant="subtitle2" color="text.secondary">This Week</Typography>
@@ -341,7 +341,7 @@ export default function ContentEnginePage() {
               Generate AI Blog Post
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Topic"
@@ -351,7 +351,7 @@ export default function ContentEnginePage() {
                   sx={{ mb: 2 }}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth sx={{ mb: 2 }}>
                   <InputLabel>Template Type</InputLabel>
                   <Select
@@ -365,7 +365,7 @@ export default function ContentEnginePage() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <FormControl fullWidth>
                   <InputLabel>Target Country</InputLabel>
                   <Select
@@ -379,7 +379,7 @@ export default function ContentEnginePage() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <FormControl fullWidth>
                   <InputLabel>Category</InputLabel>
                   <Select
@@ -393,7 +393,7 @@ export default function ContentEnginePage() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <FormControl fullWidth>
                   <InputLabel>Language</InputLabel>
                   <Select
@@ -407,7 +407,7 @@ export default function ContentEnginePage() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Keywords (comma-separated)"
@@ -416,7 +416,7 @@ export default function ContentEnginePage() {
                   onChange={(e) => setGenerateForm({ ...generateForm, keywords: e.target.value })}
                 />
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
                   fullWidth
                   type="number"
@@ -426,7 +426,7 @@ export default function ContentEnginePage() {
                   inputProps={{ min: 500, max: 3000 }}
                 />
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -437,7 +437,7 @@ export default function ContentEnginePage() {
                   label="Include FAQ Section"
                 />
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -448,7 +448,7 @@ export default function ContentEnginePage() {
                   label="Include Statistics"
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Button
                   variant="contained"
                   size="large"
@@ -549,7 +549,7 @@ export default function ContentEnginePage() {
       {/* AEO Tab */}
       {tabValue === 2 && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -597,7 +597,7 @@ export default function ContentEnginePage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             {aeoContent && (
               <Card>
                 <CardContent>
@@ -654,7 +654,7 @@ export default function ContentEnginePage() {
       {tabValue === 3 && (
         <Grid container spacing={2}>
           {suggestions.map((suggestion, idx) => (
-            <Grid item xs={12} md={6} lg={4} key={idx}>
+            <Grid size={{ xs: 12, md: 6, lg: 4 }} key={idx}>
               <Card>
                 <CardContent>
                   <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>

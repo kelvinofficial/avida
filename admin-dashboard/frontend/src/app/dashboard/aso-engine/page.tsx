@@ -232,7 +232,7 @@ export default function ASOEnginePage() {
 
       {/* Stats */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography variant="subtitle2" color="text.secondary">Total Impressions</Typography>
@@ -242,7 +242,7 @@ export default function ASOEnginePage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography variant="subtitle2" color="text.secondary">Total Installs</Typography>
@@ -252,7 +252,7 @@ export default function ASOEnginePage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography variant="subtitle2" color="text.secondary">Average CTR</Typography>
@@ -262,7 +262,7 @@ export default function ASOEnginePage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
               <Typography variant="subtitle2" color="text.secondary">Metadata Versions</Typography>
@@ -286,7 +286,7 @@ export default function ASOEnginePage() {
       {/* Google Play Tab */}
       {tabValue === 0 && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -341,7 +341,7 @@ export default function ASOEnginePage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             {googlePlayResult && (
               <Card>
                 <CardContent>
@@ -410,7 +410,7 @@ export default function ASOEnginePage() {
       {/* App Store Tab */}
       {tabValue === 1 && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -464,7 +464,7 @@ export default function ASOEnginePage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             {appStoreResult && (
               <Card>
                 <CardContent>
@@ -478,7 +478,7 @@ export default function ASOEnginePage() {
                   </Box>
 
                   <Grid container spacing={2} sx={{ mb: 3 }}>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <Box sx={{ p: 2, bgcolor: 'primary.light', borderRadius: 1 }}>
                         <Typography variant="subtitle2" color="primary.contrastText">App Name (max 30 chars)</Typography>
                         <Typography variant="h6" color="primary.contrastText" fontWeight="bold">
@@ -487,7 +487,7 @@ export default function ASOEnginePage() {
                         <Chip label={`${appStoreResult.app_name?.length || 0}/30 chars`} size="small" sx={{ mt: 1 }} />
                       </Box>
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <Box sx={{ p: 2, bgcolor: 'grey.200', borderRadius: 1 }}>
                         <Typography variant="subtitle2">Subtitle (max 30 chars)</Typography>
                         <Typography variant="h6" fontWeight="bold">
@@ -550,7 +550,7 @@ export default function ASOEnginePage() {
       {/* Keywords Tab */}
       {tabValue === 2 && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -583,7 +583,7 @@ export default function ASOEnginePage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             {regionKeywords && (
               <Card>
                 <CardContent>
@@ -633,7 +633,7 @@ export default function ASOEnginePage() {
       {/* Competitors Tab */}
       {tabValue === 3 && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -666,7 +666,7 @@ export default function ASOEnginePage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             {competitorAnalysis && (
               <Card>
                 <CardContent>
