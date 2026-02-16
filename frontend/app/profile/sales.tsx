@@ -234,19 +234,7 @@ export default function SalesScreen() {
         icon="cash-outline"
         rightAction={sales.length > 0 ? rightAction : undefined}
       >
-        {loading && !refreshing ? (
-          <View style={desktopStyles.gridContainer}>
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <View key={i} style={desktopStyles.skeletonCard}>
-                <View style={desktopStyles.skeletonImage} />
-                <View style={desktopStyles.skeletonContent}>
-                  <View style={[desktopStyles.skeletonLine, { width: '60%' }]} />
-                  <View style={[desktopStyles.skeletonLine, { width: '40%' }]} />
-                </View>
-              </View>
-            ))}
-          </View>
-        ) : sales.length === 0 ? (
+        {sales.length === 0 ? (
           <DesktopEmptyState />
         ) : (
           <>
