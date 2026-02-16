@@ -919,6 +919,8 @@ export default function AnalyticsPage() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+        </Box>
+      )}
     </Box>
   );
 }
