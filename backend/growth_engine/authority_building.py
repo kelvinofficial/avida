@@ -7,7 +7,7 @@ Enhanced with automated opportunity suggestions and competitor analysis
 from fastapi import APIRouter, HTTPException, Depends, Query, Header
 from pydantic import BaseModel, Field
 from typing import Optional, List, Callable, Dict, Any
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import uuid
 import random
 import re
