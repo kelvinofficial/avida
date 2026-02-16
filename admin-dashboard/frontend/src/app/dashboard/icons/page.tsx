@@ -740,8 +740,11 @@ export default function IconsManagementPage() {
                     height: 56,
                   }}
                 >
-                  
-                  <ion-icon name={formData.ionicon_name} style={{ fontSize: 32 }}></ion-icon>
+                  <Box
+                    component="span"
+                    sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    dangerouslySetInnerHTML={{ __html: `<ion-icon name="${formData.ionicon_name}" style="font-size: 32px;"></ion-icon>` }}
+                  />
                 </Avatar>
                 <Box sx={{ flex: 1 }}>
                   <TextField
