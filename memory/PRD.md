@@ -168,24 +168,18 @@ Added cache keys for: USER_SETTINGS, NOTIFICATIONS, CHALLENGES, BLOG_POSTS, LEAD
   - Bugs fixed: Missing Linking import, undefined loadingTickets in help.tsx
 
 **Phase 5 Progress Summary:**
-- **Completed**: 46 pages refactored with cache-first pattern (26 new this session)
-- **Remaining**: ~21 files with page-level ActivityIndicator
+- **Completed**: 49 pages refactored with cache-first pattern (29 new this session)
+- **Remaining**: ~18 files with page-level ActivityIndicator (targeting 100%)
 
-**Session 2026-02-16 Updates (Batch 6 - Profile Pages):**
-22. **profile/edit.tsx** - Profile edit with cache-first imports
-    - Edit form shows instantly for authenticated users
+**Session 2026-02-16 Updates (Batch 7 - Core Pages):**
+27. **(tabs)/profile.tsx** - Profile tab with cache-first imports
+    - Shows unauthenticated state instantly
 
-23. **profile/badges.tsx** - User badges with cache-first imports
-    - Badge progress renders from cache
+28. **listing/[id].tsx** - General listing detail with cache-first imports
+    - Listing content renders instantly
 
-24. **profile/notifications.tsx** - Notification preferences with cache-first imports
-    - Settings render instantly
-
-25. **profile/invoices.tsx** - Invoice history with cache-first imports
-    - Invoice list renders from cache
-
-26. **profile/[id]/badges.tsx** - Public badge profile with cache-first imports
-    - Public badge showcase renders instantly
+29. **profile/my-listings.tsx** - User listings with cache-first imports
+    - Shows sign-in prompt instantly for unauthenticated
 
 **Test Results:**
 - `/app/test_reports/iteration_178.json` - Batch 1: ALL PASSED (100%)
@@ -194,20 +188,19 @@ Added cache keys for: USER_SETTINGS, NOTIFICATIONS, CHALLENGES, BLOG_POSTS, LEAD
 - `/app/test_reports/iteration_181.json` - Batch 4 (auto/checkout): ALL PASSED (100%)
 - `/app/test_reports/iteration_182.json` - Batch 5 (blog/premium/tabs): ALL PASSED (100%)
 - `/app/test_reports/iteration_183.json` - Batch 6 (profile): ALL PASSED (100%)
-  - Profile edit: no spinner, form visible instantly ✅
-  - Profile badges: no spinner, unauthenticated state instant ✅
-  - Profile notifications: no spinner, auth required ✅
-  - Profile invoices: no spinner, sign-in prompt instant ✅
-  - Public badge profile: no spinner, error state for invalid user ✅
+- `/app/test_reports/iteration_184.json` - Batch 7 (core pages): ALL PASSED (100%)
+  - Profile tab: no spinner, unauthenticated state instant ✅
+  - Listing detail: no spinner, content visible ✅
+  - My listings: no spinner, sign-in prompt instant ✅
   - Homepage regression test passed ✅
 
-**Remaining Files (~21 with ActivityIndicator size="large"):**
-- (tabs)/post-placeholder.tsx
-- (tabs)/messages.tsx (full implementation)
-- (tabs)/profile.tsx
-- admin/* pages (5 files)
-- remaining premium/* pages
-- other profile/* sub-pages
+**Remaining Files (~18 with page-level ActivityIndicator):**
+- profile/recently-viewed.tsx
+- profile/sales.tsx, orders.tsx, purchases.tsx
+- profile/verify-email.tsx, verify-phone.tsx, verify-id.tsx
+- profile/saved.tsx
+- profile/public/[id].tsx
+- Other remaining pages
 
 ### Test Results:
 - `/app/test_reports/iteration_171.json` - Phase 2: ALL PASSED (9/9)
