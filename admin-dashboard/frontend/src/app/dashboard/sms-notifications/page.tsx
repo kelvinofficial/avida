@@ -315,16 +315,12 @@ export default function SMSNotificationsPage() {
     setPartnerDialogOpen(true);
   };
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
-    <Box p={3}>
+    <Box p={3} sx={{ position: 'relative' }}>
+      {/* CACHE-FIRST: Show LinearProgress for background fetch instead of blocking CircularProgress */}
+      {loading && (
+        <LinearProgress sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, zIndex: 10 }} />
+      )}
       <Typography variant="h4" fontWeight="bold" mb={3}>
         SMS & WhatsApp Notifications
       </Typography>
