@@ -183,7 +183,12 @@ export function useOptimisticList<T extends ListItem>(
   const [error, setError] = useState<Error | null>(null);
 
   const optimisticAdd = useCallback(
-    async ({ apiCall, tempItem, setList, currentList }) => {
+    async ({ apiCall, tempItem, setList, currentList }: {
+      apiCall: () => Promise<T>;
+      tempItem: T;
+      setList: React.Dispatch<React.SetStateAction<T[]>>;
+      currentList: T[];
+    }) => {
       setIsPending(true);
       setError(null);
       
@@ -213,7 +218,13 @@ export function useOptimisticList<T extends ListItem>(
   );
 
   const optimisticUpdate = useCallback(
-    async ({ apiCall, itemId, updates, setList, currentList }) => {
+    async ({ apiCall, itemId, updates, setList, currentList }: {
+      apiCall: () => Promise<T>;
+      itemId: string;
+      updates: Partial<T>;
+      setList: React.Dispatch<React.SetStateAction<T[]>>;
+      currentList: T[];
+    }) => {
       setIsPending(true);
       setError(null);
       
