@@ -412,7 +412,7 @@ export default function SocialDistributionPage() {
                         {post.platforms.map(p => (
                           <Chip
                             key={p}
-                            icon={PLATFORM_ICONS[p]}
+                            icon={getPlatformIcon(p) as any}
                             label={p}
                             size="small"
                             sx={{ bgcolor: PLATFORM_COLORS[p], color: 'white', '& .MuiChip-icon': { color: 'white' } }}
