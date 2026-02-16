@@ -10,7 +10,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  CircularProgress,
+  LinearProgress,
   ToggleButton,
   ToggleButtonGroup,
   Grid,
@@ -71,6 +71,7 @@ import {
 } from 'recharts';
 import { api } from '@/lib/api';
 import { AnalyticsOverview } from '@/types';
+import { getCachedData } from '@/hooks/useCacheFirst';
 
 const COLORS = ['#2E7D32', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'];
 
