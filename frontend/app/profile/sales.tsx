@@ -153,6 +153,8 @@ export default function SalesScreen() {
       
       if (refresh || pageNum === 1) {
         setSales(newSales);
+        // Update cache
+        setCacheSync(CACHE_KEYS.SALES, newSales);
       } else {
         setSales(prev => [...prev, ...newSales]);
       }
@@ -162,7 +164,7 @@ export default function SalesScreen() {
     } catch (error) {
       console.error('Error fetching sales:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
       setRefreshing(false);
     }
   }, []);
@@ -170,8 +172,6 @@ export default function SalesScreen() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchSales(1, true);
-    } else {
-      setLoading(false);
     }
   }, [isAuthenticated, fetchSales]);
 
@@ -181,21 +181,13 @@ export default function SalesScreen() {
   };
 
   const handleLoadMore = () => {
-    if (!loading && hasMore) {
+    if (!isFetchingInBackground && hasMore) {
       fetchSales(page + 1);
     }
   };
 
   // Calculate total earnings
   const totalEarnings = sales.reduce((sum, item) => sum + (item.price || 0), 0);
-
-  if (!isReady) {
-    return (
-      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-      </SafeAreaView>
-    );
-  }
 
   // Desktop Layout
   if (isLargeScreen) {
