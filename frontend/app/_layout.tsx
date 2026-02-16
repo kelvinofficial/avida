@@ -153,9 +153,11 @@ export default function RootLayout() {
     return () => subscription.remove();
   }, [mounted, processingAuth]);
 
-  // Show page-specific skeleton while fonts are loading on web
-  if (!mounted || (Platform.OS === 'web' && !fontsReady)) {
-    return getSkeletonForRoute(pathname, isDesktop);
+  // CACHE-FIRST ARCHITECTURE: No skeleton loading screen
+  // We render the app immediately - pages will show cached data
+  // Instead of skeleton, show nothing briefly (imperceptible flash)
+  if (!mounted) {
+    return <View style={{ flex: 1, backgroundColor: '#F5F5F5' }} />;
   }
 
   return (
