@@ -185,7 +185,7 @@ export default function PollsSurveysPage() {
           <Typography variant="body2" color="text.secondary">Collect app feedback and user opinions</Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button startIcon={<Refresh />} onClick={loadData} disabled={loading}>Refresh</Button>
+          <Button startIcon={<Refresh />} onClick={loadData} disabled={isFetchingInBackground}>Refresh</Button>
           <Button variant="contained" startIcon={<Add />} onClick={() => { resetForm(); setCreateDialogOpen(true); }}>
             Create New
           </Button>
