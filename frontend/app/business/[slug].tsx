@@ -263,7 +263,17 @@ export default function BusinessProfileScreen() {
     if (slug) {
       fetchListings(1, null, true);
     }
-  }, [slug, fetchProfile, fetchListings]);
+  }, [slug, fetchListings]);
+
+  // Pull to refresh handler
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([
+      refreshProfile(),
+      fetchListings(1, selectedCategory, true),
+    ]);
+    setRefreshing(false);
+  }, [refreshProfile, fetchListings, selectedCategory]);
 
   const handleCategorySelect = (category: string | null) => {
     setSelectedCategory(category);
