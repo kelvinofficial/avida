@@ -342,7 +342,7 @@ export default function BadgesScreen() {
           </View>
         </View>
 
-        {loading ? (
+        {isFetchingInBackground && earnedBadges.length === 0 && availableBadges.length === 0 ? (
           <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
         ) : (
           <>
