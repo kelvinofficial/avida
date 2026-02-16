@@ -168,10 +168,10 @@ Added cache keys for: USER_SETTINGS, NOTIFICATIONS, CHALLENGES, BLOG_POSTS, LEAD
   - Bugs fixed: Missing Linking import, undefined loadingTickets in help.tsx
 
 **Phase 5 Progress Summary:**
-- **Completed**: 20 pages refactored with cache-first pattern (2 new this session)
-- **Remaining**: ~47 files with page-level ActivityIndicator
+- **Completed**: 28 pages refactored with cache-first pattern (8 new this session)
+- **Remaining**: ~39 files with page-level ActivityIndicator
 
-**Session 2026-02-16 Updates:**
+**Session 2026-02-16 Updates (Batch 2):**
 1. **leaderboard.tsx** - Fixed critical bug with undefined `loading` variable
    - Added null-safety for `item.user_name` (shows 'Unknown User' if null)
    - Added null-safety for `item.top_badges` array
@@ -185,16 +185,35 @@ Added cache keys for: USER_SETTINGS, NOTIFICATIONS, CHALLENGES, BLOG_POSTS, LEAD
    - Added pull-to-refresh with RefreshControl
    - Save button shows 'Saving...' text instead of spinner
 
+3. **settings/appearance.tsx** - Refactored to cache-first pattern
+   - Instant render with cached/default theme selection
+
+4. **settings/currency.tsx** - Refactored to cache-first pattern
+   - Currency list renders instantly
+
+5. **settings/language.tsx** - Refactored to cache-first pattern
+   - Language list renders instantly
+
+6. **settings/blocked-users.tsx** - Refactored with optimistic updates
+   - Empty state or user list renders instantly
+   - Optimistic unblock with rollback on error
+
+7. **settings/sessions.tsx** - Refactored with optimistic updates
+   - Session list renders instantly
+   - Optimistic revoke with rollback on error
+
+8. **settings/alerts.tsx** - Refactored to cache-first pattern
+   - Quiet hours, frequency settings render instantly
+
 **Test Results:**
-- `/app/test_reports/iteration_178.json` - Session changes: ALL PASSED (100% frontend)
-  - Leaderboard page loads instantly ✅
-  - Null user_name fallback works ✅
-  - Notification Preferences loads instantly ✅
-  - SMS/WhatsApp/Email toggles work ✅
-  - Save button shows text not spinner ✅
+- `/app/test_reports/iteration_178.json` - Session batch 1: ALL PASSED (100% frontend)
+- `/app/test_reports/iteration_179.json` - Session batch 2: ALL PASSED (100% frontend)
+  - All 8 pages load instantly without spinners ✅
+  - Settings pages render default/cached values ✅
+  - Leaderboard null-safety working ✅
   - Homepage regression test passed ✅
 
-**Remaining Files (~49 with ActivityIndicator size="large"):**
+**Remaining Files (~39 with ActivityIndicator size="large"):**
 - property/* pages
 - auto/* pages
 - checkout/* pages
