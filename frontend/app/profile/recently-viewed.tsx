@@ -128,8 +128,10 @@ export default function RecentlyViewedScreen() {
   const { goToLogin } = useLoginRedirect();
   const isLargeScreen = isDesktop || isTablet;
   
-  const [items, setItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // CACHE-FIRST: Initialize with cached data
+  const cachedItems = getCachedSync<any[]>('recently_viewed') ?? [];
+  const [items, setItems] = useState<any[]>(cachedItems);
+  const [loading, setLoading] = useState(cachedItems.length === 0);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchRecentlyViewed = useCallback(async (refresh: boolean = false) => {
@@ -137,7 +139,11 @@ export default function RecentlyViewedScreen() {
       const response = await api.get('/profile/activity/recently-viewed', {
         params: { limit: 50 },
       });
-      setItems(response.data.items || response.data || []);
+      const newItems = response.data.items || response.data || [];
+      setItems(newItems);
+      // Cache the results
+      setCacheSync('recently_viewed', newItems);
+      CacheManager.setCache('recently_viewed', newItems);
     } catch (error) {
       console.error('Error fetching recently viewed:', error);
     } finally {
