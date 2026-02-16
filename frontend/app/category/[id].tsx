@@ -711,9 +711,8 @@ export default function CategoryScreen() {
     } catch (error) {
       console.error('Error fetching category data:', error);
     } finally {
-      setLoading(false);
+      // CACHE-FIRST: No loading states to set - data renders immediately
       setRefreshing(false);
-      setInitialLoadDone(true);
     }
   }, [categoryId, page, isAuthenticated, selectedSubcategory, priceRange, selectedCondition, sortBy, activeFilters, searchQuery, selectedRegion]);
 
