@@ -651,6 +651,11 @@ export default function ContentCalendarPage() {
                         {EVENT_TYPE_ICONS[event.event_type]}
                       </Box>
                       <Typography variant="body2" fontWeight="bold">{event.title}</Typography>
+                      {(event.is_recurring || event.parent_event_id || (event.recurrence && event.recurrence !== 'none')) && (
+                        <Tooltip title="Recurring event">
+                          <Chip label="🔄" size="small" sx={{ fontSize: '0.7rem', height: 20, minWidth: 24 }} />
+                        </Tooltip>
+                      )}
                     </Box>
                   </TableCell>
                   <TableCell>
