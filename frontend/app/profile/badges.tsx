@@ -17,6 +17,7 @@ import api from '../../src/utils/api';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { DesktopPageLayout } from '../../src/components/layout';
 import { useLoginRedirect } from '../../src/hooks/useLoginRedirect';
+import { getCachedSync, setCacheSync, CACHE_KEYS } from '../../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',
