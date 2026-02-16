@@ -163,17 +163,26 @@ const itemStyles = StyleSheet.create({
 // ============ MAIN SCREEN ============
 export default function ActiveSessionsScreen() {
   const router = useRouter();
-  const [sessions, setSessions] = useState<ActiveSession[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  // Cache key for sessions
+  const SESSIONS_CACHE_KEY = 'settings_sessions';
+  
+  // Cache-first: Initialize with cached data for instant render
+  const cachedSessions = getCachedSync<ActiveSession[]>(SESSIONS_CACHE_KEY);
+  const [sessions, setSessions] = useState<ActiveSession[]>(cachedSessions || []);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
 
   const fetchSessions = useCallback(async () => {
     try {
+      setIsFetchingInBackground(true);
       const response = await api.get('/sessions');
-      setSessions(response.data.sessions || []);
+      const sessionList = response.data.sessions || [];
+      setSessions(sessionList);
+      setCacheSync(SESSIONS_CACHE_KEY, sessionList);
     } catch (error) {
       console.error('Error fetching sessions:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   }, []);
 
@@ -191,10 +200,16 @@ export default function ActiveSessionsScreen() {
           text: 'Sign Out', 
           style: 'destructive',
           onPress: async () => {
+            // Optimistic update
+            const updatedSessions = sessions.filter(s => s.id !== session.id);
+            setSessions(updatedSessions);
+            setCacheSync(SESSIONS_CACHE_KEY, updatedSessions);
             try {
               await api.delete(`/sessions/${session.id}`);
-              setSessions(prev => prev.filter(s => s.id !== session.id));
             } catch (error) {
+              // Rollback on error
+              setSessions(sessions);
+              setCacheSync(SESSIONS_CACHE_KEY, sessions);
               Alert.alert('Error', 'Failed to end session');
             }
           }
@@ -213,11 +228,17 @@ export default function ActiveSessionsScreen() {
           text: 'Sign Out All', 
           style: 'destructive',
           onPress: async () => {
+            // Optimistic update - keep only current session
+            const currentSession = sessions.filter(s => s.is_current);
+            setSessions(currentSession);
+            setCacheSync(SESSIONS_CACHE_KEY, currentSession);
             try {
               await api.post('/sessions/revoke-all');
-              setSessions(prev => prev.filter(s => s.is_current));
               Alert.alert('Success', 'Signed out from all other devices');
             } catch (error) {
+              // Rollback on error
+              setSessions(sessions);
+              setCacheSync(SESSIONS_CACHE_KEY, sessions);
               Alert.alert('Error', 'Failed to sign out from all devices');
             }
           }
@@ -238,41 +259,35 @@ export default function ActiveSessionsScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      {loading ? (
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
-      ) : (
-        <FlatList
-          data={sessions}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <SessionItem session={item} onRevoke={() => handleRevokeSession(item)} />
-          )}
-          ListHeaderComponent={
-            <View style={styles.infoBox}>
-              <Ionicons name="shield-checkmark-outline" size={20} color={COLORS.primary} />
-              <Text style={styles.infoText}>
-                These are the devices currently signed into your account. You can sign out of any session you don't recognize.
-              </Text>
-            </View>
-          }
-          ListFooterComponent={
-            otherSessions.length > 0 ? (
-              <TouchableOpacity style={styles.revokeAllBtn} onPress={handleRevokeAll}>
-                <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
-                <Text style={styles.revokeAllText}>Sign Out All Other Devices</Text>
-              </TouchableOpacity>
-            ) : null
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Ionicons name="phone-portrait-outline" size={48} color={COLORS.textSecondary} />
-              <Text style={styles.emptyText}>No active sessions found</Text>
-            </View>
-          }
-        />
-      )}
+      <FlatList
+        data={sessions}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <SessionItem session={item} onRevoke={() => handleRevokeSession(item)} />
+        )}
+        ListHeaderComponent={
+          <View style={styles.infoBox}>
+            <Ionicons name="shield-checkmark-outline" size={20} color={COLORS.primary} />
+            <Text style={styles.infoText}>
+              These are the devices currently signed into your account. You can sign out of any session you don't recognize.
+            </Text>
+          </View>
+        }
+        ListFooterComponent={
+          otherSessions.length > 0 ? (
+            <TouchableOpacity style={styles.revokeAllBtn} onPress={handleRevokeAll}>
+              <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
+              <Text style={styles.revokeAllText}>Sign Out All Other Devices</Text>
+            </TouchableOpacity>
+          ) : null
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Ionicons name="phone-portrait-outline" size={48} color={COLORS.textSecondary} />
+            <Text style={styles.emptyText}>No active sessions found</Text>
+          </View>
+        }
+      />
     </SafeAreaView>
   );
 }

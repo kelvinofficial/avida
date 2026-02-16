@@ -169,17 +169,26 @@ const emptyStyles = StyleSheet.create({
 // ============ MAIN SCREEN ============
 export default function BlockedUsersScreen() {
   const router = useRouter();
-  const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  // Cache key for blocked users
+  const BLOCKED_USERS_CACHE_KEY = 'settings_blocked_users';
+  
+  // Cache-first: Initialize with cached data for instant render
+  const cachedUsers = getCachedSync<BlockedUser[]>(BLOCKED_USERS_CACHE_KEY);
+  const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>(cachedUsers || []);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
 
   const fetchBlockedUsers = useCallback(async () => {
     try {
+      setIsFetchingInBackground(true);
       const response = await api.get('/blocked-users');
-      setBlockedUsers(response.data.blocked_users || []);
+      const users = response.data.blocked_users || [];
+      setBlockedUsers(users);
+      setCacheSync(BLOCKED_USERS_CACHE_KEY, users);
     } catch (error) {
       console.error('Error fetching blocked users:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   }, []);
 
@@ -196,10 +205,16 @@ export default function BlockedUsersScreen() {
         { 
           text: 'Unblock', 
           onPress: async () => {
+            // Optimistic update
+            const updatedUsers = blockedUsers.filter(u => u.id !== user.id);
+            setBlockedUsers(updatedUsers);
+            setCacheSync(BLOCKED_USERS_CACHE_KEY, updatedUsers);
             try {
               await api.delete(`/blocked-users/${user.blocked_user_id}`);
-              setBlockedUsers(prev => prev.filter(u => u.id !== user.id));
             } catch (error) {
+              // Rollback on error
+              setBlockedUsers(blockedUsers);
+              setCacheSync(BLOCKED_USERS_CACHE_KEY, blockedUsers);
               Alert.alert('Error', 'Failed to unblock user');
             }
           }
@@ -218,11 +233,7 @@ export default function BlockedUsersScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      {loading ? (
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
-      ) : blockedUsers.length === 0 ? (
+      {blockedUsers.length === 0 ? (
         <EmptyState />
       ) : (
         <FlatList

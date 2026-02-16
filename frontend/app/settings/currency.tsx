@@ -41,18 +41,27 @@ const CURRENCIES = [
 
 export default function CurrencyScreen() {
   const router = useRouter();
-  const [selectedCurrency, setSelectedCurrency] = useState('EUR');
-  const [loading, setLoading] = useState(true);
+  
+  // Cache key for currency settings
+  const CURRENCY_CACHE_KEY = 'settings_currency';
+  
+  // Cache-first: Initialize with cached data for instant render
+  const cachedCurrency = getCachedSync<string>(CURRENCY_CACHE_KEY);
+  const [selectedCurrency, setSelectedCurrency] = useState(cachedCurrency || 'EUR');
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const fetchSettings = useCallback(async () => {
     try {
+      setIsFetchingInBackground(true);
       const response = await api.get('/settings');
-      setSelectedCurrency(response.data.app_preferences?.currency || 'EUR');
+      const currency = response.data.app_preferences?.currency || 'EUR';
+      setSelectedCurrency(currency);
+      setCacheSync(CURRENCY_CACHE_KEY, currency);
     } catch (error) {
       console.error('Error fetching settings:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   }, []);
 
@@ -63,6 +72,7 @@ export default function CurrencyScreen() {
   const handleSelectCurrency = async (code: string) => {
     setSaving(true);
     setSelectedCurrency(code);
+    setCacheSync(CURRENCY_CACHE_KEY, code);
     try {
       await api.put('/settings', { app_preferences: { currency: code } });
     } catch (error) {
@@ -72,23 +82,6 @@ export default function CurrencyScreen() {
     }
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Currency</Text>
-          <View style={{ width: 24 }} />
-        </View>
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
@@ -96,7 +89,7 @@ export default function CurrencyScreen() {
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Currency</Text>
-        {saving && <ActivityIndicator size="small" color={COLORS.primary} />}
+        {saving && <Ionicons name="sync" size={20} color={COLORS.primary} />}
         {!saving && <View style={{ width: 24 }} />}
       </View>
 

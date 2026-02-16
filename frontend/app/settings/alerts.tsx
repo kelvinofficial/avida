@@ -36,18 +36,32 @@ const FREQUENCY_OPTIONS = [
 
 export default function AdvancedAlertsScreen() {
   const router = useRouter();
-  const [settings, setSettings] = useState<UserSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  // Cache key for alert settings
+  const ALERTS_CACHE_KEY = 'settings_alerts';
+  
+  // Default settings
+  const defaultSettings: UserSettings = {
+    quiet_hours: { enabled: false, start_time: '22:00', end_time: '08:00' },
+    alert_preferences: { frequency: 'instant', radius_km: 50, price_threshold_percent: 10 },
+  } as UserSettings;
+  
+  // Cache-first: Initialize with cached data for instant render
+  const cachedSettings = getCachedSync<UserSettings>(ALERTS_CACHE_KEY);
+  const [settings, setSettings] = useState<UserSettings>(cachedSettings || defaultSettings);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const fetchSettings = useCallback(async () => {
     try {
+      setIsFetchingInBackground(true);
       const response = await api.get('/settings');
       setSettings(response.data);
+      setCacheSync(ALERTS_CACHE_KEY, response.data);
     } catch (error) {
       console.error('Error fetching settings:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   }, []);
 
@@ -63,41 +77,27 @@ export default function AdvancedAlertsScreen() {
       if (keys.length === 2) {
         updateData[keys[0]] = { [keys[1]]: value };
       }
+      
+      // Optimistic update
+      const newSettings = { ...settings };
+      if (keys.length === 2) {
+        (newSettings as any)[keys[0]] = {
+          ...(newSettings as any)[keys[0]],
+          [keys[1]]: value,
+        };
+      }
+      setSettings(newSettings);
+      setCacheSync(ALERTS_CACHE_KEY, newSettings);
+      
       await api.put('/settings', updateData);
-      setSettings(prev => {
-        if (!prev) return prev;
-        const newSettings = { ...prev };
-        if (keys.length === 2) {
-          (newSettings as any)[keys[0]] = {
-            ...(newSettings as any)[keys[0]],
-            [keys[1]]: value,
-          };
-        }
-        return newSettings;
-      });
     } catch (error) {
       Alert.alert('Error', 'Failed to update settings');
+      // Rollback on error
+      fetchSettings();
     } finally {
       setSaving(false);
     }
   };
-
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Advanced Alerts</Text>
-          <View style={{ width: 24 }} />
-        </View>
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   const quietHours = settings?.quiet_hours || { enabled: false, start_time: '22:00', end_time: '08:00' };
   const alertPrefs = settings?.alert_preferences || { frequency: 'instant', radius_km: 50, price_threshold_percent: 10 };
@@ -109,7 +109,7 @@ export default function AdvancedAlertsScreen() {
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Advanced Alerts</Text>
-        {saving && <ActivityIndicator size="small" color={COLORS.primary} />}
+        {saving && <Ionicons name="sync" size={20} color={COLORS.primary} />}
         {!saving && <View style={{ width: 24 }} />}
       </View>
 

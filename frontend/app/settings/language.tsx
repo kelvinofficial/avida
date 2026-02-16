@@ -41,18 +41,27 @@ const LANGUAGES = [
 
 export default function LanguageScreen() {
   const router = useRouter();
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
-  const [loading, setLoading] = useState(true);
+  
+  // Cache key for language settings
+  const LANGUAGE_CACHE_KEY = 'settings_language';
+  
+  // Cache-first: Initialize with cached data for instant render
+  const cachedLang = getCachedSync<string>(LANGUAGE_CACHE_KEY);
+  const [selectedLanguage, setSelectedLanguage] = useState(cachedLang || 'en');
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const fetchSettings = useCallback(async () => {
     try {
+      setIsFetchingInBackground(true);
       const response = await api.get('/settings');
-      setSelectedLanguage(response.data.app_preferences?.language || 'en');
+      const lang = response.data.app_preferences?.language || 'en';
+      setSelectedLanguage(lang);
+      setCacheSync(LANGUAGE_CACHE_KEY, lang);
     } catch (error) {
       console.error('Error fetching settings:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   }, []);
 
@@ -63,6 +72,7 @@ export default function LanguageScreen() {
   const handleSelectLanguage = async (code: string) => {
     setSaving(true);
     setSelectedLanguage(code);
+    setCacheSync(LANGUAGE_CACHE_KEY, code);
     try {
       await api.put('/settings', { app_preferences: { language: code } });
     } catch (error) {
@@ -72,23 +82,6 @@ export default function LanguageScreen() {
     }
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Language</Text>
-          <View style={{ width: 24 }} />
-        </View>
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
@@ -96,7 +89,7 @@ export default function LanguageScreen() {
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Language</Text>
-        {saving && <ActivityIndicator size="small" color={COLORS.primary} />}
+        {saving && <Ionicons name="sync" size={20} color={COLORS.primary} />}
         {!saving && <View style={{ width: 24 }} />}
       </View>
 
