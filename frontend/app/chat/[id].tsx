@@ -7,7 +7,6 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Keyboard,
@@ -30,6 +29,7 @@ import { Conversation, Message } from '../../src/types';
 import { useAuthStore } from '../../src/store/authStore';
 import { format, isToday, isYesterday } from 'date-fns';
 import { useResponsive } from '../../src/hooks/useResponsive';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';

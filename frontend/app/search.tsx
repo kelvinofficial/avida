@@ -6,7 +6,6 @@ import {
   TextInput,
   FlatList,
   TouchableOpacity,
-  ActivityIndicator,
   Image,
   Keyboard,
   ScrollView,
@@ -29,6 +28,7 @@ import { Footer } from '../src/components/layout/Footer';
 import { ImagePlaceholder } from '../src/components/common/ImagePlaceholder';
 import { ImageWithSkeleton } from '../src/components/common/ImageWithSkeleton';
 import Svg, { Path } from 'react-native-svg';
+import { getCachedSync, setCacheSync } from '../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',
