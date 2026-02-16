@@ -1,5 +1,5 @@
-import React, { memo, useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, Platform, Dimensions } from 'react-native';
+import React, { memo } from 'react';
+import { View, StyleSheet, Dimensions } from 'react-native';
 
 // Constants matching ListingCard
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -13,81 +13,21 @@ export interface SkeletonCardProps {
   compact?: boolean;
 }
 
+/**
+ * SkeletonCard - ZERO LOADER VERSION
+ * 
+ * Static placeholder card without shimmer animation.
+ * Used as a fallback when no data is available yet.
+ * CACHE-FIRST architecture means this is rarely shown.
+ */
 export const SkeletonCard = memo<SkeletonCardProps>(({ compact = false }) => {
-  const shimmerAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmerAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: Platform.OS !== 'web',
-        }),
-        Animated.timing(shimmerAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: Platform.OS !== 'web',
-        }),
-      ])
-    );
-    animation.start();
-    return () => animation.stop();
-  }, [shimmerAnim]);
-
-  const opacity = shimmerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.3, 0.7],
-  });
-
-  // For web, use CSS animation
-  if (Platform.OS === 'web') {
-    return (
-      <View style={styles.card} data-testid="skeleton-card">
-        <View 
-          style={[styles.image, compact && styles.imageCompact]}
-          // @ts-ignore - web specific
-          dataSet={{ shimmer: true }}
-        />
-        <View style={styles.content}>
-          <View 
-            style={styles.location}
-            // @ts-ignore - web specific
-            dataSet={{ shimmer: true }}
-          />
-          <View 
-            style={styles.title}
-            // @ts-ignore - web specific
-            dataSet={{ shimmer: true }}
-          />
-          <View 
-            style={styles.price}
-            // @ts-ignore - web specific
-            dataSet={{ shimmer: true }}
-          />
-        </View>
-        <style>
-          {`
-            [data-shimmer="true"] {
-              animation: shimmer 1.5s ease-in-out infinite;
-            }
-            @keyframes shimmer {
-              0%, 100% { opacity: 0.3; background-color: #E0E0E0; }
-              50% { opacity: 0.6; background-color: #F0F0F0; }
-            }
-          `}
-        </style>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.card} data-testid="skeleton-card">
-      <Animated.View style={[styles.image, compact && styles.imageCompact, { opacity }]} />
+      <View style={[styles.image, compact && styles.imageCompact]} />
       <View style={styles.content}>
-        <Animated.View style={[styles.location, { opacity }]} />
-        <Animated.View style={[styles.title, { opacity }]} />
-        <Animated.View style={[styles.price, { opacity }]} />
+        <View style={styles.location} />
+        <View style={styles.title} />
+        <View style={styles.price} />
       </View>
     </View>
   );
