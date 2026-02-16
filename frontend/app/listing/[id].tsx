@@ -696,14 +696,52 @@ export default function ListingDetailScreen() {
   // Attribute icons hook for dynamic icons and colors
   const { getIconForAttribute, getIconColorForAttribute } = useAttributeIcons();
   
-  const [listing, setListing] = useState<Listing | null>(null);
-  const [category, setCategory] = useState<Category | null>(null);
-  const [loading, setLoading] = useState(true);
-  
+  // CACHE-FIRST: Use cache-first hook for listing data
+  const { 
+    data: listing, 
+    isFetching: isFetchingListing,
+    error: listingError,
+    refresh: refreshListing 
+  } = useCacheFirst<Listing | null>({
+    cacheKey: `listing_detail_${id}`,
+    fetcher: async () => {
+      const sandboxActive = await sandboxUtils.isActive();
+      let data;
+      if (sandboxActive) {
+        data = await sandboxAwareListingsApi.getOne(id!);
+      } else {
+        data = await listingsApi.getOne(id!);
+      }
+      // Track recently viewed
+      if (isAuthenticated && !sandboxActive) {
+        api.post(`/profile/activity/recently-viewed/${id}`).catch(() => {});
+      }
+      return data;
+    },
+    fallbackData: null,
+    enabled: !!id,
+    deps: [id],
+  });
+
+  const { 
+    data: category, 
+    refresh: refreshCategory 
+  } = useCacheFirst<Category | null>({
+    cacheKey: `category_${listing?.category_id}`,
+    fetcher: async () => {
+      if (!listing?.category_id) return null;
+      const catData = await categoriesApi.getOne(listing.category_id);
+      return catData;
+    },
+    fallbackData: null,
+    enabled: !!listing?.category_id,
+    deps: [listing?.category_id],
+  });
+
   // Safety tips hook - fetch category-specific tips
   const { tips: safetyTips } = useSafetyTips(listing?.category_id);
   
-  const [isFavorited, setIsFavorited] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(listing?.is_favorited || false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [showOfferSuccessModal, setShowOfferSuccessModal] = useState(false);
@@ -714,58 +752,40 @@ export default function ListingDetailScreen() {
   const [submittingOffer, setSubmittingOffer] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [canBuyOnline, setCanBuyOnline] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchListing = useCallback(async () => {
-    try {
-      setLoading(true);
-      
-      // Check if sandbox mode is active and use sandbox-aware API
-      const sandboxActive = await sandboxUtils.isActive();
-      
-      let data;
-      if (sandboxActive) {
-        data = await sandboxAwareListingsApi.getOne(id!);
-      } else {
-        data = await listingsApi.getOne(id!);
-      }
-      
-      setListing(data);
-      setIsFavorited(data.is_favorited || false);
-      
-      // Track recently viewed (don't await, fire and forget) - skip in sandbox
-      if (isAuthenticated && !sandboxActive) {
-        api.post(`/profile/activity/recently-viewed/${id}`).catch(() => {});
-      }
-      
-      // Skip category fetch in sandbox (not critical)
-      if (!sandboxActive) {
-        try {
-          const catData = await categoriesApi.getOne(data.category_id);
-          setCategory(catData);
-        } catch (e) {}
-        
-        // Check if seller can sell online
-        try {
-          const sellerCheck = await api.get(`/escrow/seller/${data.user_id}/can-sell-online`);
-          setCanBuyOnline(sellerCheck.data.can_sell_online === true);
-        } catch (e) {
-          setCanBuyOnline(false);
-        }
-      } else {
-        // In sandbox mode, enable buy online for testing
-        setCanBuyOnline(true);
-      }
-    } catch (error) {
-      console.error('Error fetching listing:', error);
-      Alert.alert('Error', 'Failed to load listing');
-    } finally {
-      setLoading(false);
-    }
-  }, [id, isAuthenticated]);
-
+  // Update favorite status when listing loads
   useEffect(() => {
-    if (id) fetchListing();
-  }, [id, fetchListing]);
+    if (listing) {
+      setIsFavorited(listing.is_favorited || false);
+    }
+  }, [listing]);
+
+  // Check if seller can sell online
+  useEffect(() => {
+    const checkCanSellOnline = async () => {
+      if (!listing?.user_id) return;
+      const sandboxActive = await sandboxUtils.isActive();
+      if (sandboxActive) {
+        setCanBuyOnline(true);
+        return;
+      }
+      try {
+        const sellerCheck = await api.get(`/escrow/seller/${listing.user_id}/can-sell-online`);
+        setCanBuyOnline(sellerCheck.data.can_sell_online === true);
+      } catch {
+        setCanBuyOnline(false);
+      }
+    };
+    checkCanSellOnline();
+  }, [listing?.user_id]);
+
+  // Pull to refresh handler
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([refreshListing(), refreshCategory()]);
+    setRefreshing(false);
+  }, [refreshListing, refreshCategory]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
