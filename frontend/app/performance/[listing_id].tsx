@@ -293,7 +293,7 @@ export default function ListingPerformanceScreen() {
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle" size={64} color="#f44336" />
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={loadData} data-testid="retry-button">
+          <TouchableOpacity style={styles.retryButton} onPress={onRefresh} data-testid="retry-button">
             <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
         </View>
