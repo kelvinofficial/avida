@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # Get the base URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://growth-hub-preview.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://avida-seo-engine.preview.emergentagent.com').rstrip('/')
 
 
 class TestReportReasons:
