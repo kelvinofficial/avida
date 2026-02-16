@@ -155,7 +155,7 @@ export default function QAReliabilityPage() {
 
   // Fetch all data
   const fetchData = useCallback(async () => {
-    setLoading(true);
+    setIsFetchingInBackground(true);
     try {
       const [healthRes, errorsRes, alertsRes, metricsRes, kpisRes, flagsRes, tracesRes, auditRes] = await Promise.all([
         fetch(`${API_BASE}/qa/health`),
@@ -168,14 +168,22 @@ export default function QAReliabilityPage() {
         fetch(`${API_BASE}/qa/audit?limit=50`),
       ]);
 
-      if (healthRes.ok) setHealth(await healthRes.json());
+      if (healthRes.ok) {
+        const healthData = await healthRes.json();
+        setHealth(healthData);
+        setCachedData('admin_qa_health', healthData);
+      }
       if (errorsRes.ok) {
         const data = await errorsRes.json();
-        setErrorLogs(data.logs || []);
+        const newErrors = data.logs || [];
+        setErrorLogs(newErrors);
+        setCachedData('admin_qa_errors', newErrors);
       }
       if (alertsRes.ok) {
         const data = await alertsRes.json();
-        setAlerts(data.alerts || []);
+        const newAlerts = data.alerts || [];
+        setAlerts(newAlerts);
+        setCachedData('admin_qa_alerts', newAlerts);
       }
       if (metricsRes.ok) setMetrics(await metricsRes.json());
       if (kpisRes.ok) setKpis(await kpisRes.json());
