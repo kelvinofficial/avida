@@ -302,12 +302,19 @@ export default function LeaderboardScreen() {
     );
   };
 
-  if (loading && page === 1) {
+  if (leaderboard.length === 0 && !isFetchingInBackground) {
     return (
       <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Badge Leaderboard</Text>
+          <View style={{ width: 40 }} />
+        </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading leaderboard...</Text>
+          <Ionicons name="trophy-outline" size={64} color={COLORS.textSecondary} />
+          <Text style={styles.loadingText}>No leaderboard data yet</Text>
         </View>
       </SafeAreaView>
     );
