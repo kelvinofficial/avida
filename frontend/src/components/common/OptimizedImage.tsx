@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { 
   Image, 
   View, 
@@ -6,7 +6,6 @@ import {
   ImageStyle,
   ViewStyle,
   Platform,
-  Animated
 } from 'react-native';
 import { ImagePlaceholder } from './ImagePlaceholder';
 
@@ -22,63 +21,13 @@ interface OptimizedImageProps {
 }
 
 /**
- * ImageShimmer - Skeleton loading animation for images
- * Uses CSS animation on web and Animated.View on native
- */
-const ImageShimmer: React.FC<{ style?: ViewStyle }> = memo(({ style }) => {
-  const shimmerAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.timing(shimmerAnim, {
-        toValue: 1,
-        duration: 1500,
-        useNativeDriver: Platform.OS !== 'web',
-      })
-    );
-    animation.start();
-    return () => animation.stop();
-  }, []);
-
-  // For web, use CSS animation via data attribute
-  if (Platform.OS === 'web') {
-    return (
-      <View
-        // @ts-ignore - data attribute for CSS styling
-        dataSet={{ shimmer: true }}
-        style={[styles.shimmerContainer, style]}
-      />
-    );
-  }
-
-  // For native, use Animated.View with translateX
-  const translateX = shimmerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-300, 300],
-  });
-
-  return (
-    <View style={[styles.shimmerContainer, style]}>
-      <Animated.View
-        style={[
-          styles.shimmerGradient,
-          { transform: [{ translateX }, { skewX: '-20deg' }] }
-        ]}
-      />
-    </View>
-  );
-});
-
-ImageShimmer.displayName = 'ImageShimmer';
-
-/**
- * OptimizedImage Component
+ * OptimizedImage Component - ZERO LOADER VERSION
  * 
- * Features:
- * - Shimmer skeleton loading animation
- * - Lazy loading with loading states
+ * CACHE-FIRST ARCHITECTURE:
+ * - Shows placeholder immediately (no shimmer/skeleton)
+ * - Image loads in background and fades in
  * - Graceful fallback to placeholder on error
- * - Optimized for mobile performance
+ * - No loading spinners or skeleton animations
  */
 export const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
   uri,
@@ -86,23 +35,17 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
   containerStyle,
   placeholderType = 'listing',
   placeholderSize = 'medium',
-  showLoadingIndicator = true,
   resizeMode = 'cover',
   priority = 'normal',
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-
-  const handleLoadStart = useCallback(() => {
-    setIsLoading(true);
-  }, []);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const handleLoadEnd = useCallback(() => {
-    setIsLoading(false);
+    setIsLoaded(true);
   }, []);
 
   const handleError = useCallback(() => {
-    setIsLoading(false);
     setHasError(true);
   }, []);
 
@@ -127,18 +70,24 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
 
   return (
     <View style={[styles.container, containerStyle, style]}>
+      {/* Show placeholder until image loads */}
+      {!isLoaded && (
+        <View style={StyleSheet.absoluteFillObject}>
+          <ImagePlaceholder 
+            type={placeholderType} 
+            size={placeholderSize}
+            showText={false}
+          />
+        </View>
+      )}
       <Image
         source={{ uri }}
-        style={styles.image}
+        style={[styles.image, !isLoaded && styles.hiddenImage]}
         resizeMode={resizeMode}
-        onLoadStart={handleLoadStart}
         onLoadEnd={handleLoadEnd}
         onError={handleError}
         {...webImageProps}
       />
-      {isLoading && showLoadingIndicator && (
-        <ImageShimmer style={StyleSheet.absoluteFillObject} />
-      )}
     </View>
   );
 });
@@ -148,23 +97,14 @@ OptimizedImage.displayName = 'OptimizedImage';
 const styles = StyleSheet.create({
   container: {
     overflow: 'hidden',
-    backgroundColor: '#ECEFF1',
+    backgroundColor: '#F5F5F5',
   },
   image: {
     width: '100%',
     height: '100%',
   },
-  shimmerContainer: {
-    backgroundColor: '#E0E0E0',
-    overflow: 'hidden',
-  },
-  shimmerGradient: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    width: 150,
-    backgroundColor: '#F5F5F5',
-    opacity: 0.5,
+  hiddenImage: {
+    opacity: 0,
   },
 });
 
