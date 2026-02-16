@@ -383,8 +383,14 @@ const safetyStyles = StyleSheet.create({
 export default function AutoListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const [listing, setListing] = useState<AutoListing | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  // Cache key for auto listing detail
+  const AUTO_DETAIL_CACHE_KEY = `auto_detail_${id}`;
+  
+  // Cache-first: Initialize with cached data for instant render
+  const cachedListing = getCachedSync<AutoListing>(AUTO_DETAIL_CACHE_KEY);
+  const [listing, setListing] = useState<AutoListing | null>(cachedListing);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isFavorited, setIsFavorited] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
@@ -395,20 +401,23 @@ export default function AutoListingDetailScreen() {
 
   const fetchListing = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsFetchingInBackground(true);
       setError(null);
       const response = await api.get(`/auto/listings/${id}`);
       setListing(response.data);
+      setCacheSync(AUTO_DETAIL_CACHE_KEY, response.data);
       
       // Track recently viewed (fire and forget)
       api.post(`/profile/activity/recently-viewed/${id}`).catch(() => {});
     } catch (err: any) {
       console.error('Error fetching listing:', err);
-      setError(err.response?.data?.detail || 'Failed to load listing');
+      if (!cachedListing) {
+        setError(err.response?.data?.detail || 'Failed to load listing');
+      }
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
-  }, [id]);
+  }, [id, AUTO_DETAIL_CACHE_KEY, cachedListing]);
 
   useEffect(() => {
     if (id) fetchListing();
