@@ -351,23 +351,8 @@ export default function BusinessProfileScreen() {
     }
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => safeGoBack(router)} data-testid="back-button">
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <View style={{ width: 24 }} />
-        </View>
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (error || !profile) {
+  // CACHE-FIRST: Show error/empty state only if no profile after fetch completes, not during loading
+  if (profileError && !profile) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.header}>
@@ -378,7 +363,7 @@ export default function BusinessProfileScreen() {
         </View>
         <View style={styles.centerContent}>
           <Ionicons name="storefront-outline" size={64} color={COLORS.border} />
-          <Text style={styles.errorText}>{error || 'Profile not found'}</Text>
+          <Text style={styles.errorText}>Business profile not found</Text>
           <TouchableOpacity 
             style={styles.retryBtn} 
             onPress={() => router.back()}
@@ -390,7 +375,8 @@ export default function BusinessProfileScreen() {
     );
   }
 
-  const brandColor = profile.brand_color || COLORS.primary;
+  // CACHE-FIRST: Show placeholder UI when no data yet (first time load without cache)
+  const brandColor = profile?.brand_color || COLORS.primary;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
