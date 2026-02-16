@@ -888,7 +888,11 @@ export default function PhotographyGuidesPage() {
                     p: 1.5,
                   }}
                 >
-                  <ion-icon name={icon} style={{ fontSize: '24px' }}></ion-icon>
+                  <Box
+                    component="span"
+                    sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    dangerouslySetInnerHTML={{ __html: `<ion-icon name="${icon}" style="font-size: 24px;"></ion-icon>` }}
+                  />
                 </IconButton>
               </Tooltip>
             ))}
