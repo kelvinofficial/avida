@@ -307,37 +307,29 @@ export default function SalesScreen() {
         </View>
       )}
 
-      {loading && !refreshing ? (
-        <FlatList
-          data={[1, 2, 3, 4, 5]}
-          keyExtractor={(item) => item.toString()}
-          renderItem={() => <SkeletonItem />}
-          contentContainerStyle={styles.list}
-        />
-      ) : (
-        <FlatList
-          data={sales}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <SaleItem
-              item={item}
-              onPress={() => router.push(`/listing/${item.id}`)}
-            />
-          )}
-          contentContainerStyle={styles.list}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              colors={[COLORS.primary]}
-              tintColor={COLORS.primary}
-            />
-          }
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          ListEmptyComponent={<EmptyState />}
-          ListFooterComponent={
-            hasMore && sales.length > 0 ? (
+      <FlatList
+        data={sales}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <SaleItem
+            item={item}
+            onPress={() => router.push(`/listing/${item.id}`)}
+          />
+        )}
+        contentContainerStyle={styles.list}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
+        }
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListEmptyComponent={<EmptyState />}
+        ListFooterComponent={
+          hasMore && sales.length > 0 ? (
               <ActivityIndicator style={{ padding: 20 }} color={COLORS.primary} />
             ) : null
           }
