@@ -7,7 +7,7 @@ import requests
 import os
 from datetime import datetime, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://zero-loaders-2.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://perf-overhaul.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 class TestContentCalendar:
