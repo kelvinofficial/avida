@@ -187,34 +187,45 @@ export const ADMIN_CACHE_KEYS = {
 - [x] Sellers page renders instantly without skeletons
 - [x] Recently viewed page renders instantly without skeletons
 - [x] Image components show static placeholder (no shimmer)
-- [ ] Admin dashboard pages render with cached data
-- [ ] Service worker caches API responses
+- [x] Service worker registered and active on web platform
+- [x] Admin dashboard key pages render with cached data (listings, commission, analytics)
+- [ ] Remaining admin dashboard pages use cache-first pattern
+- [ ] Third-party scripts deferred
 - [ ] Lighthouse score >= 90
 
 ## Files Modified
 
 ### Phase 1 & 2 Changes
 ```
-/app/frontend/src/
-├── utils/
-│   └── cacheManager.ts          ✅ Created (unified cache utility)
-├── hooks/
-│   └── useHomeData.ts           ✅ Modified (cache-first pattern)
-├── components/
-│   ├── common/
-│   │   ├── OptimizedImage.tsx   ✅ Modified (static placeholder)
-│   │   └── ImageWithSkeleton.tsx ✅ Modified (static placeholder)
-│   ├── home/
-│   │   └── SkeletonCard.tsx     ✅ Modified (static placeholder)
-│   └── skeletons/
-│       └── index.tsx            ✅ Modified (all static)
-├── app/
-│   ├── (tabs)/
-│   │   ├── _layout.tsx          ✅ Modified (removed font skeletons)
-│   │   ├── index.tsx            ✅ Uses cache-first
-│   │   └── recently-viewed.tsx  ✅ Modified (removed skeletons)
-│   └── sellers/
-│       └── index.tsx            ✅ Modified (removed skeletons)
+/app/frontend/
+├── web/
+│   ├── sw.js                    ✅ Created (Service Worker)
+│   └── manifest.json            ✅ Created (PWA Manifest)
+├── src/
+│   ├── utils/
+│   │   └── cacheManager.ts      ✅ Created (unified cache utility)
+│   ├── hooks/
+│   │   ├── useHomeData.ts       ✅ Modified (cache-first pattern)
+│   │   └── useServiceWorker.ts  ✅ Created (SW registration hook)
+│   ├── components/
+│   │   ├── common/
+│   │   │   ├── OptimizedImage.tsx   ✅ Modified (static placeholder)
+│   │   │   └── ImageWithSkeleton.tsx ✅ Modified (static placeholder)
+│   │   ├── home/
+│   │   │   └── SkeletonCard.tsx     ✅ Modified (static placeholder)
+│   │   └── skeletons/
+│   │       └── index.tsx            ✅ Modified (all static)
+│   └── app/
+│       ├── _layout.tsx              ✅ Modified (added useServiceWorker)
+│       ├── +html.tsx                ✅ Modified (PWA meta tags)
+│       ├── (tabs)/
+│       │   ├── index.tsx            ✅ Uses cache-first
+│       │   └── recently-viewed.tsx  ✅ Modified (removed skeletons)
+│       └── sellers/
+│           └── index.tsx            ✅ Modified (removed skeletons)
+
+/app/backend/routes/
+└── pwa.py                           ✅ Created (PWA routes)
 ```
 
 ## Changelog
