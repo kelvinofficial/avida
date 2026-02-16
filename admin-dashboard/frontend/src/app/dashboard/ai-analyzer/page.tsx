@@ -89,7 +89,7 @@ interface AIAnalytics {
 }
 
 export default function AIAnalyzerPage() {
-  const [loading, setLoading] = useState(true);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
@@ -122,9 +122,9 @@ export default function AIAnalyzerPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      setLoading(true);
+      setIsFetchingInBackground(true);
       await Promise.all([fetchSettings(), fetchAnalytics()]);
-      setLoading(false);
+      setIsFetchingInBackground(false);
     };
     loadData();
   }, [fetchSettings, fetchAnalytics]);
