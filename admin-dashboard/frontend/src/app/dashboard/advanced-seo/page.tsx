@@ -34,6 +34,7 @@ import {
   Checkbox,
   FormControlLabel,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import {
   Link as LinkIcon,
   Share,
