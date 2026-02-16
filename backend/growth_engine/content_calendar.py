@@ -45,6 +45,7 @@ class CalendarEventUpdate(BaseModel):
     tags: Optional[List[str]] = None
     color: Optional[str] = None
     recurrence: Optional[str] = None
+    recurrence_end_date: Optional[datetime] = None
     assigned_to: Optional[str] = None
     notes: Optional[str] = None
 
