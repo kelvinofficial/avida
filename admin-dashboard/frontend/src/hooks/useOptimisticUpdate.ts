@@ -256,7 +256,12 @@ export function useOptimisticList<T extends ListItem>(
   );
 
   const optimisticDelete = useCallback(
-    async ({ apiCall, itemId, setList, currentList }) => {
+    async ({ apiCall, itemId, setList, currentList }: {
+      apiCall: () => Promise<void>;
+      itemId: string;
+      setList: React.Dispatch<React.SetStateAction<T[]>>;
+      currentList: T[];
+    }) => {
       setIsPending(true);
       setError(null);
       
