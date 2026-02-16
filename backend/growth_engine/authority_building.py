@@ -555,6 +555,303 @@ def create_authority_building_router(db, get_current_user: Callable):
             "recent_activity": [serialize_contact(c) for c in recent_contacts]
         }
 
+    # ==================== AUTOMATED SUGGESTIONS ====================
+    
+    @router.get("/suggestions/backlink-opportunities")
+    async def get_backlink_opportunities(
+        region: Optional[str] = Query(None, description="Region code: TZ, KE, DE, UG, NG, ZA"),
+        include_global: bool = Query(True, description="Include global opportunities"),
+        admin=Depends(require_admin)
+    ):
+        """Get automated backlink opportunity suggestions based on region"""
+        opportunities = []
+        
+        # Get existing contacts to filter out
+        existing_contacts = await db.outreach_contacts.find({}, {"domain": 1}).to_list(length=5000)
+        existing_domains = {c.get("domain", "").lower() for c in existing_contacts}
+        
+        # Get opportunities for specified region or all regions
+        regions_to_check = [region.upper()] if region else list(BACKLINK_OPPORTUNITIES_DB.keys())
+        
+        for reg in regions_to_check:
+            if reg in BACKLINK_OPPORTUNITIES_DB:
+                for opp in BACKLINK_OPPORTUNITIES_DB[reg]:
+                    if opp["domain"].lower() not in existing_domains:
+                        opportunities.append({
+                            **opp,
+                            "region": reg,
+                            "relevance_score": random.randint(70, 95),
+                            "suggested_approach": "guest_post" if opp["type"] == "blog" else "pr_pitch",
+                            "estimated_effort": "medium" if opp["da"] < 60 else "high"
+                        })
+        
+        # Include global opportunities if requested
+        if include_global and "GLOBAL" not in regions_to_check:
+            for opp in BACKLINK_OPPORTUNITIES_DB.get("GLOBAL", []):
+                if opp["domain"].lower() not in existing_domains:
+                    opportunities.append({
+                        **opp,
+                        "region": "GLOBAL",
+                        "relevance_score": random.randint(60, 85),
+                        "suggested_approach": "pr_pitch" if opp["type"] == "news" else "guest_post",
+                        "estimated_effort": "high"
+                    })
+        
+        # Sort by DA
+        opportunities.sort(key=lambda x: x["da"], reverse=True)
+        
+        return {
+            "opportunities": opportunities,
+            "total": len(opportunities),
+            "target_regions": ["TZ", "KE", "DE", "UG", "NG", "ZA"]
+        }
+
+    @router.get("/suggestions/pr-opportunities")
+    async def get_pr_opportunities(admin=Depends(require_admin)):
+        """Get PR opportunity categories and recommendations"""
+        return {
+            "categories": PR_OPPORTUNITY_CATEGORIES,
+            "recommendations": [
+                {
+                    "type": "immediate",
+                    "title": "Publish a How-To Guide",
+                    "description": "Create educational content about safe online buying/selling to position Avida as an authority",
+                    "estimated_impact": "high",
+                    "effort": "medium"
+                },
+                {
+                    "type": "quarterly",
+                    "title": "Share Market Insights Report",
+                    "description": "Publish a quarterly report on marketplace trends in East Africa - data journalists love this",
+                    "estimated_impact": "high",
+                    "effort": "high"
+                },
+                {
+                    "type": "ongoing",
+                    "title": "User Success Stories",
+                    "description": "Feature success stories of sellers who grew their business using Avida",
+                    "estimated_impact": "medium",
+                    "effort": "low"
+                },
+                {
+                    "type": "immediate",
+                    "title": "Safety Initiative Announcement",
+                    "description": "Launch a safety campaign or feature and announce to media - great for brand trust",
+                    "estimated_impact": "high",
+                    "effort": "medium"
+                }
+            ],
+            "pitch_calendar": {
+                "Q1": ["New Year features", "Tax season prep for sellers"],
+                "Q2": ["Spring cleaning/selling season", "Student back-to-school (Southern Hemisphere)"],
+                "Q3": ["Mid-year marketplace trends", "Holiday prep early bird"],
+                "Q4": ["Holiday shopping guide", "Year-end statistics"]
+            }
+        }
+
+    @router.post("/analyze/competitor-backlinks")
+    async def analyze_competitor_backlinks(
+        competitor_domain: str = Query(..., description="Competitor domain to analyze"),
+        admin=Depends(require_admin)
+    ):
+        """Analyze competitor backlinks to find opportunities"""
+        domain = extract_domain_from_url(competitor_domain)
+        
+        # Generate simulated competitor backlinks
+        backlinks = generate_competitor_backlinks(domain)
+        
+        # Find opportunities (sources that link to competitor but not to us)
+        our_backlinks = await db.backlinks.find({}, {"source_domain": 1}).to_list(length=5000)
+        our_sources = {b.get("source_domain", "").lower() for b in our_backlinks}
+        
+        opportunities = []
+        for bl in backlinks:
+            if bl["source_domain"].lower() not in our_sources:
+                opportunities.append({
+                    **bl,
+                    "opportunity_type": "competitor_has",
+                    "action": f"Reach out to {bl['source_domain']} - they link to your competitor"
+                })
+        
+        return {
+            "competitor": domain,
+            "total_backlinks": len(backlinks),
+            "backlinks": backlinks[:15],
+            "opportunities": opportunities[:10],
+            "summary": {
+                "dofollow_count": len([b for b in backlinks if b["link_type"] == "dofollow"]),
+                "avg_domain_authority": round(sum(b["domain_authority"] for b in backlinks) / max(len(backlinks), 1), 1),
+                "top_source_da": max(b["domain_authority"] for b in backlinks) if backlinks else 0
+            },
+            "is_simulated_data": True
+        }
+
+    @router.post("/analyze/domain-authority")
+    async def check_domain_authority(
+        domain: str = Query(..., description="Domain to check"),
+        admin=Depends(require_admin)
+    ):
+        """Check domain authority for a given domain (simulated)"""
+        domain = extract_domain_from_url(domain)
+        
+        # Look up in our database first
+        known_domains = {}
+        for region_opps in BACKLINK_OPPORTUNITIES_DB.values():
+            for opp in region_opps:
+                known_domains[opp["domain"].lower()] = opp["da"]
+        
+        if domain.lower() in known_domains:
+            da = known_domains[domain.lower()]
+        else:
+            # Generate a plausible DA based on domain characteristics
+            if any(tld in domain for tld in [".gov", ".edu"]):
+                da = random.randint(60, 85)
+            elif any(brand in domain for brand in ["google", "facebook", "amazon", "microsoft"]):
+                da = random.randint(90, 100)
+            elif len(domain) < 10:
+                da = random.randint(40, 70)
+            else:
+                da = random.randint(20, 50)
+        
+        return {
+            "domain": domain,
+            "domain_authority": da,
+            "page_authority": da - random.randint(5, 15),
+            "spam_score": random.randint(1, 15),
+            "backlinks_count": random.randint(100, 50000),
+            "linking_domains": random.randint(50, 5000),
+            "quality_rating": "high" if da > 60 else "medium" if da > 35 else "low",
+            "recommendation": "Good target for outreach" if da > 40 else "Consider higher DA targets",
+            "checked_at": datetime.now(timezone.utc).isoformat(),
+            "is_simulated_data": True
+        }
+
+    @router.post("/analyze/keywords")
+    async def analyze_keywords_for_opportunities(
+        request: KeywordAnalysisRequest,
+        admin=Depends(require_admin)
+    ):
+        """Analyze keywords to find content and link building opportunities"""
+        keywords = request.keywords[:10]  # Limit to 10 keywords
+        region = request.region
+        
+        results = []
+        for keyword in keywords:
+            kw_lower = keyword.lower()
+            
+            # Generate opportunities based on keyword
+            content_ideas = [
+                f"Complete Guide to {keyword}",
+                f"How to {keyword} Safely",
+                f"{keyword}: Tips for Buyers and Sellers",
+                f"Top 10 {keyword} Mistakes to Avoid"
+            ]
+            
+            # Find relevant sites
+            relevant_sites = []
+            search_regions = [region.upper()] if region else ["TZ", "KE", "DE", "UG", "NG", "ZA"]
+            for reg in search_regions:
+                for opp in BACKLINK_OPPORTUNITIES_DB.get(reg, []):
+                    if any(topic in kw_lower for topic in opp["topics"]) or "business" in opp["topics"]:
+                        relevant_sites.append({
+                            "domain": opp["domain"],
+                            "da": opp["da"],
+                            "region": reg,
+                            "relevance": "high" if any(topic in kw_lower for topic in opp["topics"]) else "medium"
+                        })
+            
+            results.append({
+                "keyword": keyword,
+                "search_volume_estimate": random.randint(500, 15000),
+                "competition": random.choice(["low", "medium", "high"]),
+                "content_ideas": content_ideas[:3],
+                "relevant_sites": sorted(relevant_sites, key=lambda x: x["da"], reverse=True)[:5],
+                "link_building_approach": "Create authoritative content targeting this keyword, then reach out to relevant sites"
+            })
+        
+        return {
+            "keywords_analyzed": len(keywords),
+            "results": results,
+            "overall_strategy": "Focus on creating high-quality, expert content for these keywords and build backlinks through guest posting and PR"
+        }
+
+    @router.get("/insights/health-score")
+    async def get_authority_health_score(admin=Depends(require_admin)):
+        """Get overall authority building health score and recommendations"""
+        
+        # Get current stats
+        campaigns = await db.outreach_campaigns.find({}).to_list(length=100)
+        contacts = await db.outreach_contacts.find({}).to_list(length=5000)
+        backlinks = await db.backlinks.find({}).to_list(length=5000)
+        
+        active_campaigns = len([c for c in campaigns if c.get("status") == "active"])
+        total_contacts = len(contacts)
+        linked_contacts = len([c for c in contacts if c.get("status") == "linked"])
+        active_backlinks = len([b for b in backlinks if b.get("status") == "active"])
+        dofollow_backlinks = len([b for b in backlinks if b.get("link_type") == "dofollow"])
+        
+        # Calculate health score components
+        campaign_score = min(active_campaigns * 25, 100)  # Max 4 active campaigns = 100
+        outreach_score = min(total_contacts * 2, 100) if total_contacts > 0 else 0
+        conversion_score = (linked_contacts / max(total_contacts, 1)) * 100
+        backlink_score = min(active_backlinks * 5, 100)  # 20 backlinks = 100
+        quality_score = (dofollow_backlinks / max(active_backlinks, 1)) * 100 if active_backlinks > 0 else 50
+        
+        overall_score = round((campaign_score * 0.2 + outreach_score * 0.2 + conversion_score * 0.25 + backlink_score * 0.2 + quality_score * 0.15), 0)
+        
+        recommendations = []
+        if active_campaigns < 2:
+            recommendations.append({
+                "priority": "high",
+                "action": "Start more outreach campaigns",
+                "reason": "Active campaigns drive consistent backlink acquisition"
+            })
+        if total_contacts < 20:
+            recommendations.append({
+                "priority": "high",
+                "action": "Add more outreach contacts",
+                "reason": "More prospects = more opportunities for links"
+            })
+        if conversion_score < 15:
+            recommendations.append({
+                "priority": "medium",
+                "action": "Improve outreach templates",
+                "reason": f"Current conversion rate is {round(conversion_score, 1)}% - aim for 15%+"
+            })
+        if active_backlinks < 10:
+            recommendations.append({
+                "priority": "high",
+                "action": "Focus on acquiring more backlinks",
+                "reason": "You need more referring domains for SEO impact"
+            })
+        if quality_score < 60:
+            recommendations.append({
+                "priority": "medium",
+                "action": "Target more dofollow links",
+                "reason": "Only {:.0f}% of your backlinks are dofollow".format(quality_score)
+            })
+        
+        return {
+            "overall_score": overall_score,
+            "grade": "A" if overall_score >= 80 else "B" if overall_score >= 60 else "C" if overall_score >= 40 else "D",
+            "components": {
+                "campaign_activity": round(campaign_score, 0),
+                "outreach_volume": round(outreach_score, 0),
+                "conversion_rate": round(conversion_score, 1),
+                "backlink_quantity": round(backlink_score, 0),
+                "backlink_quality": round(quality_score, 1)
+            },
+            "stats": {
+                "active_campaigns": active_campaigns,
+                "total_contacts": total_contacts,
+                "linked_contacts": linked_contacts,
+                "active_backlinks": active_backlinks,
+                "dofollow_backlinks": dofollow_backlinks
+            },
+            "recommendations": recommendations[:5],
+            "generated_at": datetime.now(timezone.utc).isoformat()
+        }
+
     return router
 
 
