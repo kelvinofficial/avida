@@ -34,6 +34,13 @@ const getPlatformIcon = (platform: string) => {
   }
 };
 
+const PLATFORM_COLORS: Record<string, string> = {
+  twitter: '#1DA1F2',
+  linkedin: '#0077B5',
+  facebook: '#1877F2',
+  instagram: '#E4405F',
+};
+
 const CONTENT_TYPES = [
   { value: 'blog_promotion', label: 'Blog Promotion' },
   { value: 'listing', label: 'Listing Highlight' },
