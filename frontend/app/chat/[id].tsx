@@ -1774,21 +1774,11 @@ export default function ChatScreen() {
     [user, conversation, getMessagesWithSeparators, isSeller, handleLongPressMessage]
   );
 
-  if (loading || !isReady) {
+  // CACHE-FIRST: Show minimal placeholder only while auth checks
+  if (!isReady) {
     return (
       <SafeAreaView style={[styles.container, isLargeScreen && desktopStyles.outerContainer]}>
-        {isLargeScreen && (
-          <View style={desktopStyles.pageWrapper}>
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={COLORS.primary} />
-            </View>
-          </View>
-        )}
-        {!isLargeScreen && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
-          </View>
-        )}
+        <View style={{ flex: 1, backgroundColor: COLORS.background }} />
       </SafeAreaView>
     );
   }
