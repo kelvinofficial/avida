@@ -308,16 +308,23 @@ export default function AnalyticsPage() {
     { name: 'Other', value: Math.max(0, overview.listings.total - overview.listings.active - overview.listings.pending), color: '#9E9E9E' },
   ] : [];
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  // CACHE-FIRST: Empty state instead of loading spinner
+  const showEmptyState = !overview && !cachedOverview;
 
   return (
-    <Box>
+    <Box sx={{ position: 'relative' }}>
+      {/* Subtle background fetch indicator */}
+      {isFetchingInBackground && (
+        <LinearProgress sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, zIndex: 10 }} />
+      )}
+      
+      {showEmptyState ? (
+        <Box>
+          <Typography variant="h4" gutterBottom>Analytics</Typography>
+          <Alert severity="info">Loading analytics data...</Alert>
+        </Box>
+      ) : (
+        <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
           <Typography variant="h4" fontWeight={600} gutterBottom>
