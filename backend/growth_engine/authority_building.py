@@ -243,6 +243,179 @@ def get_top_anchors(backlinks: List[Dict]) -> List[Dict]:
         for k, v in sorted(anchor_counts.items(), key=lambda x: x[1], reverse=True)[:10]
     ]
 
+
+def calculate_opportunity_score(backlink: Dict, competitor_count: int) -> int:
+    """Calculate opportunity score for a backlink gap"""
+    score = 50  # Base score
+    
+    # Higher DA = higher score
+    da = backlink.get("source_da", 30)
+    if da >= 80:
+        score += 30
+    elif da >= 60:
+        score += 20
+    elif da >= 40:
+        score += 10
+    
+    # Dofollow bonus
+    if backlink.get("link_type") == "dofollow":
+        score += 10
+    
+    # Multiple competitors have this link = higher priority
+    score += min(competitor_count * 5, 15)
+    
+    # Category bonus for relevant categories
+    category = backlink.get("category", "")
+    if category in ["africa_tech", "africa_business", "classifieds"]:
+        score += 10
+    elif category in ["business", "startup", "tech_news"]:
+        score += 5
+    
+    return min(score, 100)
+
+
+def get_link_difficulty(da: int) -> str:
+    """Determine link acquisition difficulty based on DA"""
+    if da >= 80:
+        return "very_hard"
+    elif da >= 60:
+        return "hard"
+    elif da >= 40:
+        return "medium"
+    else:
+        return "easy"
+
+
+def suggest_outreach_approach(backlink: Dict) -> str:
+    """Suggest outreach approach based on source characteristics"""
+    category = backlink.get("category", "")
+    
+    approaches = {
+        "tech_news": "Pitch a newsworthy story or product announcement",
+        "africa_tech": "Offer exclusive coverage of East African marketplace growth",
+        "africa_business": "Share data on marketplace economics in target regions",
+        "blog_platform": "Publish thought leadership content directly",
+        "reviews": "Request a platform review or case study feature",
+        "forum": "Engage authentically and share expertise",
+        "qa": "Answer relevant questions with helpful content",
+        "business_db": "Update your company profile with backlinks",
+        "startup": "Submit for feature or launch announcement",
+        "professional": "Share company updates and articles"
+    }
+    
+    return approaches.get(category, "Personalized outreach with value proposition")
+
+
+def generate_gap_recommendations(gap_opportunities: List[Dict], common_opportunities: List[Dict]) -> List[str]:
+    """Generate actionable recommendations from gap analysis"""
+    recommendations = []
+    
+    # Easy wins
+    easy_wins = [o for o in gap_opportunities if o.get("difficulty") == "easy"]
+    if easy_wins:
+        recommendations.append(f"Quick wins: {len(easy_wins)} low-difficulty opportunities found. Start with {easy_wins[0]['source_domain']} (DA {easy_wins[0]['source_da']})")
+    
+    # High-value targets
+    high_value = [o for o in gap_opportunities if o.get("source_da", 0) >= 70]
+    if high_value:
+        recommendations.append(f"High-value targets: {len(high_value)} high-DA domains (70+) link to competitors but not you")
+    
+    # Common opportunities
+    if common_opportunities:
+        top_common = common_opportunities[0]
+        recommendations.append(f"Priority target: {top_common['source_domain']} links to {top_common['competitors_with_link']} of your competitors")
+    
+    # Africa-focused sites
+    africa_sites = [o for o in gap_opportunities if "africa" in o.get("category", "")]
+    if africa_sites:
+        recommendations.append(f"Regional opportunity: {len(africa_sites)} Africa-focused publications to target")
+    
+    if not recommendations:
+        recommendations.append("Run gap analysis with more competitors to find opportunities")
+    
+    return recommendations[:5]
+
+
+def generate_backlink_alerts(new_backlinks: List[Dict], lost_backlinks: List[Dict]) -> List[Dict]:
+    """Generate alerts based on backlink changes"""
+    alerts = []
+    
+    # High-DA new backlinks
+    high_da_new = [b for b in new_backlinks if b.get("source_da", 0) >= 60]
+    if high_da_new:
+        alerts.append({
+            "type": "success",
+            "title": f"New high-authority backlink{'s' if len(high_da_new) > 1 else ''}",
+            "message": f"Gained {len(high_da_new)} backlink(s) from DA 60+ domains",
+            "priority": "high"
+        })
+    
+    # Lost dofollow backlinks
+    lost_dofollow = [b for b in lost_backlinks if b.get("link_type") == "dofollow"]
+    if lost_dofollow:
+        alerts.append({
+            "type": "warning",
+            "title": f"Lost dofollow backlink{'s' if len(lost_dofollow) > 1 else ''}",
+            "message": f"Lost {len(lost_dofollow)} dofollow link(s). Consider reaching out to restore.",
+            "priority": "medium"
+        })
+    
+    # Net positive trend
+    net = len(new_backlinks) - len(lost_backlinks)
+    if net > 0:
+        alerts.append({
+            "type": "info",
+            "title": "Positive growth trend",
+            "message": f"Net gain of {net} backlinks this period",
+            "priority": "low"
+        })
+    elif net < 0:
+        alerts.append({
+            "type": "error",
+            "title": "Negative growth trend",
+            "message": f"Net loss of {abs(net)} backlinks. Review lost links.",
+            "priority": "high"
+        })
+    
+    return alerts
+
+
+def generate_competitive_insights(your_metrics: Dict, all_metrics: List[Dict]) -> List[str]:
+    """Generate insights from competitor comparison"""
+    insights = []
+    
+    competitors = [m for m in all_metrics if not m.get("is_you")]
+    if not competitors:
+        return ["Add competitors to track for insights"]
+    
+    avg_competitor_backlinks = sum(c["total_backlinks"] for c in competitors) / len(competitors)
+    avg_competitor_da = sum(c["estimated_da"] for c in competitors) / len(competitors)
+    
+    your_backlinks = your_metrics.get("total_backlinks", 0)
+    your_da = your_metrics.get("estimated_da", 35)
+    
+    # Backlink volume insight
+    if your_backlinks < avg_competitor_backlinks * 0.5:
+        insights.append(f"Your backlink count ({your_backlinks}) is significantly below competitor average ({int(avg_competitor_backlinks)}). Focus on link building.")
+    elif your_backlinks > avg_competitor_backlinks:
+        insights.append(f"You have more backlinks than the average competitor. Focus on quality over quantity.")
+    
+    # DA insight
+    if your_da < avg_competitor_da - 10:
+        insights.append(f"Your estimated DA ({your_da}) lags behind competitors (avg {int(avg_competitor_da)}). Target higher-authority links.")
+    
+    # Top competitor insight
+    top_competitor = max(competitors, key=lambda x: x["estimated_da"])
+    if top_competitor["estimated_da"] > your_da + 15:
+        insights.append(f"{top_competitor['name']} leads with DA {top_competitor['estimated_da']}. Analyze their backlink sources.")
+    
+    # Dofollow ratio
+    your_dofollow_ratio = your_metrics.get("dofollow_backlinks", 0) / max(your_metrics.get("total_backlinks", 1), 1)
+    if your_dofollow_ratio < 0.4:
+        insights.append("Low dofollow ratio. Prioritize dofollow link opportunities.")
+    
+    return insights[:4]
+
 class KeywordAnalysisRequest(BaseModel):
     keywords: List[str]
     region: Optional[str] = None
