@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Share,
   Platform,
-  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +16,9 @@ import Head from 'expo-router/head';
 import api from '../../../src/utils/api';
 import { useResponsive } from '../../../src/hooks/useResponsive';
 import { getCachedSync, setCacheSync } from '../../../src/utils/cacheManager';
+import { useCacheFirst } from '../../../src/hooks/useCacheFirst';
+
+// CACHE-FIRST: No page-level loading spinners - render instantly with cached data
 
 const COLORS = {
   primary: '#2E7D32',
