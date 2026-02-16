@@ -158,7 +158,17 @@ export default function NotificationPreferencesScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={handleRefresh} 
+            tintColor={COLORS.primary} 
+          />
+        }
+      >
         {/* Channels Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
