@@ -13,11 +13,22 @@ export default function Root({ children }: PropsWithChildren) {
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         
+        {/* PWA Manifest */}
+        <link rel="manifest" href="/api/pwa/manifest.json" />
+        <meta name="theme-color" content="#2E7D32" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="LocalMarket" />
+        <link rel="apple-touch-icon" href="/assets/images/icon.png" />
+        
         {/* Using raw CSS text to ensure full-width rendering */}
         <style dangerouslySetInnerHTML={{ __html: responsiveStyle }} />
         
         {/* Load fonts using FontFace API to ensure they're registered before app renders */}
         <script dangerouslySetInnerHTML={{ __html: fontLoadScript }} />
+        
+        {/* Register Service Worker for caching and offline support */}
+        <script dangerouslySetInnerHTML={{ __html: serviceWorkerScript }} />
         
         {/* Disable body scrolling - ScrollView handles this */}
         <ScrollViewStyleReset />
