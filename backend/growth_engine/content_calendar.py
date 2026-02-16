@@ -276,11 +276,14 @@ def create_content_calendar_router(db, get_current_user: Callable):
                 stats["by_region"][region] = stats["by_region"].get(region, 0) + 1
             
             scheduled = event.get("scheduled_date")
-            if scheduled and now <= scheduled <= week_end and event.get("status") == "scheduled":
-                stats["upcoming_this_week"] += 1
-            
-            if scheduled and scheduled < now and event.get("status") in ["scheduled", "in_progress"]:
-                stats["overdue"] += 1
+            # Ensure scheduled datetime is timezone-aware for comparison
+            if scheduled:
+                if scheduled.tzinfo is None:
+                    scheduled = scheduled.replace(tzinfo=timezone.utc)
+                if now <= scheduled <= week_end and event.get("status") == "scheduled":
+                    stats["upcoming_this_week"] += 1
+                if scheduled < now and event.get("status") in ["scheduled", "in_progress"]:
+                    stats["overdue"] += 1
         
         return stats
 
