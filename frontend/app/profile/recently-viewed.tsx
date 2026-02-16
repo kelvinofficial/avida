@@ -6,7 +6,6 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
   RefreshControl,
   Alert,
   Platform,
@@ -20,6 +19,9 @@ import { useResponsive } from '../../src/hooks/useResponsive';
 import { DesktopPageLayout } from '../../src/components/layout';
 import { useLoginRedirect } from '../../src/hooks/useLoginRedirect';
 import { ImagePlaceholder } from '../../src/components/common/ImagePlaceholder';
+import { getCachedSync, setCacheSync, CacheManager } from '../../src/utils/cacheManager';
+
+// CACHE-FIRST: Removed ActivityIndicator - no loading spinners
 
 const COLORS = {
   primary: '#2E7D32',
