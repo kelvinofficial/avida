@@ -341,30 +341,47 @@ const INITIAL_MESSAGES: Message[] = [
 export default function PropertyChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const [property, setProperty] = useState<Property | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  
+  // Cache key for chat property
+  const CHAT_PROPERTY_CACHE_KEY = `chat_property_${id}`;
+  
+  // Cache-first: Initialize with cached property for instant render
+  const cachedProperty = getCachedSync<Property>(CHAT_PROPERTY_CACHE_KEY);
+  const [property, setProperty] = useState<Property | null>(cachedProperty);
+  const [messages, setMessages] = useState<Message[]>(
+    cachedProperty ? INITIAL_MESSAGES.map(m => ({
+      ...m,
+      text: m.text.replace('this property', cachedProperty.title),
+    })) : INITIAL_MESSAGES
+  );
   const [inputText, setInputText] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
   // Fetch property details
   const fetchProperty = useCallback(async () => {
     try {
+      setIsFetchingInBackground(true);
       const response = await api.get(`/property/listings/${id}`);
       setProperty(response.data);
+      setCacheSync(CHAT_PROPERTY_CACHE_KEY, response.data);
       // Initialize with dummy messages
-      setMessages(INITIAL_MESSAGES.map(m => ({
-        ...m,
-        text: m.text.replace('this property', response.data.title),
-      })));
+      if (!cachedProperty) {
+        setMessages(INITIAL_MESSAGES.map(m => ({
+          ...m,
+          text: m.text.replace('this property', response.data.title),
+        })));
+      }
     } catch (error) {
       console.error('Error fetching property:', error);
-      Alert.alert('Error', 'Failed to load property');
+      if (!cachedProperty) {
+        Alert.alert('Error', 'Failed to load property');
+      }
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
-  }, [id]);
+  }, [id, CHAT_PROPERTY_CACHE_KEY, cachedProperty]);
 
   useEffect(() => {
     if (id) {
