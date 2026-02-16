@@ -269,18 +269,6 @@ export default function BlogPostPage() {
     return elements;
   };
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        {isDesktop && <DesktopHeader />}
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={styles.loadingText}>Loading article...</Text>
-        </View>
-      </View>
-    );
-  }
-
   if (error || !post) {
     return (
       <View style={styles.container}>
