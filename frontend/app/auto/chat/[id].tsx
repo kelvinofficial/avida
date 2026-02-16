@@ -181,38 +181,47 @@ export default function AutoChatScreen() {
   const { id, listingId, title } = useLocalSearchParams<{ id: string; listingId?: string; title?: string }>();
   const router = useRouter();
   
-  const [conversation, setConversation] = useState<AutoConversation | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  // Cache key for auto conversation
+  const AUTO_CONV_CACHE_KEY = `auto_conversation_${id}`;
+  
+  // Cache-first: Initialize with cached data
+  const cachedConversation = getCachedSync<AutoConversation>(AUTO_CONV_CACHE_KEY);
+  
+  const [conversation, setConversation] = useState<AutoConversation | null>(cachedConversation);
+  const [messages, setMessages] = useState<Message[]>(cachedConversation?.messages || []);
   const [newMessage, setNewMessage] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [sending, setSending] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string>('');
+  const [currentUserId, setCurrentUserId] = useState<string>(cachedConversation?.buyer_id || '');
   const [isSellerTyping, setIsSellerTyping] = useState(false);
   
   const flatListRef = useRef<FlatList>(null);
+
+  const fetchConversation = useCallback(async () => {
+    try {
+      setIsFetchingInBackground(true);
+      const response = await api.get(`/auto/conversations/${id}`);
+      const data = response.data;
+      setConversation(data);
+      setMessages(data.messages || []);
+      setCurrentUserId(data.buyer_id);
+      setCacheSync(AUTO_CONV_CACHE_KEY, data);
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: false }), 100);
+    } catch (error) {
+      console.error('Error fetching conversation:', error);
+      if (!cachedConversation) {
+        Alert.alert('Error', 'Failed to load conversation');
+      }
+    } finally {
+      setIsFetchingInBackground(false);
+    }
+  }, [id, AUTO_CONV_CACHE_KEY, cachedConversation]);
 
   useEffect(() => {
     if (id) {
       fetchConversation();
     }
-  }, [id]);
-
-  const fetchConversation = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get(`/auto/conversations/${id}`);
-      const data = response.data;
-      setConversation(data);
-      setMessages(data.messages || []);
-      setCurrentUserId(data.buyer_id); // We're the buyer in this context
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: false }), 100);
-    } catch (error) {
-      console.error('Error fetching conversation:', error);
-      Alert.alert('Error', 'Failed to load conversation');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [id, fetchConversation]);
 
   const handleSend = async () => {
     if (!newMessage.trim() || sending) return;
