@@ -665,7 +665,12 @@ export default function TeamManagementPage() {
     }
   };
 
+  // OPTIMISTIC APPROVE: Update UI instantly, sync in background
   const handleApprove = async (approvalId: string) => {
+    // Update UI instantly - remove from pending approvals
+    const previousApprovals = [...approvals];
+    setApprovals(prev => prev.filter(a => a.id !== approvalId));
+    
     try {
       const response = await fetch(`${API_BASE}/team/approvals/${approvalId}/approve`, {
         method: 'POST',
@@ -678,15 +683,25 @@ export default function TeamManagementPage() {
       
       if (response.ok) {
         setSnackbar({ open: true, message: 'Request approved', severity: 'success' });
-        fetchApprovals();
-        fetchDashboard();
+        fetchDashboard(); // Update counts
+      } else {
+        // Rollback
+        setApprovals(previousApprovals);
+        setSnackbar({ open: true, message: 'Failed to approve', severity: 'error' });
       }
     } catch (error) {
+      // Rollback
+      setApprovals(previousApprovals);
       setSnackbar({ open: true, message: 'Failed to approve', severity: 'error' });
     }
   };
 
+  // OPTIMISTIC REJECT: Update UI instantly, sync in background
   const handleReject = async (approvalId: string, reason: string) => {
+    // Update UI instantly - remove from pending approvals
+    const previousApprovals = [...approvals];
+    setApprovals(prev => prev.filter(a => a.id !== approvalId));
+    
     try {
       const response = await fetch(`${API_BASE}/team/approvals/${approvalId}/reject`, {
         method: 'POST',
@@ -700,10 +715,15 @@ export default function TeamManagementPage() {
       
       if (response.ok) {
         setSnackbar({ open: true, message: 'Request rejected', severity: 'info' });
-        fetchApprovals();
         fetchDashboard();
+      } else {
+        // Rollback
+        setApprovals(previousApprovals);
+        setSnackbar({ open: true, message: 'Failed to reject', severity: 'error' });
       }
     } catch (error) {
+      // Rollback
+      setApprovals(previousApprovals);
       setSnackbar({ open: true, message: 'Failed to reject', severity: 'error' });
     }
   };
