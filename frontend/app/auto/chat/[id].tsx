@@ -354,17 +354,17 @@ export default function AutoChatScreen() {
     );
   };
 
-  if (loading) {
+  if (!conversation) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color={theme.colors.onSurface} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Loading...</Text>
+          <Text style={styles.headerTitle}>Conversation not found</Text>
         </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text style={styles.loadingText}>No conversation data</Text>
         </View>
       </SafeAreaView>
     );
