@@ -199,30 +199,31 @@ const CATEGORY_NAMES: Record<string, string> = {
 export default function BusinessProfileScreen() {
   const router = useRouter();
   const { slug } = useLocalSearchParams<{ slug: string }>();
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<BusinessProfile | null>(null);
+  
+  // CACHE-FIRST: Use cache-first hook for profile - eliminates page-level loader
+  const { 
+    data: profile, 
+    isFetching: isFetchingProfile, 
+    error: profileError,
+    refresh: refreshProfile 
+  } = useCacheFirst<BusinessProfile | null>({
+    cacheKey: `business_profile_${slug}`,
+    fetcher: async () => {
+      const response = await api.get(`/business-profiles/public/${slug}`);
+      return response.data;
+    },
+    fallbackData: null,
+    deps: [slug],
+    enabled: !!slug,
+  });
+
   const [listings, setListings] = useState<Listing[]>([]);
   const [totalListings, setTotalListings] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchProfile = useCallback(async () => {
-    try {
-      const response = await api.get(`/business-profiles/public/${slug}`);
-      setProfile(response.data);
-      setError(null);
-    } catch (error: any) {
-      console.error('Error fetching business profile:', error);
-      if (error.response?.status === 404) {
-        setError('Business profile not found');
-      } else {
-        setError('Failed to load business profile');
-      }
-    }
-  }, [slug]);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchListings = useCallback(async (pageNum: number = 1, category?: string | null, reset: boolean = false) => {
     try {
@@ -257,16 +258,10 @@ export default function BusinessProfileScreen() {
     }
   }, [slug]);
 
+  // Initial listings fetch
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      await fetchProfile();
-      await fetchListings(1, null, true);
-      setLoading(false);
-    };
-    
     if (slug) {
-      loadData();
+      fetchListings(1, null, true);
     }
   }, [slug, fetchProfile, fetchListings]);
 
