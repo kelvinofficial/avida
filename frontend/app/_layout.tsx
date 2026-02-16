@@ -38,33 +38,7 @@ export default function RootLayout() {
   // Network status for offline banner
   const { isOffline } = useNetworkStatus();
 
-  // Check if fonts are loaded via document.fonts API (web only)
-  useEffect(() => {
-    if (Platform.OS === 'web' && typeof document !== 'undefined') {
-      // Check if fonts are already ready
-      const checkFonts = async () => {
-        try {
-          // Wait for essential icon fonts
-          await document.fonts.ready;
-          // Additional check for ionicons specifically
-          const ioniconsLoaded = document.fonts.check('16px ionicons');
-          if (ioniconsLoaded) {
-            setFontsReady(true);
-          } else {
-            // Wait a bit more for fonts to load
-            setTimeout(() => setFontsReady(true), 500);
-          }
-        } catch (e) {
-          // Fallback: assume fonts loaded after timeout
-          setTimeout(() => setFontsReady(true), 1000);
-        }
-      };
-      checkFonts();
-    } else {
-      // Non-web platforms: fonts are bundled, mark as ready
-      setFontsReady(true);
-    }
-  }, []);
+  // CACHE-FIRST: Font loading no longer blocks rendering
 
   // Initialize notification deep linking
   useNotificationDeepLinking();
