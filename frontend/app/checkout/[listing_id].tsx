@@ -318,23 +318,15 @@ export default function CheckoutScreen() {
     return `data:image/jpeg;base64,${img}`;
   };
   
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loading}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading checkout...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-  
   if (!listing) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loading}>
-          <Ionicons name="alert-circle-outline" size={48} color={COLORS.textSecondary} />
+          <Ionicons name="cart-outline" size={48} color={COLORS.textSecondary} />
           <Text style={styles.loadingText}>Listing not found</Text>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Text style={{ color: COLORS.primary, marginTop: 12, fontSize: 16 }}>Go Back</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
