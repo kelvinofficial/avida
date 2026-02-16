@@ -330,7 +330,7 @@ export function useHomeData(): UseHomeDataReturn {
     }
   }, []);
 
-  // Fetch main data
+  // Fetch main data - CACHE-FIRST pattern
   const fetchData = useCallback(async (refresh = false) => {
     try {
       if (refresh) {
@@ -342,6 +342,9 @@ export function useHomeData(): UseHomeDataReturn {
       } else if (!hasMore && !refresh) {
         return;
       }
+
+      // Set background fetch indicator (not for showing spinners)
+      setIsFetchingInBackground(true);
 
       const currentPage = refresh ? 1 : page;
 
@@ -382,6 +385,9 @@ export function useHomeData(): UseHomeDataReturn {
       
       if (refresh) {
         setListings(newListings);
+        // Cache first page listings
+        setCacheSync(CACHE_KEYS.HOME_LISTINGS, newListings);
+        CacheManager.setCache(CACHE_KEYS.HOME_LISTINGS, newListings);
       } else {
         setListings(prev => [...prev, ...newListings]);
       }
@@ -397,6 +403,9 @@ export function useHomeData(): UseHomeDataReturn {
         : categoriesApi.getAll()
       );
       setCategories(categoriesResponse || []);
+      // Cache categories
+      setCacheSync(CACHE_KEYS.HOME_CATEGORIES, categoriesResponse || []);
+      CacheManager.setCache(CACHE_KEYS.HOME_CATEGORIES, categoriesResponse || []);
 
       // Fetch user-specific data if authenticated
       if (isAuthenticated && token) {
