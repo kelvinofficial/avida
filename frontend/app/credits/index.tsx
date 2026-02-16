@@ -599,7 +599,17 @@ export default function CreditsPage() {
   // Mobile Layout
   return (
     <View style={styles.outerContainer}>
-      <ScrollView style={styles.container}>
+      <ScrollView 
+        style={styles.container}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#4CAF50']}
+            tintColor="#4CAF50"
+          />
+        }
+      >
         <View style={styles.contentWrapper}>
           {/* Mobile Header */}
           <View style={styles.header}>
