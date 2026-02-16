@@ -17,7 +17,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://avida-seo-engine.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://seo-authority-hub.preview.emergentagent.com').rstrip('/')
 
 # Test credentials
 TEST_EMAIL = "paypaltest@test.com"

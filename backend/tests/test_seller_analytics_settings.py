@@ -18,7 +18,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://avida-seo-engine.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://seo-authority-hub.preview.emergentagent.com')
 
 # Test credentials
 TEST_EMAIL = "testadmin@test.com"

@@ -18,7 +18,7 @@ import time
 import uuid
 
 # Get base URL from environment
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://avida-seo-engine.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://seo-authority-hub.preview.emergentagent.com").rstrip("/")
 
 
 class TestAIPersonalizationConfig:
