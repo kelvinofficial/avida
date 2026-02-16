@@ -135,13 +135,19 @@ function QuickActionCard({ title, description, icon, color, href }: QuickActionC
 }
 
 export default function DashboardPage() {
-  const [loading, setLoading] = useState(true);
-  const [analytics, setAnalytics] = useState<AnalyticsOverview | null>(null);
-  const [categoryData, setCategoryData] = useState<{ category_name: string; count: number }[]>([]);
-  const [growthData, setGrowthData] = useState<{ date: string; count: number }[]>([]);
+  // CACHE-FIRST: Initialize with cached data for instant render
+  const cachedAnalytics = getCachedData<AnalyticsOverview>('admin_dashboard_analytics');
+  const cachedCategories = getCachedData<{ category_name: string; count: number }[]>('admin_dashboard_categories') || [];
+  const cachedGrowth = getCachedData<{ date: string; count: number }[]>('admin_dashboard_growth') || [];
+  
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
+  const [analytics, setAnalytics] = useState<AnalyticsOverview | null>(cachedAnalytics);
+  const [categoryData, setCategoryData] = useState<{ category_name: string; count: number }[]>(cachedCategories);
+  const [growthData, setGrowthData] = useState<{ date: string; count: number }[]>(cachedGrowth);
 
   useEffect(() => {
     const loadData = async () => {
+      setIsFetchingInBackground(true);
       try {
         const [overview, categories, growth] = await Promise.all([
           api.getAnalyticsOverview(),
@@ -151,10 +157,15 @@ export default function DashboardPage() {
         setAnalytics(overview);
         setCategoryData(categories.slice(0, 8));
         setGrowthData(growth);
+        
+        // Cache the data
+        setCachedData('admin_dashboard_analytics', overview);
+        setCachedData('admin_dashboard_categories', categories.slice(0, 8));
+        setCachedData('admin_dashboard_growth', growth);
       } catch (error) {
         console.error('Failed to load analytics:', error);
       } finally {
-        setLoading(false);
+        setIsFetchingInBackground(false);
       }
     };
     loadData();
