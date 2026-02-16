@@ -375,8 +375,8 @@ export default function LeaderboardScreen() {
             leaderboard.map((item, index) => renderLeaderboardItem(item, index))
           )}
 
-          {loading && page > 1 && (
-            <ActivityIndicator style={{ marginVertical: 20 }} color={COLORS.primary} />
+          {isFetchingInBackground && page > 1 && (
+            <Text style={styles.loadingText}>Loading more...</Text>
           )}
         </View>
 
