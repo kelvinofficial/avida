@@ -1867,11 +1867,10 @@ export default function PropertyScreen() {
         </TouchableOpacity>
       </View>
       
-      {/* Loading indicator */}
-      {loading && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading properties...</Text>
+      {/* Background fetch indicator - subtle */}
+      {isFetchingInBackground && properties.length > 0 && (
+        <View style={styles.fetchingIndicator}>
+          <Text style={styles.fetchingText}>Updating...</Text>
         </View>
       )}
     </View>
@@ -1895,7 +1894,7 @@ export default function PropertyScreen() {
           </View>
         )}
         ListHeaderComponent={renderHeader}
-        ListEmptyComponent={!loading ? (
+        ListEmptyComponent={!isFetchingInBackground ? (
           <View style={styles.emptyContainer}>
             <View style={styles.emptyIcon}>
               <Ionicons name="home-outline" size={48} color={COLORS.textSecondary} />
