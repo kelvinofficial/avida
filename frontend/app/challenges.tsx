@@ -452,20 +452,28 @@ export default function ChallengesScreen() {
     );
   };
 
-  if (loading) {
+  const seasonalChallenges = challenges.filter(c => c.type === 'seasonal');
+  const weeklyChallenges = challenges.filter(c => c.type === 'weekly');
+  const monthlyChallenges = challenges.filter(c => c.type === 'monthly');
+
+  // Empty state when no challenges available
+  if (challenges.length === 0 && !isFetchingInBackground) {
     return (
       <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Challenges</Text>
+          <View style={{ width: 40 }} />
+        </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading challenges...</Text>
+          <Ionicons name="trophy-outline" size={64} color={COLORS.textSecondary} />
+          <Text style={styles.loadingText}>No challenges available</Text>
         </View>
       </SafeAreaView>
     );
   }
-
-  const seasonalChallenges = challenges.filter(c => c.type === 'seasonal');
-  const weeklyChallenges = challenges.filter(c => c.type === 'weekly');
-  const monthlyChallenges = challenges.filter(c => c.type === 'monthly');
 
   return (
     <SafeAreaView style={styles.container}>
