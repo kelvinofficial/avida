@@ -17,6 +17,9 @@ import api from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
 import { safeGoBack } from '../../src/utils/navigation';
 import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
+import { useCacheFirst } from '../../src/hooks/useCacheFirst';
+
+// CACHE-FIRST: No page-level loading spinners - render instantly with cached data
 
 const COLORS = {
   primary: '#2E7D32',
