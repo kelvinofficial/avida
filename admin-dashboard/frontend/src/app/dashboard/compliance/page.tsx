@@ -634,16 +634,12 @@ export default function CompliancePage() {
     return diff;
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
-    <Box data-testid="compliance-page">
+    <Box data-testid="compliance-page" sx={{ position: 'relative' }}>
+      {/* CACHE-FIRST: Show LinearProgress for background fetch instead of blocking CircularProgress */}
+      {loading && (
+        <LinearProgress sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, zIndex: 10 }} />
+      )}
       {/* Header with stats */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" fontWeight={700} gutterBottom>

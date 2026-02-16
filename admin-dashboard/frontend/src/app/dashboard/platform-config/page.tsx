@@ -407,16 +407,12 @@ export default function PlatformConfigPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
-    <Box>
+    <Box sx={{ position: 'relative' }}>
+      {/* CACHE-FIRST: Show LinearProgress for background fetch instead of blocking CircularProgress */}
+      {loading && (
+        <LinearProgress sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, zIndex: 10 }} />
+      )}
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
