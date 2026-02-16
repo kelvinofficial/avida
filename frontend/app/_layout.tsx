@@ -16,6 +16,7 @@ import { BadgeCelebrationProvider } from '../src/context/BadgeCelebrationContext
 import { MilestoneProvider } from '../src/context/MilestoneContext';
 import { OfflineBanner, FavoriteNotificationProvider } from '../src/components/common';
 import { useNetworkStatus } from '../src/hooks/useNetworkStatus';
+import { useServiceWorker } from '../src/hooks/useServiceWorker';
 
 // Initialize global error handler
 if (typeof window !== 'undefined' || Platform.OS !== 'web') {
@@ -36,6 +37,9 @@ export default function RootLayout() {
   
   // Network status for offline banner
   const { isOffline } = useNetworkStatus();
+  
+  // Register Service Worker for PWA caching on web
+  useServiceWorker();
 
   // CACHE-FIRST: Font loading no longer blocks rendering
 
