@@ -6,7 +6,6 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
   RefreshControl,
   Alert,
   ScrollView,
@@ -19,6 +18,7 @@ import api from '../src/utils/api';
 import { useAuthStore } from '../src/store/authStore';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsive } from '../src/hooks/useResponsive';
+import { getCachedSync, setCacheSync, CACHE_KEYS } from '../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',
