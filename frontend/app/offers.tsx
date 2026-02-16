@@ -404,8 +404,10 @@ export default function OffersScreen() {
   const { isDesktop, isTablet, isReady } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
   
-  const [offers, setOffers] = useState<Offer[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Cache-first: Initialize with cached data for instant render
+  const cachedOffers = getCachedSync<Offer[]>(CACHE_KEYS.OFFERS) || [];
+  const [offers, setOffers] = useState<Offer[]>(cachedOffers);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [role, setRole] = useState<'seller' | 'buyer'>('seller');
   const [pendingCount, setPendingCount] = useState(0);
@@ -422,28 +424,27 @@ export default function OffersScreen() {
 
   const fetchOffers = useCallback(async () => {
     if (!isAuthenticated) {
-      setLoading(false);
       return;
     }
 
+    setIsFetchingInBackground(true);
     try {
       const response = await api.get('/offers', { params: { role } });
       setOffers(response.data.offers || []);
       setPendingCount(response.data.pending_count || 0);
+      // Update cache
+      setCacheSync(CACHE_KEYS.OFFERS, response.data.offers || []);
     } catch (error) {
       console.error('Error fetching offers:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
       setRefreshing(false);
     }
   }, [isAuthenticated, role]);
 
   useEffect(() => {
     if (isAuthenticated) {
-      setLoading(true);
       fetchOffers();
-    } else {
-      setLoading(false);
     }
   }, [isAuthenticated, role]);
 
