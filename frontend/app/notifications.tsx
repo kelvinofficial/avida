@@ -257,10 +257,10 @@ export default function NotificationsScreen() {
 
   const fetchNotifications = useCallback(async (pageNum: number = 1, refresh: boolean = false) => {
     if (!isAuthenticated) {
-      setLoading(false);
       return;
     }
 
+    setIsFetchingInBackground(true);
     try {
       const params: Record<string, any> = { page: pageNum, limit: 20 };
       if (activeTab === 'unread') params.unread_only = true;
@@ -271,6 +271,8 @@ export default function NotificationsScreen() {
 
       if (refresh || pageNum === 1) {
         setNotifications(data.notifications || []);
+        // Update cache on fresh fetch
+        setCacheSync(CACHE_KEYS.NOTIFICATIONS, data.notifications || []);
       } else {
         setNotifications(prev => [...prev, ...(data.notifications || [])]);
       }
@@ -280,8 +282,9 @@ export default function NotificationsScreen() {
       setPage(pageNum);
     } catch (error) {
       console.error('Error fetching notifications:', error);
+      // Keep showing cached data on error
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
       setRefreshing(false);
       setLoadingMore(false);
     }
