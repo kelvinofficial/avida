@@ -141,6 +141,24 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 
 ## Changelog
 
+### February 16, 2026 (Session 4)
+- Implemented **Recurring Events** for Content Calendar
+  - Options: Daily, Weekly, Bi-weekly, Monthly
+  - Auto-generates future event instances up to end date
+  - Delete/update series functionality
+- Implemented **Google Analytics Settings** (GA4 placeholder)
+  - GA4 Measurement ID configuration
+  - GTM Container ID support
+  - Tracking options: page views, blog reads, listing views, conversions
+  - Tracking code generation for website integration
+- Implemented **Authority Building System**
+  - PR Campaign management (5 types: PR, Guest Post, Link Building, Partnership, Media)
+  - Outreach contact tracking with status pipeline (Identified → Contacted → Responded → Negotiating → Linked)
+  - Backlink tracking with domain authority scores
+  - 5 default email templates (Guest Post Pitch, PR Pitch, Link Building, Follow-up, Thank You)
+- Fixed duplicate Analytics import in layout.tsx
+- Latest test report: `/app/test_reports/iteration_166.json` - 100% pass rate (19/19 backend, all frontend)
+
 ### February 15, 2026 (Session 3)
 - Implemented **Content Calendar** feature for scheduling content across regions
   - Backend API at `/api/growth/calendar/` with full CRUD operations
