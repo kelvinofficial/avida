@@ -825,6 +825,38 @@ export default function ContentCalendarPage() {
                 )}
               </Grid>
             </Grid>
+            {/* Recurrence Section */}
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Repeat</InputLabel>
+                  <Select
+                    value={formData.recurrence}
+                    label="Repeat"
+                    onChange={(e) => setFormData({ ...formData, recurrence: e.target.value })}
+                  >
+                    <MenuItem value="none">Does not repeat</MenuItem>
+                    <MenuItem value="daily">Daily</MenuItem>
+                    <MenuItem value="weekly">Weekly</MenuItem>
+                    <MenuItem value="biweekly">Every 2 weeks</MenuItem>
+                    <MenuItem value="monthly">Monthly</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6}>
+                {formData.recurrence !== 'none' && (
+                  <TextField
+                    label="Repeat Until"
+                    type="date"
+                    value={formData.recurrence_end_date}
+                    onChange={(e) => setFormData({ ...formData, recurrence_end_date: e.target.value })}
+                    fullWidth
+                    required
+                    InputLabelProps={{ shrink: true }}
+                  />
+                )}
+              </Grid>
+            </Grid>
             <TextField
               label="Notes"
               value={formData.notes}
