@@ -7,9 +7,9 @@ import {
   Card,
   CardContent,
   Typography,
-  CircularProgress,
   Chip,
   CardActionArea,
+  LinearProgress,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {
