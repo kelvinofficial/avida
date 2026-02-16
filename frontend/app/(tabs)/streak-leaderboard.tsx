@@ -8,6 +8,7 @@ import {
   RefreshControl,
   Platform,
   Share,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -156,7 +157,7 @@ export default function StreakLeaderboardScreen() {
   };
 
   const handleLoadMore = () => {
-    if (!loading && hasMore) {
+    if (!isFetchingInBackground && hasMore) {
       fetchLeaderboard(page + 1);
     }
   };
@@ -422,7 +423,7 @@ export default function StreakLeaderboardScreen() {
             leaderboard.map((item) => renderLeaderboardItem(item))
           )}
 
-          {loading && page > 1 && (
+          {isFetchingInBackground && page > 1 && (
             <ActivityIndicator style={{ marginVertical: 20 }} color={COLORS.fire} />
           )}
         </View>
