@@ -58,9 +58,12 @@ export default function BusinessDirectoryScreen() {
   const { width } = useWindowDimensions();
   const isLargeScreen = isDesktop || isTablet;
 
-  const [loading, setLoading] = useState(true);
+  // CACHE-FIRST: Initialize with cached data
+  const cachedBusinesses = getCachedSync<Business[]>(CACHE_KEYS.BUSINESS_PROFILES) ?? [];
+  
+  const [loading, setLoading] = useState(cachedBusinesses.length === 0);
   const [refreshing, setRefreshing] = useState(false);
-  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [businesses, setBusinesses] = useState<Business[]>(cachedBusinesses);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
