@@ -242,8 +242,10 @@ export default function NotificationsScreen() {
   const { isDesktop, isTablet, isReady } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
   
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Cache-first: Initialize with cached data for instant render
+  const cachedNotifications = getCachedSync<Notification[]>(CACHE_KEYS.NOTIFICATIONS) || [];
+  const [notifications, setNotifications] = useState<Notification[]>(cachedNotifications);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
