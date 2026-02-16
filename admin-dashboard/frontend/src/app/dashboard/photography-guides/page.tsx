@@ -756,7 +756,11 @@ export default function PhotographyGuidesPage() {
               <Typography variant="subtitle2" gutterBottom>Icon</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Avatar sx={{ bgcolor: 'primary.light', width: 48, height: 48 }}>
-                  <ion-icon name={formData.icon} style={{ fontSize: '24px' }}></ion-icon>
+                  <Box
+                    component="span"
+                    sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    dangerouslySetInnerHTML={{ __html: `<ion-icon name="${formData.icon}" style="font-size: 24px;"></ion-icon>` }}
+                  />
                 </Avatar>
                 <TextField
                   value={formData.icon}
