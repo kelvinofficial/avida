@@ -571,16 +571,11 @@ export default function CategoriesPage() {
     return result;
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
     <Box>
+      {/* CACHE-FIRST: Show LinearProgress for background fetch instead of blocking spinner */}
+      {isFetchingInBackground && <LinearProgress sx={{ mb: 2 }} />}
+      
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
           <Typography variant="h4" fontWeight={600} gutterBottom>
