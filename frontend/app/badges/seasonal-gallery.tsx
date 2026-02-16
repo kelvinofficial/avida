@@ -300,16 +300,7 @@ export default function SeasonalBadgesGalleryScreen() {
     </View>
   );
 
-  if (loading && page === 1) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.seasonal} />
-          <Text style={styles.loadingText}>Loading seasonal badges...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // CACHE-FIRST: No page-level loading indicator - render immediately
 
   return (
     <SafeAreaView style={styles.container}>
