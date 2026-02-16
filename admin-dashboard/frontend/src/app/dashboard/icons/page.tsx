@@ -922,14 +922,11 @@ export default function IconsManagementPage() {
                   '&:hover': { bgcolor: 'action.hover' },
                 }}
               >
-                
-                <ion-icon 
-                  name={iconName} 
-                  style={{ 
-                    fontSize: 28,
-                    color: formData.ionicon_name === iconName ? '#fff' : formData.color || '#2E7D32',
-                  }}
-                ></ion-icon>
+                <Box
+                  component="span"
+                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  dangerouslySetInnerHTML={{ __html: `<ion-icon name="${iconName}" style="font-size: 28px; color: ${formData.ionicon_name === iconName ? '#fff' : formData.color || '#2E7D32'};"></ion-icon>` }}
+                />
                 <Typography 
                   variant="caption" 
                   sx={{ 
