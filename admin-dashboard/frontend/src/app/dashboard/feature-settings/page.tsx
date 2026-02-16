@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Box, Card, CardContent, Typography, Switch, Button,
   CircularProgress, LinearProgress, Alert, Divider, Select, MenuItem,
@@ -12,9 +12,10 @@ import Grid from '@mui/material/Grid';
 import {
   Visibility, VisibilityOff, Favorite, LocationOn,
   AttachMoney, Info, Save, Refresh, TrendingUp,
-  Timer, LocalOffer, Star, Settings, Flag,
+  Timer, LocalOffer, Star, Settings, Flag, CheckCircle,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
+import { useOptimisticUpdate } from '@/hooks/useOptimisticUpdate';
 
 interface FeatureSettings {
   show_view_count: boolean;
