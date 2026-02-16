@@ -283,6 +283,13 @@ Added cache keys for: USER_SETTINGS, NOTIFICATIONS, CHALLENGES, BLOG_POSTS, LEAD
 - **Remaining loaders**: 4 admin pages (lower priority), 1 messages skeleton (acceptable for chat UX)
 - **Homepage, listings, search, profile, credits, boost, business profiles**: All instant ✅
 
+**Admin Panel Bug Fix (2026-02-16):**
+- **Issue**: Locations data not loading on admin settings page
+- **Root Cause**: Missing `/api/admin/locations` list endpoint - the admin dashboard was calling an endpoint that didn't exist
+- **Fix**: Added paginated list endpoint to `routes/admin_locations.py` that returns `{items, total, page, limit, pages}`
+- **Files Modified**: `/app/backend/routes/admin_locations.py`, `/app/backend/location_system.py`
+- **Status**: RESOLVED ✅
+
 ### Test Results:
 - `/app/test_reports/iteration_171.json` - Phase 2: ALL PASSED (9/9)
 - `/app/test_reports/iteration_172.json` - Phase 3 Initial: ALL PASSED (6/6)
