@@ -410,8 +410,8 @@ export default function PublicProfileScreen() {
     return `/listing/${item.id}`;
   };
 
-  // Render immediately without loading spinner - show empty container
-  if (loading || !isReady) {
+  // CACHE-FIRST: Minimal placeholder only when no data and auth not ready
+  if (!isReady) {
     return (
       <SafeAreaView style={[styles.container, isLargeScreen && desktopStyles.container]} edges={['top']}>
         <View style={{ flex: 1, backgroundColor: COLORS.background }} />
