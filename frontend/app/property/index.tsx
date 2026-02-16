@@ -2118,6 +2118,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
   },
+  fetchingIndicator: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  fetchingText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
   emptyContainer: {
     padding: 60,
     alignItems: 'center',
