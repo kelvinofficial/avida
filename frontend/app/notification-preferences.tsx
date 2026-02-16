@@ -333,14 +333,8 @@ export default function NotificationPreferencesScreen() {
           onPress={savePreferences}
           disabled={saving}
         >
-          {saving ? (
-            <ActivityIndicator color="#fff" size="small" />
-          ) : (
-            <>
-              <Ionicons name="checkmark-circle" size={20} color="#fff" />
-              <Text style={styles.saveButtonText}>Save Preferences</Text>
-            </>
-          )}
+          <Ionicons name={saving ? "sync" : "checkmark-circle"} size={20} color="#fff" />
+          <Text style={styles.saveButtonText}>{saving ? 'Saving...' : 'Save Preferences'}</Text>
         </TouchableOpacity>
 
         <View style={{ height: 40 }} />
