@@ -59,7 +59,10 @@
               "pathPrefix": "/category/"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -85,7 +88,9 @@
         {
           "photosPermission": "Select photos to add to your listings"
         }
-      ]
+      ],
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
