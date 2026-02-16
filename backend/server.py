@@ -3186,7 +3186,13 @@ if ADMIN_TOOLS_AVAILABLE:
         app.include_router(advanced_seo_router, prefix="/api")
         print("Growth Engine - Advanced SEO routes loaded successfully")
         
-        logger.info("AI SEO Growth Engine fully loaded (SEO Core, Content, ASO, Analytics, Advanced SEO)")
+        # Content Calendar (Schedule blog posts, social media, SEO milestones)
+        from growth_engine.content_calendar import create_content_calendar_router
+        content_calendar_router = create_content_calendar_router(db, get_current_user)
+        app.include_router(content_calendar_router, prefix="/api")
+        print("Growth Engine - Content Calendar routes loaded successfully")
+        
+        logger.info("AI SEO Growth Engine fully loaded (SEO Core, Content, ASO, Analytics, Advanced SEO, Calendar)")
     except Exception as e:
         print(f"Failed to load Growth Engine routes: {e}")
         import traceback
