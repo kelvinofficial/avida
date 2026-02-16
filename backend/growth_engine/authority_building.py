@@ -58,6 +58,191 @@ class BacklinkCreate(BaseModel):
     campaign_id: Optional[str] = None
     notes: Optional[str] = ""
 
+
+class CompetitorProfile(BaseModel):
+    domain: str
+    name: Optional[str] = None
+    description: Optional[str] = None
+    is_primary: bool = Field(default=False)
+
+
+class BacklinkGapRequest(BaseModel):
+    competitors: List[str]
+    include_common: bool = Field(default=True, description="Include domains linking to multiple competitors")
+
+
+# Simulated competitor database for realistic demo data
+COMPETITOR_PROFILES = {
+    "jiji.co.tz": {
+        "name": "Jiji Tanzania",
+        "category": "classifieds",
+        "estimated_da": 45,
+        "estimated_backlinks": 2500,
+        "regions": ["TZ"]
+    },
+    "jiji.co.ke": {
+        "name": "Jiji Kenya", 
+        "category": "classifieds",
+        "estimated_da": 52,
+        "estimated_backlinks": 4200,
+        "regions": ["KE"]
+    },
+    "olx.co.za": {
+        "name": "OLX South Africa",
+        "category": "classifieds",
+        "estimated_da": 58,
+        "estimated_backlinks": 8500,
+        "regions": ["ZA"]
+    },
+    "pigiame.co.ke": {
+        "name": "PigiaMe",
+        "category": "classifieds",
+        "estimated_da": 38,
+        "estimated_backlinks": 1200,
+        "regions": ["KE"]
+    },
+    "zoom.co.tz": {
+        "name": "ZoomTanzania",
+        "category": "classifieds",
+        "estimated_da": 32,
+        "estimated_backlinks": 800,
+        "regions": ["TZ"]
+    },
+    "jumia.com": {
+        "name": "Jumia",
+        "category": "ecommerce",
+        "estimated_da": 72,
+        "estimated_backlinks": 45000,
+        "regions": ["NG", "KE", "TZ", "UG", "ZA"]
+    },
+    "kilimall.co.ke": {
+        "name": "Kilimall",
+        "category": "ecommerce",
+        "estimated_da": 48,
+        "estimated_backlinks": 3200,
+        "regions": ["KE", "UG"]
+    }
+}
+
+# Simulated backlink sources database
+BACKLINK_SOURCES_DB = [
+    {"domain": "techcrunch.com", "da": 94, "category": "tech_news", "difficulty": "very_hard"},
+    {"domain": "forbes.com", "da": 95, "category": "business", "difficulty": "very_hard"},
+    {"domain": "bloomberg.com", "da": 93, "category": "finance", "difficulty": "very_hard"},
+    {"domain": "bbc.com", "da": 96, "category": "news", "difficulty": "very_hard"},
+    {"domain": "cnn.com", "da": 94, "category": "news", "difficulty": "very_hard"},
+    {"domain": "medium.com", "da": 96, "category": "blog_platform", "difficulty": "easy"},
+    {"domain": "linkedin.com", "da": 99, "category": "professional", "difficulty": "medium"},
+    {"domain": "twitter.com", "da": 94, "category": "social", "difficulty": "easy"},
+    {"domain": "reddit.com", "da": 97, "category": "forum", "difficulty": "medium"},
+    {"domain": "quora.com", "da": 93, "category": "qa", "difficulty": "medium"},
+    {"domain": "crunchbase.com", "da": 91, "category": "business_db", "difficulty": "medium"},
+    {"domain": "g2.com", "da": 86, "category": "reviews", "difficulty": "medium"},
+    {"domain": "trustpilot.com", "da": 93, "category": "reviews", "difficulty": "easy"},
+    {"domain": "wikipedia.org", "da": 100, "category": "encyclopedia", "difficulty": "very_hard"},
+    {"domain": "github.com", "da": 96, "category": "developer", "difficulty": "medium"},
+    {"domain": "producthunt.com", "da": 89, "category": "startup", "difficulty": "medium"},
+    {"domain": "techmoran.com", "da": 45, "category": "africa_tech", "difficulty": "easy"},
+    {"domain": "disrupt-africa.com", "da": 52, "category": "africa_tech", "difficulty": "easy"},
+    {"domain": "techcabal.com", "da": 55, "category": "africa_tech", "difficulty": "easy"},
+    {"domain": "weetracker.com", "da": 48, "category": "africa_tech", "difficulty": "easy"},
+    {"domain": "iafrikan.com", "da": 42, "category": "africa_tech", "difficulty": "easy"},
+    {"domain": "venturesafrica.com", "da": 50, "category": "africa_business", "difficulty": "easy"},
+    {"domain": "howwemadeitinafrica.com", "da": 55, "category": "africa_business", "difficulty": "medium"},
+    {"domain": "nation.africa", "da": 72, "category": "africa_news", "difficulty": "medium"},
+    {"domain": "thecitizen.co.tz", "da": 55, "category": "tz_news", "difficulty": "easy"},
+    {"domain": "dailynews.co.tz", "da": 48, "category": "tz_news", "difficulty": "easy"},
+    {"domain": "standardmedia.co.ke", "da": 68, "category": "ke_news", "difficulty": "medium"},
+    {"domain": "businessdailyafrica.com", "da": 62, "category": "ke_business", "difficulty": "medium"},
+    {"domain": "news24.com", "da": 78, "category": "za_news", "difficulty": "medium"},
+]
+
+
+def generate_competitor_backlink_profile(competitor_domain: str) -> Dict[str, Any]:
+    """Generate a detailed simulated backlink profile for a competitor"""
+    profile = COMPETITOR_PROFILES.get(competitor_domain, {
+        "name": competitor_domain,
+        "category": "unknown",
+        "estimated_da": random.randint(25, 55),
+        "estimated_backlinks": random.randint(500, 5000),
+        "regions": ["GLOBAL"]
+    })
+    
+    # Generate backlinks
+    num_backlinks = min(profile.get("estimated_backlinks", 1000), 50)  # Limit for demo
+    backlinks = []
+    
+    # Select sources based on competitor profile
+    available_sources = BACKLINK_SOURCES_DB.copy()
+    
+    for _ in range(num_backlinks):
+        if not available_sources:
+            break
+        source = random.choice(available_sources)
+        
+        # Higher DA competitors get more high-DA backlinks
+        if profile.get("estimated_da", 40) > 50 or random.random() > 0.3:
+            backlinks.append({
+                "source_domain": source["domain"],
+                "source_da": source["da"],
+                "link_type": "dofollow" if random.random() > 0.4 else "nofollow",
+                "anchor_text": generate_anchor_text(competitor_domain),
+                "category": source["category"],
+                "first_seen": (datetime.now(timezone.utc) - timedelta(days=random.randint(30, 730))).isoformat(),
+                "last_seen": datetime.now(timezone.utc).isoformat(),
+                "status": "active"
+            })
+    
+    # Calculate metrics
+    dofollow_count = len([b for b in backlinks if b["link_type"] == "dofollow"])
+    avg_da = sum(b["source_da"] for b in backlinks) / max(len(backlinks), 1)
+    
+    return {
+        "domain": competitor_domain,
+        "profile": profile,
+        "metrics": {
+            "total_backlinks": len(backlinks),
+            "dofollow_count": dofollow_count,
+            "nofollow_count": len(backlinks) - dofollow_count,
+            "average_da": round(avg_da, 1),
+            "referring_domains": len(set(b["source_domain"] for b in backlinks)),
+            "estimated_organic_traffic": random.randint(5000, 50000)
+        },
+        "backlinks": sorted(backlinks, key=lambda x: x["source_da"], reverse=True),
+        "top_anchors": get_top_anchors(backlinks),
+        "generated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+
+def generate_anchor_text(domain: str) -> str:
+    """Generate realistic anchor text variations"""
+    variations = [
+        domain,
+        domain.split('.')[0],
+        f"click here",
+        f"visit {domain.split('.')[0]}",
+        f"{domain.split('.')[0]} marketplace",
+        f"buy and sell on {domain.split('.')[0]}",
+        f"best classifieds site",
+        f"online marketplace",
+        f"sell items online",
+        f"free classifieds"
+    ]
+    return random.choice(variations)
+
+
+def get_top_anchors(backlinks: List[Dict]) -> List[Dict]:
+    """Get top anchor texts from backlinks"""
+    anchor_counts = {}
+    for bl in backlinks:
+        anchor = bl.get("anchor_text", "")
+        anchor_counts[anchor] = anchor_counts.get(anchor, 0) + 1
+    
+    return [
+        {"anchor": k, "count": v, "percentage": round(v / len(backlinks) * 100, 1)}
+        for k, v in sorted(anchor_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+    ]
+
 class KeywordAnalysisRequest(BaseModel):
     keywords: List[str]
     region: Optional[str] = None
