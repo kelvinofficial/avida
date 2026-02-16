@@ -395,10 +395,8 @@ export default function IconsManagementPage() {
             fontSize: size,
           },
         }}
-      >
-        
-        <ion-icon name={name} style={{ color: color || '#2E7D32', fontSize: size }}></ion-icon>
-      </Box>
+        dangerouslySetInnerHTML={{ __html: `<ion-icon name="${name}" style="color: ${color || '#2E7D32'}; font-size: ${size};"></ion-icon>` }}
+      />
     );
   };
 
