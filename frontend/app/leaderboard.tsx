@@ -97,9 +97,11 @@ export default function LeaderboardScreen() {
   const { isDesktop, isTablet } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
 
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  // Cache-first: Initialize with cached data for instant render
+  const cachedLeaderboard = getCachedSync<LeaderboardEntry[]>(CACHE_KEYS.LEADERBOARD) || [];
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(cachedLeaderboard);
   const [myRank, setMyRank] = useState<MyRank | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -108,15 +110,16 @@ export default function LeaderboardScreen() {
     try {
       if (refresh) {
         setRefreshing(true);
-      } else if (pageNum === 1) {
-        setLoading(true);
       }
+      setIsFetchingInBackground(true);
 
       const response = await api.get(`/badges/leaderboard?page=${pageNum}&limit=20`);
       const data = response.data;
 
       if (refresh || pageNum === 1) {
         setLeaderboard(data.leaderboard || []);
+        // Update cache
+        setCacheSync(CACHE_KEYS.LEADERBOARD, data.leaderboard || []);
       } else {
         setLeaderboard(prev => [...prev, ...(data.leaderboard || [])]);
       }
@@ -126,7 +129,7 @@ export default function LeaderboardScreen() {
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
       setRefreshing(false);
     }
   }, []);
