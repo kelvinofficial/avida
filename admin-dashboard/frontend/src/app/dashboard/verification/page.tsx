@@ -100,7 +100,7 @@ const TIER_ICONS: Record<string, React.ReactNode> = {
 
 export default function VerificationPage() {
   const [tab, setTab] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
   const [tiers, setTiers] = useState<TierInfo[]>([]);
   const [pendingRequests, setPendingRequests] = useState<VerificationRequest[]>([]);
