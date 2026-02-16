@@ -139,6 +139,16 @@ Build a full-stack classifieds application for Tanzania with admin dashboard, SE
 
 ## Changelog
 
+### February 15, 2026 (Session 3)
+- Implemented **Content Calendar** feature for scheduling content across regions
+  - Backend API at `/api/growth/calendar/` with full CRUD operations
+  - Frontend UI at `/api/admin-ui/dashboard/content-calendar`
+  - Features: Monthly calendar view, list view, stats overview, event templates
+  - Event types: Blog posts, social media, SEO milestones, campaigns
+  - Region support for all target markets (TZ, KE, DE, UG, NG, ZA)
+- Fixed datetime timezone handling bug in calendar stats
+- Latest test report: `/app/test_reports/iteration_165.json` - 100% pass rate
+
 ### February 15, 2026 (Session 2)
 - Implemented **Advanced SEO Frontend UI** in admin dashboard at `/api/admin-ui/dashboard/advanced-seo`
   - Internal Linking tab - Analyze blog posts for linking opportunities
