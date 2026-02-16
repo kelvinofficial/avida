@@ -135,7 +135,9 @@ def create_content_calendar_router(db, get_current_user: Callable):
             "content_id": event.content_id,
             "tags": event.tags or [],
             "color": event.color or EVENT_TYPE_COLORS.get(event.event_type, "#607D8B"),
-            "recurrence": event.recurrence,
+            "recurrence": event.recurrence or "none",
+            "recurrence_end_date": event.recurrence_end_date,
+            "parent_event_id": event.parent_event_id,
             "assigned_to": event.assigned_to,
             "notes": event.notes,
             "created_at": datetime.now(timezone.utc),
@@ -144,10 +146,52 @@ def create_content_calendar_router(db, get_current_user: Callable):
         
         await db.calendar_events.insert_one(event_doc)
         
+        # If recurring, generate future instances
+        recurring_events = []
+        if event.recurrence and event.recurrence != "none" and event.recurrence_end_date:
+            current_date = event.scheduled_date
+            max_instances = 52  # Max 1 year of weekly events
+            instance_count = 0
+            
+            while instance_count < max_instances:
+                current_date = get_next_occurrence(current_date, event.recurrence)
+                if current_date > event.recurrence_end_date:
+                    break
+                    
+                recurring_doc = {
+                    "id": str(uuid.uuid4()),
+                    "title": event.title,
+                    "description": event.description,
+                    "event_type": event.event_type,
+                    "scheduled_date": current_date,
+                    "end_date": None,
+                    "status": "scheduled",
+                    "priority": event.priority,
+                    "region": event.region,
+                    "category": event.category,
+                    "platform": event.platform,
+                    "content_id": None,
+                    "tags": event.tags or [],
+                    "color": event.color or EVENT_TYPE_COLORS.get(event.event_type, "#607D8B"),
+                    "recurrence": event.recurrence,
+                    "recurrence_end_date": event.recurrence_end_date,
+                    "parent_event_id": event_doc["id"],
+                    "assigned_to": event.assigned_to,
+                    "notes": event.notes,
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
+                }
+                recurring_events.append(recurring_doc)
+                instance_count += 1
+            
+            if recurring_events:
+                await db.calendar_events.insert_many(recurring_events)
+        
         return {
             "success": True,
-            "message": "Calendar event created",
-            "event": serialize_event(event_doc)
+            "message": f"Calendar event created" + (f" with {len(recurring_events)} recurring instances" if recurring_events else ""),
+            "event": serialize_event(event_doc),
+            "recurring_count": len(recurring_events)
         }
 
     @router.get("/events")
