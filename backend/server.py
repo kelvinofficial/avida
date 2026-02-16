@@ -3204,7 +3204,13 @@ if ADMIN_TOOLS_AVAILABLE:
         app.include_router(authority_building_router, prefix="/api")
         print("Growth Engine - Authority Building routes loaded successfully")
         
-        logger.info("AI SEO Growth Engine fully loaded (SEO Core, Content, ASO, Analytics, Advanced SEO, Calendar, Analytics Settings, Authority Building)")
+        # Multi-Language SEO
+        from growth_engine.multilang_seo import create_multilang_router
+        multilang_router = create_multilang_router(db, get_current_user)
+        app.include_router(multilang_router, prefix="/api")
+        print("Growth Engine - Multi-Language SEO routes loaded successfully")
+        
+        logger.info("AI SEO Growth Engine fully loaded (SEO Core, Content, ASO, Analytics, Advanced SEO, Calendar, Analytics Settings, Authority Building, Multi-Language)")
     except Exception as e:
         print(f"Failed to load Growth Engine routes: {e}")
         import traceback
