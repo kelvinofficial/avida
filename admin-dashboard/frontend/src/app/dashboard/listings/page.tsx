@@ -418,7 +418,7 @@ export default function ListingsPage() {
             variant="outlined"
             startIcon={<Refresh />}
             onClick={loadListings}
-            disabled={loading}
+            disabled={isFetchingInBackground}
           >
             {t('common.refresh')}
           </Button>
