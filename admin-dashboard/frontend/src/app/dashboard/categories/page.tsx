@@ -247,6 +247,7 @@ export default function CategoriesPage() {
   );
 
   const loadCategories = async () => {
+    setIsFetchingInBackground(true);
     try {
       const [tree, flat] = await Promise.all([
         api.getCategories(true, false),
@@ -257,7 +258,7 @@ export default function CategoriesPage() {
     } catch (error) {
       console.error('Failed to load categories:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   };
 
