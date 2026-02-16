@@ -56,45 +56,60 @@ interface Preferences {
 export default function NotificationPreferencesPage() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
-  const [loading, setLoading] = useState(true);
+  
+  // CACHE-FIRST: Use cache-first hooks for notification preferences
+  const { 
+    data: categoriesData, 
+    refresh: refreshCategories 
+  } = useCacheFirst<PreferenceCategory[]>({
+    cacheKey: 'notification_categories',
+    fetcher: async () => {
+      const res = await api.get('/notification-preferences/categories');
+      return res.data.categories || [];
+    },
+    fallbackData: [],
+    enabled: isAuthenticated,
+  });
+
+  const { 
+    data: preferencesData, 
+    refresh: refreshPreferences 
+  } = useCacheFirst<Preferences>({
+    cacheKey: 'notification_preferences',
+    fetcher: async () => {
+      const res = await api.get('/notification-preferences');
+      return res.data || {};
+    },
+    fallbackData: {},
+    enabled: isAuthenticated,
+  });
+
   const [saving, setSaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [categories, setCategories] = useState<PreferenceCategory[]>([]);
-  const [preferences, setPreferences] = useState<Preferences>({});
+  const [categories, setCategories] = useState<PreferenceCategory[]>(categoriesData);
+  const [preferences, setPreferences] = useState<Preferences>(preferencesData);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [categoriesRes, prefsRes] = await Promise.all([
-        api.get('/notification-preferences/categories'),
-        api.get('/notification-preferences'),
-      ]);
-      
-      setCategories(categoriesRes.data.categories || []);
-      setPreferences(prefsRes.data || {});
-    } catch (error: any) {
-      console.error('Error fetching preferences:', error);
-      if (error.response?.status !== 401) {
-        Alert.alert('Error', 'Failed to load notification preferences');
-      }
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  // Sync state when cache data loads
+  useEffect(() => {
+    setCategories(categoriesData);
+  }, [categoriesData]);
+
+  useEffect(() => {
+    setPreferences(preferencesData);
+  }, [preferencesData]);
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.replace('/login');
-      return;
     }
-    fetchData();
-  }, [isAuthenticated, fetchData, router]);
+  }, [isAuthenticated, router]);
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    fetchData();
-  }, [fetchData]);
+    await Promise.all([refreshCategories(), refreshPreferences()]);
+    setRefreshing(false);
+  }, [refreshCategories, refreshPreferences]);
 
   const handleToggle = (key: string, value: boolean) => {
     setPreferences(prev => ({
