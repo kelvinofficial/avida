@@ -5,7 +5,7 @@ import {
   Box, Card, CardContent, Typography, Button, TextField, Switch,
   FormControlLabel, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, IconButton, Dialog, DialogTitle, DialogContent,
-  DialogActions, CircularProgress, Alert, Tabs, Tab, Chip, Tooltip,
+  DialogActions, Alert, Tabs, Tab, Chip, Tooltip,
   Accordion, AccordionSummary, AccordionDetails, Paper, InputAdornment,
   LinearProgress, Divider, Select, MenuItem, FormControl, InputLabel,
 } from '@mui/material';
@@ -16,6 +16,7 @@ import {
   CheckCircle, Psychology, TrendingUp, Lightbulb, ContentPaste,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
+import { getCachedData, setCachedData } from '@/hooks/useCacheFirst';
 
 // Category list for SEO management
 const CATEGORIES = [
