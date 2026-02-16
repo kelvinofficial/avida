@@ -13,7 +13,6 @@ import {
   Modal,
   Alert,
   Linking,
-  ActivityIndicator,
   Animated,
   Platform,
   KeyboardAvoidingView,
@@ -33,6 +32,7 @@ import {
   FurnishingType,
   ConditionType,
 } from '../../src/types/property';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const { width, height } = Dimensions.get('window');
 

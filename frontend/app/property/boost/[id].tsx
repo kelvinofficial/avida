@@ -6,12 +6,12 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { api } from '../../../src/utils/api';
+import { getCachedSync, setCacheSync } from '../../../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',

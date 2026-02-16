@@ -13,7 +13,6 @@ import {
   TextInput,
   Modal,
   FlatList,
-  ActivityIndicator,
   Animated,
   NativeSyntheticEvent,
   NativeScrollEvent,
@@ -25,6 +24,7 @@ import { api } from '../../src/utils/api';
 import { Property, FACILITIES_LIST } from '../../src/types/property';
 import SimilarListings from '../../src/components/property/SimilarListings';
 import { safeGoBack } from '../../src/utils/navigation';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 // Generate highlights from property data
 const generateHighlights = (property: Property) => {

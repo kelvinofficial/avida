@@ -7,7 +7,6 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Keyboard,
@@ -20,6 +19,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../../src/utils/api';
 import { format, isToday, isYesterday } from 'date-fns';
+import { getCachedSync, setCacheSync } from '../../../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',
