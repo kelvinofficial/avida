@@ -889,10 +889,10 @@ export default function CategoryScreen() {
     );
   };
 
-  // Only show empty state when initial load is complete and no listings found
+  // Only show empty state when listings are loaded and no results
   const renderEmpty = () => {
-    // Don't show empty state until initial load is done
-    if (!initialLoadDone) {
+    // CACHE-FIRST: Show empty state based on listings length, not loading state
+    if (listings.length > 0) {
       return null;
     }
     
