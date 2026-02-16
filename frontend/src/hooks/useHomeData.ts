@@ -432,8 +432,9 @@ export function useHomeData(): UseHomeDataReturn {
       setInitialLoadDone(true);
     } catch (error) {
       console.error('Error fetching data:', error);
+      // Keep showing cached data on error - no state change
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
       setRefreshing(false);
     }
   }, [page, hasMore, selectedCategory, selectedLocationFilter, isSandboxMode, isAuthenticated, token]);
