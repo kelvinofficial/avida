@@ -212,7 +212,7 @@ def generate_competitor_backlinks(competitor_domain: str) -> List[Dict[str, Any]
             "domain_authority": src["da"],
             "link_type": src["type"],
             "anchor_text": f"{competitor_domain} review" if random.random() > 0.5 else competitor_domain,
-            "first_seen": (datetime.now(timezone.utc) - datetime.timedelta(days=random.randint(30, 365))).isoformat(),
+            "first_seen": (datetime.now(timezone.utc) - timedelta(days=random.randint(30, 365))).isoformat(),
             "status": "active"
         })
     
