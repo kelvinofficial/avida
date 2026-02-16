@@ -391,22 +391,7 @@ export default function AdminBusinessProfilesScreen() {
     );
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => safeGoBack(router)}>
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Business Profiles</Text>
-          <View style={{ width: 24 }} />
-        </View>
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // CACHE-FIRST: No page-level loading indicator - render instantly
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
