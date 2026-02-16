@@ -101,13 +101,19 @@ const SEVERITY_COLORS = {
 
 export default function QAReliabilityPage() {
   const [activeTab, setActiveTab] = useState(0);
-  const [loading, setLoading] = useState(true);
+  
+  // CACHE-FIRST: Initialize with cached data for instant render
+  const cachedHealth = getCachedData<any>('admin_qa_health');
+  const cachedErrors = getCachedData<any[]>('admin_qa_errors') || [];
+  const cachedAlerts = getCachedData<any[]>('admin_qa_alerts') || [];
+  
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Data states
-  const [health, setHealth] = useState<any>(null);
-  const [errorLogs, setErrorLogs] = useState<any[]>([]);
-  const [alerts, setAlerts] = useState<any[]>([]);
+  // Data states - initialized with cache where available
+  const [health, setHealth] = useState<any>(cachedHealth);
+  const [errorLogs, setErrorLogs] = useState<any[]>(cachedErrors);
+  const [alerts, setAlerts] = useState<any[]>(cachedAlerts);
   const [qaChecks, setQaChecks] = useState<any>(null);
   const [metrics, setMetrics] = useState<any>(null);
   const [kpis, setKpis] = useState<any>(null);
