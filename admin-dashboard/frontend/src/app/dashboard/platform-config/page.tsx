@@ -304,24 +304,35 @@ export default function PlatformConfigPage() {
     }
   };
 
+  // OPTIMISTIC: Update currency in UI instantly, sync in background
   const handleUpdateCurrency = async (code: string, updates: Partial<Currency>) => {
-    setSaving(true);
-    try {
-      const response = await fetch(`${API_BASE}/platform/currencies/${environment}/${code}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...updates, updated_by: 'admin' }),
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to update currency');
+    // Update UI instantly
+    if (config) {
+      const previousCurrencies = [...config.currencies];
+      const updatedCurrencies = config.currencies.map(c =>
+        c.code === code ? { ...c, ...updates } : c
+      );
+      setConfig({ ...config, currencies: updatedCurrencies });
+      setSaving(true);
+      
+      try {
+        const response = await fetch(`${API_BASE}/platform/currencies/${environment}/${code}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...updates, updated_by: 'admin' }),
+        });
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.detail || 'Failed to update currency');
+        }
+        setSnackbar({ open: true, message: 'Currency updated', severity: 'success' });
+      } catch (error: unknown) {
+        // Rollback on failure
+        setConfig({ ...config, currencies: previousCurrencies });
+        setSnackbar({ open: true, message: error instanceof Error ? error.message : 'Failed to update currency', severity: 'error' });
+      } finally {
+        setSaving(false);
       }
-      setSnackbar({ open: true, message: 'Currency updated successfully', severity: 'success' });
-      await fetchConfig();
-    } catch (error: any) {
-      setSnackbar({ open: true, message: error.message || 'Failed to update currency', severity: 'error' });
-    } finally {
-      setSaving(false);
     }
   };
 
