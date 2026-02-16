@@ -422,7 +422,8 @@ export default function GrowthEnginePage() {
                           auditResult.score >= 80 ? 'success' :
                           auditResult.score >= 60 ? 'warning' : 'error'
                         }
-                        size="large"
+                        size="medium"
+                        sx={{ fontSize: '1.1rem', height: 36 }}
                       />
                     </Box>
 
