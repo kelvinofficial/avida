@@ -92,7 +92,7 @@ export default function SeoToolsPage() {
   });
 
   const loadData = async () => {
-    setLoading(true);
+    setIsFetchingInBackground(true);
     try {
       const [metaRes, globalRes, sitemapRes, seoSettingsRes] = await Promise.all([
         api.getSeoMeta().catch(() => ({ meta_tags: [] })),
@@ -100,9 +100,16 @@ export default function SeoToolsPage() {
         api.getSitemapConfig().catch(() => ({})),
         api.getSeoSettingsGlobal().catch(() => ({})),
       ]);
-      setMetaTags(metaRes.meta_tags || []);
-      setGlobalSettings({ ...globalRes, ...seoSettingsRes });
+      const newMetaTags = metaRes.meta_tags || [];
+      const newGlobalSettings = { ...globalRes, ...seoSettingsRes };
+      setMetaTags(newMetaTags);
+      setGlobalSettings(newGlobalSettings);
       setSitemapConfig(sitemapRes);
+      
+      // Cache the data
+      setCachedData('admin_seo_meta', newMetaTags);
+      setCachedData('admin_seo_global', newGlobalSettings);
+      setCachedData('admin_seo_sitemap', sitemapRes);
       
       // Load category SEO settings
       const categoryOverrides = await api.getAllCategorySeo().catch(() => []);
@@ -117,6 +124,7 @@ export default function SeoToolsPage() {
       // Load AI SEO stats
       const aiStats = await api.getAISeoStats().catch(() => null);
       setAiSeoStats(aiStats);
+      if (aiStats) setCachedData('admin_ai_seo_stats', aiStats);
       
       // Load recent listings for AI SEO generation
       const listingsRes = await api.get('/listings?limit=50&sort=newest').catch(() => ({ listings: [] }));
@@ -124,7 +132,7 @@ export default function SeoToolsPage() {
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load SEO data');
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   };
 
