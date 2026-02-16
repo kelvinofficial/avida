@@ -334,6 +334,8 @@ export default function ContentCalendarPage() {
       platform: event.platform || '',
       tags: event.tags || [],
       notes: event.notes || '',
+      recurrence: event.recurrence || 'none',
+      recurrence_end_date: event.recurrence_end_date || '',
     });
     setEventDialogOpen(true);
   };
