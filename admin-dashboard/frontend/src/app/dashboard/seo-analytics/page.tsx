@@ -549,5 +549,7 @@ export default function SEOAnalyticsPage() {
         </CardContent>
       </Card>
     </Box>
+      )}
+    </Box>
   );
 }
