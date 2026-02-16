@@ -689,17 +689,6 @@ export default function OffersScreen() {
     );
   }
 
-  // Show loading state until responsive layout is ready
-  if (!isReady) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: '#F0F2F5' }]} edges={['top']}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   // Right action for desktop
   const rightAction = pendingCount > 0 && role === 'seller' ? (
     <View style={styles.pendingBadgeDesktop}>
