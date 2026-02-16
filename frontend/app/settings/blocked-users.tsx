@@ -6,7 +6,6 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import api from '../../src/utils/api';
 import { BlockedUser } from '../../src/types/settings';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',

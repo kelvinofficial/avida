@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,6 +14,7 @@ import { useRouter } from 'expo-router';
 import Slider from '@react-native-community/slider';
 import api from '../../src/utils/api';
 import { UserSettings } from '../../src/types/settings';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',

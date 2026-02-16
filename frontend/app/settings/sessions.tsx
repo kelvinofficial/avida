@@ -5,7 +5,6 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,6 +13,7 @@ import { useRouter } from 'expo-router';
 import api from '../../src/utils/api';
 import { ActiveSession } from '../../src/types/settings';
 import { formatDistanceToNow } from 'date-fns';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',
