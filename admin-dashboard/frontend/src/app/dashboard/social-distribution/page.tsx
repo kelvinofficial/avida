@@ -541,7 +541,7 @@ export default function SocialDistributionPage() {
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                    <Box sx={{ color: platform.color, fontSize: 40 }}>{PLATFORM_ICONS[key]}</Box>
+                    <Box sx={{ color: platform.color, fontSize: 40 }}>{getPlatformIcon(key)}</Box>
                     <Box>
                       <Typography variant="h6">{platform.name}</Typography>
                       <Chip label={`Max ${platform.max_chars} chars`} size="small" />
