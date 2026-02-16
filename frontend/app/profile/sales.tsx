@@ -132,14 +132,17 @@ export default function SalesScreen() {
   const { goToLogin } = useLoginRedirect();
   const isLargeScreen = isDesktop || isTablet;
   
-  const [sales, setSales] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Cache-first: Initialize with cached data for instant render
+  const cachedSales = getCachedSync<any[]>(CACHE_KEYS.SALES) || [];
+  const [sales, setSales] = useState<any[]>(cachedSales);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [total, setTotal] = useState(0);
 
   const fetchSales = useCallback(async (pageNum: number = 1, refresh: boolean = false) => {
+    setIsFetchingInBackground(true);
     try {
       const response = await api.get('/profile/activity/sales', {
         params: { page: pageNum, limit: 20 },
