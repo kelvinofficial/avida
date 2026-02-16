@@ -75,12 +75,35 @@ def serialize_event(event: dict) -> dict:
         "content_id": event.get("content_id"),
         "tags": event.get("tags", []),
         "color": event.get("color") or EVENT_TYPE_COLORS.get(event.get("event_type", "other"), "#607D8B"),
-        "recurrence": event.get("recurrence"),
+        "recurrence": event.get("recurrence", "none"),
+        "recurrence_end_date": event.get("recurrence_end_date").isoformat() if event.get("recurrence_end_date") else None,
+        "parent_event_id": event.get("parent_event_id"),
+        "is_recurring": event.get("recurrence", "none") not in ["none", None, ""],
         "assigned_to": event.get("assigned_to"),
         "notes": event.get("notes", ""),
         "created_at": event.get("created_at").isoformat() if event.get("created_at") else None,
         "updated_at": event.get("updated_at").isoformat() if event.get("updated_at") else None
     }
+
+# Helper function to calculate next occurrence date
+def get_next_occurrence(current_date: datetime, recurrence: str) -> datetime:
+    """Calculate next occurrence based on recurrence pattern"""
+    if recurrence == "daily":
+        return current_date + timedelta(days=1)
+    elif recurrence == "weekly":
+        return current_date + timedelta(weeks=1)
+    elif recurrence == "biweekly":
+        return current_date + timedelta(weeks=2)
+    elif recurrence == "monthly":
+        # Add one month (handle edge cases)
+        month = current_date.month + 1
+        year = current_date.year
+        if month > 12:
+            month = 1
+            year += 1
+        day = min(current_date.day, 28)  # Safe day to avoid month overflow
+        return current_date.replace(year=year, month=month, day=day)
+    return current_date
 
 
 def create_content_calendar_router(db, get_current_user: Callable):
