@@ -66,10 +66,7 @@ interface Stats {
 export default function VouchersManagementPage() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [vouchers, setVouchers] = useState<Voucher[]>([]);
-  const [stats, setStats] = useState<Stats | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [creating, setCreating] = useState(false);
   
@@ -85,38 +82,46 @@ export default function VouchersManagementPage() {
     valid_days: '30',
   });
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [vouchersRes, statsRes] = await Promise.all([
-        api.get('/vouchers/admin/list'),
-        api.get('/vouchers/admin/stats'),
-      ]);
-      setVouchers(vouchersRes.data.vouchers || []);
-      setStats(statsRes.data);
-    } catch (error: any) {
-      console.error('Error fetching vouchers:', error);
-      if (error.response?.status === 403) {
-        Alert.alert('Access Denied', 'Admin access required');
-        router.back();
-      }
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [router]);
+  // CACHE-FIRST: Use cache-first hooks for data
+  const { 
+    data: vouchers, 
+    refresh: refreshVouchers 
+  } = useCacheFirst<Voucher[]>({
+    cacheKey: 'admin_vouchers_list',
+    fetcher: async () => {
+      const res = await api.get('/vouchers/admin/list');
+      return res.data.vouchers || [];
+    },
+    fallbackData: [],
+    enabled: isAuthenticated,
+  });
+
+  const { 
+    data: stats, 
+    refresh: refreshStats 
+  } = useCacheFirst<Stats | null>({
+    cacheKey: 'admin_vouchers_stats',
+    fetcher: async () => {
+      const res = await api.get('/vouchers/admin/stats');
+      return res.data;
+    },
+    fallbackData: null,
+    enabled: isAuthenticated,
+  });
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.replace('/login');
-      return;
     }
-    fetchData();
-  }, [isAuthenticated, fetchData, router]);
+  }, [isAuthenticated, router]);
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    fetchData();
-  }, [fetchData]);
+    await Promise.all([refreshVouchers(), refreshStats()]);
+    setRefreshing(false);
+  }, [refreshVouchers, refreshStats]);
+
+  const fetchData = onRefresh; // Alias for action handlers
 
   const handleCreateVoucher = async () => {
     if (!newVoucher.code.trim()) {
