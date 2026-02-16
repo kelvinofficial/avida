@@ -4,7 +4,6 @@ import {
   Text, 
   ScrollView, 
   StyleSheet, 
-  ActivityIndicator, 
   TouchableOpacity,
   Dimensions,
   RefreshControl,
@@ -14,6 +13,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
 import api from '../../src/utils/api';
+import { useCacheFirst } from '../../src/hooks/useCacheFirst';
+
+// CACHE-FIRST: No page-level loading spinners - render instantly with cached data
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
