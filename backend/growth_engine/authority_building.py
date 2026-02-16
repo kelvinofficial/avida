@@ -1,13 +1,16 @@
 """
 Authority Building System
 PR campaign management, backlink tracking, outreach management, and brand monitoring
+Enhanced with automated opportunity suggestions and competitor analysis
 """
 
 from fastapi import APIRouter, HTTPException, Depends, Query, Header
 from pydantic import BaseModel, Field
-from typing import Optional, List, Callable
+from typing import Optional, List, Callable, Dict, Any
 from datetime import datetime, timezone
 import uuid
+import random
+import re
 
 # Pydantic Models
 class OutreachCampaignCreate(BaseModel):
@@ -55,6 +58,10 @@ class BacklinkCreate(BaseModel):
     campaign_id: Optional[str] = None
     notes: Optional[str] = ""
 
+class KeywordAnalysisRequest(BaseModel):
+    keywords: List[str]
+    region: Optional[str] = None
+
 
 # Campaign type colors
 CAMPAIGN_TYPE_COLORS = {
@@ -74,6 +81,142 @@ OUTREACH_STATUS_COLORS = {
     "linked": "#4CAF50",
     "declined": "#F44336"
 }
+
+# Predefined opportunity databases for demo/suggestions
+BACKLINK_OPPORTUNITIES_DB = {
+    "TZ": [
+        {"domain": "thecitizen.co.tz", "da": 55, "type": "news", "contact_type": "editorial", "topics": ["business", "technology", "local news"]},
+        {"domain": "ippmedia.com", "da": 52, "type": "news", "contact_type": "editorial", "topics": ["current affairs", "business"]},
+        {"domain": "dailynews.co.tz", "da": 48, "type": "news", "contact_type": "editorial", "topics": ["national news", "economy"]},
+        {"domain": "michuzi.com", "da": 42, "type": "blog", "contact_type": "blogger", "topics": ["entertainment", "lifestyle"]},
+        {"domain": "jamiiforums.com", "da": 58, "type": "forum", "contact_type": "community", "topics": ["discussions", "tech", "business"]},
+    ],
+    "KE": [
+        {"domain": "nation.africa", "da": 72, "type": "news", "contact_type": "editorial", "topics": ["news", "business", "technology"]},
+        {"domain": "standardmedia.co.ke", "da": 68, "type": "news", "contact_type": "editorial", "topics": ["news", "lifestyle"]},
+        {"domain": "techweez.com", "da": 45, "type": "blog", "contact_type": "blogger", "topics": ["technology", "startups"]},
+        {"domain": "capitalfm.co.ke", "da": 52, "type": "media", "contact_type": "editorial", "topics": ["entertainment", "business"]},
+        {"domain": "kenyans.co.ke", "da": 48, "type": "blog", "contact_type": "blogger", "topics": ["news", "entertainment"]},
+    ],
+    "DE": [
+        {"domain": "handelsblatt.com", "da": 82, "type": "news", "contact_type": "editorial", "topics": ["business", "finance", "economy"]},
+        {"domain": "gruenderszene.de", "da": 65, "type": "blog", "contact_type": "editorial", "topics": ["startups", "technology"]},
+        {"domain": "t3n.de", "da": 70, "type": "blog", "contact_type": "editorial", "topics": ["technology", "digital", "startups"]},
+        {"domain": "deutsche-startups.de", "da": 55, "type": "blog", "contact_type": "blogger", "topics": ["startups", "vc", "founders"]},
+        {"domain": "foerderland.de", "da": 48, "type": "blog", "contact_type": "blogger", "topics": ["entrepreneurs", "startups"]},
+    ],
+    "UG": [
+        {"domain": "monitor.co.ug", "da": 62, "type": "news", "contact_type": "editorial", "topics": ["news", "business"]},
+        {"domain": "newvision.co.ug", "da": 58, "type": "news", "contact_type": "editorial", "topics": ["national news", "economy"]},
+        {"domain": "chimpreports.com", "da": 45, "type": "news", "contact_type": "editorial", "topics": ["news", "politics"]},
+    ],
+    "NG": [
+        {"domain": "guardian.ng", "da": 68, "type": "news", "contact_type": "editorial", "topics": ["news", "business", "technology"]},
+        {"domain": "techcabal.com", "da": 55, "type": "blog", "contact_type": "editorial", "topics": ["technology", "startups", "africa"]},
+        {"domain": "nairametrics.com", "da": 52, "type": "blog", "contact_type": "editorial", "topics": ["finance", "business", "economy"]},
+        {"domain": "bellanaija.com", "da": 65, "type": "blog", "contact_type": "blogger", "topics": ["lifestyle", "entertainment"]},
+    ],
+    "ZA": [
+        {"domain": "news24.com", "da": 78, "type": "news", "contact_type": "editorial", "topics": ["news", "business", "tech"]},
+        {"domain": "businesstech.co.za", "da": 62, "type": "blog", "contact_type": "editorial", "topics": ["technology", "business"]},
+        {"domain": "mybroadband.co.za", "da": 65, "type": "blog", "contact_type": "editorial", "topics": ["technology", "telecom"]},
+        {"domain": "ventureburn.com", "da": 48, "type": "blog", "contact_type": "blogger", "topics": ["startups", "entrepreneurs"]},
+    ],
+    "GLOBAL": [
+        {"domain": "techcrunch.com", "da": 94, "type": "news", "contact_type": "editorial", "topics": ["technology", "startups", "vc"]},
+        {"domain": "forbes.com", "da": 95, "type": "news", "contact_type": "editorial", "topics": ["business", "entrepreneurs"]},
+        {"domain": "entrepreneur.com", "da": 90, "type": "blog", "contact_type": "editorial", "topics": ["entrepreneurs", "startups"]},
+        {"domain": "medium.com", "da": 96, "type": "platform", "contact_type": "self-publish", "topics": ["any"]},
+        {"domain": "linkedin.com", "da": 99, "type": "platform", "contact_type": "self-publish", "topics": ["professional", "business"]},
+    ]
+}
+
+PR_OPPORTUNITY_CATEGORIES = [
+    {
+        "category": "Product Launch",
+        "description": "Announce new features, app updates, or major releases",
+        "outlets": ["tech blogs", "local news", "business media"],
+        "timing": "Best on Tuesday-Thursday mornings"
+    },
+    {
+        "category": "Milestone Announcement",
+        "description": "User milestones, transactions processed, market expansion",
+        "outlets": ["business media", "industry publications"],
+        "timing": "Quarterly or when significant milestone reached"
+    },
+    {
+        "category": "Partnership News",
+        "description": "Strategic partnerships, integrations, collaborations",
+        "outlets": ["business media", "partner's media channels"],
+        "timing": "Upon signing or launch"
+    },
+    {
+        "category": "Thought Leadership",
+        "description": "Expert opinions on marketplace trends, safety tips, industry insights",
+        "outlets": ["op-ed sections", "industry blogs", "LinkedIn"],
+        "timing": "Ongoing, tie to current events"
+    },
+    {
+        "category": "Community Impact",
+        "description": "Success stories, economic impact, social initiatives",
+        "outlets": ["local news", "lifestyle media", "social media"],
+        "timing": "Human interest stories anytime"
+    },
+    {
+        "category": "Awards & Recognition",
+        "description": "Industry awards, certifications, rankings",
+        "outlets": ["press release distribution", "social media"],
+        "timing": "Upon receiving award"
+    }
+]
+
+
+def extract_domain_from_url(url: str) -> str:
+    """Extract domain from URL"""
+    url = url.lower().strip()
+    url = re.sub(r'^https?://', '', url)
+    url = re.sub(r'^www\.', '', url)
+    return url.split('/')[0]
+
+
+def generate_competitor_backlinks(competitor_domain: str) -> List[Dict[str, Any]]:
+    """Generate simulated competitor backlink data"""
+    common_sources = [
+        {"domain": "techcrunch.com", "da": 94, "type": "dofollow"},
+        {"domain": "linkedin.com", "da": 99, "type": "nofollow"},
+        {"domain": "medium.com", "da": 96, "type": "nofollow"},
+        {"domain": "twitter.com", "da": 94, "type": "nofollow"},
+        {"domain": "facebook.com", "da": 96, "type": "nofollow"},
+        {"domain": "youtube.com", "da": 100, "type": "nofollow"},
+        {"domain": "crunchbase.com", "da": 91, "type": "dofollow"},
+        {"domain": "g2.com", "da": 86, "type": "dofollow"},
+        {"domain": "capterra.com", "da": 88, "type": "dofollow"},
+    ]
+    
+    # Add some random regional sources
+    regions = list(BACKLINK_OPPORTUNITIES_DB.keys())
+    for region in random.sample(regions, min(3, len(regions))):
+        if region != "GLOBAL":
+            opps = BACKLINK_OPPORTUNITIES_DB[region]
+            for opp in random.sample(opps, min(2, len(opps))):
+                common_sources.append({
+                    "domain": opp["domain"],
+                    "da": opp["da"],
+                    "type": "dofollow" if random.random() > 0.3 else "nofollow"
+                })
+    
+    results = []
+    for src in random.sample(common_sources, min(12, len(common_sources))):
+        results.append({
+            "source_domain": src["domain"],
+            "domain_authority": src["da"],
+            "link_type": src["type"],
+            "anchor_text": f"{competitor_domain} review" if random.random() > 0.5 else competitor_domain,
+            "first_seen": (datetime.now(timezone.utc) - datetime.timedelta(days=random.randint(30, 365))).isoformat(),
+            "status": "active"
+        })
+    
+    return sorted(results, key=lambda x: x["domain_authority"], reverse=True)
 
 
 def create_authority_building_router(db, get_current_user: Callable):
