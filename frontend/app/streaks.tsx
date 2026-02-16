@@ -93,14 +93,18 @@ export default function StreakLeaderboardScreen() {
       // Fetch leaderboard (this endpoint needs to be created)
       try {
         const leaderboardRes = await api.get('/streaks/leaderboard');
-        setLeaderboard(leaderboardRes.data.leaderboard || []);
+        newLeaderboard = leaderboardRes.data.leaderboard || [];
+        setLeaderboard(newLeaderboard);
       } catch (err) {
         // If endpoint doesn't exist, create mock data
         console.error('Failed to fetch streak leaderboard:', err);
         setLeaderboard([]);
       }
+
+      // Update cache
+      setCacheSync(CACHE_KEYS.STREAKS, { myStreak: newMyStreak, leaderboard: newLeaderboard });
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
       setRefreshing(false);
     }
   }, [isAuthenticated]);
