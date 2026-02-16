@@ -762,7 +762,7 @@ export default function TeamManagementPage() {
   const handleAssignTask = async (taskId: string, memberId: string) => {
     // Update UI instantly
     const previousTasks = [...tasks];
-    const assignedMember = members.find(m => m.id === memberId);
+    const assignedMember = teamMembers.find(m => m.id === memberId);
     setTasks(prev => prev.map(t => 
       t.id === taskId ? { 
         ...t, 
