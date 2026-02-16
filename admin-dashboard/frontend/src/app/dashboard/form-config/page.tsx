@@ -433,7 +433,7 @@ export default function FormConfigPage() {
         visibility_rules: preview.visibility,
       },
       raw_configs: categoryConfigs.map(c => ({
-        id: c._id,
+        id: c.id,
         category_id: c.category_id,
         config_type: c.config_type,
         config_data: c.config_data,
