@@ -576,7 +576,7 @@ export default function IconsManagementPage() {
             </Box>
           ) : icons.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 8 }}>
-              <Shapes sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+              <Category sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
               <Typography variant="h6" color="text.secondary">No icons found</Typography>
               <Typography color="text.secondary" sx={{ mb: 2 }}>
                 Click &quot;Seed Default Icons&quot; to get started with pre-defined icons
