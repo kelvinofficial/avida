@@ -8,13 +8,13 @@ import {
   Image,
   Platform,
   useWindowDimensions,
-  ActivityIndicator,
   TextInput,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../src/utils/theme';
 import { DesktopHeader } from '../../src/components/layout/DesktopHeader';
+import { getCachedSync, setCacheSync, CACHE_KEYS } from '../../src/utils/cacheManager';
 
 const API_BASE = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
