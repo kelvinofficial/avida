@@ -145,7 +145,7 @@ export default function NotificationPreferencesPage() {
             try {
               await api.post('/notification-preferences/unsubscribe-all');
               Alert.alert('Success', 'Unsubscribed from marketing emails');
-              fetchData();
+              onRefresh();
             } catch (error: any) {
               Alert.alert('Error', 'Failed to unsubscribe');
             }
