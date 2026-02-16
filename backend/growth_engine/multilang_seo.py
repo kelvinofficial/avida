@@ -248,7 +248,7 @@ def create_multilang_router(db, get_current_user: Callable):
         """Create a translation task (queue for AI translation)"""
         
         if request.target_language not in SUPPORTED_LANGUAGES:
-            raise HTTPException(status_code=400, detail=f"Unsupported target language")
+            raise HTTPException(status_code=400, detail="Unsupported target language")
         
         task_doc = {
             "id": str(uuid.uuid4()),
