@@ -373,33 +373,19 @@ const activityStyles = StyleSheet.create({
 
 // ============ MY BADGES SECTION ============
 const MyBadgesSection = ({ userId }: { userId: string }) => {
-  const [badges, setBadges] = useState<Badge[]>([]);
-  const [loading, setLoading] = useState(true);
+  // CACHE-FIRST: Use cache-first hook for badges
+  const { data: badges } = useCacheFirst<Badge[]>({
+    cacheKey: `user_badges_${userId}`,
+    fetcher: async () => {
+      const response = await api.get(`/analytics/badges/seller/${userId}`);
+      return response.data && Array.isArray(response.data) ? response.data : [];
+    },
+    fallbackData: [],
+    enabled: !!userId,
+    deps: [userId],
+  });
 
-  useEffect(() => {
-    if (userId) {
-      api.get(`/analytics/badges/seller/${userId}`)
-        .then(response => {
-          if (response.data && Array.isArray(response.data)) {
-            setBadges(response.data);
-          }
-        })
-        .catch(() => {})
-        .finally(() => setLoading(false));
-    }
-  }, [userId]);
-
-  if (loading) {
-    return (
-      <View style={badgesStyles.container}>
-        <View style={badgesStyles.header}>
-          <Ionicons name="ribbon-outline" size={20} color={COLORS.text} />
-          <Text style={badgesStyles.title}>My Badges</Text>
-        </View>
-        <ActivityIndicator size="small" color={COLORS.primary} />
-      </View>
-    );
-  }
+  // CACHE-FIRST: No loading indicator - render immediately with cached/empty data
 
   return (
     <View style={badgesStyles.container}>
