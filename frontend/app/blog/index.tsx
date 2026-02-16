@@ -61,8 +61,10 @@ export default function BlogIndexPage() {
   const { width } = useWindowDimensions();
   const isDesktop = Platform.OS === 'web' && width >= 1024;
   
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Cache-first: Initialize with cached data for instant render
+  const cachedPosts = getCachedSync<BlogPost[]>(CACHE_KEYS.BLOG_POSTS) || [];
+  const [posts, setPosts] = useState<BlogPost[]>(cachedPosts);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
@@ -72,8 +74,8 @@ export default function BlogIndexPage() {
   }, [selectedCategory, selectedCountry]);
 
   const fetchPosts = async () => {
+    setIsFetchingInBackground(true);
     try {
-      setLoading(true);
       let url = `${API_BASE}/api/growth/content/posts?status=published&limit=50`;
       if (selectedCategory) url += `&category=${selectedCategory}`;
       if (selectedCountry) url += `&country=${selectedCountry}`;
@@ -82,11 +84,14 @@ export default function BlogIndexPage() {
       if (res.ok) {
         const data = await res.json();
         setPosts(data.posts || []);
+        // Update cache
+        setCacheSync(CACHE_KEYS.BLOG_POSTS, data.posts || []);
       }
     } catch (error) {
       console.error('Failed to fetch blog posts:', error);
+      // Keep showing cached data on error
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   };
 
