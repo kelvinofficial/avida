@@ -364,9 +364,12 @@ export default function SeoToolsPage() {
           <Typography variant="h4" fontWeight={600}>SEO Tools</Typography>
           <Typography variant="body2" color="text.secondary">Manage meta tags, sitemap, category SEO, and global settings</Typography>
         </Box>
-        <Button startIcon={<Refresh />} onClick={loadData} disabled={loading}>Refresh</Button>
+        <Button startIcon={<Refresh />} onClick={loadData} disabled={isFetchingInBackground}>Refresh</Button>
       </Box>
 
+      {/* CACHE-FIRST: Show LinearProgress for background fetch instead of blocking CircularProgress */}
+      {isFetchingInBackground && <LinearProgress sx={{ mb: 2 }} />}
+      
       {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
       {success && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>{success}</Alert>}
 
@@ -378,12 +381,10 @@ export default function SeoToolsPage() {
         <Tab label="Sitemap" icon={<Map />} iconPosition="start" />
       </Tabs>
 
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>
-      ) : (
-        <>
-          {/* AI SEO Tab */}
-          {currentTab === 0 && (
+      {/* CACHE-FIRST: Always render content, no loading spinner */}
+      <>
+        {/* AI SEO Tab */}
+        {currentTab === 0 && (
             <Box>
               {/* AI SEO Stats Cards */}
               <Grid container spacing={3} sx={{ mb: 3 }}>
