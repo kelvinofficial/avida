@@ -48,9 +48,12 @@ interface NotificationPreferences {
 export default function NotificationPreferencesScreen() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [preferences, setPreferences] = useState<NotificationPreferences>({
+  
+  // Define cache key for notification preferences
+  const NOTIFICATION_PREFS_CACHE_KEY = 'notification_preferences';
+  
+  // Default preferences used as fallback
+  const defaultPreferences: NotificationPreferences = {
     sms: true,
     whatsapp: true,
     email: false,
@@ -61,27 +64,49 @@ export default function NotificationPreferencesScreen() {
       payment_updates: true,
       promotions: true,
     },
-  });
+  };
+  
+  // Cache-first: Initialize with cached data for instant render
+  const cachedPreferences = getCachedSync<NotificationPreferences>(NOTIFICATION_PREFS_CACHE_KEY);
+  const [preferences, setPreferences] = useState<NotificationPreferences>(
+    cachedPreferences || defaultPreferences
+  );
+  const [saving, setSaving] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
+
+  const fetchPreferences = useCallback(async (isRefresh: boolean = false) => {
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      }
+      setIsFetchingInBackground(true);
+      
+      const response = await api.get('/notifications/preferences');
+      if (response.data) {
+        const newPreferences = {
+          ...defaultPreferences,
+          ...response.data,
+        };
+        setPreferences(newPreferences);
+        // Update cache
+        setCacheSync(NOTIFICATION_PREFS_CACHE_KEY, newPreferences);
+      }
+    } catch (error) {
+      console.log('Using default/cached preferences');
+    } finally {
+      setIsFetchingInBackground(false);
+      setRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchPreferences();
-  }, []);
+  }, [fetchPreferences]);
 
-  const fetchPreferences = async () => {
-    try {
-      const response = await api.get('/notifications/preferences');
-      if (response.data) {
-        setPreferences({
-          ...preferences,
-          ...response.data,
-        });
-      }
-    } catch (error) {
-      console.log('Using default preferences');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleRefresh = useCallback(() => {
+    fetchPreferences(true);
+  }, [fetchPreferences]);
 
   const savePreferences = async () => {
     setSaving(true);
