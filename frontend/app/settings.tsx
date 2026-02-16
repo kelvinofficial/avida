@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
-  ActivityIndicator,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,6 +18,7 @@ import api from '../src/utils/api';
 import { UserSettings } from '../src/types/settings';
 import { useResponsive } from '../src/hooks/useResponsive';
 import { LocationPicker, LocationData } from '../src/components/LocationPicker';
+import { getCachedSync, setCacheSync, CACHE_KEYS } from '../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',
