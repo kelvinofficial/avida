@@ -149,6 +149,7 @@ const menuItems = [
   { text: 'Advanced SEO', icon: <LinkIcon />, path: '/dashboard/advanced-seo' },
   { text: 'Content Calendar', icon: <Assignment />, path: '/dashboard/content-calendar' },
   { text: 'Multi-Language SEO', icon: <Language />, path: '/dashboard/multilang-seo' },
+  { text: 'Backlink Monitoring', icon: <LinkIcon />, path: '/dashboard/backlink-monitoring' },
   { text: 'Analytics Settings', icon: <Analytics />, path: '/dashboard/analytics-settings' },
   { text: 'Authority Building', icon: <Handshake />, path: '/dashboard/authority-building' },
   { text: 'Social Distribution', icon: <Share />, path: '/dashboard/social-distribution' },
