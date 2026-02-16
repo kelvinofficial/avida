@@ -17,6 +17,7 @@ import api from '../../src/utils/api';
 import { sandboxUtils } from '../../src/utils/sandboxAwareApi';
 import { useAuthStore } from '../../src/store/authStore';
 import { useSandbox } from '../../src/utils/sandboxContext';
+import { getCachedSync, setCacheSync, CACHE_KEYS } from '../../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',
