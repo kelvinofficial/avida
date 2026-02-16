@@ -24,7 +24,9 @@ class CalendarEventCreate(BaseModel):
     content_id: Optional[str] = None
     tags: Optional[List[str]] = []
     color: Optional[str] = None
-    recurrence: Optional[str] = None
+    recurrence: Optional[str] = Field(default="none", description="none, daily, weekly, biweekly, monthly")
+    recurrence_end_date: Optional[datetime] = None
+    parent_event_id: Optional[str] = None  # For recurring instances
     assigned_to: Optional[str] = None
     notes: Optional[str] = ""
 
