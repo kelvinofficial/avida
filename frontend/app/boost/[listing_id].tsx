@@ -65,38 +65,55 @@ export default function BoostListingPage() {
   const { isDesktop, isTablet, isReady } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
   
-  const [loading, setLoading] = useState(true);
-  const [pricing, setPricing] = useState<BoostPricing[]>([]);
-  const [listing, setListing] = useState<Listing | null>(null);
-  const [credits, setCredits] = useState(0);
+  // CACHE-FIRST: Use cache-first hooks to eliminate page-level loaders
+  const { 
+    data: pricing, 
+    refresh: refreshPricing 
+  } = useCacheFirst<BoostPricing[]>({
+    cacheKey: 'boost_pricing',
+    fetcher: async () => await boostApi.getPricing(),
+    fallbackData: [],
+  });
+
+  const { 
+    data: listing, 
+    refresh: refreshListing 
+  } = useCacheFirst<Listing | null>({
+    cacheKey: `listing_${listing_id}`,
+    fetcher: async () => await listingsApi.getOne(listing_id as string),
+    fallbackData: null,
+    enabled: !!listing_id,
+    deps: [listing_id],
+  });
+
+  const { 
+    data: credits, 
+    refresh: refreshCredits 
+  } = useCacheFirst<number>({
+    cacheKey: `user_credits_balance_${user?.user_id}`,
+    fetcher: async () => {
+      try {
+        const data = await boostApi.getMyCredits();
+        return data.balance || 0;
+      } catch { return 0; }
+    },
+    fallbackData: 0,
+    enabled: !!user?.user_id,
+    deps: [user?.user_id],
+  });
+
   const [selectedBoost, setSelectedBoost] = useState<string | null>(null);
   const [selectedDuration, setSelectedDuration] = useState(24);
   const [calculatedCost, setCalculatedCost] = useState(0);
   const [creating, setCreating] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const loadData = useCallback(async () => {
-    if (!listing_id) return;
-    
-    try {
-      const [pricingData, listingData, creditsData] = await Promise.all([
-        boostApi.getPricing(),
-        listingsApi.getOne(listing_id as string),
-        boostApi.getMyCredits().catch(() => ({ balance: 0 }))
-      ]);
-      setPricing(pricingData);
-      setListing(listingData);
-      setCredits(creditsData.balance);
-    } catch (error) {
-      console.error('Failed to load data:', error);
-      Alert.alert('Error', 'Failed to load listing data');
-    } finally {
-      setLoading(false);
-    }
-  }, [listing_id]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  // Pull to refresh handler
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([refreshPricing(), refreshListing(), refreshCredits()]);
+    setRefreshing(false);
+  }, [refreshPricing, refreshListing, refreshCredits]);
 
   useEffect(() => {
     const calculateCost = async () => {
