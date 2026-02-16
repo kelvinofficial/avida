@@ -1,12 +1,15 @@
 """
 Analytics Settings Module
 Manage Google Analytics and other analytics integrations
+Includes demo data mode for preview and actual GA4 Data API integration
 """
 
-from fastapi import APIRouter, HTTPException, Depends, Header
+from fastapi import APIRouter, HTTPException, Depends, Header, Query
 from pydantic import BaseModel, Field
-from typing import Optional, Callable
-from datetime import datetime, timezone
+from typing import Optional, Callable, List, Dict, Any
+from datetime import datetime, timezone, timedelta
+import random
+import math
 
 
 class AnalyticsSettings(BaseModel):
@@ -20,6 +23,220 @@ class AnalyticsSettings(BaseModel):
     track_listing_views: bool = Field(default=True)
     track_conversions: bool = Field(default=True)
     anonymize_ip: bool = Field(default=True)
+    demo_mode: bool = Field(default=True, description="Show demo data when GA4 is not connected")
+
+
+class TrafficSource(BaseModel):
+    source: str
+    medium: str
+    sessions: int
+    users: int
+    bounce_rate: float
+    avg_session_duration: float
+
+
+class PagePerformance(BaseModel):
+    page_path: str
+    page_title: str
+    views: int
+    unique_views: int
+    avg_time_on_page: float
+    bounce_rate: float
+    exit_rate: float
+
+
+def generate_demo_traffic_data(days: int = 30) -> Dict[str, Any]:
+    """Generate realistic demo traffic data for preview"""
+    base_daily_users = random.randint(150, 300)
+    base_daily_sessions = int(base_daily_users * 1.3)
+    
+    daily_data = []
+    total_users = 0
+    total_sessions = 0
+    total_pageviews = 0
+    
+    for i in range(days):
+        date = datetime.now(timezone.utc) - timedelta(days=days - i - 1)
+        # Add weekly pattern (lower on weekends)
+        day_of_week = date.weekday()
+        multiplier = 0.7 if day_of_week >= 5 else 1.0
+        # Add some randomness
+        multiplier *= random.uniform(0.8, 1.2)
+        # Add growth trend
+        growth_factor = 1 + (i / days) * 0.15
+        
+        users = int(base_daily_users * multiplier * growth_factor)
+        sessions = int(base_daily_sessions * multiplier * growth_factor)
+        pageviews = int(sessions * random.uniform(2.5, 4.0))
+        
+        total_users += users
+        total_sessions += sessions
+        total_pageviews += pageviews
+        
+        daily_data.append({
+            "date": date.strftime("%Y-%m-%d"),
+            "users": users,
+            "sessions": sessions,
+            "pageviews": pageviews,
+            "bounce_rate": round(random.uniform(35, 55), 1),
+            "avg_session_duration": round(random.uniform(120, 300), 0)
+        })
+    
+    return {
+        "summary": {
+            "total_users": total_users,
+            "total_sessions": total_sessions,
+            "total_pageviews": total_pageviews,
+            "avg_bounce_rate": round(random.uniform(40, 50), 1),
+            "avg_session_duration": round(random.uniform(150, 250), 0),
+            "pages_per_session": round(total_pageviews / total_sessions, 2),
+            "new_users_percentage": round(random.uniform(60, 75), 1)
+        },
+        "daily": daily_data,
+        "period": f"Last {days} days",
+        "is_demo_data": True
+    }
+
+
+def generate_demo_traffic_sources() -> List[Dict[str, Any]]:
+    """Generate demo traffic sources data"""
+    sources = [
+        {"source": "google", "medium": "organic", "base_sessions": 450},
+        {"source": "direct", "medium": "(none)", "base_sessions": 280},
+        {"source": "bing", "medium": "organic", "base_sessions": 85},
+        {"source": "facebook", "medium": "social", "base_sessions": 120},
+        {"source": "twitter", "medium": "social", "base_sessions": 65},
+        {"source": "linkedin", "medium": "social", "base_sessions": 45},
+        {"source": "chatgpt.com", "medium": "referral", "base_sessions": 95},
+        {"source": "gemini.google.com", "medium": "referral", "base_sessions": 55},
+        {"source": "perplexity.ai", "medium": "referral", "base_sessions": 35},
+        {"source": "email", "medium": "email", "base_sessions": 40}
+    ]
+    
+    result = []
+    for src in sources:
+        sessions = int(src["base_sessions"] * random.uniform(0.8, 1.3))
+        users = int(sessions * random.uniform(0.7, 0.95))
+        result.append({
+            "source": src["source"],
+            "medium": src["medium"],
+            "sessions": sessions,
+            "users": users,
+            "bounce_rate": round(random.uniform(35, 65), 1),
+            "avg_session_duration": round(random.uniform(90, 280), 0),
+            "pages_per_session": round(random.uniform(1.8, 4.2), 2),
+            "conversion_rate": round(random.uniform(1.5, 5.5), 2)
+        })
+    
+    # Sort by sessions
+    result.sort(key=lambda x: x["sessions"], reverse=True)
+    return result
+
+
+def generate_demo_page_performance() -> List[Dict[str, Any]]:
+    """Generate demo page performance data"""
+    pages = [
+        {"path": "/", "title": "Avida - Buy & Sell Marketplace", "base_views": 1200},
+        {"path": "/blog", "title": "Blog - Tips & Guides", "base_views": 450},
+        {"path": "/blog/how-to-sell-car-online", "title": "How to Sell Your Car Online", "base_views": 320},
+        {"path": "/blog/safety-tips-buyers", "title": "Safety Tips for Buyers", "base_views": 280},
+        {"path": "/listings", "title": "Browse Listings", "base_views": 850},
+        {"path": "/listings/vehicles", "title": "Vehicles for Sale", "base_views": 420},
+        {"path": "/listings/electronics", "title": "Electronics for Sale", "base_views": 380},
+        {"path": "/listings/properties", "title": "Properties for Rent/Sale", "base_views": 290},
+        {"path": "/about", "title": "About Avida", "base_views": 150},
+        {"path": "/contact", "title": "Contact Us", "base_views": 95}
+    ]
+    
+    result = []
+    for page in pages:
+        views = int(page["base_views"] * random.uniform(0.8, 1.3))
+        unique_views = int(views * random.uniform(0.7, 0.9))
+        result.append({
+            "page_path": page["path"],
+            "page_title": page["title"],
+            "views": views,
+            "unique_views": unique_views,
+            "avg_time_on_page": round(random.uniform(45, 180), 0),
+            "bounce_rate": round(random.uniform(30, 70), 1),
+            "exit_rate": round(random.uniform(20, 50), 1),
+            "entrances": int(unique_views * random.uniform(0.3, 0.7))
+        })
+    
+    result.sort(key=lambda x: x["views"], reverse=True)
+    return result
+
+
+def generate_demo_geo_data() -> List[Dict[str, Any]]:
+    """Generate demo geographic data based on target markets"""
+    countries = [
+        {"country": "Tanzania", "code": "TZ", "base_users": 450, "flag": "🇹🇿"},
+        {"country": "Kenya", "code": "KE", "base_users": 280, "flag": "🇰🇪"},
+        {"country": "Germany", "code": "DE", "base_users": 180, "flag": "🇩🇪"},
+        {"country": "Uganda", "code": "UG", "base_users": 120, "flag": "🇺🇬"},
+        {"country": "Nigeria", "code": "NG", "base_users": 95, "flag": "🇳🇬"},
+        {"country": "South Africa", "code": "ZA", "base_users": 85, "flag": "🇿🇦"},
+        {"country": "United States", "code": "US", "base_users": 65, "flag": "🇺🇸"},
+        {"country": "United Kingdom", "code": "GB", "base_users": 45, "flag": "🇬🇧"}
+    ]
+    
+    result = []
+    for geo in countries:
+        users = int(geo["base_users"] * random.uniform(0.85, 1.25))
+        sessions = int(users * random.uniform(1.1, 1.5))
+        result.append({
+            "country": geo["country"],
+            "country_code": geo["code"],
+            "flag": geo["flag"],
+            "users": users,
+            "sessions": sessions,
+            "bounce_rate": round(random.uniform(38, 58), 1),
+            "pages_per_session": round(random.uniform(2.0, 3.8), 2),
+            "avg_session_duration": round(random.uniform(100, 250), 0)
+        })
+    
+    result.sort(key=lambda x: x["users"], reverse=True)
+    return result
+
+
+def generate_demo_ai_citations() -> Dict[str, Any]:
+    """Generate demo AI/LLM citation tracking data (AEO metrics)"""
+    ai_sources = [
+        {"name": "ChatGPT", "icon": "🤖", "base_referrals": 95},
+        {"name": "Google Gemini", "icon": "✨", "base_referrals": 55},
+        {"name": "Perplexity AI", "icon": "🔍", "base_referrals": 35},
+        {"name": "Claude", "icon": "🧠", "base_referrals": 20},
+        {"name": "Microsoft Copilot", "icon": "💡", "base_referrals": 28}
+    ]
+    
+    citations = []
+    total_ai_traffic = 0
+    for src in ai_sources:
+        referrals = int(src["base_referrals"] * random.uniform(0.7, 1.4))
+        total_ai_traffic += referrals
+        citations.append({
+            "source": src["name"],
+            "icon": src["icon"],
+            "referrals": referrals,
+            "avg_session_duration": round(random.uniform(150, 300), 0),
+            "pages_per_session": round(random.uniform(2.5, 5.0), 2),
+            "conversion_rate": round(random.uniform(2.0, 6.0), 2)
+        })
+    
+    citations.sort(key=lambda x: x["referrals"], reverse=True)
+    
+    return {
+        "total_ai_traffic": total_ai_traffic,
+        "ai_traffic_growth": round(random.uniform(15, 45), 1),  # Growth percentage
+        "citations_by_source": citations,
+        "top_cited_content": [
+            {"title": "How to Sell Your Car Online - Complete Guide", "citations": random.randint(25, 50)},
+            {"title": "Best Safety Tips for Online Marketplace Buyers", "citations": random.randint(18, 35)},
+            {"title": "Tanzania's Leading Classifieds Platform", "citations": random.randint(12, 28)}
+        ],
+        "aeo_score": round(random.uniform(65, 85), 0),
+        "is_demo_data": True
+    }
 
 
 def create_analytics_settings_router(db, get_current_user: Callable):
