@@ -356,6 +356,12 @@ Added cache keys for: USER_SETTINGS, NOTIFICATIONS, CHALLENGES, BLOG_POSTS, LEAD
 50. **badges/seasonal-gallery.tsx** - Removed page-level loading indicator
 51. **chat/[id].tsx** - Removed ActivityIndicator spinner, only checks isReady
 
+**Auto & Vehicles Pages Verification:**
+- `/auto` (index) - ✅ Already using cache-first, loads instantly with brand grid, filters, listings
+- `/auto/[id]` - ✅ Already using cache-first pattern (shows "not found" for missing listings, not spinner)
+- `/auto/post` - ✅ No page-level loading states
+- `/category/auto_vehicles` - ✅ Loads instantly with subcategory tabs and vehicle listings
+
 **Updated Page Count:**
 - **78 pages refactored** with cache-first pattern (4 more this batch)
 - All page-level loading spinners removed
