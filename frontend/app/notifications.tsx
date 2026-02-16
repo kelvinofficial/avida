@@ -292,10 +292,7 @@ export default function NotificationsScreen() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      setLoading(true);
       fetchNotifications(1, true);
-    } else {
-      setLoading(false);
     }
   }, [isAuthenticated, activeTab, activeFilter, fetchNotifications]);
 
