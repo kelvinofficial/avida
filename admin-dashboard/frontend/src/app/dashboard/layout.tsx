@@ -145,6 +145,7 @@ const menuItems = [
   { text: 'Content Engine', icon: <AutoAwesome />, path: '/dashboard/content-engine' },
   { text: 'ASO Engine', icon: <TrendingUp />, path: '/dashboard/aso-engine' },
   { text: 'Advanced SEO', icon: <LinkIcon />, path: '/dashboard/advanced-seo' },
+  { text: 'Content Calendar', icon: <Assignment />, path: '/dashboard/content-calendar' },
   { text: 'Settings', icon: <Settings />, path: '/dashboard/settings' },
   { text: 'Audit Logs', icon: <History />, path: '/dashboard/audit-logs' },
 ];
