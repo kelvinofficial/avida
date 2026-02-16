@@ -9,21 +9,19 @@ import {
   FormControlLabel, FormGroup,
 } from '@mui/material';
 import {
-  Schedule, Send, Add, Edit, Delete, ContentCopy, Twitter, LinkedIn,
-  Facebook, Instagram, CalendarMonth, Analytics, Close, Queue,
+  Schedule, Send, Add, Edit, Delete, ContentCopy,
+  CalendarMonth, Analytics, Close,
 } from '@mui/icons-material';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import QueueIcon from '@mui/icons-material/Queue';
 
 const API_BASE = process.env.NEXT_PUBLIC_MAIN_API_URL || '';
 const getAuthHeaders = (): Record<string, string> => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null;
   return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
-};
-
-const PLATFORM_ICONS: Record<string, any> = {
-  twitter: <Twitter />,
-  linkedin: <LinkedIn />,
-  facebook: <Facebook />,
-  instagram: <Instagram />,
 };
 
 const PLATFORM_COLORS: Record<string, string> = {
