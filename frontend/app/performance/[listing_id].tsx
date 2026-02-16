@@ -133,62 +133,89 @@ export default function ListingPerformanceScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<TimePeriod>('7d');
-  const [metrics, setMetrics] = useState<ListingMetrics | null>(null);
-  const [insights, setInsights] = useState<Insight[]>([]);
-  const [comparison, setComparison] = useState<ComparisonData | null>(null);
   const [hasAccess, setHasAccess] = useState(true);
   const [accessMessage, setAccessMessage] = useState<string>('');
+  
+  // Default empty data structures for cache-first pattern
+  const defaultMetrics: ListingMetrics = {
+    listing_id: '',
+    period: '7d',
+    total_views: 0,
+    unique_views: 0,
+    saves: 0,
+    chats_initiated: 0,
+    offers_received: 0,
+    view_to_chat_rate: 0,
+    view_to_offer_rate: 0,
+    boost_views: 0,
+    non_boost_views: 0,
+    boost_impact_percent: 0,
+    location_breakdown: {},
+    hourly_trend: [],
+    daily_trend: {},
+  };
 
-  const loadData = useCallback(async () => {
-    if (!listing_id) return;
-    
-    try {
+  // CACHE-FIRST: Use cache-first hooks to eliminate page-level loaders
+  const { 
+    data: metrics, 
+    isFetching: isFetchingMetrics,
+    error: metricsError,
+    refresh: refreshMetrics 
+  } = useCacheFirst<ListingMetrics>({
+    cacheKey: `listing_metrics_${listing_id}_${period}`,
+    fetcher: async () => {
       // Check access first
       const accessResponse = await api.get('/analytics/access');
       if (!accessResponse.data.has_access) {
         setHasAccess(false);
         setAccessMessage(accessResponse.data.message || 'Analytics not available');
-        setLoading(false);
-        return;
+        return defaultMetrics;
       }
-      
-      // Load metrics
-      const [metricsRes, insightsRes, comparisonRes] = await Promise.all([
-        api.get(`/analytics/listing/${listing_id}?period=${period}`),
-        api.get(`/analytics/listing/${listing_id}/insights`),
-        api.get(`/analytics/listing/${listing_id}/comparison`),
-      ]);
-      
-      setMetrics(metricsRes.data);
-      setInsights(insightsRes.data);
-      setComparison(comparisonRes.data);
       setHasAccess(true);
-      setError(null);
-    } catch (err: any) {
-      if (err.response?.status === 403) {
-        setHasAccess(false);
-        setAccessMessage(err.response?.data?.detail || 'Analytics not available');
-      } else {
-        setError(err.response?.data?.detail || 'Failed to load analytics');
-      }
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [listing_id, period]);
+      const res = await api.get(`/analytics/listing/${listing_id}?period=${period}`);
+      return res.data;
+    },
+    fallbackData: defaultMetrics,
+    enabled: !!listing_id,
+    deps: [listing_id, period],
+  });
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  const { 
+    data: insights, 
+    refresh: refreshInsights 
+  } = useCacheFirst<Insight[]>({
+    cacheKey: `listing_insights_${listing_id}`,
+    fetcher: async () => {
+      const res = await api.get(`/analytics/listing/${listing_id}/insights`);
+      return res.data;
+    },
+    fallbackData: [],
+    enabled: !!listing_id && hasAccess,
+    deps: [listing_id, hasAccess],
+  });
 
-  const onRefresh = () => {
+  const { 
+    data: comparison, 
+    refresh: refreshComparison 
+  } = useCacheFirst<ComparisonData | null>({
+    cacheKey: `listing_comparison_${listing_id}`,
+    fetcher: async () => {
+      const res = await api.get(`/analytics/listing/${listing_id}/comparison`);
+      return res.data;
+    },
+    fallbackData: null,
+    enabled: !!listing_id && hasAccess,
+    deps: [listing_id, hasAccess],
+  });
+
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    loadData();
-  };
+    await Promise.all([refreshMetrics(), refreshInsights(), refreshComparison()]);
+    setRefreshing(false);
+  }, [refreshMetrics, refreshInsights, refreshComparison]);
 
   const getInsightIcon = (type: string) => {
     switch (type) {
