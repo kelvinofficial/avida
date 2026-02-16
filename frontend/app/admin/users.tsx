@@ -334,22 +334,7 @@ export default function UsersManagementPage() {
 
   if (!isAuthenticated) return null;
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Users & Verification</Text>
-          <View style={{ width: 40 }} />
-        </View>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // CACHE-FIRST: No page-level loading indicator - render instantly
 
   return (
     <SafeAreaView style={styles.container}>
