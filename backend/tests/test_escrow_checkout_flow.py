@@ -13,7 +13,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://zero-loaders-3.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://loader-free.preview.emergentagent.com')
 
 # Test credentials
 TEST_BUYER_EMAIL = "buyer@test.com"
@@ -242,7 +242,7 @@ class TestPaymentCreation:
             json={
                 "order_id": TEST_EXISTING_ORDER,
                 "provider": "stripe",
-                "origin_url": "https://zero-loaders-3.preview.emergentagent.com"
+                "origin_url": "https://loader-free.preview.emergentagent.com"
             }
         )
         
@@ -259,7 +259,7 @@ class TestPaymentCreation:
             json={
                 "order_id": TEST_EXISTING_ORDER,
                 "provider": "stripe",
-                "origin_url": "https://zero-loaders-3.preview.emergentagent.com"
+                "origin_url": "https://loader-free.preview.emergentagent.com"
             }
         )
         
