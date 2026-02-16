@@ -482,12 +482,12 @@ export function useHomeData(): UseHomeDataReturn {
     fetchData(true);
   }, [fetchData]);
 
-  // Load more
+  // Load more - CACHE-FIRST: No loading check needed, we have data
   const loadMore = useCallback(() => {
-    if (!loading && hasMore) {
+    if (!isFetchingInBackground && hasMore) {
       fetchData(false);
     }
-  }, [loading, hasMore, fetchData]);
+  }, [isFetchingInBackground, hasMore, fetchData]);
 
   // Initial load
   useEffect(() => {
