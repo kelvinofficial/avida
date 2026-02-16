@@ -178,3 +178,30 @@ const fontLoadScript = `
 })();
 `;
 
+// Service Worker registration script for caching and offline support
+const serviceWorkerScript = `
+(function() {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/api/pwa/sw.js', { scope: '/' })
+        .then(function(registration) {
+          console.log('[SW] Service Worker registered:', registration.scope);
+          
+          // Check for updates periodically
+          registration.addEventListener('updatefound', function() {
+            var newWorker = registration.installing;
+            console.log('[SW] Update found, installing new version...');
+            newWorker.addEventListener('statechange', function() {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[SW] New version available, refresh to update');
+              }
+            });
+          });
+        })
+        .catch(function(error) {
+          console.warn('[SW] Service Worker registration failed:', error);
+        });
+    });
+  }
+})();
+`;
