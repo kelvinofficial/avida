@@ -917,6 +917,7 @@ export default function IconsManagementPage() {
                   '&:hover': { bgcolor: 'action.hover' },
                 }}
               >
+                {/* @ts-expect-error ion-icon is a web component */}
                 <ion-icon 
                   name={iconName} 
                   style={{ 
