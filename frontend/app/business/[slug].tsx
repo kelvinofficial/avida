@@ -393,12 +393,20 @@ export default function BusinessProfileScreen() {
       <ScrollView 
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
+        }
       >
         {/* Profile Header */}
         <View style={[styles.profileHeader, { backgroundColor: brandColor + '15' }]}>
           {/* Logo */}
           <View style={styles.logoContainer}>
-            {profile.logo_url ? (
+            {profile?.logo_url ? (
               <Image source={{ uri: profile.logo_url }} style={styles.logo} />
             ) : (
               <View style={[styles.logoPlaceholder, { backgroundColor: brandColor + '30' }]}>
@@ -410,14 +418,14 @@ export default function BusinessProfileScreen() {
           {/* Business Info */}
           <View style={styles.businessInfo}>
             <View style={styles.nameRow}>
-              <Text style={styles.businessName}>{profile.business_name}</Text>
-              {profile.is_verified && (
+              <Text style={styles.businessName}>{profile?.business_name || 'Loading...'}</Text>
+              {profile?.is_verified && (
                 <View style={[
                   styles.verifiedBadge,
-                  profile.is_premium && styles.premiumBadge
+                  profile?.is_premium && styles.premiumBadge
                 ]} data-testid="verified-badge">
                   <Ionicons 
-                    name={profile.is_premium ? "diamond" : "checkmark-circle"} 
+                    name={profile?.is_premium ? "diamond" : "checkmark-circle"} 
                     size={18} 
                     color={profile.is_premium ? '#FF8F00' : COLORS.verified} 
                   />
