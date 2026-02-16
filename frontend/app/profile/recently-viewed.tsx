@@ -288,12 +288,12 @@ export default function RecentlyViewedScreen() {
       </View>
 
       <FlatList
-        data={loading ? [] : items}
+        data={items}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <MobileCard item={item} onPress={() => router.push(`/listing/${item.id}`)} />
         )}
-        ListEmptyComponent={loading ? null : <EmptyState />}
+        ListEmptyComponent={<EmptyState />}
         contentContainerStyle={styles.mobileList}
         refreshControl={
           <RefreshControl
