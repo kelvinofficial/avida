@@ -617,7 +617,7 @@ export default function SocialDistributionPage() {
                     }
                     label={
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Box sx={{ color: platform.color }}>{PLATFORM_ICONS[key]}</Box>
+                        <Box sx={{ color: platform.color }}>{getPlatformIcon(key)}</Box>
                         {platform.name}
                       </Box>
                     }
