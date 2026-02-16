@@ -29,7 +29,7 @@ import {
   Switch,
   FormControlLabel,
   Alert,
-  CircularProgress,
+  LinearProgress,
   Avatar,
   Tooltip,
   Snackbar,
@@ -48,6 +48,7 @@ import {
   DragIndicator,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
+import { getCachedData, setCachedData } from '@/hooks/useCacheFirst';
 import {
   DndContext,
   closestCenter,
