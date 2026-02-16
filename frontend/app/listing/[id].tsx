@@ -17,6 +17,7 @@ import {
   Platform,
   Animated,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -41,6 +42,9 @@ import { ImageWithSkeleton } from '../../src/components/common';
 import { ListingSEO, ProductSchema, BreadcrumbSchema } from '../../src/components/seo';
 import { SocialShareButtons } from '../../src/components/common/SocialShareButtons';
 import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
+import { useCacheFirst } from '../../src/hooks/useCacheFirst';
+
+// CACHE-FIRST: No page-level loading spinners - render instantly with cached data
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
