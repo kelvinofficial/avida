@@ -506,7 +506,7 @@ export default function LocationsPage() {
       const suggestedName = reverseResult?.suggested_name || '';
       openAddDialog('city', { lat, lng });
       if (suggestedName) {
-        setFormData(prev => ({ ...prev, name: suggestedName, lat, lng }));
+        setFormData((prev: Record<string, unknown>) => ({ ...prev, name: suggestedName, lat, lng }));
         setSuccessMessage(`Suggested name: ${suggestedName}`);
         setTimeout(() => setSuccessMessage(null), 3000);
       }
@@ -514,7 +514,7 @@ export default function LocationsPage() {
       const suggestedName = reverseResult?.district || '';
       openAddDialog('district', { lat, lng });
       if (suggestedName) {
-        setFormData(prev => ({ ...prev, name: suggestedName, lat, lng }));
+        setFormData((prev: Record<string, unknown>) => ({ ...prev, name: suggestedName, lat, lng }));
         setSuccessMessage(`Suggested name: ${suggestedName}`);
         setTimeout(() => setSuccessMessage(null), 3000);
       }
