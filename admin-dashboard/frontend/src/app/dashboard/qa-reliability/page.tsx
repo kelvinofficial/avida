@@ -17,7 +17,6 @@ import {
   TableRow,
   Paper,
   Chip,
-  CircularProgress,
   Alert,
   IconButton,
   Tooltip,
@@ -39,6 +38,7 @@ import {
   ListItemIcon,
   Divider,
   Badge,
+  CircularProgress,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {
@@ -67,6 +67,7 @@ import {
   TrendingUp,
   TrendingDown,
 } from '@mui/icons-material';
+import { getCachedData, setCachedData } from '@/hooks/useCacheFirst';
 import {
   LineChart,
   Line,
