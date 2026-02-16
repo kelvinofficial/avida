@@ -21,14 +21,14 @@ class TestBacklinkMonitoring:
         self.session = requests.Session()
         self.session.headers.update({"Content-Type": "application/json"})
         
-        # Login to get token
-        login_response = self.session.post(f"{BASE_URL}/admin/login", json={
+        # Login to get token - correct endpoint is /admin/auth/login
+        login_response = self.session.post(f"{BASE_URL}/admin/auth/login", json={
             "email": "admin@marketplace.com",
             "password": "Admin@123456"
         })
         
         if login_response.status_code == 200:
-            token = login_response.json().get("token") or login_response.json().get("access_token")
+            token = login_response.json().get("access_token") or login_response.json().get("token")
             if token:
                 self.session.headers.update({"Authorization": f"Bearer {token}"})
         
