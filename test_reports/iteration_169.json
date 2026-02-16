@@ -85,7 +85,7 @@
   "test_credentials": {
     "admin_email": "admin@marketplace.com",
     "admin_password": "Admin@123456",
-    "admin_dashboard_url": "https://zero-loader.preview.emergentagent.com/api/admin-ui/dashboard/backlink-monitoring"
+    "admin_dashboard_url": "https://cache-first-seo.preview.emergentagent.com/api/admin-ui/dashboard/backlink-monitoring"
   },
   "seed_data_creation": "No seed data created - feature uses simulated demo data by default",
   "retest_needed": false,

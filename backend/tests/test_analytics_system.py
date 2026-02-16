@@ -17,7 +17,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://zero-loader.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://cache-first-seo.preview.emergentagent.com').rstrip('/')
 
 # Test credentials
 TEST_EMAIL = "paypaltest@test.com"

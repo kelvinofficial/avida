@@ -7,7 +7,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://zero-loader.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://cache-first-seo.preview.emergentagent.com').rstrip('/')
 
 class TestBadgeNotificationAPIs:
     """Test badge notification endpoints"""
