@@ -367,7 +367,7 @@ export default function SocialDistributionPage() {
       )}
 
       <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} sx={{ mb: 3 }}>
-        <Tab label="All Posts" icon={<Queue />} iconPosition="start" />
+        <Tab label="All Posts" icon={<QueueIcon />} iconPosition="start" />
         <Tab label="Queue" icon={<Schedule />} iconPosition="start" />
         <Tab label="Templates" icon={<ContentCopy />} iconPosition="start" />
         <Tab label="Platforms" icon={<Analytics />} iconPosition="start" />
