@@ -38,19 +38,26 @@ const CATEGORIES = [
 
 export default function SeoToolsPage() {
   const [currentTab, setCurrentTab] = useState(0);
-  const [loading, setLoading] = useState(true);
+  
+  // CACHE-FIRST: Initialize with cached data for instant render
+  const cachedMetaTags = getCachedData<any[]>('admin_seo_meta') || [];
+  const cachedGlobalSettings = getCachedData<any>('admin_seo_global') || {};
+  const cachedSitemapConfig = getCachedData<any>('admin_seo_sitemap') || {};
+  const cachedAiSeoStats = getCachedData<any>('admin_ai_seo_stats');
+  
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
-  // Data states
-  const [metaTags, setMetaTags] = useState<any[]>([]);
-  const [globalSettings, setGlobalSettings] = useState<any>({});
-  const [sitemapConfig, setSitemapConfig] = useState<any>({});
+  // Data states - initialized with cache
+  const [metaTags, setMetaTags] = useState<any[]>(cachedMetaTags);
+  const [globalSettings, setGlobalSettings] = useState<any>(cachedGlobalSettings);
+  const [sitemapConfig, setSitemapConfig] = useState<any>(cachedSitemapConfig);
   const [categorySeo, setCategorySeo] = useState<Record<string, any>>({});
   const [seoPreview, setSeoPreview] = useState<any>(null);
   
   // AI SEO states
-  const [aiSeoStats, setAiSeoStats] = useState<any>(null);
+  const [aiSeoStats, setAiSeoStats] = useState<any>(cachedAiSeoStats);
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<any>(null);
   const [listings, setListings] = useState<any[]>([]);
