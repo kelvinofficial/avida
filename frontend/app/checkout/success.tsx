@@ -178,10 +178,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
   },
+  verifyingIcon: {
+    marginBottom: 16,
+  },
   loadingText: {
     marginTop: 16,
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  loadingSubtext: {
+    marginTop: 8,
+    fontSize: 14,
     color: COLORS.textSecondary,
+    textAlign: 'center',
   },
   successIcon: {
     marginBottom: 24,
