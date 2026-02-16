@@ -92,9 +92,13 @@ const TIER_LABELS: Record<string, string> = {
 };
 
 export default function CommissionPage() {
-  const [loading, setLoading] = useState(true);
-  const [config, setConfig] = useState<CommissionConfig | null>(null);
-  const [categories, setCategories] = useState<CategoryCommission[]>([]);
+  // CACHE-FIRST: Initialize with cached data for instant render
+  const cachedConfig = getCachedData<CommissionConfig>('commission_config');
+  const cachedCategories = getCachedData<CategoryCommission[]>('commission_categories');
+  
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
+  const [config, setConfig] = useState<CommissionConfig | null>(cachedConfig);
+  const [categories, setCategories] = useState<CategoryCommission[]>(cachedCategories || []);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
   
   // Dialog states
@@ -113,7 +117,7 @@ export default function CommissionPage() {
   const [categoryMinCommission, setCategoryMinCommission] = useState(0);
   const [categoryMaxCommission, setCategoryMaxCommission] = useState<number | null>(null);
   const [discountPercentage, setDiscountPercentage] = useState(0);
-  const [defaultCommission, setDefaultCommission] = useState(5);
+  const [defaultCommission, setDefaultCommission] = useState(cachedConfig?.default_commission || 5);
   
   // Calculator state
   const [calcAmount, setCalcAmount] = useState(100);
@@ -121,8 +125,9 @@ export default function CommissionPage() {
   const [calcTier, setCalcTier] = useState('unverified');
   const [calcResult, setCalcResult] = useState<CalculationResult | null>(null);
 
+  // CACHE-FIRST: Fetch data in background without blocking UI
   const fetchData = useCallback(async () => {
-    setLoading(true);
+    setIsFetchingInBackground(true);
     try {
       const [configRes, categoriesRes] = await Promise.all([
         api.get('/commission/config'),
@@ -131,10 +136,16 @@ export default function CommissionPage() {
       setConfig(configRes);
       setCategories(categoriesRes || []);
       setDefaultCommission(configRes.default_commission);
+      // Update cache
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('admin_cache_commission_config', JSON.stringify({ data: configRes, timestamp: Date.now() }));
+        localStorage.setItem('admin_cache_commission_categories', JSON.stringify({ data: categoriesRes || [], timestamp: Date.now() }));
+      }
     } catch (error) {
       console.error('Failed to fetch commission data:', error);
+      // Keep showing cached data on error
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   }, []);
 
