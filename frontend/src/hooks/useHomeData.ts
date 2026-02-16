@@ -1,11 +1,17 @@
 /**
  * useHomeData Hook
  * Centralized data fetching and state management for the Home Screen
+ * 
+ * CACHE-FIRST ARCHITECTURE:
+ * - Shows cached data immediately on mount (no loading spinners)
+ * - Fetches fresh data in background
+ * - Updates UI silently when fresh data arrives
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import { Storage } from '../utils/storage';
+import { CacheManager, getCachedSync, setCacheSync, CACHE_KEYS } from '../utils/cacheManager';
 import { listingsApi, categoriesApi, favoritesApi, notificationsApi, locationsApi } from '../utils/api';
 import { sandboxAwareListingsApi, sandboxAwareCategoriesApi, sandboxUtils } from '../utils/sandboxAwareApi';
 import { Listing, Category } from '../types';
@@ -46,16 +52,18 @@ export interface UseHomeDataReturn {
   // Listings data
   listings: Listing[];
   categories: Category[];
-  loading: boolean;
+  // REMOVED: loading state - cache-first means no loading spinners
   initialLoadDone: boolean;
   refreshing: boolean;
   page: number;
   hasMore: boolean;
+  // Background fetch indicator (not for UI spinners)
+  isFetchingInBackground: boolean;
   
   // Featured data
   featuredSellers: FeaturedSeller[];
   featuredListings: FeaturedListing[];
-  loadingFeatured: boolean;
+  // REMOVED: loadingFeatured - cache-first means no loading spinners
   
   // User data
   favorites: Set<string>;
@@ -102,6 +110,10 @@ export interface UseHomeDataReturn {
   setSelectedCity: (city: SelectedCity | null) => void;
   setExpandedSearch: (expanded: boolean) => void;
   setExpandedSearchMessage: (message: string | null) => void;
+  
+  // Legacy compatibility (deprecated - always false)
+  loading: boolean;
+  loadingFeatured: boolean;
 }
 
 export function useHomeData(): UseHomeDataReturn {
