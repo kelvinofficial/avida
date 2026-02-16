@@ -1037,6 +1037,294 @@ def create_authority_building_router(db, get_current_user: Callable):
             "generated_at": datetime.now(timezone.utc).isoformat()
         }
 
+    # ==================== BACKLINK MONITORING & GAP ANALYSIS ====================
+    
+    @router.get("/monitoring/competitors")
+    async def get_tracked_competitors(admin=Depends(require_admin)):
+        """Get list of tracked competitors"""
+        competitors = await db.tracked_competitors.find({}, {"_id": 0}).to_list(length=50)
+        
+        if not competitors:
+            # Return suggested competitors based on target markets
+            competitors = [
+                {"domain": d, **p, "is_tracked": False} 
+                for d, p in COMPETITOR_PROFILES.items()
+            ]
+        
+        return {
+            "competitors": competitors,
+            "total": len(competitors),
+            "suggested_competitors": list(COMPETITOR_PROFILES.keys())
+        }
+
+    @router.post("/monitoring/competitors")
+    async def add_tracked_competitor(
+        profile: CompetitorProfile,
+        admin=Depends(require_admin)
+    ):
+        """Add a competitor to track"""
+        domain = extract_domain_from_url(profile.domain)
+        
+        existing = await db.tracked_competitors.find_one({"domain": domain})
+        if existing:
+            raise HTTPException(status_code=400, detail="Competitor already tracked")
+        
+        # Get profile info if available
+        known_profile = COMPETITOR_PROFILES.get(domain, {})
+        
+        competitor_doc = {
+            "id": str(uuid.uuid4()),
+            "domain": domain,
+            "name": profile.name or known_profile.get("name", domain),
+            "description": profile.description,
+            "is_primary": profile.is_primary,
+            "category": known_profile.get("category", "classifieds"),
+            "estimated_da": known_profile.get("estimated_da", random.randint(25, 50)),
+            "regions": known_profile.get("regions", ["GLOBAL"]),
+            "added_at": datetime.now(timezone.utc),
+            "last_analyzed": None
+        }
+        
+        await db.tracked_competitors.insert_one(competitor_doc)
+        competitor_doc.pop("_id", None)
+        
+        return {
+            "success": True,
+            "message": f"Now tracking {domain}",
+            "competitor": competitor_doc
+        }
+
+    @router.delete("/monitoring/competitors/{competitor_id}")
+    async def remove_tracked_competitor(competitor_id: str, admin=Depends(require_admin)):
+        """Remove a competitor from tracking"""
+        result = await db.tracked_competitors.delete_one({"id": competitor_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Competitor not found")
+        return {"success": True, "message": "Competitor removed from tracking"}
+
+    @router.post("/monitoring/gap-analysis")
+    async def run_backlink_gap_analysis(
+        request: BacklinkGapRequest,
+        admin=Depends(require_admin)
+    ):
+        """
+        Run backlink gap analysis to find domains that link to competitors but not to you.
+        This identifies link building opportunities.
+        """
+        if len(request.competitors) == 0:
+            raise HTTPException(status_code=400, detail="At least one competitor required")
+        
+        if len(request.competitors) > 5:
+            raise HTTPException(status_code=400, detail="Maximum 5 competitors for gap analysis")
+        
+        # Generate competitor backlink profiles
+        competitor_profiles = {}
+        all_competitor_domains = set()
+        
+        for competitor in request.competitors:
+            domain = extract_domain_from_url(competitor)
+            profile = generate_competitor_backlink_profile(domain)
+            competitor_profiles[domain] = profile
+            
+            for bl in profile["backlinks"]:
+                all_competitor_domains.add(bl["source_domain"])
+        
+        # Get our existing backlinks
+        our_backlinks = await db.backlinks.find({"status": "active"}, {"source_domain": 1}).to_list(length=5000)
+        our_domains = {b.get("source_domain", "").lower() for b in our_backlinks}
+        
+        # Find gap opportunities (domains linking to competitors but not to us)
+        gap_opportunities = []
+        common_opportunities = []
+        
+        for source_domain in all_competitor_domains:
+            if source_domain.lower() in our_domains:
+                continue
+            
+            # Count how many competitors have this backlink
+            competitor_count = 0
+            sample_backlink = None
+            linking_competitors = []
+            
+            for comp_domain, comp_profile in competitor_profiles.items():
+                for bl in comp_profile["backlinks"]:
+                    if bl["source_domain"] == source_domain:
+                        competitor_count += 1
+                        sample_backlink = bl
+                        linking_competitors.append(comp_domain)
+                        break
+            
+            if sample_backlink:
+                opportunity = {
+                    "source_domain": source_domain,
+                    "source_da": sample_backlink["source_da"],
+                    "category": sample_backlink.get("category", "unknown"),
+                    "competitors_with_link": competitor_count,
+                    "linking_competitors": linking_competitors,
+                    "opportunity_score": calculate_opportunity_score(sample_backlink, competitor_count),
+                    "difficulty": get_link_difficulty(sample_backlink["source_da"]),
+                    "suggested_approach": suggest_outreach_approach(sample_backlink)
+                }
+                
+                if competitor_count >= 2 and request.include_common:
+                    common_opportunities.append(opportunity)
+                else:
+                    gap_opportunities.append(opportunity)
+        
+        # Sort by opportunity score
+        gap_opportunities.sort(key=lambda x: x["opportunity_score"], reverse=True)
+        common_opportunities.sort(key=lambda x: x["opportunity_score"], reverse=True)
+        
+        # Calculate summary stats
+        total_gap_da = sum(o["source_da"] for o in gap_opportunities)
+        avg_gap_da = round(total_gap_da / max(len(gap_opportunities), 1), 1)
+        
+        return {
+            "analysis_date": datetime.now(timezone.utc).isoformat(),
+            "competitors_analyzed": list(competitor_profiles.keys()),
+            "your_backlinks": len(our_domains),
+            "summary": {
+                "total_gap_opportunities": len(gap_opportunities),
+                "common_link_opportunities": len(common_opportunities),
+                "average_opportunity_da": avg_gap_da,
+                "high_priority_count": len([o for o in gap_opportunities if o["opportunity_score"] >= 70]),
+                "easy_wins_count": len([o for o in gap_opportunities if o["difficulty"] == "easy"])
+            },
+            "gap_opportunities": gap_opportunities[:30],  # Top 30
+            "common_opportunities": common_opportunities[:15],  # Top 15 that link to multiple competitors
+            "competitor_profiles": {
+                domain: {
+                    "domain": domain,
+                    "metrics": profile["metrics"],
+                    "top_backlinks": profile["backlinks"][:10]
+                }
+                for domain, profile in competitor_profiles.items()
+            },
+            "recommendations": generate_gap_recommendations(gap_opportunities, common_opportunities),
+            "is_simulated_data": True
+        }
+
+    @router.get("/monitoring/backlink-changes")
+    async def get_backlink_changes(
+        days: int = Query(30, ge=7, le=90),
+        admin=Depends(require_admin)
+    ):
+        """Get simulated new and lost backlinks over time"""
+        
+        # Get our tracked backlinks
+        backlinks = await db.backlinks.find({}, {"_id": 0}).to_list(length=500)
+        
+        # Generate simulated changes
+        new_backlinks = []
+        lost_backlinks = []
+        
+        # Simulate some new backlinks discovered
+        for i in range(random.randint(3, 8)):
+            source = random.choice(BACKLINK_SOURCES_DB)
+            new_backlinks.append({
+                "source_domain": source["domain"],
+                "source_da": source["da"],
+                "anchor_text": generate_anchor_text("avida"),
+                "link_type": "dofollow" if random.random() > 0.4 else "nofollow",
+                "discovered_date": (datetime.now(timezone.utc) - timedelta(days=random.randint(1, days))).isoformat(),
+                "target_url": f"https://avida.com/{random.choice(['blog', 'about', ''])}",
+                "status": "new"
+            })
+        
+        # Simulate some lost backlinks
+        if backlinks:
+            lost_count = min(random.randint(1, 3), len(backlinks))
+            for bl in random.sample(backlinks, lost_count):
+                lost_backlinks.append({
+                    **bl,
+                    "lost_date": (datetime.now(timezone.utc) - timedelta(days=random.randint(1, days))).isoformat(),
+                    "status": "lost",
+                    "possible_reason": random.choice([
+                        "Page removed by source",
+                        "Link changed to nofollow",
+                        "Domain expired",
+                        "Content updated"
+                    ])
+                })
+        
+        # Calculate net change
+        net_change = len(new_backlinks) - len(lost_backlinks)
+        
+        return {
+            "period": f"Last {days} days",
+            "summary": {
+                "new_backlinks": len(new_backlinks),
+                "lost_backlinks": len(lost_backlinks),
+                "net_change": net_change,
+                "trend": "positive" if net_change > 0 else "negative" if net_change < 0 else "stable"
+            },
+            "new_backlinks": sorted(new_backlinks, key=lambda x: x["discovered_date"], reverse=True),
+            "lost_backlinks": lost_backlinks,
+            "alerts": generate_backlink_alerts(new_backlinks, lost_backlinks),
+            "is_simulated_data": True
+        }
+
+    @router.get("/monitoring/competitor-comparison")
+    async def get_competitor_comparison(admin=Depends(require_admin)):
+        """Get a comparison of backlink metrics vs competitors"""
+        
+        # Get tracked competitors
+        competitors = await db.tracked_competitors.find({}, {"_id": 0}).to_list(length=10)
+        
+        if not competitors:
+            # Use default competitors
+            competitors = [
+                {"domain": d, **p} for d, p in list(COMPETITOR_PROFILES.items())[:5]
+            ]
+        
+        # Get our metrics
+        our_backlinks = await db.backlinks.find({"status": "active"}).to_list(length=5000)
+        our_dofollow = len([b for b in our_backlinks if b.get("link_type") == "dofollow"])
+        our_avg_da = sum(b.get("domain_authority", 30) for b in our_backlinks) / max(len(our_backlinks), 1)
+        
+        our_metrics = {
+            "domain": "avida.com",
+            "name": "Avida (You)",
+            "is_you": True,
+            "total_backlinks": len(our_backlinks),
+            "dofollow_backlinks": our_dofollow,
+            "referring_domains": len(set(b.get("source_domain", "") for b in our_backlinks)),
+            "average_da": round(our_avg_da, 1),
+            "estimated_da": 35,  # Estimated for Avida
+            "estimated_traffic": random.randint(8000, 15000)
+        }
+        
+        # Generate competitor metrics
+        comparison_data = [our_metrics]
+        
+        for comp in competitors[:5]:
+            profile = generate_competitor_backlink_profile(comp["domain"])
+            comparison_data.append({
+                "domain": comp["domain"],
+                "name": comp.get("name", comp["domain"]),
+                "is_you": False,
+                "total_backlinks": profile["metrics"]["total_backlinks"],
+                "dofollow_backlinks": profile["metrics"]["dofollow_count"],
+                "referring_domains": profile["metrics"]["referring_domains"],
+                "average_da": profile["metrics"]["average_da"],
+                "estimated_da": comp.get("estimated_da", profile["metrics"]["average_da"]),
+                "estimated_traffic": profile["metrics"]["estimated_organic_traffic"]
+            })
+        
+        # Sort by estimated DA
+        comparison_data.sort(key=lambda x: x["estimated_da"], reverse=True)
+        
+        # Calculate your ranking
+        your_rank = next((i + 1 for i, c in enumerate(comparison_data) if c["is_you"]), len(comparison_data))
+        
+        return {
+            "comparison": comparison_data,
+            "your_rank": your_rank,
+            "total_competitors": len(comparison_data) - 1,
+            "insights": generate_competitive_insights(our_metrics, comparison_data),
+            "is_simulated_data": True
+        }
+
     return router
 
 
