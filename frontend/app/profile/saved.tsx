@@ -171,14 +171,17 @@ export default function SavedItemsScreen() {
   const { goToLogin } = useLoginRedirect();
   const isLargeScreen = isDesktop || isTablet;
   
-  const [items, setItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Cache-first: Initialize with cached data for instant render
+  const cachedItems = getCachedSync<any[]>(CACHE_KEYS.SAVED_LISTINGS);
+  const [items, setItems] = useState<any[]>(cachedItems || []);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [total, setTotal] = useState(0);
+  const [total, setTotal] = useState(cachedItems?.length || 0);
 
   const fetchSavedItems = useCallback(async (pageNum: number = 1, refresh: boolean = false) => {
+    setIsFetchingInBackground(true);
     try {
       const response = await api.get('/profile/activity/favorites', {
         params: { page: pageNum, limit: 20 },
@@ -189,8 +192,12 @@ export default function SavedItemsScreen() {
       
       if (refresh || pageNum === 1) {
         setItems(newItems);
+        // Update cache
+        setCacheSync(CACHE_KEYS.SAVED_LISTINGS, newItems);
       } else {
-        setItems(prev => [...prev, ...newItems]);
+        const combinedItems = [...items, ...newItems];
+        setItems(combinedItems);
+        setCacheSync(CACHE_KEYS.SAVED_LISTINGS, combinedItems);
       }
       
       setHasMore(newItems.length === 20);
@@ -198,18 +205,16 @@ export default function SavedItemsScreen() {
     } catch (error) {
       console.error('Error fetching saved items:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [items]);
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchSavedItems(1, true);
-    } else {
-      setLoading(false);
     }
-  }, [isAuthenticated, fetchSavedItems]);
+  }, [isAuthenticated]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -217,7 +222,7 @@ export default function SavedItemsScreen() {
   };
 
   const handleLoadMore = () => {
-    if (!loading && hasMore) {
+    if (!isFetchingInBackground && hasMore) {
       fetchSavedItems(page + 1);
     }
   };
@@ -246,11 +251,8 @@ export default function SavedItemsScreen() {
   };
 
   if (!isReady) {
-    return (
-      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-      </SafeAreaView>
-    );
+    // Show minimal placeholder instead of spinner during responsive check
+    return null;
   }
 
   // Desktop Layout
@@ -303,7 +305,7 @@ export default function SavedItemsScreen() {
         icon="heart-outline"
         rightAction={rightAction}
       >
-        {loading && !refreshing ? (
+        {isFetchingInBackground && items.length === 0 ? (
           <View style={styles.gridContainer}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <Skeleton key={i} isDesktop />
@@ -371,7 +373,7 @@ export default function SavedItemsScreen() {
       </View>
 
       <FlatList
-        data={loading ? [] : items}
+        data={items}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <MobileCard
@@ -380,7 +382,7 @@ export default function SavedItemsScreen() {
             onRemove={() => handleRemove(item)}
           />
         )}
-        ListEmptyComponent={loading ? null : <EmptyState />}
+        ListEmptyComponent={isFetchingInBackground && items.length === 0 ? null : <EmptyState />}
         contentContainerStyle={styles.mobileList}
         refreshControl={
           <RefreshControl
