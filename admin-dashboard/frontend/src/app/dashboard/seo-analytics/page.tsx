@@ -115,29 +115,24 @@ export default function SEOAnalyticsPage() {
     return num.toString();
   };
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress color="primary" />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box p={3}>
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-        <Typography variant="body2" color="text.secondary">
-          Make sure the SEO tracking system is properly configured and has collected some data.
-        </Typography>
-      </Box>
-    );
-  }
-
   return (
-    <Box>
+    <Box sx={{ position: 'relative' }}>
+      {/* CACHE-FIRST: Show LinearProgress for background fetch instead of blocking CircularProgress */}
+      {loading && (
+        <LinearProgress sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, zIndex: 10 }} />
+      )}
+
+      {error ? (
+        <Box p={3}>
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+          <Typography variant="body2" color="text.secondary">
+            Make sure the SEO tracking system is properly configured and has collected some data.
+          </Typography>
+        </Box>
+      ) : (
+        <Box>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Box>
