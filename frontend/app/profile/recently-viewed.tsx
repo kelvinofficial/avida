@@ -111,15 +111,7 @@ const EmptyState = ({ isDesktop }: { isDesktop?: boolean }) => (
   </View>
 );
 
-const Skeleton = ({ isDesktop }: { isDesktop?: boolean }) => (
-  <View style={[styles.skeleton, isDesktop && styles.skeletonDesktop]}>
-    <View style={[styles.skeletonImage, isDesktop && styles.skeletonImageDesktop]} />
-    <View style={styles.skeletonContent}>
-      <View style={[styles.skeletonLine, { width: '60%' }]} />
-      <View style={[styles.skeletonLine, { width: '40%' }]} />
-    </View>
-  </View>
-);
+// CACHE-FIRST: Removed Skeleton component - no longer needed
 
 export default function RecentlyViewedScreen() {
   const router = useRouter();
