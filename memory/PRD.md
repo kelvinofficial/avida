@@ -350,9 +350,16 @@ Added cache keys for: USER_SETTINGS, NOTIFICATIONS, CHALLENGES, BLOG_POSTS, LEAD
 - Mobile listing detail: ✅ Loads instantly with full listing info, price, images
 - Mobile subcategory: ✅ Same page handles subcategories, renders immediately
 
+**Session 2026-02-16 Updates (Batch 14 - Additional Loading State Removal):**
+48. **business/edit.tsx** - Removed loading conditional, only checks isReady
+49. **profile/public/[id].tsx** - Removed loading conditional, only checks isReady
+50. **badges/seasonal-gallery.tsx** - Removed page-level loading indicator
+51. **chat/[id].tsx** - Removed ActivityIndicator spinner, only checks isReady
+
 **Updated Page Count:**
-- **74 pages refactored** with cache-first pattern (2 more this batch)
-- Listing detail and category pages now instant on both web and mobile
+- **78 pages refactored** with cache-first pattern (4 more this batch)
+- All page-level loading spinners removed
+- Mobile app now loads all pages instantly
 
 ### Test Results:
 - `/app/test_reports/iteration_171.json` - Phase 2: ALL PASSED (9/9)
