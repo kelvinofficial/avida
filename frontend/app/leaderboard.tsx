@@ -211,13 +211,13 @@ export default function LeaderboardScreen() {
             <Image source={{ uri: item.avatar_url }} style={styles.avatar} />
           ) : (
             <View style={[styles.avatar, styles.avatarPlaceholder]}>
-              <Text style={styles.avatarText}>{item.user_name.charAt(0).toUpperCase()}</Text>
+              <Text style={styles.avatarText}>{(item.user_name || 'U').charAt(0).toUpperCase()}</Text>
             </View>
           )}
           <View style={styles.userDetails}>
             <View style={styles.nameRow}>
               <Text style={[styles.userName, isCurrentUser && styles.currentUserName]}>
-                {item.user_name}
+                {item.user_name || 'Unknown User'}
                 {isCurrentUser && ' (You)'}
               </Text>
               {item.is_verified && (
@@ -226,12 +226,12 @@ export default function LeaderboardScreen() {
             </View>
             {/* Top Badges */}
             <View style={styles.badgesRow}>
-              {item.top_badges.slice(0, 3).map((badge, i) => (
-                <View key={i} style={[styles.badgeIcon, { backgroundColor: `${badge.color}20` }]}>
-                  <Ionicons name={getIconName(badge.icon)} size={12} color={badge.color} />
+              {(item.top_badges || []).slice(0, 3).map((badge, i) => (
+                <View key={i} style={[styles.badgeIcon, { backgroundColor: `${badge.color || '#666'}20` }]}>
+                  <Ionicons name={getIconName(badge.icon)} size={12} color={badge.color || '#666'} />
                 </View>
               ))}
-              {item.top_badges.length > 3 && (
+              {(item.top_badges || []).length > 3 && (
                 <Text style={styles.moreBadges}>+{item.top_badges.length - 3}</Text>
               )}
             </View>
