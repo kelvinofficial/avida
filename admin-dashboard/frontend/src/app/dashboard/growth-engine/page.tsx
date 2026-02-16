@@ -43,7 +43,7 @@ import {
 const API_BASE = process.env.NEXT_PUBLIC_MAIN_API_URL || '';
 
 // Helper to get auth header
-const getAuthHeaders = () => {
+const getAuthHeaders = (): Record<string, string> => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null;
   return token ? { 'Authorization': `Bearer ${token}` } : {};
 };
