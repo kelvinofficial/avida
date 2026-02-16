@@ -251,16 +251,6 @@ export default function BoostPropertyScreen() {
     );
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loading}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   if (!property) {
     return (
       <SafeAreaView style={styles.container}>
