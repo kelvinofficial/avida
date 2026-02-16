@@ -6,7 +6,6 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
   RefreshControl,
   Alert,
   Modal,
@@ -23,6 +22,7 @@ import { useAuthStore } from '../src/store/authStore';
 import { useResponsive } from '../src/hooks/useResponsive';
 import { DesktopPageLayout } from '../src/components/layout';
 import { ImagePlaceholder } from '../src/components/common/ImagePlaceholder';
+import { getCachedSync, setCacheSync, CACHE_KEYS } from '../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',
