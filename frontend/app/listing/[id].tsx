@@ -949,16 +949,8 @@ export default function ListingDetailScreen() {
     }
   };
 
-  // Render immediately without loading state - show empty container while data fetches
-  if (loading && !listing) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={{ flex: 1, backgroundColor: COLORS.background }} />
-      </SafeAreaView>
-    );
-  }
-
-  if (!listing) {
+  // CACHE-FIRST: Show error state only when listing fetch failed and no data
+  if (listingError && !listing) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loading}>
@@ -967,6 +959,22 @@ export default function ListingDetailScreen() {
           <TouchableOpacity style={styles.backButton} onPress={() => safeGoBack(router)}>
             <Text style={styles.backButtonText}>Go Back</Text>
           </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // CACHE-FIRST: Show minimal placeholder only when no data yet (first time load)
+  if (!listing) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={{ flex: 1, backgroundColor: COLORS.background }}>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.headerBtn}>
+              <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+            </TouchableOpacity>
+            <View style={{ flex: 1 }} />
+          </View>
         </View>
       </SafeAreaView>
     );
