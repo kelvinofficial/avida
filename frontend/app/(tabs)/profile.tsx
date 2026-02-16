@@ -20,8 +20,10 @@ import { UserProfile, UserStats } from '../../src/types/settings';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { BadgeIcon, Badge } from '../../src/components/SellerBadges';
 import { DesktopHeader, Footer, DesktopPageLayout } from '../../src/components/layout';
-import { ProfileSkeleton } from '../../src/components/skeletons';
 import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
+import { useCacheFirst } from '../../src/hooks/useCacheFirst';
+
+// CACHE-FIRST: No page-level loading spinners - render instantly with cached data
 
 const COLORS = {
   primary: '#2E7D32',
