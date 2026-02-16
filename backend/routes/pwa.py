@@ -12,8 +12,8 @@ def create_pwa_router():
     """Create router for PWA assets"""
     router = APIRouter(prefix="/pwa", tags=["PWA"])
     
-    # Path to frontend web assets
-    web_path = Path(__file__).parent.parent / "frontend" / "web"
+    # Path to frontend web assets (from /app/backend/routes/ to /app/frontend/web/)
+    web_path = Path(__file__).parent.parent.parent / "frontend" / "web"
     
     @router.get("/sw.js")
     async def get_service_worker():
