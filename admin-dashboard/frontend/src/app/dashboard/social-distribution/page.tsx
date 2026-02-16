@@ -556,7 +556,7 @@ export default function SocialDistributionPage() {
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="body2" color="text.secondary">Best Posting Times</Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                      {platform.best_times.map((time, idx) => (
+                      {platform.best_times?.map((time, idx) => (
                         <Chip key={idx} label={time} size="small" variant="outlined" />
                       ))}
                     </Box>
