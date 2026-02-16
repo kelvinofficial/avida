@@ -330,6 +330,23 @@ Added cache keys for: USER_SETTINGS, NOTIFICATIONS, CHALLENGES, BLOG_POSTS, LEAD
 - Admin locations endpoint: ~0.17s response
 - Page render: Instant (0.01s from cache)
 
+**Session 2026-02-16 Updates (Batch 13 - Listing & Category Pages):**
+46. **listing/[id].tsx** - Listing detail page with cache-first pattern
+    - Listing data renders from cache immediately
+    - Category data loaded in background
+    - Removed page-level skeleton/shimmer
+    - Added pull-to-refresh support
+    - ImageWithSkeleton retained for individual image loading (component-level, acceptable)
+
+47. **category/[id].tsx** - Category page with cache-first pattern  
+    - Removed CategoryPageSkeleton import and usage
+    - Listings render immediately without blocking skeleton
+    - Subcategories and filters display instantly
+
+**Updated Page Count:**
+- **74 pages refactored** with cache-first pattern (2 more this batch)
+- Listing detail and category pages now instant
+
 ### Test Results:
 - `/app/test_reports/iteration_171.json` - Phase 2: ALL PASSED (9/9)
 - `/app/test_reports/iteration_172.json` - Phase 3 Initial: ALL PASSED (6/6)
