@@ -21,12 +21,12 @@ class TestAnalyticsSettingsAPIs:
         self.headers = {"Content-Type": "application/json"}
         # Login to get token
         login_response = requests.post(
-            f"{BASE_URL}/admin/login",
+            f"{BASE_URL}/admin/auth/login",
             json={"email": "admin@marketplace.com", "password": "Admin@123456"},
             headers=self.headers
         )
         if login_response.status_code == 200:
-            token = login_response.json().get("token")
+            token = login_response.json().get("access_token")
             self.headers["Authorization"] = f"Bearer {token}"
         else:
             pytest.skip("Admin login failed - skipping analytics tests")
@@ -238,12 +238,12 @@ class TestAuthorityBuildingAPIs:
         self.headers = {"Content-Type": "application/json"}
         # Login to get token
         login_response = requests.post(
-            f"{BASE_URL}/admin/login",
+            f"{BASE_URL}/admin/auth/login",
             json={"email": "admin@marketplace.com", "password": "Admin@123456"},
             headers=self.headers
         )
         if login_response.status_code == 200:
-            token = login_response.json().get("token")
+            token = login_response.json().get("access_token")
             self.headers["Authorization"] = f"Bearer {token}"
         else:
             pytest.skip("Admin login failed - skipping authority tests")
