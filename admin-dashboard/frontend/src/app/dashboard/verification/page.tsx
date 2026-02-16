@@ -28,7 +28,7 @@ import {
   Tabs,
   Tab,
   IconButton,
-  CircularProgress,
+  LinearProgress,
   Snackbar,
   Avatar,
   Tooltip,
