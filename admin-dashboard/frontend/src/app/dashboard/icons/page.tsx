@@ -395,6 +395,7 @@ export default function IconsManagementPage() {
           },
         }}
       >
+        {/* @ts-expect-error ion-icon is a web component */}
         <ion-icon name={name} style={{ color: color || '#2E7D32', fontSize: size }}></ion-icon>
       </Box>
     );
