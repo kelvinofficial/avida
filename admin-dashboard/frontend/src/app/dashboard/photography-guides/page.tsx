@@ -662,11 +662,10 @@ export default function PhotographyGuidesPage() {
 
         {/* Guides Table with DnD */}
         <CardContent>
-          {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress />
-            </Box>
-          ) : guides.length === 0 ? (
+          {/* CACHE-FIRST: Show LinearProgress for background fetch instead of blocking CircularProgress */}
+          {isFetchingInBackground && <LinearProgress sx={{ mb: 2 }} />}
+          
+          {guides.length === 0 ? (
             <Alert severity="info">
               No photography guides found. Click "Seed Defaults" to add standard guides.
             </Alert>
