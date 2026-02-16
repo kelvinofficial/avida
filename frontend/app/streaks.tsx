@@ -59,21 +59,32 @@ export default function StreakLeaderboardScreen() {
   const { isDesktop, isTablet } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
 
-  const [myStreak, setMyStreak] = useState<StreakData | null>(null);
-  const [leaderboard, setLeaderboard] = useState<StreakLeaderboardEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Cache-first: Initialize with cached data for instant render
+  interface StreakCache {
+    myStreak: StreakData | null;
+    leaderboard: StreakLeaderboardEntry[];
+  }
+  const cachedData = getCachedSync<StreakCache>(CACHE_KEYS.STREAKS);
+  
+  const [myStreak, setMyStreak] = useState<StreakData | null>(cachedData?.myStreak || null);
+  const [leaderboard, setLeaderboard] = useState<StreakLeaderboardEntry[]>(cachedData?.leaderboard || []);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchData = useCallback(async (refresh = false) => {
     try {
       if (refresh) setRefreshing(true);
-      else setLoading(true);
+      else setIsFetchingInBackground(true);
+
+      let newMyStreak: StreakData | null = null;
+      let newLeaderboard: StreakLeaderboardEntry[] = [];
 
       // Fetch my streak if authenticated
       if (isAuthenticated) {
         try {
           const streakRes = await api.get('/streaks/my-streak');
-          setMyStreak(streakRes.data);
+          newMyStreak = streakRes.data;
+          setMyStreak(newMyStreak);
         } catch (err) {
           console.error('Failed to fetch my streak:', err);
         }
@@ -231,16 +242,8 @@ export default function StreakLeaderboardScreen() {
     );
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.flame} />
-          <Text style={styles.loadingText}>Loading streaks...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // Remove page-level loading blocker - content renders instantly from cache
+  // Show empty states or cached data while background fetch happens
 
   return (
     <SafeAreaView style={styles.container}>
