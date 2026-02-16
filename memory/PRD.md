@@ -340,12 +340,19 @@ Added cache keys for: USER_SETTINGS, NOTIFICATIONS, CHALLENGES, BLOG_POSTS, LEAD
 
 47. **category/[id].tsx** - Category page with cache-first pattern  
     - Removed CategoryPageSkeleton import and usage
+    - Removed `loading` and `initialLoadDone` blocking states
     - Listings render immediately without blocking skeleton
     - Subcategories and filters display instantly
+    - Mobile view now renders content immediately (no skeleton blocking)
+
+**Mobile App Verification:**
+- Mobile category page: ✅ Loads instantly with subcategory tabs and listings
+- Mobile listing detail: ✅ Loads instantly with full listing info, price, images
+- Mobile subcategory: ✅ Same page handles subcategories, renders immediately
 
 **Updated Page Count:**
 - **74 pages refactored** with cache-first pattern (2 more this batch)
-- Listing detail and category pages now instant
+- Listing detail and category pages now instant on both web and mobile
 
 ### Test Results:
 - `/app/test_reports/iteration_171.json` - Phase 2: ALL PASSED (9/9)
