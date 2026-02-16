@@ -62,10 +62,16 @@ export default function CheckoutScreen() {
   const { isAuthenticated, user } = useAuthStore();
   const { isSandboxMode, sandboxSession } = useSandbox();
   
+  // Cache key for checkout listing
+  const CHECKOUT_LISTING_CACHE_KEY = `checkout_listing_${listing_id}`;
+  
+  // Cache-first: Initialize with cached data for instant render
+  const cachedListing = getCachedSync<any>(CHECKOUT_LISTING_CACHE_KEY);
+  
   // State
-  const [loading, setLoading] = useState(true);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [listing, setListing] = useState<any>(null);
+  const [listing, setListing] = useState<any>(cachedListing);
   const [step, setStep] = useState(1); // 1: Summary, 2: Delivery, 3: Payment, 4: Review
   const [isSandbox, setIsSandbox] = useState(false);
   
@@ -105,8 +111,10 @@ export default function CheckoutScreen() {
     }
   }, [deliveryMethod, deliveryAddress.country, listing]);
   
-  const fetchListing = async () => {
+  const fetchListing = useCallback(async () => {
     try {
+      setIsFetchingInBackground(true);
+      
       // Check if sandbox mode is active
       const sandboxActive = await sandboxUtils.isActive();
       setIsSandbox(sandboxActive);
@@ -117,12 +125,14 @@ export default function CheckoutScreen() {
         // Use sandbox proxy API
         listingData = await sandboxAwareListingsApi.getOne(listing_id!);
         setListing(listingData);
+        setCacheSync(CHECKOUT_LISTING_CACHE_KEY, listingData);
         // In sandbox mode, always allow checkout
       } else {
         // Normal production flow
         const response = await api.get(`/listings/${listing_id}`);
         listingData = response.data;
         setListing(listingData);
+        setCacheSync(CHECKOUT_LISTING_CACHE_KEY, listingData);
         
         // Check if seller can sell online
         const sellerCheck = await api.get(`/escrow/seller/${listingData.user_id}/can-sell-online`);
