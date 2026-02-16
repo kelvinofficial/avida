@@ -638,7 +638,8 @@ export default function BusinessProfileEditScreen() {
     ]);
   };
 
-  if (loading || !isReady) {
+  // CACHE-FIRST: Only check isReady (auth readiness), not loading state
+  if (!isReady) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.header}>
@@ -647,9 +648,6 @@ export default function BusinessProfileEditScreen() {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Business Profile</Text>
           <View style={{ width: 24 }} />
-        </View>
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
       </SafeAreaView>
     );
