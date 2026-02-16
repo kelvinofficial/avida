@@ -197,65 +197,60 @@ export default function UsersManagementPage() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<TabType>('all_users');
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
-  const [stats, setStats] = useState<Stats>({
-    total_users: 0,
-    verified_sellers: 0,
-    verified_businesses: 0,
-    premium_businesses: 0,
-    pending_verifications: 0,
-  });
-  
-  const [users, setUsers] = useState<User[]>([]);
-  const [businessProfiles, setBusinessProfiles] = useState<BusinessProfile[]>([]);
-
   const isAdmin = user?.email === 'admin@marketplace.com' || user?.email === 'admin@example.com';
 
-  const fetchData = useCallback(async () => {
-    try {
-      // Fetch stats
-      const [usersRes, businessRes] = await Promise.all([
-        api.get('/admin/verification/users').catch(() => ({ data: [] })),
-        api.get('/admin/business-profiles/').catch(() => ({ data: { profiles: [] } })),
-      ]);
-      
-      const allUsers = usersRes.data || [];
-      const allProfiles = businessRes.data.profiles || businessRes.data || [];
-      
-      setUsers(allUsers);
-      setBusinessProfiles(allProfiles);
-      
-      // Calculate stats
-      setStats({
-        total_users: allUsers.length,
-        verified_sellers: allUsers.filter((u: User) => u.is_verified).length,
-        verified_businesses: allProfiles.filter((p: BusinessProfile) => p.is_verified).length,
-        premium_businesses: allProfiles.filter((p: BusinessProfile) => p.is_premium).length,
-        pending_verifications: allProfiles.filter((p: BusinessProfile) => p.verification_status === 'pending').length,
-      });
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  // CACHE-FIRST: Use cache-first hooks for data
+  const { 
+    data: users, 
+    refresh: refreshUsers 
+  } = useCacheFirst<User[]>({
+    cacheKey: 'admin_users_list',
+    fetcher: async () => {
+      const res = await api.get('/admin/verification/users');
+      return res.data || [];
+    },
+    fallbackData: [],
+    enabled: isAuthenticated,
+  });
+
+  const { 
+    data: businessProfiles, 
+    refresh: refreshBusinessProfiles 
+  } = useCacheFirst<BusinessProfile[]>({
+    cacheKey: 'admin_business_profiles',
+    fetcher: async () => {
+      const res = await api.get('/admin/business-profiles/');
+      return res.data.profiles || res.data || [];
+    },
+    fallbackData: [],
+    enabled: isAuthenticated,
+  });
+
+  // Calculate stats from data
+  const stats: Stats = {
+    total_users: users.length,
+    verified_sellers: users.filter((u: User) => u.is_verified).length,
+    verified_businesses: businessProfiles.filter((p: BusinessProfile) => p.is_verified).length,
+    premium_businesses: businessProfiles.filter((p: BusinessProfile) => p.is_premium).length,
+    pending_verifications: businessProfiles.filter((p: BusinessProfile) => p.verification_status === 'pending').length,
+  };
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.replace('/login');
-      return;
     }
-    fetchData();
-  }, [isAuthenticated, fetchData, router]);
+  }, [isAuthenticated, router]);
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    fetchData();
-  }, [fetchData]);
+    await Promise.all([refreshUsers(), refreshBusinessProfiles()]);
+    setRefreshing(false);
+  }, [refreshUsers, refreshBusinessProfiles]);
+
+  const fetchData = onRefresh; // Alias for action handlers
 
   const handleVerifyUser = async (userId: string) => {
     try {
