@@ -409,7 +409,7 @@ export default function SocialDistributionPage() {
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 0.5 }}>
-                        {post.platforms.map(p => (
+                        {(post.platforms || []).map(p => (
                           <Chip
                             key={p}
                             icon={getPlatformIcon(p) as any}
