@@ -3192,7 +3192,19 @@ if ADMIN_TOOLS_AVAILABLE:
         app.include_router(content_calendar_router, prefix="/api")
         print("Growth Engine - Content Calendar routes loaded successfully")
         
-        logger.info("AI SEO Growth Engine fully loaded (SEO Core, Content, ASO, Analytics, Advanced SEO, Calendar)")
+        # Analytics Settings (Google Analytics GA4 integration)
+        from growth_engine.analytics_settings import create_analytics_settings_router
+        analytics_settings_router = create_analytics_settings_router(db, get_current_user)
+        app.include_router(analytics_settings_router, prefix="/api")
+        print("Growth Engine - Analytics Settings routes loaded successfully")
+        
+        # Authority Building (PR campaigns, outreach, backlinks)
+        from growth_engine.authority_building import create_authority_building_router
+        authority_building_router = create_authority_building_router(db, get_current_user)
+        app.include_router(authority_building_router, prefix="/api")
+        print("Growth Engine - Authority Building routes loaded successfully")
+        
+        logger.info("AI SEO Growth Engine fully loaded (SEO Core, Content, ASO, Analytics, Advanced SEO, Calendar, Analytics Settings, Authority Building)")
     except Exception as e:
         print(f"Failed to load Growth Engine routes: {e}")
         import traceback
