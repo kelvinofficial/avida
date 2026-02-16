@@ -18,6 +18,48 @@ def create_admin_locations_router(db, require_auth):
     router = APIRouter(prefix="/admin/locations", tags=["admin-locations"])
     
     # =========================================================================
+    # LIST ENDPOINT - For admin dashboard
+    # =========================================================================
+    
+    @router.get("")
+    async def list_all_locations(
+        request: Request,
+        page: int = Query(1, ge=1),
+        limit: int = Query(10, ge=1, le=100),
+        search: str = Query(None),
+        type: str = Query(None),
+        is_active: bool = Query(None),
+    ):
+        """Get paginated list of all locations for admin dashboard"""
+        # Build query
+        query = {}
+        if search:
+            query["$or"] = [
+                {"name": {"$regex": search, "$options": "i"}},
+                {"code": {"$regex": search, "$options": "i"}}
+            ]
+        if type:
+            query["type"] = type
+        if is_active is not None:
+            query["is_active"] = is_active
+        
+        # Get total count
+        total = await db.locations.count_documents(query)
+        
+        # Get paginated items
+        skip = (page - 1) * limit
+        cursor = db.locations.find(query, {"_id": 0}).skip(skip).limit(limit).sort("name", 1)
+        items = await cursor.to_list(length=limit)
+        
+        return {
+            "items": items,
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "pages": (total + limit - 1) // limit if total > 0 else 0
+        }
+    
+    # =========================================================================
     # READ OPERATIONS
     # =========================================================================
     
