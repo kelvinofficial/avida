@@ -125,18 +125,9 @@ export default function ShareBadgesScreen() {
     }
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading badge profile...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // CACHE-FIRST: No page-level loading indicator - render immediately
 
-  if (error || !profile) {
+  if (error && !profile) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
@@ -148,7 +139,7 @@ export default function ShareBadgesScreen() {
         </View>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle-outline" size={48} color={COLORS.textSecondary} />
-          <Text style={styles.errorText}>{error || 'Profile not found'}</Text>
+          <Text style={styles.errorText}>Profile not found</Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => router.back()}>
             <Text style={styles.retryButtonText}>Go Back</Text>
           </TouchableOpacity>
