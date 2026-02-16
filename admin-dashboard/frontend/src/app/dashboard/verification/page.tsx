@@ -122,7 +122,7 @@ export default function VerificationPage() {
   const [actionReason, setActionReason] = useState('');
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
+    setIsFetchingInBackground(true);
     try {
       const [statsRes, tiersRes] = await Promise.all([
         api.get('/verification/stats'),
@@ -133,7 +133,7 @@ export default function VerificationPage() {
     } catch (error) {
       console.error('Failed to fetch verification data:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   }, []);
 
