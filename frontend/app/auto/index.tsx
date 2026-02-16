@@ -621,8 +621,10 @@ export default function AutoCategoryScreen() {
           </View>
         }
         ListFooterComponent={
-          loading ? (
-            <ActivityIndicator style={styles.loader} color={theme.colors.primary} />
+          isFetchingInBackground ? (
+            <View style={styles.fetchingFooter}>
+              <Text style={styles.fetchingText}>Loading more...</Text>
+            </View>
           ) : (
             <View style={styles.footerPadding} />
           )
