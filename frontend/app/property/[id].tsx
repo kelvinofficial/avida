@@ -1532,8 +1532,14 @@ const offerStyles = StyleSheet.create({
 export default function PropertyDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const [property, setProperty] = useState<Property | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  // Cache key for property detail
+  const PROPERTY_CACHE_KEY = `property_detail_${id}`;
+  
+  // Cache-first: Initialize with cached data for instant render
+  const cachedProperty = getCachedSync<Property>(PROPERTY_CACHE_KEY);
+  const [property, setProperty] = useState<Property | null>(cachedProperty);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -1552,19 +1558,22 @@ export default function PropertyDetailScreen() {
   // Fetch property from API
   const fetchProperty = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsFetchingInBackground(true);
       const response = await api.get(`/property/listings/${id}`);
       setProperty(response.data);
+      setCacheSync(PROPERTY_CACHE_KEY, response.data);
       
       // Track recently viewed (fire and forget)
       api.post(`/profile/activity/recently-viewed/${id}`).catch(() => {});
     } catch (error) {
       console.error('Error fetching property:', error);
-      Alert.alert('Error', 'Failed to load property details');
+      if (!cachedProperty) {
+        Alert.alert('Error', 'Failed to load property details');
+      }
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
-  }, [id]);
+  }, [id, PROPERTY_CACHE_KEY]);
 
   useEffect(() => {
     if (id) {
