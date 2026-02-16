@@ -231,13 +231,8 @@ export default function RecentlyViewedScreen() {
         icon="time-outline"
         rightAction={rightAction}
       >
-        {loading ? (
-          <View style={styles.gridContainer}>
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Skeleton key={i} isDesktop />
-            ))}
-          </View>
-        ) : items.length === 0 ? (
+        {/* CACHE-FIRST: No skeleton loading - show data or empty state */}
+        {items.length === 0 ? (
           <EmptyState isDesktop />
         ) : (
           <View style={styles.gridContainer}>
