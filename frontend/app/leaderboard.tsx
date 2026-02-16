@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   RefreshControl,
   Image,
   Platform,
@@ -18,6 +17,7 @@ import api from '../src/utils/api';
 import { useAuthStore } from '../src/store/authStore';
 import { useResponsive } from '../src/hooks/useResponsive';
 import { Footer } from '../src/components/layout';
+import { getCachedSync, setCacheSync, CACHE_KEYS } from '../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',
