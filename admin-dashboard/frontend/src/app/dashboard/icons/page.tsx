@@ -608,8 +608,11 @@ export default function IconsManagementPage() {
                             height: 40,
                           }}
                         >
-                          
-                          <ion-icon name={icon.ionicon_name} style={{ fontSize: 24 }}></ion-icon>
+                          <Box
+                            component="span"
+                            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            dangerouslySetInnerHTML={{ __html: `<ion-icon name="${icon.ionicon_name}" style="font-size: 24px;"></ion-icon>` }}
+                          />
                         </Avatar>
                       </TableCell>
                       <TableCell>
