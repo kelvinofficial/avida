@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid,
   CircularProgress,
   Alert,
   Tab,
@@ -25,6 +24,7 @@ import {
   Tooltip,
   LinearProgress,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import {
   TrendingUp,
   TrendingDown,
