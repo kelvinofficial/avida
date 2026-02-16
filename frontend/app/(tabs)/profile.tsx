@@ -1041,9 +1041,7 @@ export default function ProfileScreen() {
     );
   }
 
-  if (loading) {
-    return <ProfileSkeleton isDesktop={isLargeScreen} />;
-  }
+  // CACHE-FIRST: No page-level loading indicator - render instantly with cached/fallback data
 
   // ============ DESKTOP VIEW - AUTHENTICATED ============
   if (isLargeScreen) {
