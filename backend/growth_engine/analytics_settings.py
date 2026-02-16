@@ -411,4 +411,148 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             ]
         }
 
+    # ==================== ANALYTICS DATA ENDPOINTS ====================
+    
+    @router.get("/traffic-overview")
+    async def get_traffic_overview(
+        days: int = Query(30, ge=7, le=90),
+        admin=Depends(require_admin)
+    ):
+        """Get traffic overview data (demo mode or real GA4 data)"""
+        settings = await db.analytics_settings.find_one({"type": "ga4"})
+        
+        # Always return demo data for now (can integrate real GA4 API later)
+        # In production, you would check if GA4 API credentials are available
+        # and fetch real data from Google Analytics Data API
+        
+        demo_mode = True
+        if settings and settings.get("ga4_enabled") and settings.get("ga4_measurement_id"):
+            # TODO: Implement real GA4 Data API integration when credentials provided
+            # For now, show enhanced demo data
+            pass
+        
+        traffic_data = generate_demo_traffic_data(days)
+        traffic_data["ga4_configured"] = bool(settings and settings.get("ga4_measurement_id"))
+        traffic_data["ga4_enabled"] = bool(settings and settings.get("ga4_enabled"))
+        
+        return traffic_data
+
+    @router.get("/traffic-sources")
+    async def get_traffic_sources(admin=Depends(require_admin)):
+        """Get traffic sources breakdown"""
+        settings = await db.analytics_settings.find_one({"type": "ga4"})
+        
+        sources = generate_demo_traffic_sources()
+        
+        return {
+            "sources": sources,
+            "total_sessions": sum(s["sessions"] for s in sources),
+            "ga4_configured": bool(settings and settings.get("ga4_measurement_id")),
+            "is_demo_data": True
+        }
+
+    @router.get("/page-performance")
+    async def get_page_performance(admin=Depends(require_admin)):
+        """Get top performing pages"""
+        settings = await db.analytics_settings.find_one({"type": "ga4"})
+        
+        pages = generate_demo_page_performance()
+        
+        return {
+            "pages": pages,
+            "total_pageviews": sum(p["views"] for p in pages),
+            "ga4_configured": bool(settings and settings.get("ga4_measurement_id")),
+            "is_demo_data": True
+        }
+
+    @router.get("/geo-data")
+    async def get_geo_data(admin=Depends(require_admin)):
+        """Get geographic distribution of users"""
+        settings = await db.analytics_settings.find_one({"type": "ga4"})
+        
+        geo = generate_demo_geo_data()
+        
+        return {
+            "countries": geo,
+            "total_users": sum(g["users"] for g in geo),
+            "target_markets": ["TZ", "KE", "DE", "UG", "NG", "ZA"],
+            "ga4_configured": bool(settings and settings.get("ga4_measurement_id")),
+            "is_demo_data": True
+        }
+
+    @router.get("/ai-citations")
+    async def get_ai_citations(admin=Depends(require_admin)):
+        """Get AI/LLM citation tracking data (Answer Engine Optimization metrics)"""
+        settings = await db.analytics_settings.find_one({"type": "ga4"})
+        
+        citations = generate_demo_ai_citations()
+        citations["ga4_configured"] = bool(settings and settings.get("ga4_measurement_id"))
+        
+        return citations
+
+    @router.get("/realtime")
+    async def get_realtime_data(admin=Depends(require_admin)):
+        """Get real-time analytics data (simulated)"""
+        # Simulate real-time data
+        active_users = random.randint(5, 35)
+        
+        pages_being_viewed = [
+            {"page": "/", "users": random.randint(1, 8)},
+            {"page": "/listings", "users": random.randint(0, 5)},
+            {"page": "/blog", "users": random.randint(0, 4)},
+            {"page": "/listings/vehicles", "users": random.randint(0, 3)},
+        ]
+        pages_being_viewed = [p for p in pages_being_viewed if p["users"] > 0]
+        
+        traffic_sources = [
+            {"source": "Google", "users": random.randint(1, 10)},
+            {"source": "Direct", "users": random.randint(1, 8)},
+            {"source": "Social", "users": random.randint(0, 5)},
+        ]
+        traffic_sources = [t for t in traffic_sources if t["users"] > 0]
+        
+        return {
+            "active_users": active_users,
+            "pages_being_viewed": pages_being_viewed,
+            "traffic_sources": traffic_sources,
+            "pageviews_last_30_min": random.randint(15, 80),
+            "events_last_30_min": random.randint(25, 120),
+            "is_demo_data": True,
+            "last_updated": datetime.now(timezone.utc).isoformat()
+        }
+
+    @router.get("/dashboard-summary")
+    async def get_dashboard_summary(admin=Depends(require_admin)):
+        """Get comprehensive analytics dashboard summary"""
+        settings = await db.analytics_settings.find_one({"type": "ga4"})
+        
+        traffic = generate_demo_traffic_data(30)
+        sources = generate_demo_traffic_sources()
+        pages = generate_demo_page_performance()
+        geo = generate_demo_geo_data()
+        ai = generate_demo_ai_citations()
+        
+        # Calculate top metrics
+        organic_traffic = next((s for s in sources if s["source"] == "google" and s["medium"] == "organic"), None)
+        
+        return {
+            "overview": traffic["summary"],
+            "top_sources": sources[:5],
+            "top_pages": pages[:5],
+            "top_countries": geo[:5],
+            "ai_traffic": {
+                "total": ai["total_ai_traffic"],
+                "growth": ai["ai_traffic_growth"],
+                "aeo_score": ai["aeo_score"]
+            },
+            "organic_search": {
+                "sessions": organic_traffic["sessions"] if organic_traffic else 0,
+                "percentage": round((organic_traffic["sessions"] / sum(s["sessions"] for s in sources) * 100), 1) if organic_traffic else 0
+            },
+            "ga4_configured": bool(settings and settings.get("ga4_measurement_id")),
+            "ga4_enabled": bool(settings and settings.get("ga4_enabled")),
+            "is_demo_data": True,
+            "generated_at": datetime.now(timezone.utc).isoformat()
+        }
+
     return router
