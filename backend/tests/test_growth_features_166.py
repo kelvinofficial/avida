@@ -45,11 +45,11 @@ class TestRecurringCalendarEvents:
     @pytest.fixture(autouse=True)
     def setup(self):
         """Setup for each test"""
+        self.created_event_ids = []
         self.token = TestHelpers.get_admin_token()
         if not self.token:
             pytest.skip("Could not obtain admin token")
         self.headers = TestHelpers.get_auth_headers(self.token)
-        self.created_event_ids = []
     
     def teardown_method(self):
         """Cleanup created events"""
@@ -299,12 +299,12 @@ class TestAuthorityBuilding:
     @pytest.fixture(autouse=True)
     def setup(self):
         """Setup for each test"""
+        self.created_campaign_ids = []
+        self.created_backlink_ids = []
         self.token = TestHelpers.get_admin_token()
         if not self.token:
             pytest.skip("Could not obtain admin token")
         self.headers = TestHelpers.get_auth_headers(self.token)
-        self.created_campaign_ids = []
-        self.created_backlink_ids = []
     
     def teardown_method(self):
         """Cleanup created resources"""
