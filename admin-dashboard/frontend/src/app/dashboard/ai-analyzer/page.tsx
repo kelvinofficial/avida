@@ -173,16 +173,11 @@ export default function AIAnalyzerPage() {
     setSettings({ ...settings, [key]: value });
   };
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
     <Box p={3}>
+      {/* CACHE-FIRST: Show LinearProgress for background fetch instead of blocking spinner */}
+      {isFetchingInBackground && <LinearProgress sx={{ mb: 2 }} />}
+      
       <Box display="flex" alignItems="center" gap={2} mb={3}>
         <AutoAwesome sx={{ fontSize: 32, color: 'primary.main' }} />
         <Typography variant="h4" fontWeight="bold">
