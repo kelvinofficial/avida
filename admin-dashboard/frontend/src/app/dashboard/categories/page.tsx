@@ -448,15 +448,23 @@ export default function CategoriesPage() {
     }
   };
 
+  // OPTIMISTIC DELETE: Remove from UI instantly, sync in background
   const handleDelete = async () => {
     if (!deleteCategory) return;
 
+    const previousCategories = [...categories];
+    const categoryToDelete = deleteCategory;
+    
+    // Update UI instantly - remove the category
+    setCategories(prev => prev.filter(c => c.id !== categoryToDelete.id));
+    setDeleteCategory(null);
     setSaving(true);
+    
     try {
-      await api.deleteCategory(deleteCategory.id);
-      setDeleteCategory(null);
-      await loadCategories();
+      await api.deleteCategory(categoryToDelete.id);
     } catch (err: unknown) {
+      // Rollback on failure
+      setCategories(previousCategories);
       const error = err as { response?: { data?: { detail?: string } } };
       setError(error.response?.data?.detail || 'Failed to delete category');
     } finally {
