@@ -21,7 +21,7 @@ import os
 import uuid
 
 # Base URLs
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://cache-first-dash.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://zero-loaders.preview.emergentagent.com')
 if BASE_URL.endswith('/'):
     BASE_URL = BASE_URL.rstrip('/')
 
