@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Stack, usePathname } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View, Platform, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Platform } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useAuthStore, saveUserData } from '../src/store/authStore';
 import { useFeatureSettingsStore } from '../src/store/featureSettingsStore';
 import { authApi } from '../src/utils/api';
-import { theme } from '../src/utils/theme';
 import { useNotificationDeepLinking, registerForPushNotifications } from '../src/utils/notifications';
 import { setupGlobalErrorHandler } from '../src/utils/errorLogger';
 import ErrorBoundary from '../src/components/ErrorBoundary';
