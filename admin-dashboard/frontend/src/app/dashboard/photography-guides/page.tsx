@@ -265,9 +265,13 @@ function SortableTableRow({ guide, getCategoryName, handleOpenDialog, handleDele
 }
 
 export default function PhotographyGuidesPage() {
-  const [guides, setGuides] = useState<PhotographyGuide[]>([]);
-  const [stats, setStats] = useState<GuideStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  // CACHE-FIRST: Initialize with cached data for instant render
+  const cachedGuides = getCachedData<PhotographyGuide[]>('admin_photo_guides') || [];
+  const cachedStats = getCachedData<GuideStats>('admin_photo_stats');
+  
+  const [guides, setGuides] = useState<PhotographyGuide[]>(cachedGuides);
+  const [stats, setStats] = useState<GuideStats | null>(cachedStats);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingGuide, setEditingGuide] = useState<PhotographyGuide | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>('');
