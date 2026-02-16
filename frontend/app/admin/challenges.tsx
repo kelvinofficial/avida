@@ -685,16 +685,7 @@ export default function AdminChallengesScreen() {
     </Modal>
   );
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading challenges...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // CACHE-FIRST: No page-level loading indicator - render instantly
 
   const filteredChallenges = getFilteredChallenges();
 
