@@ -192,11 +192,15 @@ export default function SettingsScreen() {
   const { isDesktop, isTablet } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
   
-  const [settings, setSettings] = useState<UserSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Cache-first: Initialize with cached data for instant render
+  const cachedSettings = getCachedSync<UserSettings>(CACHE_KEYS.USER_SETTINGS);
+  const [settings, setSettings] = useState<UserSettings | null>(cachedSettings);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeSection, setActiveSection] = useState('notifications');
-  const [defaultLocation, setDefaultLocation] = useState<LocationData | null>(null);
+  const [defaultLocation, setDefaultLocation] = useState<LocationData | null>(
+    cachedSettings?.default_location || null
+  );
   const [locationSaving, setLocationSaving] = useState(false);
 
   // Load notification prefs on mount
