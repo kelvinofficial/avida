@@ -221,16 +221,11 @@ export default function VerificationPage() {
     fetchVerifiedUsers(tier || undefined);
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
     <Box>
+      {/* CACHE-FIRST: Show LinearProgress for background fetch instead of blocking spinner */}
+      {isFetchingInBackground && <LinearProgress sx={{ mb: 2 }} />}
+      
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" fontWeight={600}>
           User Verification
