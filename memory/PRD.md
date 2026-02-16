@@ -168,8 +168,31 @@ Added cache keys for: USER_SETTINGS, NOTIFICATIONS, CHALLENGES, BLOG_POSTS, LEAD
   - Bugs fixed: Missing Linking import, undefined loadingTickets in help.tsx
 
 **Phase 5 Progress Summary:**
-- **Completed**: 18 pages refactored with cache-first pattern
-- **Remaining**: ~49 files with page-level ActivityIndicator
+- **Completed**: 20 pages refactored with cache-first pattern (2 new this session)
+- **Remaining**: ~47 files with page-level ActivityIndicator
+
+**Session 2026-02-16 Updates:**
+1. **leaderboard.tsx** - Fixed critical bug with undefined `loading` variable
+   - Added null-safety for `item.user_name` (shows 'Unknown User' if null)
+   - Added null-safety for `item.top_badges` array
+   - Replaced undefined `loading` with `isFetchingInBackground`
+   - Removed unused ActivityIndicator import
+
+2. **notification-preferences.tsx** - Refactored to cache-first pattern
+   - Added `getCachedSync/setCacheSync` imports
+   - Initialized state with cached data for instant render
+   - Replaced page-level ActivityIndicator with instant default values
+   - Added pull-to-refresh with RefreshControl
+   - Save button shows 'Saving...' text instead of spinner
+
+**Test Results:**
+- `/app/test_reports/iteration_178.json` - Session changes: ALL PASSED (100% frontend)
+  - Leaderboard page loads instantly ✅
+  - Null user_name fallback works ✅
+  - Notification Preferences loads instantly ✅
+  - SMS/WhatsApp/Email toggles work ✅
+  - Save button shows text not spinner ✅
+  - Homepage regression test passed ✅
 
 **Remaining Files (~49 with ActivityIndicator size="large"):**
 - property/* pages
