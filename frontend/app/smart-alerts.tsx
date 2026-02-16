@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import api from '../src/utils/api';
 import { useAuthStore } from '../src/store/authStore';
+import { getCachedSync, setCacheSync, CACHE_KEYS } from '../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',
