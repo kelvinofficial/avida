@@ -311,7 +311,7 @@ export default function PhotographyGuidesPage() {
 
   const fetchGuides = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsFetchingInBackground(true);
       let url = '/photography-guides?limit=100';
       if (filterCategory) url += `&category_id=${filterCategory}`;
       
@@ -319,10 +319,11 @@ export default function PhotographyGuidesPage() {
       // Sort by order to ensure correct display
       const sortedGuides = (response.guides || []).sort((a: PhotographyGuide, b: PhotographyGuide) => a.order - b.order);
       setGuides(sortedGuides);
+      setCachedData('admin_photo_guides', sortedGuides);
     } catch (error) {
       console.error('Error fetching guides:', error);
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
     }
   }, [filterCategory]);
 
@@ -330,6 +331,7 @@ export default function PhotographyGuidesPage() {
     try {
       const response = await api.get('/photography-guides/stats');
       setStats(response);
+      setCachedData('admin_photo_stats', response);
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
