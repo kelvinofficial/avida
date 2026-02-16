@@ -355,6 +355,7 @@ export default function CategoriesPage() {
     setDialogOpen(true);
   };
 
+  // OPTIMISTIC SAVE: For updates, update UI instantly; for creates, wait for ID
   const handleSave = async () => {
     if (!formData.name || !formData.slug) {
       setError('Name and slug are required');
@@ -364,15 +365,28 @@ export default function CategoriesPage() {
     setSaving(true);
     setError('');
 
+    const previousCategories = [...categories];
+
     try {
       if (editCategory) {
+        // OPTIMISTIC UPDATE: Update UI instantly
+        const updatedCategories = categories.map(c =>
+          c.id === editCategory.id ? { ...c, ...formData, updated_at: new Date().toISOString() } : c
+        );
+        setCategories(updatedCategories as Category[]);
+        setDialogOpen(false);
+        
+        // Sync in background
         await api.updateCategory(editCategory.id, formData);
       } else {
+        // For new categories, we need the ID from server first
         await api.createCategory(formData);
+        setDialogOpen(false);
+        await loadCategories();
       }
-      setDialogOpen(false);
-      await loadCategories();
     } catch (err: unknown) {
+      // Rollback on failure
+      setCategories(previousCategories);
       const error = err as { response?: { data?: { detail?: string } } };
       setError(error.response?.data?.detail || 'Failed to save category');
     } finally {
