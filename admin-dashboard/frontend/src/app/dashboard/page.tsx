@@ -37,6 +37,7 @@ import {
 } from 'recharts';
 import { api } from '@/lib/api';
 import { AnalyticsOverview } from '@/types';
+import { getCachedData, setCachedData } from '@/hooks/useCacheFirst';
 
 interface StatCardProps {
   title: string;
