@@ -269,6 +269,7 @@ export const CACHE_KEYS = {
   PROPERTY_LISTINGS: 'property_listings',
   AUTO_LISTINGS: 'auto_listings',
   HELP_ARTICLES: 'help_articles',
+  SUPPORT_TICKETS: 'support_tickets',
   CHECKOUT: (id: string) => `checkout_${id}`,
 };
 
