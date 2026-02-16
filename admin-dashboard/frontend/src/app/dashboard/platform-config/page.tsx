@@ -336,21 +336,33 @@ export default function PlatformConfigPage() {
     }
   };
 
+  // OPTIMISTIC: Set default currency instantly, sync in background
   const handleSetDefaultCurrency = async (code: string) => {
-    setSaving(true);
-    try {
-      const response = await fetch(`${API_BASE}/platform/currencies/${environment}/${code}/set-default`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ set_by: 'admin' }),
-      });
-      if (!response.ok) throw new Error('Failed to set default');
-      setSnackbar({ open: true, message: `${code} is now the default currency`, severity: 'success' });
-      await fetchConfig();
-    } catch (error) {
-      setSnackbar({ open: true, message: 'Failed to set default currency', severity: 'error' });
-    } finally {
-      setSaving(false);
+    if (config) {
+      const previousCurrencies = [...config.currencies];
+      // Update UI instantly - set new default, unset old default
+      const updatedCurrencies = config.currencies.map(c => ({
+        ...c,
+        is_default: c.code === code
+      }));
+      setConfig({ ...config, currencies: updatedCurrencies });
+      setSaving(true);
+      
+      try {
+        const response = await fetch(`${API_BASE}/platform/currencies/${environment}/${code}/set-default`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ set_by: 'admin' }),
+        });
+        if (!response.ok) throw new Error('Failed to set default');
+        setSnackbar({ open: true, message: `${code} is now the default currency`, severity: 'success' });
+      } catch (error) {
+        // Rollback on failure
+        setConfig({ ...config, currencies: previousCurrencies });
+        setSnackbar({ open: true, message: 'Failed to set default currency', severity: 'error' });
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
