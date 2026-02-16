@@ -30,10 +30,13 @@ interface Question {
 }
 
 export default function PollsSurveysPage() {
-  const [loading, setLoading] = useState(true);
+  // CACHE-FIRST: Initialize with cached data for instant render
+  const cachedPolls = getCachedData<any[]>('admin_polls') || [];
+  
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [polls, setPolls] = useState<any[]>([]);
+  const [polls, setPolls] = useState<any[]>(cachedPolls);
   const [currentTab, setCurrentTab] = useState(0);
   
   // Dialog states
