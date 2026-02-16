@@ -156,7 +156,7 @@ export default function LeaderboardScreen() {
   };
 
   const handleLoadMore = () => {
-    if (!loading && hasMore) {
+    if (!isFetchingInBackground && hasMore) {
       fetchLeaderboard(page + 1);
     }
   };
