@@ -17,7 +17,9 @@ import { useRouter } from 'expo-router';
 import api from '../../src/utils/api';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { DesktopHeader } from '../../src/components/layout';
-import { BusinessDirectorySkeleton } from '../../src/components/skeletons';
+import { CacheManager, getCachedSync, setCacheSync, CACHE_KEYS } from '../../src/utils/cacheManager';
+
+// CACHE-FIRST: Removed skeleton import - no loading states
 
 const COLORS = {
   primary: '#2E7D32',
