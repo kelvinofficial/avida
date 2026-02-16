@@ -3256,6 +3256,15 @@ if ADMIN_TOOLS_AVAILABLE:
     except Exception as e:
         print(f"Failed to load safety tips routes: {e}")
     
+    # PWA routes (Service Worker, Manifest)
+    try:
+        from routes.pwa import create_pwa_router
+        pwa_router = create_pwa_router()
+        app.include_router(pwa_router, prefix="/api")
+        print("PWA routes loaded successfully")
+    except Exception as e:
+        print(f"Failed to load PWA routes: {e}")
+    
     # URL redirect endpoint for short URLs
     @app.get("/s/{code}")
     async def redirect_short_url(code: str, request: Request):
