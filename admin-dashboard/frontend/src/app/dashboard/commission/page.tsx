@@ -230,16 +230,25 @@ export default function CommissionPage() {
     setEditDiscountDialog({ open: true, discount });
   };
 
-  if (loading) {
+  // CACHE-FIRST: Always render content, show subtle indicator for background fetch
+  // Empty state instead of loading spinner when no data
+  if (!config && !cachedConfig) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <CircularProgress />
+      <Box>
+        <Typography variant="h4" gutterBottom>Commission Management</Typography>
+        <Alert severity="info" sx={{ mt: 2 }}>
+          Loading commission configuration...
+        </Alert>
       </Box>
     );
   }
 
   return (
     <Box>
+      {/* Subtle background fetch indicator */}
+      {isFetchingInBackground && (
+        <LinearProgress sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2 }} />
+      )}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" fontWeight={600}>
           Commission Settings
