@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   Image,
   Alert,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Switch,
@@ -24,6 +23,7 @@ import api from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
 import { useBadgeCelebration } from '../../src/context/BadgeCelebrationContext';
 import { useMilestones } from '../../src/context/MilestoneContext';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 import { 
   ALL_CATEGORIES, 
   getMainCategory, 

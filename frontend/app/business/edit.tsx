@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
-  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -25,6 +24,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { safeGoBack } from '../../src/utils/navigation';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { DesktopPageLayout } from '../../src/components/layout';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 

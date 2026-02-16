@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
   FlatList,
   Dimensions,
   Linking,
@@ -19,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import api from '../../src/utils/api';
 import { safeGoBack } from '../../src/utils/navigation';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const COLORS = {
   primary: '#2E7D32',
