@@ -611,6 +611,45 @@ def create_admin_location_router(db: AsyncIOMotorDatabase, require_admin):
     router = APIRouter(prefix="/locations", tags=["Admin Locations"])
     service = LocationService(db)
     
+    # General list endpoint for admin dashboard
+    @router.get("")
+    async def list_locations(
+        page: int = Query(1, ge=1),
+        limit: int = Query(10, ge=1, le=100),
+        search: str = Query(None),
+        type: str = Query(None),
+        is_active: bool = Query(None),
+        admin = Depends(require_admin)
+    ):
+        """Get paginated list of all locations for admin dashboard"""
+        # Build query
+        query = {}
+        if search:
+            query["$or"] = [
+                {"name": {"$regex": search, "$options": "i"}},
+                {"code": {"$regex": search, "$options": "i"}}
+            ]
+        if type:
+            query["type"] = type
+        if is_active is not None:
+            query["is_active"] = is_active
+        
+        # Get total count
+        total = await db.locations.count_documents(query)
+        
+        # Get paginated items
+        skip = (page - 1) * limit
+        cursor = db.locations.find(query, {"_id": 0}).skip(skip).limit(limit).sort("name", 1)
+        items = await cursor.to_list(length=limit)
+        
+        return {
+            "items": items,
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "pages": (total + limit - 1) // limit
+        }
+    
     # Read endpoints (needed for admin dashboard)
     @router.get("/stats")
     async def get_stats(admin = Depends(require_admin)):
