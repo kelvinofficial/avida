@@ -513,7 +513,7 @@ export default function SocialDistributionPage() {
                       <Grid item xs={12} md={4} key={platform}>
                         <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                            <Box sx={{ color: PLATFORM_COLORS[platform] }}>{PLATFORM_ICONS[platform]}</Box>
+                            <Box sx={{ color: PLATFORM_COLORS[platform] }}>{getPlatformIcon(platform)}</Box>
                             <Typography fontWeight="bold" sx={{ textTransform: 'capitalize' }}>{platform}</Typography>
                             <IconButton size="small" onClick={() => copyToClipboard(template)} sx={{ ml: 'auto' }}>
                               <ContentCopy fontSize="small" />
