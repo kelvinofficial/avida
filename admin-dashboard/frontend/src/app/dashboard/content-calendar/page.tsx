@@ -227,20 +227,36 @@ export default function ContentCalendarPage() {
       return;
     }
     
+    // Validate recurrence end date
+    if (formData.recurrence !== 'none' && !formData.recurrence_end_date) {
+      setError('Please set an end date for recurring events');
+      return;
+    }
+    
     setLoading(true);
     try {
+      const payload: any = {
+        ...formData,
+        scheduled_date: new Date(formData.scheduled_date).toISOString(),
+        tags: formData.tags,
+      };
+      
+      if (formData.recurrence !== 'none' && formData.recurrence_end_date) {
+        payload.recurrence_end_date = new Date(formData.recurrence_end_date).toISOString();
+      }
+      
       const res = await fetch(`${API_BASE}/growth/calendar/events`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({
-          ...formData,
-          scheduled_date: new Date(formData.scheduled_date).toISOString(),
-          tags: formData.tags,
-        }),
+        body: JSON.stringify(payload),
       });
       
       if (res.ok) {
-        setSuccess('Event created successfully');
+        const data = await res.json();
+        const msg = data.recurring_count > 0 
+          ? `Event created with ${data.recurring_count} recurring instances!`
+          : 'Event created successfully';
+        setSuccess(msg);
         setEventDialogOpen(false);
         resetForm();
         fetchEvents();
