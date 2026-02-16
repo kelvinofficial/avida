@@ -21,7 +21,7 @@ import {
   Switch,
   FormControlLabel,
   Alert,
-  CircularProgress,
+  LinearProgress,
   List,
   ListItem,
   ListItemText,
