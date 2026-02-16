@@ -601,10 +601,16 @@ export default function ContentCalendarPage() {
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
                             cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.25,
                             '&:hover': { opacity: 0.9 }
                           }}
                         >
-                          {event.title}
+                          {(event.is_recurring || event.parent_event_id || event.recurrence !== 'none') && (
+                            <span style={{ fontSize: '0.6rem' }}>🔄</span>
+                          )}
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{event.title}</span>
                         </Box>
                       ))}
                       {dayEvents.length > 3 && (
