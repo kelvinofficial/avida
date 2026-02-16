@@ -1,5 +1,4 @@
 'use client';
-// @ts-nocheck - ion-icon web component is not recognized by TypeScript
 
 import { useState, useEffect, useCallback } from 'react';
 import {
