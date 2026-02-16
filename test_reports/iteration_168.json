@@ -93,7 +93,7 @@
   "test_credentials": {
     "admin_email": "admin@marketplace.com",
     "admin_password": "Admin@123456",
-    "admin_dashboard_url": "https://perf-overhaul.preview.emergentagent.com/api/admin-ui/dashboard"
+    "admin_dashboard_url": "https://perf-overhaul-1.preview.emergentagent.com/api/admin-ui/dashboard"
   },
   "seed_data_creation": "Test data created with TEST_ prefix: translation tasks, recurring events, social posts - cleaned up after tests",
   "retest_needed": false,

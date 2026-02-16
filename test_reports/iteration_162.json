@@ -32,7 +32,7 @@
   "test_credentials": {
     "admin_email": "admin@marketplace.com",
     "admin_password": "Admin@123456",
-    "api_base_url": "https://perf-overhaul.preview.emergentagent.com/api"
+    "api_base_url": "https://perf-overhaul-1.preview.emergentagent.com/api"
   },
   "seed_data_creation": "2 blog posts exist from previous testing (Used Cars in Dar es Salaam, Buying Used Phones in Dar es Salaam)",
   "retest_needed": false,

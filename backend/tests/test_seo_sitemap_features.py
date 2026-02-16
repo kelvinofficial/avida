@@ -13,7 +13,7 @@ import requests
 import os
 import xml.etree.ElementTree as ET
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://perf-overhaul.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://perf-overhaul-1.preview.emergentagent.com').rstrip('/')
 
 # Test credentials
 ADMIN_EMAIL = "admin@test.com"

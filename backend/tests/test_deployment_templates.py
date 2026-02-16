@@ -11,7 +11,7 @@ import requests
 import os
 from datetime import datetime, timezone, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://perf-overhaul.preview.emergentagent.com/api').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://perf-overhaul-1.preview.emergentagent.com/api').rstrip('/')
 
 
 class TestDeploymentTemplates:
