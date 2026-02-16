@@ -82,6 +82,7 @@ import {
   GppGood,
   PhotoCamera,
   Link as LinkIcon,
+  Share,
 } from '@mui/icons-material';
 import { api } from '@/lib/api';
 import { Admin } from '@/types';
