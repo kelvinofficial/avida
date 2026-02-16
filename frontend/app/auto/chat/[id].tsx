@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Keyboard,
@@ -21,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../../src/utils/theme';
 import { api } from '../../../src/utils/api';
 import { format, isToday, isYesterday } from 'date-fns';
+import { getCachedSync, setCacheSync } from '../../../src/utils/cacheManager';
 
 // Typing Indicator Component with animated dots
 const TypingIndicator = ({ sellerName }: { sellerName: string }) => {

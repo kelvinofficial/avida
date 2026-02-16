@@ -6,7 +6,6 @@ import {
   ScrollView,
   FlatList,
   RefreshControl,
-  ActivityIndicator,
   Dimensions,
   TouchableOpacity,
   Alert,
@@ -20,6 +19,7 @@ import { theme } from '../../src/utils/theme';
 import { AutoFilters, AutoListing } from '../../src/types/auto';
 import { CAR_BRANDS, EXPLORE_CARDS, CITIES } from '../../src/data/autoData';
 import { api } from '../../src/utils/api';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 // Components
 import { SegmentedTabs } from '../../src/components/auto/SegmentedTabs';

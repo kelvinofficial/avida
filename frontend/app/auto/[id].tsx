@@ -13,7 +13,6 @@ import {
   TextInput,
   Modal,
   FlatList,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,6 +22,7 @@ import { AutoListing } from '../../src/types/auto';
 import { ImageViewerModal } from '../../src/components/auto/ImageViewerModal';
 import SimilarListings from '../../src/components/property/SimilarListings';
 import { safeGoBack } from '../../src/utils/navigation';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
