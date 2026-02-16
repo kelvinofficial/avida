@@ -265,12 +265,62 @@ def create_content_calendar_router(db, get_current_user: Callable):
         return {"success": True, "message": "Event updated", "event": serialize_event(updated_event)}
 
     @router.delete("/events/{event_id}")
-    async def delete_calendar_event(event_id: str, admin=Depends(require_admin)):
-        """Delete a calendar event"""
-        result = await db.calendar_events.delete_one({"id": event_id})
-        if result.deleted_count == 0:
+    async def delete_calendar_event(
+        event_id: str, 
+        delete_series: bool = Query(False, description="Delete all recurring instances"),
+        admin=Depends(require_admin)
+    ):
+        """Delete a calendar event or entire series"""
+        event = await db.calendar_events.find_one({"id": event_id})
+        if not event:
             raise HTTPException(status_code=404, detail="Event not found")
-        return {"success": True, "message": "Event deleted"}
+        
+        deleted_count = 1
+        
+        if delete_series:
+            # Delete all events with this parent_event_id or the parent itself
+            parent_id = event.get("parent_event_id") or event_id
+            result = await db.calendar_events.delete_many({
+                "$or": [
+                    {"id": parent_id},
+                    {"parent_event_id": parent_id}
+                ]
+            })
+            deleted_count = result.deleted_count
+        else:
+            await db.calendar_events.delete_one({"id": event_id})
+        
+        return {
+            "success": True, 
+            "message": f"Deleted {deleted_count} event(s)",
+            "deleted_count": deleted_count
+        }
+
+    @router.put("/events/{event_id}/update-series")
+    async def update_event_series(event_id: str, update: CalendarEventUpdate, admin=Depends(require_admin)):
+        """Update all events in a recurring series"""
+        event = await db.calendar_events.find_one({"id": event_id})
+        if not event:
+            raise HTTPException(status_code=404, detail="Event not found")
+        
+        parent_id = event.get("parent_event_id") or event_id
+        
+        update_data = {k: v for k, v in update.dict().items() if v is not None and k not in ["scheduled_date"]}
+        update_data["updated_at"] = datetime.now(timezone.utc)
+        
+        if "event_type" in update_data and "color" not in update_data:
+            update_data["color"] = EVENT_TYPE_COLORS.get(update_data["event_type"], "#607D8B")
+        
+        result = await db.calendar_events.update_many(
+            {"$or": [{"id": parent_id}, {"parent_event_id": parent_id}]},
+            {"$set": update_data}
+        )
+        
+        return {
+            "success": True,
+            "message": f"Updated {result.modified_count} events in series",
+            "modified_count": result.modified_count
+        }
 
     @router.post("/events/{event_id}/reschedule")
     async def reschedule_event(event_id: str, new_date: datetime, admin=Depends(require_admin)):
