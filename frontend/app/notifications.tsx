@@ -567,12 +567,7 @@ export default function NotificationsScreen() {
 
           {/* Notifications List */}
           <View style={desktopStyles.listContainer}>
-            {loading ? (
-              <View style={desktopStyles.loadingContainer}>
-                <ActivityIndicator size="large" color={COLORS.primary} />
-                <Text style={desktopStyles.loadingText}>Loading notifications...</Text>
-              </View>
-            ) : notifications.length === 0 ? (
+            {notifications.length === 0 ? (
               <View style={desktopStyles.emptyContainer}>
                 <View style={desktopStyles.emptyIcon}>
                   <Ionicons
