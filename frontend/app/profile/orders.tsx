@@ -60,8 +60,10 @@ export default function SellerOrdersScreen() {
   const { isAuthenticated, user } = useAuthStore();
   const { isSandboxMode, sandboxSession } = useSandbox();
   
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Cache-first: Initialize with cached data for instant render
+  const cachedOrders = getCachedSync<Order[]>(CACHE_KEYS.ORDERS);
+  const [orders, setOrders] = useState<Order[]>(cachedOrders || []);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [processingOrder, setProcessingOrder] = useState<string | null>(null);
   const [isSandbox, setIsSandbox] = useState(false);
@@ -90,6 +92,7 @@ export default function SellerOrdersScreen() {
   };
   
   const fetchOrders = async () => {
+    setIsFetchingInBackground(true);
     try {
       const sandboxActive = await sandboxUtils.isActive();
       
@@ -122,6 +125,8 @@ export default function SellerOrdersScreen() {
       }
       
       setOrders(ordersData);
+      // Update cache
+      setCacheSync(CACHE_KEYS.ORDERS, ordersData);
       
       // Calculate stats
       const pending = ordersData.filter((o: Order) => o.status === 'paid' || o.status === 'pending').length;
@@ -143,9 +148,12 @@ export default function SellerOrdersScreen() {
       });
     } catch (error) {
       console.error('Failed to fetch orders:', error);
-      Alert.alert('Error', 'Failed to load orders');
+      // Only show error if no cached data
+      if (!cachedOrders?.length) {
+        Alert.alert('Error', 'Failed to load orders');
+      }
     } finally {
-      setLoading(false);
+      setIsFetchingInBackground(false);
       setRefreshing(false);
     }
   };
@@ -205,16 +213,8 @@ export default function SellerOrdersScreen() {
     return `data:image/jpeg;base64,${img}`;
   };
   
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loading}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading orders...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // Remove loading blocker - show content immediately with cached data
+  // Background fetch will update UI when fresh data arrives
   
   return (
     <SafeAreaView style={styles.container}>
