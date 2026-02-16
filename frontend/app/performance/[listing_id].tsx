@@ -250,14 +250,7 @@ export default function ListingPerformanceScreen() {
     };
   }, [metrics]);
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer} data-testid="performance-loading">
-        <ActivityIndicator size="large" color="#4CAF50" />
-        <Text style={styles.loadingText}>Loading analytics...</Text>
-      </View>
-    );
-  }
+  // CACHE-FIRST: No page-level loading indicator - render instantly
 
   if (!hasAccess) {
     return (
@@ -286,7 +279,7 @@ export default function ListingPerformanceScreen() {
     );
   }
 
-  if (error) {
+  if (metricsError && !metrics?.listing_id) {
     return (
       <View style={styles.container} data-testid="performance-error">
         <View style={styles.header}>
