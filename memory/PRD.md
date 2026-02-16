@@ -168,61 +168,45 @@ Added cache keys for: USER_SETTINGS, NOTIFICATIONS, CHALLENGES, BLOG_POSTS, LEAD
   - Bugs fixed: Missing Linking import, undefined loadingTickets in help.tsx
 
 **Phase 5 Progress Summary:**
-- **Completed**: 32 pages refactored with cache-first pattern (12 new this session)
-- **Remaining**: ~35 files with page-level ActivityIndicator
+- **Completed**: 37 pages refactored with cache-first pattern (17 new this session)
+- **Remaining**: ~30 files with page-level ActivityIndicator
 
-**Session 2026-02-16 Updates (Batch 2 - Settings Pages):**
-1. **leaderboard.tsx** - Fixed critical bug with undefined `loading` variable
-   - Added null-safety for `item.user_name` (shows 'Unknown User' if null)
-   - Added null-safety for `item.top_badges` array
+**Session 2026-02-16 Updates (Batch 4 - Auto/Checkout Pages):**
+13. **auto/index.tsx** - Auto list with cache-first pattern
+    - Brands, explore cards, dealers render instantly
+    - Shows "Loading more..." text for background refresh
 
-2. **notification-preferences.tsx** - Refactored to cache-first pattern
-   - Added pull-to-refresh with RefreshControl
+14. **auto/[id].tsx** - Auto detail with cache-first pattern
+    - Price, highlights, vehicle specs render instantly
+    - Shows 'not found' state if vehicle not in cache
 
-3. **settings/appearance.tsx** - Instant render with cached/default theme selection
+15. **auto/chat/[id].tsx** - Auto chat with cache-first pattern
+    - Conversation and messages render instantly
+    - Quick replies visible immediately
 
-4. **settings/currency.tsx** - Currency list renders instantly
+16. **checkout/[listing_id].tsx** - Checkout with cache-first pattern
+    - Listing info renders instantly from cache
+    - Proper auth redirect if not logged in
 
-5. **settings/language.tsx** - Language list renders instantly
-
-6. **settings/blocked-users.tsx** - Optimistic unblock with rollback on error
-
-7. **settings/sessions.tsx** - Optimistic revoke with rollback on error
-
-8. **settings/alerts.tsx** - Quiet hours, frequency settings render instantly
-
-**Session 2026-02-16 Updates (Batch 3 - Property Pages):**
-9. **property/index.tsx** - Property list with cache-first pattern
-   - Property types and filters render instantly
-   - Shows "Updating..." text instead of blocking spinner
-
-10. **property/[id].tsx** - Property detail with cache-first pattern
-    - Price, highlights, AI summary render instantly from cache
-
-11. **property/chat/[id].tsx** - Chat with cache-first pattern
-    - Initial messages render instantly
-
-12. **property/boost/[id].tsx** - Boost/Feature pricing with cache-first pattern
-    - Pricing options render instantly from cache
+17. **auto/post.tsx** - No loader (already optimized)
 
 **Test Results:**
-- `/app/test_reports/iteration_178.json` - Session batch 1: ALL PASSED (100% frontend)
-- `/app/test_reports/iteration_179.json` - Session batch 2: ALL PASSED (100% frontend)
-- `/app/test_reports/iteration_180.json` - Session batch 3 (property pages): ALL PASSED (100% frontend)
-  - Property List page: no spinner, types/filters visible ✅
-  - Property Detail page: no spinner, price/highlights visible ✅
-  - Property Chat page: no spinner, initial messages visible ✅
-  - Property Boost page: no spinner, pricing options visible ✅
+- `/app/test_reports/iteration_178.json` - Batch 1: ALL PASSED (100%)
+- `/app/test_reports/iteration_179.json` - Batch 2 (settings): ALL PASSED (100%)
+- `/app/test_reports/iteration_180.json` - Batch 3 (property): ALL PASSED (100%)
+- `/app/test_reports/iteration_181.json` - Batch 4 (auto/checkout): ALL PASSED (100%)
+  - Auto List: no spinner, brands/explore cards visible ✅
+  - Auto Detail: no spinner, price/highlights visible ✅
+  - Auto Chat: no spinner, messages/quick replies visible ✅
+  - Checkout: no spinner, auth redirect works ✅
   - Homepage regression test passed ✅
 
-**Remaining Files (~35 with ActivityIndicator size="large"):**
-- auto/* pages (4 files)
-- checkout/* pages (2 files)
+**Remaining Files (~30 with ActivityIndicator size="large"):**
+- blog/* pages (2 files)
+- premium/* pages (3 files)
+- profile/* pages (several)
 - admin/* pages (5 files)
-- (tabs)/* pages (several)
-- profile/edit.tsx
-- blog/* pages
-- premium/* pages
+- (tabs)/* pages
 
 ### Test Results:
 - `/app/test_reports/iteration_171.json` - Phase 2: ALL PASSED (9/9)
