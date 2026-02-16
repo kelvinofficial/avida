@@ -148,19 +148,59 @@ export default function ShareBadgesScreen() {
     );
   }
 
+  // CACHE-FIRST: Render placeholder while waiting for data (no loading indicator)
+  if (!profile) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Badge Profile</Text>
+          <View style={{ width: 40 }} />
+        </View>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={[
+            styles.scrollContent,
+            isLargeScreen && styles.scrollContentDesktop,
+          ]}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[COLORS.primary]}
+              tintColor={COLORS.primary}
+            />
+          }
+        >
+          {/* Empty placeholder card while data loads */}
+          <View style={styles.profileCard}>
+            <View style={styles.avatarContainer}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>?</Text>
+              </View>
+            </View>
+            <Text style={styles.userName}>Loading profile...</Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Open Graph Meta Tags for Social Sharing */}
       <Head>
-        <title>{profile.og_meta.title}</title>
-        <meta property="og:title" content={profile.og_meta.title} />
-        <meta property="og:description" content={profile.og_meta.description} />
-        <meta property="og:type" content={profile.og_meta.type} />
-        <meta property="og:url" content={profile.og_meta.url} />
+        <title>{profile.og_meta?.title || 'Badge Profile'}</title>
+        <meta property="og:title" content={profile.og_meta?.title || 'Badge Profile'} />
+        <meta property="og:description" content={profile.og_meta?.description || 'Check out this badge collection'} />
+        <meta property="og:type" content={profile.og_meta?.type || 'profile'} />
+        <meta property="og:url" content={profile.og_meta?.url || ''} />
         <meta property="og:image" content="https://loader-free.preview.emergentagent.com/badge-share-preview.png" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={profile.og_meta.title} />
-        <meta name="twitter:description" content={profile.og_meta.description} />
+        <meta name="twitter:title" content={profile.og_meta?.title || 'Badge Profile'} />
+        <meta name="twitter:description" content={profile.og_meta?.description || 'Check out this badge collection'} />
       </Head>
 
       {/* Header */}
