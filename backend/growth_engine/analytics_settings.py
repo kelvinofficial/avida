@@ -425,7 +425,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         # In production, you would check if GA4 API credentials are available
         # and fetch real data from Google Analytics Data API
         
-        demo_mode = True
         if settings and settings.get("ga4_enabled") and settings.get("ga4_measurement_id"):
             # TODO: Implement real GA4 Data API integration when credentials provided
             # For now, show enhanced demo data
