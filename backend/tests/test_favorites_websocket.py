@@ -9,7 +9,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://zero-loaders-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://zero-loaders-2.preview.emergentagent.com')
 
 class TestFavoritesNotification:
     """Test favorite notifications feature"""
