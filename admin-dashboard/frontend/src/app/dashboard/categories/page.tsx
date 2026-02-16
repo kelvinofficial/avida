@@ -198,7 +198,7 @@ function SortableCategoryItem({ category, level, onEdit, onDelete, onManageAttri
 
 export default function CategoriesPage() {
   const { t } = useLocale();
-  const [loading, setLoading] = useState(true);
+  const [isFetchingInBackground, setIsFetchingInBackground] = useState(false);
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [flatCategories, setFlatCategories] = useState<Category[]>([]);
