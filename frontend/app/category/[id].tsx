@@ -33,8 +33,11 @@ import {
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { useFeatureSettingsStore } from '../../src/store/featureSettingsStore';
 import { Footer } from '../../src/components/layout';
-import { CategoryPageSkeleton } from '../../src/components/skeletons';
 import { CategorySEO, BreadcrumbSchema, ItemListSchema } from '../../src/components/seo';
+import { useCacheFirst } from '../../src/hooks/useCacheFirst';
+import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
+
+// CACHE-FIRST: No page-level loading skeletons - render instantly with cached data
 
 const COLORS = {
   primary: '#2E7D32',
