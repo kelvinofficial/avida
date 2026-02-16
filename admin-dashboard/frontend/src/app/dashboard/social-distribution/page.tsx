@@ -24,11 +24,14 @@ const getAuthHeaders = (): Record<string, string> => {
   return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
 };
 
-const PLATFORM_COLORS: Record<string, string> = {
-  twitter: '#1DA1F2',
-  linkedin: '#0077B5',
-  facebook: '#1877F2',
-  instagram: '#E4405F',
+const getPlatformIcon = (platform: string) => {
+  switch (platform) {
+    case 'twitter': return <TwitterIcon />;
+    case 'linkedin': return <LinkedInIcon />;
+    case 'facebook': return <FacebookIcon />;
+    case 'instagram': return <InstagramIcon />;
+    default: return null;
+  }
 };
 
 const CONTENT_TYPES = [
