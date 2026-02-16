@@ -171,16 +171,11 @@ export default function DashboardPage() {
     loadData();
   }, []);
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
     <Box>
+      {/* CACHE-FIRST: Show LinearProgress for background fetch instead of blocking spinner */}
+      {isFetchingInBackground && <LinearProgress sx={{ mb: 2 }} />}
+      
       <Typography variant="h4" fontWeight={600} gutterBottom>
         Dashboard Overview
       </Typography>
