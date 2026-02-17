@@ -780,7 +780,8 @@ export default function CategoryScreen() {
   };
 
   const handleLoadMore = () => {
-    if (!loading && hasMore) {
+    if (!isLoadingMore && hasMore) {
+      setIsLoadingMore(true);
       setPage((p) => p + 1);
       fetchData(false);
     }
