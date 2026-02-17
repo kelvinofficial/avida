@@ -133,16 +133,17 @@ export default function RootLayout() {
   }
 
   return (
-    <LocationProvider>
-      <SandboxProvider>
-        <BadgeCelebrationProvider>
-          <MilestoneProvider>
-            <FavoriteNotificationProvider>
-              <ErrorBoundary componentName="RootLayout">
-                <OfflineBanner isOffline={isOffline} />
-                <SandboxBanner />
-                <StatusBar style="dark" />
-                <Stack
+    <SafeAreaProvider>
+      <LocationProvider>
+        <SandboxProvider>
+          <BadgeCelebrationProvider>
+            <MilestoneProvider>
+              <FavoriteNotificationProvider>
+                <ErrorBoundary componentName="RootLayout">
+                  <OfflineBanner isOffline={isOffline} />
+                  <SandboxBanner />
+                  <StatusBar style="dark" />
+                  <Stack
                   screenOptions={{
                     headerShown: false,
                     contentStyle: { backgroundColor: '#1A1A1A' }, // Dark footer background
