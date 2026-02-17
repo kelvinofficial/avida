@@ -143,24 +143,8 @@ export default function RootLayout() {
     return <View style={{ flex: 1, backgroundColor: '#F5F5F5' }} />;
   }
 
-  // Web-specific CSS fix for icon fonts rendering with zero width
-  const WebIconFix = Platform.OS === 'web' ? (
-    <style dangerouslySetInnerHTML={{ __html: `
-      /* Fix for icon fonts showing zero width on web */
-      [style*="font-family: ionicons"],
-      [style*="font-family: MaterialIcons"],
-      [style*="font-family: FontAwesome"],
-      [style*="font-family: Feather"],
-      [style*="font-family: MaterialCommunityIcons"] {
-        min-width: 1em !important;
-        display: inline-block !important;
-      }
-    `}} />
-  ) : null;
-
   return (
     <SafeAreaProvider>
-      {WebIconFix}
       <LocationProvider>
         <SandboxProvider>
           <BadgeCelebrationProvider>
