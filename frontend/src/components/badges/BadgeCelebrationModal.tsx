@@ -297,8 +297,8 @@ export const BadgeCelebrationModal: React.FC<BadgeCelebrationModalProps> = ({
               <Text style={styles.closeButtonText}>Awesome!</Text>
             </TouchableOpacity>
           </Animated.View>
-        </View>
-      </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   );
 };
