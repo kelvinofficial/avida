@@ -239,9 +239,10 @@ def create_badges_router(db, get_current_user, badge_service=None):
         }
 
     @router.post("/milestones/acknowledge")
-    async def acknowledge_milestone(milestone_id: str, current_user = Depends(get_current_user)):
+    async def acknowledge_milestone(data: dict, current_user = Depends(get_current_user)):
         """Mark a milestone as acknowledged/seen"""
         user_id = current_user.user_id
+        milestone_id = data.get("milestone_id")
         
         if not milestone_id:
             raise HTTPException(status_code=400, detail="milestone_id is required")
