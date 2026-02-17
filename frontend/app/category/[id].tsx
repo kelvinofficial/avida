@@ -188,6 +188,7 @@ export default function CategoryScreen() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [total, setTotal] = useState(0);
 
   // Filter state
