@@ -172,5 +172,6 @@ export default function RootLayout() {
         </BadgeCelebrationProvider>
       </SandboxProvider>
     </LocationProvider>
+    </SafeAreaProvider>
   );
 }
