@@ -149,37 +149,43 @@ const responsiveStyle = `
   }
   
   /* Fix for icon fonts showing zero width on web */
-  /* Target elements using icon fonts and ensure they have proper width */
-  div[style*="font-family: ionicons"],
-  div[style*="font-family:ionicons"],
-  span[style*="font-family: ionicons"],
-  span[style*="font-family:ionicons"] {
-    min-width: 1em !important;
-    width: auto !important;
-    display: inline-block !important;
+  /* Target react-native-web text elements with specific computed styles */
+  .css-text-146c3p1 {
+    min-width: auto;
   }
   
-  div[style*="font-family: material"],
-  div[style*="font-family:material"],
-  span[style*="font-family: material"],
-  span[style*="font-family:material"],
-  div[style*="font-family: MaterialIcons"],
-  div[style*="font-family:MaterialIcons"] {
-    min-width: 1em !important;
-    width: auto !important;
-    display: inline-block !important;
+  /* Use JavaScript to detect and fix icon elements on page load */
+`;
+
+// Add JavaScript to fix icon widths after render
+const iconFixScript = `
+(function() {
+  function fixIconWidths() {
+    var elements = document.querySelectorAll('div, span');
+    elements.forEach(function(el) {
+      var style = window.getComputedStyle(el);
+      var fontFamily = style.fontFamily.toLowerCase();
+      if (fontFamily.includes('ionicons') || 
+          fontFamily.includes('material') || 
+          fontFamily.includes('fontawesome') ||
+          fontFamily.includes('feather')) {
+        el.style.minWidth = '1em';
+        el.style.display = 'inline-block';
+        el.style.textAlign = 'center';
+      }
+    });
   }
   
-  div[style*="font-family: feather"],
-  div[style*="font-family:feather"],
-  span[style*="font-family: feather"],
-  span[style*="font-family:feather"],
-  div[style*="font-family: Feather"],
-  div[style*="font-family:Feather"] {
-    min-width: 1em !important;
-    width: auto !important;
-    display: inline-block !important;
+  // Run after initial render
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fixIconWidths);
+  } else {
+    setTimeout(fixIconWidths, 100);
   }
+  
+  // Run periodically to catch dynamically added icons
+  setInterval(fixIconWidths, 1000);
+})();
 `;
 
 
