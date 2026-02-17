@@ -361,7 +361,8 @@ const MilestoneNotificationModal: React.FC<MilestoneNotificationModalProps> = ({
             </TouchableOpacity>
           </View>
         </Animated.View>
-      </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   );
 };
