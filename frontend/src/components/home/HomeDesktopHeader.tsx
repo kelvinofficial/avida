@@ -87,13 +87,12 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
         localStyles.iconContainer,
         selectedCategory === cat.id && localStyles.iconContainerSelected
       ]}>
-        <View style={{ width: 28, height: 28, alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons 
-            name={cat.icon as any} 
-            size={28} 
-            color={selectedCategory === cat.id ? '#fff' : '#2E7D32'} 
-          />
-        </View>
+        <Ionicons 
+          name={cat.icon as any} 
+          size={28} 
+          color={selectedCategory === cat.id ? '#fff' : '#2E7D32'}
+          style={{ width: 28, textAlign: 'center' }}
+        />
       </View>
       <Text style={[
         localStyles.iconLabel,
