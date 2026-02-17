@@ -90,8 +90,7 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
         <Ionicons 
           name={cat.icon as any} 
           size={28} 
-          color={selectedCategory === cat.id ? '#fff' : '#2E7D32'}
-          style={{ width: 28, textAlign: 'center' }}
+          color={selectedCategory === cat.id ? '#fff' : '#2E7D32'} 
         />
       </View>
       <Text style={[
