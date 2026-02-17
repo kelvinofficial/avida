@@ -147,6 +147,39 @@ const responsiveStyle = `
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite ease-in-out;
   }
+  
+  /* Fix for icon fonts showing zero width on web */
+  /* Target elements using icon fonts and ensure they have proper width */
+  div[style*="font-family: ionicons"],
+  div[style*="font-family:ionicons"],
+  span[style*="font-family: ionicons"],
+  span[style*="font-family:ionicons"] {
+    min-width: 1em !important;
+    width: auto !important;
+    display: inline-block !important;
+  }
+  
+  div[style*="font-family: material"],
+  div[style*="font-family:material"],
+  span[style*="font-family: material"],
+  span[style*="font-family:material"],
+  div[style*="font-family: MaterialIcons"],
+  div[style*="font-family:MaterialIcons"] {
+    min-width: 1em !important;
+    width: auto !important;
+    display: inline-block !important;
+  }
+  
+  div[style*="font-family: feather"],
+  div[style*="font-family:feather"],
+  span[style*="font-family: feather"],
+  span[style*="font-family:feather"],
+  div[style*="font-family: Feather"],
+  div[style*="font-family:Feather"] {
+    min-width: 1em !important;
+    width: auto !important;
+    display: inline-block !important;
+  }
 `;
 
 
