@@ -104,6 +104,18 @@ export const BadgeCelebrationModal: React.FC<BadgeCelebrationModalProps> = ({
   const glowOpacity = useRef(new Animated.Value(0)).current;
   const textOpacity = useRef(new Animated.Value(0)).current;
 
+  // Auto-dismiss timer to prevent blocking UI
+  useEffect(() => {
+    if (visible && badge) {
+      // Auto-dismiss after 5 seconds
+      const autoDismissTimer = setTimeout(() => {
+        onClose();
+      }, 5000);
+      
+      return () => clearTimeout(autoDismissTimer);
+    }
+  }, [visible, badge, onClose]);
+
   useEffect(() => {
     if (visible && badge) {
       // Create confetti pieces
