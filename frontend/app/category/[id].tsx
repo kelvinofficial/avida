@@ -714,6 +714,7 @@ export default function CategoryScreen() {
     } finally {
       // CACHE-FIRST: No loading states to set - data renders immediately
       setRefreshing(false);
+      setIsLoadingMore(false);
     }
   }, [categoryId, page, isAuthenticated, selectedSubcategory, priceRange, selectedCondition, sortBy, activeFilters, searchQuery, selectedRegion]);
 
