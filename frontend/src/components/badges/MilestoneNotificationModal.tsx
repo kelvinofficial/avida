@@ -194,6 +194,17 @@ const MilestoneNotificationModal: React.FC<MilestoneNotificationModalProps> = ({
   const [showConfetti, setShowConfetti] = useState(false);
   const confettiColors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', '#F38181', '#AA96DA', '#FCBAD3'];
 
+  // Auto-dismiss timer to prevent blocking UI
+  useEffect(() => {
+    if (visible && milestone) {
+      const autoDismissTimer = setTimeout(() => {
+        onClose();
+      }, 6000); // 6 seconds auto-dismiss
+      
+      return () => clearTimeout(autoDismissTimer);
+    }
+  }, [visible, milestone, onClose]);
+
   useEffect(() => {
     if (visible) {
       setShowConfetti(true);
