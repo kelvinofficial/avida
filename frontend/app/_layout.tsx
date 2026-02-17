@@ -3,8 +3,6 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { useFonts } from 'expo-font';
-import { Ionicons, MaterialIcons, FontAwesome, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
 import { useAuthStore, saveUserData } from '../src/store/authStore';
 import { useFeatureSettingsStore } from '../src/store/featureSettingsStore';
