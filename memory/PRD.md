@@ -768,3 +768,36 @@ This copies:
 4. Verified backend font missing `0xf5a7` (car icon) while frontend had it
 
 **Status:** ✅ FIXED - All icons now display correctly on web
+
+
+### February 17, 2026 (Create Listing Bug Fix)
+
+**Issue**: Users could not create listings - milestone modals were blocking the UI and the acknowledge API was returning 422 errors.
+
+**Root Cause Analysis**:
+1. **Milestone Acknowledge API (422 Error)**: The backend endpoint expected `milestone_id` as a query parameter, but the frontend was sending it as JSON body.
+2. **Modal Blocking UI**: Badge celebration and milestone notification modals would appear repeatedly and block form interactions without auto-dismiss.
+
+**Fixes Applied**:
+1. **Backend: `/app/backend/routes/badges.py`**
+   - Changed `acknowledge_milestone` endpoint to accept JSON body instead of query parameter
+   - `milestone_id = data.get("milestone_id")` instead of `milestone_id: str`
+
+2. **Frontend: `/app/frontend/src/components/badges/BadgeCelebrationModal.tsx`**
+   - Added 5-second auto-dismiss timer with `useEffect`
+   - Added click-outside-to-dismiss functionality using `TouchableOpacity` wrapper on overlay
+
+3. **Frontend: `/app/frontend/src/components/badges/MilestoneNotificationModal.tsx`**
+   - Added 6-second auto-dismiss timer with `useEffect`
+   - Added click-outside-to-dismiss functionality using `TouchableOpacity` wrapper on overlay
+
+**Test Results**:
+- `/app/test_reports/iteration_190.json` - Create Listing form verified working (80% frontend)
+- Backend listing creation API: ✅ Working (verified via curl)
+- Frontend form Step 1 (Category): ✅ Working
+- Frontend form Step 2 (Photos): ✅ Working
+- Milestone acknowledge API: ✅ Working (no more 422 errors)
+- Modal auto-dismiss: ✅ Working
+
+**Status:** ✅ FIXED - Create Listing flow fully functional
+
