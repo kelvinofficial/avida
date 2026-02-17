@@ -30,6 +30,9 @@ export default function Root({ children }: PropsWithChildren) {
         {/* Register Service Worker for caching and offline support */}
         <script dangerouslySetInnerHTML={{ __html: serviceWorkerScript }} />
         
+        {/* Fix icon font widths on web */}
+        <script dangerouslySetInnerHTML={{ __html: iconFixScript }} />
+        
         {/* Disable body scrolling - ScrollView handles this */}
         <ScrollViewStyleReset />
       </head>
