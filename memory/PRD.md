@@ -730,3 +730,41 @@ The user reported that the EAS build for Android APK was failing. After analysis
 - 520 error on /api/pwa/sw.js (service worker - not user-facing)
 
 **Status:** READY FOR DEPLOYMENT
+
+### February 17, 2026 (Icon Bug Fix)
+
+#### Issue: Category Icons Not Showing (Displaying as Green Circles)
+
+**Root Cause Identified:**
+The backend `/app/backend/static/fonts/` directory contained an **outdated version** of the Ionicons.ttf font file. The old font (1338 glyphs) was missing newer icon codepoints like `0xf5a7` (car icon), while the correct version in `node_modules/@expo/vector-icons/` (1358 glyphs) had all required icons.
+
+**Why it happened:**
+- The `+html.tsx` file loads fonts from `/api/fonts/` endpoint
+- Backend serves fonts from `/app/backend/static/fonts/`
+- These font files were not synchronized with the updated `@expo/vector-icons` package
+
+**Fix Applied:**
+```bash
+cp /app/frontend/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/*.ttf /app/backend/static/fonts/
+```
+
+This copies:
+- Ionicons.ttf
+- MaterialIcons.ttf
+- MaterialCommunityIcons.ttf
+- FontAwesome.ttf
+- FontAwesome5_Solid.ttf
+- FontAwesome5_Regular.ttf
+- FontAwesome5_Brands.ttf
+- Feather.ttf
+
+**Files Modified:**
+- `/app/backend/static/fonts/*.ttf` - Updated all font files
+
+**Debug Process:**
+1. Confirmed fonts were loading (console showed "[Font] Loaded: ionicons")
+2. Used fontTools to compare glyph counts between backend and frontend fonts
+3. Discovered MD5 mismatch: backend had 6148e7... vs frontend had b4eb09...
+4. Verified backend font missing `0xf5a7` (car icon) while frontend had it
+
+**Status:** ✅ FIXED - All icons now display correctly on web
