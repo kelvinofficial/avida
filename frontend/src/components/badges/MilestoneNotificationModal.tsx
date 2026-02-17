@@ -278,7 +278,12 @@ const MilestoneNotificationModal: React.FC<MilestoneNotificationModalProps> = ({
       onRequestClose={onClose}
       testID="milestone-notification-modal"
     >
-      <View style={styles.overlay} testID="milestone-modal-overlay">
+      <TouchableOpacity 
+        style={styles.overlay} 
+        activeOpacity={1}
+        onPress={onClose}
+        testID="milestone-modal-overlay"
+      >
         {/* Confetti */}
         {showConfetti && (
           <View style={styles.confettiContainer}>
@@ -292,6 +297,7 @@ const MilestoneNotificationModal: React.FC<MilestoneNotificationModalProps> = ({
           </View>
         )}
 
+        <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
         <Animated.View
           style={[
             styles.modalContainer,
