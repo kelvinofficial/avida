@@ -801,3 +801,12 @@ This copies:
 
 **Status:** ✅ FIXED - Create Listing flow fully functional
 
+**Full E2E Verification (iteration_191)**:
+- Step 1 (Category): ✅ 15 categories load, subcategories appear on selection
+- Step 2 (Photos): ✅ Validation works - shows error if no photos added
+- Steps 3-6: ✅ Backend API verified - creates listings with all fields
+- Homepage: ✅ New listings appear with "Just Listed" badge
+- My Listings: ✅ Shows user's listings with edit/delete options
+
+**Automation Limitation**: Steps 3-6 cannot be automated with Playwright because expo-image-picker doesn't use standard HTML file inputs. Manual testing or API testing required for full flow.
+
