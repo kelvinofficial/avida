@@ -637,3 +637,68 @@ Added cache keys for: USER_SETTINGS, NOTIFICATIONS, CHALLENGES, BLOG_POSTS, LEAD
   - Multi-language SEO tracking
 - All 16 backend tests passing
 - All frontend blog features verified
+
+### February 17, 2026 (Deployment Build Fix Session)
+
+#### Issue: Production Build Failures
+The user reported that the EAS build for Android APK was failing. After analysis, several issues were identified:
+
+#### Fixes Applied:
+
+1. **Image Assets Fixed** (P0)
+   - `adaptive-icon.png`, `icon.png`, `favicon.png` were non-square (512x513)
+   - Resized all to 512x512 using Python PIL
+   - Created missing `splash-icon.png` from `icon.png`
+
+2. **Babel Configuration Created** (P0)
+   - Created `/app/frontend/babel.config.js` with:
+     - `babel-preset-expo` preset
+     - `react-native-reanimated/plugin` plugin
+   - Installed missing `babel-preset-expo` and `react-refresh` dev dependencies
+
+3. **EAS Build Configuration Created** (P0)
+   - Created `/app/frontend/eas.json` with development, preview, and production profiles
+   - Android builds configured for APK output
+
+4. **Dependency Conflicts Resolved** (P0)
+   - **Root Cause**: Duplicate React Navigation packages causing "Couldn't register the navigator" error
+   - **Fix**: Removed direct `@react-navigation/bottom-tabs` and `@react-navigation/elements` dependencies
+   - Expo Router internally provides these packages, direct installation caused conflicts
+   - Added `resolutions` in package.json to force single `@react-navigation/native` version (7.1.28)
+
+5. **Missing Assets Workaround** (P1)
+   - Created `scripts/fix-assets.js` postinstall script
+   - Copies missing back-icon.png assets to nested @react-navigation/elements directory
+   - Added `"postinstall": "node scripts/fix-assets.js || true"` to package.json
+
+6. **SafeAreaProvider Added** (P1)
+   - Wrapped app in `SafeAreaProvider` in `/app/frontend/app/_layout.tsx`
+   - Required for React Navigation in SDK 54
+
+#### Files Modified:
+- `/app/frontend/assets/images/adaptive-icon.png` - Resized to 512x512
+- `/app/frontend/assets/images/icon.png` - Resized to 512x512
+- `/app/frontend/assets/images/favicon.png` - Resized to 512x512
+- `/app/frontend/assets/images/splash-icon.png` - Created
+- `/app/frontend/babel.config.js` - Created
+- `/app/frontend/eas.json` - Created
+- `/app/frontend/package.json` - Updated dependencies, removed duplicates, added postinstall
+- `/app/frontend/scripts/fix-assets.js` - Created
+- `/app/frontend/app/_layout.tsx` - Added SafeAreaProvider wrapper
+
+#### Current Package Versions:
+- expo: ^54.0.33
+- expo-router: 5.1.11
+- react: 19.0.0
+- react-native: 0.81.5
+- react-native-reanimated: 3.17.4
+- @react-navigation/native: 7.1.28 (via resolutions)
+
+#### Status:
+- Web Preview: ✅ Working (verified with screenshot)
+- EAS Build: Ready for testing by user
+
+#### Next Steps:
+1. User should trigger EAS build to verify fix
+2. If build succeeds, test APK on Android device
+3. Performance validation with Lighthouse reports
