@@ -218,14 +218,22 @@ export const BadgeCelebrationModal: React.FC<BadgeCelebrationModalProps> = ({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
+      <TouchableOpacity 
+        style={styles.overlay} 
+        activeOpacity={1} 
+        onPress={onClose}
+      >
         {/* Confetti */}
         {confetti.map((piece) => (
           <ConfettiPiece key={piece.id} piece={piece} />
         ))}
 
-        {/* Content */}
-        <View style={styles.content}>
+        {/* Content - stop propagation to prevent closing when clicking content */}
+        <TouchableOpacity 
+          style={styles.content}
+          activeOpacity={1}
+          onPress={(e) => e.stopPropagation()}
+        >
           {/* Celebration Header */}
           <Animated.Text style={[styles.celebrationText, { opacity: textOpacity }]}>
             Congratulations!
