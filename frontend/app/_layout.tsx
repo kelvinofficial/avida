@@ -36,15 +36,6 @@ export default function RootLayout() {
   const [processingAuth, setProcessingAuth] = useState(false);
   const [mounted, setMounted] = useState(false);
   
-  // Pre-load icon fonts for web compatibility
-  const [fontsLoaded] = useFonts({
-    ...Ionicons.font,
-    ...MaterialIcons.font,
-    ...FontAwesome.font,
-    ...Feather.font,
-    ...MaterialCommunityIcons.font,
-  });
-  
   // Network status for offline banner
   const { isOffline } = useNetworkStatus();
   
