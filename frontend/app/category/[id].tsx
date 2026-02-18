@@ -179,6 +179,7 @@ export default function CategoryScreen() {
   const { id, subcategory: initialSubcategory } = useLocalSearchParams<{ id: string; subcategory?: string }>();
   const { isAuthenticated } = useAuthStore();
   const { isMobile, isTablet, isDesktop, width: screenWidth } = useResponsive();
+  const insets = useSafeAreaInsets(); // Safe area insets for bottom padding
   
   // CACHE-FIRST: Track if initial fetch has completed to prevent premature "no listings" message
   const [listings, setListings] = useState<any[]>([]);
