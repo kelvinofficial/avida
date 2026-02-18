@@ -1085,7 +1085,7 @@ export default function SearchScreen() {
             data={listings}
             renderItem={renderListing}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={[styles.listContent, { paddingBottom: Math.max(insets.bottom, 24) }]}
             ListHeaderComponent={() => (
               <Text style={styles.resultsText}>
                 {listings.length} {listings.length === 1 ? 'result' : 'results'} for "{searchQuery}"
