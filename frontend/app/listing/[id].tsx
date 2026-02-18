@@ -1703,7 +1703,7 @@ export default function ListingDetailScreen() {
 
       {/* Bottom Actions - Dynamic based on seller preferences */}
       {listing.user_id !== user?.user_id && (
-        <View style={styles.bottomActions}>
+        <View style={[styles.bottomActions, { paddingBottom: Math.max(insets.bottom, 24) }]}>
           {/* Chat button - Always shown if seller allows chat */}
           {((listing as any).contact_methods || ['chat']).includes('chat') && (
             <TouchableOpacity style={styles.actionBtn} onPress={handleChat}>
