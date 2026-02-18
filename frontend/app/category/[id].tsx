@@ -714,6 +714,7 @@ export default function CategoryScreen() {
       console.error('Error fetching category data:', error);
     } finally {
       // CACHE-FIRST: No loading states to set - data renders immediately
+      setHasFetched(true);
       setRefreshing(false);
       setIsLoadingMore(false);
     }
