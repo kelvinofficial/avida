@@ -59,7 +59,12 @@ export default function TabLayout() {
       screenOptions={{
         tabBarStyle: hideBottomNav ? { display: 'none' } : [
           styles.tabBar,
-          { paddingBottom: Platform.OS === 'ios' ? insets.bottom : 12 },
+          { 
+            paddingBottom: Platform.OS === 'ios' 
+              ? insets.bottom 
+              : Math.max(insets.bottom, 16), // Use safe area inset on Android too
+            height: 60 + (Platform.OS === 'ios' ? insets.bottom : Math.max(insets.bottom, 16)),
+          },
         ],
         tabBarActiveTintColor: '#2E7D32',
         tabBarInactiveTintColor: '#9E9E9E',
@@ -143,13 +148,18 @@ const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: '#FFFFFF',
     borderTopWidth: 0,
-    height: 60,
+    minHeight: 60,
     paddingTop: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 8,
+    // Ensure content is above gesture navigation area
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   tabLabel: {
     fontSize: 10,
