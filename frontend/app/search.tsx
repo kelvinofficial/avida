@@ -1107,7 +1107,7 @@ export default function SearchScreen() {
               renderItem={renderCategory}
               keyExtractor={(item) => item.id}
               numColumns={3}
-              contentContainerStyle={styles.categoriesGridMobile}
+              contentContainerStyle={[styles.categoriesGridMobile, { paddingBottom: Math.max(insets.bottom, 24) }]}
             />
           </View>
         )}
