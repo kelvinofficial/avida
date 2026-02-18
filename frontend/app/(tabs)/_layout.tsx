@@ -45,6 +45,9 @@ export default function TabLayout() {
 
   // Only hide bottom nav after mounting AND confirming large screen
   const hideBottomNav = isMounted && isLargeScreen;
+  
+  // Calculate tab bar height for content padding
+  const tabBarHeight = 60 + (Platform.OS === 'ios' ? insets.bottom : Math.max(insets.bottom, 16));
 
   const handlePostPress = () => {
     if (!isAuthenticated) {
