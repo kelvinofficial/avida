@@ -600,7 +600,7 @@ export default function AutoListingDetailScreen() {
       </ScrollView>
 
       {/* Bottom Actions - Dynamic based on seller preferences */}
-      <View style={styles.bottomActions}>
+      <View style={[styles.bottomActions, { paddingBottom: Math.max(insets.bottom, 24) }]}>
         {/* Chat button - Always shown */}
         <TouchableOpacity style={styles.actionBtn} onPress={handleChat}>
           <Ionicons name="chatbubble-outline" size={20} color={COLORS.primary} />
