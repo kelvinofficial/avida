@@ -1851,7 +1851,7 @@ export default function PropertyDetailScreen() {
       </ScrollView>
 
       {/* Bottom Actions - Enhanced with all key actions */}
-      <View style={styles.bottomActions}>
+      <View style={[styles.bottomActions, { paddingBottom: Math.max(insets.bottom, 24) }]}>
         {/* Chat button - Always shown */}
         <TouchableOpacity style={styles.actionBtn} onPress={handleChat}>
           <Ionicons name="chatbubble-outline" size={18} color={COLORS.primary} />
