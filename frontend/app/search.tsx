@@ -236,6 +236,7 @@ export default function SearchScreen() {
   const { selectedLocationFilter } = useLocationStore();
   const { isDesktop, isTablet } = useResponsive();
   const { width: screenWidth } = useWindowDimensions();
+  const insets = useSafeAreaInsets(); // Safe area insets for bottom padding
   const isLargeScreen = isDesktop || isTablet;
   
   // Responsive category rows - single row for wide screens, two rows for narrower
