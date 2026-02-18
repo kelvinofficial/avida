@@ -1532,6 +1532,7 @@ const offerStyles = StyleSheet.create({
 export default function PropertyDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets(); // Safe area insets for bottom padding
   
   // Cache key for property detail
   const PROPERTY_CACHE_KEY = `property_detail_${id}`;
