@@ -66,7 +66,7 @@ export default function TabLayout() {
             paddingBottom: Platform.OS === 'ios' 
               ? insets.bottom 
               : Math.max(insets.bottom, 16), // Use safe area inset on Android too
-            height: 60 + (Platform.OS === 'ios' ? insets.bottom : Math.max(insets.bottom, 16)),
+            height: tabBarHeight,
           },
         ],
         tabBarActiveTintColor: '#2E7D32',
@@ -74,6 +74,8 @@ export default function TabLayout() {
         tabBarLabelStyle: styles.tabLabel,
         tabBarShowLabel: true,
         headerShown: false,
+        // Add padding to screen content to prevent tab bar from covering it
+        sceneContainerStyle: hideBottomNav ? {} : { paddingBottom: tabBarHeight },
       }}
     >
       <Tabs.Screen
