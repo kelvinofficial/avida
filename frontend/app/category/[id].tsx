@@ -896,8 +896,9 @@ export default function CategoryScreen() {
 
   // Only show empty state when listings are loaded and no results
   const renderEmpty = () => {
-    // CACHE-FIRST: Show empty state based on listings length, not loading state
-    if (listings.length > 0) {
+    // CACHE-FIRST: Only show empty state after initial fetch completes
+    // This prevents the "No listings" flash while data is being fetched
+    if (!hasFetched || listings.length > 0) {
       return null;
     }
     
