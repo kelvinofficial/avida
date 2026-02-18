@@ -180,8 +180,9 @@ export default function CategoryScreen() {
   const { isAuthenticated } = useAuthStore();
   const { isMobile, isTablet, isDesktop, width: screenWidth } = useResponsive();
   
-  // CACHE-FIRST: Remove loading/initialLoadDone blocking states
+  // CACHE-FIRST: Track if initial fetch has completed to prevent premature "no listings" message
   const [listings, setListings] = useState<any[]>([]);
+  const [hasFetched, setHasFetched] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_category, setCategory] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
