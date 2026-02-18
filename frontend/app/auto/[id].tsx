@@ -383,6 +383,7 @@ const safetyStyles = StyleSheet.create({
 export default function AutoListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets(); // Safe area insets for bottom padding
   
   // Cache key for auto listing detail
   const AUTO_DETAIL_CACHE_KEY = `auto_detail_${id}`;
