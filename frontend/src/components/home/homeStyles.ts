@@ -816,7 +816,7 @@ export const mobileStyles = StyleSheet.create({
 
   // CATEGORIES
   categoriesSection: {
-    paddingTop: 16,
+    paddingTop: 12,
     paddingBottom: 8,
     zIndex: 1,
     position: 'relative',
@@ -825,7 +825,7 @@ export const mobileStyles = StyleSheet.create({
     flexGrow: 0,
   },
   categoriesContent: {
-    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingHorizontal: 12,
     gap: 4,
   },
 
@@ -834,9 +834,9 @@ export const mobileStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: HORIZONTAL_PADDING,
-    paddingTop: 20,
-    paddingBottom: 12,
+    paddingHorizontal: 12,
+    paddingTop: 16,
+    paddingBottom: 10,
   },
   sectionTitle: {
     fontSize: 18,
