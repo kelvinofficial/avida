@@ -48,6 +48,9 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
   onSelectSubcategory,
   onSelectRecentSubcategory,
 }) => {
+  // Get safe area insets for bottom padding
+  const insets = useSafeAreaInsets();
+  
   // Filter recent subcategories for the current category
   const recentForThisCategory = recentSubcategories.filter(
     item => item.categoryId === category?.id
@@ -63,7 +66,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.modalOverlay}>
           <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
-            <View style={styles.subcategoryModalContent}>
+            <View style={[styles.subcategoryModalContent, { paddingBottom: Math.max(insets.bottom, 40) }]}>
               {/* Modal Header */}
               <View style={styles.subcategoryModalHeader}>
                 <View style={styles.subcategoryHeaderLeft}>
