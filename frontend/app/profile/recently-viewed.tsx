@@ -152,6 +152,15 @@ export default function RecentlyViewedScreen() {
     }
   }, [isAuthenticated, fetchRecentlyViewed]);
 
+  // Refresh when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (isAuthenticated) {
+        fetchRecentlyViewed();
+      }
+    }, [isAuthenticated, fetchRecentlyViewed])
+  );
+
   const handleRefresh = () => {
     setRefreshing(true);
     fetchRecentlyViewed(true);
