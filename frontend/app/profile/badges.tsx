@@ -344,6 +344,14 @@ export default function BadgesScreen() {
 
         {isFetchingInBackground && earnedBadges.length === 0 && availableBadges.length === 0 ? (
           <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
+        ) : earnedBadges.length === 0 && availableBadges.length === 0 ? (
+          <View style={styles.mobileEmptyState}>
+            <Ionicons name="ribbon-outline" size={64} color={COLORS.textLight} />
+            <Text style={styles.mobileEmptyTitle}>No badges yet</Text>
+            <Text style={styles.mobileEmptySubtitle}>
+              Start earning badges by creating listings, making sales, and engaging with the community
+            </Text>
+          </View>
         ) : (
           <>
             {earnedBadges.length > 0 && (
