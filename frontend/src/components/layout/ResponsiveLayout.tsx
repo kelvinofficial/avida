@@ -41,7 +41,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
   },
   desktopContainer: {
     flex: 1,
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   },
   mainContent: {
     flex: 1,
-    backgroundColor: '#1A1A1A', // Dark footer background - content areas have their own light backgrounds
+    backgroundColor: '#FFFFFF',
   },
 });
 
