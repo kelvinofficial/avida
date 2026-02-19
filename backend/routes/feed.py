@@ -169,17 +169,31 @@ def create_feed_router(db):
                 img = item["images"][0]
                 thumb_url = img if isinstance(img, str) else img.get("url", img.get("uri"))
             
+            # Handle location - it could be a string or an object
+            location = item.get("location", {})
+            if isinstance(location, str):
+                city_name = location
+                country_code = "TZ"
+            else:
+                city_name = location.get("city", "Unknown") if location else "Unknown"
+                country_code = location.get("country_code", "TZ") if location else "TZ"
+            
+            # Handle created_at - it could be a datetime or string
+            created_at = item.get("created_at")
+            if hasattr(created_at, 'isoformat'):
+                created_at = created_at.isoformat()
+            
             feed_items.append({
                 "id": item.get("id"),
                 "title": item.get("title", ""),
                 "price": item.get("price", 0),
                 "currency": item.get("currency", "TZS"),
-                "cityName": item.get("location", {}).get("city", "Unknown"),
-                "countryCode": item.get("location", {}).get("country_code", "TZ"),
+                "cityName": city_name,
+                "countryCode": country_code,
                 "category": item.get("category"),
                 "subcategory": item.get("subcategory"),
                 "thumbUrl": thumb_url,
-                "createdAt": item.get("created_at"),
+                "createdAt": created_at,
                 "isBoosted": item.get("is_boosted", False),
                 "sellerId": item.get("user_id"),
                 "viewsCount": item.get("views_count", 0),
