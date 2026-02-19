@@ -22,7 +22,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { listingsApi, favoritesApi, conversationsApi, reportsApi, categoriesApi } from '../../src/utils/api';
+import { listingsApi, favoritesApi, conversationsApi, reportsApi, categoriesApi, API_URL } from '../../src/utils/api';
 import { sandboxAwareListingsApi, sandboxUtils } from '../../src/utils/sandboxAwareApi';
 import api from '../../src/utils/api';
 import { Listing, Category } from '../../src/types';
