@@ -2088,7 +2088,7 @@ export default function ChatScreen() {
 
         {/* Input Bar */}
         {!isRecording && (
-          <View style={styles.inputContainer}>
+          <View style={[styles.inputContainer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
             <TouchableOpacity style={styles.attachButton} onPress={showAttachmentOptions}>
               <Ionicons name="add-circle" size={28} color={COLORS.primary} />
             </TouchableOpacity>
