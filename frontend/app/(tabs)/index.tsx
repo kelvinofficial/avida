@@ -1,15 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import {
   View,
   RefreshControl,
-  ScrollView,
+  FlatList,
   Platform,
+  ActivityIndicator,
+  Text,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useLocationStore } from '../../src/store/locationStore';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { useHomeData } from '../../src/hooks/useHomeData';
+import { useInstantListingsFeed, getFeedFlatListProps, feedKeyExtractor, FeedParams } from '../../src/hooks/useInstantListingsFeed';
+import { feedItemToListing, FeedItem } from '../../src/utils/feedCache';
 import { useSubcategoryModal } from '../../src/hooks/useSubcategoryModal';
 import { ResponsiveLayout, Footer } from '../../src/components/layout';
 import { LocationData } from '../../src/components/LocationPicker';
@@ -17,9 +21,10 @@ import { CategoryDrawer } from '../../src/components/home/CategoryDrawer';
 import { 
   MobileHeader,
   HomeDesktopHeader,
-  ListingsGrid,
   LocationModal,
 } from '../../src/components/home';
+import { ListingCard } from '../../src/components/shared/ListingCard';
+import { EmptyState } from '../../src/components/EmptyState';
 import { 
   styles, 
   HORIZONTAL_PADDING, 
