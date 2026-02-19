@@ -1846,8 +1846,8 @@ export default function PropertyDetailScreen() {
         {/* Similar Listings */}
         <SimilarListings propertyId={property.id} category="property" />
 
-        {/* Spacer for bottom actions */}
-        <View style={{ height: 120 }} />
+        {/* Spacer for bottom actions - dynamic height based on safe area */}
+        <View style={{ height: Math.max(insets.bottom, 24) + 100 }} />
       </ScrollView>
 
       {/* Bottom Actions - Enhanced with all key actions */}
