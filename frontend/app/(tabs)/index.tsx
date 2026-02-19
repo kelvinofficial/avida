@@ -302,21 +302,21 @@ export default function HomeScreen() {
 
   // ============ RENDER LISTING ITEM FOR FLATLIST ============
   const renderListingItem = useCallback(({ item, index }: { item: any; index: number }) => {
-    const rowIndex = Math.floor(index / columns);
     const colIndex = index % columns;
     const isFirstInRow = colIndex === 0;
     const isLastInRow = colIndex === columns - 1;
     
+    // Consistent gap on both sides between items
+    const marginHorizontal = gridGap / 2;
+    
     return (
       <View 
-        style={[
-          { 
-            width: dynamicCardWidth,
-            marginBottom: gridGap,
-            marginLeft: isFirstInRow ? 0 : gridGap / 2,
-            marginRight: isLastInRow ? 0 : gridGap / 2,
-          }
-        ]}
+        style={{
+          width: dynamicCardWidth,
+          marginBottom: gridGap,
+          marginLeft: isFirstInRow ? 0 : marginHorizontal,
+          marginRight: isLastInRow ? 0 : marginHorizontal,
+        }}
       >
         <ListingCard
           listing={item}
