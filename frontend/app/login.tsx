@@ -20,12 +20,12 @@ import * as WebBrowser from 'expo-web-browser';
 import * as ExpoLinking from 'expo-linking';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore, saveUserData } from '../src/store/authStore';
-import { authApi } from '../src/utils/api';
+import { authApi, API_URL } from '../src/utils/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useResponsive } from '../src/hooks/useResponsive';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+const BACKEND_URL = API_URL;
 
 // URLs for Terms and Privacy
 const TERMS_URL = 'https://www.emergentagent.com/terms';
