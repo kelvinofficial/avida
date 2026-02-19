@@ -657,6 +657,7 @@ export default function MyListingsScreen() {
         onEndReachedThreshold={0.5}
         ListEmptyComponent={!loading ? <EmptyState status={activeTab} /> : null}
         ListFooterComponent={null}
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16) + 24 }}
       />
     </SafeAreaView>
   );
