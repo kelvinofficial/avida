@@ -1212,6 +1212,7 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16) + 80 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
