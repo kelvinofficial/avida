@@ -190,11 +190,28 @@ export const useInstantListingsFeed = (params: FeedParams): UseInstantListingsFe
    * Monitor network status
    */
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener(state => {
-      setIsOffline(!state.isConnected);
-    });
+    let unsubscribe: (() => void) | null = null;
     
-    return () => unsubscribe();
+    try {
+      unsubscribe = NetInfo.addEventListener(state => {
+        if (isMountedRef.current) {
+          setIsOffline(!state.isConnected);
+        }
+      });
+    } catch (error) {
+      // NetInfo may throw on some platforms, ignore silently
+      console.warn('[Feed] NetInfo error:', error);
+    }
+    
+    return () => {
+      try {
+        if (unsubscribe) {
+          unsubscribe();
+        }
+      } catch (error) {
+        // Ignore abort errors during cleanup
+      }
+    };
   }, []);
   
   /**
