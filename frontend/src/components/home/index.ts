@@ -14,6 +14,7 @@ export type { SkeletonCardProps } from './SkeletonCard';
 export { FeaturedSellersSection } from './FeaturedSellersSection';
 export type { FeaturedSeller, FeaturedListing } from './FeaturedSellersSection';
 export { SubcategoryModal } from './SubcategoryModal';
+export { CategoryDrawer } from './CategoryDrawer';
 export { MobileHeader } from './MobileHeader';
 export { HomeDesktopHeader } from './HomeDesktopHeader';
 export { ListingsGrid } from './ListingsGrid';
