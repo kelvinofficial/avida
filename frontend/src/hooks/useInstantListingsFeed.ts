@@ -82,7 +82,7 @@ const fetchFeed = async (
   if (cursor) queryParams.append('cursor', cursor);
   queryParams.append('limit', String(params.limit || 20));
   
-  const response = await fetch(`${API_URL}/api/listings/feed?${queryParams.toString()}`, {
+  const response = await fetch(`${API_URL}/api/feed/listings?${queryParams.toString()}`, {
     headers: {
       'Accept': 'application/json',
     },
