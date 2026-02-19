@@ -88,6 +88,7 @@ export const useNetworkStatus = (): NetworkStatus => {
           isOffline: !state.isConnected,
         });
       } catch (error) {
+        // Ignore NetInfo errors - may not be available on all platforms
         console.warn('NetInfo not available:', error);
       }
     };
@@ -95,8 +96,12 @@ export const useNetworkStatus = (): NetworkStatus => {
     setupNetInfo();
 
     return () => {
-      if (unsubscribe) {
-        unsubscribe();
+      try {
+        if (unsubscribe) {
+          unsubscribe();
+        }
+      } catch (error) {
+        // Ignore abort errors during cleanup
       }
     };
   }, []);
