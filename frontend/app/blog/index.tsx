@@ -15,8 +15,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../src/utils/theme';
 import { DesktopHeader } from '../../src/components/layout/DesktopHeader';
 import { getCachedSync, setCacheSync, CACHE_KEYS } from '../../src/utils/cacheManager';
+import { API_URL } from '../../src/utils/api';
 
-const API_BASE = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+const API_BASE = API_URL;
 
 interface BlogPost {
   id: string;

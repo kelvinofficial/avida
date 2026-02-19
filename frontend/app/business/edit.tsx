@@ -327,7 +327,7 @@ export default function BusinessProfileEditScreen() {
       }
       
       // Show success modal with profile URL
-      const baseUrl = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace('/api', '').replace(/\/$/, '');
+      const baseUrl = API_URL.replace('/api', '').replace(/\/$/, '');
       const profileUrl = `${baseUrl}/business/${profileSlug}`;
       setSuccessProfileUrl(profileUrl);
       setSuccessProfileSlug(profileSlug);
