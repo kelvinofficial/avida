@@ -5,7 +5,7 @@ import Constants from 'expo-constants';
 
 // Production API URL - HARDCODED for APK builds where env vars don't work
 // This is the ULTIMATE fallback and MUST always be correct
-export const PRODUCTION_API_URL = 'https://expo-connectivity.preview.emergentagent.com';
+export const PRODUCTION_API_URL = 'https://instant-feed-perf.preview.emergentagent.com';
 
 // Get API URL - try multiple sources for maximum compatibility
 export const getApiUrl = (): string => {

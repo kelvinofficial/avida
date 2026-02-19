@@ -408,7 +408,7 @@ def create_badges_router(db, get_current_user, badge_service=None):
                 "title": og_title,
                 "description": og_description,
                 "type": "profile",
-                "url": f"https://expo-connectivity.preview.emergentagent.com/profile/{user_id}/badges",
+                "url": f"https://instant-feed-perf.preview.emergentagent.com/profile/{user_id}/badges",
             }
         }
 
