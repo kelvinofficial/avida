@@ -330,6 +330,7 @@ export default function MyListingsScreen() {
   const { showCelebration, showMultipleCelebrations } = useBadgeCelebration();
   const { checkForNewMilestones } = useMilestones();
   const isLargeScreen = isDesktop || isTablet;
+  const insets = useSafeAreaInsets(); // Safe area insets for bottom padding
   
   const [activeTab, setActiveTab] = useState(params.tab as string || 'all');
   const [listings, setListings] = useState<any[]>([]);
