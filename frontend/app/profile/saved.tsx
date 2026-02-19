@@ -678,6 +678,10 @@ const styles = StyleSheet.create({
   mobileList: {
     padding: 16,
   },
+  mobileListEmpty: {
+    flex: 1,
+    justifyContent: 'center',
+  },
   mobileCard: {
     flexDirection: 'row',
     backgroundColor: COLORS.surface,
