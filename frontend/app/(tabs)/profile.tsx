@@ -726,6 +726,7 @@ export default function ProfileScreen() {
   const { isAuthenticated, user, logout } = useAuthStore();
   const { isDesktop, isTablet } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
+  const insets = useSafeAreaInsets(); // Safe area insets for bottom padding
   
   // CACHE-FIRST: Use cache-first hook for profile data
   const { 
