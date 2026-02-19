@@ -1235,7 +1235,7 @@ export default function ProfileScreen() {
         <QuickActions router={router} onLogout={handleLogout} />
 
         <TouchableOpacity 
-          onPress={() => router.push('/api-debug')}
+          onPress={() => router.push('/debug-api')}
           activeOpacity={0.7}
         >
           <Text style={styles.version}>avida v1.0.0 (tap for debug)</Text>
