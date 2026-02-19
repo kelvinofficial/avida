@@ -208,11 +208,10 @@ export function useHomeData(): UseHomeDataReturn {
 
       let trending: { query: string; count: number }[] = [];
       try {
-        const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/searches/popular?limit=5`);
-        if (res.ok) {
-          const data = await res.json();
-          trending = data.global_searches || [];
-        }
+        // Use the api instance which has proper URL configuration
+        const { api } = await import('../utils/api');
+        const res = await api.get('/searches/popular', { params: { limit: 5 } });
+        trending = res.data?.global_searches || [];
       } catch (e) {
         console.log('Could not fetch trending searches');
       }
@@ -231,16 +230,15 @@ export function useHomeData(): UseHomeDataReturn {
     }
 
     try {
-      const res = await fetch(
-        `${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/searches/suggestions?q=${encodeURIComponent(query)}&limit=8`
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setSearchSuggestions(prev => ({ 
-          ...prev, 
-          autocomplete: data.suggestions || [] 
-        }));
-      }
+      // Use the api instance which has proper URL configuration
+      const { api } = await import('../utils/api');
+      const res = await api.get('/searches/suggestions', { 
+        params: { q: query, limit: 8 } 
+      });
+      setSearchSuggestions(prev => ({ 
+        ...prev, 
+        autocomplete: res.data?.suggestions || [] 
+      }));
     } catch (e) {
       console.log('Could not fetch autocomplete suggestions');
     }
