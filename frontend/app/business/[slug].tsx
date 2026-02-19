@@ -18,7 +18,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import api from '../../src/utils/api';
+import api, { API_URL } from '../../src/utils/api';
 import { safeGoBack } from '../../src/utils/navigation';
 import { getCachedSync, setCacheSync, CACHE_KEYS } from '../../src/utils/cacheManager';
 import { useCacheFirst } from '../../src/hooks/useCacheFirst';

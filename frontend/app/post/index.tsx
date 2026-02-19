@@ -19,7 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { listingsApi, categoriesApi } from '../../src/utils/api';
+import { listingsApi, categoriesApi, API_URL } from '../../src/utils/api';
 import api from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
 import { useBadgeCelebration } from '../../src/context/BadgeCelebrationContext';
