@@ -5,7 +5,7 @@ import {
   ScrollView,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useLocationStore } from '../../src/store/locationStore';
 import { useResponsive } from '../../src/hooks/useResponsive';
@@ -13,8 +13,8 @@ import { useHomeData } from '../../src/hooks/useHomeData';
 import { useSubcategoryModal } from '../../src/hooks/useSubcategoryModal';
 import { ResponsiveLayout, Footer } from '../../src/components/layout';
 import { LocationData } from '../../src/components/LocationPicker';
+import { CategoryDrawer } from '../../src/components/home/CategoryDrawer';
 import { 
-  SubcategoryModal,
   MobileHeader,
   HomeDesktopHeader,
   ListingsGrid,
@@ -25,6 +25,7 @@ import {
   HORIZONTAL_PADDING, 
 } from '../../src/components/home/homeStyles';
 import { HomeSEO, OrganizationSchema, WebsiteSearchSchema } from '../../src/components/seo';
+import { SPACING, getBottomPadding } from '../../src/constants/layout';
 
 // ============ LAYOUT CONSTANTS ============
 const COLUMN_GAP = 12;
