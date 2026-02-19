@@ -167,8 +167,10 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
               </TouchableOpacity>
             ))}
           </ScrollView>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
