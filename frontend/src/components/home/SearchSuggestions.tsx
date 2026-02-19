@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { API_URL } from '../../utils/api';
 
 // ============ ANIMATED CHIP COMPONENT ============
 interface AnimatedChipProps {
@@ -212,7 +213,7 @@ export const useSearchSuggestions = () => {
       // Fetch trending searches from API
       let trending: { query: string; count: number }[] = [];
       try {
-        const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || 'https://expo-connectivity.preview.emergentagent.com'}/api/searches/popular?limit=5`);
+        const res = await fetch(`${API_URL}/api/searches/popular?limit=5`);
         if (res.ok) {
           const data = await res.json();
           trending = data.global_searches || [];
@@ -240,7 +241,7 @@ export const useSearchSuggestions = () => {
 
     try {
       const res = await fetch(
-        `${process.env.EXPO_PUBLIC_BACKEND_URL || 'https://expo-connectivity.preview.emergentagent.com'}/api/searches/suggestions?q=${encodeURIComponent(query)}&limit=8`
+        `${API_URL}/api/searches/suggestions?q=${encodeURIComponent(query)}&limit=8`
       );
       if (res.ok) {
         const data = await res.json();
