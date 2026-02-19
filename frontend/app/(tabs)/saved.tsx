@@ -791,7 +791,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
-    paddingBottom: 100,
+    paddingBottom: 140, // Increased to account for tab bar
   },
   unauthIllustration: { position: 'relative', marginBottom: 24 },
   unauthIconBg: {

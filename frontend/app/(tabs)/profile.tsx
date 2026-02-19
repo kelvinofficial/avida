@@ -1264,7 +1264,7 @@ const styles = StyleSheet.create({
   unauthContent: {
     flexGrow: 1,
     paddingHorizontal: HORIZONTAL_PADDING,
-    paddingBottom: 40,
+    paddingBottom: 120, // Increased to account for tab bar
   },
   unauthHeader: {
     flexDirection: 'row',
