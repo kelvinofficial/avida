@@ -820,8 +820,16 @@ export default function ListingDetailScreen() {
   const handleShare = async () => {
     if (!listing) return;
     try {
-      await Share.share({ message: `Check out: ${listing.title} - ${formatPrice(listing.price)}` });
-    } catch (error) {}
+      const shareUrl = `${API_URL.replace('/api', '')}/listing/${id}`;
+      const message = `Check out: ${listing.title} - ${formatPrice(listing.price)}\n\n${shareUrl}`;
+      await Share.share({ 
+        message,
+        url: shareUrl, // iOS uses this separately
+        title: listing.title
+      });
+    } catch (error) {
+      console.log('Share error:', error);
+    }
   };
 
   const handleChat = async () => {
