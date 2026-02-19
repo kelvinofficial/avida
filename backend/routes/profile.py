@@ -321,6 +321,35 @@ def create_profile_router(db, require_auth, get_current_user):
         
         return {"items": result, "total": total, "page": page}
 
+    @router.get("/activity/recently-viewed")
+    async def get_recently_viewed(
+        request: Request,
+        limit: int = Query(50, ge=1, le=100)
+    ):
+        """Get recently viewed listings"""
+        user = await require_auth(request)
+        
+        # Get from recently_viewed collection
+        viewed = await db.recently_viewed.find(
+            {"user_id": user.user_id},
+            {"_id": 0}
+        ).sort("viewed_at", -1).limit(limit).to_list(limit)
+        
+        # Get listing details for each viewed item
+        result = []
+        for item in viewed:
+            listing = await db.listings.find_one(
+                {"id": item.get("listing_id")},
+                {"_id": 0}
+            )
+            if listing:
+                result.append({
+                    **listing,
+                    "viewed_at": item.get("viewed_at")
+                })
+        
+        return {"items": result}
+
     @router.delete("/activity/recently-viewed")
     async def clear_recently_viewed(request: Request):
         """Clear recently viewed history"""
