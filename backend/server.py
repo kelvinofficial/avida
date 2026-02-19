@@ -3265,6 +3265,18 @@ if ADMIN_TOOLS_AVAILABLE:
     except Exception as e:
         print(f"Failed to load PWA routes: {e}")
     
+    # Instant Feed Router
+    try:
+        from routes.feed import create_feed_router, ensure_feed_indexes
+        feed_router = create_feed_router(db)
+        app.include_router(feed_router, prefix="/api")
+        print("Instant Feed routes loaded successfully")
+        # Create indexes in background
+        import asyncio
+        asyncio.create_task(ensure_feed_indexes(db))
+    except Exception as e:
+        print(f"Failed to load Feed routes: {e}")
+    
     # URL redirect endpoint for short URLs
     @app.get("/s/{code}")
     async def redirect_short_url(code: str, request: Request):
