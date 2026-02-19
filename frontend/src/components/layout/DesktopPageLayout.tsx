@@ -146,7 +146,7 @@ const QuickStatsCard: React.FC = () => {
     const connectWebSocket = async () => {
       try {
         const { io } = await import('socket.io-client');
-        const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+        const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://perf-bugfix.preview.emergentagent.com';
         
         const socket = io(BACKEND_URL, {
           transports: ['websocket'],

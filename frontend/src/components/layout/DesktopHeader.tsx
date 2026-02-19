@@ -82,7 +82,7 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
     }
     try {
       const res = await fetch(
-        `${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/api/searches/suggestions?q=${encodeURIComponent(query)}&limit=8`
+        `${process.env.EXPO_PUBLIC_BACKEND_URL || 'https://perf-bugfix.preview.emergentagent.com'}/api/searches/suggestions?q=${encodeURIComponent(query)}&limit=8`
       );
       if (res.ok) {
         const data = await res.json();
