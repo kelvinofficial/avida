@@ -101,8 +101,8 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
 
   if (!category) return null;
 
-  // Calculate max height - 95% of screen
-  const maxHeight = SCREEN_HEIGHT * 0.95;
+  // Calculate max height - 70% of screen (reduced to ensure scrolling is visible)
+  const maxHeight = SCREEN_HEIGHT * 0.70;
   const bottomPadding = Math.max(insets.bottom, 24);
 
   return (
