@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '92%',
-    paddingBottom: 40,
+    // paddingBottom is now set dynamically using safe area insets
   },
   subcategoryModalHeader: {
     flexDirection: 'row',
