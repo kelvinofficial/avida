@@ -279,7 +279,7 @@ export default function HomeScreen() {
   // ============ LISTINGS GRID PROPS ============
   const listingsGridProps = {
     listings,
-    initialLoadDone,
+    initialLoadDone: !isInitialLoad,
     expandedSearch,
     selectedCategory,
     favorites,
@@ -301,32 +301,113 @@ export default function HomeScreen() {
     listings,
   };
 
-  const mainContent = (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2E7D32']} tintColor="#2E7D32" />}
-      onScroll={({ nativeEvent }) => {
-        const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-        const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
-        if (isCloseToBottom && !loading && hasMore) {
-          loadMore();
-        }
-      }}
-      scrollEventThrottle={400}
-      style={isDesktop || isTablet ? { flex: 1 } : undefined}
-    >
-      {/* Content wrapper with light background */}
-      <View style={(isDesktop || isTablet) ? { backgroundColor: '#F5F5F5' } : undefined}>
-        {isDesktop || isTablet ? (
-          <HomeDesktopHeader {...homeDesktopHeaderProps} />
-        ) : <MobileHeader {...mobileHeaderProps} />}
-        <View style={[styles.listContent, (isDesktop || isTablet) && { paddingHorizontal: 0, alignItems: 'center' }]}>
-          <ListingsGrid {...listingsGridProps} />
-        </View>
+  // ============ RENDER LISTING ITEM FOR FLATLIST ============
+  const renderListingItem = useCallback(({ item, index }: { item: any; index: number }) => {
+    const rowIndex = Math.floor(index / columns);
+    const colIndex = index % columns;
+    const isFirstInRow = colIndex === 0;
+    const isLastInRow = colIndex === columns - 1;
+    
+    return (
+      <View 
+        style={[
+          { 
+            width: dynamicCardWidth,
+            marginBottom: gridGap,
+            marginLeft: isFirstInRow ? 0 : gridGap / 2,
+            marginRight: isLastInRow ? 0 : gridGap / 2,
+          }
+        ]}
+      >
+        <ListingCard
+          listing={item}
+          onPress={() => router.push(`/listing/${item.id}`)}
+          onFavorite={() => toggleFavorite(item.id)}
+          isFavorited={favorites.has(item.id)}
+          userLocation={selectedCity?.lat && selectedCity?.lng ? { lat: selectedCity.lat, lng: selectedCity.lng } : null}
+        />
       </View>
-      {/* Footer for Desktop & Tablet */}
+    );
+  }, [columns, dynamicCardWidth, gridGap, router, toggleFavorite, favorites, selectedCity]);
+
+  // ============ FLATLIST HEADER COMPONENT ============
+  const ListHeaderComponent = useMemo(() => (
+    <View style={(isDesktop || isTablet) ? { backgroundColor: '#F5F5F5' } : undefined}>
+      {isDesktop || isTablet ? (
+        <HomeDesktopHeader {...homeDesktopHeaderProps} />
+      ) : <MobileHeader {...mobileHeaderProps} />}
+    </View>
+  ), [isDesktop, isTablet, homeDesktopHeaderProps, mobileHeaderProps]);
+
+  // ============ FLATLIST FOOTER COMPONENT ============
+  const ListFooterComponent = useMemo(() => (
+    <View>
+      {isLoadingMore && (
+        <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+          <ActivityIndicator size="small" color="#2E7D32" />
+        </View>
+      )}
       {(isDesktop || isTablet) && <Footer isTablet={isTablet && !isDesktop} />}
-    </ScrollView>
+      <View style={{ height: 100 }} />
+    </View>
+  ), [isLoadingMore, isDesktop, isTablet]);
+
+  // ============ EMPTY STATE COMPONENT ============
+  const ListEmptyComponent = useMemo(() => {
+    if (isInitialLoad) {
+      return (
+        <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#2E7D32" />
+          <Text style={{ marginTop: 12, color: '#666' }}>Loading listings...</Text>
+        </View>
+      );
+    }
+    return (
+      <EmptyState 
+        icon="pricetags-outline" 
+        title={expandedSearch ? "Showing nearby listings" : "No listings yet"} 
+        description={expandedSearch ? "Try adjusting your location or search settings." : "Be the first to post an ad in your area!"} 
+      />
+    );
+  }, [isInitialLoad, expandedSearch]);
+
+  // FlatList key extractor
+  const keyExtractor = useCallback((item: any) => item.id, []);
+
+  // FlatList optimizations
+  const flatListProps = useMemo(() => ({
+    ...getFeedFlatListProps(240),
+    numColumns: columns,
+    key: columns, // Force re-render when columns change
+  }), [columns]);
+
+  const mainContent = (
+    <FlatList
+      data={listings}
+      renderItem={renderListingItem}
+      keyExtractor={keyExtractor}
+      ListHeaderComponent={ListHeaderComponent}
+      ListFooterComponent={ListFooterComponent}
+      ListEmptyComponent={ListEmptyComponent}
+      refreshControl={
+        <RefreshControl 
+          refreshing={isRefreshing} 
+          onRefresh={refreshFeed} 
+          colors={['#2E7D32']} 
+          tintColor="#2E7D32" 
+        />
+      }
+      onEndReached={loadMoreFeed}
+      onEndReachedThreshold={0.5}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={[
+        styles.listContent,
+        (isDesktop || isTablet) && { paddingHorizontal: gridPadding, maxWidth: MAX_WIDTH, alignSelf: 'center', width: '100%' },
+        { paddingHorizontal: gridPadding }
+      ]}
+      style={isDesktop || isTablet ? { flex: 1 } : undefined}
+      {...flatListProps}
+    />
   );
 
   return (
