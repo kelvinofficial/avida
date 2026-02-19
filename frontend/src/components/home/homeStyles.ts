@@ -492,7 +492,7 @@ export const desktopStyles = StyleSheet.create({
 export const mobileStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#FFFFFF',
   },
 
   // ========== HEADER (NO BOX, PLAIN SURFACE) ==========
