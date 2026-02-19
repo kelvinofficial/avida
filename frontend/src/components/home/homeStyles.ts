@@ -6,7 +6,7 @@
 import { StyleSheet, Platform } from 'react-native';
 
 // Layout Constants
-export const HORIZONTAL_PADDING = 6; // Reduced for edge-to-edge look
+export const HORIZONTAL_PADDING = 0; // Edge-to-edge layout
 export const ROW_1_HEIGHT = 56;
 export const TOUCH_TARGET = 44;
 export const ICON_SIZE = 24;
@@ -825,7 +825,7 @@ export const mobileStyles = StyleSheet.create({
     flexGrow: 0,
   },
   categoriesContent: {
-    paddingHorizontal: 6,
+    paddingHorizontal: 0,
     gap: 4,
   },
 
@@ -834,7 +834,7 @@ export const mobileStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 6,
+    paddingHorizontal: 0,
     paddingTop: 16,
     paddingBottom: 10,
   },
