@@ -854,3 +854,60 @@ This copies:
 
 **Note:** Testing was performed on web with mobile viewport (375x812). Physical Android device testing recommended to verify platform-specific behavior.
 
+
+### February 19, 2026 (Comprehensive UI/UX Layout Refactoring)
+
+#### Global Layout System Architecture Created
+
+**New Files Created:**
+1. `/app/frontend/src/constants/layout.ts` - Global layout constants including:
+   - Standardized 8-point spacing scale (SPACING: 4, 8, 12, 16, 20, 24, 32, 48)
+   - Brand colors (COLORS: primary #2E7D32, backgrounds, text, etc.)
+   - Layout dimensions (screen sizes, safe area values, bottom sheet configs)
+   - Typography scale (sizes, weights, line heights)
+   - Border radius values (RADIUS)
+   - Shadow presets (SHADOWS)
+   - Helper functions: `getBottomPadding()`, `getScrollContentPadding()`, `getGridColumns()`
+
+2. `/app/frontend/src/components/layout/ScreenLayout.tsx` - Standard screen wrapper with:
+   - Proper SafeAreaView handling
+   - Sticky footer support (outside ScrollView)
+   - KeyboardAvoidingView option
+   - Consistent edge handling
+
+3. `/app/frontend/src/components/common/BottomSheetDrawer.tsx` - Full-height expandable drawer:
+   - 95% screen height max
+   - Sticky header that doesn't scroll
+   - Proper safe area bottom padding
+   - Tap outside to close
+   - Android back button support
+   - Smooth slide animation
+
+4. `/app/frontend/src/components/home/CategoryDrawer.tsx` - Redesigned category drawer:
+   - Full-height expandable (95% screen)
+   - Sticky header with category name and close button
+   - "View All" button always visible at top
+   - Scrollable subcategory list
+   - Recent subcategories section
+   - Proper safe area handling
+
+**Fixes Applied:**
+1. **Bottom Navigation Safe Area** - Tab bar uses `Math.max(insets.bottom, 16)` for Android
+2. **Screen Content Padding** - All screens with sticky CTAs have dynamic spacer: `Math.max(insets.bottom, 24) + 80`
+3. **Category Drawer** - Converted from small modal to full-height expandable drawer
+4. **Scroll Clipping** - All FlatList/ScrollView use dynamic `paddingBottom: Math.max(insets.bottom, 24)`
+
+**Screens Updated:**
+- `/app/frontend/app/(tabs)/index.tsx` - Uses new CategoryDrawer
+- `/app/frontend/app/listing/[id].tsx` - Dynamic spacer for bottom actions
+- `/app/frontend/app/auto/[id].tsx` - Dynamic spacer for bottom actions
+- `/app/frontend/app/property/[id].tsx` - Dynamic spacer for bottom actions
+
+**Standards Implemented:**
+- Spacing scale: 8 / 12 / 16 / 20 / 24 / 32 only
+- Consistent horizontal padding: 16px on all screens
+- Bottom sheet max height: 95% screen height
+- Safe area minimum padding: 16px
+- Sticky CTA height: 56px + safe area
+
+
