@@ -3,10 +3,10 @@ import { useAuthStore } from '../store/authStore';
 import { Platform } from 'react-native';
 
 // Production API URL - used when env variable is not available (e.g., in APK builds)
-const PRODUCTION_API_URL = 'https://perf-bugfix.preview.emergentagent.com';
+export const PRODUCTION_API_URL = 'https://perf-bugfix.preview.emergentagent.com';
 
 // Get API URL from environment or use production fallback
-const getApiUrl = (): string => {
+export const getApiUrl = (): string => {
   const envUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
   
   // If env variable is set and not empty, use it
@@ -18,7 +18,7 @@ const getApiUrl = (): string => {
   return PRODUCTION_API_URL;
 };
 
-const API_URL = getApiUrl();
+export const API_URL = getApiUrl();
 
 // Log API URL for debugging (only in development)
 if (__DEV__) {
