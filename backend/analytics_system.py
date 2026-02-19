@@ -1024,7 +1024,7 @@ class EngagementNotificationManager:
                     notification_data = {
                         "type": "engagement_views_spike",
                         "title": "Your listing is trending!",
-                        "body": f'"{listing["title"][:30]}..." got {today_events} views today - {views_ratio:.1f}x your average!',
+                        "body": f'"{listing_title[:30]}..." got {today_events} views today - {views_ratio:.1f}x your average!',
                         "metric": "views",
                         "value": today_events,
                         "ratio": views_ratio
@@ -1037,7 +1037,7 @@ class EngagementNotificationManager:
                     notification_data = {
                         "type": "engagement_saves_spike",
                         "title": "People are saving your listing!",
-                        "body": f'"{listing["title"][:30]}..." was saved {today_saves} times today - buyers are interested!',
+                        "body": f'"{listing_title[:30]}..." was saved {today_saves} times today - buyers are interested!',
                         "metric": "saves",
                         "value": today_saves,
                         "ratio": saves_ratio
@@ -1050,7 +1050,7 @@ class EngagementNotificationManager:
                     notification_data = {
                         "type": "engagement_chats_spike",
                         "title": "Buyers want to chat!",
-                        "body": f'"{listing["title"][:30]}..." received {today_chats} chat requests today!',
+                        "body": f'"{listing_title[:30]}..." received {today_chats} chat requests today!',
                         "metric": "chats",
                         "value": today_chats,
                         "ratio": chats_ratio
@@ -1067,7 +1067,7 @@ class EngagementNotificationManager:
                         cta_label="View Performance",
                         cta_route=f"/performance/{listing_id}",
                         listing_id=listing_id,
-                        listing_title=listing["title"],
+                        listing_title=listing_title,
                         data_payload={
                             "listing_id": listing_id,
                             "type": notification_data["type"],
