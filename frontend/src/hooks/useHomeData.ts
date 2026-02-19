@@ -12,7 +12,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import { Storage } from '../utils/storage';
 import { CacheManager, getCachedSync, setCacheSync, CACHE_KEYS } from '../utils/cacheManager';
-import { listingsApi, categoriesApi, favoritesApi, notificationsApi, locationsApi } from '../utils/api';
+import { listingsApi, categoriesApi, favoritesApi, notificationsApi, locationsApi, API_URL } from '../utils/api';
 import { sandboxAwareListingsApi, sandboxAwareCategoriesApi, sandboxUtils } from '../utils/sandboxAwareApi';
 import { Listing, Category } from '../types';
 import { useAuthStore } from '../store/authStore';

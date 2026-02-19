@@ -4,8 +4,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { CATEGORY_LISTING_TIPS } from '../config/listingFormConfig';
-
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://expo-connectivity.preview.emergentagent.com';
+import { API_URL } from '../utils/api';
 
 export interface PhotographyGuide {
   id: string;
