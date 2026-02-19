@@ -595,8 +595,8 @@ export default function AutoListingDetailScreen() {
         {/* Similar Listings - Two column layout for auto category */}
         <SimilarListings propertyId={listing.id} category="auto" />
 
-        {/* Spacer for bottom actions */}
-        <View style={{ height: 100 }} />
+        {/* Spacer for bottom actions - dynamic height based on safe area */}
+        <View style={{ height: Math.max(insets.bottom, 24) + 80 }} />
       </ScrollView>
 
       {/* Bottom Actions - Dynamic based on seller preferences */}
