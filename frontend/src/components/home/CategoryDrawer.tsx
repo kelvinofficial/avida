@@ -2,9 +2,8 @@
  * CategoryDrawer - Full-height expandable category subcategory drawer
  * 
  * Layout Structure:
- * - Header (STICKY): Category name + close button
- * - View All button (STICKY): Always visible below header
- * - Scrollable content: Recent subcategories + All subcategories list
+ * - Header (STICKY): Category name + close button - DOES NOT SCROLL
+ * - View All + Subcategories: SCROLLABLE - scrolls together
  */
 
 import React, { useEffect, useRef } from 'react';
@@ -20,13 +19,14 @@ import {
   TouchableWithoutFeedback,
   Animated,
   BackHandler,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SubcategoryConfig } from '../../config/subcategories';
 import { COLORS, SPACING, RADIUS, LAYOUT, SHADOWS, getBottomPadding } from '../../constants/layout';
 
-const SCREEN_HEIGHT = Dimensions.get('window').height;
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface RecentSubcategory {
   categoryId: string;
@@ -53,12 +53,6 @@ interface CategoryDrawerProps {
   onSelectRecentSubcategory: (item: RecentSubcategory) => void;
 }
 
-/**
- * CategoryDrawer implements:
- * - Header + View All are STICKY (never scroll)
- * - Recent + Subcategories list scroll together
- * - Proper safe area handling
- */
 export const CategoryDrawer: React.FC<CategoryDrawerProps> = ({
   visible,
   onClose,
@@ -73,54 +67,31 @@ export const CategoryDrawer: React.FC<CategoryDrawerProps> = ({
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  // Filter recent subcategories for the current category
   const recentForThisCategory = recentSubcategories.filter(
     item => item.categoryId === category?.id
   );
 
-  // Calculate heights
-  const sheetHeight = SCREEN_HEIGHT * 0.85;
-  const bottomPadding = getBottomPadding(insets.bottom, SPACING.xl);
+  const bottomPadding = Math.max(insets.bottom, 34) + SPACING.xl;
 
-  // Handle Android back button
   useEffect(() => {
     if (!visible) return;
-
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       onClose();
       return true;
     });
-
     return () => backHandler.remove();
   }, [visible, onClose]);
 
-  // Animate in/out
   useEffect(() => {
     if (visible) {
       Animated.parallel([
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
+        Animated.timing(slideAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
+        Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
       ]).start();
     } else {
       Animated.parallel([
-        Animated.timing(slideAnim, {
-          toValue: SCREEN_HEIGHT,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 250,
-          useNativeDriver: true,
-        }),
+        Animated.timing(slideAnim, { toValue: SCREEN_HEIGHT, duration: 250, useNativeDriver: true }),
+        Animated.timing(fadeAnim, { toValue: 0, duration: 250, useNativeDriver: true }),
       ]).start();
     }
   }, [visible]);
@@ -135,45 +106,34 @@ export const CategoryDrawer: React.FC<CategoryDrawerProps> = ({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      {/* Overlay */}
-      <TouchableWithoutFeedback onPress={onClose}>
-        <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />
-      </TouchableWithoutFeedback>
+      <View style={styles.modalContainer}>
+        {/* Overlay */}
+        <TouchableWithoutFeedback onPress={onClose}>
+          <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />
+        </TouchableWithoutFeedback>
 
-      {/* Sheet Container */}
-      <Animated.View
-        style={[
-          styles.sheetContainer,
-          {
-            height: sheetHeight,
-            transform: [{ translateY: slideAnim }],
-          },
-        ]}
-        testID="category-drawer"
-      >
-        <View style={[styles.sheet, { height: sheetHeight }]}>
-          {/* ========== STICKY SECTION START ========== */}
-          
+        {/* Sheet */}
+        <Animated.View
+          style={[
+            styles.sheet,
+            { transform: [{ translateY: slideAnim }] },
+          ]}
+          testID="category-drawer"
+        >
           {/* Drag Handle */}
           <View style={styles.dragHandleContainer}>
             <View style={styles.dragHandle} />
           </View>
 
-          {/* Sticky Header */}
+          {/* STICKY HEADER - Does not scroll */}
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               {category.icon && (
                 <View style={styles.headerIconContainer}>
-                  <Ionicons
-                    name={category.icon as any}
-                    size={24}
-                    color={COLORS.primary}
-                  />
+                  <Ionicons name={category.icon as any} size={24} color={COLORS.primary} />
                 </View>
               )}
-              <Text style={styles.headerTitle} numberOfLines={1}>
-                {category.name}
-              </Text>
+              <Text style={styles.headerTitle} numberOfLines={1}>{category.name}</Text>
             </View>
             <TouchableOpacity
               onPress={onClose}
@@ -185,22 +145,17 @@ export const CategoryDrawer: React.FC<CategoryDrawerProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Divider */}
           <View style={styles.divider} />
 
-          {/* ========== SCROLLABLE SECTION START ========== */}
+          {/* SCROLLABLE CONTENT - View All + Subcategories scroll together */}
           <ScrollView
-            style={styles.scrollableContent}
-            contentContainerStyle={[
-              styles.scrollContentContainer,
-              { paddingBottom: bottomPadding },
-            ]}
+            style={styles.scrollView}
+            contentContainerStyle={{ paddingBottom: bottomPadding }}
             showsVerticalScrollIndicator={true}
             bounces={true}
-            alwaysBounceVertical={true}
-            scrollEnabled={true}
+            scrollEventThrottle={16}
           >
-            {/* View All Button - Scrollable */}
+            {/* View All Button */}
             <TouchableOpacity
               style={styles.viewAllButton}
               onPress={() => onSelectSubcategory(category.id, undefined)}
@@ -218,18 +173,16 @@ export const CategoryDrawer: React.FC<CategoryDrawerProps> = ({
                   <ActivityIndicator size="small" color={COLORS.primary} />
                 ) : (
                   <View style={styles.countBadge}>
-                    <Text style={styles.countBadgeText}>
-                      {subcategoryCounts._total || 0}
-                    </Text>
+                    <Text style={styles.countBadgeText}>{subcategoryCounts._total || 0}</Text>
                   </View>
                 )}
                 <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
               </View>
             </TouchableOpacity>
 
-            {/* Recently Viewed Section */}
+            {/* Recently Viewed */}
             {recentForThisCategory.length > 0 && (
-              <View style={styles.sectionContainer}>
+              <View style={styles.section}>
                 <View style={styles.sectionHeader}>
                   <Ionicons name="time-outline" size={14} color={COLORS.textMuted} />
                   <Text style={styles.sectionTitle}>Recently viewed</Text>
@@ -246,247 +199,221 @@ export const CategoryDrawer: React.FC<CategoryDrawerProps> = ({
                       onPress={() => onSelectRecentSubcategory(item)}
                       activeOpacity={0.7}
                     >
-                      <Text style={styles.recentChipText} numberOfLines={1}>
-                        {item.subcategoryName}
-                      </Text>
+                      <Text style={styles.recentChipText} numberOfLines={1}>{item.subcategoryName}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
               </View>
             )}
 
-            {/* All Subcategories Section */}
-            <View style={styles.sectionContainer}>
+            {/* All Subcategories */}
+            <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>ALL SUBCATEGORIES</Text>
               </View>
-              
-              <View style={styles.subcategoriesList}>
-                {category.subcategories.map((subcat, index) => (
-                  <TouchableOpacity
-                    key={subcat.id}
-                    style={[
-                      styles.subcategoryItem,
-                      index === category.subcategories.length - 1 && styles.subcategoryItemLast,
-                    ]}
-                    onPress={() => onSelectSubcategory(category.id, subcat.id)}
-                    activeOpacity={0.7}
-                    testID={`subcategory-${subcat.id}`}
-                  >
-                    <Text style={styles.subcategoryText}>{subcat.name}</Text>
-                    <View style={styles.subcategoryRight}>
-                      {loadingCounts ? (
-                        <View style={styles.countPlaceholder} />
-                      ) : subcategoryCounts[subcat.id] > 0 ? (
-                        <View style={styles.smallCountBadge}>
-                          <Text style={styles.smallCountText}>
-                            {subcategoryCounts[subcat.id]}
-                          </Text>
-                        </View>
-                      ) : null}
-                      <Ionicons name="chevron-forward" size={18} color={COLORS.textMuted} />
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
+              {category.subcategories.map((subcat, index) => (
+                <TouchableOpacity
+                  key={subcat.id}
+                  style={[
+                    styles.subcategoryItem,
+                    index === category.subcategories.length - 1 && styles.subcategoryItemLast,
+                  ]}
+                  onPress={() => onSelectSubcategory(category.id, subcat.id)}
+                  activeOpacity={0.7}
+                  testID={`subcategory-${subcat.id}`}
+                >
+                  <Text style={styles.subcategoryText}>{subcat.name}</Text>
+                  <View style={styles.subcategoryRight}>
+                    {!loadingCounts && subcategoryCounts[subcat.id] > 0 && (
+                      <View style={styles.smallCountBadge}>
+                        <Text style={styles.smallCountText}>{subcategoryCounts[subcat.id]}</Text>
+                      </View>
+                    )}
+                    <Ionicons name="chevron-forward" size={18} color={COLORS.textMuted} />
+                  </View>
+                </TouchableOpacity>
+              ))}
             </View>
           </ScrollView>
-          {/* ========== SCROLLABLE SECTION END ========== */}
-        </View>
-      </Animated.View>
+        </Animated.View>
+      </View>
     </Modal>
   );
 };
 
+const HEADER_HEIGHT = 70;
+
 const styles = StyleSheet.create({
-  // Overlay
+  modalContainer: {
+    flex: 1,
+  },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: COLORS.overlay,
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
-
-  // Sheet Container
-  sheetContainer: {
+  sheet: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
+    height: SCREEN_HEIGHT * 0.85,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+      },
+      android: {
+        elevation: 10,
+      },
+    }),
   },
-  sheet: {
-    backgroundColor: COLORS.surface,
-    borderTopLeftRadius: RADIUS.sheet,
-    borderTopRightRadius: RADIUS.sheet,
-    overflow: 'hidden',
-    ...SHADOWS.xl,
-  },
-
-  // Drag Handle
   dragHandleContainer: {
     alignItems: 'center',
-    paddingVertical: SPACING.sm,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
   dragHandle: {
     width: 36,
     height: 4,
-    backgroundColor: COLORS.borderLight,
+    backgroundColor: '#E0E0E0',
     borderRadius: 2,
   },
-
-  // Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    minHeight: LAYOUT.bottomSheet.headerHeight,
+    paddingHorizontal: 16,
+    height: HEADER_HEIGHT,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    gap: SPACING.md,
+    gap: 12,
   },
   headerIconContainer: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: COLORS.primaryLight,
+    backgroundColor: '#E8F5E9',
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '700',
-    color: COLORS.text,
+    color: '#212121',
     flex: 1,
   },
   closeButton: {
-    padding: SPACING.xs,
-    marginLeft: SPACING.sm,
+    padding: 8,
   },
-
-  // Divider
   divider: {
     height: 1,
-    backgroundColor: COLORS.divider,
+    backgroundColor: '#E0E0E0',
   },
-
-  // View All Button (STICKY - outside ScrollView)
+  scrollView: {
+    flex: 1,
+  },
   viewAllButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginHorizontal: SPACING.base,
-    marginTop: SPACING.base,
-    marginBottom: SPACING.sm,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.base,
-    backgroundColor: COLORS.primaryLight,
-    borderRadius: RADIUS.lg,
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#E8F5E9',
+    borderRadius: 12,
   },
   viewAllContent: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    gap: SPACING.md,
+    gap: 12,
   },
   viewAllIcon: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: COLORS.surface,
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
   },
   viewAllText: {
     fontSize: 15,
     fontWeight: '600',
-    color: COLORS.primary,
-    flex: 1,
+    color: '#2E7D32',
   },
   viewAllRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
+    gap: 8,
   },
   countBadge: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    borderRadius: RADIUS.full,
+    backgroundColor: '#2E7D32',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
     minWidth: 28,
     alignItems: 'center',
   },
   countBadgeText: {
     fontSize: 12,
     fontWeight: '700',
-    color: COLORS.surface,
+    color: '#fff',
   },
-
-  // Scrollable Content
-  scrollableContent: {
-    flex: 1,
-  },
-  scrollContentContainer: {
-    flexGrow: 1,
-  },
-
-  // Section Container
-  sectionContainer: {
-    marginTop: SPACING.sm,
+  section: {
+    marginTop: 8,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
-    paddingHorizontal: SPACING.base,
-    paddingVertical: SPACING.sm,
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderLight,
+    borderBottomColor: '#F0F0F0',
   },
   sectionTitle: {
     fontSize: 11,
     fontWeight: '600',
-    color: COLORS.textMuted,
+    color: '#9E9E9E',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-
-  // Recent Subcategories
   recentScrollContent: {
-    paddingHorizontal: SPACING.base,
-    paddingVertical: SPACING.md,
-    gap: SPACING.sm,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   recentChip: {
-    backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: RADIUS.full,
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: '#C8E6C9',
-    marginRight: SPACING.sm,
+    marginRight: 8,
   },
   recentChipText: {
     fontSize: 13,
     fontWeight: '500',
-    color: COLORS.primary,
-    maxWidth: 120,
-  },
-
-  // Subcategories List
-  subcategoriesList: {
-    paddingHorizontal: SPACING.sm,
+    color: '#2E7D32',
   },
   subcategoryItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.sm,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderLight,
+    borderBottomColor: '#F0F0F0',
     minHeight: 52,
   },
   subcategoryItemLast: {
@@ -494,34 +421,28 @@ const styles = StyleSheet.create({
   },
   subcategoryText: {
     fontSize: 15,
-    color: COLORS.text,
+    color: '#212121',
     flex: 1,
   },
   subcategoryRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
+    gap: 8,
   },
   smallCountBadge: {
-    backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: SPACING.sm,
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 10,
     paddingVertical: 2,
-    borderRadius: RADIUS.base,
+    borderRadius: 8,
     minWidth: 28,
     alignItems: 'center',
   },
   smallCountText: {
     fontSize: 12,
     fontWeight: '600',
-    color: COLORS.primary,
-  },
-  countPlaceholder: {
-    width: 28,
-    height: 20,
+    color: '#2E7D32',
   },
 });
 
-// For backward compatibility, also export as SubcategoryModal
 export const SubcategoryModal = CategoryDrawer;
-
 export default CategoryDrawer;
