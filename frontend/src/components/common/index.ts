@@ -25,3 +25,4 @@ export { FavoriteNotificationProvider, useFavoriteNotification } from './Favorit
 export { SocialShareButtons } from './SocialShareButtons';
 export { BackButton } from './BackButton';
 export { BottomSheetDrawer } from './BottomSheetDrawer';
+export { ScreenLayout } from './ScreenLayout';
