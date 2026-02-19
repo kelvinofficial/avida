@@ -190,9 +190,11 @@ export const BottomSheetDrawer: React.FC<BottomSheetDrawerProps> = ({
                 styles.contentContainer,
                 { paddingBottom: bottomPadding },
               ]}
-              showsVerticalScrollIndicator={false}
-              bounces={false}
+              showsVerticalScrollIndicator={true}
+              bounces={true}
               keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled={true}
+              overScrollMode="always"
             >
               {children}
             </ScrollView>
