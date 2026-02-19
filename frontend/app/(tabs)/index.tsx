@@ -56,15 +56,8 @@ export default function HomeScreen() {
   } = useSubcategoryModal();
   
   // ============ USE HOME DATA HOOK ============
-  // Centralized data fetching and state management
+  // Centralized data fetching and state management (for non-listings data)
   const {
-    // Listings data
-    listings,
-    loading,
-    initialLoadDone,
-    refreshing,
-    hasMore,
-    
     // Featured data
     featuredSellers,
     featuredListings,
@@ -89,8 +82,6 @@ export default function HomeScreen() {
     selectedCategory,
     
     // Actions
-    handleRefresh: onRefresh,
-    loadMore,
     toggleFavorite,
     setSelectedCategory,
     setHomeSearchQuery,
@@ -103,6 +94,30 @@ export default function HomeScreen() {
     saveSelectedCity,
     handleClearLocationFilter,
   } = useHomeData();
+  
+  // ============ INSTANT FEED HOOK ============
+  // High-performance cache-first feed for listings
+  const feedParams: FeedParams = useMemo(() => ({
+    country: selectedLocationFilter?.country_code,
+    region: selectedLocationFilter?.region_code,
+    city: selectedLocationFilter?.city_code,
+    category: selectedCategory || undefined,
+    sort: 'newest',
+    limit: 20,
+  }), [selectedLocationFilter, selectedCategory]);
+  
+  const {
+    items: feedItems,
+    isRefreshing,
+    isLoadingMore,
+    hasMore,
+    isInitialLoad,
+    refresh: refreshFeed,
+    loadMore: loadMoreFeed,
+  } = useInstantListingsFeed(feedParams);
+  
+  // Convert feed items to listing format for compatibility
+  const listings = useMemo(() => feedItems.map(feedItemToListing), [feedItems]);
   
   // ============ UI-SPECIFIC STATE (not in hooks) ============
   const [showLocationModal, setShowLocationModal] = useState(false);
