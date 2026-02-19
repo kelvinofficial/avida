@@ -19,7 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { conversationsApi, usersApi } from '../../src/utils/api';
+import { conversationsApi, usersApi, API_URL } from '../../src/utils/api';
 import api from '../../src/utils/api';
 import { sandboxAwareConversationsApi, sandboxUtils } from '../../src/utils/sandboxAwareApi';
 import { Conversation, Message } from '../../src/types';
@@ -31,15 +31,12 @@ import { useResponsive } from '../../src/hooks/useResponsive';
 import { DesktopHeader, DesktopPageLayout } from '../../src/components/layout';
 import { MessagesSkeleton } from '../../src/components/skeletons';
 import { io, Socket } from 'socket.io-client';
-import Constants from 'expo-constants';
 import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Get backend URL
-const BACKEND_URL = Constants.expoConfig?.extra?.EXPO_BACKEND_URL || 
-                    process.env.EXPO_PUBLIC_BACKEND_URL || 
-                    'http://localhost:8001';
+// Get backend URL from centralized API config
+const BACKEND_URL = API_URL;
 
 const COLORS = {
   primary: '#2E7D32',

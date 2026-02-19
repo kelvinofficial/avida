@@ -16,7 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { listingsApi, categoriesApi, favoritesApi } from '../../src/utils/api';
+import { listingsApi, categoriesApi, favoritesApi, API_URL } from '../../src/utils/api';
 import { useAuthStore } from '../../src/store/authStore';
 import { safeGoBack } from '../../src/utils/navigation';
 import {
@@ -240,8 +240,7 @@ export default function CategoryScreen() {
 
   const categoryId = id as string;
   
-  // API Base URL
-  const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+  // API Base URL is imported from centralized api.ts
   
   // Storage key for recent searches (per category)
   const RECENT_SEARCHES_KEY = `recent_searches_${categoryId}`;

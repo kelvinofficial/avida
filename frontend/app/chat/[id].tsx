@@ -24,7 +24,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { io, Socket } from 'socket.io-client';
 import { Audio } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
-import { conversationsApi, reportApi } from '../../src/utils/api';
+import { conversationsApi, reportApi, API_URL } from '../../src/utils/api';
 import { Conversation, Message } from '../../src/types';
 import { useAuthStore } from '../../src/store/authStore';
 import { format, isToday, isYesterday } from 'date-fns';
@@ -32,7 +32,7 @@ import { useResponsive } from '../../src/hooks/useResponsive';
 import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+const BACKEND_URL = API_URL;
 
 const COLORS = {
   primary: '#2E7D32',
