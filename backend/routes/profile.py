@@ -350,6 +350,28 @@ def create_profile_router(db, require_auth, get_current_user):
         
         return {"items": result}
 
+    @router.post("/activity/recently-viewed/{listing_id}")
+    async def add_recently_viewed(listing_id: str, request: Request):
+        """Add listing to recently viewed"""
+        user = await require_auth(request)
+        
+        from datetime import datetime, timezone
+        
+        # Upsert to recently_viewed
+        await db.recently_viewed.update_one(
+            {"user_id": user.user_id, "listing_id": listing_id},
+            {
+                "$set": {
+                    "user_id": user.user_id,
+                    "listing_id": listing_id,
+                    "viewed_at": datetime.now(timezone.utc).isoformat()
+                }
+            },
+            upsert=True
+        )
+        
+        return {"success": True}
+
     @router.delete("/activity/recently-viewed")
     async def clear_recently_viewed(request: Request):
         """Clear recently viewed history"""
