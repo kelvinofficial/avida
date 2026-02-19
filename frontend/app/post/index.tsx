@@ -752,7 +752,7 @@ export default function PostListingScreen() {
     setShowAiSuggestions(false);
     
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/ai-analyzer/analyze`, {
+      const response = await fetch(`${API_URL}/api/ai-analyzer/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -857,7 +857,7 @@ export default function PostListingScreen() {
 
   const submitAiFeedback = async (analysisId: string, accepted: boolean, edited: boolean, rejected: boolean) => {
     try {
-      await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/ai-analyzer/feedback`, {
+      await fetch(`${API_URL}/api/ai-analyzer/feedback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ analysis_id: analysisId, accepted, edited, rejected }),
@@ -880,7 +880,7 @@ export default function PostListingScreen() {
     setPriceSuggestion(null);
     
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/ai-analyzer/price-suggestion`, {
+      const response = await fetch(`${API_URL}/api/ai-analyzer/price-suggestion`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
