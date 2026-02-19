@@ -59,31 +59,34 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
       transparent={true}
       onRequestClose={onClose}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.subcategoryModalContent}>
-          {/* Modal Header */}
-          <View style={styles.subcategoryModalHeader}>
-            <View style={styles.subcategoryHeaderLeft}>
-              {category?.icon && (
-                <View style={styles.subcategoryHeaderIcon}>
-                  <Ionicons 
-                    name={category.icon as any} 
-                    size={24} 
-                    color="#2E7D32" 
-                  />
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.modalOverlay}>
+          <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+            <View style={styles.subcategoryModalContent}>
+              {/* Modal Header */}
+              <View style={styles.subcategoryModalHeader}>
+                <View style={styles.subcategoryHeaderLeft}>
+                  {category?.icon && (
+                    <View style={styles.subcategoryHeaderIcon}>
+                      <Ionicons 
+                        name={category.icon as any} 
+                        size={24} 
+                        color="#2E7D32" 
+                      />
+                    </View>
+                  )}
+                  <Text style={styles.subcategoryModalTitle}>
+                    {category?.name}
+                  </Text>
                 </View>
-              )}
-              <Text style={styles.subcategoryModalTitle}>
-                {category?.name}
-              </Text>
-            </View>
-            <TouchableOpacity 
-              onPress={onClose} 
-              style={styles.modalCloseBtn}
-            >
-              <Ionicons name="close" size={24} color="#333" />
-            </TouchableOpacity>
-          </View>
+                <TouchableOpacity 
+                  onPress={onClose} 
+                  style={styles.modalCloseBtn}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Ionicons name="close" size={24} color="#333" />
+                </TouchableOpacity>
+              </View>
 
           {/* View All Option */}
           <TouchableOpacity
