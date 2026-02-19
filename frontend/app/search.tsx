@@ -547,7 +547,7 @@ export default function SearchScreen() {
   const fetchDistricts = async (regionCode: string) => {
     try {
       setLocationLoading(true);
-      const data = await locationsApi.getDistricts(regionCode);
+      const data = await locationsApi.getDistricts('TZ', regionCode);
       setDistricts(data);
     } catch (error) {
       console.error('Error fetching districts:', error);
@@ -559,7 +559,8 @@ export default function SearchScreen() {
   const fetchCities = async (districtCode: string) => {
     try {
       setLocationLoading(true);
-      const data = await locationsApi.getCities(districtCode);
+      // Get current region from selected location
+      const data = await locationsApi.getCities('TZ', selectedRegion || '', districtCode);
       setCities(data);
     } catch (error) {
       console.error('Error fetching cities:', error);
