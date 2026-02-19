@@ -1697,8 +1697,8 @@ export default function ListingDetailScreen() {
         {/* Similar Listings - Two column layout for general listings */}
         <SimilarListings propertyId={id!} category="other" />
 
-        {/* Spacer for bottom actions */}
-        <View style={{ height: 100 }} />
+        {/* Spacer for bottom actions - dynamic height based on safe area */}
+        <View style={{ height: Math.max(insets.bottom, 24) + 80 }} />
       </ScrollView>
 
       {/* Bottom Actions - Dynamic based on seller preferences */}
