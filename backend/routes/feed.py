@@ -148,9 +148,13 @@ def create_feed_router(db):
         next_cursor = None
         if has_more and items:
             last_item = items[-1]
+            created_at = last_item.get("created_at")
+            # Handle datetime objects
+            if hasattr(created_at, 'isoformat'):
+                created_at = created_at.isoformat()
             next_cursor = json.dumps({
                 "id": last_item.get("id"),
-                "created_at": last_item.get("created_at")
+                "created_at": created_at
             })
         
         # Combine boosted + regular items
