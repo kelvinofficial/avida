@@ -10,6 +10,7 @@
  * - FavoriteToast: Toast notification for favorites
  * - FavoriteNotificationProvider: WebSocket-based favorite notifications
  * - SocialShareButtons: Social media share buttons (WhatsApp, Facebook, Twitter)
+ * - BottomSheetDrawer: Full-height expandable bottom sheet with sticky header
  */
 
 export { ImagePlaceholder } from './ImagePlaceholder';
@@ -23,3 +24,4 @@ export type { FavoriteToastProps } from './FavoriteToast';
 export { FavoriteNotificationProvider, useFavoriteNotification } from './FavoriteNotificationProvider';
 export { SocialShareButtons } from './SocialShareButtons';
 export { BackButton } from './BackButton';
+export { BottomSheetDrawer } from './BottomSheetDrawer';
