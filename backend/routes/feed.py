@@ -10,7 +10,7 @@ from bson import ObjectId
 import hashlib
 import json
 
-router = APIRouter(prefix="/listings", tags=["Feed"])
+router = APIRouter(prefix="/feed", tags=["Feed"])
 
 def create_feed_router(db):
     """Create the feed router with database dependency."""
@@ -35,7 +35,7 @@ def create_feed_router(db):
         "is_negotiable": 1,
     }
     
-    @router.get("/feed")
+    @router.get("/listings")
     async def get_listings_feed(
         request: Request,
         response: Response,
@@ -211,7 +211,7 @@ def create_feed_router(db):
         
         return result
     
-    @router.get("/feed/cached-meta")
+    @router.get("/listings/cached-meta")
     async def get_feed_cache_meta():
         """
         Get metadata for cache invalidation.
