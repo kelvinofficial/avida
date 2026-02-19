@@ -6,7 +6,7 @@
 import { StyleSheet, Platform } from 'react-native';
 
 // Layout Constants
-export const HORIZONTAL_PADDING = 16;
+export const HORIZONTAL_PADDING = 12; // Reduced from 16 for edge-to-edge look
 export const ROW_1_HEIGHT = 56;
 export const TOUCH_TARGET = 44;
 export const ICON_SIZE = 24;
