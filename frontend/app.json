@@ -104,7 +104,8 @@
       "router": {},
       "eas": {
         "projectId": "cc272e5f-6f33-48db-9774-cd9a80fdae0e"
-      }
+      },
+      "apiUrl": "https://perf-bugfix.preview.emergentagent.com"
     },
     "owner": "kcmkcm"
   }
