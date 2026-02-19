@@ -248,6 +248,34 @@ def create_profile_router(db, require_auth, get_current_user):
         
         return {"badges": result_badges}
 
+    @router.get("/activity/listings")
+    async def get_my_listings_activity(
+        request: Request,
+        page: int = Query(1, ge=1),
+        limit: int = Query(20, ge=1, le=100),
+        status: str = Query(None)
+    ):
+        """Get user's own listings with pagination"""
+        user = await require_auth(request)
+        
+        skip = (page - 1) * limit
+        
+        # Build query
+        query = {"user_id": user.user_id}
+        if status and status != 'all':
+            query["status"] = status
+        
+        # Get listings
+        listings = await db.listings.find(
+            query,
+            {"_id": 0}
+        ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+        
+        # Get total count
+        total = await db.listings.count_documents(query)
+        
+        return {"listings": listings, "total": total, "page": page}
+
     @router.get("/activity/favorites")
     async def get_saved_items(
         request: Request,
