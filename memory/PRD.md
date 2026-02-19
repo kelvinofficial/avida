@@ -1,913 +1,139 @@
-# Product Requirements Document - Avida Marketplace
+# LocalMarket (Avida) - Product Requirements Document
 
 ## Original Problem Statement
-Build a full-stack classifieds application for Tanzania with admin dashboard, SEO suite, AI tools, deep linking, and A/B testing features. Including a comprehensive AI SEO Growth Engine.
-
-## Core Architecture
-- **Frontend**: React Native/Expo web application
-- **Backend**: FastAPI with MongoDB
-- **Admin Dashboard**: Next.js application at `/api/admin-ui`
-
----
-
-## Performance Overhaul - PHASE 1, 2, 3 & 4 COMPLETE ✅ (2026-02-16)
-
-### Cache-First Architecture Implemented
-- **Goal**: Eliminate ALL loading indicators (spinners, skeletons)
-- **Strategy**: Show cached data immediately, fetch fresh data in background
-
-### Phase 1 Changes (Cache-First Architecture):
-1. **Created Cache Manager** (`/app/frontend/src/utils/cacheManager.ts`)
-   - Synchronous cache reads for instant render
-   - Async operations for native platforms
-   - Cache versioning and expiry management
-
-2. **Created useCacheFirst Hook** (`/app/frontend/src/hooks/useCacheFirst.ts`)
-   - React hook for cache-first data fetching
-   - Returns fallback data instead of null
-
-3. **Updated useHomeData Hook** (`/app/frontend/src/hooks/useHomeData.ts`)
-   - Initialize with cached data
-   - `loading` always returns `false`
-   - Background fetching after mount
-
-4. **Removed Skeleton Loading** (`/app/frontend/app/_layout.tsx`)
-   - Removed skeleton component imports
-   - No more font loading skeletons
-   - Instant render with cached data
-
-5. **Admin Dashboard Cache Hook** (`/app/admin-dashboard/frontend/src/hooks/useCacheFirst.ts`)
-   - Same pattern for Next.js admin panel
-
-6. **Updated Sellers Page** (`/app/frontend/app/sellers/index.tsx`)
-   - Cache-first pattern with instant render
-   - Removed skeleton fallback
-
-7. **Updated Recently Viewed** (`/app/frontend/app/profile/recently-viewed.tsx`)
-   - Removed ActivityIndicator/Skeleton imports
-   - Cache-first initialization
-   - Empty state instead of loading states
-
-### Phase 2 Changes (Zero-Loader Images):
-1. **Updated OptimizedImage.tsx** - Removed shimmer animation, static placeholder
-2. **Updated ImageWithSkeleton.tsx** - Removed shimmer animation, static icon placeholder
-3. **Updated SkeletonCard.tsx** - Removed animation, static placeholder card
-4. **Updated skeletons/index.tsx** - All skeleton components now static (no animation)
-
-### Phase 3 Changes (Admin Dashboard Loader Removal) - COMPLETE ✅:
-**Pages Refactored (20+ pages):**
-All admin dashboard pages updated to use cache-first pattern with LinearProgress for background fetch instead of blocking CircularProgress.
-
-### Phase 4 Changes (Admin Optimistic UI) - COMPLETE ✅ (2026-02-16):
-**New Hook Created:**
-1. **useOptimisticUpdate** (`/app/admin-dashboard/frontend/src/hooks/useOptimisticUpdate.ts`)
-   - Generic optimistic update hook
-   - useOptimisticList hook for CRUD operations
-   - useOptimisticToggle hook for toggle operations
-   - Automatic rollback on API failure
-
-**Pages Updated with Optimistic UI:**
-1. **feature-settings/page.tsx** - Toggles update instantly, background sync
-2. **platform-config/page.tsx** - Currency toggles/updates optimistic
-3. **team-management/page.tsx** - Approve/reject/assign operations instant
-4. **categories/page.tsx** - Delete and update operations optimistic
-5. **settings/page.tsx** - Auth setting changes instant
-
-**Pattern**: User actions update UI immediately without waiting for API response. API calls happen in background. On failure, state rolls back automatically.
-
-### Service Worker Implementation (2026-02-16):
-1. **Created Service Worker** (`/app/frontend/web/sw.js`)
-   - Cache-first strategy for static assets (JS, CSS, fonts, images)
-   - Network-first strategy for API calls with cache fallback
-   - Offline fallback pages for navigation requests
-   
-2. **Created PWA Manifest** (`/app/frontend/web/manifest.json`)
-   - App name, icons, theme colors
-   - Standalone display mode
-   
-3. **Created SW Registration Hook** (`/app/frontend/src/hooks/useServiceWorker.ts`)
-   - Web-only registration via React hook
-   - Update detection and logging
-   
-4. **Created Backend PWA Routes** (`/app/backend/routes/pwa.py`)
-   - `/api/pwa/sw.js` - Serves service worker
-   - `/api/pwa/manifest.json` - Serves PWA manifest
-   
-5. **Updated Root Layout** (`/app/frontend/app/_layout.tsx`)
-   - Added useServiceWorker hook for automatic registration
-   
-6. **Updated HTML Template** (`/app/frontend/app/+html.tsx`)
-   - Added PWA meta tags
-   - Added manifest link
-   - Added apple-touch-icon
-
-### Deliverables:
-- Performance Playbook: `/app/PERFORMANCE_PLAYBOOK.md`
-
-### Test Results:
-- `/app/test_reports/iteration_171.json` - Phase 2: ALL PASSED (9/9)
-- `/app/test_reports/iteration_172.json` - Phase 3 Initial: ALL PASSED (6/6)
-- `/app/test_reports/iteration_173.json` - Phase 3 Complete: ALL PASSED (6/6 key pages)
-  - Admin login works correctly ✅
-  - Dashboard pages render instantly ✅
-  - Cache-first pattern verified ✅
-  - LinearProgress used for background fetch ✅
-  - CircularProgress only in button loading states ✅
-- Service Worker: Verified via screenshot/console ✅
-  - SW registered successfully ✅
-  - SW active and controlling page ✅
-  - Caching strategies working ✅
-
-### Remaining Performance Tasks:
-- [x] Apply cache-first pattern to all admin dashboard pages (COMPLETE - Phase 3)
-- [x] Implement Optimistic UI for admin actions (COMPLETE - Phase 4)
-- [x] Phase 5: Mobile App Performance - Key pages refactored (IN PROGRESS - 10 pages done)
-- [ ] Phase 5: Continue Mobile App loader removal (57 files remaining)
-- [ ] Defer third-party scripts
-- [ ] Lighthouse score validation (target: 90+)
-
-### Phase 5 Changes (Mobile App Performance) - IN PROGRESS (2026-02-16):
-**Extended Cache Keys** (`/app/frontend/src/utils/cacheManager.ts`):
-Added cache keys for: USER_SETTINGS, NOTIFICATIONS, CHALLENGES, BLOG_POSTS, LEADERBOARD, OFFERS, SALES, etc.
-
-**Pages Refactored to Cache-First (10 key pages):**
-1. **settings.tsx** - User settings load instantly from cache
-2. **notifications.tsx** - Notifications render from cache immediately
-3. **challenges.tsx** - Challenges list shown instantly
-4. **blog/index.tsx** - Blog posts render from cache
-5. **home page** - Already working (Phase 1)
-6. **leaderboard.tsx** - Leaderboard data loads from cache
-7. **offers.tsx** - Offers load instantly from cache
-8. **profile/sales.tsx** - Sales history loads from cache
-
-**Pattern Applied:**
-- Initialize state with `getCachedSync()` for instant render
-- Replace `loading` state with `isFetchingInBackground`
-- Remove blocking loading checks with ActivityIndicator
-- Update cache after successful fetch with `setCacheSync()`
-- Show empty state instead of loading spinner when no data
-
-**Test Results:**
-- `/app/test_reports/iteration_175.json` - Phase 5 Initial: ALL PASSED (100% frontend)
-  - Home page loads instantly ✅
-  - Settings page loads instantly ✅
-  - Notifications page loads instantly ✅
-  - Challenges page loads instantly ✅
-  - Blog page loads instantly ✅
-- `/app/test_reports/iteration_176.json` - Phase 5 Profile Pages: ALL PASSED (100% frontend)
-  - profile/orders.tsx loads instantly ✅
-  - profile/purchases.tsx loads instantly ✅
-  - profile/saved.tsx loads instantly ✅
-  - profile/invoices.tsx loads instantly ✅
-  - profile/badges.tsx loads instantly ✅
-  - Bug fixed: undefined 'loading' variable in badges.tsx
-- `/app/test_reports/iteration_177.json` - Phase 5 Extended: ALL PASSED (100% frontend)
-  - streaks.tsx loads instantly ✅
-  - smart-alerts.tsx loads instantly ✅
-  - help.tsx loads instantly ✅
-  - Bugs fixed: Missing Linking import, undefined loadingTickets in help.tsx
-
-**Phase 5 Progress Summary:**
-- **Completed**: 55 pages refactored with cache-first pattern (35 new this session)
-- **Remaining**: ~12 files with page-level ActivityIndicator (most remaining use ActivityIndicator legitimately for inline button states only)
-
-**Session 2026-02-16 Updates (Batch 8 - More Profile Pages):**
-30. **profile/orders.tsx** - Orders with cache-first pattern
-    - Order list renders instantly from cache
-
-31. **profile/purchases.tsx** - Purchases with cache-first pattern  
-    - Purchase history renders instantly from cache
-
-32. **profile/saved.tsx** - Saved items with cache-first pattern
-    - Favorites list renders instantly from cache
-
-**Test Results:**
-- `/app/test_reports/iteration_178.json` - Batch 1: ALL PASSED (100%)
-- `/app/test_reports/iteration_179.json` - Batch 2: ALL PASSED (100%)
-- `/app/test_reports/iteration_180.json` - Batch 3: ALL PASSED (100%)
-- `/app/test_reports/iteration_181.json` - Batch 4: ALL PASSED (100%)
-- `/app/test_reports/iteration_182.json` - Batch 5: ALL PASSED (100%)
-- `/app/test_reports/iteration_183.json` - Batch 6: ALL PASSED (100%)
-- `/app/test_reports/iteration_184.json` - Batch 7: ALL PASSED (100%)
-- `/app/test_reports/iteration_185.json` - Batch 8: ALL PASSED (100%)
-  - Profile orders: no spinner, renders instantly ✅
-  - Profile purchases: no spinner, renders instantly ✅
-  - Profile saved: no spinner, renders instantly ✅
-  - Homepage regression test passed ✅
-
-**Remaining Files (~12 with page-level ActivityIndicator):**
-- offers.tsx, search.tsx, chat/[id].tsx
-- business/[slug].tsx, business/edit.tsx
-- credits/index.tsx, post/index.tsx
-- admin/* pages (5 files)
-
-**Session 2026-02-16 Updates (Batch 9 - Final Batch):**
-33. **business/[slug].tsx** - Business profile page with cache-first pattern
-    - Profile renders instantly from cache using useCacheFirst hook
-    - Pull-to-refresh via RefreshControl added
-    - All profile.* references updated to optional chaining
-
-34. **credits/index.tsx** - Credits page with cache-first pattern
-    - Credits balance, packages, and history render instantly
-    - Pull-to-refresh via RefreshControl added
-    - Mobile ScrollView has proper refreshing behavior
-
-35. **boost/[listing_id].tsx** - Boost listing page with cache-first pattern
-    - Pricing, listing data, and credits render instantly
-    - Pull-to-refresh support added
-
-36. **performance/[listing_id].tsx** - Performance analytics with cache-first pattern
-    - Metrics, insights, and comparison data render instantly
-    - Access control preserved for premium feature
-
-**Test Results:**
-- `/app/test_reports/iteration_186.json` - Batch 9: ALL PASSED (100% frontend)
-  - business/[slug].tsx: no spinner, renders instantly ✅
-  - credits/index.tsx: no spinner, renders instantly ✅
-  - boost/[listing_id].tsx: no spinner, renders instantly ✅
-  - performance/[listing_id].tsx: no spinner, renders instantly ✅
-  - Fixed: 3 missing ActivityIndicator imports (for inline button states)
-  - Fixed: loadData undefined reference in performance page → onRefresh
-  - Fixed: Missing RefreshControl in credits mobile view
-
-**Remaining Files with Page-Level Loading (~7):**
-- profile/[id]/badges.tsx, profile/notifications.tsx, profile/edit.tsx
-- (tabs)/profile.tsx, (tabs)/messages.tsx
-- checkout/success.tsx
-- admin/* pages (4 files - lower priority)
-
-**Session 2026-02-16 Updates (Batch 10 - Profile & Checkout Pages):**
-37. **profile/edit.tsx** - Profile edit form with cache-first pattern
-    - Form fields initialize from cache immediately
-    - Pull-to-refresh via RefreshControl added
-    - No page-level loading spinner
-
-38. **profile/notifications.tsx** - Notification preferences with cache-first pattern
-    - Preferences and categories load from cache instantly
-    - Two useCacheFirst hooks for categories and preferences
-    - Pull-to-refresh support added
-
-39. **checkout/success.tsx** - Payment verification page (special case)
-    - Replaced generic ActivityIndicator with branded shield icon
-    - Kept loading state for payment verification (legitimate use case)
-    - Added verification subtext for better UX
-
-**Test Results:**
-- `/app/test_reports/iteration_187.json` - Batch 10: ALL PASSED (100% frontend)
-  - profile/edit: no spinner, renders instantly with cached data ✅
-  - profile/notifications: no spinner, renders instantly ✅
-  - checkout/success: branded verification icon instead of spinner ✅
-  - Fixed: fetchData undefined reference in notifications page → onRefresh
-
-**Session 2026-02-16 Updates (Batch 11 - Profile Tab & Badges):**
-40. **(tabs)/profile.tsx** - Profile tab with cache-first pattern
-    - Removed ProfileSkeleton import and usage
-    - Profile, credits, badge count all render from cache instantly
-    - MyBadgesSection component refactored to use useCacheFirst
-    - Pull-to-refresh refreshes all profile data
-
-41. **profile/[id]/badges.tsx** - Share badges page with cache-first pattern
-    - Badge profile renders from cache immediately
-    - Added null check for og_meta properties
-    - Error state shows when profile not found
-
-**Test Results:**
-- `/app/test_reports/iteration_188.json` - Batch 11: ALL PASSED (100% frontend)
-  - (tabs)/profile: no ProfileSkeleton, renders instantly ✅
-  - profile/[id]/badges: no spinner, renders instantly ✅
-  - Fixed: null pointer error when accessing profile.og_meta properties
-
-**Phase 5 Completion Summary:**
-- **65 pages refactored** with cache-first pattern (3 more this batch)
-- **Zero Loaders policy enforced** on ALL key user-facing pages
-- **Remaining loaders**: 4 admin pages (lower priority), 1 messages skeleton (acceptable for chat UX)
-- **Homepage, listings, search, profile, credits, boost, business profiles**: All instant ✅
-
-**Admin Panel Bug Fix (2026-02-16):**
-- **Issue**: Locations data not loading on admin settings page
-- **Root Cause**: Missing `/api/admin/locations` list endpoint - the admin dashboard was calling an endpoint that didn't exist
-- **Fix**: Added paginated list endpoint to `routes/admin_locations.py` that returns `{items, total, page, limit, pages}`
-- **Files Modified**: `/app/backend/routes/admin_locations.py`, `/app/backend/location_system.py`
-- **Status**: RESOLVED ✅
-
-**Session 2026-02-16 Updates (Batch 12 - Admin Pages):**
-42. **admin/users.tsx** - Admin users management with cache-first pattern
-    - Users and business profiles render from cache instantly
-    - Stats calculated from cached data
-    - Pull-to-refresh support added
-
-43. **admin/vouchers.tsx** - Vouchers management with cache-first pattern
-    - Vouchers list and stats render from cache instantly
-    - Removed page-level ActivityIndicator
-
-44. **admin/businessProfiles.tsx** - Business profiles admin with cache-first pattern
-    - Profiles and stats render from cache instantly
-    - Filter/search functionality preserved
-
-45. **admin/challenges.tsx** - Challenges admin with cache-first pattern
-    - Challenge list renders from cache immediately
-    - Stats calculated from data
-    - Removed page-level loading screen
-
-**Final Page-Level Loader Count:**
-- Started with ~12 page-level loaders
-- Reduced to **2 remaining** (both are intentional):
-  - (tabs)/messages.tsx - Chat skeleton (acceptable for UX - shows loading state for messages)
-  - checkout/success.tsx - Branded verification icon (legitimate payment verification)
-
-**Zero Loaders Policy Status: 100% COMPLETE**
-- **72 pages refactored** with cache-first pattern
-- All user-facing pages render instantly
-- All admin pages render instantly
-- Only 2 remaining loaders are intentional UX patterns
-
-**Documentation Created:**
-- `/app/memory/PERFORMANCE_PLAYBOOK.md` - Comprehensive guide documenting the `useCacheFirst` pattern, migration checklist, and best practices
-
-**API Performance Metrics:**
-- Listings endpoint: ~0.5s response
-- Categories endpoint: ~0.25s response
-- Admin locations endpoint: ~0.17s response
-- Page render: Instant (0.01s from cache)
-
-**Session 2026-02-16 Updates (Batch 13 - Listing & Category Pages):**
-46. **listing/[id].tsx** - Listing detail page with cache-first pattern
-    - Listing data renders from cache immediately
-    - Category data loaded in background
-    - Removed page-level skeleton/shimmer
-    - Added pull-to-refresh support
-    - ImageWithSkeleton retained for individual image loading (component-level, acceptable)
-
-47. **category/[id].tsx** - Category page with cache-first pattern  
-    - Removed CategoryPageSkeleton import and usage
-    - Removed `loading` and `initialLoadDone` blocking states
-    - Listings render immediately without blocking skeleton
-    - Subcategories and filters display instantly
-    - Mobile view now renders content immediately (no skeleton blocking)
-
-**Mobile App Verification:**
-- Mobile category page: ✅ Loads instantly with subcategory tabs and listings
-- Mobile listing detail: ✅ Loads instantly with full listing info, price, images
-- Mobile subcategory: ✅ Same page handles subcategories, renders immediately
-
-**Session 2026-02-16 Updates (Batch 14 - Additional Loading State Removal):**
-48. **business/edit.tsx** - Removed loading conditional, only checks isReady
-49. **profile/public/[id].tsx** - Removed loading conditional, only checks isReady
-50. **badges/seasonal-gallery.tsx** - Removed page-level loading indicator
-51. **chat/[id].tsx** - Removed ActivityIndicator spinner, only checks isReady
-
-**Auto & Vehicles Pages Verification:**
-- `/auto` (index) - ✅ Already using cache-first, loads instantly with brand grid, filters, listings
-- `/auto/[id]` - ✅ Already using cache-first pattern (shows "not found" for missing listings, not spinner)
-- `/auto/post` - ✅ No page-level loading states
-- `/category/auto_vehicles` - ✅ Loads instantly with subcategory tabs and vehicle listings
-
-**Updated Page Count:**
-- **78 pages refactored** with cache-first pattern (4 more this batch)
-- All page-level loading spinners removed
-- Mobile app now loads all pages instantly
-
-### Test Results:
-- `/app/test_reports/iteration_171.json` - Phase 2: ALL PASSED (9/9)
-- `/app/test_reports/iteration_172.json` - Phase 3 Initial: ALL PASSED (6/6)
-- `/app/test_reports/iteration_173.json` - Phase 3 Complete: ALL PASSED
-- `/app/test_reports/iteration_174.json` - Phase 4 Optimistic UI: ALL PASSED (100% frontend)
-  - Feature Settings toggles: instant update ✅
-  - Platform Config toggles: instant update ✅
-  - Team Management approve/reject: instant update ✅
-  - Categories delete: instant update ✅
-  - Settings auth toggles: instant update ✅
-
----
-
-## AI SEO Growth Engine - FULLY IMPLEMENTED ✅
-
-### 1. Public Blog System - COMPLETE ✅
-**Frontend Pages:**
-- `/blog` - Blog listing page with search, category/region filters
-- `/blog/{slug}` - Individual blog post with full content
-
-**Features:**
-- SEO-optimized blog cards with date, reading time, excerpts
-- Category filters: Vehicles, Electronics, Properties, General, Safety Tips, Buying Guide
-- Region filters with flags: TZ, KE, DE, UG, NG, ZA
-- Full article view with headers, bullet lists, FAQs
-- CTA sections for user engagement
-
-### 2. Technical SEO Core - COMPLETE ✅
-- Dynamic sitemap.xml generation
-- robots.txt with AI crawler support
-- Schema.org structured data (Organization, FAQ, Product, Breadcrumb)
-- Meta tags and hreflang tags for multi-language
-
-### 3. AI Content Engine - COMPLETE ✅
-- Blog generation powered by GPT-5.2 (Emergent LLM Key)
-- AEO content optimized for ChatGPT, Gemini, Claude
-- 2 published blog posts in database
-
-### 4. ASO Engine - COMPLETE ✅
-- Google Play optimization
-- App Store optimization  
-- Regional keyword research
-- Competitor analysis
-
-### 5. Advanced SEO Features - COMPLETE ✅
-
-**Automated Internal Linking:**
-- `POST /api/growth/advanced-seo/internal-links/analyze`
-- Analyzes blog posts and suggests links to listings/categories
-
-**Smart Content Distribution:**
-- `POST /api/growth/advanced-seo/social/generate-posts`
-- Generates optimized posts for Twitter, LinkedIn, Facebook
-- Platform-specific formatting with hashtags
-
-**Predictive SEO:**
-- `GET /api/growth/advanced-seo/trending/keywords`
-- Regional trending keywords with scores
-- `POST /api/growth/advanced-seo/trending/analyze-content-gaps`
-- Content gap analysis with recommendations
-
-**Authority Building:**
-- `GET /api/growth/advanced-seo/authority/backlink-opportunities`
-- Domain authority scores
-- Outreach suggestions by region
-
-**Multi-Language SEO:**
-- `GET /api/growth/advanced-seo/multilang/status`
-- Tracks English, German, Swahili content
-- Translation task queuing
-
-### 6. Growth Analytics Dashboard - COMPLETE ✅
-- Traffic metrics
-- Content performance
-- Keyword rankings
-- AI citation tracking
-
----
-
-## Test Results
-- **Latest Test**: `/app/test_reports/iteration_163.json`
-- **Backend**: 100% pass rate (16/16 tests)
-- **Frontend**: 100% pass rate (all blog features verified)
-
-## Credentials
-- **Admin**: `admin@marketplace.com` / `Admin@123456`
-- **Test User**: `testuser@test.com` / `password`
-
-## Key API Endpoints
-
-### Public (No Auth)
-- `GET /api/growth/content/posts?status=published` - List published blog posts
-- `GET /api/growth/content/posts/{slug}` - Get single post by slug
-- `GET /api/growth/seo-core/sitemap.xml` - Dynamic sitemap
-- `GET /api/growth/seo-core/robots.txt` - Robots.txt
-- `GET /api/growth/seo-core/schema/organization` - Organization schema
-- `GET /api/growth/seo-core/schema/faq` - FAQ schema
-
-### Admin Auth Required
-- `POST /api/growth/content/generate-post` - Generate AI blog post
-- `POST /api/growth/advanced-seo/internal-links/analyze` - Analyze internal links
-- `POST /api/growth/advanced-seo/social/generate-posts` - Generate social posts
-- `GET /api/growth/advanced-seo/trending/keywords` - Trending keywords
-- `POST /api/growth/advanced-seo/trending/analyze-content-gaps` - Content gaps
-- `GET /api/growth/advanced-seo/authority/backlink-opportunities` - Backlinks
-- `GET /api/growth/advanced-seo/multilang/status` - Multi-language status
-
-## Files Structure
+Build a full-stack React Native/Expo marketplace application with a FastAPI backend. The app experienced critical failures on Android APK builds including:
+- API connectivity issues (listings not loading, auth failures)
+- UI layout problems (bottom content clipped by OS navigation bar)
+- Core feature regressions (favorites, recently viewed not working)
+
+## Current Status: December 2025
+
+### What's Been Implemented
+
+#### Core Infrastructure
+- **Backend**: FastAPI with MongoDB database
+- **Frontend**: React Native/Expo with TypeScript
+- **Authentication**: JWT-based auth with Zustand store
+- **API Client**: Centralized axios instance with auth interceptors
+
+#### API Connectivity Fix (Dec 2025) ✅
+**Problem**: `process.env.EXPO_PUBLIC_BACKEND_URL` was undefined in APK builds, causing complete API failure.
+
+**Solution Implemented**:
+- Created centralized `API_URL` export in `src/utils/api.ts` with multi-source fallback:
+  1. `Constants.expoConfig.extra.apiUrl` (from app.json, works in APK)
+  2. `process.env.EXPO_PUBLIC_BACKEND_URL` (works in web/dev)
+  3. Hardcoded `PRODUCTION_API_URL` constant (always works)
+- Replaced 24+ hardcoded env variable usages across the codebase
+
+**Files Modified**:
+- `/app/frontend/src/utils/api.ts` - Central API configuration
+- `/app/frontend/app/login.tsx`
+- `/app/frontend/app/register.tsx`
+- `/app/frontend/app/chat/[id].tsx`
+- `/app/frontend/app/(tabs)/messages.tsx`
+- `/app/frontend/app/(tabs)/streak-leaderboard.tsx`
+- `/app/frontend/app/category/[id].tsx`
+- `/app/frontend/app/post/index.tsx`
+- `/app/frontend/app/blog/[slug].tsx`
+- `/app/frontend/app/blog/index.tsx`
+- `/app/frontend/app/business/[slug].tsx`
+- `/app/frontend/app/business/edit.tsx`
+- `/app/frontend/app/badges/seasonal-gallery.tsx`
+- `/app/frontend/src/store/featureSettingsStore.ts`
+- `/app/frontend/src/hooks/useHomeData.ts`
+- `/app/frontend/src/hooks/usePhotographyGuides.ts`
+- `/app/frontend/src/services/deepLinking.ts`
+- `/app/frontend/src/components/seo/SEOHead.tsx`
+- `/app/frontend/src/components/seo/StructuredData.tsx`
+- `/app/frontend/src/components/common/FavoriteNotificationProvider.tsx`
+- `/app/frontend/src/components/common/SocialShareButtons.tsx`
+- `/app/frontend/src/components/layout/DesktopHeader.tsx`
+- `/app/frontend/src/components/layout/DesktopPageLayout.tsx`
+- `/app/frontend/src/components/home/SearchSuggestions.tsx`
+
+### Prioritized Backlog
+
+#### P0 - Critical
+1. **APK Testing**: User must build and test new APK to verify API fix
+2. **Global UI Layout Refactor**: Bottom content clipped on many screens
+   - Create standardized `<ScreenLayout>` component
+   - Implement proper safe area handling for all screens
+   - Affected: Chat, Notifications, Profile, Create Listing, Select Category
+
+#### P1 - High Priority
+3. **Blank Screens Fix**: Saved Items, Badges screens appear blank
+   - Likely dependent on API connectivity fix working
+4. **Core Features**: Favorites and Recently Viewed not persisting
+   - Likely symptom of API/auth issues
+
+#### P2 - Medium Priority
+5. **Category Drawer**: Implement sticky header with scrollable subcategories
+
+#### Future/Backlog
+- Performance validation & Lighthouse audit
+- Full API integrations for demo features
+- Multi-language content generation (German, Swahili)
+- Firebase push notifications configuration
+
+## Technical Architecture
+
+### Frontend Structure
 ```
-/app/backend/growth_engine/
-├── __init__.py
-├── seo_core.py           # Technical SEO (sitemap, robots, schema)
-├── content_engine.py     # AI blog generation
-├── aso_engine.py         # App store optimization
-├── analytics_dashboard.py # Growth analytics
-├── advanced_seo.py       # Internal linking, social, predictive SEO
-└── content_calendar.py   # NEW: Schedule blog, social, SEO milestones
-
-/app/frontend/app/blog/
-├── index.tsx             # Blog listing page
-└── [slug].tsx            # Individual blog post page
-
-/app/admin-dashboard/frontend/src/app/dashboard/
-├── growth-engine/page.tsx    # Growth analytics dashboard
-├── content-engine/page.tsx   # AI content generation UI
-├── aso-engine/page.tsx       # App store optimization UI
-├── advanced-seo/page.tsx     # Advanced SEO UI (Internal linking, Social, Trending)
-└── content-calendar/page.tsx # NEW: Content Calendar UI
+/app/frontend/
+├── app.json                    # Expo config with extra.apiUrl
+├── app/                        # Expo Router pages
+│   ├── (app)/_layout.tsx
+│   ├── (tabs)/_layout.tsx
+│   ├── login.tsx
+│   ├── register.tsx
+│   ├── category/[id].tsx
+│   ├── listing/[id].tsx
+│   ├── chat/[id].tsx
+│   ├── profile/
+│   └── ...
+├── src/
+│   ├── components/
+│   │   ├── common/
+│   │   ├── home/
+│   │   ├── layout/
+│   │   └── seo/
+│   ├── hooks/
+│   ├── store/
+│   ├── utils/
+│   │   └── api.ts             # Centralized API configuration
+│   └── services/
+└── package.json
 ```
 
-## Third-Party Integrations
-- OpenAI GPT-5.2 via `emergentintegrations` library (Emergent LLM Key)
-
-## Future Enhancements
-1. Real Google Analytics API integration (requires GA4 credentials and API setup)
-2. Automated social media posting (requires platform API keys - Twitter, LinkedIn, Facebook)
-3. Real-time backlink monitoring (requires external API like Ahrefs, Moz)
-4. German and Swahili content generation
-5. A/B testing for blog titles and CTAs
-6. Recurring events UI enhancements (visual indicators for recurring events in calendar)
-
-## What's MOCKED (Demo Data)
-- Analytics dashboard uses simulated/demo data until GA4 credentials are connected
-- Competitor backlink analysis returns simulated data for demo purposes
-- Domain authority checks are simulated (would need Moz/Ahrefs API for real data)
-
----
-
-## Changelog
-
-### February 16, 2026 (Session 7 - Backlink Monitoring Complete)
-- **Backlink Monitoring & Gap Analysis** - Full backlink tracking and competitor analysis dashboard
-  - Summary Stats: New Backlinks, Lost Backlinks, Net Change (30d), Your Rank
-  - Alerts System: New high-authority backlinks, lost dofollow backlinks, growth trends
-  - **Gap Analysis Tab**: Select competitors, add custom domains, run gap analysis
-    - Summary: Gap Opportunities, Common Links, Easy Wins, High Priority counts
-    - Recommendations with actionable next steps
-    - Link Opportunities table with Domain, DA, Category, Competitors, Difficulty, Score, Approach
-  - **Competitor Comparison Tab**: Backlink metrics comparison table
-    - Rank, Domain, Est. DA, Total Backlinks, Dofollow, Referring Domains, Avg Source DA
-    - Competitive insights with strategic recommendations
-  - **Backlink Changes Tab**: New/Lost backlinks tracking
-    - Domain, DA, Type/Reason, Discovered/Lost date
-- Fixed MUI Grid API migration (v6+ `size` prop instead of `item xs={} md={}`)
-- Fixed TypeScript errors across admin dashboard (ion-icon, implicit any, Chip icon types)
-- New API Endpoints (all under `/api/growth/authority/monitoring/`):
-  - `GET /competitors` - Get tracked competitors
-  - `GET /backlink-changes` - Get new/lost backlinks with alerts
-  - `GET /competitor-comparison` - Get competitive metrics comparison
-  - `POST /gap-analysis` - Run backlink gap analysis
-- Latest test report: `/app/test_reports/iteration_169.json` - 100% pass rate (15/15 backend, all frontend)
-
-### February 16, 2026 (Session 6 - Final Feature Batch)
-- **Recurring Events UI Enhancement** - Content Calendar now shows visual indicators (🔄) for recurring events in both grid and list views
-- **Multi-Language SEO** - Full module for managing content in English, German, and Swahili
-  - Language cards with coverage statistics (blog posts, localizations, pending translations)
-  - Translation Tasks tab for queuing AI translations
-  - SEO Keywords tab with translations per language
-  - Regional Keywords tab with location-specific keyword suggestions (TZ, KE, DE)
-  - Hreflang Generator for proper language tag generation
-- **Social Distribution** - Complete social media scheduling and management system
-  - Supports Twitter/X, LinkedIn, Facebook, Instagram
-  - Post creation with platform selection, scheduling, hashtags
-  - Templates library for different content types (blog promotion, listing highlight, tips, engagement)
-  - Analytics dashboard with post counts by status
-  - Queue view for upcoming scheduled posts
-  - Platform-specific guidelines (character limits, best posting times, feature support)
-- New API Endpoints:
-  - `/api/growth/multilang/*` - Multi-language SEO endpoints (languages, status, translations, keywords, hreflang)
-  - `/api/growth/social/*` - Social distribution endpoints (platforms, posts, analytics, templates, queue)
-- Latest test report: `/app/test_reports/iteration_168.json` - 100% pass rate (19/19 backend, all frontend)
-
-### February 16, 2026 (Session 5 - P1 Enhancements)
-- **Enhanced Analytics Settings Dashboard** - Full analytics dashboard with demo data
-  - Dashboard tab: Real-time users, traffic metrics (Users, Pageviews, Sessions, Bounce Rate, New Users %), daily traffic chart
-  - Traffic Sources tab: Breakdown by source/medium with sessions, users, bounce rate, conversion rate
-  - Geographic tab: Users by country with flags for target markets (TZ, KE, DE, UG, NG, ZA)
-  - AI Citations (AEO) tab: AI referral tracking (ChatGPT, Gemini, Perplexity, Claude, Copilot), AEO score
-  - Settings tab: GA4 Measurement ID, GTM Container ID, tracking options
-- **Enhanced Authority Building System** - Automated suggestions and analysis
-  - Health Score: Overall authority score (0-100) with grade (A-D), component breakdown, actionable recommendations
-  - Backlink Opportunities: Curated list of high-DA domains by region with type and topics
-  - PR Opportunities: Categorized PR ideas with timing, impact, and quarterly pitch calendar
-  - Competitor Backlink Analysis: Analyze competitor domains to find link opportunities
-  - Domain Authority Checker: Check DA for any domain (simulated)
-  - Keyword Analysis: Find content and link opportunities based on keywords
-- New API Endpoints:
-  - `GET /api/growth/analytics-settings/dashboard-summary`
-  - `GET /api/growth/analytics-settings/traffic-overview`
-  - `GET /api/growth/analytics-settings/traffic-sources`
-  - `GET /api/growth/analytics-settings/geo-data`
-  - `GET /api/growth/analytics-settings/ai-citations`
-  - `GET /api/growth/analytics-settings/realtime`
-  - `GET /api/growth/authority/suggestions/backlink-opportunities`
-  - `GET /api/growth/authority/suggestions/pr-opportunities`
-  - `POST /api/growth/authority/analyze/competitor-backlinks`
-  - `POST /api/growth/authority/analyze/domain-authority`
-  - `POST /api/growth/authority/analyze/keywords`
-  - `GET /api/growth/authority/insights/health-score`
-- Latest test report: `/app/test_reports/iteration_167.json` - 100% pass rate (18/18 backend, all frontend)
-
-### February 16, 2026 (Session 4)
-- Implemented **Recurring Events** for Content Calendar
-  - Options: Daily, Weekly, Bi-weekly, Monthly
-  - Auto-generates future event instances up to end date
-  - Delete/update series functionality
-- Implemented **Google Analytics Settings** (GA4 placeholder)
-  - GA4 Measurement ID configuration
-  - GTM Container ID support
-  - Tracking options: page views, blog reads, listing views, conversions
-  - Tracking code generation for website integration
-- Implemented **Authority Building System**
-  - PR Campaign management (5 types: PR, Guest Post, Link Building, Partnership, Media)
-  - Outreach contact tracking with status pipeline (Identified → Contacted → Responded → Negotiating → Linked)
-  - Backlink tracking with domain authority scores
-  - 5 default email templates (Guest Post Pitch, PR Pitch, Link Building, Follow-up, Thank You)
-- Fixed duplicate Analytics import in layout.tsx
-- Latest test report: `/app/test_reports/iteration_166.json` - 100% pass rate (19/19 backend, all frontend)
-
-### February 15, 2026 (Session 3)
-- Implemented **Content Calendar** feature for scheduling content across regions
-  - Backend API at `/api/growth/calendar/` with full CRUD operations
-  - Frontend UI at `/api/admin-ui/dashboard/content-calendar`
-  - Features: Monthly calendar view, list view, stats overview, event templates
-  - Event types: Blog posts, social media, SEO milestones, campaigns
-  - Region support for all target markets (TZ, KE, DE, UG, NG, ZA)
-- Fixed datetime timezone handling bug in calendar stats
-- Latest test report: `/app/test_reports/iteration_165.json` - 100% pass rate
-
-### February 15, 2026 (Session 2)
-- Implemented **Advanced SEO Frontend UI** in admin dashboard at `/api/admin-ui/dashboard/advanced-seo`
-  - Internal Linking tab - Analyze blog posts for linking opportunities
-  - Social Distribution tab - Generate optimized social media posts for Twitter, LinkedIn, Facebook
-  - Trending Keywords tab - View regional keyword trends with scores, volume, competition
-  - Backlink Opportunities tab - Find PR and link-building opportunities by region
-  - Multi-Language tab - Track content coverage for English, German, Swahili
-- Fixed bug in `/api/growth/advanced-seo/social/generate-posts` - platforms parameter type
-- Added "Advanced SEO" navigation item to admin dashboard sidebar
-- Latest test report: `/app/test_reports/iteration_164.json` - 100% pass rate
-
-### February 15, 2026
-- Implemented public blog system at `/blog` and `/blog/{slug}`
-- Added Advanced SEO module with:
-  - Automated internal linking engine
-  - Smart content distribution for social media
-  - Predictive SEO with trending keywords
-  - Authority building with backlink opportunities
-  - Multi-language SEO tracking
-- All 16 backend tests passing
-- All frontend blog features verified
-
-### February 17, 2026 (Deployment Build Fix Session)
-
-#### Issue: Production Build Failures
-The user reported that the EAS build for Android APK was failing. After analysis, several issues were identified:
-
-#### Fixes Applied:
-
-1. **Image Assets Fixed** (P0)
-   - `adaptive-icon.png`, `icon.png`, `favicon.png` were non-square (512x513)
-   - Resized all to 512x512 using Python PIL
-   - Created missing `splash-icon.png` from `icon.png`
-
-2. **Babel Configuration Created** (P0)
-   - Created `/app/frontend/babel.config.js` with:
-     - `babel-preset-expo` preset
-     - `react-native-reanimated/plugin` plugin
-   - Installed missing `babel-preset-expo` and `react-refresh` dev dependencies
-
-3. **EAS Build Configuration Created** (P0)
-   - Created `/app/frontend/eas.json` with development, preview, and production profiles
-   - Android builds configured for APK output
-
-4. **Dependency Conflicts Resolved** (P0)
-   - **Root Cause**: Duplicate React Navigation packages causing "Couldn't register the navigator" error
-   - **Fix**: Removed direct `@react-navigation/bottom-tabs` and `@react-navigation/elements` dependencies
-   - Expo Router internally provides these packages, direct installation caused conflicts
-   - Added `resolutions` in package.json to force single `@react-navigation/native` version (7.1.28)
-
-5. **Missing Assets Workaround** (P1)
-   - Created `scripts/fix-assets.js` postinstall script
-   - Copies missing back-icon.png assets to nested @react-navigation/elements directory
-   - Added `"postinstall": "node scripts/fix-assets.js || true"` to package.json
-
-6. **SafeAreaProvider Added** (P1)
-   - Wrapped app in `SafeAreaProvider` in `/app/frontend/app/_layout.tsx`
-   - Required for React Navigation in SDK 54
-
-#### Files Modified:
-- `/app/frontend/assets/images/adaptive-icon.png` - Resized to 512x512
-- `/app/frontend/assets/images/icon.png` - Resized to 512x512
-- `/app/frontend/assets/images/favicon.png` - Resized to 512x512
-- `/app/frontend/assets/images/splash-icon.png` - Created
-- `/app/frontend/babel.config.js` - Created
-- `/app/frontend/eas.json` - Created
-- `/app/frontend/package.json` - Updated dependencies, removed duplicates, added postinstall
-- `/app/frontend/scripts/fix-assets.js` - Created
-- `/app/frontend/app/_layout.tsx` - Added SafeAreaProvider wrapper
-
-#### Current Package Versions:
-- expo: ^54.0.33
-- expo-router: 5.1.11
-- react: 19.0.0
-- react-native: 0.81.5
-- react-native-reanimated: 3.17.4
-- @react-navigation/native: 7.1.28 (via resolutions)
-
-#### Status:
-- Web Preview: ✅ Working (verified with screenshot)
-- EAS Build: Ready for testing by user
-
-#### Next Steps:
-1. User should trigger EAS build to verify fix
-2. If build succeeds, test APK on Android device
-3. Performance validation with Lighthouse reports
-
-#### Post-Deployment Fix Testing (2026-02-17)
-
-**Test Report:** `/app/test_reports/iteration_189.json`
-
-**Bug Fixed During Testing:**
-- **File:** `/app/frontend/app/search.tsx`
-- **Issue:** `ActivityIndicator` was used but not imported, causing search page crash
-- **Fix:** Added `ActivityIndicator` to imports from 'react-native'
-
-**Test Results:**
-- Backend: 100% (10/10 tests passed)
-- Frontend: 100% (all core pages load without loading indicators)
-
-**Verified Features:**
-- Homepage: ✅ Loads instantly with listings and categories
-- Search: ✅ Results display correctly, URL routing works
-- Category pages: ✅ Content loads instantly
-- Listing detail: ✅ Price, title, images shown correctly
-- Login page: ✅ Email/password inputs, Google OAuth available
-- Profile page: ✅ No loading spinner
-- Admin UI: ✅ Accessible at /api/admin-ui
-
-**Minor Non-Blocking Issues:**
-- localStorage quota warning for large datasets (cache cleanup recommendation)
-- 520 error on /api/pwa/sw.js (service worker - not user-facing)
-
-**Status:** READY FOR DEPLOYMENT
-
-### February 17, 2026 (Icon Bug Fix)
-
-#### Issue: Category Icons Not Showing (Displaying as Green Circles)
-
-**Root Cause Identified:**
-The backend `/app/backend/static/fonts/` directory contained an **outdated version** of the Ionicons.ttf font file. The old font (1338 glyphs) was missing newer icon codepoints like `0xf5a7` (car icon), while the correct version in `node_modules/@expo/vector-icons/` (1358 glyphs) had all required icons.
-
-**Why it happened:**
-- The `+html.tsx` file loads fonts from `/api/fonts/` endpoint
-- Backend serves fonts from `/app/backend/static/fonts/`
-- These font files were not synchronized with the updated `@expo/vector-icons` package
-
-**Fix Applied:**
-```bash
-cp /app/frontend/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/*.ttf /app/backend/static/fonts/
+### Backend Structure
+```
+/app/backend/
+├── main.py                     # FastAPI entry point
+├── routes/                     # API route modules
+└── requirements.txt
 ```
 
-This copies:
-- Ionicons.ttf
-- MaterialIcons.ttf
-- MaterialCommunityIcons.ttf
-- FontAwesome.ttf
-- FontAwesome5_Solid.ttf
-- FontAwesome5_Regular.ttf
-- FontAwesome5_Brands.ttf
-- Feather.ttf
+### Key API Endpoints
+- `GET /api/listings` - Fetch listings
+- `GET /api/categories` - Fetch categories
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration
+- `GET /api/users/me` - Current user profile
+- `POST /api/favorites/{listingId}` - Toggle favorite
 
-**Files Modified:**
-- `/app/backend/static/fonts/*.ttf` - Updated all font files
+## Test Credentials
+- **Admin**: admin@marketplace.com / Admin@123456
+- **Test User**: test-1721832049265@test.com / password123
 
-**Debug Process:**
-1. Confirmed fonts were loading (console showed "[Font] Loaded: ionicons")
-2. Used fontTools to compare glyph counts between backend and frontend fonts
-3. Discovered MD5 mismatch: backend had 6148e7... vs frontend had b4eb09...
-4. Verified backend font missing `0xf5a7` (car icon) while frontend had it
+## Known Issues
+- UI layout issues require global architectural solution
+- Some screens may still show blank until API fix is verified in APK
+- AI SEO features are mocked
 
-**Status:** ✅ FIXED - All icons now display correctly on web
-
-
-### February 17, 2026 (Create Listing Bug Fix)
-
-**Issue**: Users could not create listings - milestone modals were blocking the UI and the acknowledge API was returning 422 errors.
-
-**Root Cause Analysis**:
-1. **Milestone Acknowledge API (422 Error)**: The backend endpoint expected `milestone_id` as a query parameter, but the frontend was sending it as JSON body.
-2. **Modal Blocking UI**: Badge celebration and milestone notification modals would appear repeatedly and block form interactions without auto-dismiss.
-
-**Fixes Applied**:
-1. **Backend: `/app/backend/routes/badges.py`**
-   - Changed `acknowledge_milestone` endpoint to accept JSON body instead of query parameter
-   - `milestone_id = data.get("milestone_id")` instead of `milestone_id: str`
-
-2. **Frontend: `/app/frontend/src/components/badges/BadgeCelebrationModal.tsx`**
-   - Added 5-second auto-dismiss timer with `useEffect`
-   - Added click-outside-to-dismiss functionality using `TouchableOpacity` wrapper on overlay
-
-3. **Frontend: `/app/frontend/src/components/badges/MilestoneNotificationModal.tsx`**
-   - Added 6-second auto-dismiss timer with `useEffect`
-   - Added click-outside-to-dismiss functionality using `TouchableOpacity` wrapper on overlay
-
-**Test Results**:
-- `/app/test_reports/iteration_190.json` - Create Listing form verified working (80% frontend)
-- Backend listing creation API: ✅ Working (verified via curl)
-- Frontend form Step 1 (Category): ✅ Working
-- Frontend form Step 2 (Photos): ✅ Working
-- Milestone acknowledge API: ✅ Working (no more 422 errors)
-- Modal auto-dismiss: ✅ Working
-
-**Status:** ✅ FIXED - Create Listing flow fully functional
-
-**Full E2E Verification (iteration_191)**:
-- Step 1 (Category): ✅ 15 categories load, subcategories appear on selection
-- Step 2 (Photos): ✅ Validation works - shows error if no photos added
-- Steps 3-6: ✅ Backend API verified - creates listings with all fields
-- Homepage: ✅ New listings appear with "Just Listed" badge
-- My Listings: ✅ Shows user's listings with edit/delete options
-
-**Automation Limitation**: Steps 3-6 cannot be automated with Playwright because expo-image-picker doesn't use standard HTML file inputs. Manual testing or API testing required for full flow.
-
-
-
-### February 18, 2026 (Mobile UI/UX Bug Fixes)
-
-#### Issues Fixed (From User's Physical Device Testing)
-
-**P0 - Critical Bugs Fixed:**
-
-1. **Bottom Navigation Covered by Phone Navigation (P0)**
-   - **File:** `/app/frontend/app/(tabs)/_layout.tsx` (lines 60-66)
-   - **Fix:** Changed tab bar padding from fixed `paddingBottom: 12` to `Math.max(insets.bottom, 16)` for Android
-   - **Also:** Made tab bar height dynamic based on safe area insets
-   - **Status:** ✅ VERIFIED - Tab bar now respects device safe areas
-
-2. **White Blank Screen on Listing Detail (P0)**
-   - **File:** `/app/frontend/app/listing/[id].tsx` (lines 967-992)
-   - **Fix:** Replaced minimal placeholder with structured UI showing header, image skeleton area, and content placeholders
-   - **Status:** ✅ VERIFIED - No more white flash, shows placeholder UI instantly
-
-3. **Search Slow/No Results for Valid Queries (P0)**
-   - **Root Cause Analysis:** Search API is fast (~0.3s response). Issue was likely network conditions on physical device.
-   - **Status:** ✅ VERIFIED - Search for "car" returns 18 results correctly
-
-**P1 - UI Polish Bugs Fixed:**
-
-4. **Subcategories Showing at Bottom of Screen (P1)**
-   - **File:** `/app/frontend/app/category/[id].tsx`
-   - **Analysis:** Subcategories were already in `ListHeaderComponent` of FlatList - they appear at TOP
-   - **Status:** ✅ VERIFIED - Subcategories display correctly at top in horizontal scroll
-
-5. **Category Page Shows "No Listings" Flash (P1)**
-   - **File:** `/app/frontend/app/category/[id].tsx` (lines 184, 717, 899-918)
-   - **Fix:** Added `hasFetched` state flag to prevent showing empty state until initial fetch completes
-   - **Status:** ✅ VERIFIED - No "No listings" flash during page load
-
-**Test Report:** `/app/test_reports/iteration_192.json` - All fixes verified (100% frontend pass rate)
-
-**Minor Issues Noted (Non-blocking):**
-- localStorage QuotaExceededError on cache - needs cache cleanup strategy
-- Duplicate key warnings in FlatList - cosmetic issue
-- Currency inconsistency (€ vs TSh) - data consistency issue
-
-**Note:** Testing was performed on web with mobile viewport (375x812). Physical Android device testing recommended to verify platform-specific behavior.
-
-
-### February 19, 2026 (Comprehensive UI/UX Layout Refactoring)
-
-#### Global Layout System Architecture Created
-
-**New Files Created:**
-1. `/app/frontend/src/constants/layout.ts` - Global layout constants including:
-   - Standardized 8-point spacing scale (SPACING: 4, 8, 12, 16, 20, 24, 32, 48)
-   - Brand colors (COLORS: primary #2E7D32, backgrounds, text, etc.)
-   - Layout dimensions (screen sizes, safe area values, bottom sheet configs)
-   - Typography scale (sizes, weights, line heights)
-   - Border radius values (RADIUS)
-   - Shadow presets (SHADOWS)
-   - Helper functions: `getBottomPadding()`, `getScrollContentPadding()`, `getGridColumns()`
-
-2. `/app/frontend/src/components/layout/ScreenLayout.tsx` - Standard screen wrapper with:
-   - Proper SafeAreaView handling
-   - Sticky footer support (outside ScrollView)
-   - KeyboardAvoidingView option
-   - Consistent edge handling
-
-3. `/app/frontend/src/components/common/BottomSheetDrawer.tsx` - Full-height expandable drawer:
-   - 95% screen height max
-   - Sticky header that doesn't scroll
-   - Proper safe area bottom padding
-   - Tap outside to close
-   - Android back button support
-   - Smooth slide animation
-
-4. `/app/frontend/src/components/home/CategoryDrawer.tsx` - Redesigned category drawer:
-   - Full-height expandable (95% screen)
-   - Sticky header with category name and close button
-   - "View All" button always visible at top
-   - Scrollable subcategory list
-   - Recent subcategories section
-   - Proper safe area handling
-
-**Fixes Applied:**
-1. **Bottom Navigation Safe Area** - Tab bar uses `Math.max(insets.bottom, 16)` for Android
-2. **Screen Content Padding** - All screens with sticky CTAs have dynamic spacer: `Math.max(insets.bottom, 24) + 80`
-3. **Category Drawer** - Converted from small modal to full-height expandable drawer
-4. **Scroll Clipping** - All FlatList/ScrollView use dynamic `paddingBottom: Math.max(insets.bottom, 24)`
-
-**Screens Updated:**
-- `/app/frontend/app/(tabs)/index.tsx` - Uses new CategoryDrawer
-- `/app/frontend/app/listing/[id].tsx` - Dynamic spacer for bottom actions
-- `/app/frontend/app/auto/[id].tsx` - Dynamic spacer for bottom actions
-- `/app/frontend/app/property/[id].tsx` - Dynamic spacer for bottom actions
-
-**Standards Implemented:**
-- Spacing scale: 8 / 12 / 16 / 20 / 24 / 32 only
-- Consistent horizontal padding: 16px on all screens
-- Bottom sheet max height: 95% screen height
-- Safe area minimum padding: 16px
-- Sticky CTA height: 56px + safe area
-
-
+## Dependencies
+- expo-constants: For reading app.json config in APK builds
+- axios: HTTP client
+- zustand: State management
+- expo-router: Navigation
+- react-native-safe-area-context: Safe area handling
