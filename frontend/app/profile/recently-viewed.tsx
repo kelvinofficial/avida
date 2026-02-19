@@ -119,6 +119,7 @@ export default function RecentlyViewedScreen() {
   const { isDesktop, isTablet, isReady } = useResponsive();
   const { goToLogin } = useLoginRedirect();
   const isLargeScreen = isDesktop || isTablet;
+  const insets = useSafeAreaInsets(); // Safe area insets for bottom padding
   
   // CACHE-FIRST: Initialize with cached data
   const cachedItems = getCachedSync<any[]>('recently_viewed') ?? [];
