@@ -494,7 +494,7 @@ const mobileDropdownStyles = StyleSheet.create({
   categoriesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingLeft: 16,
+    paddingLeft: 12,
   },
   allButton: {
     flexDirection: 'row',
