@@ -949,15 +949,20 @@ class EngagementNotificationManager:
         week_ago = now - timedelta(days=7)
         cooldown_cutoff = now - timedelta(hours=self.config.notification_cooldown_hours)
         
-        # Get all active listings with their sellers
+        # Get all active listings with their sellers (only those with user_id)
         active_listings = await self.db.listings.find(
-            {"status": "active"},
+            {"status": "active", "user_id": {"$exists": True, "$ne": None}},
             {"id": 1, "title": 1, "user_id": 1, "_id": 0}
         ).to_list(1000)
         
         for listing in active_listings:
-            listing_id = listing["id"]
-            seller_id = listing["user_id"]
+            listing_id = listing.get("id")
+            seller_id = listing.get("user_id")
+            listing_title = listing.get("title", "Untitled")
+            
+            # Skip if missing required fields
+            if not listing_id or not seller_id:
+                continue
             
             # Check if we've recently notified for this listing
             recent_notification = await self.db.engagement_notifications_sent.find_one({
