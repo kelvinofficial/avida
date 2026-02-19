@@ -18,11 +18,15 @@ import { MilestoneProvider } from '../src/context/MilestoneContext';
 import { OfflineBanner, FavoriteNotificationProvider } from '../src/components/common';
 import { useNetworkStatus } from '../src/hooks/useNetworkStatus';
 import { useServiceWorker } from '../src/hooks/useServiceWorker';
+import { preloadCacheToMemory } from '../src/utils/cacheManager';
 
 // Initialize global error handler
 if (typeof window !== 'undefined' || Platform.OS !== 'web') {
   setupGlobalErrorHandler();
 }
+
+// CACHE-FIRST: Preload cache to memory on app start (for mobile instant rendering)
+preloadCacheToMemory().catch(() => {});
 
 // CACHE-FIRST ARCHITECTURE: Removed all skeleton imports
 // We no longer show loading skeletons - pages render with cached data immediately
