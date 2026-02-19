@@ -301,12 +301,14 @@ export default function HomeScreen() {
   };
 
   // ============ RENDER LISTING ITEM FOR FLATLIST ============
+  const CARD_PADDING = 16; // Padding for listing cards to match header alignment
+  
   const renderListingItem = useCallback(({ item, index }: { item: any; index: number }) => {
     const colIndex = index % columns;
     const isFirstInRow = colIndex === 0;
     const isLastInRow = colIndex === columns - 1;
     
-    // Consistent gap on both sides between items
+    // Gap between items
     const marginHorizontal = gridGap / 2;
     
     return (
@@ -314,8 +316,8 @@ export default function HomeScreen() {
         style={{
           width: dynamicCardWidth,
           marginBottom: gridGap,
-          marginLeft: isFirstInRow ? 0 : marginHorizontal,
-          marginRight: isLastInRow ? 0 : marginHorizontal,
+          marginLeft: isFirstInRow ? CARD_PADDING : marginHorizontal,
+          marginRight: isLastInRow ? CARD_PADDING : marginHorizontal,
         }}
       >
         <ListingCard
