@@ -4,30 +4,53 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
 // Production API URL - HARDCODED for APK builds where env vars don't work
+// This is the ULTIMATE fallback and MUST always be correct
 export const PRODUCTION_API_URL = 'https://expo-connectivity.preview.emergentagent.com';
 
 // Get API URL - try multiple sources for maximum compatibility
 export const getApiUrl = (): string => {
   // 1. Try expo-constants extra config (works in APK builds)
-  const extraApiUrl = Constants.expoConfig?.extra?.apiUrl;
-  if (extraApiUrl && extraApiUrl.trim() !== '') {
-    return extraApiUrl;
+  try {
+    const expoConfig = Constants.expoConfig;
+    if (expoConfig?.extra?.apiUrl) {
+      console.log('[API] Found apiUrl in expoConfig.extra');
+      return expoConfig.extra.apiUrl;
+    }
+    if (expoConfig?.extra?.backendUrl) {
+      console.log('[API] Found backendUrl in expoConfig.extra');
+      return expoConfig.extra.backendUrl;
+    }
+    
+    // Also check manifest for older expo versions
+    const manifest = Constants.manifest || Constants.manifest2;
+    if (manifest?.extra?.apiUrl) {
+      console.log('[API] Found apiUrl in manifest.extra');
+      return manifest.extra.apiUrl;
+    }
+  } catch (e) {
+    console.log('[API] Error reading Constants:', e);
   }
   
   // 2. Try environment variable (works in dev/web)
-  const envUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
-  if (envUrl && envUrl.trim() !== '') {
-    return envUrl;
+  try {
+    const envUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+    if (envUrl && envUrl.trim() !== '') {
+      console.log('[API] Found EXPO_PUBLIC_BACKEND_URL env var');
+      return envUrl;
+    }
+  } catch (e) {
+    console.log('[API] Error reading env var:', e);
   }
   
-  // 3. Fallback to hardcoded production URL (always works)
+  // 3. Fallback to hardcoded production URL (ALWAYS works)
+  console.log('[API] Using hardcoded PRODUCTION_API_URL');
   return PRODUCTION_API_URL;
 };
 
 export const API_URL = getApiUrl();
 
 // Log API URL for debugging
-console.log('[API] Using API URL:', API_URL);
+console.log('[API] Final API URL:', API_URL);
 
 export const api = axios.create({
   baseURL: `${API_URL}/api`,
