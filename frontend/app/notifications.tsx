@@ -242,6 +242,7 @@ export default function NotificationsScreen() {
   const { isAuthenticated } = useAuthStore();
   const { isDesktop, isTablet, isReady } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
+  const insets = useSafeAreaInsets(); // Safe area insets for bottom padding
   
   // Cache-first: Initialize with cached data for instant render
   const cachedNotifications = getCachedSync<Notification[]>(CACHE_KEYS.NOTIFICATIONS) || [];
