@@ -36,6 +36,29 @@ export interface FeedItem {
   isNegotiable?: boolean;
 }
 
+/**
+ * Convert FeedItem to Listing format for compatibility with existing components
+ */
+export const feedItemToListing = (item: FeedItem): any => ({
+  id: item.id,
+  title: item.title,
+  price: item.price,
+  images: item.thumbUrl ? [item.thumbUrl] : [],
+  location: item.cityName,
+  location_data: {
+    city_name: item.cityName,
+  },
+  category_id: item.category,
+  subcategory: item.subcategory,
+  created_at: item.createdAt,
+  views: item.viewsCount || 0,
+  featured: item.isBoosted,
+  is_boosted: item.isBoosted,
+  negotiable: item.isNegotiable || false,
+  user_id: item.sellerId,
+  currency: item.currency,
+});
+
 export interface CachedFeed {
   items: FeedItem[];
   updatedAt: string;
