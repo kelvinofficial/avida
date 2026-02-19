@@ -494,7 +494,7 @@ const mobileDropdownStyles = StyleSheet.create({
   categoriesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingLeft: 16,
+    paddingLeft: 0,
   },
   allButton: {
     flexDirection: 'row',
@@ -562,7 +562,7 @@ const newHeaderStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     paddingTop: 8,
     paddingBottom: 8,
   },
@@ -624,7 +624,7 @@ const newHeaderStyles = StyleSheet.create({
   
   // Row 2: Full-width search bar with dropdown
   row2: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     paddingBottom: 12,
     zIndex: 1000,
   },
