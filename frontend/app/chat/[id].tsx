@@ -1178,6 +1178,7 @@ export default function ChatScreen() {
   const { user } = useAuthStore();
   const { isDesktop, isTablet, isReady } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
+  const insets = useSafeAreaInsets(); // Get safe area insets for bottom padding
 
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
