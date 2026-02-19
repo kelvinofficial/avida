@@ -188,35 +188,6 @@ export const CategoryDrawer: React.FC<CategoryDrawerProps> = ({
           {/* Divider */}
           <View style={styles.divider} />
 
-          {/* Sticky View All Button */}
-          <TouchableOpacity
-            style={styles.viewAllButton}
-            onPress={() => onSelectSubcategory(category.id, undefined)}
-            activeOpacity={0.7}
-            testID="view-all-category-btn"
-          >
-            <View style={styles.viewAllContent}>
-              <View style={styles.viewAllIcon}>
-                <Ionicons name="grid-outline" size={20} color={COLORS.primary} />
-              </View>
-              <Text style={styles.viewAllText}>View All {category.name}</Text>
-            </View>
-            <View style={styles.viewAllRight}>
-              {loadingCounts ? (
-                <ActivityIndicator size="small" color={COLORS.primary} />
-              ) : (
-                <View style={styles.countBadge}>
-                  <Text style={styles.countBadgeText}>
-                    {subcategoryCounts._total || 0}
-                  </Text>
-                </View>
-              )}
-              <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
-            </View>
-          </TouchableOpacity>
-
-          {/* ========== STICKY SECTION END ========== */}
-
           {/* ========== SCROLLABLE SECTION START ========== */}
           <ScrollView
             style={styles.scrollableContent}
@@ -229,6 +200,33 @@ export const CategoryDrawer: React.FC<CategoryDrawerProps> = ({
             alwaysBounceVertical={true}
             scrollEnabled={true}
           >
+            {/* View All Button - Scrollable */}
+            <TouchableOpacity
+              style={styles.viewAllButton}
+              onPress={() => onSelectSubcategory(category.id, undefined)}
+              activeOpacity={0.7}
+              testID="view-all-category-btn"
+            >
+              <View style={styles.viewAllContent}>
+                <View style={styles.viewAllIcon}>
+                  <Ionicons name="grid-outline" size={20} color={COLORS.primary} />
+                </View>
+                <Text style={styles.viewAllText}>View All {category.name}</Text>
+              </View>
+              <View style={styles.viewAllRight}>
+                {loadingCounts ? (
+                  <ActivityIndicator size="small" color={COLORS.primary} />
+                ) : (
+                  <View style={styles.countBadge}>
+                    <Text style={styles.countBadgeText}>
+                      {subcategoryCounts._total || 0}
+                    </Text>
+                  </View>
+                )}
+                <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
+              </View>
+            </TouchableOpacity>
+
             {/* Recently Viewed Section */}
             {recentForThisCategory.length > 0 && (
               <View style={styles.sectionContainer}>
