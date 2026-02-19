@@ -164,7 +164,7 @@ export default function StreakLeaderboardScreen() {
 
   const handleShare = async () => {
     const message = `Check out the Streak Leaderboard on Avida Marketplace! See who's on fire with challenge completions! #AvidaMarketplace`;
-    const url = `${process.env.EXPO_PUBLIC_BACKEND_URL}/streak-leaderboard`;
+    const url = `${API_URL}/streak-leaderboard`;
     
     if (Platform.OS === 'web') {
       try {

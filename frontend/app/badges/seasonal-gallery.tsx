@@ -158,7 +158,7 @@ export default function SeasonalBadgesGalleryScreen() {
     const message = badge 
       ? `Check out the "${badge.name}" seasonal badge on Avida Marketplace!`
       : `Check out the Seasonal Badges Gallery on Avida Marketplace! See all the limited-time badges from past events.`;
-    const url = `${process.env.EXPO_PUBLIC_BACKEND_URL}/badges/seasonal-gallery`;
+    const url = `${API_URL}/badges/seasonal-gallery`;
     
     if (Platform.OS === 'web') {
       try {
