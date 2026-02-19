@@ -1,29 +1,33 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
-// Production API URL - used when env variable is not available (e.g., in APK builds)
+// Production API URL - HARDCODED for APK builds where env vars don't work
 export const PRODUCTION_API_URL = 'https://perf-bugfix.preview.emergentagent.com';
 
-// Get API URL from environment or use production fallback
+// Get API URL - try multiple sources for maximum compatibility
 export const getApiUrl = (): string => {
-  const envUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+  // 1. Try expo-constants extra config (works in APK builds)
+  const extraApiUrl = Constants.expoConfig?.extra?.apiUrl;
+  if (extraApiUrl && extraApiUrl.trim() !== '') {
+    return extraApiUrl;
+  }
   
-  // If env variable is set and not empty, use it
+  // 2. Try environment variable (works in dev/web)
+  const envUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
   if (envUrl && envUrl.trim() !== '') {
     return envUrl;
   }
   
-  // Fallback to production URL for native builds
+  // 3. Fallback to hardcoded production URL (always works)
   return PRODUCTION_API_URL;
 };
 
 export const API_URL = getApiUrl();
 
-// Log API URL for debugging (only in development)
-if (__DEV__) {
-  console.log('[API] Using API URL:', API_URL);
-}
+// Log API URL for debugging
+console.log('[API] Using API URL:', API_URL);
 
 export const api = axios.create({
   baseURL: `${API_URL}/api`,
@@ -31,8 +35,6 @@ export const api = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 30000, // 30 second timeout
-  // Don't use withCredentials as it requires specific CORS headers
-  // We use Authorization header for auth instead
 });
 
 // Add auth token to requests
