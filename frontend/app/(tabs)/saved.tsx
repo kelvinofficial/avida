@@ -198,9 +198,17 @@ export default function SavedScreen() {
     }
   }, [isAuthenticated]);
 
+  // Initial fetch on mount
   useEffect(() => {
     fetchSavedItems();
   }, [fetchSavedItems]);
+  
+  // Refresh when tab comes into focus (e.g., after saving an item on another screen)
+  useFocusEffect(
+    useCallback(() => {
+      fetchSavedItems();
+    }, [fetchSavedItems])
+  );
 
   const handleRefresh = () => {
     setRefreshing(true);
