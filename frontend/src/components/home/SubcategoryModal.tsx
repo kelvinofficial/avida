@@ -83,6 +83,7 @@ export const SubcategoryModal: React.FC<SubcategoryModalProps> = ({
                   onPress={onClose} 
                   style={styles.modalCloseBtn}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  testID="subcategory-modal-close-btn"
                 >
                   <Ionicons name="close" size={24} color="#333" />
                 </TouchableOpacity>
