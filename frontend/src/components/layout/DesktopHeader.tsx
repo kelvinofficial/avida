@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'expo-router';
 import { useAuthStore } from '../../store/authStore';
 import { useLocationStore } from '../../store/locationStore';
 import { useLoginRedirect } from '../../hooks/useLoginRedirect';
-import api, { locationsApi } from '../../utils/api';
+import api, { locationsApi, API_URL } from '../../utils/api';
 import { LocationPicker, LocationData } from '../LocationPicker';
 
 interface Country {
@@ -82,7 +82,7 @@ export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
     }
     try {
       const res = await fetch(
-        `${process.env.EXPO_PUBLIC_BACKEND_URL || 'https://expo-connectivity.preview.emergentagent.com'}/api/searches/suggestions?q=${encodeURIComponent(query)}&limit=8`
+        `${API_URL}/api/searches/suggestions?q=${encodeURIComponent(query)}&limit=8`
       );
       if (res.ok) {
         const data = await res.json();

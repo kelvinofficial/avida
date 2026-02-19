@@ -5,8 +5,9 @@
 import * as Linking from 'expo-linking';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '../utils/api';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://expo-connectivity.preview.emergentagent.com';
+const API_BASE_URL = API_URL;
 
 // App URL scheme
 export const APP_SCHEME = 'localmarket';

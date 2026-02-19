@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState, useCallb
 import { View, StyleSheet } from 'react-native';
 import { FavoriteToast } from './FavoriteToast';
 import { useAuthStore } from '../../store/authStore';
+import { API_URL } from '../../utils/api';
 
 interface FavoriteNotification {
   userName: string;
@@ -69,7 +70,7 @@ export const FavoriteNotificationProvider: React.FC<Props> = ({ children }) => {
     const connectWebSocket = async () => {
       try {
         const { io } = await import('socket.io-client');
-        const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://expo-connectivity.preview.emergentagent.com';
+        const BACKEND_URL = API_URL;
         
         const socket = io(BACKEND_URL, {
           transports: ['websocket'],
