@@ -783,7 +783,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   headerGradient: {
-    height: SCREEN_HEIGHT * 0.28,
+    minHeight: SCREEN_HEIGHT * 0.30,
+    paddingBottom: 40,
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
     overflow: 'hidden',
