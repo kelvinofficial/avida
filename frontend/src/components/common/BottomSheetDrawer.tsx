@@ -58,7 +58,7 @@ export const BottomSheetDrawer: React.FC<BottomSheetDrawerProps> = ({
   headerIcon,
   customHeader,
   children,
-  maxHeightPercent = 0.95,
+  maxHeightPercent = 0.85,
   showHeader = true,
   testID,
 }) => {
@@ -66,9 +66,11 @@ export const BottomSheetDrawer: React.FC<BottomSheetDrawerProps> = ({
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  // Calculate max height
-  const maxHeight = SCREEN_HEIGHT * maxHeightPercent;
-  const bottomPadding = getBottomPadding(insets.bottom, SPACING.lg);
+  // Calculate heights - use fixed height instead of maxHeight for proper scrolling
+  const sheetHeight = SCREEN_HEIGHT * maxHeightPercent;
+  const headerHeight = showHeader ? (LAYOUT.bottomSheet.headerHeight + SPACING.sm + 1) : 0; // header + dragHandle + divider
+  const bottomPadding = getBottomPadding(insets.bottom, SPACING.xl);
+  const scrollViewHeight = sheetHeight - headerHeight - SPACING.sm; // subtract drag handle area
 
   // Handle Android back button
   useEffect(() => {
@@ -130,76 +132,75 @@ export const BottomSheetDrawer: React.FC<BottomSheetDrawerProps> = ({
         />
       </TouchableWithoutFeedback>
 
-      {/* Sheet Container */}
+      {/* Sheet Container - Fixed height for proper scrolling */}
       <Animated.View
         style={[
           styles.sheetContainer,
           {
-            maxHeight,
+            height: sheetHeight,
             transform: [{ translateY: slideAnim }],
           },
         ]}
         testID={testID}
       >
-        <TouchableWithoutFeedback>
-          <View style={styles.sheet}>
-            {/* Drag Handle */}
-            <View style={styles.dragHandleContainer}>
-              <View style={styles.dragHandle} />
-            </View>
-
-            {/* Sticky Header */}
-            {showHeader && (
-              <View style={styles.header}>
-                {customHeader || (
-                  <>
-                    <View style={styles.headerLeft}>
-                      {headerIcon && (
-                        <View style={styles.headerIconContainer}>
-                          <Ionicons
-                            name={headerIcon as any}
-                            size={24}
-                            color={COLORS.primary}
-                          />
-                        </View>
-                      )}
-                      <Text style={styles.headerTitle} numberOfLines={1}>
-                        {title}
-                      </Text>
-                    </View>
-                    <TouchableOpacity
-                      onPress={onClose}
-                      style={styles.closeButton}
-                      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                      testID="bottom-sheet-close-btn"
-                    >
-                      <Ionicons name="close" size={24} color={COLORS.text} />
-                    </TouchableOpacity>
-                  </>
-                )}
-              </View>
-            )}
-
-            {/* Divider */}
-            {showHeader && <View style={styles.divider} />}
-
-            {/* Scrollable Content */}
-            <ScrollView
-              style={styles.content}
-              contentContainerStyle={[
-                styles.contentContainer,
-                { paddingBottom: bottomPadding },
-              ]}
-              showsVerticalScrollIndicator={true}
-              bounces={true}
-              keyboardShouldPersistTaps="handled"
-              nestedScrollEnabled={true}
-              overScrollMode="always"
-            >
-              {children}
-            </ScrollView>
+        <View style={[styles.sheet, { height: sheetHeight }]}>
+          {/* Drag Handle */}
+          <View style={styles.dragHandleContainer}>
+            <View style={styles.dragHandle} />
           </View>
-        </TouchableWithoutFeedback>
+
+          {/* Sticky Header */}
+          {showHeader && (
+            <View style={styles.header}>
+              {customHeader || (
+                <>
+                  <View style={styles.headerLeft}>
+                    {headerIcon && (
+                      <View style={styles.headerIconContainer}>
+                        <Ionicons
+                          name={headerIcon as any}
+                          size={24}
+                          color={COLORS.primary}
+                        />
+                      </View>
+                    )}
+                    <Text style={styles.headerTitle} numberOfLines={1}>
+                      {title}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={onClose}
+                    style={styles.closeButton}
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                    testID="bottom-sheet-close-btn"
+                  >
+                    <Ionicons name="close" size={24} color={COLORS.text} />
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          )}
+
+          {/* Divider */}
+          {showHeader && <View style={styles.divider} />}
+
+          {/* Scrollable Content - Fixed height to enable scrolling */}
+          <ScrollView
+            style={[styles.content, { height: scrollViewHeight }]}
+            contentContainerStyle={[
+              styles.contentContainer,
+              { paddingBottom: bottomPadding },
+            ]}
+            showsVerticalScrollIndicator={true}
+            bounces={true}
+            keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled={true}
+            scrollEnabled={true}
+            alwaysBounceVertical={true}
+          >
+            {children}
+          </ScrollView>
+        </View>
       </Animated.View>
     </Modal>
   );
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.divider,
   },
   content: {
-    flex: 1,
+    // Height set dynamically
   },
   contentContainer: {
     flexGrow: 1,
