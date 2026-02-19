@@ -400,8 +400,8 @@ export default function HomeScreen() {
       onEndReachedThreshold={0.5}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={[
-        { paddingHorizontal: gridPadding, paddingBottom: 100 },
-        (isDesktop || isTablet) && { maxWidth: MAX_WIDTH, alignSelf: 'center', width: '100%' },
+        { paddingBottom: 100 },
+        (isDesktop || isTablet) && { maxWidth: MAX_WIDTH, alignSelf: 'center', width: '100%', paddingHorizontal: gridPadding },
       ]}
       style={isDesktop || isTablet ? { flex: 1 } : undefined}
       {...flatListProps}
