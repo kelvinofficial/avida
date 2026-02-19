@@ -60,26 +60,45 @@ Build a full-stack React Native/Expo marketplace application with a FastAPI back
 ### Prioritized Backlog
 
 #### P0 - Critical
-1. **APK Testing**: User must build and test new APK to verify API fix
-2. **Global UI Layout Refactor**: Bottom content clipped on many screens
-   - Create standardized `<ScreenLayout>` component
-   - Implement proper safe area handling for all screens
-   - Affected: Chat, Notifications, Profile, Create Listing, Select Category
+1. ✅ **Instant Listings Feed Integrated**: Implemented cache-first architecture for fast listings display
+2. ✅ **Subcategory Drawer Scroll Fix**: ScrollView now works correctly with bounces and nested scroll enabled
+3. ✅ **UI Layout Fix**: All main screens (Login, Profile, Saved, Messages) display correctly
 
 #### P1 - High Priority
-3. **Blank Screens Fix**: Saved Items, Badges screens appear blank
-   - Likely dependent on API connectivity fix working
-4. **Core Features**: Favorites and Recently Viewed not persisting
-   - Likely symptom of API/auth issues
+1. **Recently Viewed Feature**: Not working, needs investigation
+2. **Share Button & Deep Linking**: Needs to be verified on physical device
+3. **Authentication Persistence**: Session may not persist on physical device - needs testing
 
 #### P2 - Medium Priority
-5. **Category Drawer**: Implement sticky header with scrollable subcategories
+1. **Performance Validation**: Monitor actual performance on physical device
+2. **Data Mismatch on Profile**: Stats may not match list counts
 
 #### Future/Backlog
 - Performance validation & Lighthouse audit
 - Full API integrations for demo features
 - Multi-language content generation (German, Swahili)
 - Firebase push notifications configuration
+
+### Instant Feed Implementation (Dec 2025) ✅
+**Problem**: Listings were very slow to display, causing poor user experience on mobile.
+
+**Solution Implemented**:
+- Created new `/api/feed/listings` endpoint with cursor-based pagination
+- Implemented cache-first rendering strategy with `useInstantListingsFeed` hook
+- Home screen now uses FlatList with instant feed data
+- MongoDB indexes created for optimal feed performance
+
+**Key Files**:
+- `/app/backend/routes/feed.py` - High-performance feed endpoint
+- `/app/frontend/src/hooks/useInstantListingsFeed.ts` - Cache-first feed hook
+- `/app/frontend/src/utils/feedCache.ts` - AsyncStorage caching utility
+- `/app/frontend/app/(tabs)/index.tsx` - Refactored home screen using instant feed
+
+**Features**:
+- Cache-first: Shows cached data immediately (<150ms target)
+- Background refresh: Updates data silently without blocking UI
+- Cursor-based pagination: Stable results during refresh
+- Optimized FlatList with proper virtualization
 
 ## Technical Architecture
 
