@@ -212,7 +212,7 @@ export const useSearchSuggestions = () => {
       // Fetch trending searches from API
       let trending: { query: string; count: number }[] = [];
       try {
-        const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || 'https://perf-bugfix.preview.emergentagent.com'}/api/searches/popular?limit=5`);
+        const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || 'https://expo-connectivity.preview.emergentagent.com'}/api/searches/popular?limit=5`);
         if (res.ok) {
           const data = await res.json();
           trending = data.global_searches || [];
@@ -240,7 +240,7 @@ export const useSearchSuggestions = () => {
 
     try {
       const res = await fetch(
-        `${process.env.EXPO_PUBLIC_BACKEND_URL || 'https://perf-bugfix.preview.emergentagent.com'}/api/searches/suggestions?q=${encodeURIComponent(query)}&limit=8`
+        `${process.env.EXPO_PUBLIC_BACKEND_URL || 'https://expo-connectivity.preview.emergentagent.com'}/api/searches/suggestions?q=${encodeURIComponent(query)}&limit=8`
       );
       if (res.ok) {
         const data = await res.json();

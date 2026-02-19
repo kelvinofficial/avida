@@ -7,7 +7,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://perf-bugfix.preview.emergentagent.com/api')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://expo-connectivity.preview.emergentagent.com/api')
 
 # Admin credentials
 ADMIN_EMAIL = "admin@marketplace.com"

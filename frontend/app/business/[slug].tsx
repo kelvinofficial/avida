@@ -302,7 +302,7 @@ export default function BusinessProfileScreen() {
   const handleShare = async () => {
     if (!profile) return;
     
-    const baseUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://perf-bugfix.preview.emergentagent.com';
+    const baseUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://expo-connectivity.preview.emergentagent.com';
     const profileUrl = `${baseUrl.replace('/api', '')}/business/${slug}`;
     
     try {

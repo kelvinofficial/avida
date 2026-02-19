@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 // Helper to get API URL at runtime
-const getApiUrl = () => process.env.EXPO_PUBLIC_BACKEND_URL || 'https://perf-bugfix.preview.emergentagent.com';
+const getApiUrl = () => process.env.EXPO_PUBLIC_BACKEND_URL || 'https://expo-connectivity.preview.emergentagent.com';
 
 // Feature settings interface matching backend response
 export interface FeatureSettings {

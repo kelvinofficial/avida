@@ -4,7 +4,7 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
 // Production API URL - HARDCODED for APK builds where env vars don't work
-export const PRODUCTION_API_URL = 'https://perf-bugfix.preview.emergentagent.com';
+export const PRODUCTION_API_URL = 'https://expo-connectivity.preview.emergentagent.com';
 
 // Get API URL - try multiple sources for maximum compatibility
 export const getApiUrl = (): string => {

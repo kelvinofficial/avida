@@ -69,7 +69,7 @@ export const FavoriteNotificationProvider: React.FC<Props> = ({ children }) => {
     const connectWebSocket = async () => {
       try {
         const { io } = await import('socket.io-client');
-        const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://perf-bugfix.preview.emergentagent.com';
+        const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://expo-connectivity.preview.emergentagent.com';
         
         const socket = io(BACKEND_URL, {
           transports: ['websocket'],

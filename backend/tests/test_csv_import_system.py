@@ -21,7 +21,7 @@ import io
 import time
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://perf-bugfix.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://expo-connectivity.preview.emergentagent.com').rstrip('/')
 
 
 class TestCSVImportFields:

@@ -170,7 +170,7 @@ export function useHomeData(): UseHomeDataReturn {
   const fetchFeaturedListings = useCallback(async () => {
     try {
       // Don't set loading state - cache-first pattern
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || 'https://perf-bugfix.preview.emergentagent.com'}/api/listings/featured-verified?limit=12`);
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || 'https://expo-connectivity.preview.emergentagent.com'}/api/listings/featured-verified?limit=12`);
       if (response.ok) {
         const data = await response.json();
         const newFeaturedListings = data.listings || [];
@@ -179,7 +179,7 @@ export function useHomeData(): UseHomeDataReturn {
         setCacheSync(CACHE_KEYS.FEATURED_LISTINGS, newFeaturedListings);
         CacheManager.setCache(CACHE_KEYS.FEATURED_LISTINGS, newFeaturedListings);
       } else {
-        const sellersResponse = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || 'https://perf-bugfix.preview.emergentagent.com'}/api/business-profiles/featured?limit=8`);
+        const sellersResponse = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || 'https://expo-connectivity.preview.emergentagent.com'}/api/business-profiles/featured?limit=8`);
         if (sellersResponse.ok) {
           const data = await sellersResponse.json();
           const newFeaturedSellers = data.sellers || [];
@@ -423,7 +423,7 @@ export function useHomeData(): UseHomeDataReturn {
         }
 
         try {
-          const profileResponse = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || 'https://perf-bugfix.preview.emergentagent.com'}/api/users/me`, {
+          const profileResponse = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL || 'https://expo-connectivity.preview.emergentagent.com'}/api/users/me`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (profileResponse.ok) {
