@@ -117,6 +117,13 @@ export function useSubcategoryModal() {
     loadRecentSubcategories();
   }, []);
 
+  // Ensure modal is closed when hook is unmounted (navigation away)
+  useEffect(() => {
+    return () => {
+      setShowSubcategoryModal(false);
+    };
+  }, []);
+
   // Open subcategory modal for a category
   const openSubcategoryModal = useCallback(async (categoryId: string) => {
     const category = FULL_CATEGORIES.find(c => c.id === categoryId);
