@@ -7,6 +7,7 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Share, Platform, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { API_URL } from '../../utils/api';
 
 interface SocialShareButtonsProps {
   title: string;
@@ -20,7 +21,7 @@ interface SocialShareButtonsProps {
   onShareComplete?: (platform: string) => void;
 }
 
-const BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://avida.com';
+const BASE_URL = API_URL || 'https://avida.com';
 
 export const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
   title,

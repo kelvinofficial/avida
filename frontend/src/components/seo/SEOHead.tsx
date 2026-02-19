@@ -6,6 +6,7 @@
 
 import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
+import { API_URL } from '../../utils/api';
 
 interface SEOHeadProps {
   title: string;
@@ -27,7 +28,7 @@ interface SEOHeadProps {
   noIndex?: boolean;
 }
 
-const BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://avida.com';
+const BASE_URL = API_URL || 'https://avida.com';
 const DEFAULT_IMAGE = `${BASE_URL}/og-image.png`;
 const SITE_NAME = 'Avida Marketplace';
 

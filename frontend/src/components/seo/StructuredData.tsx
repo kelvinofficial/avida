@@ -6,8 +6,9 @@
 
 import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
+import { API_URL } from '../../utils/api';
 
-const BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://avida.com';
+const BASE_URL = API_URL || 'https://avida.com';
 const SITE_NAME = 'Avida Marketplace';
 
 // Helper to add/update JSON-LD script
