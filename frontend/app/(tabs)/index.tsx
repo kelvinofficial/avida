@@ -328,8 +328,8 @@ export default function HomeScreen() {
           onClearLocationFilter={handleClearLocationFilter}
         />
 
-      {/* Subcategory Selection Modal */}
-      <SubcategoryModal
+      {/* Subcategory Selection Drawer - Full Height */}
+      <CategoryDrawer
         visible={showSubcategoryModal}
         onClose={closeSubcategoryModal}
         category={selectedCategoryForSubcats}
