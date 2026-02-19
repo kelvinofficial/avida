@@ -192,45 +192,109 @@ export async function cacheFirstFetch<T>(
 /**
  * Synchronous cache read for instant UI rendering
  * Use this for initial render - returns null if not in cache
+ * 
+ * NOTE: This only works synchronously on web.
+ * For mobile, use the in-memory cache that gets populated from AsyncStorage.
  */
+
+// In-memory cache for instant mobile access
+const memoryCache: Map<string, any> = new Map();
+
 export function getCachedSync<T>(key: string): T | null {
-  if (Platform.OS !== 'web') return null;
-  
-  try {
-    const cacheKey = `${CACHE_CONFIG.PREFIX}${key}`;
-    const cached = localStorage.getItem(cacheKey);
-    
-    if (!cached) return null;
-    
-    const entry: CacheEntry<T> = JSON.parse(cached);
-    const now = Date.now();
-    
-    // Check version and expiry
-    if (entry.version !== CACHE_VERSION) return null;
-    if (now - entry.timestamp > CACHE_CONFIG.MAX_AGE) return null;
-    
-    return entry.data;
-  } catch {
-    return null;
+  // First, try memory cache (works on both web and mobile)
+  const cacheKey = `${CACHE_CONFIG.PREFIX}${key}`;
+  if (memoryCache.has(cacheKey)) {
+    return memoryCache.get(cacheKey);
   }
+  
+  // On web, try localStorage as fallback
+  if (Platform.OS === 'web') {
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      
+      if (!cached) return null;
+      
+      const entry: CacheEntry<T> = JSON.parse(cached);
+      const now = Date.now();
+      
+      // Check version and expiry
+      if (entry.version !== CACHE_VERSION) return null;
+      if (now - entry.timestamp > CACHE_CONFIG.MAX_AGE) return null;
+      
+      // Store in memory cache for future sync access
+      memoryCache.set(cacheKey, entry.data);
+      
+      return entry.data;
+    } catch {
+      return null;
+    }
+  }
+  
+  return null;
 }
 
 /**
  * Synchronous cache write
  */
 export function setCacheSync<T>(key: string, data: T): void {
-  if (Platform.OS !== 'web') return;
+  const cacheKey = `${CACHE_CONFIG.PREFIX}${key}`;
   
-  try {
-    const cacheKey = `${CACHE_CONFIG.PREFIX}${key}`;
-    const entry: CacheEntry<T> = {
+  // Always update memory cache
+  memoryCache.set(cacheKey, data);
+  
+  // On web, also update localStorage
+  if (Platform.OS === 'web') {
+    try {
+      const entry: CacheEntry<T> = {
+        data,
+        timestamp: Date.now(),
+        version: CACHE_VERSION,
+      };
+      localStorage.setItem(cacheKey, JSON.stringify(entry));
+    } catch {
+      // Ignore errors
+    }
+  }
+  
+  // On mobile, also persist to AsyncStorage (fire and forget)
+  if (Platform.OS !== 'web') {
+    Storage.setItem(cacheKey, JSON.stringify({
       data,
       timestamp: Date.now(),
       version: CACHE_VERSION,
-    };
-    localStorage.setItem(cacheKey, JSON.stringify(entry));
-  } catch {
-    // Ignore errors
+    })).catch(() => {});
+  }
+}
+
+/**
+ * Preload cache from AsyncStorage into memory (call on app start)
+ */
+export async function preloadCacheToMemory(): Promise<void> {
+  if (Platform.OS === 'web') return;
+  
+  const keysToPreload = [
+    CACHE_KEYS.HOME_LISTINGS,
+    CACHE_KEYS.HOME_CATEGORIES,
+    CACHE_KEYS.FEATURED_LISTINGS,
+    CACHE_KEYS.FEATURED_SELLERS,
+  ];
+  
+  for (const key of keysToPreload) {
+    try {
+      const cacheKey = `${CACHE_CONFIG.PREFIX}${key}`;
+      const cached = await Storage.getItem(cacheKey);
+      if (cached) {
+        const entry: CacheEntry<any> = JSON.parse(cached);
+        const now = Date.now();
+        
+        // Check version and expiry
+        if (entry.version === CACHE_VERSION && now - entry.timestamp < CACHE_CONFIG.MAX_AGE) {
+          memoryCache.set(cacheKey, entry.data);
+        }
+      }
+    } catch {
+      // Ignore errors
+    }
   }
 }
 
