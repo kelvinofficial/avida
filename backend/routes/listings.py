@@ -96,6 +96,17 @@ def calculate_generic_similarity(source: dict, candidate: dict) -> float:
     # Location match (20 points)
     source_location = source.get('location', '') or source.get('city', '')
     candidate_location = candidate.get('location', '') or candidate.get('city', '')
+    
+    # Handle dict locations (location_data structure)
+    if isinstance(source_location, dict):
+        source_location = source_location.get('city_name', '') or source_location.get('city', '')
+    if isinstance(candidate_location, dict):
+        candidate_location = candidate_location.get('city_name', '') or candidate_location.get('city', '')
+    
+    # Ensure we have strings
+    source_location = str(source_location) if source_location else ''
+    candidate_location = str(candidate_location) if candidate_location else ''
+    
     if source_location and candidate_location:
         # Check if same city
         source_city = source_location.split(',')[0].strip().lower()
