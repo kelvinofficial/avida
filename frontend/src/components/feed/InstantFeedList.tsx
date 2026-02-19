@@ -28,8 +28,8 @@ import {
   getFeedFlatListProps,
   feedKeyExtractor,
   FeedParams,
-} from '../hooks/useInstantListingsFeed';
-import { FeedItem } from '../utils/feedCache';
+} from '../../hooks/useInstantListingsFeed';
+import { FeedItem } from '../../utils/feedCache';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2;
