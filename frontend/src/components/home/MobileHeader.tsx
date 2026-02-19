@@ -624,8 +624,8 @@ const newHeaderStyles = StyleSheet.create({
   
   // Row 2: Full-width search bar with dropdown
   row2: {
-    paddingHorizontal: 16,
-    paddingBottom: 14,
+    paddingHorizontal: 12,
+    paddingBottom: 12,
     zIndex: 1000,
   },
   searchContainer: {
