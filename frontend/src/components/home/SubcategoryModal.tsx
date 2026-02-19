@@ -7,6 +7,7 @@ import {
   ScrollView,
   Modal,
   ActivityIndicator,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SubcategoryConfig } from '../../config/subcategories';
