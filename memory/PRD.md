@@ -24,7 +24,7 @@ Build a full-stack React Native/Expo marketplace application with a FastAPI back
   1. `Constants.expoConfig.extra.apiUrl` (from app.json, works in APK)
   2. `process.env.EXPO_PUBLIC_BACKEND_URL` (works in web/dev)
   3. Hardcoded `PRODUCTION_API_URL` constant (always works)
-- Replaced 24+ hardcoded env variable usages across the codebase
+- Replaced **27+ hardcoded env variable usages** across the codebase
 
 **Files Modified**:
 - `/app/frontend/src/utils/api.ts` - Central API configuration
@@ -51,6 +51,11 @@ Build a full-stack React Native/Expo marketplace application with a FastAPI back
 - `/app/frontend/src/components/layout/DesktopHeader.tsx`
 - `/app/frontend/src/components/layout/DesktopPageLayout.tsx`
 - `/app/frontend/src/components/home/SearchSuggestions.tsx`
+
+#### Layout System Fix (Dec 2025) ✅
+- Created `/app/frontend/src/components/common/ScreenLayout.tsx` for standardized safe area handling
+- Fixed `profile/saved.tsx` ListEmptyComponent logic and added `mobileListEmpty` style
+- SubcategoryModal already has correct sticky header + scrollable content structure
 
 ### Prioritized Backlog
 
