@@ -39,28 +39,45 @@ export const useOffline = (): UseOfflineReturn => {
 
   // Listen to network changes
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
-      const online = state.isConnected && state.isInternetReachable !== false;
-      setIsOnline(online ?? true);
-      setIsOfflineMode(!online);
-      
-      // Sync pending actions when coming back online
-      if (online) {
-        syncPendingActions();
-      }
-    });
+    let unsubscribe: (() => void) | null = null;
+    
+    try {
+      unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
+        const online = state.isConnected && state.isInternetReachable !== false;
+        setIsOnline(online ?? true);
+        setIsOfflineMode(!online);
+        
+        // Sync pending actions when coming back online
+        if (online) {
+          syncPendingActions();
+        }
+      });
 
-    // Initial check
-    NetInfo.fetch().then((state) => {
-      const online = state.isConnected && state.isInternetReachable !== false;
-      setIsOnline(online ?? true);
-      setIsOfflineMode(!online);
-    });
+      // Initial check
+      NetInfo.fetch().then((state) => {
+        const online = state.isConnected && state.isInternetReachable !== false;
+        setIsOnline(online ?? true);
+        setIsOfflineMode(!online);
+      }).catch(() => {
+        // Ignore NetInfo errors
+      });
+    } catch (error) {
+      // NetInfo may throw on some platforms, ignore silently
+      console.warn('[Offline] NetInfo error:', error);
+    }
 
     // Load offline state
     loadOfflineState();
 
-    return () => unsubscribe();
+    return () => {
+      try {
+        if (unsubscribe) {
+          unsubscribe();
+        }
+      } catch (error) {
+        // Ignore abort errors during cleanup
+      }
+    };
   }, []);
 
   const loadOfflineState = async () => {
