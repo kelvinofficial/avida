@@ -381,10 +381,11 @@ export default function SavedItemsScreen() {
             onRemove={() => handleRemove(item)}
           />
         )}
-        ListEmptyComponent={
-          isFetchingInBackground ? null : items.length === 0 ? <EmptyState /> : null
-        }
-        contentContainerStyle={styles.mobileList}
+        ListEmptyComponent={!isFetchingInBackground ? <EmptyState /> : null}
+        contentContainerStyle={[
+          styles.mobileList,
+          items.length === 0 && styles.mobileListEmpty,
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
