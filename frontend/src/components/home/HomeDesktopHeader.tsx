@@ -190,8 +190,8 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
 const localStyles = StyleSheet.create({
   categoryRowWrapper: {
     backgroundColor: '#fff',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
     zIndex: 1,
@@ -208,23 +208,24 @@ const localStyles = StyleSheet.create({
     maxWidth: 1400,
     ...(Platform.OS === 'web' ? { overflow: 'visible' } as any : {}),
   },
-  // Icon style category rows
+  // Icon style category rows - all in one row on desktop
   iconCategoryRow: {
     flexDirection: 'row',
     flexWrap: 'nowrap',
     justifyContent: 'center',
     alignItems: 'flex-start',
-    gap: 4,
+    gap: 2,
   },
   iconCategoryItem: {
     alignItems: 'center',
-    width: 68,
-    minWidth: 68,
+    width: 64,
+    minWidth: 64,
+    paddingHorizontal: 2,
   },
   iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#E8F5E9',
     justifyContent: 'center',
     alignItems: 'center',
@@ -238,8 +239,8 @@ const localStyles = StyleSheet.create({
     color: '#333',
     textAlign: 'center',
     fontWeight: '500',
-    lineHeight: 11,
-    height: 22,
+    lineHeight: 10,
+    height: 20,
   },
   iconLabelSelected: {
     color: '#2E7D32',
