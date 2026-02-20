@@ -715,6 +715,15 @@ def create_property_router(db, require_auth, get_current_user):
 def create_offers_router(db, require_auth, get_current_user, notify_stats_update=None):
     """Create offers router with dependency injection."""
     router = APIRouter(prefix="/offers", tags=["offers"])
+    
+    # Initialize notification service
+    notification_service = None
+    try:
+        from services.notification_service import NotificationService
+        notification_service = NotificationService(db)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Notification service not available: {e}")
 
     @router.post("")
     async def create_offer(request: Request):
@@ -740,6 +749,7 @@ def create_offers_router(db, require_auth, get_current_user, notify_stats_update
             raise HTTPException(status_code=404, detail="Listing not found")
         
         listed_price = listing.get("price", 0)
+        currency = listing.get("currency", "EUR")
         
         # Validate offer is below listed price
         if offered_price >= listed_price:
@@ -795,6 +805,25 @@ def create_offers_router(db, require_auth, get_current_user, notify_stats_update
         
         await db.offers.insert_one(offer)
         offer.pop("_id", None)
+        
+        # Send notification to seller about new offer
+        if notification_service and seller_id:
+            try:
+                import asyncio
+                asyncio.create_task(notification_service.notify_offer_received(
+                    user_id=seller_id,
+                    buyer_name=user.name or "A buyer",
+                    listing_title=offer["listing_title"],
+                    listing_id=listing_id,
+                    offered_price=offered_price,
+                    listed_price=listed_price,
+                    currency=currency,
+                    buyer_picture=getattr(user, 'picture', None),
+                    listing_image=offer["listing_image"]
+                ))
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).debug(f"Offer notification failed: {e}")
         
         # Notify seller of stats update via WebSocket (new pending offer)
         if notify_stats_update and seller_id:
