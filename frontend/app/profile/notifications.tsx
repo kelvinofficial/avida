@@ -281,6 +281,27 @@ export default function NotificationPreferencesPage() {
           
           <TouchableOpacity 
             style={styles.actionCard}
+            onPress={async () => {
+              try {
+                const res = await api.post('/notification-preferences/test', { channel: 'all' });
+                Alert.alert('Test Sent', 'A test notification has been sent to all your enabled channels (email + push + in-app).');
+              } catch (error: any) {
+                Alert.alert('Error', error.response?.data?.detail || 'Failed to send test notification');
+              }
+            }}
+            data-testid="test-notification-button"
+          >
+            <View style={[styles.actionIcon, { backgroundColor: '#E3F2FD' }]}>
+              <Ionicons name="paper-plane-outline" size={20} color="#1976D2" />
+            </View>
+            <View style={styles.actionInfo}>
+              <Text style={styles.actionName}>Send Test Notification</Text>
+              <Text style={styles.actionDescription}>Verify your notification settings work</Text>
+            </View>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.actionCard}
             onPress={() => {
               const allEnabled: Preferences = {};
               categories.forEach(cat => {
