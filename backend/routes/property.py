@@ -871,6 +871,12 @@ def create_offers_router(db, require_auth, get_current_user, notify_stats_update
             raise HTTPException(status_code=403, detail="Only the seller can respond to this offer")
         
         action = body.get("action")  # accept, reject, counter
+        buyer_id = offer.get("buyer_id")
+        listing_title = offer.get("listing_title", "item")
+        listing_id = offer.get("listing_id")
+        listing_image = offer.get("listing_image")
+        offered_price = offer.get("offered_price", 0)
+        currency = "EUR"  # Default, could be fetched from listing
         
         # Helper function to notify stats update
         async def notify_stats_for_offer():
@@ -892,6 +898,24 @@ def create_offers_router(db, require_auth, get_current_user, notify_stats_update
                 }}
             )
             await notify_stats_for_offer()
+            
+            # Notify buyer their offer was accepted
+            if notification_service and buyer_id:
+                try:
+                    import asyncio
+                    asyncio.create_task(notification_service.notify_offer_accepted(
+                        user_id=buyer_id,
+                        listing_title=listing_title,
+                        listing_id=listing_id,
+                        accepted_price=offered_price,
+                        currency=currency,
+                        listing_image=listing_image,
+                        seller_name=user.name
+                    ))
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).debug(f"Offer accepted notification failed: {e}")
+            
             return {"message": "Offer accepted", "status": "accepted"}
         
         elif action == "reject":
@@ -903,6 +927,24 @@ def create_offers_router(db, require_auth, get_current_user, notify_stats_update
                 }}
             )
             await notify_stats_for_offer()
+            
+            # Notify buyer their offer was rejected
+            if notification_service and buyer_id:
+                try:
+                    import asyncio
+                    asyncio.create_task(notification_service.notify_offer_rejected(
+                        user_id=buyer_id,
+                        listing_title=listing_title,
+                        listing_id=listing_id,
+                        offered_price=offered_price,
+                        currency=currency,
+                        listing_image=listing_image,
+                        seller_name=user.name
+                    ))
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).debug(f"Offer rejected notification failed: {e}")
+            
             return {"message": "Offer rejected", "status": "rejected"}
         
         elif action == "counter":
@@ -922,6 +964,34 @@ def create_offers_router(db, require_auth, get_current_user, notify_stats_update
                 }}
             )
             await notify_stats_for_offer()
+            
+            # Notify buyer about counter offer
+            if notification_service and buyer_id:
+                try:
+                    import asyncio
+                    asyncio.create_task(notification_service.notify(
+                        user_id=buyer_id,
+                        notification_type="offer_countered",
+                        title="Counter offer received 💬",
+                        body=f"{user.name or 'Seller'} countered with {currency} {counter_price:,.0f} for {listing_title}",
+                        data={
+                            "listing_id": listing_id,
+                            "listing_title": listing_title,
+                            "image_url": listing_image,
+                            "cta_label": "VIEW OFFER",
+                            "actor_name": user.name,
+                            "meta": {
+                                "counter_price": counter_price,
+                                "original_offer": offered_price,
+                                "currency": currency
+                            }
+                        },
+                        channels=["in_app", "email", "push"]
+                    ))
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).debug(f"Counter offer notification failed: {e}")
+            
             return {"message": "Counter offer sent", "status": "countered", "counter_price": counter_price}
         
         else:
