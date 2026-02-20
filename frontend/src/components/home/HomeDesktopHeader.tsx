@@ -117,7 +117,10 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
       <DesktopHeader showNavLinks={true} showSearch={true} showLocationSelector={true} />
       
       {/* Row 3: Icon Style Categories - Single horizontal scrollable row */}
-      <View style={localStyles.categoryRowWrapper}>
+      <View style={[
+        localStyles.categoryRowWrapper,
+        Platform.OS === 'web' && localStyles.categoryRowWrapperWeb
+      ]}>
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
