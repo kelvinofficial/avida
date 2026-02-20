@@ -3318,6 +3318,7 @@ const styles = StyleSheet.create({
   // Footer
   footer: {
     padding: 16,
+    paddingBottom: 32, // Extra padding for safe area on mobile
     backgroundColor: COLORS.surface,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
