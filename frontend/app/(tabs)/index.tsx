@@ -273,9 +273,10 @@ export default function HomeScreen() {
   const columns = getColumns();
   const gridPadding = isDesktop ? 24 : isTablet ? 20 : HORIZONTAL_PADDING;
   const gridGap = isDesktop ? 20 : isTablet ? 16 : COLUMN_GAP;
-  // For FlatList with numColumns and space-between, width should be slightly less to leave room for gap
+  // For FlatList with numColumns and space-between, use available width minus padding
   const availableWidth = effectiveWidth - gridPadding * 2;
-  const dynamicCardWidth = Math.floor((availableWidth - gridGap * (columns - 1)) / columns);
+  // Subtract 2px buffer to account for any rounding issues
+  const dynamicCardWidth = Math.floor((availableWidth - gridGap * (columns - 1) - 2) / columns);
 
   // ============ LISTINGS GRID PROPS ============
   const listingsGridProps = {
