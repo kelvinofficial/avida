@@ -458,25 +458,6 @@ class NotificationService:
             }
         )
     
-    async def notify_listing_approved(
-        self,
-        user_id: str,
-        listing_title: str,
-        listing_id: str
-    ) -> Dict[str, Any]:
-        """Send notification when listing is approved"""
-        return await self.notify(
-            user_id=user_id,
-            notification_type="listing_approved",
-            title="Listing approved ✅",
-            body=f"Your listing '{listing_title}' has been approved and is now live!",
-            data={
-                "listing_id": listing_id,
-                "listing_title": listing_title,
-                "cta_label": "VIEW LISTING"
-            }
-        )
-    
     async def notify_badge_earned(
         self,
         user_id: str,
