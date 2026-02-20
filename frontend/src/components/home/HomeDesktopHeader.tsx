@@ -184,7 +184,7 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
 const localStyles = StyleSheet.create({
   categoryRowWrapper: {
     backgroundColor: '#fff',
-    paddingVertical: 8,
+    paddingVertical: 6,
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
     zIndex: 1,
@@ -195,21 +195,23 @@ const localStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-evenly',
-    paddingHorizontal: 8,
     width: '100%',
+    flexWrap: 'nowrap',
   },
   iconCategoryItem: {
     alignItems: 'center',
-    paddingHorizontal: 2,
+    paddingHorizontal: 1,
+    minWidth: 0,
+    flex: 1,
   },
   iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: '#E8F5E9',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   iconContainerSelected: {
     backgroundColor: '#2E7D32',
