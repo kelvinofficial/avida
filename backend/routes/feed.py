@@ -63,22 +63,40 @@ def create_feed_router(db):
         # Build query
         query = {"status": "active"}
         
-        if country:
-            query["$or"] = [
-                {"location.country_code": country},
-                {"location.country": country},
-            ]
+        # Build location filter using proper AND logic
+        location_conditions = []
         
-        if city:
-            query["$or"] = query.get("$or", []) + [
-                {"location.city": city},
-                {"location.city_id": city},
-            ]
-            if not query.get("$or"):
-                query["location.city"] = city
+        if country:
+            location_conditions.append({
+                "$or": [
+                    {"location.country_code": country},
+                    {"location.country": country},
+                ]
+            })
         
         if region:
-            query["location.region"] = region
+            location_conditions.append({
+                "$or": [
+                    {"location.region": region},
+                    {"location.region_code": region},
+                ]
+            })
+        
+        if city:
+            location_conditions.append({
+                "$or": [
+                    {"location.city": city},
+                    {"location.city_id": city},
+                    {"location.city_code": city},
+                ]
+            })
+        
+        # Apply location conditions with AND logic
+        if location_conditions:
+            if len(location_conditions) == 1:
+                query.update(location_conditions[0])
+            else:
+                query["$and"] = location_conditions
             
         if category:
             query["category"] = category
