@@ -2421,7 +2421,7 @@ export default function PostListingScreen() {
 
   // Mobile Layout
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       {/* Loading overlay for edit mode */}
       {editLoading && (
         <View style={styles.editLoadingOverlay}>
