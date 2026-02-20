@@ -179,17 +179,8 @@ const localStyles = StyleSheet.create({
     position: 'relative',
   },
   categoryScrollContent: {
+    flexDirection: 'row',
     paddingHorizontal: 16,
-  },
-  categoryRowInner: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  // Icon style category rows - single row with horizontal scroll
-  iconCategoryRow: {
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
-    alignItems: 'flex-start',
     gap: 8,
   },
   iconCategoryItem: {
