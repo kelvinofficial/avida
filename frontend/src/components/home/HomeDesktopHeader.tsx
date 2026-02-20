@@ -118,31 +118,18 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
       
       {/* Row 3: Icon Style Categories - Single horizontal scrollable row */}
       <View style={localStyles.categoryRowWrapper}>
-        {Platform.OS === 'web' ? (
-          // Web-specific: Use inline styles for proper horizontal scrolling
-          <View 
-            style={{
-              flexDirection: 'row',
-              overflowX: 'auto' as any,
-              overflowY: 'hidden' as any,
-              paddingHorizontal: 16,
-              gap: 8,
-              WebkitOverflowScrolling: 'touch' as any,
-            } as any}
-          >
-            {ALL_ICON_CATEGORIES.map(renderCategoryItem)}
-          </View>
-        ) : (
-          <ScrollView 
-            ref={scrollContainerRef}
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={localStyles.categoriesScrollContent}
-            style={localStyles.categoriesScrollView}
-          >
-            {ALL_ICON_CATEGORIES.map(renderCategoryItem)}
-          </ScrollView>
-        )}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={localStyles.categoriesScrollContent}
+          style={[
+            localStyles.categoriesScrollView,
+            // Add explicit overflow for web
+            Platform.OS === 'web' && { overflow: 'scroll' as any }
+          ]}
+        >
+          {ALL_ICON_CATEGORIES.map(renderCategoryItem)}
+        </ScrollView>
       </View>
 
       {/* Category Dropdown Overlay - Uses fixed positioning for web compatibility */}
