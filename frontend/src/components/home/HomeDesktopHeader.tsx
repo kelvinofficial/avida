@@ -58,8 +58,8 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
   const { width } = useWindowDimensions();
   
   // Always show all categories in one scrollable row on desktop
-  // Only split into rows on very narrow screens (< 900px)
-  const needsTwoRows = width < 900;
+  // Split into two rows only on very narrow screens (< 700px)
+  const needsTwoRows = width < 700;
   const row1Categories = needsTwoRows ? ALL_ICON_CATEGORIES.slice(0, 7) : ALL_ICON_CATEGORIES;
   const row2Categories = needsTwoRows ? ALL_ICON_CATEGORIES.slice(7) : [];
 
@@ -89,7 +89,7 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
       ]}>
         <Ionicons 
           name={cat.icon as any} 
-          size={24} 
+          size={22} 
           color={selectedCategory === cat.id ? '#fff' : '#2E7D32'} 
         />
       </View>
@@ -107,19 +107,19 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
       {/* Shared Desktop Header for Rows 1-2 */}
       <DesktopHeader showNavLinks={true} showSearch={true} showLocationSelector={true} />
       
-      {/* Row 3: Icon Style Categories - Horizontal scroll on narrower screens */}
+      {/* Row 3: Icon Style Categories - Horizontal scroll */}
       <View style={localStyles.categoryRowWrapper}>
         <ScrollView 
-          horizontal={!needsTwoRows}
+          horizontal={true}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={localStyles.categoryScrollContent}
         >
           <View style={localStyles.categoryRowInner}>
-            {/* First row of categories */}
+            {/* Categories row - always horizontal scroll on desktop */}
             <View style={localStyles.iconCategoryRow}>
               {row1Categories.map(renderCategoryItem)}
             </View>
-            {/* Second row of categories (only on very narrow screens) */}
+            {/* Second row of categories (only on mobile) */}
             {needsTwoRows && row2Categories.length > 0 && (
               <View style={[localStyles.iconCategoryRow, { marginTop: 12 }]}>
                 {row2Categories.map(renderCategoryItem)}
