@@ -153,6 +153,14 @@ def create_listings_router(
     """
     router = APIRouter(prefix="/listings", tags=["Listings"])
     
+    # Initialize notification service
+    notification_service = None
+    try:
+        from services.notification_service import NotificationService
+        notification_service = NotificationService(db)
+    except Exception as e:
+        logger.warning(f"Notification service not available: {e}")
+    
     @router.post("", response_model=dict)
     async def create_listing(listing: ListingCreate, request: Request):
         """Create a new listing"""
