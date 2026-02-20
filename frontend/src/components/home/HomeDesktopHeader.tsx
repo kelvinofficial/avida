@@ -57,9 +57,9 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const { width } = useWindowDimensions();
   
-  // Split categories into rows based on screen width
-  // At narrower widths (< 1300px), split into two rows
-  const needsTwoRows = width < 1300;
+  // Always show all categories in one scrollable row on desktop
+  // Only split into rows on very narrow screens (< 900px)
+  const needsTwoRows = width < 900;
   const row1Categories = needsTwoRows ? ALL_ICON_CATEGORIES.slice(0, 7) : ALL_ICON_CATEGORIES;
   const row2Categories = needsTwoRows ? ALL_ICON_CATEGORIES.slice(7) : [];
 
@@ -89,7 +89,7 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
       ]}>
         <Ionicons 
           name={cat.icon as any} 
-          size={28} 
+          size={24} 
           color={selectedCategory === cat.id ? '#fff' : '#2E7D32'} 
         />
       </View>
@@ -107,20 +107,26 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
       {/* Shared Desktop Header for Rows 1-2 */}
       <DesktopHeader showNavLinks={true} showSearch={true} showLocationSelector={true} />
       
-      {/* Row 3: Icon Style Categories Only */}
+      {/* Row 3: Icon Style Categories - Horizontal scroll on narrower screens */}
       <View style={localStyles.categoryRowWrapper}>
-        <View style={localStyles.categoryRowInner}>
-          {/* First row of categories */}
-          <View style={localStyles.iconCategoryRow}>
-            {row1Categories.map(renderCategoryItem)}
-          </View>
-          {/* Second row of categories (only on smaller screens) */}
-          {needsTwoRows && row2Categories.length > 0 && (
-            <View style={[localStyles.iconCategoryRow, { marginTop: 16 }]}>
-              {row2Categories.map(renderCategoryItem)}
+        <ScrollView 
+          horizontal={!needsTwoRows}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={localStyles.categoryScrollContent}
+        >
+          <View style={localStyles.categoryRowInner}>
+            {/* First row of categories */}
+            <View style={localStyles.iconCategoryRow}>
+              {row1Categories.map(renderCategoryItem)}
             </View>
-          )}
-        </View>
+            {/* Second row of categories (only on very narrow screens) */}
+            {needsTwoRows && row2Categories.length > 0 && (
+              <View style={[localStyles.iconCategoryRow, { marginTop: 12 }]}>
+                {row2Categories.map(renderCategoryItem)}
+              </View>
+            )}
+          </View>
+        </ScrollView>
       </View>
 
       {/* Category Dropdown Overlay - Uses fixed positioning for web compatibility */}
