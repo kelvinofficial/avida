@@ -825,8 +825,6 @@ export const mobileStyles = StyleSheet.create({
     flexGrow: 0,
   },
   categoriesContent: {
-    paddingLeft: 16,
-    paddingRight: 16,
     gap: 4,
   },
 
