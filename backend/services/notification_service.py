@@ -319,7 +319,8 @@ class NotificationService:
         listing_id: str,
         accepted_price: float,
         currency: str = "EUR",
-        listing_image: Optional[str] = None
+        listing_image: Optional[str] = None,
+        seller_name: Optional[str] = None
     ) -> Dict[str, Any]:
         """Send notification when an offer is accepted"""
         return await self.notify(
@@ -332,11 +333,100 @@ class NotificationService:
                 "listing_title": listing_title,
                 "image_url": listing_image,
                 "cta_label": "MESSAGE SELLER",
+                "actor_name": seller_name,
                 "meta": {
                     "accepted_price": accepted_price,
                     "currency": currency
                 }
-            }
+            },
+            channels=["in_app", "email", "push"]  # All channels for accepted offers
+        )
+    
+    async def notify_offer_rejected(
+        self,
+        user_id: str,
+        listing_title: str,
+        listing_id: str,
+        offered_price: float,
+        currency: str = "EUR",
+        listing_image: Optional[str] = None,
+        seller_name: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Send notification when an offer is rejected"""
+        return await self.notify(
+            user_id=user_id,
+            notification_type="offer_rejected",
+            title="Offer not accepted",
+            body=f"Your offer for {listing_title} was not accepted. Try a different price or browse similar items.",
+            data={
+                "listing_id": listing_id,
+                "listing_title": listing_title,
+                "image_url": listing_image,
+                "cta_label": "BROWSE SIMILAR",
+                "actor_name": seller_name,
+                "meta": {
+                    "offered_price": offered_price,
+                    "currency": currency
+                }
+            },
+            channels=["in_app", "email", "push"]  # All channels for rejected offers
+        )
+    
+    async def notify_listing_approved(
+        self,
+        user_id: str,
+        listing_title: str,
+        listing_id: str,
+        listing_image: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Send notification when listing is approved"""
+        return await self.notify(
+            user_id=user_id,
+            notification_type="listing_approved",
+            title="Listing approved ✅",
+            body=f"Your listing '{listing_title}' has been approved and is now live!",
+            data={
+                "listing_id": listing_id,
+                "listing_title": listing_title,
+                "image_url": listing_image,
+                "cta_label": "VIEW LISTING"
+            },
+            channels=["in_app", "email", "push"]  # All channels for listing approval
+        )
+    
+    async def notify_listing_sold(
+        self,
+        user_id: str,
+        listing_title: str,
+        listing_id: str,
+        sold_price: float,
+        currency: str = "EUR",
+        buyer_name: Optional[str] = None,
+        listing_image: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Send notification when listing is marked as sold"""
+        body = f"Congratulations! Your listing '{listing_title}' has been sold"
+        if buyer_name:
+            body += f" to {buyer_name}"
+        body += f" for {currency} {sold_price:,.0f}!"
+        
+        return await self.notify(
+            user_id=user_id,
+            notification_type="listing_sold",
+            title="Item sold! 🎉",
+            body=body,
+            data={
+                "listing_id": listing_id,
+                "listing_title": listing_title,
+                "image_url": listing_image,
+                "cta_label": "VIEW SALE",
+                "actor_name": buyer_name,
+                "meta": {
+                    "sold_price": sold_price,
+                    "currency": currency
+                }
+            },
+            channels=["in_app", "email", "push"]  # All channels for sold notifications
         )
     
     async def notify_price_drop(
