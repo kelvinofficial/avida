@@ -217,12 +217,12 @@ const localStyles = StyleSheet.create({
     backgroundColor: '#2E7D32',
   },
   iconLabel: {
-    fontSize: 10,
+    fontSize: 9,
     color: '#333',
     textAlign: 'center',
     fontWeight: '500',
-    lineHeight: 12,
-    height: 24,
+    lineHeight: 10,
+    maxWidth: 60,
   },
   iconLabelSelected: {
     color: '#2E7D32',
