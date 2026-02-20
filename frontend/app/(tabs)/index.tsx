@@ -308,7 +308,7 @@ export default function HomeScreen() {
     const isFirstInRow = colIndex === 0;
     const isLastInRow = colIndex === columns - 1;
     
-    // Gap between items
+    // Gap between items - no extra padding needed since contentContainerStyle handles it
     const marginHorizontal = gridGap / 2;
     
     return (
@@ -316,8 +316,8 @@ export default function HomeScreen() {
         style={{
           width: dynamicCardWidth,
           marginBottom: gridGap,
-          marginLeft: isFirstInRow ? CARD_PADDING : marginHorizontal,
-          marginRight: isLastInRow ? CARD_PADDING : marginHorizontal,
+          marginLeft: isFirstInRow ? 0 : marginHorizontal,
+          marginRight: isLastInRow ? 0 : marginHorizontal,
         }}
       >
         <ListingCard
