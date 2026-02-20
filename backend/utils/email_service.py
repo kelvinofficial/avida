@@ -6,6 +6,10 @@ Handles sending notification emails via SendGrid.
 import os
 import logging
 from typing import Dict, Any
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +22,14 @@ except ImportError:
     SENDGRID_AVAILABLE = False
     logger.warning("SendGrid not installed. Email notifications will be disabled.")
 
-# Configuration
+# Configuration - loaded at import time but re-read in functions if needed
 SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY")
 FROM_EMAIL = os.environ.get("SENDGRID_FROM_EMAIL", "donotreply@avida.co.tz")
 FROM_NAME = os.environ.get("SENDGRID_FROM_NAME", "avida")
+
+def get_api_key():
+    """Get API key - allows for dynamic reload"""
+    return os.environ.get("SENDGRID_API_KEY") or SENDGRID_API_KEY
 
 
 async def send_notification_email(
