@@ -55,13 +55,6 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
   listings,
 }) => {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const { width } = useWindowDimensions();
-  
-  // Always show all categories in one scrollable row on desktop
-  // Split into two rows only on very narrow screens (< 700px)
-  const needsTwoRows = width < 700;
-  const row1Categories = needsTwoRows ? ALL_ICON_CATEGORIES.slice(0, 7) : ALL_ICON_CATEGORIES;
-  const row2Categories = needsTwoRows ? ALL_ICON_CATEGORIES.slice(7) : [];
 
   const handleAllPress = () => {
     setShowCategoryDropdown(true);
