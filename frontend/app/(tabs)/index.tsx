@@ -333,12 +333,15 @@ export default function HomeScreen() {
 
   // ============ FLATLIST HEADER COMPONENT ============
   const ListHeaderComponent = useMemo(() => (
-    <View style={(isDesktop || isTablet) ? { backgroundColor: '#F5F5F5' } : undefined}>
+    <View style={(isDesktop || isTablet) ? { 
+      backgroundColor: '#F5F5F5',
+      marginHorizontal: -gridPadding, // Compensate for container padding to make header full-width
+    } : undefined}>
       {isDesktop || isTablet ? (
         <HomeDesktopHeader {...homeDesktopHeaderProps} />
       ) : <MobileHeader {...mobileHeaderProps} />}
     </View>
-  ), [isDesktop, isTablet, homeDesktopHeaderProps, mobileHeaderProps]);
+  ), [isDesktop, isTablet, homeDesktopHeaderProps, mobileHeaderProps, gridPadding]);
 
   // ============ FLATLIST FOOTER COMPONENT ============
   const ListFooterComponent = useMemo(() => (
