@@ -960,6 +960,21 @@ def create_listings_router(
             }
         )
         
+        # Send notification to seller about successful sale
+        if notification_service:
+            try:
+                import asyncio
+                asyncio.create_task(notification_service.notify_listing_sold(
+                    user_id=user.user_id,
+                    listing_title=listing.get("title", "Item"),
+                    listing_id=listing_id,
+                    sold_price=listing.get("price", 0),
+                    currency=listing.get("currency", "EUR"),
+                    listing_image=listing.get("images", [""])[0] if listing.get("images") else None
+                ))
+            except Exception as e:
+                logger.debug(f"Listing sold notification failed: {e}")
+        
         # Check and award badges for this sale
         awarded_badges = []
         try:
