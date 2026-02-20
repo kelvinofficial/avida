@@ -10,8 +10,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { AppState, AppStateStatus } from 'react-native';
-import NetInfo from '@react-native-community/netinfo';
+import { AppState, AppStateStatus, Platform } from 'react-native';
 import {
   FeedItem,
   FeedCacheKey,
