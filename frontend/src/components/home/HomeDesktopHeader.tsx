@@ -107,25 +107,14 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
       {/* Shared Desktop Header for Rows 1-2 */}
       <DesktopHeader showNavLinks={true} showSearch={true} showLocationSelector={true} />
       
-      {/* Row 3: Icon Style Categories - Horizontal scroll */}
+      {/* Row 3: Icon Style Categories - Single horizontal row */}
       <View style={localStyles.categoryRowWrapper}>
         <ScrollView 
           horizontal={true}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={localStyles.categoryScrollContent}
         >
-          <View style={localStyles.categoryRowInner}>
-            {/* Categories row - always horizontal scroll on desktop */}
-            <View style={localStyles.iconCategoryRow}>
-              {row1Categories.map(renderCategoryItem)}
-            </View>
-            {/* Second row of categories (only on mobile) */}
-            {needsTwoRows && row2Categories.length > 0 && (
-              <View style={[localStyles.iconCategoryRow, { marginTop: 12 }]}>
-                {row2Categories.map(renderCategoryItem)}
-              </View>
-            )}
-          </View>
+          {ALL_ICON_CATEGORIES.map(renderCategoryItem)}
         </ScrollView>
       </View>
 
