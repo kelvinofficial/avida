@@ -562,7 +562,6 @@ const newHeaderStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 8,
   },
