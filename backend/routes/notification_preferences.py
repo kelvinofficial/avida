@@ -150,6 +150,34 @@ def create_notification_preferences_router(db, require_auth):
                             "category": "transactional"
                         },
                         {
+                            "key": "email_messages",
+                            "name": "Messages",
+                            "description": "New messages from buyers and sellers",
+                            "required": False,
+                            "category": "transactional"
+                        },
+                        {
+                            "key": "email_offers",
+                            "name": "Offers",
+                            "description": "New offers, accepted, rejected, and counter offers",
+                            "required": False,
+                            "category": "transactional"
+                        },
+                        {
+                            "key": "email_listing_updates",
+                            "name": "Listing Updates",
+                            "description": "Listing approvals, status changes, and sales",
+                            "required": False,
+                            "category": "transactional"
+                        },
+                        {
+                            "key": "email_price_alerts",
+                            "name": "Price Alerts",
+                            "description": "Price drops on items you've saved",
+                            "required": False,
+                            "category": "reminders"
+                        },
+                        {
                             "key": "email_verification_updates",
                             "name": "Verification Updates",
                             "description": "Business profile verification status changes",
@@ -199,6 +227,13 @@ def create_notification_preferences_router(db, require_auth):
                             "category": "transactional"
                         },
                         {
+                            "key": "push_offers",
+                            "name": "Offers",
+                            "description": "New offers, accepted, rejected, and counter offers",
+                            "required": False,
+                            "category": "transactional"
+                        },
+                        {
                             "key": "push_listings",
                             "name": "Listing Updates",
                             "description": "Price drops and updates on saved items",
@@ -216,5 +251,84 @@ def create_notification_preferences_router(db, require_auth):
                 }
             ]
         }
+    
+    @router.post("/notification-preferences/toggle")
+    async def toggle_notification_preference(request: Request):
+        """Quick toggle for any notification preference"""
+        user = await require_auth(request)
+        body = await request.json()
+        
+        key = body.get("key")
+        enabled = body.get("enabled")
+        
+        if key is None or enabled is None:
+            raise HTTPException(status_code=400, detail="'key' and 'enabled' are required")
+        
+        # Validate key exists
+        all_keys = list(DEFAULT_NOTIFICATION_PREFS.keys()) + [
+            "email_messages", "email_offers", "email_listing_updates", "email_price_alerts",
+            "push_offers"
+        ]
+        
+        if key not in all_keys:
+            raise HTTPException(status_code=400, detail=f"Invalid preference key: {key}")
+        
+        now = datetime.now(timezone.utc)
+        
+        await db.notification_preferences.update_one(
+            {"user_id": user.user_id},
+            {
+                "$set": {key: enabled, "updated_at": now},
+                "$setOnInsert": {"user_id": user.user_id, "created_at": now}
+            },
+            upsert=True
+        )
+        
+        return {
+            "message": f"Preference '{key}' set to {enabled}",
+            "key": key,
+            "enabled": enabled
+        }
+    
+    @router.post("/notification-preferences/test")
+    async def send_test_notification(request: Request):
+        """Send a test notification to verify settings are working"""
+        user = await require_auth(request)
+        body = await request.json()
+        
+        channel = body.get("channel", "all")  # "email", "push", or "all"
+        
+        try:
+            from services.notification_service import NotificationService
+            service = NotificationService(db)
+            
+            channels = ["in_app"]  # Always include in-app
+            if channel in ["email", "all"]:
+                channels.append("email")
+            if channel in ["push", "all"]:
+                channels.append("push")
+            
+            result = await service.notify(
+                user_id=user.user_id,
+                notification_type="system",
+                title="Test Notification 🔔",
+                body="This is a test notification to verify your settings are working correctly.",
+                data={
+                    "cta_label": "DISMISS",
+                    "meta": {"test": True}
+                },
+                channels=channels
+            )
+            
+            return {
+                "message": "Test notification sent",
+                "channels_sent": list(result.get("channels", {}).keys()),
+                "notification_id": result.get("notification_id"),
+                "details": result
+            }
+            
+        except Exception as e:
+            logger.error(f"Test notification failed: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to send test notification: {str(e)}")
     
     return router
