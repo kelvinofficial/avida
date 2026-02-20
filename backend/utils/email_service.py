@@ -59,7 +59,7 @@ async def send_notification_email(
         html_content = build_email_template(subject, body, notification_type, data)
         
         message = Mail(
-            from_email=Email(FROM_EMAIL, "avida Marketplace"),
+            from_email=Email(FROM_EMAIL, FROM_NAME),
             to_emails=To(to_email),
             subject=subject,
             html_content=html_content
