@@ -20,7 +20,8 @@ except ImportError:
 
 # Configuration
 SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY")
-FROM_EMAIL = os.environ.get("FROM_EMAIL", "noreply@avida.app")
+FROM_EMAIL = os.environ.get("SENDGRID_FROM_EMAIL", "donotreply@avida.co.tz")
+FROM_NAME = os.environ.get("SENDGRID_FROM_NAME", "avida")
 
 
 async def send_notification_email(
