@@ -638,9 +638,9 @@ const newHeaderStyles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 28,
     height: 52,
-    paddingLeft: 16,
+    paddingLeft: 12,
     paddingRight: 8,
-    gap: 10,
+    gap: 8,
     borderWidth: 1,
     borderColor: '#E8E8E8',
     // Shadow for elevated look
