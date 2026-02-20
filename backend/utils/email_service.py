@@ -56,12 +56,13 @@ async def send_notification_email(
         logger.info(f"SendGrid not available. Email would be sent to {to_email}: {subject}")
         return False
     
-    if not SENDGRID_API_KEY:
+    api_key = get_api_key()
+    if not api_key:
         logger.warning("SendGrid API key not configured")
         return False
     
     try:
-        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        sg = SendGridAPIClient(api_key)
         
         # Build HTML email content
         html_content = build_email_template(subject, body, notification_type, data)
