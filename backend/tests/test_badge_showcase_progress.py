@@ -12,7 +12,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL') or "https://listings-performance.preview.emergentagent.com"
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL') or "https://location-filter-2.preview.emergentagent.com"
 BASE_URL = BASE_URL.rstrip('/')
 
 class TestBadgeShowcaseAndProgressAPIs:

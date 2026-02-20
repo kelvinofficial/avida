@@ -8,7 +8,7 @@
  */
 
 // Hardcoded production API URL - this MUST be set for APK builds
-const PRODUCTION_API_URL = 'https://listings-performance.preview.emergentagent.com';
+const PRODUCTION_API_URL = 'https://location-filter-2.preview.emergentagent.com';
 
 module.exports = ({ config }) => {
   return {

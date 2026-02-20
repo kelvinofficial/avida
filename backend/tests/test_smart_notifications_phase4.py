@@ -15,7 +15,7 @@ from datetime import datetime, timezone, timedelta
 import uuid
 
 # Get BASE_URL from environment - without /api suffix (added in requests)
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://listings-performance.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://location-filter-2.preview.emergentagent.com").rstrip("/")
 
 
 class TestPhase4UserSegmentation:
