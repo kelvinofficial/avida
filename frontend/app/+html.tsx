@@ -179,6 +179,16 @@ const responsiveStyle = `
     height: 0;
   }
   
+  /* Force horizontal scroll on category row - target by structure */
+  .r-borderBottomColor-o7c05e {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+  }
+  
+  .r-borderBottomColor-o7c05e::-webkit-scrollbar {
+    display: none;
+  }
+  
   /* Use JavaScript to detect and fix icon elements on page load */
 `;
 
