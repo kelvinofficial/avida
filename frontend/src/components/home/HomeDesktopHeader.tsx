@@ -101,33 +101,17 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
       
       {/* Row 3: Icon Style Categories - Single horizontal scrollable row */}
       <View style={localStyles.categoryRowWrapper}>
-        {Platform.OS === 'web' ? (
-          <div 
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              flexWrap: 'nowrap',
-              overflowX: 'auto',
-              overflowY: 'hidden',
-              width: '100%',
-              paddingLeft: 16,
-              paddingRight: 16,
-              gap: 8,
-              scrollbarWidth: 'none', // Firefox
-              msOverflowStyle: 'none', // IE/Edge
-            }}
-            className="hide-scrollbar"
-          >
-            {ALL_ICON_CATEGORIES.map(renderCategoryItem)}
-          </div>
-        ) : (
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={localStyles.categoriesScrollContent}
-          >
-            {ALL_ICON_CATEGORIES.map(renderCategoryItem)}
-          </ScrollView>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={localStyles.categoriesScrollContent}
+          style={localStyles.categoriesScrollView}
+          // @ts-ignore - web-only attribute for CSS targeting
+          dataSet={{ categoryscroll: true }}
+        >
+          {ALL_ICON_CATEGORIES.map(renderCategoryItem)}
+        </ScrollView>
+      </View>
         )}
       </View>
 
