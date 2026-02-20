@@ -112,8 +112,6 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
           {ALL_ICON_CATEGORIES.map(renderCategoryItem)}
         </ScrollView>
       </View>
-        )}
-      </View>
 
       {/* Category Dropdown Overlay - Uses fixed positioning for web compatibility */}
       {showCategoryDropdown && (
