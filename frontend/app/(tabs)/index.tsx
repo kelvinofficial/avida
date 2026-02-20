@@ -395,6 +395,7 @@ export default function HomeScreen() {
         { paddingBottom: 100, paddingHorizontal: gridPadding },
         (isDesktop || isTablet) && { maxWidth: MAX_WIDTH, alignSelf: 'center', width: '100%' },
       ]}
+      columnWrapperStyle={columns > 1 ? { justifyContent: 'space-between' } : undefined}
       style={isDesktop || isTablet ? { flex: 1 } : undefined}
       {...flatListProps}
     />
