@@ -164,6 +164,21 @@ const responsiveStyle = `
     height: 0;
   }
   
+  /* Category scroll on desktop - horizontal scrolling */
+  [data-categoryscroll="true"] {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  [data-categoryscroll="true"]::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+  
   /* Use JavaScript to detect and fix icon elements on page load */
 `;
 
