@@ -16,7 +16,7 @@ import os
 import time
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://instant-feed-perf.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://listings-performance.preview.emergentagent.com')
 
 
 @pytest.fixture

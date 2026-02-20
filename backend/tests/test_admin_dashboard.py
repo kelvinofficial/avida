@@ -8,7 +8,7 @@ import requests
 import os
 
 # Use the public URL for testing
-BASE_URL = "https://instant-feed-perf.preview.emergentagent.com"
+BASE_URL = "https://listings-performance.preview.emergentagent.com"
 
 # Test credentials
 ADMIN_EMAIL = "admin@marketplace.com"
