@@ -101,7 +101,8 @@ Build a full-stack React Native/Expo marketplace application with a FastAPI back
 - Optimized FlatList with proper virtualization
 
 ### Bug Fixes (Feb 2025)
-- **NetInfo abort error**: Fixed by wrapping NetInfo listeners in try-catch to handle abort signals gracefully
+- **NetInfo abort error**: Fixed by wrapping NetInfo listeners in Platform.OS check to skip on web platform
+- **Desktop category layout**: Fixed by limiting categories to 10 and using flexbox with space-evenly distribution - no scrolling needed
 - **Home screen padding**: Fixed duplicate padding on FlatList contentContainerStyle
 - **Backend similar listings crash**: Fixed location dict handling in calculate_generic_similarity()
 - **Subcategory drawer scroll**: Rebuilt CategoryDrawer with proper sticky header and scrollable content
