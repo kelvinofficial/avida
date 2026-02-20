@@ -186,21 +186,30 @@ export const useInstantListingsFeed = (params: FeedParams): UseInstantListingsFe
   }, [cacheKey]);
   
   /**
-   * Monitor network status
+   * Monitor network status (only on native platforms)
    */
   useEffect(() => {
+    // Skip NetInfo on web - it causes abort errors
+    if (Platform.OS === 'web') {
+      return;
+    }
+    
     let unsubscribe: (() => void) | null = null;
     
-    try {
-      unsubscribe = NetInfo.addEventListener(state => {
-        if (isMountedRef.current) {
-          setIsOffline(!state.isConnected);
-        }
-      });
-    } catch (error) {
-      // NetInfo may throw on some platforms, ignore silently
-      console.warn('[Feed] NetInfo error:', error);
-    }
+    const setupNetInfo = async () => {
+      try {
+        const NetInfo = require('@react-native-community/netinfo').default;
+        unsubscribe = NetInfo.addEventListener((state: any) => {
+          if (isMountedRef.current) {
+            setIsOffline(!state.isConnected);
+          }
+        });
+      } catch (error) {
+        // NetInfo may throw on some platforms, ignore silently
+      }
+    };
+    
+    setupNetInfo();
     
     return () => {
       try {
