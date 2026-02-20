@@ -19,6 +19,13 @@
     "/app/backend/tests/test_notification_preferences.py",
     "/app/backend/services/notification_service.py"
   ],
+  "bug_fix_applied": {
+    "file": "/app/backend/services/notification_service.py",
+    "issue": "Method _send_push was calling push_service.send_to_user() which doesn't exist",
+    "fix": "Changed to push_service.send_notification() which is the correct method name",
+    "line": 244,
+    "rca": "The NotificationService class was referencing an incorrect method name on PushNotificationService. The actual method is send_notification(), not send_to_user()."
+  },
   "success_rate": {
     "backend": "100% (20/20 tests passed)",
     "frontend": "N/A (backend only testing requested)"
