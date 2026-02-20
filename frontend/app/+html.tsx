@@ -192,7 +192,7 @@ const responsiveStyle = `
   /* Use JavaScript to detect and fix icon elements on page load */
 `;
 
-// Add JavaScript to fix icon widths after render
+// Add JavaScript to fix icon widths and category scroll after render
 const iconFixScript = `
 (function() {
   function fixIconWidths() {
@@ -213,37 +213,53 @@ const iconFixScript = `
   
   // Fix for category row horizontal scrolling on desktop
   function fixCategoryScroll() {
-    var categoryRows = document.querySelectorAll('.r-borderBottomColor-o7c05e');
-    categoryRows.forEach(function(el) {
-      if (el.scrollWidth > el.clientWidth + 10) {
-        el.style.overflowX = 'auto';
-        el.style.overflowY = 'hidden';
-        el.style.webkitOverflowScrolling = 'touch';
-        // Hide scrollbar
-        el.style.scrollbarWidth = 'none';
-        el.style.msOverflowStyle = 'none';
+    // Target the category row by looking for elements with categories
+    var allDivs = document.querySelectorAll('div');
+    allDivs.forEach(function(el) {
+      // Check if this contains category items (has many children with small text)
+      var text = el.textContent || '';
+      if (text.includes('Auto & Vehicles') && 
+          text.includes('Properties') && 
+          text.includes('Electronics') &&
+          text.includes('Friendship')) {
+        // Check if overflow is needed
+        if (el.scrollWidth > el.clientWidth + 20) {
+          el.style.overflowX = 'auto';
+          el.style.overflowY = 'hidden';
+          el.style.webkitOverflowScrolling = 'touch';
+          el.style.scrollbarWidth = 'none';
+          el.style.msOverflowStyle = 'none';
+        }
       }
     });
   }
   
-  // Run after initial render
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-      fixIconWidths();
-      fixCategoryScroll();
-    });
-  } else {
-    setTimeout(function() {
-      fixIconWidths();
-      fixCategoryScroll();
-    }, 100);
-  }
-  
-  // Run periodically to catch dynamically added icons and handle navigation
-  setInterval(function() {
+  // Run fixes
+  function runFixes() {
     fixIconWidths();
     fixCategoryScroll();
-  }, 1000);
+  }
+  
+  // Use MutationObserver to catch dynamic content
+  var observer = new MutationObserver(function(mutations) {
+    runFixes();
+  });
+  
+  // Start observing when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      runFixes();
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+  } else {
+    runFixes();
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+  
+  // Also run periodically as a fallback
+  setInterval(runFixes, 2000);
 })();
 `;
 
