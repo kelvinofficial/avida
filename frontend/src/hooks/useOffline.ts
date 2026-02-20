@@ -36,36 +36,43 @@ export const useOffline = (): UseOfflineReturn => {
   const [offlineState, setOfflineState] = useState<OfflineState | null>(null);
   const [isOfflineMode, setIsOfflineMode] = useState(false);
 
-  // Listen to network changes
+  // Listen to network changes (only on native platforms)
   useEffect(() => {
+    // Skip NetInfo on web - it causes abort errors
+    if (Platform.OS === 'web') {
+      setIsOnline(true);
+      loadOfflineState();
+      return;
+    }
+    
     let unsubscribe: (() => void) | null = null;
     
-    try {
-      unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
-        const online = state.isConnected && state.isInternetReachable !== false;
-        setIsOnline(online ?? true);
-        setIsOfflineMode(!online);
+    const setupNetInfo = async () => {
+      try {
+        const NetInfo = require('@react-native-community/netinfo').default;
         
-        // Sync pending actions when coming back online
-        if (online) {
-          syncPendingActions();
-        }
-      });
+        unsubscribe = NetInfo.addEventListener((state: any) => {
+          const online = state.isConnected && state.isInternetReachable !== false;
+          setIsOnline(online ?? true);
+          setIsOfflineMode(!online);
+          
+          // Sync pending actions when coming back online
+          if (online) {
+            syncPendingActions();
+          }
+        });
 
-      // Initial check
-      NetInfo.fetch().then((state) => {
+        // Initial check
+        const state = await NetInfo.fetch();
         const online = state.isConnected && state.isInternetReachable !== false;
         setIsOnline(online ?? true);
         setIsOfflineMode(!online);
-      }).catch(() => {
-        // Ignore NetInfo errors
-      });
-    } catch (error) {
-      // NetInfo may throw on some platforms, ignore silently
-      console.warn('[Offline] NetInfo error:', error);
-    }
-
-    // Load offline state
+      } catch (error) {
+        // NetInfo may throw on some platforms, ignore silently
+      }
+    };
+    
+    setupNetInfo();
     loadOfflineState();
 
     return () => {
