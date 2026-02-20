@@ -241,14 +241,14 @@ class NotificationService:
             return False
         
         try:
-            result = await self.push_service.send_to_user(
+            result = await self.push_service.send_notification(
                 user_id=user_id,
                 title=title,
                 body=body,
                 data=data,
-                priority=priority
+                notification_type=data.get("notification_type", "message")
             )
-            return result
+            return result.get("success", False) if isinstance(result, dict) else bool(result)
         except Exception as e:
             logger.error(f"Failed to send push notification: {e}")
             return False
