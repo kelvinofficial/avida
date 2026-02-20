@@ -211,15 +211,39 @@ const iconFixScript = `
     });
   }
   
-  // Run after initial render
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', fixIconWidths);
-  } else {
-    setTimeout(fixIconWidths, 100);
+  // Fix for category row horizontal scrolling on desktop
+  function fixCategoryScroll() {
+    var categoryRows = document.querySelectorAll('.r-borderBottomColor-o7c05e');
+    categoryRows.forEach(function(el) {
+      if (el.scrollWidth > el.clientWidth + 10) {
+        el.style.overflowX = 'auto';
+        el.style.overflowY = 'hidden';
+        el.style.webkitOverflowScrolling = 'touch';
+        // Hide scrollbar
+        el.style.scrollbarWidth = 'none';
+        el.style.msOverflowStyle = 'none';
+      }
+    });
   }
   
-  // Run periodically to catch dynamically added icons
-  setInterval(fixIconWidths, 1000);
+  // Run after initial render
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      fixIconWidths();
+      fixCategoryScroll();
+    });
+  } else {
+    setTimeout(function() {
+      fixIconWidths();
+      fixCategoryScroll();
+    }, 100);
+  }
+  
+  // Run periodically to catch dynamically added icons and handle navigation
+  setInterval(function() {
+    fixIconWidths();
+    fixCategoryScroll();
+  }, 1000);
 })();
 `;
 
