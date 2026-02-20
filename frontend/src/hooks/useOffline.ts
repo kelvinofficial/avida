@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Platform } from 'react-native';
-import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 import { offlineStorage, CachedListing, OfflineState } from '../services/offlineStorage';
 import { offlineSync } from '../services/offlineSync';
 
