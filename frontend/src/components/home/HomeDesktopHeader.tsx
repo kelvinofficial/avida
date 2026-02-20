@@ -116,23 +116,11 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
       {/* Shared Desktop Header for Rows 1-2 */}
       <DesktopHeader showNavLinks={true} showSearch={true} showLocationSelector={true} />
       
-      {/* Row 3: Icon Style Categories - Single horizontal scrollable row */}
-      <View style={[
-        localStyles.categoryRowWrapper,
-        Platform.OS === 'web' && localStyles.categoryRowWrapperWeb
-      ]}>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={localStyles.categoriesScrollContent}
-          style={[
-            localStyles.categoriesScrollView,
-            // Add explicit overflow for web
-            Platform.OS === 'web' && { overflow: 'scroll' as any }
-          ]}
-        >
+      {/* Row 3: Icon Style Categories - Single horizontal row (no scroll) */}
+      <View style={localStyles.categoryRowWrapper}>
+        <View style={localStyles.categoriesContainer}>
           {ALL_ICON_CATEGORIES.map(renderCategoryItem)}
-        </ScrollView>
+        </View>
       </View>
 
       {/* Category Dropdown Overlay - Uses fixed positioning for web compatibility */}
