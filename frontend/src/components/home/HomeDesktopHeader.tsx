@@ -101,13 +101,9 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
       
       {/* Row 3: Icon Style Categories - Single horizontal row */}
       <View style={localStyles.categoryRowWrapper}>
-        <ScrollView 
-          horizontal={true}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={localStyles.categoryScrollContent}
-        >
+        <View style={localStyles.categoriesContainer}>
           {ALL_ICON_CATEGORIES.map(renderCategoryItem)}
-        </ScrollView>
+        </View>
       </View>
 
       {/* Category Dropdown Overlay - Uses fixed positioning for web compatibility */}
