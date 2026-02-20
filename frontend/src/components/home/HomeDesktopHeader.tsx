@@ -184,40 +184,32 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
 const localStyles = StyleSheet.create({
   categoryRowWrapper: {
     backgroundColor: '#fff',
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
     zIndex: 1,
     width: '100%',
-    position: 'relative',
   },
-  // Web-specific style for the category row - applied separately
-  categoryRowWrapperWeb: {
-    overflowX: 'auto' as any,
-    overflowY: 'hidden' as any,
-  },
-  categoriesScrollView: {
-    flexGrow: 0,
-  },
-  categoriesScrollContent: {
+  categoriesContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    paddingHorizontal: 16,
-    gap: 8,
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
   },
   iconCategoryItem: {
     alignItems: 'center',
-    width: 72,
+    flex: 1,
+    maxWidth: 75,
+    minWidth: 50,
   },
   iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#E8F5E9',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   iconContainerSelected: {
     backgroundColor: '#2E7D32',
