@@ -37,8 +37,8 @@ const FULL_CATEGORIES = [
   { id: 'friendship_dating', name: 'Friendship & Dating', icon: 'heart-outline' },
 ];
 
-// All categories in single icon row - limited to 10 for better fit on narrow screens
-const ALL_ICON_CATEGORIES = FULL_CATEGORIES.slice(0, 10);
+// All categories in 2 rows for desktop
+const ALL_ICON_CATEGORIES = FULL_CATEGORIES;
 
 interface HomeDesktopHeaderProps {
   selectedCategory: string | null;
