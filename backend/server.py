@@ -2610,6 +2610,14 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load saved filters router: {e}")
     
+    # Create Email Test router
+    try:
+        email_test_router = create_email_test_router(db, require_auth)
+        api_router.include_router(email_test_router)
+        logger.info("Email test router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load email test router: {e}")
+    
     app.include_router(api_router)  # Re-include to pick up modular routes
     logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors, Property, Offers, Similar, Social, ProfileActivity, Notifications, Account, Support, UserSettings, Sessions, IDVerification) loaded successfully")
 
