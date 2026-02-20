@@ -309,6 +309,7 @@ try:
     from routes.popular_searches import create_popular_searches_router
     from routes.photography_guides import create_photography_guides_router
     from routes.saved_filters import create_saved_filters_router
+    from routes.email_test import create_email_test_router
     MODULAR_ROUTES_AVAILABLE = True
 except ImportError as e:
     MODULAR_ROUTES_AVAILABLE = False
