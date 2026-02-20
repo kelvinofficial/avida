@@ -20,9 +20,6 @@ export const desktopStyles = StyleSheet.create({
     borderBottomColor: '#E8E8E8',
     width: '100%',
     zIndex: 1000,
-    // Break out of parent padding by using negative margins + padding
-    marginHorizontal: -24,
-    paddingHorizontal: 24,
     ...(Platform.OS === 'web' ? { overflow: 'visible' } as any : {}),
   },
   // Row 1: Logo + Nav Links + Auth + Post Listing
