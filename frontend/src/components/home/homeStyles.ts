@@ -498,8 +498,9 @@ export const mobileStyles = StyleSheet.create({
   // ========== HEADER (NO BOX, PLAIN SURFACE) ==========
   headerWrapper: {
     backgroundColor: '#fff',
-    // NO border radius, NO margin - spans full width edge to edge
-    marginHorizontal: 0,
+    // Use negative margins to offset the FlatList container padding
+    marginHorizontal: -HORIZONTAL_PADDING,
+    paddingHorizontal: HORIZONTAL_PADDING,
     borderRadius: 0,
     zIndex: 10000,
     position: 'relative',
