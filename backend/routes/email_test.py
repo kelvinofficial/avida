@@ -44,7 +44,7 @@ def create_email_test_router(db, require_auth):
             sender_info = "anonymous"
         
         try:
-            from utils.email_service import send_notification_email, SENDGRID_AVAILABLE, SENDGRID_API_KEY
+            from utils.email_service import send_notification_email, SENDGRID_AVAILABLE, get_api_key
             
             if not SENDGRID_AVAILABLE:
                 return EmailResponse(
@@ -53,7 +53,8 @@ def create_email_test_router(db, require_auth):
                     details={"error": "sendgrid package not available"}
                 )
             
-            if not SENDGRID_API_KEY:
+            api_key = get_api_key()
+            if not api_key:
                 return EmailResponse(
                     success=False,
                     message="SendGrid API key not configured",
