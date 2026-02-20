@@ -199,6 +199,11 @@ const localStyles = StyleSheet.create({
     zIndex: 1,
     width: '100%',
     position: 'relative',
+    // Web-specific: enable horizontal scrolling on the wrapper
+    ...(Platform.OS === 'web' ? {
+      overflowX: 'auto',
+      overflowY: 'hidden',
+    } : {}),
   },
   categoriesScrollView: {
     flexGrow: 0,
@@ -208,6 +213,11 @@ const localStyles = StyleSheet.create({
     alignItems: 'flex-start',
     paddingHorizontal: 16,
     gap: 8,
+    // Web-specific: Don't center, align from start
+    ...(Platform.OS === 'web' ? {
+      justifyContent: 'flex-start',
+      flexWrap: 'nowrap',
+    } : {}),
   },
   iconCategoryItem: {
     alignItems: 'center',
