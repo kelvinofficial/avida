@@ -1259,6 +1259,45 @@ async def create_notification(
                     data_payload or {"notification_id": notification_id, "type": notification_type},
                     notification_type
                 )
+        
+        # Send email notification for messages if enabled
+        if not in_quiet_hours and notifications_prefs.get("email", True):
+            # Check if email is enabled for this notification type
+            email_prefs = settings.get("email_notifications", {})
+            should_send_email = True
+            
+            # Map notification types to preferences
+            type_to_pref = {
+                "message": "push_messages",
+                "offer_received": "email_transactional",
+                "offer_accepted": "email_transactional",
+                "offer_rejected": "email_transactional",
+                "listing_sold": "email_transactional",
+                "listing_approved": "email_transactional",
+                "price_drop": "push_listings"
+            }
+            pref_key = type_to_pref.get(notification_type)
+            if pref_key and not email_prefs.get(pref_key, True):
+                should_send_email = False
+            
+            if should_send_email and user_data.get("email"):
+                try:
+                    from utils.email_service import send_notification_email
+                    await send_notification_email(
+                        to_email=user_data["email"],
+                        subject=f"[avida] {title}",
+                        body=body,
+                        notification_type=notification_type,
+                        data={
+                            "listing_id": listing_id,
+                            "listing_title": listing_title,
+                            "actor_name": actor_name,
+                            "cta_label": cta_label,
+                            "cta_route": cta_route
+                        }
+                    )
+                except Exception as e:
+                    logger.debug(f"Email notification failed: {e}")
     
     return notification
 
