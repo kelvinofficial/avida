@@ -98,14 +98,15 @@ def create_email_test_router(db, require_auth):
     async def get_email_status():
         """Check email service status."""
         try:
-            from utils.email_service import SENDGRID_AVAILABLE, SENDGRID_API_KEY, FROM_EMAIL, FROM_NAME
+            from utils.email_service import SENDGRID_AVAILABLE, get_api_key, FROM_EMAIL, FROM_NAME
             
+            api_key = get_api_key()
             return {
                 "sendgrid_installed": SENDGRID_AVAILABLE,
-                "api_key_configured": bool(SENDGRID_API_KEY),
+                "api_key_configured": bool(api_key),
                 "from_email": FROM_EMAIL,
                 "from_name": FROM_NAME,
-                "status": "ready" if (SENDGRID_AVAILABLE and SENDGRID_API_KEY) else "not_configured"
+                "status": "ready" if (SENDGRID_AVAILABLE and api_key) else "not_configured"
             }
         except Exception as e:
             return {
