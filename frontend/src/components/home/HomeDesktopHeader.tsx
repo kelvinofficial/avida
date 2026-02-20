@@ -119,12 +119,11 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
       {/* Row 3: Icon Style Categories - Single horizontal scrollable row */}
       <View style={localStyles.categoryRowWrapper}>
         <ScrollView 
+          ref={scrollContainerRef}
           horizontal 
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={localStyles.categoriesScrollContent}
           style={localStyles.categoriesScrollView}
-          // @ts-ignore - web-only attribute for CSS targeting
-          dataSet={{ categoryscroll: true }}
         >
           {ALL_ICON_CATEGORIES.map(renderCategoryItem)}
         </ScrollView>
