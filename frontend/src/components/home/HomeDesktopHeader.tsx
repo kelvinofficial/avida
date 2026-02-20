@@ -54,6 +54,23 @@ export const HomeDesktopHeader: React.FC<HomeDesktopHeaderProps> = ({
   listings,
 }) => {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const scrollContainerRef = useRef<any>(null);
+
+  // Apply web-specific styles for horizontal scrolling
+  useEffect(() => {
+    if (Platform.OS === 'web' && scrollContainerRef.current) {
+      const element = scrollContainerRef.current;
+      // Find the actual DOM node (React Native Web wraps components)
+      const domNode = element._nativeTag || element;
+      if (domNode && domNode.style) {
+        domNode.style.overflowX = 'auto';
+        domNode.style.overflowY = 'hidden';
+        domNode.style.scrollbarWidth = 'none';
+        domNode.style.msOverflowStyle = 'none';
+        domNode.style.webkitOverflowScrolling = 'touch';
+      }
+    }
+  }, []);
 
   const handleAllPress = () => {
     setShowCategoryDropdown(true);
