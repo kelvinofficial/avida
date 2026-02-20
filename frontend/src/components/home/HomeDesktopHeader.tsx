@@ -173,9 +173,13 @@ const localStyles = StyleSheet.create({
     zIndex: 1,
     width: '100%',
     position: 'relative',
+    alignItems: 'center',
   },
-  categoryScrollContent: {
+  categoriesContainer: {
     flexDirection: 'row',
+    flexWrap: 'nowrap',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
     paddingHorizontal: 16,
     gap: 8,
   },
