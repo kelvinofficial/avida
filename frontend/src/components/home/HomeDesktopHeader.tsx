@@ -181,6 +181,9 @@ const localStyles = StyleSheet.create({
     width: '100%',
     position: 'relative',
   },
+  categoriesScrollView: {
+    flexGrow: 0,
+  },
   categoriesScrollContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
