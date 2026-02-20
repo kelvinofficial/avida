@@ -213,30 +213,21 @@ const iconFixScript = `
   
   // Fix for category row horizontal scrolling on desktop
   function fixCategoryScroll() {
-    // Find the direct parent of category icons by looking for specific structure
     var allDivs = document.querySelectorAll('div');
     allDivs.forEach(function(el) {
-      // Check for category row: has children containing category names, is flex row, needs scroll
-      var children = el.children;
-      if (children.length >= 10) {
-        // Check if children look like category items (each has icon + text)
-        var firstChild = children[0];
-        var lastChild = children[children.length - 1];
-        if (firstChild && lastChild) {
-          var firstText = firstChild.textContent || '';
-          var lastText = lastChild.textContent || '';
-          // Check if this is the category row (first is Auto & Vehicles, last is Friendship)
-          if ((firstText.includes('Auto') || firstText.includes('Vehicles')) && 
-              (lastText.includes('Friendship') || lastText.includes('Dating'))) {
-            // This is the category items container, check if parent needs scroll
-            var parent = el.parentElement;
-            if (parent && parent.scrollWidth > parent.clientWidth + 10) {
-              parent.style.overflowX = 'auto';
-              parent.style.overflowY = 'hidden';
-              parent.style.webkitOverflowScrolling = 'touch';
-              parent.style.scrollbarWidth = 'none';
-              parent.style.msOverflowStyle = 'none';
-            }
+      // Check if this element overflows horizontally
+      if (el.scrollWidth > el.clientWidth + 30) {
+        var text = el.textContent || '';
+        // Check if this contains the category row (has Auto & Vehicles and Friendship)
+        if (text.includes('Auto') && text.includes('Vehicles') && 
+            text.includes('Friendship') && text.includes('Dating')) {
+          // Only apply to elements that are not too large (to avoid applying to root)
+          if (el.clientWidth < 1200 && el.clientWidth > 500) {
+            el.style.overflowX = 'auto';
+            el.style.overflowY = 'hidden';
+            el.style.webkitOverflowScrolling = 'touch';
+            el.style.scrollbarWidth = 'none';
+            el.style.msOverflowStyle = 'none';
           }
         }
       }
