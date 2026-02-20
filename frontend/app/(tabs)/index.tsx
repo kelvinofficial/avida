@@ -301,7 +301,6 @@ export default function HomeScreen() {
   };
 
   // ============ RENDER LISTING ITEM FOR FLATLIST ============
-  const CARD_PADDING = 16; // Padding for listing cards to match header alignment
   
   const renderListingItem = useCallback(({ item, index }: { item: any; index: number }) => {
     const colIndex = index % columns;
