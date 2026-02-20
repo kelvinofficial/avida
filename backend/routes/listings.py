@@ -555,7 +555,7 @@ def create_listings_router(
                 "search_mode": "exact_city",
                 "selected_city": city_code,
                 "expanded_search": False,
-                "message": f"No listings in this city."
+                "message": "No listings in this city."
             }
         
         # Find all listings with coordinates and calculate distances
