@@ -157,6 +157,13 @@ const responsiveStyle = `
     min-width: auto;
   }
   
+  /* Hide scrollbar for horizontal scroll containers */
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+  
   /* Use JavaScript to detect and fix icon elements on page load */
 `;
 
