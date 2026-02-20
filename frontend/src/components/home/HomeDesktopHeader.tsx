@@ -4,7 +4,7 @@
  * Wraps the shared DesktopHeader and adds category row + section title
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
