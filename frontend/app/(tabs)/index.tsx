@@ -303,20 +303,11 @@ export default function HomeScreen() {
   // ============ RENDER LISTING ITEM FOR FLATLIST ============
   
   const renderListingItem = useCallback(({ item, index }: { item: any; index: number }) => {
-    const colIndex = index % columns;
-    const isFirstInRow = colIndex === 0;
-    const isLastInRow = colIndex === columns - 1;
-    
-    // Gap between items - no extra padding needed since contentContainerStyle handles it
-    const marginHorizontal = gridGap / 2;
-    
     return (
       <View 
         style={{
           width: dynamicCardWidth,
           marginBottom: gridGap,
-          marginLeft: isFirstInRow ? 0 : marginHorizontal,
-          marginRight: isLastInRow ? 0 : marginHorizontal,
         }}
       >
         <ListingCard
