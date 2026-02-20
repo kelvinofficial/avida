@@ -1,5 +1,5 @@
 {
-  "summary": "Backend testing for notification preferences system completed successfully. All 20 tests passed covering: email status endpoint (SendGrid ready), notification preference categories (email + push), user preferences CRUD with toggle, test notification sending, and notification service integration in offers/listings routes.",
+  "summary": "Backend testing for notification preferences system completed successfully. All 20 tests passed covering: email status endpoint (SendGrid ready), notification preference categories (email + push), user preferences CRUD with toggle, test notification sending, and notification service integration in offers/listings routes. Fixed a minor bug in notification_service.py where _send_push was calling non-existent 'send_to_user' method (corrected to 'send_notification').",
   "backend_issues": {
     "critical": [],
     "minor": []
@@ -16,7 +16,8 @@
   "action_items": [],
   "critical_code_review_comments": [],
   "updated_files": [
-    "/app/backend/tests/test_notification_preferences.py"
+    "/app/backend/tests/test_notification_preferences.py",
+    "/app/backend/services/notification_service.py"
   ],
   "success_rate": {
     "backend": "100% (20/20 tests passed)",
