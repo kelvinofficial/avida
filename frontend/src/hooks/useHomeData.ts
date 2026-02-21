@@ -515,11 +515,16 @@ export function useHomeData(): UseHomeDataReturn {
   // Re-fetch user-specific data when auth state changes (login/logout)
   useEffect(() => {
     console.log('[useHomeData] Auth state changed - isAuthenticated:', isAuthenticated, 'hasToken:', !!token);
-    if (isAuthenticated && token) {
+    // Only fetch if we have BOTH token and isAuthenticated
+    // This prevents fetching when one is set but not the other
+    if (token && isAuthenticated) {
       // Fetch user-specific data when user logs in
       console.log('[useHomeData] Fetching data after login...');
-      fetchData(true);
-    } else {
+      // Small delay to ensure token is available in interceptor
+      setTimeout(() => {
+        fetchData(true);
+      }, 100);
+    } else if (!token && !isAuthenticated) {
       // Clear user data when logged out
       console.log('[useHomeData] Clearing user data (logged out)');
       setNotificationCount(0);
