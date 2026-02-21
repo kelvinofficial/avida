@@ -1008,6 +1008,26 @@ export default function ListingDetailScreen() {
     return `data:image/jpeg;base64,${img}`;
   };
 
+  // Wait for responsive hook to be ready before rendering layout
+  // This prevents flash from desktop to mobile layout
+  if (!isReady) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={{ flex: 1, backgroundColor: COLORS.background }}>
+          <View style={styles.floatingHeader}>
+            <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.headerBtn}>
+              <Ionicons name="arrow-back" size={22} color={COLORS.text} />
+            </TouchableOpacity>
+            <View style={{ flex: 1 }} />
+          </View>
+          <View style={{ height: 280, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   // ============ DESKTOP VIEW ============
   if (isDesktop || isTablet) {
     const MAX_CONTENT_WIDTH = 1280;
