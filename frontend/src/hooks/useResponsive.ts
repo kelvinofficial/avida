@@ -59,27 +59,24 @@ export const useResponsive = (): ResponsiveInfo => {
     return { width, height };
   });
   
-  // Start as true on web since we have dimensions, false on native until measured
-  const [isReady, setIsReady] = useState(() => {
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      return true;
-    }
-    return Platform.OS !== 'web';
-  });
+  // CRITICAL: Always start as false to prevent layout flash during hydration
+  // This ensures we don't render conditional layouts until dimensions are confirmed
+  const [isReady, setIsReady] = useState(false);
 
-  // Use useLayoutEffect on web to prevent flash
+  // Use useLayoutEffect on web to prevent flash (runs synchronously before paint)
   const useIsomorphicLayoutEffect = Platform.OS === 'web' ? useLayoutEffect : useEffect;
 
   useIsomorphicLayoutEffect(() => {
-    // On web, get the actual window dimensions immediately
+    // Set dimensions and mark ready synchronously before first paint
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const actualDimensions = {
         width: window.innerWidth,
         height: window.innerHeight,
       };
       setDimensions(actualDimensions);
-      setIsReady(true);
     }
+    // Mark as ready - this runs synchronously before browser paints
+    setIsReady(true);
   }, []);
 
   useEffect(() => {
