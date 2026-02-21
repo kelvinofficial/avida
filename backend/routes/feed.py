@@ -24,6 +24,53 @@ except ImportError:
     CACHE_AVAILABLE = False
     logger.warning("Cache module not available")
 
+# Import image optimizer for thumbnail compression
+try:
+    from utils.image_optimizer import create_thumbnail, is_url
+    IMAGE_OPTIMIZER_AVAILABLE = True
+except ImportError:
+    IMAGE_OPTIMIZER_AVAILABLE = False
+    logger.warning("Image optimizer not available")
+
+# In-memory thumbnail cache to avoid re-compressing same images
+_thumbnail_cache = {}
+MAX_THUMBNAIL_CACHE_SIZE = 500
+
+def get_compressed_thumbnail(img_source: str) -> str:
+    """
+    Get compressed thumbnail from image source.
+    For URLs: return as-is
+    For base64: compress to small WebP thumbnail
+    Uses caching to avoid re-compression.
+    """
+    if not img_source:
+        return None
+    
+    # URLs don't need compression
+    if is_url(img_source) if IMAGE_OPTIMIZER_AVAILABLE else img_source.startswith(('http://', 'https://')):
+        return img_source
+    
+    # Check thumbnail cache
+    cache_key = hash(img_source[:100])  # Use first 100 chars as key
+    if cache_key in _thumbnail_cache:
+        return _thumbnail_cache[cache_key]
+    
+    # Compress base64 image if optimizer available
+    if IMAGE_OPTIMIZER_AVAILABLE:
+        try:
+            thumbnail = create_thumbnail(img_source, size=(200, 200))  # Small thumbnails
+            if thumbnail:
+                # Cache the result
+                if len(_thumbnail_cache) >= MAX_THUMBNAIL_CACHE_SIZE:
+                    _thumbnail_cache.clear()  # Simple cache eviction
+                _thumbnail_cache[cache_key] = thumbnail
+                return thumbnail
+        except Exception as e:
+            logger.debug(f"Thumbnail compression failed: {e}")
+    
+    # Fallback: return original (will be large but functional)
+    return img_source
+
 def create_feed_router(db):
     """Create the feed router with database dependency."""
     
