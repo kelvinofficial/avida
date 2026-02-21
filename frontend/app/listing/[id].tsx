@@ -691,7 +691,7 @@ export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
-  const { isMobile, isTablet, isDesktop, width: screenWidth } = useResponsive();
+  const { isMobile, isTablet, isDesktop, width: screenWidth, isReady } = useResponsive();
   const insets = useSafeAreaInsets(); // Safe area insets for bottom padding
   
   // Attribute icons hook for dynamic icons and colors
