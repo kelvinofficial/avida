@@ -11,14 +11,15 @@ interface ImageWithSkeletonProps {
   placeholderIconSize?: number;
   placeholderIconColor?: string;
   testID?: string;
+  showPlaceholder?: boolean;
 }
 
 /**
- * ImageWithSkeleton - ZERO LOADER VERSION
+ * ImageWithSkeleton - INSTANT LOAD VERSION
  * 
- * CACHE-FIRST ARCHITECTURE:
- * - Shows placeholder icon immediately (no shimmer/skeleton animation)
- * - Image loads in background and appears when ready
+ * OPTIMIZED FOR PERFORMANCE:
+ * - NO placeholder/skeleton by default - image appears when ready
+ * - Set showPlaceholder=true only where explicitly needed
  * - Falls back to placeholder icon if image fails to load
  */
 export const ImageWithSkeleton = memo<ImageWithSkeletonProps>(({
@@ -30,6 +31,7 @@ export const ImageWithSkeleton = memo<ImageWithSkeletonProps>(({
   placeholderIconSize = 32,
   placeholderIconColor = '#CCC',
   testID,
+  showPlaceholder = false, // Default: NO placeholder
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -42,8 +44,8 @@ export const ImageWithSkeleton = memo<ImageWithSkeletonProps>(({
     setHasError(true);
   };
 
-  // Show placeholder if no source or error
-  if (!source || hasError) {
+  // Show placeholder ONLY on error, not during loading
+  if (hasError) {
     return (
       <View style={[styles.container, containerStyle]} testID={testID}>
         <View style={[styles.placeholder, style]}>
@@ -53,22 +55,28 @@ export const ImageWithSkeleton = memo<ImageWithSkeletonProps>(({
     );
   }
 
+  // If no source, show nothing (not a placeholder)
+  if (!source) {
+    return <View style={[styles.container, containerStyle]} testID={testID} />;
+  }
+
   return (
     <View style={[styles.container, containerStyle]} testID={testID}>
-      {/* Static placeholder - shown until image loads (no animation) */}
-      {!isLoaded && (
+      {/* Show placeholder while loading ONLY if explicitly requested */}
+      {showPlaceholder && !isLoaded && (
         <View style={[styles.placeholder, style]}>
           <Ionicons name={placeholderIcon as any} size={placeholderIconSize} color={placeholderIconColor} />
         </View>
       )}
       
-      {/* Actual image */}
+      {/* Actual image - loads in background */}
       <Image
         source={source}
         style={[
           styles.image,
           style,
-          !isLoaded && styles.hiddenImage,
+          // Only hide if showing placeholder AND not loaded
+          (showPlaceholder && !isLoaded) && styles.hiddenImage,
         ]}
         resizeMode={resizeMode}
         onLoadEnd={handleLoadEnd}
