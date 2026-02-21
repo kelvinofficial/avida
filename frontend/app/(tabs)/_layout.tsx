@@ -42,11 +42,6 @@ export default function TabLayout() {
     const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);
   }, [isAuthenticated, token]);
-  
-  // Start with false (show tab bar) to avoid SSR hydration mismatch
-  // Only hide after client-side mount confirms we're on tablet/desktop
-  const [isMounted, setIsMounted] = useState(false);
-  const [isLargeScreen, setIsLargeScreen] = useState(false);
 
   useEffect(() => {
     // Mark as mounted (client-side only)
