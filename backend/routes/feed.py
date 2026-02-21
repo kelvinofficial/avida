@@ -222,11 +222,19 @@ def create_feed_router(db):
         # Transform items for feed
         feed_items = []
         for item in all_items:
-            # Get thumbnail URL
+            # Get thumbnail URL - SKIP base64 data URIs (too large for feed)
             thumb_url = None
             if item.get("images") and len(item["images"]) > 0:
                 img = item["images"][0]
-                thumb_url = img if isinstance(img, str) else img.get("url", img.get("uri"))
+                img_url = img if isinstance(img, str) else img.get("url", img.get("uri"))
+                # Only use if it's a valid URL, not a base64 data URI
+                if img_url and isinstance(img_url, str):
+                    if img_url.startswith("http"):
+                        thumb_url = img_url
+                    elif not img_url.startswith("data:"):
+                        # Relative URL - might need base URL
+                        thumb_url = img_url
+                    # else: Skip base64 data URIs - they're too large for feed
             
             # Handle location - it could be a string or an object
             location = item.get("location", {})
