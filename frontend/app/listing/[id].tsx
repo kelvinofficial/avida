@@ -973,27 +973,18 @@ export default function ListingDetailScreen() {
     );
   }
 
-  // CACHE-FIRST: Show immediate placeholder while first-time data loads
-  // This prevents white flash by showing UI structure instantly
+  // CACHE-FIRST: Return minimal header while data loads - no skeleton placeholders
+  // This provides a cleaner transition than showing skeleton UI
   if (!listing) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={{ flex: 1, backgroundColor: COLORS.background }}>
-          {/* Floating Header - same position as when data loads */}
+        <View style={{ flex: 1, backgroundColor: COLORS.surface }}>
+          {/* Minimal header with back button only */}
           <View style={styles.floatingHeader}>
             <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.headerBtn}>
               <Ionicons name="arrow-back" size={22} color={COLORS.text} />
             </TouchableOpacity>
             <View style={{ flex: 1 }} />
-          </View>
-          {/* Image Placeholder Area */}
-          <View style={{ height: 280, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' }}>
-            <Ionicons name="image-outline" size={48} color={COLORS.border} />
-          </View>
-          {/* Content Placeholder - maintains layout */}
-          <View style={{ backgroundColor: COLORS.surface, padding: 16, marginTop: 8 }}>
-            <View style={{ height: 24, backgroundColor: COLORS.background, borderRadius: 4, width: '70%', marginBottom: 8 }} />
-            <View style={{ height: 32, backgroundColor: COLORS.background, borderRadius: 4, width: '40%' }} />
           </View>
         </View>
       </SafeAreaView>
