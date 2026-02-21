@@ -269,14 +269,14 @@ def create_feed_router(db):
         # Transform items for feed
         feed_items = []
         for item in all_items:
-            # Get thumbnail URL - handle both URLs and base64 data URIs
+            # Get thumbnail URL - compress base64 images for smaller payload
             thumb_url = None
             if item.get("images") and len(item["images"]) > 0:
                 img = item["images"][0]
                 img_url = img if isinstance(img, str) else img.get("url", img.get("uri"))
                 if img_url and isinstance(img_url, str):
-                    # Accept both HTTP URLs and data URIs
-                    thumb_url = img_url
+                    # Compress base64 thumbnails for smaller payload
+                    thumb_url = get_compressed_thumbnail(img_url)
             
             # Handle location - it could be a string or an object
             location = item.get("location", {})
