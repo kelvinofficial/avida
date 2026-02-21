@@ -5,10 +5,8 @@ import Constants from 'expo-constants';
 
 // Production API URL - HARDCODED for APK builds where env vars don't work
 // This is the ULTIMATE fallback and MUST always be correct
-// For production deployment, this should be https://avida.co.tz
-export const PRODUCTION_API_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://avida.co.tz'
-  : 'https://location-filter-2.preview.emergentagent.com';
+// Change this to https://avida.co.tz when you have custom domain working
+export const PRODUCTION_API_URL = 'https://location-filter-2.preview.emergentagent.com';
 
 // Get API URL - try multiple sources for maximum compatibility
 export const getApiUrl = (): string => {
