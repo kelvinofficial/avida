@@ -33,6 +33,14 @@ Build a full-stack React Native/Expo marketplace application with a FastAPI back
 #### Location Filter (Feb 2026) ✅
 - Working correctly with `$and` query logic
 
+#### Layout Flash Fix (Feb 2026) ✅ FIXED
+**Problem**: When navigating to listing detail page, a full-width desktop layout briefly appeared before the correct mobile layout rendered
+**Root Cause**: The `useResponsive` hook's `isReady` flag was initialized to `true` on web, causing the conditional layout to render immediately with potentially incorrect dimensions
+**Fix**: Updated `/app/frontend/src/hooks/useResponsive.ts`:
+- Changed `isReady` to always start as `false`
+- Use `useLayoutEffect` on web to set `isReady` to `true` synchronously before browser paint
+- This ensures the `!isReady` loading state shows until dimensions are confirmed
+
 ### Code Ready - Needs Device/Deployment Testing
 
 #### Share Button & Deep Linking
