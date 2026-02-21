@@ -285,6 +285,9 @@ export const useInstantListingsFeed = (params: FeedParams): UseInstantListingsFe
     } catch (err: any) {
       if (!isMountedRef.current) return;
       
+      // Always mark initial load as complete, even on error
+      setIsInitialLoad(false);
+      
       // Only show error if we have no cached data
       if (items.length === 0) {
         setError(err.message || 'Failed to load listings');
