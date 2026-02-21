@@ -452,12 +452,17 @@ def create_profile_activity_router(db, require_auth, get_current_user):
         for v in viewed:
             listing = listings_map.get(v["listing_id"])
             if listing:
+                viewed_at = v.get("viewed_at")
+                # Convert datetime to ISO string if needed
+                if hasattr(viewed_at, 'isoformat'):
+                    viewed_at = viewed_at.isoformat()
                 result.append({
                     **listing,
-                    "viewed_at": v.get("viewed_at")
+                    "viewed_at": viewed_at
                 })
         
-        return {"listings": result}
+        # Return as "items" to match frontend expectation
+        return {"items": result}
 
     @router.post("/recently-viewed/{listing_id}")
     async def add_recently_viewed(listing_id: str, request: Request):
