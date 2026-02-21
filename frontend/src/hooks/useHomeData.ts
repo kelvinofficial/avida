@@ -417,10 +417,13 @@ export function useHomeData(): UseHomeDataReturn {
 
         try {
           const notificationsResponse = await notificationsApi.getUnreadCount();
+          console.log('[useHomeData] Notifications API response:', JSON.stringify(notificationsResponse));
           // API returns { unread_count: number }
-          setNotificationCount(notificationsResponse?.unread_count || 0);
+          const count = notificationsResponse?.unread_count || 0;
+          console.log('[useHomeData] Setting notification count to:', count);
+          setNotificationCount(count);
         } catch (err) {
-          console.error('Failed to fetch notifications:', err);
+          console.error('[useHomeData] Failed to fetch notifications:', err);
         }
 
         try {
