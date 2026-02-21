@@ -3518,6 +3518,16 @@ async def startup_event():
     if SCHEDULED_REPORTS_AVAILABLE:
         asyncio.create_task(scheduled_reports_task())
         logger.info("Started scheduled reports background task")
+    
+    # Initialize database indexes for performance
+    try:
+        from utils.db_indexes import ensure_all_indexes
+        index_results = await ensure_all_indexes(db)
+        logger.info(f"Database indexes initialized: {index_results}")
+    except ImportError as e:
+        logger.warning(f"Index module not available: {e}")
+    except Exception as e:
+        logger.warning(f"Failed to initialize indexes (non-fatal): {e}")
 
 
 async def periodic_badge_check_task():
