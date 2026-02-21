@@ -8,7 +8,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://location-filter-2.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://layout-render-fix.preview.emergentagent.com')
 
 # Test credentials
 TEST_USER = {

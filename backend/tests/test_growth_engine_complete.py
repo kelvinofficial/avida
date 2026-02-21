@@ -8,7 +8,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://location-filter-2.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://layout-render-fix.preview.emergentagent.com').rstrip('/')
 
 # Admin credentials
 ADMIN_EMAIL = "admin@marketplace.com"

@@ -11,7 +11,7 @@ import os
 import json
 import time
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://location-filter-2.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://layout-render-fix.preview.emergentagent.com')
 
 class TestSearchAutocomplete:
     """Search autocomplete/suggestions API tests"""

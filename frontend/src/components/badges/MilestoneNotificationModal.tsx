@@ -244,7 +244,7 @@ const MilestoneNotificationModal: React.FC<MilestoneNotificationModalProps> = ({
 
   const handleShare = async () => {
     const shareMessage = `I just unlocked "${milestone?.name}" on Avida Marketplace! Check out my badge collection.`;
-    const url = shareUrl || `https://location-filter-2.preview.emergentagent.com/profile/${userId}`;
+    const url = shareUrl || `https://layout-render-fix.preview.emergentagent.com/profile/${userId}`;
     
     if (Platform.OS === 'web') {
       try {
