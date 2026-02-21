@@ -382,18 +382,28 @@ export const useInstantListingsFeed = (params: FeedParams): UseInstantListingsFe
 
 /**
  * Optimized FlatList props for feed
+ * Performance targets:
+ * - First 6 items render instantly (<100ms)
+ * - Smooth scrolling (60fps)
+ * - Memory efficient
  */
 export const getFeedFlatListProps = (cardHeight: number = 200) => ({
-  initialNumToRender: 10,
-  maxToRenderPerBatch: 10,
-  windowSize: 7,
-  removeClippedSubviews: true,
-  updateCellsBatchingPeriod: 50,
+  initialNumToRender: 6,        // Show first 6 instantly
+  maxToRenderPerBatch: 6,       // Render in small batches
+  windowSize: 5,                // Only keep 5 screens in memory
+  removeClippedSubviews: true,  // Remove off-screen views
+  updateCellsBatchingPeriod: 30, // Faster batch updates
   getItemLayout: (_: any, index: number) => ({
     length: cardHeight,
     offset: cardHeight * index,
     index,
   }),
+  // Reduce re-renders
+  keyboardShouldPersistTaps: 'handled' as const,
+  // Optimize for scrolling
+  scrollEventThrottle: 16,      // 60fps
+  // Prevent unnecessary re-renders
+  extraData: undefined,
 });
 
 /**
