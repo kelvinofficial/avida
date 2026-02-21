@@ -103,6 +103,9 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   const router = useRouter();
   const ICON_SIZE = 24;
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  
+  // Debug log - remove after testing
+  console.log('[MobileHeader] notificationCount:', notificationCount);
 
   // Handle category selection from dropdown
   const handleCategoryDropdownSelect = (categoryId: string | null) => {
