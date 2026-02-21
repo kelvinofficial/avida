@@ -1234,9 +1234,10 @@ async def create_notification(
     settings = await db.user_settings.find_one({"user_id": user_id})
     user_data = await db.users.find_one({"user_id": user_id})
     
-    if settings and user_data:
-        notifications_prefs = settings.get("notifications", {})
-        quiet_hours = settings.get("quiet_hours", {})
+    # Check if we have user data - proceed with defaults if no settings
+    if user_data:
+        notifications_prefs = settings.get("notifications", {}) if settings else {}
+        quiet_hours = settings.get("quiet_hours", {}) if settings else {}
         
         # Check quiet hours
         in_quiet_hours = False
@@ -1252,7 +1253,13 @@ async def create_notification(
         
         # Send push notification if enabled and not in quiet hours
         if not in_quiet_hours and notifications_prefs.get("push", True):
-            push_token = user_data.get("push_token")
+            # Check for push_token in settings first, then user_data
+            push_token = None
+            if settings:
+                push_token = settings.get("push_token")
+            if not push_token:
+                push_token = user_data.get("push_token")
+            
             if push_token:
                 await send_push_notification(
                     push_token, title, body, 
