@@ -12,7 +12,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.localmarket.app",
       "associatedDomains": [
-        "applinks:expo-connectivity.preview.emergentagent.com"
+        "applinks:location-filter-2.preview.emergentagent.com",
+        "applinks:avida.co.tz"
       ],
       "infoPlist": {
         "NSCameraUsageDescription": "Take photos to add to your listings",
@@ -41,23 +42,53 @@
           "data": [
             {
               "scheme": "https",
-              "host": "expo-connectivity.preview.emergentagent.com",
-              "pathPrefix": "/api/l/"
-            },
-            {
-              "scheme": "https",
-              "host": "expo-connectivity.preview.emergentagent.com",
+              "host": "location-filter-2.preview.emergentagent.com",
               "pathPrefix": "/listing/"
             },
             {
               "scheme": "https",
-              "host": "expo-connectivity.preview.emergentagent.com",
+              "host": "location-filter-2.preview.emergentagent.com",
               "pathPrefix": "/profile/"
             },
             {
               "scheme": "https",
-              "host": "expo-connectivity.preview.emergentagent.com",
+              "host": "location-filter-2.preview.emergentagent.com",
               "pathPrefix": "/category/"
+            },
+            {
+              "scheme": "https",
+              "host": "location-filter-2.preview.emergentagent.com",
+              "pathPrefix": "/auto/"
+            },
+            {
+              "scheme": "https",
+              "host": "location-filter-2.preview.emergentagent.com",
+              "pathPrefix": "/property/"
+            },
+            {
+              "scheme": "https",
+              "host": "avida.co.tz",
+              "pathPrefix": "/listing/"
+            },
+            {
+              "scheme": "https",
+              "host": "avida.co.tz",
+              "pathPrefix": "/profile/"
+            },
+            {
+              "scheme": "https",
+              "host": "avida.co.tz",
+              "pathPrefix": "/category/"
+            },
+            {
+              "scheme": "https",
+              "host": "avida.co.tz",
+              "pathPrefix": "/auto/"
+            },
+            {
+              "scheme": "https",
+              "host": "avida.co.tz",
+              "pathPrefix": "/property/"
             }
           ],
           "category": [
