@@ -205,16 +205,26 @@ export async function registerForPushNotifications(userId: string): Promise<stri
 
     console.log('Expo Push Token:', pushToken);
 
-    // Send token to backend
+    // Send token to backend - try multiple endpoints for compatibility
     try {
-      await api.post('/users/settings', {
+      // First try the settings endpoint (main settings update)
+      await api.put('/settings', {
         push_token: pushToken,
-        push_enabled: true,
-        platform: Platform.OS,
+        notifications: {
+          push: true
+        }
       });
-      console.log('Push token registered with backend');
+      console.log('Push token registered with backend via settings');
     } catch (error) {
-      console.log('Failed to register push token with backend:', error);
+      // Fallback to dedicated push-token endpoint
+      try {
+        await api.put('/settings/push-token', {
+          push_token: pushToken,
+        });
+        console.log('Push token registered with backend via push-token endpoint');
+      } catch (fallbackError) {
+        console.log('Failed to register push token with backend:', fallbackError);
+      }
     }
 
     // Set up notification channel for Android
