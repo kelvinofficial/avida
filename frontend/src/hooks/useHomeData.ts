@@ -509,6 +509,20 @@ export function useHomeData(): UseHomeDataReturn {
     fetchData(true);
   }, [selectedCategory, selectedLocationFilter]);
 
+  // Re-fetch user-specific data when auth state changes (login/logout)
+  useEffect(() => {
+    if (isAuthenticated && token) {
+      // Fetch user-specific data when user logs in
+      fetchData(true);
+    } else {
+      // Clear user data when logged out
+      setNotificationCount(0);
+      setFavorites(new Set());
+      setCreditBalance(null);
+      setUnviewedBadgeCount(0);
+    }
+  }, [isAuthenticated, token]);
+
   return {
     // Listings data
     listings,
