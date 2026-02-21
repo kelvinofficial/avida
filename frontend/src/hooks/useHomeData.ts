@@ -417,7 +417,8 @@ export function useHomeData(): UseHomeDataReturn {
 
         try {
           const notificationsResponse = await notificationsApi.getUnreadCount();
-          setNotificationCount(notificationsResponse?.count || 0);
+          // API returns { unread_count: number }
+          setNotificationCount(notificationsResponse?.unread_count || 0);
         } catch (err) {
           console.error('Failed to fetch notifications:', err);
         }
