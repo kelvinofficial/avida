@@ -1,6 +1,6 @@
 """
 Instant Listings Feed API
-High-performance feed endpoint with cursor-based pagination and minimal payload.
+High-performance feed endpoint with cursor-based pagination, caching, and minimal payload.
 """
 
 from fastapi import APIRouter, Query, Response, Request
@@ -9,8 +9,20 @@ from datetime import datetime, timezone
 from bson import ObjectId
 import hashlib
 import json
+import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/feed", tags=["Feed"])
+
+# Import cache (with fallback if not available)
+try:
+    from utils.cache import cache, CACHE_TTL
+    CACHE_AVAILABLE = True
+except ImportError:
+    CACHE_AVAILABLE = False
+    logger.warning("Cache module not available")
 
 def create_feed_router(db):
     """Create the feed router with database dependency."""
@@ -23,9 +35,11 @@ def create_feed_router(db):
         "price": 1,
         "currency": 1,
         "location": 1,
+        "cityName": 1,  # Pre-computed for display
         "category": 1,
         "subcategory": 1,
         "images": {"$slice": 1},  # Only first image for thumbnail
+        "thumbnail": 1,  # Optimized thumbnail URL
         "created_at": 1,
         "is_boosted": 1,
         "boost_expires_at": 1,
@@ -34,6 +48,11 @@ def create_feed_router(db):
         "views_count": 1,
         "is_negotiable": 1,
     }
+    
+    def generate_cache_key(params: dict) -> str:
+        """Generate a unique cache key from query parameters."""
+        key_data = json.dumps(params, sort_keys=True, default=str)
+        return f"feed:{hashlib.md5(key_data.encode()).hexdigest()[:16]}"
     
     @router.get("/listings")
     async def get_listings_feed(
@@ -54,11 +73,33 @@ def create_feed_router(db):
         High-performance feed endpoint with cursor-based pagination.
         
         Features:
+        - Redis/memory caching (60s TTL)
         - Minimal payload (only fields needed for feed cards)
         - Cursor-based pagination for stable results
-        - ETag support for caching
+        - ETag support for HTTP caching
         - Optimized MongoDB queries with proper indexes
+        
+        Target: < 300ms response time
         """
+        start_time = time.time()
+        
+        # Generate cache key
+        cache_params = {
+            "country": country, "region": region, "city": city,
+            "category": category, "subcategory": subcategory,
+            "sort": sort, "cursor": cursor, "limit": limit,
+            "seller_id": seller_id, "search": search
+        }
+        cache_key = generate_cache_key(cache_params)
+        
+        # Try cache first (skip if cursor-based pagination for freshness)
+        if CACHE_AVAILABLE and not cursor:
+            cached_result = await cache.get(cache_key)
+            if cached_result:
+                # Add cache header
+                response.headers["X-Cache"] = "HIT"
+                response.headers["X-Response-Time"] = f"{(time.time() - start_time) * 1000:.0f}ms"
+                return cached_result
         
         # Build query
         query = {"status": "active"}
