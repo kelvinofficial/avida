@@ -1,15 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { View, StyleSheet, Platform, Dimensions } from 'react-native';
+import { View, StyleSheet, Platform, Dimensions, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/store/authStore';
+import api from '../../src/utils/api';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, token } = useAuthStore();
+  
+  // Unread counts
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  
+  // Start with false (show tab bar) to avoid SSR hydration mismatch
+  // Only hide after client-side mount confirms we're on tablet/desktop
+  const [isMounted, setIsMounted] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+
+  // Fetch unread message count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      if (!isAuthenticated || !token) {
+        setUnreadMessages(0);
+        return;
+      }
+      
+      try {
+        const response = await api.get('/conversations/unread-count');
+        setUnreadMessages(response.data?.count || 0);
+      } catch (error) {
+        console.log('Failed to fetch unread count:', error);
+      }
+    };
+
+    fetchUnreadCount();
+    
+    // Poll for updates every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, token]);
   
   // Start with false (show tab bar) to avoid SSR hydration mismatch
   // Only hide after client-side mount confirms we're on tablet/desktop
