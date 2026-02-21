@@ -53,7 +53,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } else {
       await storage.removeItem(TOKEN_KEY);
     }
-    set({ token });
+    // Also set isAuthenticated when we have a token
+    set({ token, isAuthenticated: !!token });
   },
 
   loadStoredAuth: async () => {
