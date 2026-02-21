@@ -2802,6 +2802,17 @@ if NOTIFICATION_QUEUE_AVAILABLE and NOTIFICATION_SERVICE_AVAILABLE:
     
     logger.info("Notification queue and escrow integration loaded successfully")
 
+# Initialize Cache on Startup
+try:
+    from utils.cache import cache
+    
+    @app.on_event("startup")
+    async def init_cache_on_startup():
+        await cache.connect()
+        logger.info("Cache system initialized")
+except ImportError:
+    logger.info("Cache module not available, skipping cache initialization")
+
 # AI Listing Analyzer Routes
 if AI_ANALYZER_AVAILABLE:
     ai_router, ai_analyzer = create_ai_analyzer_router(db, get_current_user)
