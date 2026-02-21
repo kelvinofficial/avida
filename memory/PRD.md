@@ -109,6 +109,18 @@ Build a full-stack React Native/Expo marketplace application with a FastAPI back
 7. ✅ Continue Button Fix
 8. ✅ Location Filter Fix
 9. ✅ Layout Flash Fix (useResponsive hook)
+10. ✅ Skeleton Placeholder Removed (listing detail)
+11. ✅ Performance Optimization (API <200ms, 97.9% payload reduction)
+12. ✅ Push Token Registration Fix (frontend/backend sync)
+
+### Notification System Status (Feb 2026)
+- **In-App**: ✅ Working (206 notifications in database)
+- **Email**: ✅ Configured (SendGrid ready)
+- **Push**: ⚠️ Requires user action
+  - Users must log in via mobile app (not web)
+  - Users must grant notification permissions
+  - Push token auto-registers after permission granted
+  - No users have registered push tokens yet
 
 ### Future/Backlog
 - Multi-language content generation (German, Swahili)
