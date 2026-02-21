@@ -990,18 +990,7 @@ export default function ListingDetailScreen() {
   // Wait for responsive hook to be ready before rendering layout
   // This prevents flash from desktop to mobile layout
   if (!isReady) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={{ flex: 1, backgroundColor: COLORS.surface }}>
-          <View style={styles.floatingHeader}>
-            <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.headerBtn}>
-              <Ionicons name="arrow-back" size={22} color={COLORS.text} />
-            </TouchableOpacity>
-            <View style={{ flex: 1 }} />
-          </View>
-        </View>
-      </SafeAreaView>
-    );
+    return null; // Return nothing - content will appear when ready
   }
 
   // ============ DESKTOP VIEW ============
