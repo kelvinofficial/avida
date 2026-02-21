@@ -514,11 +514,14 @@ export function useHomeData(): UseHomeDataReturn {
 
   // Re-fetch user-specific data when auth state changes (login/logout)
   useEffect(() => {
+    console.log('[useHomeData] Auth state changed - isAuthenticated:', isAuthenticated, 'hasToken:', !!token);
     if (isAuthenticated && token) {
       // Fetch user-specific data when user logs in
+      console.log('[useHomeData] Fetching data after login...');
       fetchData(true);
     } else {
       // Clear user data when logged out
+      console.log('[useHomeData] Clearing user data (logged out)');
       setNotificationCount(0);
       setFavorites(new Set());
       setCreditBalance(null);
