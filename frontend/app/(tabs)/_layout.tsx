@@ -212,6 +212,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 2,
   },
+  badge: {
+    position: 'absolute',
+    right: -8,
+    top: -4,
+    backgroundColor: '#EF4444',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
+  },
   fabContainer: {
     alignItems: 'center',
     justifyContent: 'center',
