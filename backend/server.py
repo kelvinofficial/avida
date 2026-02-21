@@ -1447,6 +1447,47 @@ async def root():
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
+@api_router.get("/ping")
+async def ping():
+    """
+    Keep-alive endpoint to prevent server cold starts.
+    Configure uptime monitoring to hit this endpoint every 5 minutes.
+    """
+    return {"pong": True, "ts": datetime.now(timezone.utc).isoformat()}
+
+@api_router.get("/perf/stats")
+async def performance_stats():
+    """
+    Get performance statistics including cache status and index info.
+    Useful for monitoring API performance targets (<300ms).
+    """
+    try:
+        from utils.cache import cache
+        from utils.db_indexes import get_index_stats
+        
+        # Get cache stats
+        cache_status = "connected" if cache.connected else "memory_fallback"
+        
+        # Get index stats
+        index_stats = await get_index_stats(db)
+        
+        # Get collection counts
+        listings_count = await db.listings.count_documents({})
+        users_count = await db.users.count_documents({})
+        
+        return {
+            "cache_status": cache_status,
+            "index_stats": index_stats,
+            "counts": {
+                "listings": listings_count,
+                "users": users_count
+            },
+            "performance_target": "<300ms API response",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        return {"error": str(e), "timestamp": datetime.now(timezone.utc).isoformat()}
+
 # =============================================================================
 # ADMIN LOCATION ROUTES - Now handled by modular router (routes/admin_locations.py)
 # =============================================================================
