@@ -271,6 +271,13 @@ def create_feed_router(db):
             "hasMore": has_more,
         }
         
+        # Calculate response time
+        response_time = (time.time() - start_time) * 1000
+        
+        # Cache the result (for non-cursor requests)
+        if CACHE_AVAILABLE and not cursor:
+            await cache.set(cache_key, result, ttl=60)
+        
         # Generate ETag for caching
         etag_content = f"{json.dumps(query)}:{sort}:{cursor}:{limit}"
         etag = hashlib.md5(etag_content.encode()).hexdigest()
@@ -285,6 +292,8 @@ def create_feed_router(db):
         response.headers["ETag"] = etag
         response.headers["Cache-Control"] = "max-age=30, stale-while-revalidate=120"
         response.headers["X-Total-Approx"] = str(total_approx)
+        response.headers["X-Cache"] = "MISS"
+        response.headers["X-Response-Time"] = f"{response_time:.0f}ms"
         
         return result
     
