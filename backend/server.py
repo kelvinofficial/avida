@@ -3354,6 +3354,14 @@ if ADMIN_TOOLS_AVAILABLE:
     
     logger.info("Admin Tools loaded successfully (SEO, URL Masking, Polls, Cookies, reCAPTCHA, WebP, Invoice PDF)")
 
+# =============================================================================
+# PERFORMANCE MIDDLEWARE
+# =============================================================================
+
+# GZIP Compression - reduces response size by 60-80%
+from fastapi.middleware.gzip import GZipMiddleware
+app.add_middleware(GZipMiddleware, minimum_size=500)  # Compress responses > 500 bytes
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
