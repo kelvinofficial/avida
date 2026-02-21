@@ -34,33 +34,50 @@ def create_profile_router(db, require_auth, get_current_user):
         if not user_data:
             raise HTTPException(status_code=404, detail="User not found")
         
-        # Get stats
+        # Get stats from ALL listing collections
         active_listings = await db.listings.count_documents({"user_id": user.user_id, "status": "active"})
+        active_properties = await db.properties.count_documents({"user_id": user.user_id, "status": "active"})
+        active_auto = await db.auto_listings.count_documents({"user_id": user.user_id, "status": "active"})
+        
         sold_listings = await db.listings.count_documents({"user_id": user.user_id, "status": "sold"})
+        sold_properties = await db.properties.count_documents({"user_id": user.user_id, "status": "sold"})
+        sold_auto = await db.auto_listings.count_documents({"user_id": user.user_id, "status": "sold"})
+        
         total_favorites = await db.favorites.count_documents({"user_id": user.user_id})
         
-        # Get total views on all listings
-        pipeline = [
+        # Get total views on all listings from all collections
+        views_pipeline = [
             {"$match": {"user_id": user.user_id}},
-            {"$group": {"_id": None, "total_views": {"$sum": "$views"}}}
+            {"$group": {"_id": None, "total_views": {"$sum": {"$ifNull": ["$views", 0]}}}}
         ]
-        views_result = await db.listings.aggregate(pipeline).to_list(1)
-        total_views = views_result[0]["total_views"] if views_result else 0
+        listings_views = await db.listings.aggregate(views_pipeline).to_list(1)
+        properties_views = await db.properties.aggregate(views_pipeline).to_list(1)
+        auto_views = await db.auto_listings.aggregate(views_pipeline).to_list(1)
         
-        # Purchases (conversations where user is buyer and listing is sold)
+        total_views = (
+            (listings_views[0]["total_views"] if listings_views else 0) +
+            (properties_views[0]["total_views"] if properties_views else 0) +
+            (auto_views[0]["total_views"] if auto_views else 0)
+        )
+        
+        # Purchases (conversations where user is buyer)
         purchases = await db.conversations.count_documents({
             "buyer_id": user.user_id
         })
         
+        # Calculate totals
+        total_active = active_listings + active_properties + active_auto
+        total_sold = sold_listings + sold_properties + sold_auto
+        
         return {
             **user_data,
             "stats": {
-                "active_listings": active_listings,
-                "sold_listings": sold_listings,
+                "active_listings": total_active,
+                "sold_listings": total_sold,
                 "total_favorites": total_favorites,
                 "total_views": total_views,
                 "purchases": purchases,
-                "sales_count": sold_listings
+                "sales_count": total_sold
             }
         }
 
