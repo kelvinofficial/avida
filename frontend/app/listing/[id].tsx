@@ -976,19 +976,7 @@ export default function ListingDetailScreen() {
   // CACHE-FIRST: Return minimal header while data loads - no skeleton placeholders
   // This provides a cleaner transition than showing skeleton UI
   if (!listing) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={{ flex: 1, backgroundColor: COLORS.surface }}>
-          {/* Minimal header with back button only */}
-          <View style={styles.floatingHeader}>
-            <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.headerBtn}>
-              <Ionicons name="arrow-back" size={22} color={COLORS.text} />
-            </TouchableOpacity>
-            <View style={{ flex: 1 }} />
-          </View>
-        </View>
-      </SafeAreaView>
-    );
+    return null; // Return nothing - let the content appear when ready
   }
 
   const images = listing.images || [];
