@@ -1004,15 +1004,12 @@ export default function ListingDetailScreen() {
   if (!isReady) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={{ flex: 1, backgroundColor: COLORS.background }}>
+        <View style={{ flex: 1, backgroundColor: COLORS.surface }}>
           <View style={styles.floatingHeader}>
             <TouchableOpacity onPress={() => safeGoBack(router)} style={styles.headerBtn}>
               <Ionicons name="arrow-back" size={22} color={COLORS.text} />
             </TouchableOpacity>
             <View style={{ flex: 1 }} />
-          </View>
-          <View style={{ height: 280, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' }}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
           </View>
         </View>
       </SafeAreaView>
