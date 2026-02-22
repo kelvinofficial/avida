@@ -519,11 +519,11 @@ export function useHomeData(): UseHomeDataReturn {
     // This prevents fetching when one is set but not the other
     if (token && isAuthenticated) {
       // Fetch user-specific data when user logs in
-      console.log('[useHomeData] Fetching data after login...');
+      console.log('[useHomeData] Fetching data after login with token:', token?.substring(0, 10) + '...');
       // Small delay to ensure token is available in interceptor
       setTimeout(() => {
         fetchData(true);
-      }, 100);
+      }, 500);  // Increased delay for mobile
     } else if (!token && !isAuthenticated) {
       // Clear user data when logged out
       console.log('[useHomeData] Clearing user data (logged out)');
