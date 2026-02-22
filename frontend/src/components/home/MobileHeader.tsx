@@ -643,6 +643,7 @@ const newHeaderStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
+    overflow: 'visible',
   },
   notificationBadge: {
     position: 'absolute',
