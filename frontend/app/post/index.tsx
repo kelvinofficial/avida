@@ -766,35 +766,16 @@ export default function PostListingScreen() {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
+      allowsEditing: false,
       quality: 0.7,
       base64: true,
     });
 
     if (!result.canceled && result.assets[0].base64) {
-      // Show preview for user confirmation
+      // Add image directly without cropping or preview
       const imageUri = `data:image/jpeg;base64,${result.assets[0].base64}`;
-      setPreviewImage(imageUri);
-      setShowImagePreview(true);
+      setImages([...images, imageUri]);
     }
-  };
-
-  // Confirm cropped image
-  const confirmImage = () => {
-    if (previewImage) {
-      const newImages = [...images, previewImage];
-      setImages(newImages);
-      // AI analysis disabled - removed per user request
-    }
-    setPreviewImage(null);
-    setShowImagePreview(false);
-  };
-
-  // Cancel image preview
-  const cancelImagePreview = () => {
-    setPreviewImage(null);
-    setShowImagePreview(false);
   };
 
   const removeImage = (index: number) => {
