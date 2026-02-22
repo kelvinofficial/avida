@@ -1814,7 +1814,7 @@ export default function PostListingScreen() {
               <View style={priceStyles.recommendedPrice}>
                 <Text style={priceStyles.recommendedLabel}>Recommended:</Text>
                 <Text style={priceStyles.recommendedValue}>
-                  €{priceSuggestion.price_suggestion.recommended_price}
+                  {currencySymbol}{priceSuggestion.price_suggestion.recommended_price}
                 </Text>
                 <TouchableOpacity
                   style={priceStyles.useButton}
@@ -1854,7 +1854,7 @@ export default function PostListingScreen() {
                   style={priceStyles.quickButton}
                   onPress={() => applyPriceSuggestion(priceSuggestion.price_suggestion.min_price)}
                 >
-                  <Text style={priceStyles.quickButtonText}>€{priceSuggestion.price_suggestion.min_price}</Text>
+                  <Text style={priceStyles.quickButtonText}>{currencySymbol}{priceSuggestion.price_suggestion.min_price}</Text>
                   <Text style={priceStyles.quickButtonLabel}>Quick Sale</Text>
                 </TouchableOpacity>
               )}
@@ -1864,7 +1864,7 @@ export default function PostListingScreen() {
                   onPress={() => applyPriceSuggestion(priceSuggestion.price_suggestion.recommended_price)}
                 >
                   <Text style={[priceStyles.quickButtonText, priceStyles.quickButtonTextHighlight]}>
-                    €{priceSuggestion.price_suggestion.recommended_price}
+                    {currencySymbol}{priceSuggestion.price_suggestion.recommended_price}
                   </Text>
                   <Text style={[priceStyles.quickButtonLabel, priceStyles.quickButtonLabelHighlight]}>Best Value</Text>
                 </TouchableOpacity>
@@ -1874,7 +1874,7 @@ export default function PostListingScreen() {
                   style={priceStyles.quickButton}
                   onPress={() => applyPriceSuggestion(priceSuggestion.price_suggestion.max_price)}
                 >
-                  <Text style={priceStyles.quickButtonText}>€{priceSuggestion.price_suggestion.max_price}</Text>
+                  <Text style={priceStyles.quickButtonText}>{currencySymbol}{priceSuggestion.price_suggestion.max_price}</Text>
                   <Text style={priceStyles.quickButtonLabel}>Premium</Text>
                 </TouchableOpacity>
               )}
