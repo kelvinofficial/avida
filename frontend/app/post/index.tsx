@@ -1608,8 +1608,8 @@ export default function PostListingScreen() {
         </View>
       )}
 
-      {/* Show button to view AI suggestions if they were dismissed - Only if AI enabled */}
-      {featureSettings?.show_ai_suggestions && aiResult && !showAiSuggestions && !aiSuggestionsApplied && images.length > 0 && (
+      {/* Show button to view AI suggestions - DISABLED */}
+      {false && aiResult && !showAiSuggestions && !aiSuggestionsApplied && images.length > 0 && (
         <TouchableOpacity 
           style={aiStyles.viewSuggestionsButton}
           onPress={() => setShowAiSuggestions(true)}
