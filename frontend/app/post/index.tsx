@@ -2188,13 +2188,13 @@ export default function PostListingScreen() {
           {/* Price or Salary display */}
           {!hidePrice && !showSalary && (
             <Text style={styles.previewPrice}>
-              €{parseFloat(price || '0').toLocaleString()}
+              {currencySymbol}{parseFloat(price || '0').toLocaleString()}
               {negotiable && <Text style={styles.previewVB}> VB</Text>}
             </Text>
           )}
           {showSalary && (salaryMin || salaryMax) && (
             <Text style={styles.previewPrice}>
-              €{salaryMin || '0'} - €{salaryMax || '0'} / {salaryPeriod}
+              {currencySymbol}{salaryMin || '0'} - {currencySymbol}{salaryMax || '0'} / {salaryPeriod}
             </Text>
           )}
           <Text style={styles.previewTitle}>{title}</Text>
