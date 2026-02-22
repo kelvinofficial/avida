@@ -107,12 +107,12 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   
   // Direct fetch for notification count - more reliable than prop passing
-  const { isAuthenticated, token } = useAuthStore();
+  const { token } = useAuthStore();
   const [localNotificationCount, setLocalNotificationCount] = useState(0);
   
   useEffect(() => {
     const fetchNotificationCount = async () => {
-      if (!isAuthenticated || !token) {
+      if (!token) {
         setLocalNotificationCount(0);
         return;
       }
@@ -124,15 +124,17 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
         setLocalNotificationCount(count);
       } catch (error) {
         console.log('[MobileHeader] Failed to fetch notification count:', error);
+        setLocalNotificationCount(0);
       }
     };
     
+    // Immediate fetch
     fetchNotificationCount();
     
     // Poll every 30 seconds
     const interval = setInterval(fetchNotificationCount, 30000);
     return () => clearInterval(interval);
-  }, [isAuthenticated, token]);
+  }, [token]);
   
   // Use local count if available, otherwise use prop
   const notificationCount = localNotificationCount > 0 ? localNotificationCount : propNotificationCount;
