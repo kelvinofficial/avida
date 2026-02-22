@@ -1753,7 +1753,7 @@ export default function PostListingScreen() {
         <View style={styles.priceSection}>
           <Text style={styles.fieldLabel}>Price <Text style={styles.required}>*</Text></Text>
           <View style={styles.priceInputContainer}>
-            <Text style={styles.currencySymbol}>€</Text>
+            <Text style={styles.currencySymbol}>{currencySymbol}</Text>
             <TextInput
               style={styles.priceInput}
               placeholder="0"
@@ -1764,7 +1764,8 @@ export default function PostListingScreen() {
             />
           </View>
         
-        {/* Get Price Suggestion Button */}
+        {/* Get Price Suggestion Button - Only if AI enabled */}
+        {featureSettings?.show_ai_suggestions && (
         <TouchableOpacity
           style={priceStyles.getSuggestionButton}
           onPress={getPriceSuggestion}
@@ -1779,6 +1780,7 @@ export default function PostListingScreen() {
             </>
           )}
         </TouchableOpacity>
+        )}
 
         {/* Price Suggestion Error */}
         {priceSuggestionError && (
@@ -1803,7 +1805,7 @@ export default function PostListingScreen() {
             <View style={priceStyles.priceRange}>
               <Text style={priceStyles.priceRangeLabel}>Suggested Range:</Text>
               <Text style={priceStyles.priceRangeValue}>
-                €{priceSuggestion.price_suggestion.min_price} - €{priceSuggestion.price_suggestion.max_price}
+                {currencySymbol}{priceSuggestion.price_suggestion.min_price} - {currencySymbol}{priceSuggestion.price_suggestion.max_price}
               </Text>
             </View>
 
