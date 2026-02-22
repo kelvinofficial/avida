@@ -232,12 +232,26 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           accessibilityLabel="Notifications"
           data-testid="mobile-notifications-btn"
         >
-          <Ionicons name="notifications-outline" size={22} color="#2E7D32" />
-          {/* Always show badge for testing - will be replaced with real count */}
-          <View style={newHeaderStyles.notificationBadge}>
-            <Text style={newHeaderStyles.notificationBadgeText}>
-              {localNotificationCount > 0 ? (localNotificationCount > 99 ? '99+' : localNotificationCount) : '!'}
-            </Text>
+          <View style={{ position: 'relative', width: 24, height: 24 }}>
+            <Ionicons name="notifications-outline" size={22} color="#2E7D32" />
+            <View style={{
+              position: 'absolute',
+              top: -8,
+              right: -10,
+              backgroundColor: '#FF0000',
+              borderRadius: 12,
+              minWidth: 20,
+              height: 20,
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingHorizontal: 4,
+              borderWidth: 2,
+              borderColor: '#fff',
+            }}>
+              <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>
+                {localNotificationCount > 0 ? (localNotificationCount > 99 ? '99+' : localNotificationCount) : '!'}
+              </Text>
+            </View>
           </View>
         </TouchableOpacity>
       </View>
