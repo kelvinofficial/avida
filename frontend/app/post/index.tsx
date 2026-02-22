@@ -1483,15 +1483,15 @@ export default function PostListingScreen() {
         </View>
       )}
 
-      {/* AI Analyzer Status */}
-      {aiAnalyzing && (
+      {/* AI Analyzer Status - Only show if AI suggestions are enabled */}
+      {featureSettings?.show_ai_suggestions && aiAnalyzing && (
         <View style={aiStyles.analyzingContainer}>
           <ActivityIndicator size="small" color={COLORS.primary} />
           <Text style={aiStyles.analyzingText}>Analyzing photos...</Text>
         </View>
       )}
 
-      {aiError && !aiAnalyzing && (
+      {featureSettings?.show_ai_suggestions && aiError && !aiAnalyzing && (
         <View style={aiStyles.errorContainer}>
           <Ionicons name="alert-circle" size={18} color={COLORS.warning} />
           <Text style={aiStyles.errorText}>{aiError}</Text>
@@ -1501,8 +1501,8 @@ export default function PostListingScreen() {
         </View>
       )}
 
-      {/* AI Suggestions Panel */}
-      {showAiSuggestions && aiResult && (
+      {/* AI Suggestions Panel - Only show if AI suggestions are enabled */}
+      {featureSettings?.show_ai_suggestions && showAiSuggestions && aiResult && (
         <View style={aiStyles.suggestionsContainer}>
           <View style={aiStyles.suggestionsHeader}>
             <View style={aiStyles.suggestionsHeaderLeft}>
@@ -1515,7 +1515,7 @@ export default function PostListingScreen() {
           </View>
 
           <Text style={aiStyles.disclaimer}>
-            ⚠️ AI suggestions may not be 100% accurate. Please review before publishing.
+            AI suggestions may not be 100% accurate. Please review before publishing.
           </Text>
 
           {/* Detected Info */}
@@ -1588,8 +1588,8 @@ export default function PostListingScreen() {
         </View>
       )}
 
-      {/* Show button to view AI suggestions if they were dismissed */}
-      {aiResult && !showAiSuggestions && !aiSuggestionsApplied && images.length > 0 && (
+      {/* Show button to view AI suggestions if they were dismissed - Only if AI enabled */}
+      {featureSettings?.show_ai_suggestions && aiResult && !showAiSuggestions && !aiSuggestionsApplied && images.length > 0 && (
         <TouchableOpacity 
           style={aiStyles.viewSuggestionsButton}
           onPress={() => setShowAiSuggestions(true)}
