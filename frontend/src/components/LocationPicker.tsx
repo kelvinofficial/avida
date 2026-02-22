@@ -52,6 +52,7 @@ interface LocationPickerProps {
   error?: string;
   disabled?: boolean;
   showRecentLocations?: boolean;
+  embedded?: boolean; // When true, shows selection directly without trigger/modal
 }
 
 type SelectionStep = 'region' | 'city';
@@ -73,6 +74,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   error,
   disabled = false,
   showRecentLocations = true,
+  embedded = false,
 }) => {
   // Modal state
   const [modalVisible, setModalVisible] = useState(false);
