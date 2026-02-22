@@ -7,7 +7,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://badge-fix-3.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://ui-refactor-preview.preview.emergentagent.com"
       }
     },
     "preview": {
@@ -16,7 +16,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://badge-fix-3.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://ui-refactor-preview.preview.emergentagent.com"
       }
     },
     "production": {
@@ -24,7 +24,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://badge-fix-3.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://ui-refactor-preview.preview.emergentagent.com"
       }
     }
   },

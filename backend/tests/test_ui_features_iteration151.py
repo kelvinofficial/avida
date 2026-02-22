@@ -5,7 +5,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://badge-fix-3.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://ui-refactor-preview.preview.emergentagent.com')
 
 class TestFeatureSettingsAPI:
     """Test the /api/feature-settings endpoint"""
