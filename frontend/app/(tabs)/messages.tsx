@@ -587,9 +587,6 @@ export default function MessagesScreen() {
       {/* Title Row */}
       <View style={styles.titleRow}>
         <Text style={styles.title}>Messages</Text>
-        <TouchableOpacity style={styles.composeButton}>
-          <Ionicons name="create-outline" size={24} color={COLORS.primary} />
-        </TouchableOpacity>
       </View>
 
       {/* Search Bar */}
