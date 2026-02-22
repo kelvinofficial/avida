@@ -147,7 +147,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   const loadCities = async (regionCode: string) => {
     setLoading(true);
     try {
-      const response = await api.get(`/locations/cities?country_code=${TANZANIA_COUNTRY.code}&region_code=${regionCode}`);
+      const response = await api.get(`/locations/cities/by-region?country_code=${TANZANIA_COUNTRY.code}&region_code=${regionCode}`);
       setCities(response.data || []);
     } catch (err) {
       console.error('Failed to load cities:', err);
