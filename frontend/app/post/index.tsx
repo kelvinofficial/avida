@@ -659,7 +659,7 @@ export default function PostListingScreen() {
           setAttributes(listing.attributes || {});
           setPrice(listing.price?.toString() || '');
           setNegotiable(listing.negotiable !== false);
-          setCurrency(listing.currency || 'EUR');
+          setCurrency(listing.currency || 'TZS');
           setLocation(listing.location || '');
           setLocationData(listing.location_data || null);
           setSellerType(listing.seller_type || 'Individual');
