@@ -188,10 +188,14 @@ const navStyles = StyleSheet.create({
 // ============ MAIN SCREEN ============
 export default function SettingsScreen() {
   const router = useRouter();
-  const { isAuthenticated, logout } = useAuthStore();
+  const { isAuthenticated, logout, user } = useAuthStore();
   const { soundEnabled, setSoundEnabled, loadPrefs } = useNotificationPrefsStore();
   const { isDesktop, isTablet } = useResponsive();
   const isLargeScreen = isDesktop || isTablet;
+  
+  // Email verification state
+  const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
+  const [resendingVerification, setResendingVerification] = useState(false);
   
   // Cache-first: Initialize with cached data for instant render
   const cachedSettings = getCachedSync<UserSettings>(CACHE_KEYS.USER_SETTINGS);
