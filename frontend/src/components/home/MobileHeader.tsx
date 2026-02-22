@@ -636,6 +636,7 @@ const newHeaderStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    overflow: 'visible',
   },
   iconButton: {
     width: 40,
