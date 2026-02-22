@@ -325,13 +325,16 @@ export default function HomeScreen() {
   }, [columns, dynamicCardWidth, gridGap, router, toggleFavorite, favorites, selectedCity]);
 
   // ============ FLATLIST HEADER COMPONENT ============
-  const ListHeaderComponent = useMemo(() => (
-    <View style={(isDesktop || isTablet) ? { backgroundColor: '#F5F5F5' } : undefined}>
-      {isDesktop || isTablet ? (
-        <HomeDesktopHeader {...homeDesktopHeaderProps} />
-      ) : <MobileHeader {...mobileHeaderProps} />}
-    </View>
-  ), [isDesktop, isTablet, homeDesktopHeaderProps, mobileHeaderProps]);
+  const ListHeaderComponent = useMemo(() => {
+    console.log('[index.tsx] Rendering header - isDesktop:', isDesktop, 'isTablet:', isTablet);
+    return (
+      <View style={(isDesktop || isTablet) ? { backgroundColor: '#F5F5F5' } : undefined}>
+        {isDesktop || isTablet ? (
+          <HomeDesktopHeader {...homeDesktopHeaderProps} />
+        ) : <MobileHeader {...mobileHeaderProps} />}
+      </View>
+    );
+  }, [isDesktop, isTablet, homeDesktopHeaderProps, mobileHeaderProps]);
 
   // ============ FLATLIST FOOTER COMPONENT ============
   const ListFooterComponent = useMemo(() => (
