@@ -87,15 +87,17 @@ export const LocationModal: React.FC<LocationModalProps> = ({
         </TouchableOpacity>
         
         <View style={styles.locationPickerContent}>
-          <LocationPicker
-            value={selectedLocationFilter}
-            onChange={(location) => {
-              onLocationSelect(location);
-              onClose();
-            }}
-            placeholder="Browse locations..."
-            embedded={true}
-          />
+          {visible && (
+            <LocationPicker
+              value={selectedLocationFilter}
+              onChange={(location) => {
+                onLocationSelect(location);
+                onClose();
+              }}
+              placeholder="Browse locations..."
+              embedded={true}
+            />
+          )}
         </View>
       </View>
     </Modal>
