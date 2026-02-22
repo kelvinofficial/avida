@@ -113,6 +113,8 @@ Build a full-stack React Native/Expo marketplace application with a FastAPI back
 11. ✅ Performance Optimization (API <200ms, 97.9% payload reduction)
 12. ✅ Push Token Registration Fix (frontend/backend sync)
 13. ✅ **Badge Count Fix (Feb 2026)** - Notification/message count badges now appear after login
+14. ✅ **White Screen Crash Fix (Feb 2026)** - Fixed Metro cache corruption causing app to crash on startup
+15. ✅ **Unified Login Screens (Feb 2026)** - Messages, Saved, Profile tabs now use consistent AuthPrompt component
 
 #### Badge Count Fix (Feb 2026) ✅ FIXED
 **Problem**: Unread notification and message counts not showing on bell icon and Messages tab after user login
