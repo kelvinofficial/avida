@@ -90,11 +90,17 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   // Selection state
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
 
-  // Load regions on mount
+  // Load regions on mount or when modal opens
   useEffect(() => {
-    loadRegions();
+    // For embedded mode, always load on mount
+    // For modal mode, load when modal becomes visible
+    if (embedded || modalVisible) {
+      if (regions.length === 0) {
+        loadRegions();
+      }
+    }
     loadRecentLocations();
-  }, []);
+  }, [embedded, modalVisible]);
 
   const loadRecentLocations = async () => {
     try {
