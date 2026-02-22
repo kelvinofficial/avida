@@ -607,6 +607,8 @@ const newHeaderStyles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: 8,
     paddingBottom: 8,
+    overflow: 'visible',
+    zIndex: 100,
   },
   logo: {
     fontSize: 24,
