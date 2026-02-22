@@ -1029,6 +1029,40 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.primary,
   },
+  // Remember Me & Forgot Password styles (Mobile)
+  loginOptionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  rememberMeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: COLORS.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  rememberMeText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  forgotPasswordText: {
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
   terms: {
     fontSize: 12,
     color: COLORS.textLight,
