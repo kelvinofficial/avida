@@ -79,7 +79,7 @@ export default function ResetPasswordScreen() {
   
   const verifyToken = async () => {
     try {
-      const response = await fetch(`${API_URL}/auth/verify-reset-token/${token}`);
+      const response = await fetch(`${API_URL}/api/auth/verify-reset-token/${token}`);
       const data = await response.json();
       
       if (response.ok && data.valid) {
