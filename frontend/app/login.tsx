@@ -173,8 +173,18 @@ export default function LoginScreen() {
         await setToken(result.session_token);
         setUser(result.user);
         await saveUserData(result.user);
-        Alert.alert('Success', 'Account created successfully!');
-        router.replace(redirectAfterLogin as any);
+        
+        // Check if email verification is required
+        if (result.email_verification_required) {
+          Alert.alert(
+            'Verify Your Email',
+            'Account created! Please check your email to verify your account and unlock all features.',
+            [{ text: 'OK', onPress: () => router.replace(redirectAfterLogin as any) }]
+          );
+        } else {
+          Alert.alert('Success', 'Account created successfully!');
+          router.replace(redirectAfterLogin as any);
+        }
       }
     } catch (err: any) {
       console.error('Registration error:', err);
