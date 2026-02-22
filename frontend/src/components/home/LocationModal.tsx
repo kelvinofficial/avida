@@ -68,11 +68,25 @@ export const LocationModal: React.FC<LocationModalProps> = ({
           </View>
         )}
         
-        <View style={styles.locationPickerContent}>
-          <Text style={styles.locationPickerHint}>
-            Filter listings by region in Tanzania.
+        {/* All Locations option */}
+        <TouchableOpacity 
+          style={[styles.allLocationsBtn, !selectedLocationFilter && styles.allLocationsBtnActive]}
+          onPress={() => {
+            onClearLocationFilter();
+            onClose();
+          }}
+          data-testid="all-locations-btn"
+        >
+          <Ionicons name="globe-outline" size={20} color={!selectedLocationFilter ? "#2E7D32" : "#666"} />
+          <Text style={[styles.allLocationsBtnText, !selectedLocationFilter && styles.allLocationsBtnTextActive]}>
+            All Locations
           </Text>
-          
+          {!selectedLocationFilter && (
+            <Ionicons name="checkmark" size={20} color="#2E7D32" />
+          )}
+        </TouchableOpacity>
+        
+        <View style={styles.locationPickerContent}>
           <LocationPicker
             value={selectedLocationFilter}
             onChange={(location) => {
@@ -80,25 +94,8 @@ export const LocationModal: React.FC<LocationModalProps> = ({
               onClose();
             }}
             placeholder="Browse locations..."
+            embedded={true}
           />
-          
-          {/* All Locations option */}
-          <TouchableOpacity 
-            style={[styles.allLocationsBtn, !selectedLocationFilter && styles.allLocationsBtnActive]}
-            onPress={() => {
-              onClearLocationFilter();
-              onClose();
-            }}
-            data-testid="all-locations-btn"
-          >
-            <Ionicons name="globe-outline" size={20} color={!selectedLocationFilter ? "#2E7D32" : "#666"} />
-            <Text style={[styles.allLocationsBtnText, !selectedLocationFilter && styles.allLocationsBtnTextActive]}>
-              All Locations
-            </Text>
-            {!selectedLocationFilter && (
-              <Ionicons name="checkmark" size={20} color="#2E7D32" />
-            )}
-          </TouchableOpacity>
         </View>
       </View>
     </Modal>
