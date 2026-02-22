@@ -11,7 +11,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://layout-render-fix.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://badge-fix-3.preview.emergentagent.com')
 BASE_URL = BASE_URL.rstrip('/')
 
 

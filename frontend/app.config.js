@@ -8,7 +8,7 @@
  */
 
 // Hardcoded production API URL - this MUST be set for APK builds
-const PRODUCTION_API_URL = 'https://layout-render-fix.preview.emergentagent.com';
+const PRODUCTION_API_URL = 'https://badge-fix-3.preview.emergentagent.com';
 
 module.exports = ({ config }) => {
   return {

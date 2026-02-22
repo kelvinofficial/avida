@@ -8,7 +8,7 @@ import requests
 import os
 
 # Get base URL from environment
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://layout-render-fix.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://badge-fix-3.preview.emergentagent.com')
 ADMIN_BASE_URL = f"{BASE_URL}/api/admin"
 MAIN_API_URL = f"{BASE_URL}/api"
 
