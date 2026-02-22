@@ -2069,6 +2069,13 @@ export default function ChatScreen() {
               onSend={sendVoiceMessage}
             />
 
+            {/* Emoji Picker - Desktop */}
+            <EmojiPicker
+              visible={showEmojiPicker}
+              onSelect={handleEmojiSelect}
+              onClose={() => setShowEmojiPicker(false)}
+            />
+
             {/* Desktop Input Bar */}
             {!isRecording && (
               <View style={desktopStyles.inputContainer}>
