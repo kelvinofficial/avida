@@ -139,11 +139,20 @@ export default function RootLayout() {
     return () => subscription.remove();
   }, [mounted, processingAuth]);
 
+  // Handle splash screen completion
+  const handleSplashComplete = () => {
+    setAppReady(true);
+    // Add a small delay before hiding splash for smooth transition
+    setTimeout(() => {
+      setShowSplash(false);
+    }, 500);
+  };
+
   // CACHE-FIRST ARCHITECTURE: No skeleton loading screen
   // We render the app immediately - pages will show cached data
   // Instead of skeleton, show nothing briefly (imperceptible flash)
   if (!mounted) {
-    return <View style={{ flex: 1, backgroundColor: '#F5F5F5' }} />;
+    return <View style={{ flex: 1, backgroundColor: '#1B5E20' }} />;
   }
 
   return (
@@ -154,9 +163,13 @@ export default function RootLayout() {
             <MilestoneProvider>
               <FavoriteNotificationProvider>
                 <ErrorBoundary componentName="RootLayout">
+                  {/* Animated Splash Screen */}
+                  {showSplash && (
+                    <AnimatedSplashScreen onAnimationComplete={handleSplashComplete} />
+                  )}
                   <OfflineBanner isOffline={isOffline} />
                   <SandboxBanner />
-                  <StatusBar style="dark" />
+                  <StatusBar style={showSplash ? "light" : "dark"} />
                   <Stack
                   screenOptions={{
                     headerShown: false,
