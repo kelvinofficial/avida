@@ -889,6 +889,47 @@ const styles = StyleSheet.create({
     marginHorizontal: HORIZONTAL_PADDING,
     overflow: 'hidden',
   },
+  // Email verification styles
+  verificationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  verificationInfo: {
+    flex: 1,
+  },
+  verificationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  verificationLabel: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: COLORS.text,
+  },
+  verificationStatus: {
+    fontSize: 13,
+    marginTop: 4,
+    marginLeft: 28,
+  },
+  resendBtn: {
+    backgroundColor: COLORS.primaryLight,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  resendBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
   centerContent: {
     flex: 1,
     justifyContent: 'center',
