@@ -412,7 +412,10 @@ export default function HomeScreen() {
       <WebsiteSearchSchema />
       
       <SafeAreaView style={styles.container} edges={isMobile ? ['top'] : []}>
-        {mainContent}
+        {/* Show minimal background immediately to prevent white flash */}
+        <View style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
+          {mainContent}
+        </View>
 
         {/* Location Picker Modal */}
         <LocationModal
