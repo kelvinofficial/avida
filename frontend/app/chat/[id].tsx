@@ -2249,6 +2249,13 @@ export default function ChatScreen() {
           onSend={sendVoiceMessage}
         />
 
+        {/* Emoji Picker - Mobile */}
+        <EmojiPicker
+          visible={showEmojiPicker}
+          onSelect={handleEmojiSelect}
+          onClose={() => setShowEmojiPicker(false)}
+        />
+
         {/* Input Bar */}
         {!isRecording && (
           <View style={[styles.inputContainer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
