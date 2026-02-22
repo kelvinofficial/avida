@@ -2438,6 +2438,81 @@ export default function ChatScreen() {
         messageContent={reportingMessage?.content}
         loading={reportLoading}
       />
+
+      {/* Chat Menu Modal */}
+      <Modal
+        visible={showChatMenu}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowChatMenu(false)}
+      >
+        <Pressable 
+          style={chatMenuStyles.overlay} 
+          onPress={() => setShowChatMenu(false)}
+        >
+          <View style={chatMenuStyles.menuContainer}>
+            <View style={chatMenuStyles.menuHeader}>
+              <Text style={chatMenuStyles.menuTitle}>Chat Options</Text>
+              <TouchableOpacity onPress={() => setShowChatMenu(false)}>
+                <Ionicons name="close" size={22} color={COLORS.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={chatMenuStyles.menuItem} onPress={handleMuteConversation}>
+              <View style={[chatMenuStyles.iconContainer, { backgroundColor: '#FFF3E0' }]}>
+                <Ionicons name={isMuted ? "notifications" : "notifications-off"} size={20} color="#FF9800" />
+              </View>
+              <Text style={chatMenuStyles.menuItemText}>{isMuted ? 'Unmute Conversation' : 'Mute Conversation'}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={chatMenuStyles.menuItem} onPress={handlePinConversation}>
+              <View style={[chatMenuStyles.iconContainer, { backgroundColor: '#E3F2FD' }]}>
+                <Ionicons name={isPinned ? "pin-outline" : "pin"} size={20} color="#2196F3" />
+              </View>
+              <Text style={chatMenuStyles.menuItemText}>{isPinned ? 'Unpin Conversation' : 'Pin Conversation'}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={chatMenuStyles.menuItem} onPress={handleViewSellerProfile}>
+              <View style={[chatMenuStyles.iconContainer, { backgroundColor: '#E8F5E9' }]}>
+                <Ionicons name="person" size={20} color="#4CAF50" />
+              </View>
+              <Text style={chatMenuStyles.menuItemText}>View Seller Profile</Text>
+            </TouchableOpacity>
+
+            {conversation?.listing && (
+              <TouchableOpacity style={chatMenuStyles.menuItem} onPress={handleShareListing}>
+                <View style={[chatMenuStyles.iconContainer, { backgroundColor: '#F3E5F5' }]}>
+                  <Ionicons name="share-social" size={20} color="#9C27B0" />
+                </View>
+                <Text style={chatMenuStyles.menuItemText}>Share Listing</Text>
+              </TouchableOpacity>
+            )}
+
+            <View style={chatMenuStyles.divider} />
+
+            <TouchableOpacity style={chatMenuStyles.menuItem} onPress={handleReportUser}>
+              <View style={[chatMenuStyles.iconContainer, { backgroundColor: '#FFF8E1' }]}>
+                <Ionicons name="flag" size={20} color="#FFC107" />
+              </View>
+              <Text style={chatMenuStyles.menuItemText}>Report User</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={chatMenuStyles.menuItem} onPress={handleBlockUser}>
+              <View style={[chatMenuStyles.iconContainer, { backgroundColor: '#FFEBEE' }]}>
+                <Ionicons name="ban" size={20} color="#F44336" />
+              </View>
+              <Text style={[chatMenuStyles.menuItemText, { color: '#F44336' }]}>Block User</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={chatMenuStyles.menuItem} onPress={handleDeleteChat}>
+              <View style={[chatMenuStyles.iconContainer, { backgroundColor: '#FFEBEE' }]}>
+                <Ionicons name="trash" size={20} color="#F44336" />
+              </View>
+              <Text style={[chatMenuStyles.menuItemText, { color: '#F44336' }]}>Delete Chat</Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
