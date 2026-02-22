@@ -351,10 +351,14 @@ export default function HomeScreen() {
 
   // ============ EMPTY STATE COMPONENT ============
   const ListEmptyComponent = useMemo(() => {
-    // Remove blocking spinner - only show empty state when truly empty
-    // During initial load, show nothing to avoid flash
-    if (isInitialLoad && listings.length === 0) {
-      return null; // No spinner - let cache data populate
+    // Show a loading indicator during initial load
+    if (isInitialLoad) {
+      return (
+        <View style={{ paddingVertical: 60, alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#2E7D32" />
+          <Text style={{ marginTop: 12, color: '#666', fontSize: 14 }}>Loading listings...</Text>
+        </View>
+      );
     }
     return (
       <EmptyState 
@@ -363,7 +367,7 @@ export default function HomeScreen() {
         description={expandedSearch ? "Try adjusting your location or search settings." : "Be the first to post an ad in your area!"} 
       />
     );
-  }, [isInitialLoad, expandedSearch, listings.length]);
+  }, [isInitialLoad, expandedSearch]);
 
   // FlatList key extractor
   const keyExtractor = useCallback((item: any) => item.id, []);
