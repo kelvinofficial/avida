@@ -21,7 +21,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Storage } from '../utils/storage';
 import { theme } from '../utils/theme';
-import { locationsApi } from '../utils/api';
+import api, { locationsApi } from '../utils/api';
 
 // Types for location data
 interface Country {
