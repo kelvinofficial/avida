@@ -715,6 +715,24 @@ export default function LoginScreen() {
             </View>
           </View>
 
+          {/* Remember Me & Forgot Password (Login only) */}
+          {isLoginMode && (
+            <View style={styles.loginOptionsRow}>
+              <TouchableOpacity 
+                style={styles.rememberMeContainer}
+                onPress={() => setRememberMe(!rememberMe)}
+              >
+                <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                  {rememberMe && <Ionicons name="checkmark" size={12} color="#fff" />}
+                </View>
+                <Text style={styles.rememberMeText}>Remember me</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/forgot-password')}>
+                <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           {/* Login/Register Button */}
           <TouchableOpacity
             style={styles.primaryButton}
