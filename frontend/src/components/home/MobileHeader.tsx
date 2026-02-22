@@ -233,13 +233,12 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           data-testid="mobile-notifications-btn"
         >
           <Ionicons name="notifications-outline" size={22} color="#2E7D32" />
-          {notificationCount > 0 && (
-            <View style={newHeaderStyles.notificationBadge}>
-              <Text style={newHeaderStyles.notificationBadgeText}>
-                {notificationCount > 99 ? '99+' : notificationCount}
-              </Text>
-            </View>
-          )}
+          {/* Always show badge for testing - will be replaced with real count */}
+          <View style={newHeaderStyles.notificationBadge}>
+            <Text style={newHeaderStyles.notificationBadgeText}>
+              {localNotificationCount > 0 ? (localNotificationCount > 99 ? '99+' : localNotificationCount) : '!'}
+            </Text>
+          </View>
         </TouchableOpacity>
       </View>
 
