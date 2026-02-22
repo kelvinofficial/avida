@@ -40,6 +40,10 @@ class ResetPasswordRequest(BaseModel):
     new_password: str
 
 
+class ResendVerificationRequest(BaseModel):
+    email: str
+
+
 class UserResponse(BaseModel):
     user_id: str
     email: str
