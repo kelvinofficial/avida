@@ -109,7 +109,16 @@ const getNotificationConfig = (type: NotificationType) => {
 
 const formatTimeAgo = (dateStr: string) => {
   try {
-    const date = new Date(dateStr);
+    // Parse the date - ensure UTC timezone is handled correctly
+    let date: Date;
+    if (dateStr.endsWith('Z') || dateStr.includes('+') || dateStr.includes('-', 10)) {
+      // Already has timezone info
+      date = new Date(dateStr);
+    } else {
+      // No timezone info - assume UTC
+      date = new Date(dateStr + 'Z');
+    }
+    
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
