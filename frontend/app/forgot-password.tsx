@@ -260,7 +260,7 @@ export default function ForgotPasswordScreen() {
         style={styles.headerGradient}
       >
         <TouchableOpacity style={styles.closeButton} onPress={handleBackToLogin}>
-          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          <Ionicons name="close" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         
         <View style={[styles.decorCircle, styles.circle1]} />
