@@ -525,4 +525,119 @@ def create_auth_router(db, get_current_user, get_session_token, check_rate_limit
         
         return {"valid": True, "email": reset_record["email"]}
     
+    @router.get("/verify-email/{token}")
+    async def verify_email(token: str):
+        """Verify user email address"""
+        # Find verification record
+        verification = await db.email_verifications.find_one({"token": token})
+        
+        if not verification:
+            raise HTTPException(status_code=400, detail="Invalid verification link")
+        
+        # Check expiry
+        if verification["expires_at"] < datetime.now(timezone.utc):
+            await db.email_verifications.delete_one({"token": token})
+            raise HTTPException(status_code=400, detail="Verification link has expired. Please request a new one.")
+        
+        # Update user as verified
+        result = await db.users.update_one(
+            {"email": verification["email"]},
+            {"$set": {"email_verified": True, "verified_at": datetime.now(timezone.utc)}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=400, detail="Failed to verify email")
+        
+        # Delete verification token
+        await db.email_verifications.delete_one({"token": token})
+        
+        logger.info(f"Email verified for {verification['email']}")
+        return {"message": "Email verified successfully! You can now use all features of Avida.", "email": verification["email"]}
+    
+    @router.post("/resend-verification")
+    async def resend_verification(data: ResendVerificationRequest, request: Request):
+        """Resend verification email"""
+        # Rate limiting
+        client_ip = request.client.host if request.client else "unknown"
+        if not check_rate_limit(client_ip, "resend_verification"):
+            raise HTTPException(status_code=429, detail="Too many requests. Please wait a few minutes.")
+        
+        # Find user
+        user = await db.users.find_one({"email": data.email.lower()})
+        
+        if not user:
+            # Return success to prevent email enumeration
+            return {"message": "If your email is registered, you will receive a verification link."}
+        
+        # Check if already verified
+        if user.get("email_verified"):
+            return {"message": "Your email is already verified. You can login now."}
+        
+        # Check if user uses Google auth
+        if user.get("auth_provider") == "google":
+            return {"message": "Google accounts are automatically verified."}
+        
+        # Generate new verification token
+        verification_token = secrets.token_urlsafe(32)
+        verification_expires = datetime.now(timezone.utc) + timedelta(hours=24)
+        
+        await db.email_verifications.delete_many({"email": data.email.lower()})
+        await db.email_verifications.insert_one({
+            "email": data.email.lower(),
+            "user_id": user["user_id"],
+            "token": verification_token,
+            "expires_at": verification_expires,
+            "created_at": datetime.now(timezone.utc)
+        })
+        
+        # Send verification email
+        try:
+            from utils.email_service import email_service
+            
+            verify_link = f"https://ui-refactor-preview.preview.emergentagent.com/verify-email?token={verification_token}"
+            
+            await email_service.send_email(
+                to_email=data.email.lower(),
+                subject="Verify Your Avida Account",
+                html_content=f"""
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: linear-gradient(135deg, #2E7D32, #66BB6A); padding: 30px; text-align: center;">
+                        <h1 style="color: white; margin: 0;">Avida</h1>
+                        <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0;">Your local marketplace</p>
+                    </div>
+                    <div style="padding: 30px; background: #f8f8f8;">
+                        <h2 style="color: #333;">Verify Your Email</h2>
+                        <p style="color: #666;">Click the button below to verify your email address:</p>
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="{verify_link}" style="background: #2E7D32; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600;">Verify My Email</a>
+                        </div>
+                        <p style="color: #999; font-size: 14px;">This link will expire in 24 hours.</p>
+                    </div>
+                    <div style="padding: 20px; text-align: center; background: #333;">
+                        <p style="color: #999; font-size: 12px; margin: 0;">© 2026 Avida Marketplace. All rights reserved.</p>
+                    </div>
+                </div>
+                """,
+                text_content=f"Verify your Avida account by visiting: {verify_link}\n\nThis link expires in 24 hours."
+            )
+            logger.info(f"Verification email resent to {data.email}")
+        except Exception as e:
+            logger.error(f"Failed to resend verification email: {e}")
+        
+        return {"message": "If your email is registered, you will receive a verification link."}
+    
+    @router.get("/check-verification/{email}")
+    async def check_verification_status(email: str):
+        """Check if email is verified"""
+        user = await db.users.find_one({"email": email.lower()})
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return {
+            "email": email.lower(),
+            "email_verified": user.get("email_verified", False),
+            "auth_provider": user.get("auth_provider", "email")
+        }
+    
     return router
