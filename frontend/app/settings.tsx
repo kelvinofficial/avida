@@ -264,6 +264,35 @@ export default function SettingsScreen() {
     }
   }, [isAuthenticated, fetchSettings]);
 
+  // Check email verification status
+  useEffect(() => {
+    const checkEmailVerification = async () => {
+      if (isAuthenticated && user?.email) {
+        try {
+          const response = await api.get(`/auth/check-verification/${encodeURIComponent(user.email)}`);
+          setEmailVerified(response.data.email_verified);
+        } catch (error) {
+          console.error('Error checking email verification:', error);
+        }
+      }
+    };
+    checkEmailVerification();
+  }, [isAuthenticated, user?.email]);
+
+  const handleResendVerification = async () => {
+    if (!user?.email) return;
+    
+    setResendingVerification(true);
+    try {
+      await api.post('/auth/resend-verification', { email: user.email });
+      Alert.alert('Success', 'Verification email sent! Please check your inbox.');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to send verification email. Please try again.');
+    } finally {
+      setResendingVerification(false);
+    }
+  };
+
   const updateSettings = async (path: string, value: any) => {
     if (!settings) return;
 
