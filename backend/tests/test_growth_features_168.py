@@ -8,7 +8,7 @@ import requests
 import os
 from datetime import datetime, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://ui-refactor-preview.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://property-upload-hub.preview.emergentagent.com')
 API_BASE = f"{BASE_URL}/api"
 
 class TestGrowthEngineFeatures:

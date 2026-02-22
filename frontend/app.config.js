@@ -8,7 +8,7 @@
  */
 
 // Hardcoded production API URL - this MUST be set for APK builds
-const PRODUCTION_API_URL = 'https://ui-refactor-preview.preview.emergentagent.com';
+const PRODUCTION_API_URL = 'https://property-upload-hub.preview.emergentagent.com';
 
 module.exports = ({ config }) => {
   return {
