@@ -2070,8 +2070,8 @@ export default function ChatScreen() {
         {/* Typing Indicator */}
         {isTyping && <TypingIndicator userName={typingUser || conversation?.other_user?.name} />}
 
-        {/* Quick Replies */}
-        {messages.length === 0 && !isRecording && (
+        {/* Quick Replies - Only show for new conversations after loading completes */}
+        {!loading && messages.length === 0 && !isRecording && (
           <QuickReplies onSelect={(text) => setNewMessage(text)} />
         )}
 
