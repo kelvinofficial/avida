@@ -586,6 +586,16 @@ def create_location_router(db: AsyncIOMotorDatabase):
         """Get cities for a district"""
         return await service.get_cities(country_code, region_code, district_code, search)
     
+    @router.get("/cities/by-region")
+    async def get_cities_by_region(
+        country_code: str = Query(...),
+        region_code: str = Query(...),
+        search: str = Query(None),
+        limit: int = Query(100, ge=1, le=500)
+    ):
+        """Get all cities in a region (without requiring district)"""
+        return await service.get_cities_by_region(country_code, region_code, search, limit)
+    
     @router.get("/cities/search")
     async def search_cities(
         country_code: str = Query(...),
