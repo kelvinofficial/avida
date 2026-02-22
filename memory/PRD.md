@@ -116,6 +116,7 @@ Build a full-stack React Native/Expo marketplace application with a FastAPI back
 14. ✅ **White Screen Crash Fix (Feb 2026)** - Fixed Metro cache corruption causing app to crash on startup
 15. ✅ **Unified Login Screens (Feb 2026)** - Messages, Saved, Profile tabs now use consistent AuthPrompt component
 16. ✅ **Remember Me & Forgot Password (Feb 2026)** - Added Remember Me checkbox and complete password reset flow with email-based reset links
+17. ✅ **Email Verification for Registration (Feb 2026)** - New accounts receive verification email, settings shows verification status with resend option
 
 #### Badge Count Fix (Feb 2026) ✅ FIXED
 **Problem**: Unread notification and message counts not showing on bell icon and Messages tab after user login
