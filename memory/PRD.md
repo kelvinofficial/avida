@@ -117,6 +117,44 @@ Build a full-stack React Native/Expo marketplace application with a FastAPI back
 15. ✅ **Unified Login Screens (Feb 2026)** - Messages, Saved, Profile tabs now use consistent AuthPrompt component
 16. ✅ **Remember Me & Forgot Password (Feb 2026)** - Added Remember Me checkbox and complete password reset flow with email-based reset links
 17. ✅ **Email Verification for Registration (Feb 2026)** - New accounts receive verification email, settings shows verification status with resend option
+18. ✅ **Create Post Page Enhancements (Dec 2025)** - Image preview with Done button, city-level location, dynamic currency, AI suggestions hidden
+
+#### Create Post Page Enhancements (Dec 2025) ✅ COMPLETED
+**User Request**: Four enhancements to the "Create Post" page
+**Implementation**:
+1. **Image Cropper "Done" Button**:
+   - After cropping an image using the system picker, a preview modal now appears
+   - Users can click "Done" to confirm or "Try Again" to recrop
+   - Replaces the auto-add behavior with an explicit confirmation step
+   - Files modified: `frontend/app/post/index.tsx`
+
+2. **City-Level Location Selection**:
+   - Completely refactored `LocationPicker` component to support Region → City flow
+   - New backend endpoint: `GET /api/locations/cities/by-region` - returns all cities in a region
+   - Search functionality within both regions and cities lists
+   - Removed district selection step per user request
+   - Files modified: `frontend/src/components/LocationPicker.tsx`, `backend/location_system.py`
+
+3. **Admin-Managed Currency Symbol**:
+   - Currency symbol already loads from `/api/feature-settings`
+   - All price displays use dynamic `currencySymbol` state variable
+   - Default is "TSh" (Tanzanian Shilling)
+   - No hardcoded currency symbols in the price input
+
+4. **Remove AI Suggestions**:
+   - All AI-related UI conditionally rendered based on `featureSettings?.show_ai_suggestions`
+   - Default setting is `false` in feature_settings.py
+   - Price suggestion button, AI analyzer, suggestions panel all hidden when disabled
+
+**API Changes**:
+- `GET /api/locations/cities/by-region?country_code=TZ&region_code=XXX` - New endpoint
+
+**Files Modified**:
+- `frontend/app/post/index.tsx` - Image preview modal, state management
+- `frontend/src/components/LocationPicker.tsx` - Complete refactor for city-level selection
+- `backend/location_system.py` - New endpoint for cities by region
+
+**Testing Status**: Backend endpoints verified working. Frontend needs visual testing (ngrok tunnel unstable).
 
 #### Badge Count Fix (Feb 2026) ✅ FIXED
 **Problem**: Unread notification and message counts not showing on bell icon and Messages tab after user login
