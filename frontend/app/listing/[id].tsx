@@ -984,6 +984,12 @@ export default function ListingDetailScreen() {
   }
 
   const images = listing.images || [];
+  const highlights = generateHighlights(listing, category);
+
+  const getImageUri = (img: string) => {
+    if (img.startsWith('data:') || img.startsWith('http')) return img;
+    return `data:image/jpeg;base64,${img}`;
+  };
 
   // ============ DESKTOP VIEW ============
   if (isDesktop || isTablet) {
