@@ -365,6 +365,8 @@ export const notificationsApi = {
   },
   getUnreadCount: async () => {
     const response = await api.get('/notifications/unread-count');
+    console.log('[notificationsApi.getUnreadCount] Full response:', JSON.stringify(response));
+    console.log('[notificationsApi.getUnreadCount] response.data:', JSON.stringify(response.data));
     return response.data;
   },
   markAsRead: async (notificationId: string) => {
