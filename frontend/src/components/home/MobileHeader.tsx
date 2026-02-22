@@ -107,23 +107,23 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   
   // Direct fetch for notification count - more reliable than prop passing
-  const { token } = useAuthStore();
   const [localNotificationCount, setLocalNotificationCount] = useState(0);
   
   useEffect(() => {
-    console.log('[MobileHeader] useEffect triggered, token:', token ? 'exists' : 'null');
-    
     const fetchNotificationCount = async () => {
-      console.log('[MobileHeader] fetchNotificationCount called, token:', token ? token.substring(0, 10) + '...' : 'null');
+      // Get current token directly from store
+      const currentToken = useAuthStore.getState().token;
       
-      if (!token) {
-        console.log('[MobileHeader] No token, setting count to 0');
+      console.log('[MobileHeader] fetchNotificationCount - token:', currentToken ? currentToken.substring(0, 10) + '...' : 'null');
+      
+      if (!currentToken) {
+        console.log('[MobileHeader] No token, skipping fetch');
         setLocalNotificationCount(0);
         return;
       }
       
       try {
-        console.log('[MobileHeader] Calling notificationsApi.getUnreadCount()...');
+        console.log('[MobileHeader] Making API call to /notifications/unread-count...');
         const response = await notificationsApi.getUnreadCount();
         console.log('[MobileHeader] API response:', JSON.stringify(response));
         const count = response?.unread_count || 0;
@@ -141,7 +141,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
     // Poll every 30 seconds
     const interval = setInterval(fetchNotificationCount, 30000);
     return () => clearInterval(interval);
-  }, [token]);
+  }, []); // Empty deps - run once on mount, then poll
   
   // Use local count if available, otherwise use prop
   const notificationCount = localNotificationCount > 0 ? localNotificationCount : propNotificationCount;
