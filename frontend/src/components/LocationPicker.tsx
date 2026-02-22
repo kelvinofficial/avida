@@ -334,8 +334,15 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   };
 
   const goBack = () => {
-    // In Tanzania-only mode, going back should close the modal
-    // since we don't show country selection
+    // In city step, go back to region selection
+    if (currentStep === 'city') {
+      setCurrentStep('region');
+      setSelectedRegion(null);
+      setSearchQuery('');
+      setCities([]);
+      return;
+    }
+    // In region step (Tanzania-only mode), going back should close the modal
     closeModal();
   };
 
@@ -345,6 +352,10 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         return 'Select Region in Tanzania';
       case 'region':
         return 'Select Region in Tanzania';
+      case 'city':
+        return `Select City in ${selectedRegion?.name || 'Region'}`;
+      default:
+        return 'Select Location';
     }
   };
 
