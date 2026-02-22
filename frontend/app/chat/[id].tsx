@@ -1626,6 +1626,11 @@ export default function ChatScreen() {
     }
   };
 
+  // Handle emoji selection
+  const handleEmojiSelect = (emoji: string) => {
+    setNewMessage(prev => prev + emoji);
+  };
+
   // Report message functions
   const handleLongPressMessage = (message: Message) => {
     // Only allow reporting messages from other users
