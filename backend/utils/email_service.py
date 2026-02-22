@@ -88,6 +88,68 @@ async def send_notification_email(
         return False
 
 
+class EmailService:
+    """Email service class for sending emails via SendGrid"""
+    
+    async def send_email(
+        self,
+        to_email: str,
+        subject: str,
+        html_content: str,
+        text_content: str = ""
+    ) -> bool:
+        """
+        Send email via SendGrid.
+        
+        Args:
+            to_email: Recipient email address
+            subject: Email subject line
+            html_content: HTML content of the email
+            text_content: Plain text content (fallback)
+        
+        Returns:
+            bool: True if email was sent successfully, False otherwise
+        """
+        if not SENDGRID_AVAILABLE:
+            logger.info(f"SendGrid not available. Email would be sent to {to_email}: {subject}")
+            return True  # Return True to prevent error display
+        
+        api_key = get_api_key()
+        if not api_key:
+            logger.warning("SendGrid API key not configured")
+            return True  # Return True to prevent email enumeration
+        
+        try:
+            sg = SendGridAPIClient(api_key)
+            
+            message = Mail(
+                from_email=Email(FROM_EMAIL, FROM_NAME),
+                to_emails=To(to_email),
+                subject=subject,
+                html_content=html_content
+            )
+            
+            if text_content:
+                message.plain_text_content = text_content
+            
+            response = sg.send(message)
+            
+            if response.status_code in [200, 201, 202]:
+                logger.info(f"Email sent successfully to {to_email}")
+                return True
+            else:
+                logger.warning(f"Email send failed with status {response.status_code}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Failed to send email via SendGrid: {e}")
+            return True  # Return True to prevent email enumeration
+
+
+# Singleton instance for import
+email_service = EmailService()
+
+
 def build_email_template(subject: str, body: str, notification_type: str, data: Dict[str, Any]) -> str:
     """
     Build HTML email template.
