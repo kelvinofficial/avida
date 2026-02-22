@@ -352,4 +352,126 @@ def create_auth_router(db, get_current_user, get_session_token, check_rate_limit
         response.delete_cookie(key="session_token", path="/")
         return {"message": "Logged out successfully"}
     
+    @router.post("/forgot-password")
+    async def forgot_password(data: ForgotPasswordRequest, request: Request):
+        """Send password reset email"""
+        # Rate limiting
+        client_ip = request.client.host if request.client else "unknown"
+        if not check_rate_limit(client_ip, "forgot_password"):
+            raise HTTPException(status_code=429, detail="Too many requests. Please wait a few minutes.")
+        
+        # Find user by email
+        user = await db.users.find_one({"email": data.email.lower()})
+        
+        # Always return success to prevent email enumeration
+        if not user:
+            return {"message": "If an account exists with this email, you will receive a password reset link."}
+        
+        # Check if user uses Google auth
+        if user.get("auth_provider") == "google" and not user.get("password_hash"):
+            return {"message": "If an account exists with this email, you will receive a password reset link."}
+        
+        # Generate reset token
+        reset_token = secrets.token_urlsafe(32)
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+        
+        # Store reset token
+        await db.password_resets.delete_many({"email": data.email.lower()})  # Remove old tokens
+        await db.password_resets.insert_one({
+            "email": data.email.lower(),
+            "token": reset_token,
+            "expires_at": expires_at,
+            "created_at": datetime.now(timezone.utc)
+        })
+        
+        # Send email using SendGrid if configured
+        try:
+            from utils.email_service import email_service
+            
+            reset_link = f"https://ui-refactor-preview.preview.emergentagent.com/reset-password?token={reset_token}"
+            
+            await email_service.send_email(
+                to_email=data.email.lower(),
+                subject="Reset Your Avida Password",
+                html_content=f"""
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: linear-gradient(135deg, #2E7D32, #66BB6A); padding: 30px; text-align: center;">
+                        <h1 style="color: white; margin: 0;">Avida</h1>
+                        <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0;">Your local marketplace</p>
+                    </div>
+                    <div style="padding: 30px; background: #f8f8f8;">
+                        <h2 style="color: #333;">Reset Your Password</h2>
+                        <p style="color: #666;">We received a request to reset your password. Click the button below to create a new password:</p>
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="{reset_link}" style="background: #2E7D32; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600;">Reset Password</a>
+                        </div>
+                        <p style="color: #999; font-size: 14px;">This link will expire in 1 hour. If you didn't request a password reset, you can safely ignore this email.</p>
+                    </div>
+                    <div style="padding: 20px; text-align: center; background: #333;">
+                        <p style="color: #999; font-size: 12px; margin: 0;">© 2026 Avida Marketplace. All rights reserved.</p>
+                    </div>
+                </div>
+                """,
+                text_content=f"Reset your Avida password by visiting: {reset_link}\n\nThis link expires in 1 hour."
+            )
+            logger.info(f"Password reset email sent to {data.email}")
+        except Exception as e:
+            logger.error(f"Failed to send password reset email: {e}")
+            # Still return success to prevent enumeration
+        
+        return {"message": "If an account exists with this email, you will receive a password reset link."}
+    
+    @router.post("/reset-password")
+    async def reset_password(data: ResetPasswordRequest):
+        """Reset password using token"""
+        # Validate password
+        if len(data.new_password) < 6:
+            raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+        
+        # Find reset token
+        reset_record = await db.password_resets.find_one({"token": data.token})
+        
+        if not reset_record:
+            raise HTTPException(status_code=400, detail="Invalid or expired reset link")
+        
+        # Check expiry
+        if reset_record["expires_at"] < datetime.now(timezone.utc):
+            await db.password_resets.delete_one({"token": data.token})
+            raise HTTPException(status_code=400, detail="Reset link has expired. Please request a new one.")
+        
+        # Update password
+        new_password_hash = hash_password(data.new_password)
+        result = await db.users.update_one(
+            {"email": reset_record["email"]},
+            {"$set": {"password_hash": new_password_hash}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=400, detail="Failed to reset password")
+        
+        # Delete used token
+        await db.password_resets.delete_one({"token": data.token})
+        
+        # Invalidate all existing sessions
+        user = await db.users.find_one({"email": reset_record["email"]})
+        if user:
+            await db.user_sessions.delete_many({"user_id": user.get("user_id")})
+        
+        logger.info(f"Password reset successful for {reset_record['email']}")
+        return {"message": "Password reset successful. You can now login with your new password."}
+    
+    @router.get("/verify-reset-token/{token}")
+    async def verify_reset_token(token: str):
+        """Verify if a reset token is valid"""
+        reset_record = await db.password_resets.find_one({"token": token})
+        
+        if not reset_record:
+            raise HTTPException(status_code=400, detail="Invalid reset link")
+        
+        if reset_record["expires_at"] < datetime.now(timezone.utc):
+            await db.password_resets.delete_one({"token": token})
+            raise HTTPException(status_code=400, detail="Reset link has expired")
+        
+        return {"valid": True, "email": reset_record["email"]}
+    
     return router
