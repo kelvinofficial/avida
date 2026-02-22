@@ -186,7 +186,7 @@ export const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
           // @ts-ignore - for web compatibility
           {...(Platform.OS === 'web' ? { 'data-testid': 'share-whatsapp-btn' } : { testID: 'share-whatsapp-btn' })}
         >
-          <Ionicons name="logo-whatsapp" size={24} color="#fff" />
+          <Ionicons name="logo-whatsapp" size={18} color="#fff" />
           <Text style={styles.buttonText}>WhatsApp</Text>
         </TouchableOpacity>
         
@@ -196,7 +196,7 @@ export const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
           // @ts-ignore - for web compatibility
           {...(Platform.OS === 'web' ? { 'data-testid': 'share-facebook-btn' } : { testID: 'share-facebook-btn' })}
         >
-          <Ionicons name="logo-facebook" size={24} color="#fff" />
+          <Ionicons name="logo-facebook" size={18} color="#fff" />
           <Text style={styles.buttonText}>Facebook</Text>
         </TouchableOpacity>
         
@@ -206,7 +206,7 @@ export const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
           // @ts-ignore - for web compatibility
           {...(Platform.OS === 'web' ? { 'data-testid': 'share-twitter-btn' } : { testID: 'share-twitter-btn' })}
         >
-          <Ionicons name="logo-twitter" size={24} color="#fff" />
+          <Ionicons name="logo-twitter" size={18} color="#fff" />
           <Text style={styles.buttonText}>Twitter</Text>
         </TouchableOpacity>
         
@@ -216,7 +216,7 @@ export const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
           // @ts-ignore - for web compatibility
           {...(Platform.OS === 'web' ? { 'data-testid': 'share-copy-btn' } : { testID: 'share-copy-btn' })}
         >
-          <Ionicons name="copy-outline" size={24} color="#fff" />
+          <Ionicons name="copy-outline" size={18} color="#fff" />
           <Text style={styles.buttonText}>Copy Link</Text>
         </TouchableOpacity>
       </View>
