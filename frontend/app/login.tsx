@@ -84,6 +84,7 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [name, setName] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleClose = () => {
     router.replace('/');
