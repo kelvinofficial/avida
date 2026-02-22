@@ -667,138 +667,14 @@ export default function MessagesScreen() {
   }
 
   if (!isAuthenticated) {
-    // Desktop unauthenticated - using DesktopPageLayout
-    if (isLargeScreen) {
-      return (
-        <DesktopPageLayout
-          title="Messages"
-          icon="chatbubbles-outline"
-        >
-          <View style={messagesDesktopStyles.unauthContainer}>
-            {/* Hero Section */}
-            <View style={messagesDesktopStyles.heroSection}>
-              <View style={messagesDesktopStyles.heroIcon}>
-                <Ionicons name="chatbubbles" size={72} color="#1976D2" />
-              </View>
-              <Text style={messagesDesktopStyles.heroTitle}>Connect with Buyers & Sellers</Text>
-              <Text style={messagesDesktopStyles.heroSubtitle}>
-                Real-time messaging, negotiate prices, make offers, and close deals securely.
-              </Text>
-              
-              <TouchableOpacity 
-                style={messagesDesktopStyles.signInBtn} 
-                onPress={() => router.push('/login?redirect=/messages')}
-                data-testid="sign-in-btn"
-              >
-                <Ionicons name="log-in-outline" size={22} color="#fff" />
-                <Text style={messagesDesktopStyles.signInBtnText}>Sign In to Start Messaging</Text>
-              </TouchableOpacity>
-            </View>
-            
-            {/* Features Grid */}
-            <View style={messagesDesktopStyles.featuresGrid}>
-              <View style={messagesDesktopStyles.featureCard}>
-                <View style={[messagesDesktopStyles.featureIcon, { backgroundColor: '#E3F2FD' }]}>
-                  <Ionicons name="chatbubble-ellipses" size={28} color="#1976D2" />
-                </View>
-                <Text style={messagesDesktopStyles.featureTitle}>Real-time Chat</Text>
-                <Text style={messagesDesktopStyles.featureDesc}>Instant messaging with buyers and sellers</Text>
-              </View>
-              <View style={messagesDesktopStyles.featureCard}>
-                <View style={[messagesDesktopStyles.featureIcon, { backgroundColor: '#E8F5E9' }]}>
-                  <Ionicons name="pricetag" size={28} color={COLORS.primary} />
-                </View>
-                <Text style={messagesDesktopStyles.featureTitle}>Make Offers</Text>
-                <Text style={messagesDesktopStyles.featureDesc}>Negotiate prices directly in chat</Text>
-              </View>
-              <View style={messagesDesktopStyles.featureCard}>
-                <View style={[messagesDesktopStyles.featureIcon, { backgroundColor: '#FFF3E0' }]}>
-                  <Ionicons name="shield-checkmark" size={28} color="#F57C00" />
-                </View>
-                <Text style={messagesDesktopStyles.featureTitle}>Secure</Text>
-                <Text style={messagesDesktopStyles.featureDesc}>Safe & private conversations</Text>
-              </View>
-              <View style={messagesDesktopStyles.featureCard}>
-                <View style={[messagesDesktopStyles.featureIcon, { backgroundColor: '#FCE4EC' }]}>
-                  <Ionicons name="notifications" size={28} color="#E91E63" />
-                </View>
-                <Text style={messagesDesktopStyles.featureTitle}>Notifications</Text>
-                <Text style={messagesDesktopStyles.featureDesc}>Never miss a message</Text>
-              </View>
-            </View>
-          </View>
-        </DesktopPageLayout>
-      );
-    }
-
-    // Mobile unauthenticated
+    // Use the unified AuthPrompt for both mobile and desktop
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.unauthHeader}>
-          <Text style={styles.title}>Messages</Text>
-        </View>
-        <ScrollView 
-          style={styles.unauthScrollView}
-          contentContainerStyle={styles.unauthContainer}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Illustration */}
-          <View style={styles.unauthIllustration}>
-            <View style={styles.unauthIconBg}>
-              <Ionicons name="chatbubbles" size={48} color="#1976D2" />
-            </View>
-            <View style={[styles.floatingBubble, styles.floatingBubble1]}>
-              <Ionicons name="chatbubble" size={14} color={COLORS.primary} />
-            </View>
-            <View style={[styles.floatingBubble, styles.floatingBubble2]}>
-              <Ionicons name="send" size={12} color="#F57C00" />
-            </View>
-          </View>
-
-          <Text style={styles.unauthTitle}>Your Messages</Text>
-          <Text style={styles.unauthSubtitle}>
-            Sign in to chat with buyers and sellers, negotiate prices, and close deals
-          </Text>
-
-          {/* Benefits */}
-          <View style={styles.benefitsList}>
-            <View style={styles.benefitItem}>
-              <View style={[styles.benefitIcon, { backgroundColor: '#E3F2FD' }]}>
-                <Ionicons name="chatbubble-ellipses" size={18} color="#1976D2" />
-              </View>
-              <Text style={styles.benefitText}>Real-time messaging</Text>
-            </View>
-            <View style={styles.benefitItem}>
-              <View style={[styles.benefitIcon, { backgroundColor: '#E8F5E9' }]}>
-                <Ionicons name="pricetag" size={18} color={COLORS.primary} />
-              </View>
-              <Text style={styles.benefitText}>Make and receive offers</Text>
-            </View>
-            <View style={styles.benefitItem}>
-              <View style={[styles.benefitIcon, { backgroundColor: '#FFF3E0' }]}>
-                <Ionicons name="shield-checkmark" size={18} color="#F57C00" />
-              </View>
-              <Text style={styles.benefitText}>Safe & secure conversations</Text>
-            </View>
-          </View>
-
-          {/* Buttons */}
-          <TouchableOpacity 
-            style={styles.unauthSignInBtn} 
-            onPress={() => router.push('/login?redirect=/messages')}
-          >
-            <Ionicons name="log-in-outline" size={20} color="#fff" />
-            <Text style={styles.unauthSignInBtnText}>Sign In</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.unauthSignUpBtn} 
-            onPress={() => router.push('/register?redirect=/messages')}
-          >
-            <Text style={styles.unauthSignUpBtnText}>Create Account</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </SafeAreaView>
+      <AuthPrompt
+        title="Your Messages"
+        subtitle="Sign in to chat with buyers and sellers, negotiate prices, and close deals"
+        icon="chatbubbles-outline"
+        redirectPath="/messages"
+      />
     );
   }
 
