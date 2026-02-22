@@ -142,6 +142,29 @@ class LocationService:
         cities = await self.cities.find(query, {"_id": 0}).sort("name", 1).to_list(1000)
         return cities
     
+    async def get_cities_by_region(self, country_code: str, region_code: str, search: str = None, limit: int = 100) -> List[Dict]:
+        """Get all cities in a region (without requiring district)"""
+        query = {
+            "country_code": country_code.upper(),
+            "region_code": region_code.upper()
+        }
+        if search:
+            query["name"] = {"$regex": search, "$options": "i"}
+        
+        cities = await self.cities.find(query, {"_id": 0}).sort("name", 1).limit(limit).to_list(limit)
+        
+        # Enrich with region name
+        region = await self.regions.find_one({
+            "country_code": country_code.upper(),
+            "region_code": region_code.upper()
+        }, {"_id": 0, "name": 1})
+        
+        region_name = region.get("name") if region else ""
+        for city in cities:
+            city["region_name"] = region_name
+        
+        return cities
+    
     async def search_cities(self, country_code: str, search: str, limit: int = 20) -> List[Dict]:
         """Search cities by name across all regions/districts"""
         query = {
