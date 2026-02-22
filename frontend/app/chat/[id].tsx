@@ -1637,6 +1637,122 @@ export default function ChatScreen() {
   };
 
   // Report message functions
+  // Chat menu action handlers
+  const handleMuteConversation = () => {
+    setIsMuted(!isMuted);
+    setShowChatMenu(false);
+    Alert.alert(
+      isMuted ? 'Unmuted' : 'Muted',
+      isMuted ? 'You will now receive notifications from this conversation.' : 'You will no longer receive notifications from this conversation.'
+    );
+  };
+
+  const handleDeleteChat = () => {
+    setShowChatMenu(false);
+    Alert.alert(
+      'Delete Chat',
+      'Are you sure you want to delete this conversation? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.delete(`/conversations/${id}`);
+              router.replace('/(tabs)/messages');
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete conversation');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleBlockUser = () => {
+    setShowChatMenu(false);
+    Alert.alert(
+      'Block User',
+      `Are you sure you want to block ${conversation?.other_user?.name}? You won't be able to send or receive messages from them.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Block', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.post(`/users/${conversation?.other_user?.id}/block`);
+              Alert.alert('Blocked', 'User has been blocked successfully.');
+              router.replace('/(tabs)/messages');
+            } catch (error) {
+              Alert.alert('Error', 'Failed to block user');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleReportUser = () => {
+    setShowChatMenu(false);
+    Alert.alert(
+      'Report User',
+      `Report ${conversation?.other_user?.name} for inappropriate behavior?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Report', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.post(`/users/${conversation?.other_user?.id}/report`, {
+                reason: 'inappropriate_behavior',
+                context: 'chat_conversation'
+              });
+              Alert.alert('Reported', 'Thank you for your report. We will review it shortly.');
+            } catch (error) {
+              Alert.alert('Error', 'Failed to submit report');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handlePinConversation = () => {
+    setIsPinned(!isPinned);
+    setShowChatMenu(false);
+    Alert.alert(
+      isPinned ? 'Unpinned' : 'Pinned',
+      isPinned ? 'Conversation unpinned.' : 'Conversation pinned to top.'
+    );
+  };
+
+  const handleShareListing = async () => {
+    setShowChatMenu(false);
+    if (conversation?.listing) {
+      const listingUrl = `${API_URL}/listing/${conversation.listing.id}`;
+      try {
+        await Share.share({
+          message: `Check out this listing: ${conversation.listing.title}\n${listingUrl}`,
+          title: conversation.listing.title,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      Alert.alert('No Listing', 'There is no listing associated with this conversation.');
+    }
+  };
+
+  const handleViewSellerProfile = () => {
+    setShowChatMenu(false);
+    if (conversation?.other_user?.id) {
+      router.push(`/seller/${conversation.other_user.id}`);
+    }
+  };
+
   const handleLongPressMessage = (message: Message) => {
     // Only allow reporting messages from other users
     if (message.sender_id === user?.user_id) {
