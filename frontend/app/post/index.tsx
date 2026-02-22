@@ -1510,7 +1510,8 @@ export default function PostListingScreen() {
         </View>
       )}
 
-      {featureSettings?.show_ai_suggestions && aiError && !aiAnalyzing && (
+      {/* AI Error Container - DISABLED */}
+      {false && aiError && !aiAnalyzing && (
         <View style={aiStyles.errorContainer}>
           <Ionicons name="alert-circle" size={18} color={COLORS.warning} />
           <Text style={aiStyles.errorText}>{aiError}</Text>
@@ -1520,8 +1521,8 @@ export default function PostListingScreen() {
         </View>
       )}
 
-      {/* AI Suggestions Panel - Only show if AI suggestions are enabled */}
-      {featureSettings?.show_ai_suggestions && showAiSuggestions && aiResult && (
+      {/* AI Suggestions Panel - DISABLED */}
+      {false && showAiSuggestions && aiResult && (
         <View style={aiStyles.suggestionsContainer}>
           <View style={aiStyles.suggestionsHeader}>
             <View style={aiStyles.suggestionsHeaderLeft}>
