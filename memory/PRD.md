@@ -127,6 +127,27 @@ Build a full-stack React Native/Expo marketplace application with a FastAPI back
 - `/api/conversations/unread-count` returns `{count: N}`
 **Testing**: 9/9 backend tests passed. Frontend requires manual verification on mobile device due to ngrok tunnel issues.
 
+#### White Screen Crash Fix (Feb 2026) ✅ FIXED
+**Problem**: App displayed white screen and crashed on startup
+**Root Cause**: Metro bundler cache corruption - "Unable to deserialize cloned data due to invalid or unsupported version"
+**Fix**: 
+- Cleared corrupted cache folders: `.metro-cache`, `.expo`, `node_modules/.cache`
+- Restarted expo service to rebuild with clean cache
+**Testing**: App loads correctly, home page shows listings, all tabs accessible
+
+#### Unified Login Screens (Feb 2026) ✅ COMPLETED
+**Problem**: Unauthenticated screens for Saved, Profile, and Messages tabs had inconsistent designs
+**User Request**: Match all login screens to main login screen aesthetic with green gradient left panel
+**Fix**: 
+- Created `AuthPrompt.tsx` component with split-screen design (desktop) and stacked layout (mobile)
+- Updated `messages.tsx` to use AuthPrompt component for unauthenticated state
+- `saved.tsx` and `profile.tsx` were already updated in previous session
+**Design Features**:
+- **Desktop**: 45% left panel with green gradient, avida branding, features list; 55% right panel with context-specific icon, title, subtitle, Sign In/Browse as Guest buttons
+- **Mobile**: Green gradient header with icon/title, white card with features, Sign In/Browse as Guest buttons
+- **Context-specific content**: Messages shows chatbubbles icon with "Your Messages", Saved shows heart with "Save Your Favorites", Profile shows person with "Your Profile"
+**Testing**: 100% - All 8 test scenarios passed (desktop + mobile for all 3 tabs, button navigation)
+
 ### Notification System Status (Feb 2026)
 - **In-App**: ✅ Working (206 notifications in database)
 - **Email**: ✅ Configured (SendGrid ready)
