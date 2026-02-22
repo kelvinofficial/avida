@@ -973,25 +973,17 @@ export default function ListingDetailScreen() {
     );
   }
 
-  // CACHE-FIRST: Return minimal header while data loads - no skeleton placeholders
-  // This provides a cleaner transition than showing skeleton UI
-  if (!listing) {
-    return null; // Return nothing - let the content appear when ready
+  // CACHE-FIRST: Return minimal loading state while data loads
+  // This provides a cleaner transition than showing full skeleton UI
+  if (!listing || !isReady) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
   }
 
   const images = listing.images || [];
-  const highlights = generateHighlights(listing, category);
-
-  const getImageUri = (img: string) => {
-    if (img.startsWith('data:') || img.startsWith('http')) return img;
-    return `data:image/jpeg;base64,${img}`;
-  };
-
-  // Wait for responsive hook to be ready before rendering layout
-  // This prevents flash from desktop to mobile layout
-  if (!isReady) {
-    return null; // Return nothing - content will appear when ready
-  }
 
   // ============ DESKTOP VIEW ============
   if (isDesktop || isTablet) {
