@@ -31,6 +31,15 @@ class RegisterRequest(BaseModel):
     name: str
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+
 class UserResponse(BaseModel):
     user_id: str
     email: str
