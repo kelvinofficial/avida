@@ -111,16 +111,23 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   const [localNotificationCount, setLocalNotificationCount] = useState(0);
   
   useEffect(() => {
+    console.log('[MobileHeader] useEffect triggered, token:', token ? 'exists' : 'null');
+    
     const fetchNotificationCount = async () => {
+      console.log('[MobileHeader] fetchNotificationCount called, token:', token ? token.substring(0, 10) + '...' : 'null');
+      
       if (!token) {
+        console.log('[MobileHeader] No token, setting count to 0');
         setLocalNotificationCount(0);
         return;
       }
       
       try {
+        console.log('[MobileHeader] Calling notificationsApi.getUnreadCount()...');
         const response = await notificationsApi.getUnreadCount();
+        console.log('[MobileHeader] API response:', JSON.stringify(response));
         const count = response?.unread_count || 0;
-        console.log('[MobileHeader] Fetched notification count:', count);
+        console.log('[MobileHeader] Setting notification count to:', count);
         setLocalNotificationCount(count);
       } catch (error) {
         console.log('[MobileHeader] Failed to fetch notification count:', error);
@@ -138,6 +145,8 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   
   // Use local count if available, otherwise use prop
   const notificationCount = localNotificationCount > 0 ? localNotificationCount : propNotificationCount;
+  
+  console.log('[MobileHeader] Render - notificationCount:', notificationCount, 'localCount:', localNotificationCount, 'propCount:', propNotificationCount);
 
   // Handle category selection from dropdown
   const handleCategoryDropdownSelect = (categoryId: string | null) => {
