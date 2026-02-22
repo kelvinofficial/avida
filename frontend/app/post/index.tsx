@@ -2459,48 +2459,6 @@ export default function PostListingScreen() {
           buttonText="View Listings"
           onClose={handleSuccessModalClose}
         />
-        
-        {/* Image Preview Modal - Desktop */}
-        <Modal
-          visible={showImagePreview}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={cancelImagePreview}
-        >
-          <View style={imagePreviewStyles.overlay}>
-            <View style={imagePreviewStyles.container}>
-              <Text style={imagePreviewStyles.title}>Preview Photo</Text>
-              <Text style={imagePreviewStyles.subtitle}>Does this look good?</Text>
-              
-              {previewImage && (
-                <Image 
-                  source={{ uri: previewImage }} 
-                  style={imagePreviewStyles.image}
-                  resizeMode="contain"
-                />
-              )}
-              
-              <View style={imagePreviewStyles.buttonRow}>
-                <TouchableOpacity 
-                  style={imagePreviewStyles.cancelButton} 
-                  onPress={cancelImagePreview}
-                  data-testid="cancel-image-btn-desktop"
-                >
-                  <Ionicons name="close" size={20} color={COLORS.text} />
-                  <Text style={imagePreviewStyles.cancelButtonText}>Try Again</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={imagePreviewStyles.doneButton} 
-                  onPress={confirmImage}
-                  data-testid="confirm-image-btn-desktop"
-                >
-                  <Ionicons name="checkmark" size={20} color="#fff" />
-                  <Text style={imagePreviewStyles.doneButtonText}>Done</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
       </SafeAreaView>
     );
   }
