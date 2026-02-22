@@ -576,6 +576,37 @@ export default function SettingsScreen() {
                 <Text style={desktopStyles.sectionSubtitle}>Protect your account</Text>
                 
                 <View style={desktopStyles.settingsGroup}>
+                  {/* Email Verification Status */}
+                  {user?.auth_provider !== 'google' && (
+                    <View style={desktopStyles.verificationRow}>
+                      <View style={desktopStyles.verificationInfo}>
+                        <View style={desktopStyles.verificationHeader}>
+                          <Ionicons 
+                            name={emailVerified ? "checkmark-circle" : "alert-circle"} 
+                            size={20} 
+                            color={emailVerified ? COLORS.success : COLORS.warning} 
+                          />
+                          <Text style={desktopStyles.verificationLabel}>Email Verification</Text>
+                        </View>
+                        <Text style={[desktopStyles.verificationStatus, { color: emailVerified ? COLORS.success : COLORS.warning }]}>
+                          {emailVerified === null ? 'Checking...' : emailVerified ? 'Verified' : 'Not Verified'}
+                        </Text>
+                      </View>
+                      {!emailVerified && emailVerified !== null && (
+                        <TouchableOpacity 
+                          style={desktopStyles.resendBtn} 
+                          onPress={handleResendVerification}
+                          disabled={resendingVerification}
+                        >
+                          {resendingVerification ? (
+                            <ActivityIndicator size="small" color={COLORS.primary} />
+                          ) : (
+                            <Text style={desktopStyles.resendBtnText}>Resend</Text>
+                          )}
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  )}
                   <NavigationRow icon="key-outline" label="Change Password" onPress={() => router.push('/settings/change-password')} />
                   <NavigationRow icon="finger-print-outline" label="Two-Factor Authentication" value={settings?.security?.two_factor_enabled ? 'On' : 'Off'} onPress={() => router.push('/settings/2fa')} />
                   <NavigationRow icon="lock-closed-outline" label="App Lock" value={settings?.security?.app_lock_enabled ? 'Enabled' : 'Disabled'} onPress={() => router.push('/settings/app-lock')} />
