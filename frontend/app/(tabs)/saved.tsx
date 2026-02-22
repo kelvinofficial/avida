@@ -528,9 +528,28 @@ export default function SavedScreen() {
   // Desktop Layout
   if (isLargeScreen) {
     if (!isAuthenticated) {
-      return renderDesktopUnauthenticated();
+      return (
+        <AuthPrompt
+          title="Save Your Favorites"
+          subtitle="Sign in to save items you love and access them anytime, anywhere"
+          icon="heart-outline"
+          redirectPath="/saved"
+        />
+      );
     }
     return renderDesktopAuthenticated();
+  }
+
+  // Mobile Layout - Use AuthPrompt for unauthenticated users
+  if (!isAuthenticated) {
+    return (
+      <AuthPrompt
+        title="Save Your Favorites"
+        subtitle="Sign in to save items you love and access them anytime, anywhere"
+        icon="heart-outline"
+        redirectPath="/saved"
+      />
+    );
   }
 
   // Mobile Layout
