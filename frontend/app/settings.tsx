@@ -714,6 +714,37 @@ export default function SettingsScreen() {
         {/* SECURITY */}
         <SectionHeader icon="shield-outline" title="Security" />
         <View style={styles.section}>
+          {/* Email Verification Status */}
+          {user?.auth_provider !== 'google' && (
+            <View style={styles.verificationRow}>
+              <View style={styles.verificationInfo}>
+                <View style={styles.verificationHeader}>
+                  <Ionicons 
+                    name={emailVerified ? "checkmark-circle" : "alert-circle"} 
+                    size={20} 
+                    color={emailVerified ? COLORS.success : COLORS.warning} 
+                  />
+                  <Text style={styles.verificationLabel}>Email Verification</Text>
+                </View>
+                <Text style={[styles.verificationStatus, { color: emailVerified ? COLORS.success : COLORS.warning }]}>
+                  {emailVerified === null ? 'Checking...' : emailVerified ? 'Verified' : 'Not Verified'}
+                </Text>
+              </View>
+              {!emailVerified && emailVerified !== null && (
+                <TouchableOpacity 
+                  style={styles.resendBtn} 
+                  onPress={handleResendVerification}
+                  disabled={resendingVerification}
+                >
+                  {resendingVerification ? (
+                    <ActivityIndicator size="small" color={COLORS.primary} />
+                  ) : (
+                    <Text style={styles.resendBtnText}>Resend</Text>
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
           <NavigationRow
             icon="key-outline"
             label="Change Password"
