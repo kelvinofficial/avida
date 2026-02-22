@@ -25,12 +25,20 @@ def create_feature_settings_router(db, require_auth):
         "show_time_ago": True,
         "show_negotiable_badge": True,
         "show_featured_badge": True,
-        "location_mode": "region",  # region, district, city
+        "location_mode": "city",  # region, district, city - Users select up to city level
         "default_country": "TZ",
         "allow_country_change": False,
         "currency": "TZS",
         "currency_symbol": "TSh",
         "currency_position": "before",
+        "available_currencies": [
+            {"code": "TZS", "symbol": "TSh", "name": "Tanzanian Shilling"},
+            {"code": "EUR", "symbol": "€", "name": "Euro"},
+            {"code": "USD", "symbol": "$", "name": "US Dollar"},
+            {"code": "KES", "symbol": "KSh", "name": "Kenyan Shilling"},
+            {"code": "GBP", "symbol": "£", "name": "British Pound"},
+        ],
+        "show_ai_suggestions": False,  # Disabled AI suggestions in post creation
     }
     
     @router.get("")
