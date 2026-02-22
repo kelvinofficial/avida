@@ -257,12 +257,36 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   }, [regions, searchQuery]);
 
   const handleRegionSelect = (region: Region) => {
-    // Complete the selection at region level (no district/city selection)
+    // After selecting region, move to city selection
+    setSelectedRegion(region);
+    setSearchQuery('');
+    setCurrentStep('city');
+    loadCities(region.country_code, region.region_code);
+  };
+
+  // Load cities for a region
+  const loadCities = async (countryCode: string, regionCode: string) => {
+    setLoading(true);
+    try {
+      const response = await api.get(`/locations/cities?country_code=${countryCode}&region_code=${regionCode}`);
+      setCities(response.data || []);
+    } catch (err) {
+      console.error('Failed to load cities:', err);
+      setCities([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle city selection - this completes the location selection
+  const handleCitySelect = (city: City) => {
     const locationData: LocationData = {
-      country_code: region.country_code,
-      region_code: region.region_code,
-      region_name: region.name,
-      location_text: `${region.name}, ${selectedCountry?.name || ''}`,
+      country_code: city.country_code,
+      region_code: city.region_code,
+      region_name: selectedRegion?.name || '',
+      city_code: city.city_code,
+      city_name: city.name,
+      location_text: `${city.name}, ${selectedRegion?.name || ''}, ${selectedCountry?.name || ''}`,
     };
     
     // Save to recent locations
@@ -271,6 +295,17 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     onChange(locationData);
     closeModal();
   };
+
+  // Filter cities by search query
+  const getFilteredCities = useCallback(() => {
+    if (!searchQuery || searchQuery.length < 1) {
+      return cities;
+    }
+    const query = searchQuery.toLowerCase();
+    return cities.filter(city => 
+      city.name.toLowerCase().includes(query)
+    );
+  }, [cities, searchQuery]);
 
   const handleRecentLocationSelect = (location: LocationData) => {
     // Save to recent locations (moves to top)
