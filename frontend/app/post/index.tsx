@@ -536,6 +536,10 @@ export default function PostListingScreen() {
   // Step 2: Images
   const [images, setImages] = useState<string[]>([]);
   
+  // Image Preview State (for crop confirmation)
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  
   // AI Analyzer State
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   const [aiResult, setAiResult] = useState<any>(null);
