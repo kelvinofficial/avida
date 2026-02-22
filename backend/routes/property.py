@@ -1135,4 +1135,37 @@ def create_similar_listings_router(db):
         else:
             return [item['listing'] for item in scored[:limit]]
 
+    @router.post("/track")
+    async def track_similar_listing_interaction(
+        eventType: str = None,
+        sourceListingId: str = None,
+        targetListingId: str = None,
+        isSponsored: bool = False,
+        position: int = None,
+        sessionId: str = None
+    ):
+        """
+        Track user interactions with similar listings for analytics.
+        Event types: view, click, impression
+        """
+        try:
+            event = {
+                "event_type": eventType or "unknown",
+                "source_listing_id": sourceListingId,
+                "target_listing_id": targetListingId,
+                "is_sponsored": isSponsored,
+                "position": position,
+                "session_id": sessionId,
+                "timestamp": datetime.now(timezone.utc)
+            }
+            
+            # Store the event for analytics
+            await db.similar_listing_events.insert_one(event)
+            
+            return {"status": "tracked", "event_type": eventType}
+        except Exception as e:
+            # Log but don't fail - tracking is non-critical
+            logger.warning(f"Failed to track similar listing event: {e}")
+            return {"status": "ok"}
+
     return router
