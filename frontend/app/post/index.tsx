@@ -1502,8 +1502,8 @@ export default function PostListingScreen() {
         </View>
       )}
 
-      {/* AI Analyzer Status - Only show if AI suggestions are enabled */}
-      {featureSettings?.show_ai_suggestions && aiAnalyzing && (
+      {/* AI Analyzer Status - DISABLED */}
+      {false && aiAnalyzing && (
         <View style={aiStyles.analyzingContainer}>
           <ActivityIndicator size="small" color={COLORS.primary} />
           <Text style={aiStyles.analyzingText}>Analyzing photos...</Text>
