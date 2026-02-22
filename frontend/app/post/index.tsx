@@ -772,14 +772,32 @@ export default function PostListingScreen() {
     });
 
     if (!result.canceled && result.assets[0].base64) {
-      const newImages = [...images, `data:image/jpeg;base64,${result.assets[0].base64}`];
+      // Show preview for user confirmation
+      const imageUri = `data:image/jpeg;base64,${result.assets[0].base64}`;
+      setPreviewImage(imageUri);
+      setShowImagePreview(true);
+    }
+  };
+
+  // Confirm cropped image
+  const confirmImage = () => {
+    if (previewImage) {
+      const newImages = [...images, previewImage];
       setImages(newImages);
       
-      // Trigger AI analysis when first image is added or when we have at least one image
-      if (newImages.length === 1) {
+      // Trigger AI analysis when first image is added
+      if (newImages.length === 1 && featureSettings?.show_ai_suggestions) {
         triggerAiAnalysis(newImages);
       }
     }
+    setPreviewImage(null);
+    setShowImagePreview(false);
+  };
+
+  // Cancel image preview
+  const cancelImagePreview = () => {
+    setPreviewImage(null);
+    setShowImagePreview(false);
   };
 
   const removeImage = (index: number) => {
