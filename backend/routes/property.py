@@ -1074,7 +1074,7 @@ def create_offers_router(db, require_auth, get_current_user, notify_stats_update
 
 def create_similar_listings_router(db):
     """Create similar listings router with dependency injection."""
-    router = APIRouter(prefix="/similar", tags=["similar-listings"])
+    router = APIRouter(prefix="/property/similar", tags=["similar-listings"])
 
     @router.get("/listings/{listing_id}")
     async def get_similar_listings(
