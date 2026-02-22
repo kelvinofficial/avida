@@ -1898,7 +1898,7 @@ export default function PostListingScreen() {
             <View style={styles.salaryInputWrapper}>
               <Text style={styles.salaryInputLabel}>Min</Text>
               <View style={styles.priceInputContainer}>
-                <Text style={styles.currencySymbol}>€</Text>
+                <Text style={styles.currencySymbol}>{currencySymbol}</Text>
                 <TextInput
                   style={styles.priceInput}
                   placeholder="0"
@@ -1915,7 +1915,7 @@ export default function PostListingScreen() {
             <View style={styles.salaryInputWrapper}>
               <Text style={styles.salaryInputLabel}>Max</Text>
               <View style={styles.priceInputContainer}>
-                <Text style={styles.currencySymbol}>€</Text>
+                <Text style={styles.currencySymbol}>{currencySymbol}</Text>
                 <TextInput
                   style={styles.priceInput}
                   placeholder="0"
