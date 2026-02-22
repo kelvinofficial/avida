@@ -1,0 +1,86 @@
+{
+  "summary": "Badge count fix verification complete. Backend APIs verified working (notifications: 8 unread, messages: 7 unread). Code review confirms fix is correct in MobileHeader.tsx and _layout.tsx - useEffect now depends on [isAuthenticated, token] to trigger re-fetch on auth state change. Frontend UI testing incomplete due to ngrok tunnel infrastructure issues causing Cloudflare 520 errors.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "infrastructure_issues": [
+      {
+        "issue": "Expo ngrok tunnel experiencing persistent timeout errors",
+        "impact": "Unable to complete Playwright UI tests",
+        "status": "Transient - not a code issue",
+        "evidence": "CommandError: ngrok tunnel took too long to connect in expo logs"
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_badge_count_apis.py",
+    "/app/test_reports/pytest/badge_count_apis_results.xml"
+  ],
+  "action_items": [
+    "User should manually verify badges appear after login on mobile device (ngrok tunnel issues prevent automated testing)",
+    "Consider adding data-testid to badge View elements for easier testing in future"
+  ],
+  "critical_code_review_comments": [
+    "FIX VERIFIED CORRECT: MobileHeader.tsx useEffect at line 113 now has [isAuthenticated, token] dependencies",
+    "FIX VERIFIED CORRECT: _layout.tsx useEffect at line 24 also has [isAuthenticated, token] dependencies",
+    "VERIFIED: notificationsApi.getUnreadCount() returns response.data which has {unread_count: N}",
+    "VERIFIED: conversations/unread-count returns {count: N} which _layout.tsx reads correctly"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_badge_count_apis.py"
+  ],
+  "success_rate": {
+    "backend": "100% (9/9 tests passed)",
+    "frontend": "Unable to test due to infrastructure issues"
+  },
+  "test_credentials": {
+    "email": "testbadge@example.com",
+    "password": "Test123!",
+    "expected_notification_count": 8,
+    "expected_message_count": 7
+  },
+  "seed_data_creation": "Test user was pre-created with unread notifications and messages",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Badge indicator backend APIs are confirmed working. The fix in MobileHeader.tsx and _layout.tsx adds [isAuthenticated, token] as useEffect dependencies to trigger re-fetch on auth state change. Backend test suite in test_badge_count_apis.py covers all endpoint tests. Frontend testing was blocked by ngrok tunnel timeouts - this is an infrastructure issue, not code. When testing manually: 1) Login as testbadge@example.com/Test123!, 2) Check notification bell icon should show badge with count ~8, 3) Check Messages tab should show badge with count ~7.",
+  "api_verification": {
+    "POST /api/auth/login": {
+      "status": 200,
+      "response_fields": ["session_token", "user"],
+      "verified": true
+    },
+    "GET /api/notifications/unread-count": {
+      "status": 200,
+      "response": {"unread_count": 8},
+      "field_name": "unread_count",
+      "verified": true
+    },
+    "GET /api/conversations/unread-count": {
+      "status": 200,
+      "response": {"count": 7},
+      "field_name": "count",
+      "verified": true
+    }
+  },
+  "code_fix_verification": {
+    "MobileHeader.tsx": {
+      "file": "/app/frontend/src/components/home/MobileHeader.tsx",
+      "line_range": "113-158",
+      "change": "useEffect dependencies changed from [] to [isAuthenticated, token]",
+      "purpose": "Trigger notification count fetch when auth state changes (login/logout)",
+      "status": "VERIFIED CORRECT"
+    },
+    "_layout.tsx": {
+      "file": "/app/frontend/app/(tabs)/_layout.tsx",
+      "line_range": "24-54",
+      "change": "useEffect depends on [isAuthenticated, token]",
+      "purpose": "Trigger message count fetch when auth state changes",
+      "status": "VERIFIED CORRECT"
+    }
+  }
+}
