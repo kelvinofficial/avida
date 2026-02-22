@@ -703,9 +703,6 @@ export default function MessagesScreen() {
               {/* Sidebar Header - NOT sticky */}
               <View style={desktopStyles.sidebarHeader}>
                 <Text style={desktopStyles.sidebarTitle}>{isSandbox ? '🧪 Sandbox Messages' : 'Messages'}</Text>
-                <TouchableOpacity style={desktopStyles.composeBtn}>
-                  <Ionicons name="create-outline" size={20} color={COLORS.primary} />
-                </TouchableOpacity>
               </View>
 
               {/* Search Bar */}
