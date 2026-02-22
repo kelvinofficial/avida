@@ -587,6 +587,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
+  embeddedContainer: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  embeddedBackButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    gap: theme.spacing.xs,
+  },
+  embeddedBackText: {
+    fontSize: 14,
+    color: theme.colors.primary,
+    fontWeight: '500',
+  },
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
