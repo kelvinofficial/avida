@@ -554,10 +554,15 @@ export default function PostListingScreen() {
   // Step 5: Price & Contact
   const [price, setPrice] = useState('');
   const [negotiable, setNegotiable] = useState(true);
-  const [currency, setCurrency] = useState('EUR');
+  const [currency, setCurrency] = useState('TZS');
+  const [currencySymbol, setCurrencySymbol] = useState('TSh');
+  const [availableCurrencies, setAvailableCurrencies] = useState<Array<{ code: string; symbol: string; name: string }>>([]);
   const [location, setLocation] = useState('');
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [sellerType, setSellerType] = useState('Individual');
+  
+  // Feature Settings
+  const [featureSettings, setFeatureSettings] = useState<FeatureSettings | null>(null);
   
   // Salary Range (for job listings)
   const [salaryMin, setSalaryMin] = useState('');
