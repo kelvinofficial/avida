@@ -30,12 +30,15 @@ export default function TabLayout() {
       
       try {
         const response = await api.get('/conversations/unread-count');
-        setUnreadMessages(response.data?.count || 0);
+        const count = response.data?.count || 0;
+        console.log('[TabLayout] Fetched unread messages count:', count);
+        setUnreadMessages(count);
       } catch (error) {
-        console.log('Failed to fetch unread count:', error);
+        console.log('[TabLayout] Failed to fetch unread count:', error);
       }
     };
 
+    // Immediate fetch
     fetchUnreadCount();
     
     // Poll for updates every 30 seconds
