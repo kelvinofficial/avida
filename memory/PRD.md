@@ -149,6 +149,32 @@ Build a full-stack React Native/Expo marketplace application with a FastAPI back
 - **Context-specific content**: Messages shows chatbubbles icon with "Your Messages", Saved shows heart with "Save Your Favorites", Profile shows person with "Your Profile"
 **Testing**: 100% - All 8 test scenarios passed (desktop + mobile for all 3 tabs, button navigation)
 
+#### Remember Me & Forgot Password (Feb 2026) ✅ COMPLETED
+**User Request**: Add "Remember Me" checkbox and "Forgot Password" functionality to login screen
+**Implementation**:
+- **Login Screen Updates**: 
+  - Added "Remember me" checkbox with checkmark toggle
+  - Added "Forgot password?" link that navigates to /forgot-password
+  - Both mobile and desktop views updated
+- **Forgot Password Page** (`/forgot-password`):
+  - Email input form with validation
+  - "Send Reset Link" button triggers API call
+  - Success screen shows confirmation message
+  - "Back to Login" navigation
+- **Reset Password Page** (`/reset-password?token=xxx`):
+  - Token verification on page load
+  - New password and confirm password inputs
+  - Password validation (min 6 chars)
+  - Success screen redirects to login
+  - Invalid/expired token shows error
+- **Backend APIs**:
+  - `POST /api/auth/forgot-password`: Sends reset email (prevents email enumeration)
+  - `POST /api/auth/reset-password`: Validates token and updates password
+  - `GET /api/auth/verify-reset-token/{token}`: Validates token before showing form
+  - Reset tokens stored in `password_resets` collection with 1-hour expiry
+  - Uses SendGrid for email delivery (if configured)
+**Testing**: 12/12 backend tests passed, frontend UI verified
+
 ### Notification System Status (Feb 2026)
 - **In-App**: ✅ Working (206 notifications in database)
 - **Email**: ✅ Configured (SendGrid ready)
