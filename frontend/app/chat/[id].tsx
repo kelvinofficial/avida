@@ -1348,6 +1348,11 @@ export default function ChatScreen() {
   
   // Emoji picker state
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  
+  // Chat menu state
+  const [showChatMenu, setShowChatMenu] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isPinned, setIsPinned] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
   const socketRef = useRef<Socket | null>(null);
