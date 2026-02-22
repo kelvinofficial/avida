@@ -785,11 +785,7 @@ export default function PostListingScreen() {
     if (previewImage) {
       const newImages = [...images, previewImage];
       setImages(newImages);
-      
-      // Trigger AI analysis when first image is added
-      if (newImages.length === 1 && featureSettings?.show_ai_suggestions) {
-        triggerAiAnalysis(newImages);
-      }
+      // AI analysis disabled - removed per user request
     }
     setPreviewImage(null);
     setShowImagePreview(false);
