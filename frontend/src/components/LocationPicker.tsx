@@ -261,11 +261,11 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     setSelectedRegion(region);
     setSearchQuery('');
     setCurrentStep('city');
-    loadCities(region.country_code, region.region_code);
+    loadCitiesForRegion(region.country_code, region.region_code);
   };
 
-  // Load cities for a region
-  const loadCities = async (countryCode: string, regionCode: string) => {
+  // Load cities for a region (using API)
+  const loadCitiesForRegion = async (countryCode: string, regionCode: string) => {
     setLoading(true);
     try {
       const response = await api.get(`/locations/cities?country_code=${countryCode}&region_code=${regionCode}`);
