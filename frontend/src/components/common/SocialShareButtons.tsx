@@ -300,12 +300,12 @@ const styles = StyleSheet.create({
   // Compact styles
   compactContainer: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
   },
   compactButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
