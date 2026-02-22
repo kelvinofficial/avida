@@ -406,7 +406,14 @@ export function useHomeData(): UseHomeDataReturn {
       CacheManager.setCache(CACHE_KEYS.HOME_CATEGORIES, categoriesResponse || []);
 
       // Fetch user-specific data if authenticated
-      if (isAuthenticated && token) {
+      // Use current auth state from store (not closure values)
+      const currentAuthState = useAuthStore.getState();
+      const currentToken = currentAuthState.token;
+      const currentIsAuthenticated = currentAuthState.isAuthenticated;
+      
+      console.log('[useHomeData] Checking auth for user data fetch:', { currentIsAuthenticated, hasToken: !!currentToken });
+      
+      if (currentIsAuthenticated && currentToken) {
         try {
           const favoritesResponse = await favoritesApi.getAll();
           const favoriteIds = new Set((favoritesResponse || []).map((f: any) => f.listing_id || f.id));
@@ -416,6 +423,7 @@ export function useHomeData(): UseHomeDataReturn {
         }
 
         try {
+          console.log('[useHomeData] Fetching notification count...');
           const notificationsResponse = await notificationsApi.getUnreadCount();
           console.log('[useHomeData] Notifications API response:', JSON.stringify(notificationsResponse));
           // API returns { unread_count: number }
