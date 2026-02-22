@@ -227,3 +227,12 @@ Build a full-stack React Native/Expo marketplace application with a FastAPI back
 - Multi-language content generation (German, Swahili)
 - Full API integrations for demo features
 - Campaign scheduling for notifications
+- Image Optimization Pipeline (WebP + CDN)
+
+### Pending Issues (P1)
+- Backend `ObjectId` serialization error - needs investigation
+- Notification/message badge counts - pending mobile device verification
+
+### Blocked Items (P2)
+- Share Button & Deep Linking - needs production build with custom domain
+- Authentication Persistence - needs physical device testing
