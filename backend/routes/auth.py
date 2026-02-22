@@ -131,6 +131,53 @@ def create_auth_router(db, get_current_user, get_session_token, check_rate_limit
         
         await db.users.insert_one(new_user)
         
+        # Generate email verification token
+        verification_token = secrets.token_urlsafe(32)
+        verification_expires = datetime.now(timezone.utc) + timedelta(hours=24)
+        
+        await db.email_verifications.delete_many({"email": register_data.email.lower()})
+        await db.email_verifications.insert_one({
+            "email": register_data.email.lower(),
+            "user_id": user_id,
+            "token": verification_token,
+            "expires_at": verification_expires,
+            "created_at": datetime.now(timezone.utc)
+        })
+        
+        # Send verification email
+        try:
+            from utils.email_service import email_service
+            
+            verify_link = f"https://ui-refactor-preview.preview.emergentagent.com/verify-email?token={verification_token}"
+            
+            await email_service.send_email(
+                to_email=register_data.email.lower(),
+                subject="Verify Your Avida Account",
+                html_content=f"""
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: linear-gradient(135deg, #2E7D32, #66BB6A); padding: 30px; text-align: center;">
+                        <h1 style="color: white; margin: 0;">Welcome to Avida!</h1>
+                        <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0;">Your local marketplace</p>
+                    </div>
+                    <div style="padding: 30px; background: #f8f8f8;">
+                        <h2 style="color: #333;">Hi {register_data.name}!</h2>
+                        <p style="color: #666;">Thanks for signing up! Please verify your email address to activate your account and start buying and selling.</p>
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="{verify_link}" style="background: #2E7D32; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600;">Verify My Email</a>
+                        </div>
+                        <p style="color: #999; font-size: 14px;">This link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.</p>
+                    </div>
+                    <div style="padding: 20px; text-align: center; background: #333;">
+                        <p style="color: #999; font-size: 12px; margin: 0;">© 2026 Avida Marketplace. All rights reserved.</p>
+                    </div>
+                </div>
+                """,
+                text_content=f"Hi {register_data.name}! Verify your Avida account by visiting: {verify_link}\n\nThis link expires in 24 hours."
+            )
+            logger.info(f"Verification email sent to {register_data.email}")
+        except Exception as e:
+            logger.error(f"Failed to send verification email: {e}")
+        
         # Create session
         session_token = secrets.token_urlsafe(32)
         expires_at = datetime.now(timezone.utc) + timedelta(days=7)
