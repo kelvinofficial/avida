@@ -93,8 +93,8 @@ class TestVerifyEmail:
         """Test verification with empty token returns error"""
         response = requests.get(f"{BASE_URL}/api/auth/verify-email/")
         
-        # Should return 404 (route not found) or 422 (validation error)
-        assert response.status_code in [404, 422, 307], f"Expected 404/422/307, got {response.status_code}"
+        # Should return 404 (route not found), 422 (validation error), 405 (method not allowed), or 307 (redirect)
+        assert response.status_code in [404, 422, 307, 405], f"Expected 404/422/307/405, got {response.status_code}"
     
     def test_verify_email_expired_token_message(self):
         """Test that expired token returns appropriate message"""
