@@ -116,7 +116,10 @@ export default function HomeScreen() {
   } = useInstantListingsFeed(feedParams);
   
   // Convert feed items to listing format for compatibility
-  const listings = useMemo(() => feedItems.map(feedItemToListing), [feedItems]);
+  const listings = useMemo(() => {
+    console.log('[Homepage] feedItems count:', feedItems.length, 'isInitialLoad:', isInitialLoad);
+    return feedItems.map(feedItemToListing);
+  }, [feedItems]);
   
   // ============ UI-SPECIFIC STATE (not in hooks) ============
   const [showLocationModal, setShowLocationModal] = useState(false);
