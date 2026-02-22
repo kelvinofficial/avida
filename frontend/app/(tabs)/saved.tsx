@@ -21,6 +21,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { DesktopHeader } from '../../src/components/layout';
 import { Footer } from '../../src/components/layout';
+import { AuthPrompt } from '../../src/components/AuthPrompt';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
