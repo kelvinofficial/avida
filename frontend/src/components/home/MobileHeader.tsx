@@ -198,13 +198,6 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           )}
         </TouchableOpacity>
       </View>
-      
-      {/* DEBUG: Show notification count - remove after testing */}
-      {__DEV__ && (
-        <Text style={{position: 'absolute', top: 5, right: 60, fontSize: 10, color: 'red'}}>
-          NC:{notificationCount}
-        </Text>
-      )}
 
       {/* ROW 2: FULL-WIDTH SEARCH BAR WITH DROPDOWN */}
       <View style={newHeaderStyles.row2}>
