@@ -602,6 +602,37 @@ export default function PostListingScreen() {
     }
   }, [showErrorBanner, fieldErrors]);
 
+  // Load feature settings (currency, location mode, AI suggestions)
+  useEffect(() => {
+    const loadFeatureSettings = async () => {
+      try {
+        const response = await api.get('/feature-settings');
+        const settings = response.data;
+        setFeatureSettings(settings);
+        
+        // Set currency from settings
+        if (settings.currency) {
+          setCurrency(settings.currency);
+        }
+        if (settings.currency_symbol) {
+          setCurrencySymbol(settings.currency_symbol);
+        }
+        if (settings.available_currencies) {
+          setAvailableCurrencies(settings.available_currencies);
+        }
+      } catch (error) {
+        console.error('Failed to load feature settings:', error);
+        // Use defaults
+        setAvailableCurrencies([
+          { code: 'TZS', symbol: 'TSh', name: 'Tanzanian Shilling' },
+          { code: 'EUR', symbol: '€', name: 'Euro' },
+          { code: 'USD', symbol: '$', name: 'US Dollar' },
+        ]);
+      }
+    };
+    loadFeatureSettings();
+  }, []);
+
   // Load existing listing data when in edit mode
   useEffect(() => {
     const loadListingForEdit = async () => {
