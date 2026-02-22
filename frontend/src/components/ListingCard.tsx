@@ -54,7 +54,11 @@ export const ListingCard: React.FC<ListingCardProps> = ({
 
   const getTimeAgo = (date: string) => {
     try {
-      return formatDistanceToNow(new Date(date), { addSuffix: false });
+      // Handle timezone - append 'Z' if no timezone info to treat as UTC
+      const dateWithTz = date.endsWith('Z') || date.includes('+') || date.includes('-', 10) 
+        ? date 
+        : date + 'Z';
+      return formatDistanceToNow(new Date(dateWithTz), { addSuffix: false });
     } catch {
       return '';
     }
