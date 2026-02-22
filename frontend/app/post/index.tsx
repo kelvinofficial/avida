@@ -47,6 +47,15 @@ import {
   CATEGORY_PREFERENCES,
 } from '../../src/config/listingFormConfig';
 
+// Feature settings interface
+interface FeatureSettings {
+  currency: string;
+  currency_symbol: string;
+  available_currencies: Array<{ code: string; symbol: string; name: string }>;
+  show_ai_suggestions: boolean;
+  location_mode: string;
+}
+
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const MAX_IMAGES = 10;
 
