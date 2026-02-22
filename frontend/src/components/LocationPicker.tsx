@@ -79,7 +79,7 @@ interface LocationPickerProps {
   showRecentLocations?: boolean;
 }
 
-type SelectionStep = 'country' | 'region';
+type SelectionStep = 'country' | 'region' | 'district' | 'city';
 
 const RECENT_LOCATIONS_KEY = '@recent_locations';
 const MAX_RECENT_LOCATIONS = 5;
