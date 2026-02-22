@@ -2254,8 +2254,11 @@ export default function ChatScreen() {
                 multiline
                 maxLength={1000}
               />
-              <TouchableOpacity style={styles.emojiButton}>
-                <Ionicons name="happy-outline" size={22} color={COLORS.textSecondary} />
+              <TouchableOpacity 
+                style={styles.emojiButton}
+                onPress={() => setShowEmojiPicker(!showEmojiPicker)}
+              >
+                <Ionicons name={showEmojiPicker ? "close" : "happy-outline"} size={22} color={showEmojiPicker ? COLORS.primary : COLORS.textSecondary} />
               </TouchableOpacity>
             </View>
 
