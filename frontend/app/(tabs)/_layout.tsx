@@ -23,12 +23,19 @@ export default function TabLayout() {
   // Fetch unread message count
   useEffect(() => {
     const fetchUnreadCount = async () => {
-      if (!isAuthenticated || !token) {
+      // Get current auth state directly from store
+      const currentAuthState = useAuthStore.getState();
+      const currentToken = currentAuthState.token;
+      
+      console.log('[TabLayout] fetchUnreadCount - token:', currentToken ? 'exists' : 'null');
+      
+      if (!currentToken) {
         setUnreadMessages(0);
         return;
       }
       
       try {
+        console.log('[TabLayout] Calling /conversations/unread-count...');
         const response = await api.get('/conversations/unread-count');
         const count = response.data?.count || 0;
         console.log('[TabLayout] Fetched unread messages count:', count);
