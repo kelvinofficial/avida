@@ -1784,8 +1784,8 @@ export default function PostListingScreen() {
             />
           </View>
         
-        {/* Get Price Suggestion Button - Only if AI enabled */}
-        {featureSettings?.show_ai_suggestions && (
+        {/* Get Price Suggestion Button - DISABLED */}
+        {false && (
         <TouchableOpacity
           style={priceStyles.getSuggestionButton}
           onPress={getPriceSuggestion}
@@ -1802,16 +1802,16 @@ export default function PostListingScreen() {
         </TouchableOpacity>
         )}
 
-        {/* Price Suggestion Error */}
-        {priceSuggestionError && (
+        {/* Price Suggestion Error - DISABLED */}
+        {false && priceSuggestionError && (
           <View style={priceStyles.errorContainer}>
             <Ionicons name="alert-circle" size={16} color={COLORS.warning} />
             <Text style={priceStyles.errorText}>{priceSuggestionError}</Text>
           </View>
         )}
 
-        {/* Price Suggestion Result */}
-        {priceSuggestion && priceSuggestion.price_suggestion && (
+        {/* Price Suggestion Result - DISABLED */}
+        {false && priceSuggestion && priceSuggestion.price_suggestion && (
           <View style={priceStyles.suggestionContainer}>
             <View style={priceStyles.suggestionHeader}>
               <Ionicons name="sparkles" size={18} color={COLORS.primary} />
