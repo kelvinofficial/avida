@@ -2114,7 +2114,7 @@ export default function ChatScreen() {
             </TouchableOpacity>
 
             <View style={desktopStyles.headerActions}>
-              <TouchableOpacity style={desktopStyles.headerButton}>
+              <TouchableOpacity style={desktopStyles.headerButton} onPress={() => setShowChatMenu(true)}>
                 <Ionicons name="ellipsis-vertical" size={20} color={COLORS.text} />
               </TouchableOpacity>
             </View>
