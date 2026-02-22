@@ -151,7 +151,7 @@ export default function ForgotPasswordScreen() {
                 </View>
                 <Text style={styles.successTitleMobile}>Check Your Email</Text>
                 <Text style={styles.successSubtitleMobile}>
-                  If an account exists, you'll receive a password reset link shortly.
+                  If an account exists, you&apos;ll receive a password reset link shortly.
                 </Text>
                 <TouchableOpacity style={styles.successBtn} onPress={handleBackToLogin}>
                   <Ionicons name="arrow-back-outline" size={20} color={COLORS.primary} />
