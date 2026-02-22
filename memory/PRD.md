@@ -112,6 +112,18 @@ Build a full-stack React Native/Expo marketplace application with a FastAPI back
 10. ✅ Skeleton Placeholder Removed (listing detail)
 11. ✅ Performance Optimization (API <200ms, 97.9% payload reduction)
 12. ✅ Push Token Registration Fix (frontend/backend sync)
+13. ✅ **Badge Count Fix (Feb 2026)** - Notification/message count badges now appear after login
+
+#### Badge Count Fix (Feb 2026) ✅ FIXED
+**Problem**: Unread notification and message counts not showing on bell icon and Messages tab after user login
+**Root Cause**: The `useEffect` in `MobileHeader.tsx` had empty `[]` dependencies, so it only fetched once on mount (before login) and never re-fetched after authentication
+**Fix**: 
+- Updated `/app/frontend/src/components/home/MobileHeader.tsx` - Changed useEffect dependencies from `[]` to `[isAuthenticated, token]`
+- The `_layout.tsx` already had correct dependencies for message count
+**Backend Verified**: 
+- `/api/notifications/unread-count` returns `{unread_count: N}`
+- `/api/conversations/unread-count` returns `{count: N}`
+**Testing**: 9/9 backend tests passed. Frontend requires manual verification on mobile device due to ngrok tunnel issues.
 
 ### Notification System Status (Feb 2026)
 - **In-App**: ✅ Working (206 notifications in database)
