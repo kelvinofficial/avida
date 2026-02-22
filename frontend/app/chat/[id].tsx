@@ -1111,6 +1111,154 @@ const reportModalStyles = StyleSheet.create({
   },
 });
 
+// Emoji Picker Component
+const EMOJI_CATEGORIES = [
+  {
+    title: 'Smileys',
+    emojis: ['😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊', '😇', '🙂', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '😎', '🤓', '🧐']
+  },
+  {
+    title: 'Gestures',
+    emojis: ['👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '👇', '☝️', '👋', '🤚', '🖐️', '✋', '🖖', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💪', '🦵', '🦶', '👂', '👃', '🧠', '🦷', '🦴', '👀', '👁️', '👅', '👄']
+  },
+  {
+    title: 'Hearts',
+    emojis: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '♥️']
+  },
+  {
+    title: 'Objects',
+    emojis: ['💰', '💵', '💴', '💶', '💷', '💸', '💳', '🏠', '🏡', '🏢', '🏣', '🏤', '🏥', '🏦', '🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🛻', '🚚', '🚛', '📱', '💻', '⌨️', '🖥️', '🖨️', '📷', '📸', '📹', '🎥', '📞', '☎️', '📺', '📻', '⏰', '⌚', '💡', '🔦', '🔑', '🗝️', '🔒', '🔓']
+  },
+  {
+    title: 'Symbols',
+    emojis: ['✅', '❌', '⭕', '❗', '❓', '‼️', '⁉️', '💯', '🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '⚫', '⚪', '🟤', '🔶', '🔷', '🔸', '🔹', '▪️', '▫️', '◾', '◽', '◼️', '◻️', '⬛', '⬜', '🔈', '🔇', '🔉', '🔊', '🔔', '🔕', '📣', '📢']
+  }
+];
+
+interface EmojiPickerProps {
+  visible: boolean;
+  onSelect: (emoji: string) => void;
+  onClose: () => void;
+}
+
+const EmojiPicker: React.FC<EmojiPickerProps> = ({ visible, onSelect, onClose }) => {
+  const [selectedCategory, setSelectedCategory] = useState(0);
+  
+  if (!visible) return null;
+  
+  return (
+    <View style={emojiPickerStyles.container}>
+      <View style={emojiPickerStyles.header}>
+        <Text style={emojiPickerStyles.title}>Emojis</Text>
+        <TouchableOpacity onPress={onClose} style={emojiPickerStyles.closeButton}>
+          <Ionicons name="close" size={20} color={COLORS.textSecondary} />
+        </TouchableOpacity>
+      </View>
+      
+      {/* Category Tabs */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={emojiPickerStyles.categoryTabs}>
+        {EMOJI_CATEGORIES.map((category, index) => (
+          <TouchableOpacity
+            key={category.title}
+            style={[
+              emojiPickerStyles.categoryTab,
+              selectedCategory === index && emojiPickerStyles.categoryTabActive
+            ]}
+            onPress={() => setSelectedCategory(index)}
+          >
+            <Text style={[
+              emojiPickerStyles.categoryTabText,
+              selectedCategory === index && emojiPickerStyles.categoryTabTextActive
+            ]}>
+              {category.title}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+      
+      {/* Emoji Grid */}
+      <ScrollView style={emojiPickerStyles.emojiGrid} contentContainerStyle={emojiPickerStyles.emojiGridContent}>
+        <View style={emojiPickerStyles.emojiRow}>
+          {EMOJI_CATEGORIES[selectedCategory].emojis.map((emoji, index) => (
+            <TouchableOpacity
+              key={`${emoji}-${index}`}
+              style={emojiPickerStyles.emojiButton}
+              onPress={() => onSelect(emoji)}
+            >
+              <Text style={emojiPickerStyles.emoji}>{emoji}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+    </View>
+  );
+};
+
+const emojiPickerStyles = StyleSheet.create({
+  container: {
+    backgroundColor: COLORS.surface,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    maxHeight: 280,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  closeButton: {
+    padding: 4,
+  },
+  categoryTabs: {
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  categoryTab: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  categoryTabActive: {
+    borderBottomWidth: 2,
+    borderBottomColor: COLORS.primary,
+  },
+  categoryTabText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  categoryTabTextActive: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  emojiGrid: {
+    maxHeight: 180,
+  },
+  emojiGridContent: {
+    padding: 8,
+  },
+  emojiRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  emojiButton: {
+    width: '12.5%',
+    aspectRatio: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emoji: {
+    fontSize: 24,
+  },
+});
+
 // Quick reply buttons
 const QuickReplies = ({ onSelect }: { onSelect: (text: string) => void }) => {
   const replies = [
