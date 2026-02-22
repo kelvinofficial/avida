@@ -22,6 +22,7 @@ import { BadgeIcon, Badge } from '../../src/components/SellerBadges';
 import { DesktopHeader, Footer, DesktopPageLayout } from '../../src/components/layout';
 import { getCachedSync, setCacheSync } from '../../src/utils/cacheManager';
 import { useCacheFirst } from '../../src/hooks/useCacheFirst';
+import { AuthPrompt } from '../../src/components/AuthPrompt';
 
 // CACHE-FIRST: No page-level loading spinners - render instantly with cached data
 
