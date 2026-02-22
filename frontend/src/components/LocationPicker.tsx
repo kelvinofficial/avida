@@ -376,6 +376,137 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     );
   };
 
+  // Render the selection content (used by both modal and embedded modes)
+  const renderSelectionContent = () => (
+    <View style={embedded ? styles.embeddedContainer : styles.modalContainer}>
+      {/* Header - only show in non-embedded mode or when on city step */}
+      {!embedded && (
+        <View style={styles.modalHeader}>
+          {currentStep === 'city' && (
+            <TouchableOpacity onPress={goBack} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color={theme.colors.onSurface} />
+            </TouchableOpacity>
+          )}
+          <Text style={styles.modalTitle}>{getStepTitle()}</Text>
+          <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
+            <Ionicons name="close" size={24} color={theme.colors.onSurface} />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Back button for embedded mode when on city step */}
+      {embedded && currentStep === 'city' && (
+        <TouchableOpacity onPress={goBack} style={styles.embeddedBackButton}>
+          <Ionicons name="arrow-back" size={20} color={theme.colors.primary} />
+          <Text style={styles.embeddedBackText}>Back to regions</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Recent Locations - Only show on region step */}
+      {showRecentLocations && recentLocations.length > 0 && currentStep === 'region' && (
+        <View style={styles.recentSection}>
+          <View style={styles.recentHeader}>
+            <Text style={styles.recentTitle}>Recent Locations</Text>
+            <TouchableOpacity 
+              onPress={clearRecentLocations}
+              style={styles.clearRecentButton}
+              data-testid="clear-recent-locations"
+            >
+              <Text style={styles.clearRecentText}>Clear</Text>
+            </TouchableOpacity>
+          </View>
+          {recentLocations.map((loc, index) => (
+            <TouchableOpacity
+              key={`recent-${index}`}
+              style={styles.recentItem}
+              onPress={() => handleRecentLocationSelect(loc)}
+              data-testid={`recent-location-${index}`}
+            >
+              <Ionicons name="time-outline" size={18} color={theme.colors.primary} />
+              <View style={styles.recentItemText}>
+                <Text style={styles.recentItemName}>{loc.city_name || loc.location_text}</Text>
+                {loc.location_text && loc.city_name && (
+                  <Text style={styles.recentItemSubtext} numberOfLines={1}>
+                    {loc.location_text}
+                  </Text>
+                )}
+              </View>
+            </TouchableOpacity>
+          ))}
+          <View style={styles.recentDivider} />
+        </View>
+      )}
+
+      {/* Breadcrumb */}
+      <View style={styles.breadcrumb}>
+        <Text style={styles.breadcrumbText}>
+          {TANZANIA_COUNTRY.flag} {TANZANIA_COUNTRY.name}
+          {selectedRegion && ` → ${selectedRegion.name}`}
+        </Text>
+      </View>
+
+      {/* Search */}
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color={theme.colors.onSurfaceVariant} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder={currentStep === 'region' ? 'Search regions...' : 'Search cities...'}
+          placeholderTextColor={theme.colors.onSurfaceVariant}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          autoCapitalize="none"
+          testID={`${currentStep}-search-input`}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <Ionicons name="close-circle" size={20} color={theme.colors.onSurfaceVariant} />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* List Content */}
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      ) : (
+        <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.listContent}>
+          {currentStep === 'region' && (
+            getFilteredRegions().length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Ionicons name="location-outline" size={48} color={theme.colors.outline} />
+                <Text style={styles.emptyText}>
+                  {searchQuery.length > 0 ? 'No regions found' : 'Loading regions...'}
+                </Text>
+              </View>
+            ) : (
+              getFilteredRegions().map((region, index) => renderRegionItem(region, index))
+            )
+          )}
+          
+          {currentStep === 'city' && (
+            getFilteredCities().length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Ionicons name="location-outline" size={48} color={theme.colors.outline} />
+                <Text style={styles.emptyText}>
+                  {searchQuery.length > 0 ? 'No cities found' : 'Loading cities...'}
+                </Text>
+              </View>
+            ) : (
+              getFilteredCities().map((city, index) => renderCityItem(city, index))
+            )
+          )}
+        </ScrollView>
+      )}
+    </View>
+  );
+
+  // Embedded mode - render selection UI directly
+  if (embedded) {
+    return renderSelectionContent();
+  }
+
+  // Normal mode - render trigger button and modal
   return (
     <>
       {/* Trigger Button */}
@@ -414,117 +545,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         presentationStyle="pageSheet"
         onRequestClose={closeModal}
       >
-        <View style={styles.modalContainer}>
-          {/* Header */}
-          <View style={styles.modalHeader}>
-            {currentStep === 'city' && (
-              <TouchableOpacity onPress={goBack} style={styles.backButton}>
-                <Ionicons name="arrow-back" size={24} color={theme.colors.onSurface} />
-              </TouchableOpacity>
-            )}
-            <Text style={styles.modalTitle}>{getStepTitle()}</Text>
-            <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color={theme.colors.onSurface} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Recent Locations - Only show on region step */}
-          {showRecentLocations && recentLocations.length > 0 && currentStep === 'region' && (
-            <View style={styles.recentSection}>
-              <View style={styles.recentHeader}>
-                <Text style={styles.recentTitle}>Recent Locations</Text>
-                <TouchableOpacity 
-                  onPress={clearRecentLocations}
-                  style={styles.clearRecentButton}
-                  data-testid="clear-recent-locations"
-                >
-                  <Text style={styles.clearRecentText}>Clear</Text>
-                </TouchableOpacity>
-              </View>
-              {recentLocations.map((loc, index) => (
-                <TouchableOpacity
-                  key={`recent-${index}`}
-                  style={styles.recentItem}
-                  onPress={() => handleRecentLocationSelect(loc)}
-                  data-testid={`recent-location-${index}`}
-                >
-                  <Ionicons name="time-outline" size={18} color={theme.colors.primary} />
-                  <View style={styles.recentItemText}>
-                    <Text style={styles.recentItemName}>{loc.city_name || loc.location_text}</Text>
-                    {loc.location_text && loc.city_name && (
-                      <Text style={styles.recentItemSubtext} numberOfLines={1}>
-                        {loc.location_text}
-                      </Text>
-                    )}
-                  </View>
-                </TouchableOpacity>
-              ))}
-              <View style={styles.recentDivider} />
-            </View>
-          )}
-
-          {/* Breadcrumb */}
-          <View style={styles.breadcrumb}>
-            <Text style={styles.breadcrumbText}>
-              {TANZANIA_COUNTRY.flag} {TANZANIA_COUNTRY.name}
-              {selectedRegion && ` → ${selectedRegion.name}`}
-            </Text>
-          </View>
-
-          {/* Search */}
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={20} color={theme.colors.onSurfaceVariant} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder={currentStep === 'region' ? 'Search regions...' : 'Search cities...'}
-              placeholderTextColor={theme.colors.onSurfaceVariant}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoCapitalize="none"
-              testID={`${currentStep}-search-input`}
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Ionicons name="close-circle" size={20} color={theme.colors.onSurfaceVariant} />
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {/* List Content */}
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-            </View>
-          ) : (
-            <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.listContent}>
-              {currentStep === 'region' && (
-                getFilteredRegions().length === 0 ? (
-                  <View style={styles.emptyContainer}>
-                    <Ionicons name="location-outline" size={48} color={theme.colors.outline} />
-                    <Text style={styles.emptyText}>
-                      {searchQuery.length > 0 ? 'No regions found' : 'Loading regions...'}
-                    </Text>
-                  </View>
-                ) : (
-                  getFilteredRegions().map((region, index) => renderRegionItem(region, index))
-                )
-              )}
-              
-              {currentStep === 'city' && (
-                getFilteredCities().length === 0 ? (
-                  <View style={styles.emptyContainer}>
-                    <Ionicons name="location-outline" size={48} color={theme.colors.outline} />
-                    <Text style={styles.emptyText}>
-                      {searchQuery.length > 0 ? 'No cities found' : 'Loading cities...'}
-                    </Text>
-                  </View>
-                ) : (
-                  getFilteredCities().map((city, index) => renderCityItem(city, index))
-                )
-              )}
-            </ScrollView>
-          )}
-        </View>
+        {renderSelectionContent()}
       </Modal>
     </>
   );
