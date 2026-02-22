@@ -1,7 +1,7 @@
 /**
  * LocationPicker Component
- * Hierarchical location selection: Country → Region → District → City
- * Supports search, GPS location detection, and recent locations
+ * City-level location selection: Country → Region → City
+ * Supports search and recent locations
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -10,9 +10,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  TouchableHighlight,
   Modal,
-  FlatList,
   ScrollView,
   TextInput,
   ActivityIndicator,
@@ -21,51 +19,29 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Storage } from '../utils/storage';
 import { theme } from '../utils/theme';
-import api, { locationsApi } from '../utils/api';
+import api from '../utils/api';
 
 // Types for location data
-interface Country {
-  code: string;
-  name: string;
-  flag?: string;
-}
-
 interface Region {
   country_code: string;
   region_code: string;
   name: string;
 }
 
-interface District {
-  country_code: string;
-  region_code: string;
-  district_code: string;
-  name: string;
-}
-
 interface City {
   country_code: string;
   region_code: string;
-  district_code: string;
   city_code: string;
   name: string;
-  lat: number;
-  lng: number;
   region_name?: string;
-  district_name?: string;
-  location_text?: string;
 }
 
 export interface LocationData {
   country_code?: string;
   region_code?: string;
-  district_code?: string;
   city_code?: string;
   city_name?: string;
   region_name?: string;
-  district_name?: string;
-  lat?: number;
-  lng?: number;
   location_text?: string;
 }
 
@@ -75,17 +51,16 @@ interface LocationPickerProps {
   placeholder?: string;
   error?: string;
   disabled?: boolean;
-  showGpsOption?: boolean;
   showRecentLocations?: boolean;
 }
 
-type SelectionStep = 'country' | 'region' | 'district' | 'city';
+type SelectionStep = 'region' | 'city';
 
 const RECENT_LOCATIONS_KEY = '@recent_locations';
 const MAX_RECENT_LOCATIONS = 5;
 
-// Tanzania-only configuration - restrict location to Tanzania
-const TANZANIA_COUNTRY: Country = {
+// Tanzania-only configuration
+const TANZANIA_COUNTRY = {
   code: 'TZ',
   name: 'Tanzania',
   flag: '🇹🇿',
@@ -94,40 +69,28 @@ const TANZANIA_COUNTRY: Country = {
 export const LocationPicker: React.FC<LocationPickerProps> = ({
   value,
   onChange,
-  placeholder = 'Select location',
+  placeholder = 'Select city',
   error,
   disabled = false,
-  showGpsOption = true,
   showRecentLocations = true,
 }) => {
   // Modal state
   const [modalVisible, setModalVisible] = useState(false);
-  // Tanzania-only mode: always start at region step
   const [currentStep, setCurrentStep] = useState<SelectionStep>('region');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Selection state - countries not needed in Tanzania-only mode
-  const [countries, setCountries] = useState<Country[]>([]);
+  // Data state
   const [regions, setRegions] = useState<Region[]>([]);
-  const [districts, setDistricts] = useState<District[]>([]);
   const [cities, setCities] = useState<City[]>([]);
-  const [searchResults, setSearchResults] = useState<City[]>([]);
-
-  // Recent locations
   const [recentLocations, setRecentLocations] = useState<LocationData[]>([]);
 
-  // Current selections - Tanzania pre-selected
-  const [selectedCountry, setSelectedCountry] = useState<Country | null>(TANZANIA_COUNTRY);
+  // Selection state
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
-  const [selectedDistrict, setSelectedDistrict] = useState<District | null>(null);
 
-  // Load countries and recent locations on mount
-  // For Tanzania-only restriction, we automatically set Tanzania and load regions
+  // Load regions on mount
   useEffect(() => {
-    // Auto-select Tanzania and load regions directly
-    setSelectedCountry(TANZANIA_COUNTRY);
-    loadRegions(TANZANIA_COUNTRY.code);
+    loadRegions();
     loadRecentLocations();
   }, []);
 
@@ -144,14 +107,11 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
   const saveRecentLocation = async (location: LocationData) => {
     try {
-      // Create a unique key for this location
-      const locationKey = `${location.country_code}-${location.region_code}-${location.district_code}-${location.city_code}`;
-      
-      // Filter out duplicate and add new location at the start
+      const locationKey = `${location.region_code}-${location.city_code}`;
       const updatedRecent = [
         location,
         ...recentLocations.filter(loc => 
-          `${loc.country_code}-${loc.region_code}-${loc.district_code}-${loc.city_code}` !== locationKey
+          `${loc.region_code}-${loc.city_code}` !== locationKey
         )
       ].slice(0, MAX_RECENT_LOCATIONS);
       
@@ -171,78 +131,30 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     }
   };
 
-  const loadCountries = async () => {
+  const loadRegions = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const data = await locationsApi.getCountries();
-      setCountries(data);
-    } catch (err) {
-      console.error('Failed to load countries:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadRegions = async (countryCode: string) => {
-    try {
-      setLoading(true);
-      const data = await locationsApi.getRegions(countryCode);
-      setRegions(data);
+      const response = await api.get(`/locations/regions?country_code=${TANZANIA_COUNTRY.code}`);
+      setRegions(response.data || []);
     } catch (err) {
       console.error('Failed to load regions:', err);
+      setRegions([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadDistricts = async (countryCode: string, regionCode: string) => {
+  const loadCities = async (regionCode: string) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const data = await locationsApi.getDistricts(countryCode, regionCode);
-      setDistricts(data);
-    } catch (err) {
-      console.error('Failed to load districts:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadCities = async (countryCode: string, regionCode: string, districtCode: string) => {
-    try {
-      setLoading(true);
-      const data = await locationsApi.getCities(countryCode, regionCode, districtCode);
-      setCities(data);
+      const response = await api.get(`/locations/cities?country_code=${TANZANIA_COUNTRY.code}&region_code=${regionCode}`);
+      setCities(response.data || []);
     } catch (err) {
       console.error('Failed to load cities:', err);
+      setCities([]);
     } finally {
       setLoading(false);
     }
-  };
-
-  const searchCities = useCallback(async (query: string) => {
-    if (!selectedCountry || query.length < 2) {
-      setSearchResults([]);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const data = await locationsApi.searchCities(selectedCountry.code, query, 20);
-      setSearchResults(data);
-    } catch (err) {
-      console.error('Failed to search cities:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedCountry]);
-
-  const handleCountrySelect = (country: Country) => {
-    setSelectedCountry(country);
-    setSelectedRegion(null);
-    setRegions([]);
-    setSearchQuery(''); // Clear search when changing country
-    setCurrentStep('region');
-    loadRegions(country.code);
   };
 
   // Filter regions by search query
@@ -256,46 +168,6 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     );
   }, [regions, searchQuery]);
 
-  const handleRegionSelect = (region: Region) => {
-    // After selecting region, move to city selection
-    setSelectedRegion(region);
-    setSearchQuery('');
-    setCurrentStep('city');
-    loadCitiesForRegion(region.country_code, region.region_code);
-  };
-
-  // Load cities for a region (using API)
-  const loadCitiesForRegion = async (countryCode: string, regionCode: string) => {
-    setLoading(true);
-    try {
-      const response = await api.get(`/locations/cities?country_code=${countryCode}&region_code=${regionCode}`);
-      setCities(response.data || []);
-    } catch (err) {
-      console.error('Failed to load cities:', err);
-      setCities([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle city selection - this completes the location selection
-  const handleCitySelect = (city: City) => {
-    const locationData: LocationData = {
-      country_code: city.country_code,
-      region_code: city.region_code,
-      region_name: selectedRegion?.name || '',
-      city_code: city.city_code,
-      city_name: city.name,
-      location_text: `${city.name}, ${selectedRegion?.name || ''}, ${selectedCountry?.name || ''}`,
-    };
-    
-    // Save to recent locations
-    saveRecentLocation(locationData);
-    
-    onChange(locationData);
-    closeModal();
-  };
-
   // Filter cities by search query
   const getFilteredCities = useCallback(() => {
     if (!searchQuery || searchQuery.length < 1) {
@@ -307,8 +179,29 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     );
   }, [cities, searchQuery]);
 
+  const handleRegionSelect = (region: Region) => {
+    setSelectedRegion(region);
+    setSearchQuery('');
+    setCurrentStep('city');
+    loadCities(region.region_code);
+  };
+
+  const handleCitySelect = (city: City) => {
+    const locationData: LocationData = {
+      country_code: TANZANIA_COUNTRY.code,
+      region_code: selectedRegion?.region_code || city.region_code,
+      region_name: selectedRegion?.name || city.region_name || '',
+      city_code: city.city_code,
+      city_name: city.name,
+      location_text: `${city.name}, ${selectedRegion?.name || city.region_name || ''}, Tanzania`,
+    };
+    
+    saveRecentLocation(locationData);
+    onChange(locationData);
+    closeModal();
+  };
+
   const handleRecentLocationSelect = (location: LocationData) => {
-    // Save to recent locations (moves to top)
     saveRecentLocation(location);
     onChange(location);
     closeModal();
@@ -317,41 +210,35 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   const openModal = () => {
     if (disabled) return;
     setModalVisible(true);
-    // Start directly with region selection (Tanzania only)
     setCurrentStep('region');
-    setSelectedCountry(TANZANIA_COUNTRY);
     setSelectedRegion(null);
-    setSelectedDistrict(null);
     setSearchQuery('');
-    // Reload regions for Tanzania
-    loadRegions(TANZANIA_COUNTRY.code);
+    setCities([]);
+    if (regions.length === 0) {
+      loadRegions();
+    }
   };
 
   const closeModal = () => {
     setModalVisible(false);
     setSearchQuery('');
-    setSearchResults([]);
   };
 
   const goBack = () => {
-    // In city step, go back to region selection
     if (currentStep === 'city') {
       setCurrentStep('region');
       setSelectedRegion(null);
       setSearchQuery('');
       setCities([]);
-      return;
+    } else {
+      closeModal();
     }
-    // In region step (Tanzania-only mode), going back should close the modal
-    closeModal();
   };
 
   const getStepTitle = () => {
     switch (currentStep) {
-      case 'country':
-        return 'Select Region in Tanzania';
       case 'region':
-        return 'Select Region in Tanzania';
+        return 'Select Region';
       case 'city':
         return `Select City in ${selectedRegion?.name || 'Region'}`;
       default:
@@ -365,60 +252,126 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     return placeholder;
   };
 
-  const renderItem = ({ item }: { item: any }) => {
-    switch (currentStep) {
-      case 'country':
-        if (Platform.OS === 'web') {
-          return (
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                padding: '16px',
-                gap: '12px',
-                cursor: 'pointer',
-                backgroundColor: 'transparent',
-              }}
-              onClick={() => handleCountrySelect(item)}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.backgroundColor = theme.colors.surfaceVariant;
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
-              }}
-              data-testid={`country-${item.code}`}
-            >
-              <Text style={styles.flagText}>{item.flag || ''}</Text>
-              <Text style={[styles.itemText, { flex: 1 }]}>{item.name}</Text>
-              <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceVariant} />
-            </div>
-          );
-        }
-        return (
-          <TouchableOpacity
-            style={styles.listItem}
-            onPress={() => handleCountrySelect(item)}
-            data-testid={`country-${item.code}`}
-          >
-            <Text style={styles.flagText}>{item.flag || ''}</Text>
-            <Text style={styles.itemText}>{item.name}</Text>
-            <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceVariant} />
-          </TouchableOpacity>
-        );
-      case 'region':
-        // Region rendering is now handled in ScrollView above
-        return null;
+  const renderRegionItem = (region: Region, index: number) => {
+    if (Platform.OS === 'web') {
+      return (
+        <div
+          key={`${region.country_code}-${region.region_code}`}
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            padding: '16px',
+            gap: '12px',
+            cursor: 'pointer',
+            backgroundColor: 'transparent',
+            borderBottom: index < getFilteredRegions().length - 1 ? `1px solid ${theme.colors.outlineVariant}` : 'none',
+          }}
+          onClick={() => handleRegionSelect(region)}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.backgroundColor = theme.colors.surfaceVariant;
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+          }}
+          data-testid={`region-${region.region_code}`}
+        >
+          <div style={{ 
+            width: 32, 
+            height: 32, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            backgroundColor: theme.colors.primaryContainer,
+            borderRadius: 8,
+            flexShrink: 0,
+          }}>
+            <Ionicons name="map-outline" size={20} color={theme.colors.primary} />
+          </div>
+          <span style={{ 
+            flex: 1, 
+            fontSize: 16, 
+            color: theme.colors.onSurface,
+          }}>{region.name}</span>
+          <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceVariant} />
+        </div>
+      );
     }
+    
+    return (
+      <TouchableOpacity
+        key={`${region.country_code}-${region.region_code}`}
+        style={[styles.listItem, index < getFilteredRegions().length - 1 && styles.listItemBorder]}
+        onPress={() => handleRegionSelect(region)}
+        data-testid={`region-${region.region_code}`}
+      >
+        <View style={styles.iconContainer}>
+          <Ionicons name="map-outline" size={20} color={theme.colors.primary} />
+        </View>
+        <Text style={styles.itemText}>{region.name}</Text>
+        <Ionicons name="chevron-forward" size={20} color={theme.colors.onSurfaceVariant} />
+      </TouchableOpacity>
+    );
   };
 
-  const getData = () => {
-    switch (currentStep) {
-      case 'country':
-        return countries;
-      case 'region':
-        return regions;
+  const renderCityItem = (city: City, index: number) => {
+    if (Platform.OS === 'web') {
+      return (
+        <div
+          key={`${city.region_code}-${city.city_code}`}
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            padding: '16px',
+            gap: '12px',
+            cursor: 'pointer',
+            backgroundColor: 'transparent',
+            borderBottom: index < getFilteredCities().length - 1 ? `1px solid ${theme.colors.outlineVariant}` : 'none',
+          }}
+          onClick={() => handleCitySelect(city)}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.backgroundColor = theme.colors.surfaceVariant;
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+          }}
+          data-testid={`city-${city.city_code}`}
+        >
+          <div style={{ 
+            width: 32, 
+            height: 32, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            backgroundColor: theme.colors.primaryContainer,
+            borderRadius: 8,
+            flexShrink: 0,
+          }}>
+            <Ionicons name="location-outline" size={20} color={theme.colors.primary} />
+          </div>
+          <span style={{ 
+            flex: 1, 
+            fontSize: 16, 
+            color: theme.colors.onSurface,
+          }}>{city.name}</span>
+        </div>
+      );
     }
+    
+    return (
+      <TouchableOpacity
+        key={`${city.region_code}-${city.city_code}`}
+        style={[styles.listItem, index < getFilteredCities().length - 1 && styles.listItemBorder]}
+        onPress={() => handleCitySelect(city)}
+        data-testid={`city-${city.city_code}`}
+      >
+        <View style={styles.iconContainer}>
+          <Ionicons name="location-outline" size={20} color={theme.colors.primary} />
+        </View>
+        <Text style={styles.itemText}>{city.name}</Text>
+      </TouchableOpacity>
+    );
   };
 
   return (
@@ -462,15 +415,19 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         <View style={styles.modalContainer}>
           {/* Header */}
           <View style={styles.modalHeader}>
-            {/* No back button in Tanzania-only mode */}
+            {currentStep === 'city' && (
+              <TouchableOpacity onPress={goBack} style={styles.backButton}>
+                <Ionicons name="arrow-back" size={24} color={theme.colors.onSurface} />
+              </TouchableOpacity>
+            )}
             <Text style={styles.modalTitle}>{getStepTitle()}</Text>
             <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
               <Ionicons name="close" size={24} color={theme.colors.onSurface} />
             </TouchableOpacity>
           </View>
 
-          {/* Recent Locations - Always show in Tanzania-only mode */}
-          {showRecentLocations && recentLocations.length > 0 && (
+          {/* Recent Locations - Only show on region step */}
+          {showRecentLocations && recentLocations.length > 0 && currentStep === 'region' && (
             <View style={styles.recentSection}>
               <View style={styles.recentHeader}>
                 <Text style={styles.recentTitle}>Recent Locations</Text>
@@ -491,8 +448,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                 >
                   <Ionicons name="time-outline" size={18} color={theme.colors.primary} />
                   <View style={styles.recentItemText}>
-                    <Text style={styles.recentItemName}>{loc.region_name || loc.location_text}</Text>
-                    {loc.location_text && (
+                    <Text style={styles.recentItemName}>{loc.city_name || loc.location_text}</Text>
+                    {loc.location_text && loc.city_name && (
                       <Text style={styles.recentItemSubtext} numberOfLines={1}>
                         {loc.location_text}
                       </Text>
@@ -505,113 +462,63 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
           )}
 
           {/* Breadcrumb */}
-          {selectedCountry && (
-            <View style={styles.breadcrumb}>
-              <Text style={styles.breadcrumbText}>
-                {selectedCountry.flag} {selectedCountry.name}
-              </Text>
-            </View>
-          )}
+          <View style={styles.breadcrumb}>
+            <Text style={styles.breadcrumbText}>
+              {TANZANIA_COUNTRY.flag} {TANZANIA_COUNTRY.name}
+              {selectedRegion && ` → ${selectedRegion.name}`}
+            </Text>
+          </View>
 
-          {/* Search (for region step) */}
-          {currentStep === 'region' && selectedCountry && (
-            <View style={styles.searchContainer}>
-              <Ionicons name="search" size={20} color={theme.colors.onSurfaceVariant} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search regions..."
-                placeholderTextColor={theme.colors.onSurfaceVariant}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                autoCapitalize="none"
-                testID="region-search-input"
-              />
-              {searchQuery.length > 0 && (
-                <TouchableOpacity onPress={() => setSearchQuery('')}>
-                  <Ionicons name="close-circle" size={20} color={theme.colors.onSurfaceVariant} />
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
+          {/* Search */}
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={20} color={theme.colors.onSurfaceVariant} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder={currentStep === 'region' ? 'Search regions...' : 'Search cities...'}
+              placeholderTextColor={theme.colors.onSurfaceVariant}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoCapitalize="none"
+              testID={`${currentStep}-search-input`}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <Ionicons name="close-circle" size={20} color={theme.colors.onSurfaceVariant} />
+              </TouchableOpacity>
+            )}
+          </View>
 
-          {/* List - Tanzania-only mode: always show regions */}
+          {/* List Content */}
           {loading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
           ) : (
-            /* Use ScrollView for region list with web-compatible click handling */
             <ScrollView style={styles.scrollViewContainer} contentContainerStyle={styles.listContent}>
-              {getFilteredRegions().length === 0 ? (
-                <View style={styles.emptyContainer}>
-                  <Ionicons name="location-outline" size={48} color={theme.colors.outline} />
-                  <Text style={styles.emptyText}>
-                    {searchQuery.length > 0 ? 'No regions found' : 'Loading regions...'}
-                  </Text>
-                </View>
-              ) : (
-                getFilteredRegions().map((region, index) => (
-                  <React.Fragment key={`${region.country_code}-${region.region_code}`}>
-                    {Platform.OS === 'web' ? (
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          padding: '16px',
-                          gap: '12px',
-                          cursor: 'pointer',
-                          backgroundColor: 'transparent',
-                          position: 'relative',
-                          overflow: 'hidden',
-                        }}
-                        onClick={() => handleRegionSelect(region)}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLElement).style.backgroundColor = theme.colors.surfaceVariant;
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
-                        }}
-                        data-testid={`region-${region.region_code}`}
-                      >
-                        <div style={{ 
-                          width: 32, 
-                          height: 32, 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center',
-                          backgroundColor: theme.colors.primaryContainer,
-                          borderRadius: 8,
-                          flexShrink: 0,
-                        }}>
-                          <Ionicons name="map-outline" size={20} color={theme.colors.primary} />
-                        </div>
-                        <span style={{ 
-                          flex: 1, 
-                          fontSize: 16, 
-                          color: theme.colors.onSurface,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}>{region.name}</span>
-                      </div>
-                    ) : (
-                      <TouchableOpacity
-                        style={styles.listItem}
-                        onPress={() => handleRegionSelect(region)}
-                        data-testid={`region-${region.region_code}`}
-                      >
-                        <View style={styles.iconContainer}>
-                          <Ionicons name="map-outline" size={20} color={theme.colors.primary} />
-                        </View>
-                        <Text style={[styles.itemText, { flex: 1 }]}>{region.name}</Text>
-                      </TouchableOpacity>
-                    )}
-                    {index < getFilteredRegions().length - 1 && (
-                      <View style={styles.separator} />
-                    )}
-                  </React.Fragment>
-                ))
+              {currentStep === 'region' && (
+                getFilteredRegions().length === 0 ? (
+                  <View style={styles.emptyContainer}>
+                    <Ionicons name="location-outline" size={48} color={theme.colors.outline} />
+                    <Text style={styles.emptyText}>
+                      {searchQuery.length > 0 ? 'No regions found' : 'Loading regions...'}
+                    </Text>
+                  </View>
+                ) : (
+                  getFilteredRegions().map((region, index) => renderRegionItem(region, index))
+                )
+              )}
+              
+              {currentStep === 'city' && (
+                getFilteredCities().length === 0 ? (
+                  <View style={styles.emptyContainer}>
+                    <Ionicons name="location-outline" size={48} color={theme.colors.outline} />
+                    <Text style={styles.emptyText}>
+                      {searchQuery.length > 0 ? 'No cities found' : 'Loading cities...'}
+                    </Text>
+                  </View>
+                ) : (
+                  getFilteredCities().map((city, index) => renderCityItem(city, index))
+                )
               )}
             </ScrollView>
           )}
@@ -715,11 +622,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  listContent: {
-    paddingBottom: theme.spacing.xl,
-  },
   scrollViewContainer: {
     flex: 1,
+  },
+  listContent: {
+    paddingBottom: theme.spacing.xl,
   },
   listItem: {
     flexDirection: 'row',
@@ -728,13 +635,14 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
     gap: theme.spacing.md,
   },
-  flagText: {
-    fontSize: 24,
+  listItemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.outlineVariant,
   },
   iconContainer: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: 8,
     backgroundColor: theme.colors.primaryContainer,
     justifyContent: 'center',
     alignItems: 'center',
@@ -743,24 +651,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: theme.colors.onSurface,
-  },
-  cityInfo: {
-    flex: 1,
-  },
-  cityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.md,
-  },
-  citySubtext: {
-    fontSize: 12,
-    color: theme.colors.onSurfaceVariant,
-    marginTop: 2,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: theme.colors.outlineVariant,
-    marginLeft: 64,
   },
   emptyContainer: {
     flex: 1,
