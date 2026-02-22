@@ -108,16 +108,19 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   
   // Direct fetch for notification count - more reliable than prop passing
   const [localNotificationCount, setLocalNotificationCount] = useState(0);
+  const { isAuthenticated, token } = useAuthStore();
   
   useEffect(() => {
     const fetchNotificationCount = async () => {
-      // Get current token directly from store
-      const currentToken = useAuthStore.getState().token;
+      // Get current token directly from store (most up-to-date)
+      const currentAuthState = useAuthStore.getState();
+      const currentToken = currentAuthState.token;
+      const currentIsAuth = currentAuthState.isAuthenticated;
       
-      console.log('[MobileHeader] fetchNotificationCount - token:', currentToken ? currentToken.substring(0, 10) + '...' : 'null');
+      console.log('[MobileHeader] fetchNotificationCount - token:', currentToken ? currentToken.substring(0, 10) + '...' : 'null', 'isAuth:', currentIsAuth);
       
-      if (!currentToken) {
-        console.log('[MobileHeader] No token, skipping fetch');
+      if (!currentToken || !currentIsAuth) {
+        console.log('[MobileHeader] No auth, clearing count');
         setLocalNotificationCount(0);
         return;
       }
@@ -135,13 +138,24 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
       }
     };
     
-    // Immediate fetch
-    fetchNotificationCount();
+    // Fetch when auth state changes (login/logout)
+    if (isAuthenticated && token) {
+      // Small delay to ensure token is propagated to axios interceptor
+      setTimeout(fetchNotificationCount, 300);
+    } else {
+      setLocalNotificationCount(0);
+    }
     
-    // Poll every 30 seconds
-    const interval = setInterval(fetchNotificationCount, 30000);
-    return () => clearInterval(interval);
-  }, []); // Empty deps - run once on mount, then poll
+    // Poll every 30 seconds when authenticated
+    let interval: NodeJS.Timeout | null = null;
+    if (isAuthenticated && token) {
+      interval = setInterval(fetchNotificationCount, 30000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isAuthenticated, token]); // Re-run when auth state changes
   
   // Use local count if available, otherwise use prop
   const notificationCount = localNotificationCount > 0 ? localNotificationCount : propNotificationCount;
