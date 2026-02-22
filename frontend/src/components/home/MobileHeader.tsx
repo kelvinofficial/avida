@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,8 @@ import { AnimatedChip } from './AnimatedChip';
 import { FeaturedSellersSection } from './FeaturedSellersSection';
 import type { FeaturedSeller, FeaturedListing } from './FeaturedSellersSection';
 import { Category } from '../../types';
+import { useAuthStore } from '../../store/authStore';
+import { notificationsApi } from '../../utils/api';
 
 // Full categories list - Must match backend DEFAULT_CATEGORIES and HomeDesktopHeader.tsx
 const FULL_CATEGORIES = [
