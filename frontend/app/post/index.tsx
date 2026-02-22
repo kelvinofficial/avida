@@ -2567,6 +2567,48 @@ export default function PostListingScreen() {
         )}
       </View>
 
+      {/* Image Preview Modal */}
+      <Modal
+        visible={showImagePreview}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={cancelImagePreview}
+      >
+        <View style={imagePreviewStyles.overlay}>
+          <View style={imagePreviewStyles.container}>
+            <Text style={imagePreviewStyles.title}>Preview Photo</Text>
+            <Text style={imagePreviewStyles.subtitle}>Does this look good?</Text>
+            
+            {previewImage && (
+              <Image 
+                source={{ uri: previewImage }} 
+                style={imagePreviewStyles.image}
+                resizeMode="contain"
+              />
+            )}
+            
+            <View style={imagePreviewStyles.buttonRow}>
+              <TouchableOpacity 
+                style={imagePreviewStyles.cancelButton} 
+                onPress={cancelImagePreview}
+                data-testid="cancel-image-btn"
+              >
+                <Ionicons name="close" size={20} color={COLORS.text} />
+                <Text style={imagePreviewStyles.cancelButtonText}>Try Again</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={imagePreviewStyles.doneButton} 
+                onPress={confirmImage}
+                data-testid="confirm-image-btn"
+              >
+                <Ionicons name="checkmark" size={20} color="#fff" />
+                <Text style={imagePreviewStyles.doneButtonText}>Done</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* Success Modal */}
       <SuccessModal
         visible={showSuccessModal}
