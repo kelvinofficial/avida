@@ -223,7 +223,7 @@ def create_auth_router(db, get_current_user, get_session_token, check_rate_limit
         except Exception as e:
             logger.debug(f"Cohort event tracking failed: {e}")
         
-        return {"user": user_doc, "session_token": session_token, "message": "Registration successful"}
+        return {"user": user_doc, "session_token": session_token, "message": "Registration successful. Please check your email to verify your account.", "email_verification_required": True}
     
     @router.post("/login")
     async def login_user(login_data: LoginRequest, request: Request, response: Response):
