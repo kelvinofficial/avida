@@ -44,6 +44,8 @@ export default function RootLayout() {
   const fetchFeatureSettings = useFeatureSettingsStore(state => state.fetchSettings);
   const [processingAuth, setProcessingAuth] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+  const [appReady, setAppReady] = useState(false);
   
   // Network status for offline banner
   const { isOffline } = useNetworkStatus();
@@ -61,6 +63,9 @@ export default function RootLayout() {
     loadStoredAuth();
     // Fetch feature settings on app mount
     fetchFeatureSettings();
+    
+    // Hide the native splash screen once the app is mounted
+    SplashScreen.hideAsync().catch(() => {});
   }, []);
 
   // Register for push notifications when user is authenticated
