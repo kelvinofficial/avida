@@ -1197,6 +1197,9 @@ export default function ChatScreen() {
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportingMessage, setReportingMessage] = useState<Message | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
+  
+  // Emoji picker state
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
   const socketRef = useRef<Socket | null>(null);
