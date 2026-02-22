@@ -1156,6 +1156,48 @@ const desktopStyles = StyleSheet.create({
     padding: 24,
     marginBottom: 24,
   },
+  // Email verification styles for desktop
+  verificationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+  },
+  verificationInfo: {
+    flex: 1,
+  },
+  verificationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  verificationLabel: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: COLORS.text,
+  },
+  verificationStatus: {
+    fontSize: 13,
+    marginTop: 4,
+    marginLeft: 28,
+  },
+  resendBtn: {
+    backgroundColor: COLORS.primaryLight,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  resendBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
