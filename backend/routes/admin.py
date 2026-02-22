@@ -424,4 +424,53 @@ def create_admin_router(db, require_admin):
             "message": f"Reminders sent to {len(participants)} participants"
         }
 
+    # ============ CURRENCY SETTINGS ============
+    @router.get("/settings/currency")
+    async def get_currency_settings(current_user: dict = Depends(require_admin)):
+        """Get current currency settings."""
+        try:
+            settings = db.admin_settings.find_one({"type": "currency"}, {"_id": 0})
+            if not settings:
+                # Default settings
+                settings = {
+                    "type": "currency",
+                    "default_currency": "EUR",
+                    "currency_symbol": "€",
+                    "available_currencies": [
+                        {"code": "EUR", "symbol": "€", "name": "Euro"},
+                        {"code": "USD", "symbol": "$", "name": "US Dollar"},
+                        {"code": "TZS", "symbol": "TSh", "name": "Tanzanian Shilling"},
+                        {"code": "KES", "symbol": "KSh", "name": "Kenyan Shilling"},
+                        {"code": "GBP", "symbol": "£", "name": "British Pound"},
+                    ]
+                }
+            return settings
+        except Exception as e:
+            logger.error(f"Error fetching currency settings: {e}")
+            raise HTTPException(status_code=500, detail="Failed to fetch currency settings")
+
+    @router.put("/settings/currency")
+    async def update_currency_settings(
+        settings: Dict[str, Any],
+        current_user: dict = Depends(require_admin)
+    ):
+        """Update currency settings."""
+        try:
+            db.admin_settings.update_one(
+                {"type": "currency"},
+                {"$set": {
+                    "type": "currency",
+                    "default_currency": settings.get("default_currency", "EUR"),
+                    "currency_symbol": settings.get("currency_symbol", "€"),
+                    "available_currencies": settings.get("available_currencies", []),
+                    "updated_at": datetime.now(timezone.utc),
+                    "updated_by": current_user.get("user_id")
+                }},
+                upsert=True
+            )
+            return {"success": True, "message": "Currency settings updated"}
+        except Exception as e:
+            logger.error(f"Error updating currency settings: {e}")
+            raise HTTPException(status_code=500, detail="Failed to update currency settings")
+
     return router
