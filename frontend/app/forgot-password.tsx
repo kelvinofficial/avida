@@ -260,7 +260,11 @@ export default function ForgotPasswordScreen() {
         end={{ x: 1, y: 1 }}
         style={styles.headerGradient}
       >
-        <TouchableOpacity style={styles.closeButton} onPress={handleBackToLogin}>
+        <TouchableOpacity 
+          style={[styles.closeButton, { top: insets.top + 8 }]} 
+          onPress={handleBackToLogin}
+          data-testid="forgot-password-close-btn"
+        >
           <Ionicons name="close" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         
