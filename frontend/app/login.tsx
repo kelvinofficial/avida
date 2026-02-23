@@ -53,6 +53,7 @@ export default function LoginScreen() {
   const { signedOut, redirect } = useLocalSearchParams<{ signedOut?: string; redirect?: string }>();
   const { setUser, setToken } = useAuthStore();
   const { isDesktop, isTablet } = useResponsive();
+  const insets = useSafeAreaInsets();
   
   // Use client-side state for large screen detection to avoid SSR hydration mismatch
   const [isClient, setIsClient] = useState(false);
