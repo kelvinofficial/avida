@@ -318,4 +318,46 @@ def create_users_router(db, get_current_user, require_auth, online_users: Set[st
         
         return result
     
+    @router.post("/{user_id}/report")
+    async def report_user(user_id: str, request: Request):
+        """Report a user for inappropriate behavior"""
+        current_user = await require_auth(request)
+        
+        if current_user.user_id == user_id:
+            raise HTTPException(status_code=400, detail="Cannot report yourself")
+        
+        # Get report details from body
+        try:
+            body = await request.json()
+            reason = body.get("reason", "inappropriate_behavior")
+            context = body.get("context", "general")
+            details = body.get("details", "")
+        except:
+            reason = "inappropriate_behavior"
+            context = "general"
+            details = ""
+        
+        # Check if user exists
+        reported_user = await db.users.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
+        if not reported_user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Create report record
+        import uuid
+        report = {
+            "id": str(uuid.uuid4()),
+            "reporter_id": current_user.user_id,
+            "reported_user_id": user_id,
+            "reason": reason,
+            "context": context,
+            "details": details,
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.user_reports.insert_one(report)
+        
+        logger.info(f"User {current_user.user_id} reported user {user_id} for {reason}")
+        
+        return {"success": True, "message": "Report submitted successfully", "report_id": report["id"]}
+    
     return router
