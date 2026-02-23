@@ -5,223 +5,108 @@ Build a full-stack React Native/Expo marketplace application with a FastAPI back
 
 ## Current Status: February 2026
 
-### All P0-P2 Tasks Completed ✅
+### Active Blocker: ngrok Tunnel Instability (P0)
+The development preview tunnel (`https://homepage-fix-8.preview.emergentagent.com`) is experiencing repeated "ngrok tunnel took too long to connect" errors, preventing frontend testing. Backend APIs are confirmed working via curl.
 
-#### Notification System (Feb 2026) ✅
+### Fixes Applied This Session (Pending Verification)
+
+#### Close Button Fix on Auth Screens (P1)
+**Problem**: Close (X) icons on auth screens (login, register, forgot-password) were not visible on mobile devices
+**Root Cause**: Close button had fixed `top: 16` position, which places it under the device's status bar/notch on modern phones
+**Fix Applied**:
+- Added `useSafeAreaInsets()` hook to all three auth screens
+- Updated close button positioning to use `top: insets.top + 8` for dynamic positioning below status bar
+- Files modified:
+  - `frontend/app/login.tsx` - Added insets, updated close button position
+  - `frontend/app/register.tsx` - Added insets, updated close button position
+  - `frontend/app/forgot-password.tsx` - Added insets, updated close button position
+**Status**: Code fixed, awaiting frontend verification when tunnel is stable
+
+### Homepage Issues (P0) - Investigation In Progress
+**Problem**: Homepage shows white screen, slow load, listings not displayed
+**User Hypothesis**: LocationPicker component is causing the issue
+**Investigation Findings**:
+- Backend APIs are working correctly (`/api/listings`, `/api/feed/listings`, `/api/locations/regions` all return data)
+- The LocationPicker is conditionally rendered only when modal is opened (`{visible && <LocationPicker />}`)
+- The `useInstantListingsFeed` hook uses cache-first strategy which should show data immediately
+- Unable to verify frontend behavior due to ngrok tunnel instability
+
+**Next Steps When Tunnel Stabilizes**:
+1. Take screenshot to see current homepage state
+2. Temporarily remove LocationPicker import/usage from homepage to confirm if it's the cause
+3. Check browser console for JavaScript errors
+4. Inspect the FlatList rendering logic for race conditions
+
+### All P0-P2 Tasks Previously Completed
+
+#### Notification System (Feb 2026)
 - **SendGrid Email**: Configured and verified (donotreply@avida.co.tz)
 - **Firebase FCM Push**: Configured with service account
 - **Automatic Triggers**: Messages, Offers, Listing Sold/Approved
 - **User Preferences**: 10 email + 4 push toggles
 - **Test Results**: 30/30 backend tests passed
 
-#### Recently Viewed Feature (Feb 2026) ✅
-**Problem**: API returned empty results
-**Root Cause**: Only searched `listings` collection, not all collections
-**Fix**: Updated `routes/social.py` to search `listings`, `properties`, and `auto_listings`
-
-#### Profile Data Mismatch (Feb 2026) ✅ FIXED
-**Problem**: Profile stats only counted from `listings` collection
-**Root Cause**: `/api/profile` endpoint didn't count from `properties` and `auto_listings`
-**Fix**: Updated `routes/profile.py` to aggregate stats from all three listing collections:
-- `active_listings` = listings + properties + auto_listings
-- `sold_listings` = listings + properties + auto_listings  
-- `total_views` = sum of views from all collections
-
-#### Continue Button Fix (Feb 2026) ✅
-- SafeAreaView edges from `['top']` to `['top', 'bottom']`
-
-#### Location Filter (Feb 2026) ✅
-- Working correctly with `$and` query logic
-
-#### Layout Flash Fix (Feb 2026) ✅ FIXED
-**Problem**: When navigating to listing detail page, a full-width desktop layout briefly appeared before the correct mobile layout rendered
-**Root Cause**: The `useResponsive` hook's `isReady` flag was initialized to `true` on web, causing the conditional layout to render immediately with potentially incorrect dimensions
-**Fix**: Updated `/app/frontend/src/hooks/useResponsive.ts`:
-- Changed `isReady` to always start as `false`
-- Use `useLayoutEffect` on web to set `isReady` to `true` synchronously before browser paint
-- This ensures the `!isReady` loading state shows until dimensions are confirmed
-
-#### Performance Optimization (Feb 2026) ✅ COMPLETED
+#### Performance Optimization (Feb 2026)
 **Target**: Sub-1-second listing loads, API <300ms
-
-**Backend Optimizations:**
-- **MongoDB Indexes**: 16 indexes on listings collection including compound indexes for status+created_at, status+category, status+location, price sorting, views sorting
-- **Redis Caching**: 60-second homepage cache (memory fallback when Redis unavailable)
-- **GZIP Compression**: Enabled for responses >500 bytes
-- **Image Thumbnails**: WebP compression (200x200) reduces payload by 97.9%
-- **Keep-alive Endpoint**: `/api/ping` for uptime monitoring to prevent cold starts
-- **Performance Stats**: `/api/perf/stats` endpoint for monitoring
-
-**Frontend Optimizations:**
-- **FlatList Performance**: initialNumToRender=6, windowSize=5, removeClippedSubviews=true
-- **No Blocking Spinners**: Cache-first rendering with background refresh
-- **Cache Preloading**: `preloadCacheToMemory()` on app start
-
-**Results:**
-- API response time: ~200ms (cached), ~350ms (uncached) - **Target: <300ms ✅**
+**Results**:
+- API response time: ~200ms (cached), ~350ms (uncached) - **Target: <300ms**
 - Payload size reduced from 3.9MB to 82KB - **97.9% reduction**
-- First 6 listings render instantly
 
-### Code Ready - Needs Device/Deployment Testing
+#### Other Completed Features
+1. Email Notifications (SendGrid)
+2. Push Notifications (Firebase FCM)  
+3. Notification Triggers (messages, offers, listings)
+4. User Notification Preferences UI
+5. Recently Viewed Feature Fix
+6. Profile Data Mismatch Fix
+7. Continue Button Fix
+8. Location Filter Fix
+9. Layout Flash Fix (useResponsive hook)
+10. Performance Optimization
+11. Push Token Registration Fix
+12. Badge Count Fix
+13. White Screen Crash Fix (Metro cache)
+14. Unified Login Screens
+15. Remember Me & Forgot Password
+16. Email Verification for Registration
+17. Create Post Page Enhancements (city-level location, currency, AI hidden)
 
-#### Share Button & Deep Linking
-- **Code**: Correctly implemented
-- **Action Required**: Update `app.json` domains for production deployment
-
-#### Authentication Persistence
-- **Code**: SecureStore (native) / AsyncStorage (web) implemented
-- **Action Required**: Test on physical device
-
-### Technical Architecture
-
-#### Backend Files Modified
+### Code Architecture
 ```
-/app/backend/routes/
-├── profile.py          # FIXED: Stats now count from all collections
-├── social.py           # FIXED: Recently viewed searches all collections
-├── notification_preferences.py
-├── property.py         # Offers with notifications
-└── listings.py         # Listings with notifications
+/app
+├── backend/
+│   ├── routes/
+│   │   ├── conversations.py   # Chat APIs (mute, pin, delete - placeholder)
+│   │   ├── users.py           # Block/report endpoints (placeholder)
+│   │   ├── locations.py       # Region/city selection
+│   │   └── ...
+│   └── main.py
+├── frontend/
+│   ├── app/
+│   │   ├── (tabs)/
+│   │   │   ├── index.tsx      # Homepage (issue: white screen)
+│   │   │   └── profile.tsx    # Profile page
+│   │   ├── chat/[id].tsx      # Chat with 3-dot menu (UI only)
+│   │   ├── login.tsx          # FIXED: Close button position
+│   │   ├── register.tsx       # FIXED: Close button position
+│   │   └── forgot-password.tsx# FIXED: Close button position
+│   └── src/
+│       └── components/
+│           ├── LocationPicker.tsx  # City selection (suspected issue)
+│           └── home/LocationModal.tsx # Modal wrapper
+└── memory/PRD.md
 ```
 
-### Key API Endpoints
-- `GET /api/profile` - User profile with corrected stats
-- `GET /api/profile/activity/recently-viewed` - Recently viewed (all collections)
-- `GET /api/notification-preferences/categories` - Notification settings
-- `POST /api/notification-preferences/test` - Test notifications
+### Pending Issues
 
-### 3rd Party Integrations
-- **SendGrid**: Email (verified)
-- **Firebase FCM**: Push (configured)
-- **OpenAI GPT-5.2**: AI features
+#### High Priority (P1)
+- **Homepage White Screen**: Needs investigation when tunnel is stable
+- **Chat Options Menu**: Backend routes are placeholders, frontend handlers are empty
+- **Backend ObjectId serialization error**: Needs investigation
 
-### Test Credentials
-- **Admin**: admin@marketplace.com / Admin@123456
-- **Test Email**: kelvincharlesm@gmail.com
-
-### Completed Work Summary
-1. ✅ Email Notifications (SendGrid)
-2. ✅ Push Notifications (Firebase FCM)  
-3. ✅ Notification Triggers (messages, offers, listings)
-4. ✅ User Notification Preferences UI
-5. ✅ Recently Viewed Feature Fix
-6. ✅ Profile Data Mismatch Fix
-7. ✅ Continue Button Fix
-8. ✅ Location Filter Fix
-9. ✅ Layout Flash Fix (useResponsive hook)
-10. ✅ Skeleton Placeholder Removed (listing detail)
-11. ✅ Performance Optimization (API <200ms, 97.9% payload reduction)
-12. ✅ Push Token Registration Fix (frontend/backend sync)
-13. ✅ **Badge Count Fix (Feb 2026)** - Notification/message count badges now appear after login
-14. ✅ **White Screen Crash Fix (Feb 2026)** - Fixed Metro cache corruption causing app to crash on startup
-15. ✅ **Unified Login Screens (Feb 2026)** - Messages, Saved, Profile tabs now use consistent AuthPrompt component
-16. ✅ **Remember Me & Forgot Password (Feb 2026)** - Added Remember Me checkbox and complete password reset flow with email-based reset links
-17. ✅ **Email Verification for Registration (Feb 2026)** - New accounts receive verification email, settings shows verification status with resend option
-18. ✅ **Create Post Page Enhancements (Dec 2025)** - Image preview with Done button, city-level location, dynamic currency, AI suggestions hidden
-
-#### Create Post Page Enhancements (Dec 2025) ✅ COMPLETED
-**User Request**: Four enhancements to the "Create Post" page
-**Implementation**:
-1. **Image Cropper "Done" Button**:
-   - After cropping an image using the system picker, a preview modal now appears
-   - Users can click "Done" to confirm or "Try Again" to recrop
-   - Replaces the auto-add behavior with an explicit confirmation step
-   - Files modified: `frontend/app/post/index.tsx`
-
-2. **City-Level Location Selection**:
-   - Completely refactored `LocationPicker` component to support Region → City flow
-   - New backend endpoint: `GET /api/locations/cities/by-region` - returns all cities in a region
-   - Search functionality within both regions and cities lists
-   - Removed district selection step per user request
-   - Files modified: `frontend/src/components/LocationPicker.tsx`, `backend/location_system.py`
-
-3. **Admin-Managed Currency Symbol**:
-   - Currency symbol already loads from `/api/feature-settings`
-   - All price displays use dynamic `currencySymbol` state variable
-   - Default is "TSh" (Tanzanian Shilling)
-   - No hardcoded currency symbols in the price input
-
-4. **Remove AI Suggestions**:
-   - All AI-related UI conditionally rendered based on `featureSettings?.show_ai_suggestions`
-   - Default setting is `false` in feature_settings.py
-   - Price suggestion button, AI analyzer, suggestions panel all hidden when disabled
-
-**API Changes**:
-- `GET /api/locations/cities/by-region?country_code=TZ&region_code=XXX` - New endpoint
-
-**Files Modified**:
-- `frontend/app/post/index.tsx` - Image preview modal, state management
-- `frontend/src/components/LocationPicker.tsx` - Complete refactor for city-level selection
-- `backend/location_system.py` - New endpoint for cities by region
-
-**Testing Status**: Backend endpoints verified working. Frontend needs visual testing (ngrok tunnel unstable).
-
-#### Badge Count Fix (Feb 2026) ✅ FIXED
-**Problem**: Unread notification and message counts not showing on bell icon and Messages tab after user login
-**Root Cause**: The `useEffect` in `MobileHeader.tsx` had empty `[]` dependencies, so it only fetched once on mount (before login) and never re-fetched after authentication
-**Fix**: 
-- Updated `/app/frontend/src/components/home/MobileHeader.tsx` - Changed useEffect dependencies from `[]` to `[isAuthenticated, token]`
-- The `_layout.tsx` already had correct dependencies for message count
-**Backend Verified**: 
-- `/api/notifications/unread-count` returns `{unread_count: N}`
-- `/api/conversations/unread-count` returns `{count: N}`
-**Testing**: 9/9 backend tests passed. Frontend requires manual verification on mobile device due to ngrok tunnel issues.
-
-#### White Screen Crash Fix (Feb 2026) ✅ FIXED
-**Problem**: App displayed white screen and crashed on startup
-**Root Cause**: Metro bundler cache corruption - "Unable to deserialize cloned data due to invalid or unsupported version"
-**Fix**: 
-- Cleared corrupted cache folders: `.metro-cache`, `.expo`, `node_modules/.cache`
-- Restarted expo service to rebuild with clean cache
-**Testing**: App loads correctly, home page shows listings, all tabs accessible
-
-#### Unified Login Screens (Feb 2026) ✅ COMPLETED
-**Problem**: Unauthenticated screens for Saved, Profile, and Messages tabs had inconsistent designs
-**User Request**: Match all login screens to main login screen aesthetic with green gradient left panel
-**Fix**: 
-- Created `AuthPrompt.tsx` component with split-screen design (desktop) and stacked layout (mobile)
-- Updated `messages.tsx` to use AuthPrompt component for unauthenticated state
-- `saved.tsx` and `profile.tsx` were already updated in previous session
-**Design Features**:
-- **Desktop**: 45% left panel with green gradient, avida branding, features list; 55% right panel with context-specific icon, title, subtitle, Sign In/Browse as Guest buttons
-- **Mobile**: Green gradient header with icon/title, white card with features, Sign In/Browse as Guest buttons
-- **Context-specific content**: Messages shows chatbubbles icon with "Your Messages", Saved shows heart with "Save Your Favorites", Profile shows person with "Your Profile"
-**Testing**: 100% - All 8 test scenarios passed (desktop + mobile for all 3 tabs, button navigation)
-
-#### Remember Me & Forgot Password (Feb 2026) ✅ COMPLETED
-**User Request**: Add "Remember Me" checkbox and "Forgot Password" functionality to login screen
-**Implementation**:
-- **Login Screen Updates**: 
-  - Added "Remember me" checkbox with checkmark toggle
-  - Added "Forgot password?" link that navigates to /forgot-password
-  - Both mobile and desktop views updated
-- **Forgot Password Page** (`/forgot-password`):
-  - Email input form with validation
-  - "Send Reset Link" button triggers API call
-  - Success screen shows confirmation message
-  - "Back to Login" navigation
-- **Reset Password Page** (`/reset-password?token=xxx`):
-  - Token verification on page load
-  - New password and confirm password inputs
-  - Password validation (min 6 chars)
-  - Success screen redirects to login
-  - Invalid/expired token shows error
-- **Backend APIs**:
-  - `POST /api/auth/forgot-password`: Sends reset email (prevents email enumeration)
-  - `POST /api/auth/reset-password`: Validates token and updates password
-  - `GET /api/auth/verify-reset-token/{token}`: Validates token before showing form
-  - Reset tokens stored in `password_resets` collection with 1-hour expiry
-  - Uses SendGrid for email delivery (if configured)
-**Testing**: 12/12 backend tests passed, frontend UI verified
-
-### Notification System Status (Feb 2026)
-- **In-App**: ✅ Working (206 notifications in database)
-- **Email**: ✅ Configured (SendGrid ready)
-- **Push**: ⚠️ Requires user action
-  - Users must log in via mobile app (not web)
-  - Users must grant notification permissions
-  - Push token auto-registers after permission granted
-  - No users have registered push tokens yet
+#### Medium Priority (P2)
+- Share Button & Deep Linking - needs production build
+- Authentication Persistence - needs physical device testing
 
 ### Future/Backlog
 - Multi-language content generation (German, Swahili)
@@ -229,10 +114,12 @@ Build a full-stack React Native/Expo marketplace application with a FastAPI back
 - Campaign scheduling for notifications
 - Image Optimization Pipeline (WebP + CDN)
 
-### Pending Issues (P1)
-- Backend `ObjectId` serialization error - needs investigation
-- Notification/message badge counts - pending mobile device verification
+### 3rd Party Integrations
+- **SendGrid**: Email (verified)
+- **Firebase FCM**: Push (configured)
+- **OpenAI GPT-5.2**: AI features
+- **Lottie**: Animated splash screen
 
-### Blocked Items (P2)
-- Share Button & Deep Linking - needs production build with custom domain
-- Authentication Persistence - needs physical device testing
+### Test Credentials
+- **Test User**: kmasuka48@gmail.com / 123
+- **Admin**: admin@marketplace.com / Admin@123456
