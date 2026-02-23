@@ -12,7 +12,7 @@ import {
   Linking,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import * as ExpoLinking from 'expo-linking';
@@ -49,6 +49,7 @@ const COLORS = {
 export default function RegisterScreen() {
   const router = useRouter();
   const { setUser, setToken } = useAuthStore();
+  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showLocationOnboarding, setShowLocationOnboarding] = useState(false);
