@@ -1,7 +1,14 @@
-# LocalMarket (Avida) - Product Requirements Document
+# LocalMarket (Avida/Avito) - Product Requirements Document
 
 ## Original Problem Statement
 Build a full-stack React Native/Expo marketplace application with a FastAPI backend.
+
+## Web App Separation Plan (February 2026)
+User requested separation of web marketplace from mobile app:
+- **Mobile App**: Keep in this current job (React Native/Expo)
+- **Web App**: New job with Next.js for `avito.co.tz`
+- **Specification created**: `/app/memory/WEB_APP_SPECIFICATION.md`
+- **Backend CORS**: Already configured to accept `*` origins (works with any domain)
 
 ## Current Status: February 2026
 
