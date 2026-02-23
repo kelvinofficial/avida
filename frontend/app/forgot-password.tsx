@@ -11,7 +11,7 @@ import {
   KeyboardAvoidingView,
   ScrollView,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -39,6 +39,7 @@ const COLORS = {
 export default function ForgotPasswordScreen() {
   const router = useRouter();
   const { isDesktop, isTablet } = useResponsive();
+  const insets = useSafeAreaInsets();
   
   const [isClient, setIsClient] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
