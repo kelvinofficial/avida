@@ -1,482 +1,111 @@
 <analysis>**original_problem_statement**:
 The user's initial goal was to fix a full-stack React Native/Expo application with critical failures. Over the course of the session, the agent has fixed several critical bugs and implemented multiple new features based on user requests.
 
-The most recent user requests are for the Create Post page:
-1.  **[In Progress]** After cropping an image, there should be a Done button to confirm.
-2.  **[In Progress]** Remove all AI Suggestions from the page.
-3.  **[In Progress]** The currency symbol for the price should be manageable by an admin, not hardcoded.
-4.  **[In Progress]** The location selection should be restricted to the city level.
+Recent user requests that have been addressed or are in progress:
+1.  **[COMPLETED]** Fixes for the Create Post page: Add Done button for image cropper (later reversed), remove AI suggestions, set default currency to TSh, and restrict location selection to the city level.
+2.  **[COMPLETED]** Add close (X) icons to all auth screens. (Note: User reported this is still not working).
+3.  **[COMPLETED]** Remove AI-related error messages from the Create Post page.
+4.  **[COMPLETED]** Set the default currency to TSh instead of Euro.
+5.  **[IN PROGRESS]** Verify all recent fixes (Location, Currency, Image, AI). Blocked by tunnel instability.
+6.  **[COMPLETED]** UI Adjustments: Reduce social media share button size and fix notification count badge overlap.
+7.  **[COMPLETED]** Simplify image picker on Create Post page to remove cropping/preview.
+8.  **[IN PROGRESS]** Fix homepage: Location selection not working, slow load times, and white screen. (Agent attempted fixes, but user reports persist).
+9.  **[IN PROGRESS]** Fix homepage: Listings are not being displayed. (Likely related to the homepage white screen issue).
+10. **[COMPLETED]** Chat Screen Fixes: Remove call icon, implement voice notes (was already present), fix quick replies logic, and implement emoji picker.
+11. **[COMPLETED]** Consolidate duplicate notification settings on the Profile page. (Note: User reported this is still not working).
+12. **[COMPLETED]** Fix timestamp display to be in the correct timezone.
+13. **[COMPLETED]** Remove the compose message icon from the messages list screen.
+14. **[IN PROGRESS]** Add a dropdown menu with actions (Mute, Delete, Block, etc.) to the chat screen.
+15. **[COMPLETED]** Add a premium animated splash screen.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack React Native/Expo app with a FastAPI backend. Several major issues have been resolved in this session, including a critical white screen crash, a white flash on the listing page, and unifying the UI for unauthenticated users. New features like Forgot Password and Email Verification have also been implemented and tested.
-
-The agent is currently in the middle of implementing a batch of user-requested changes on the Create Post page.
+The application is a full-stack React Native/Expo app with a FastAPI backend. In this session, the agent implemented a large number of UI/UX features and bug fixes, primarily focusing on the Create Post page, chat functionality, and the homepage. The codebase has been significantly modified to add an animated splash screen, refactor location picking, implement an emoji picker, and add new backend endpoints for upcoming chat features. However, the application is suffering from critical performance and stability issues on the homepage, and the development preview tunnel is highly unstable.
 
 **Last working item**:
--   **Last item agent was working**: Implementing several enhancements on the Create Post page (). This involved creating backend endpoints for admin-managed currency, modifying the frontend to fetch and display this currency, removing AI-related UI elements conditionally, and refactoring the  component to support city-level selection.
+-   **Last item agent was working**: Implementing the backend endpoints for the 3-dot chat options menu (, , , , , etc.) on the chat screen. The agent added new routes to  and .
 -   **Status**: IN PROGRESS
--   **Agent Testing Done**: N
--   **Which testing method agent to use?**: Frontend testing agent to test the comprehensive UI changes on the Create Post page, and manual  commands to test the new backend admin endpoints for currency management.
+-   **Agent Testing Done**: N (Only backend code was written; no frontend connection or testing was performed).
+-   **Which testing method agent to use?**: both. Use  to test the new backend endpoints. Use the frontend testing agent to verify the full user flow (opening the menu, clicking each option, and seeing the result).
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: Backend  serialization error (P1)
--   **Issue 2**: Unread notification and message counts are not displayed on the UI (P1)
--   **Issue 3**: Share Button & Deep Linking functionality is not fully verifiable (P2)
--   **Issue 4**: Authentication Persistence needs to be verified on a physical device (P2)
--   **Issue 5**: Persistent ngrok/Cloudflare tunnel instability (P0 Blocker for UI work)
+-   **Issue 1**: Homepage is slow, shows a white screen, and listings are not displayed (P0)
+-   **Issue 2**: Close (X) icons on auth screens are still not displayed correctly (P1)
+-   **Issue 3**: Duplicate notification settings still appear on the Profile page (P1)
+-   **Issue 4**: Backend  serialization error (P1)
+-   **Issue 5**: Unread notification and message counts are not displayed on the UI (P1)
+-   **Issue 6**: Persistent ngrok/Cloudflare tunnel instability (P0 Blocker)
+-   **Issue 7**: Share Button & Deep Linking functionality is not fully verifiable (P2)
+-   **Issue 8**: Authentication Persistence needs to be verified on a physical device (P2)
 
 **Issues Detail**:
--   **Issue 1: Backend  serialization error (P1)**
-    -   **Attempted fixes**: The agent identified the error in the backend logs but was redirected to other tasks before finding the root cause. The agent searched several files but the investigation was inconclusive.
+-   **Issue 1: Homepage is slow, shows a white screen, and listings are not displayed (P0)**
+    -   **Attempted fixes**: The agent suspected the refactored  component. Fixes included conditionally rendering the picker inside its modal, wrapping API calls in , and reverting a  dependency. A background color was added to  to prevent a white flash. None of these resolved the core issue. The user explicitly stated they believe the  is the cause.
     -   **Next debug checklist**:
-        1.  Review backend logs (==> /var/log/supervisor/backend.err.log <==
-WARNING:utils.cache:Redis connection failed, using memory cache: Error Multiple exceptions: [Errno 111] Connection refused, [Errno 99] Cannot assign requested address connecting to localhost:6379.
-WARNING:  WatchFiles detected changes in 'routes/auth.py'. Reloading...
-INFO:     Application startup complete.
-ERROR:    Traceback (most recent call last):
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 747, in lifespan
-    await receive()
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/lifespan/on.py", line 137, in receive
-    return await self.receive_queue.get()
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.11/asyncio/queues.py", line 158, in get
-    await getter
-asyncio.exceptions.CancelledError
-
-Server initialized for asgi.
-WARNING:  WatchFiles detected changes in 'routes/auth.py'. Reloading...
-Server initialized for asgi.
-/root/.venv/lib/python3.11/site-packages/africastalking/Whatsapp.py:34: UserWarning: Sandbox is currently not available for the Whatsapp service.
-  warnings.warn(
-INFO:     Started server process [21188]
-INFO:     Waiting for application startup.
-WARNING:utils.cache:Redis connection failed, using memory cache: Error Multiple exceptions: [Errno 111] Connection refused, [Errno 99] Cannot assign requested address connecting to localhost:6379.
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'routes/auth.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [21188]
-Server initialized for asgi.
-/root/.venv/lib/python3.11/site-packages/africastalking/Whatsapp.py:34: UserWarning: Sandbox is currently not available for the Whatsapp service.
-  warnings.warn(
-INFO:     Started server process [22674]
-INFO:     Waiting for application startup.
-WARNING:utils.cache:Redis connection failed, using memory cache: Error Multiple exceptions: [Errno 111] Connection refused, [Errno 99] Cannot assign requested address connecting to localhost:6379.
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'tests/test_email_verification.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [22674]
-Server initialized for asgi.
-/root/.venv/lib/python3.11/site-packages/africastalking/Whatsapp.py:34: UserWarning: Sandbox is currently not available for the Whatsapp service.
-  warnings.warn(
-INFO:     Started server process [27662]
-INFO:     Waiting for application startup.
-WARNING:utils.cache:Redis connection failed, using memory cache: Error Multiple exceptions: [Errno 111] Connection refused, [Errno 99] Cannot assign requested address connecting to localhost:6379.
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'tests/test_email_verification.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [27662]
-Server initialized for asgi.
-/root/.venv/lib/python3.11/site-packages/africastalking/Whatsapp.py:34: UserWarning: Sandbox is currently not available for the Whatsapp service.
-  warnings.warn(
-INFO:     Started server process [28427]
-INFO:     Waiting for application startup.
-WARNING:utils.cache:Redis connection failed, using memory cache: Error Multiple exceptions: [Errno 111] Connection refused, [Errno 99] Cannot assign requested address connecting to localhost:6379.
-INFO:     Application startup complete.
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/encoders.py", line 322, in jsonable_encoder
-    data = dict(obj)
-           ^^^^^^^^^
-TypeError: 'ObjectId' object is not iterable
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/encoders.py", line 327, in jsonable_encoder
-    data = vars(obj)
-           ^^^^^^^^^
-TypeError: vars() argument must have __dict__ attribute
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 419, in run_asgi
-    result = await app(  # type: ignore[func-returns-value]
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
-    return await self.app(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
-    await super().__call__(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
-    await self.app(scope, receive, _send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 83, in __call__
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/gzip.py", line 24, in __call__
-    await responder(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/gzip.py", line 44, in __call__
-    await self.app(scope, receive, self.send_with_gzip)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 762, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 782, in app
-    await route.handle(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
-    response = await func(request)
-               ^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 315, in app
-    content = await serialize_response(
-              ^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 180, in serialize_response
-    return jsonable_encoder(response_content)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/encoders.py", line 287, in jsonable_encoder
-    encoded_value = jsonable_encoder(
-                    ^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/encoders.py", line 330, in jsonable_encoder
-    raise ValueError(errors) from e
-ValueError: [TypeError("'ObjectId' object is not iterable"), TypeError('vars() argument must have __dict__ attribute')]
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [107] using WatchFiles
-Server initialized for asgi.
-/root/.venv/lib/python3.11/site-packages/africastalking/Whatsapp.py:34: UserWarning: Sandbox is currently not available for the Whatsapp service.
-  warnings.warn(
-INFO:     Started server process [162]
-INFO:     Waiting for application startup.
-WARNING:utils.cache:Redis connection failed, using memory cache: Error Multiple exceptions: [Errno 111] Connection refused, [Errno 99] Cannot assign requested address connecting to localhost:6379.
-INFO:     Application startup complete.
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [119] using WatchFiles
-Server initialized for asgi.
-/root/.venv/lib/python3.11/site-packages/africastalking/Whatsapp.py:34: UserWarning: Sandbox is currently not available for the Whatsapp service.
-  warnings.warn(
-INFO:     Started server process [172]
-INFO:     Waiting for application startup.
-WARNING:utils.cache:Redis connection failed, using memory cache: Error Multiple exceptions: [Errno 111] Connection refused, [Errno 99] Cannot assign requested address connecting to localhost:6379.
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'routes/property.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [172]
-Server initialized for asgi.
-/root/.venv/lib/python3.11/site-packages/africastalking/Whatsapp.py:34: UserWarning: Sandbox is currently not available for the Whatsapp service.
-  warnings.warn(
-INFO:     Started server process [1271]
-INFO:     Waiting for application startup.
-WARNING:utils.cache:Redis connection failed, using memory cache: Error Multiple exceptions: [Errno 111] Connection refused, [Errno 99] Cannot assign requested address connecting to localhost:6379.
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'routes/admin.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [1271]
-Server initialized for asgi.
-/root/.venv/lib/python3.11/site-packages/africastalking/Whatsapp.py:34: UserWarning: Sandbox is currently not available for the Whatsapp service.
-  warnings.warn(
-INFO:     Started server process [2383]
-INFO:     Waiting for application startup.
-WARNING:utils.cache:Redis connection failed, using memory cache: Error Multiple exceptions: [Errno 111] Connection refused, [Errno 99] Cannot assign requested address connecting to localhost:6379.
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'routes/feature_settings.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [2383]
-Server initialized for asgi.
-/root/.venv/lib/python3.11/site-packages/africastalking/Whatsapp.py:34: UserWarning: Sandbox is currently not available for the Whatsapp service.
-  warnings.warn(
-INFO:     Started server process [2639]
-INFO:     Waiting for application startup.
-WARNING:utils.cache:Redis connection failed, using memory cache: Error Multiple exceptions: [Errno 111] Connection refused, [Errno 99] Cannot assign requested address connecting to localhost:6379.
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'routes/property.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [2639]
-Server initialized for asgi.
-/root/.venv/lib/python3.11/site-packages/africastalking/Whatsapp.py:34: UserWarning: Sandbox is currently not available for the Whatsapp service.
-  warnings.warn(
-INFO:     Started server process [3370]
-INFO:     Waiting for application startup.
-WARNING:utils.cache:Redis connection failed, using memory cache: Error Multiple exceptions: [Errno 111] Connection refused, [Errno 99] Cannot assign requested address connecting to localhost:6379.
-INFO:     Application startup complete.
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [117] using WatchFiles
-
-==> /var/log/supervisor/backend.out.log <==
-Created index: feed_seller_idx
-Created index: feed_price_idx
-Created index: feed_popular_idx
-Created index: feed_category_idx
-Created index: feed_text_search_idx
-INFO:     10.208.169.227:39218 - "GET /api/fonts/MaterialIcons.ttf HTTP/1.1" 200 OK
-INFO:     10.208.169.227:39230 - "GET /api/fonts/FontAwesome5_Solid.ttf HTTP/1.1" 200 OK
-INFO:     10.208.169.227:39218 - "GET /api/fonts/MaterialCommunityIcons.ttf HTTP/1.1" 200 OK
-INFO:     10.208.128.134:35778 - "GET /api/fonts/Feather.ttf HTTP/1.1" 200 OK
-INFO:     10.208.128.134:35770 - "GET /api/fonts/Ionicons.ttf HTTP/1.1" 200 OK
-INFO:     10.208.128.134:35794 - "GET /api/fonts/FontAwesome.ttf HTTP/1.1" 200 OK
-INFO:     10.208.128.134:41792 - "GET /api/feature-settings HTTP/1.1" 200 OK
-INFO:     10.208.128.134:41792 - "GET /api/fonts/Ionicons.ttf HTTP/1.1" 200 OK
-INFO:     10.208.169.227:45940 - "GET /api/listings/featured-verified?limit=12 HTTP/1.1" 200 OK
-INFO:     10.208.169.227:48242 - "GET /api/listings?page=1&limit=20 HTTP/1.1" 200 OK
-INFO:     10.208.169.227:45940 - "GET /api/feed/listings?sort=newest&limit=20 HTTP/1.1" 200 OK
-INFO:     10.208.128.134:41792 - "GET /api/searches/popular?limit=5 HTTP/1.1" 200 OK
-INFO:     10.208.169.227:48242 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     10.208.128.134:41792 - "GET /api/pwa/sw.js HTTP/1.1" 200 OK
-SEO Settings routes loaded successfully
-AI SEO routes loaded successfully
-SEO Analytics routes loaded successfully
-Offline Sync routes loaded successfully
-Deep Linking routes loaded successfully
-SEO A/B Testing routes loaded successfully
-Growth Engine - SEO Core routes loaded successfully
-Growth Engine - Content Engine routes loaded successfully
-Growth Engine - ASO Engine routes loaded successfully
-Growth Engine - Analytics Dashboard routes loaded successfully
-Growth Engine - Advanced SEO routes loaded successfully
-Growth Engine - Content Calendar routes loaded successfully
-Growth Engine - Analytics Settings routes loaded successfully
-Growth Engine - Authority Building routes loaded successfully
-Growth Engine - Multi-Language SEO routes loaded successfully
-Growth Engine - Social Distribution routes loaded successfully
-Feature Settings routes loaded successfully
-Safety tips routes loaded successfully
-PWA routes loaded successfully
-Instant Feed routes loaded successfully
-Created index: feed_primary_idx
-Created index: feed_location_category_idx
-Created index: feed_boosted_idx
-Created index: feed_seller_idx
-Created index: feed_price_idx
-Created index: feed_popular_idx
-Created index: feed_category_idx
-Created index: feed_text_search_idx
-SEO Settings routes loaded successfully
-AI SEO routes loaded successfully
-SEO Analytics routes loaded successfully
-Offline Sync routes loaded successfully
-Deep Linking routes loaded successfully
-SEO A/B Testing routes loaded successfully
-Growth Engine - SEO Core routes loaded successfully
-Growth Engine - Content Engine routes loaded successfully
-Growth Engine - ASO Engine routes loaded successfully
-Growth Engine - Analytics Dashboard routes loaded successfully
-Growth Engine - Advanced SEO routes loaded successfully
-Growth Engine - Content Calendar routes loaded successfully
-Growth Engine - Analytics Settings routes loaded successfully
-Growth Engine - Authority Building routes loaded successfully
-Growth Engine - Multi-Language SEO routes loaded successfully
-Growth Engine - Social Distribution routes loaded successfully
-Feature Settings routes loaded successfully
-Safety tips routes loaded successfully
-PWA routes loaded successfully
-Instant Feed routes loaded successfully
-Created index: feed_primary_idx
-Created index: feed_location_category_idx
-Created index: feed_boosted_idx
-Created index: feed_seller_idx
-Created index: feed_price_idx
-Created index: feed_popular_idx
-Created index: feed_category_idx
-Created index: feed_text_search_idx
-INFO:     10.208.128.134:51686 - "GET /api/safety-tips/public/fashion_beauty HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51686 - "GET /api/analytics/badges/seller/user_ce2a0febdaee HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43744 - "GET /api/categories/fashion_beauty HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43742 - "GET /api/attribute-icons/public HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43744 - "GET /api/escrow/seller/user_ce2a0febdaee/can-sell-online HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43754 - "GET /api/listings/5e780af2-83e0-46a2-9235-c9a0ffc8a17b HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51686 - "GET /api/listings/similar/5e780af2-83e0-46a2-9235-c9a0ffc8a17b?limit=20&include_sponsored=true HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51686 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.169.227:43744 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.169.227:43742 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:51686 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:51700 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.169.227:43758 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:51706 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.169.227:43766 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:51720 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:51736 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:51746 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.169.227:43772 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:51758 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:51686 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51700 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43742 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43744 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43778 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51766 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51770 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43782 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51784 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51786 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43790 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51792 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43806 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51700 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:51686 - "GET /api/listings/fashion_1 HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43778 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43778 - "GET /api/safety-tips/public/fashion_beauty HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43778 - "GET /api/categories/fashion_beauty HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51686 - "GET /api/escrow/seller/seller_auto_1/can-sell-online HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51700 - "GET /api/analytics/badges/seller/seller_auto_1 HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43778 - "GET /api/listings/similar/fashion_1?limit=20&include_sponsored=true HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51686 - "GET /api/fonts/Ionicons.ttf HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51800 - "GET /api/fonts/MaterialIcons.ttf HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51700 - "GET /api/fonts/FontAwesome.ttf HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43778 - "GET /api/fonts/Feather.ttf HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51808 - "GET /api/fonts/MaterialCommunityIcons.ttf HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51824 - "GET /api/fonts/FontAwesome5_Solid.ttf HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43778 - "GET /api/feature-settings HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51686 - "GET /api/safety-tips/public/fashion_beauty HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43778 - "GET /api/fonts/Ionicons.ttf HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43742 - "GET /api/categories/fashion_beauty HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51700 - "GET /api/escrow/seller/user_ce2a0febdaee/can-sell-online HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51686 - "GET /api/attribute-icons/public HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51700 - "GET /api/analytics/badges/seller/user_ce2a0febdaee HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43778 - "GET /api/listings/5e780af2-83e0-46a2-9235-c9a0ffc8a17b HTTP/1.1" 200 OK
-INFO:     10.208.128.134:36562 - "GET /api/listings/similar/5e780af2-83e0-46a2-9235-c9a0ffc8a17b?limit=20&include_sponsored=true HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51700 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:51686 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.169.227:43778 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.169.227:43742 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:36572 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.169.227:43822 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:36580 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.169.227:43834 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:36590 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:36596 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:36604 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:36606 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.169.227:43846 - "POST /api/property/similar/track HTTP/1.1" 404 Not Found
-INFO:     10.208.128.134:51686 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43778 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43742 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.128.134:51700 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.128.134:36616 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43860 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43876 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.128.134:36632 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.128.134:36642 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43882 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.128.134:36656 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.128.134:36660 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.128.134:36664 - "POST /api/qa/errors/log HTTP/1.1" 200 OK
-INFO:     10.208.169.227:43778 - "GET /api/pwa/sw.js HTTP/1.1" 200 OK
-SEO Settings routes loaded successfully
-AI SEO routes loaded successfully
-SEO Analytics routes loaded successfully
-Offline Sync routes loaded successfully
-Deep Linking routes loaded successfully
-SEO A/B Testing routes loaded successfully
-Growth Engine - SEO Core routes loaded successfully
-Growth Engine - Content Engine routes loaded successfully
-Growth Engine - ASO Engine routes loaded successfully
-Growth Engine - Analytics Dashboard routes loaded successfully
-Growth Engine - Advanced SEO routes loaded successfully
-Growth Engine - Content Calendar routes loaded successfully
-Growth Engine - Analytics Settings routes loaded successfully
-Growth Engine - Authority Building routes loaded successfully
-Growth Engine - Multi-Language SEO routes loaded successfully
-Growth Engine - Social Distribution routes loaded successfully
-Feature Settings routes loaded successfully
-Safety tips routes loaded successfully
-PWA routes loaded successfully
-Instant Feed routes loaded successfully
-Created index: feed_primary_idx
-Created index: feed_location_category_idx
-Created index: feed_boosted_idx
-Created index: feed_seller_idx
-Created index: feed_price_idx
-Created index: feed_popular_idx
-Created index: feed_category_idx
-Created index: feed_text_search_idx
-INFO:     10.208.169.227:51324 - "GET /api/fonts/Ionicons.ttf HTTP/1.1" 200 OK
-INFO:     10.208.128.134:48586 - "GET /api/fonts/FontAwesome.ttf HTTP/1.1" 200 OK
-INFO:     10.208.169.227:51324 - "GET /api/fonts/Feather.ttf HTTP/1.1" 200 OK
-INFO:     10.208.128.134:48566 - "GET /api/fonts/MaterialIcons.ttf HTTP/1.1" 200 OK
-INFO:     10.208.128.134:48578 - "GET /api/fonts/FontAwesome5_Solid.ttf HTTP/1.1" 200 OK
-INFO:     10.208.128.134:48594 - "GET /api/fonts/MaterialCommunityIcons.ttf HTTP/1.1" 200 OK
-INFO:     10.208.169.227:49688 - "GET /api/feature-settings HTTP/1.1" 200 OK
-INFO:     10.208.128.134:48600 - "GET /api/fonts/Ionicons.ttf HTTP/1.1" 200 OK
-INFO:     10.208.169.227:49688 - "GET /api/listings/featured-verified?limit=12 HTTP/1.1" 200 OK
-INFO:     10.208.169.227:49688 - "GET /api/listings?page=1&limit=20 HTTP/1.1" 200 OK
-INFO:     10.208.128.134:48600 - "GET /api/feed/listings?sort=newest&limit=20 HTTP/1.1" 200 OK
-INFO:     10.208.128.134:48600 - "GET /api/searches/popular?limit=5 HTTP/1.1" 200 OK
-INFO:     10.208.128.134:48600 - "GET /api/categories HTTP/1.1" 200 OK
-INFO:     10.208.169.227:33996 - "GET /api/pwa/sw.js HTTP/1.1" 200 OK) while interacting with the application to find which endpoint triggers the .
-        2.  Inspect the code for the identified endpoint.
-        3.  Ensure any direct MongoDB query results either use a projection () to exclude the  field or are serialized through a Pydantic model that correctly converts  to .
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical backend error that can cause API requests to fail and break frontend functionality.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Backend
-    -   **Blocked on other issue**: None.
-
--   **Issue 2: Unread notification and message counts are not displayed on the UI (P1)**
-    -   **Attempted fixes**: A code-level fix was implemented in , and automated tests passed.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a core UX feature.
-    -   **Status**: USER VERIFICATION PENDING (The issue was originally reported on mobile, so it requires user testing on a physical device).
+        1.  Thoroughly investigate  and its usage in .
+        2.  Check the browser console/device logs for JavaScript errors when navigating to the homepage.
+        3.  Temporarily comment out the  from the homepage to confirm if it's the source of the crash/slowness.
+        4.  Inspect the  hook and the  rendering logic in  for race conditions or infinite loops.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical P0 bug that makes the app's main screen unusable.
+    -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on other issue**: None.
+    -   **Blocked on other issue**: Potentially blocked by ngrok instability for testing.
 
--   **Issue 3: Share Button & Deep Linking functionality is not fully verifiable (P2)**
-    -   **Status**: BLOCKED (Requires a production build with a static custom domain).
+-   **Issue 2: Close (X) icons on auth screens are still not displayed correctly (P1)**
+    -   **Attempted fixes**: The agent added close icons to all auth screens (, , , ). When the user reported they were still missing, the agent attempted another fix by using  to adjust the  position of the button.
+    -   **Next debug checklist**:
+        1.  Take a screenshot of , , and  to verify the current state.
+        2.  Inspect the styles for the close button and its container. Check for  issues or if it's being rendered behind another element.
+    -   **Why fix this issue and what will be achieved with the fix?**: Improves user navigation and provides a standard UX pattern.
+    -   **Status**: USER VERIFICATION PENDING
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Frontend
 
--   **Issue 4: Authentication Persistence needs to be verified on a physical device (P2)**
+-   **Issue 3: Duplicate notification settings still appear on the Profile page (P1)**
+    -   **Attempted fixes**: The agent removed a Notifications link from the quick actions on . However, the user reported the issue persists.
+    -   **Next debug checklist**:
+        1.  Review  again to find the source of the duplicate entry. The first fix may have been incorrect.
+        2.  Check if  or another settings page is being rendered or linked in a way that creates the duplicate.
+    -   **Why fix this issue and what will be achieved with the fix?**: Cleans up the UI and removes user confusion.
+    -   **Status**: USER VERIFICATION PENDING
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Frontend
+
+-   **Issue 4: Backend  serialization error (P1)**
+    -   **Status**: NOT STARTED (Carried over from the previous session, not addressed in this one).
+    -   **Next debug checklist**: Review backend logs while using the app to find the endpoint triggering the . Inspect that endpoint's code and ensure all MongoDB results are correctly serialized to strings, likely via Pydantic models.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical backend error that can cause API requests to fail and break frontend functionality.
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Backend
+
+-   **Issue 5: Unread notification and message counts are not displayed on the UI (P1)**
+    -   **Status**: USER VERIFICATION PENDING (Carried over, needs user testing on a physical device).
+    -   **Is recurring issue?**: Y
+
+-   **Issue 6: Persistent ngrok/Cloudflare tunnel instability (P0 Blocker)**
+    -   **Status**: BLOCKED (Environment issue). This remains a major impediment to frontend development. The agent must pivot to backend tasks if the tunnel is down.
+    -   **Is recurring issue?**: Y
+
+-   **Issue 7: Share Button & Deep Linking functionality is not fully verifiable (P2)**
+    -   **Status**: BLOCKED (Requires a production build).
+
+-   **Issue 8: Authentication Persistence needs to be verified on a physical device (P2)**
     -   **Status**: USER VERIFICATION PENDING (Requires testing with a fresh APK build).
 
--   **Issue 5: Persistent ngrok/Cloudflare tunnel instability (P0 Blocker for UI work)**
-    -   **Attempted fixes**: The agent encountered numerous  errors and tunnel connection failures. Restarting the  service and clearing the cache were tried multiple times. This is an infrastructure issue.
-    -   **Next debug checklist**: If the tunnel fails, wait and retry. If the issue persists, focus on backend or code-level tasks that do not require a UI preview.
-    -   **Why fix this issue and what will be achieved with the fix?**: The frontend web preview is unusable when the tunnel is down, blocking all UI-related development and testing.
-    -   **Status**: BLOCKED (Environment issue).
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: N/A
-    -   **Blocked on other issue**: This issue blocks other tasks.
-
 **In progress Task List**:
--   **Task 1: Complete Create Post Page Enhancements (P0)**
+-   **Task 1: Implement Chat Options Functionality (P0)**
     -   **Where to resume**:
-        1.  **Image Cropper Done Button**: This has not been started. Investigate the image cropping implementation in  and add a confirmation button.
-        2.  **Location Picker**: The component  is partially refactored. The state logic was updated, but the UI for city selection needs to be added to the  method.
-        3.  **Currency Symbol**: Finish replacing all hardcoded '€' symbols in  with the  state variable loaded from feature settings.
-        4.  **Remove AI Suggestions**: The UI is conditionally rendered. This needs to be tested to confirm it's fully removed when the feature flag is off.
-    -   **What will be achieved with this?**: Fulfills the user's latest requests, improving the post creation experience and adding admin flexibility.
+        1.  The backend endpoints for mute, pin, delete (), block, and report () have been added but not tested.
+        2.  The frontend UI for the menu exists in , but the handler functions (, , etc.) are empty placeholders.
+        3.  Connect the frontend handler functions to the new backend API endpoints.
+        4.  Implement the frontend logic for each action (e.g., optimistic UI updates for pin/mute, navigation for block/report, confirmation modals for delete/block).
+    -   **What will be achieved with this?**: Completes a key user-facing feature in the chat screen.
     -   **Status**: IN PROGRESS
     -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on something**: Can be blocked by the ngrok tunnel instability.
+    -   **Blocked on something**: Ngrok instability might block frontend testing.
 
 **Upcoming and Future Tasks**
 **Upcoming Tasks**:
@@ -488,83 +117,92 @@ INFO:     10.208.169.227:33996 - "GET /api/pwa/sw.js HTTP/1.1" 200 OK) while int
 -   **Prevent Server Cold Starts (P2)**: For production, configure an uptime monitoring service to ping the  endpoint.
 
 **Completed work in this session**
--   Fixed the critical white screen app crash.
--   Completed the UI refactor for unauthenticated screens (, , ).
--   Implemented Remember Me and Forgot Password features on the login page.
--   Implemented Email Verification for new user registrations, including UI in the settings page.
--   Fixed a white flash loading issue on the listing detail page.
--   Started implementing enhancements for the Create Post page (Admin currency, removing AI suggestions, city-level location).
--   Fixed a 404 error for a backend endpoint ().
--   Updated  with progress.
+-   **Create Post Page**: Implemented city-level location selection, completely removed all AI suggestion features, and set the default currency to TSh.
+-   **Image Picker**: Initially added a Done button with a preview modal, then simplified the flow to remove cropping/preview per a later user request.
+-   **Chat Screen**: Removed the phone/call icon, fixed a logic bug causing quick replies to show incorrectly, implemented a custom emoji picker, removed the compose message icon, and added the UI for the 3-dots action menu.
+-   **UI/UX**: Added a premium animated splash screen using Lottie, adjusted social share button sizes, fixed the notification bell badge layout, and attempted to fix Close (X) icons on auth screens and duplicate notification settings.
+-   **Backend**: Added a new endpoint () to support city selection. Added placeholder endpoints for chat actions (mute, pin, delete, block, report).
+-   **Bug Fixes**: Addressed a timezone issue causing timestamps to be off by one hour. Attempted to fix the critical homepage white screen/listing display issue.
 
 **Earlier issues found/mentioned but not fixed**
--   The backend  serialization error was identified in logs but not resolved. This is now listed under **All Pending/In progress Issue list**.
+-   The backend  serialization error was carried over and not addressed.
+-   The homepage performance issues (white screen, listings not displaying) remain unresolved despite multiple attempts.
 
 **Known issue recurrence from previous fork**
--   **Unread notification/message counts**: This was a recurring issue. The latest fix passed automated tests but is pending user verification.
--   **ngrok/Cloudflare tunnel instability**: This was noted in the previous handoff and was a significant blocker during this session as well.
+-   **Unread notification/message counts**: Status remains pending user verification.
+-   **ngrok/Cloudflare tunnel instability**: This was a major blocker throughout the session.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Backend**: FastAPI, MongoDB, Pydantic
--   **Frontend**: React Native, Expo, TypeScript, Zustand for state management
--   **Development Concepts**: Feature Flags (via backend settings), Admin Controls, Conditional Rendering, Asynchronous State Management (), Form Handling.
+-   **Backend**: FastAPI, MongoDB
+-   **Frontend**: React Native, Expo, TypeScript, Zustand
+-   **UI/UX**: Lottie for animations (), ,  for handling safe areas, custom component creation (EmojiPicker, AnimatedSplashScreen), conditional rendering for feature flags.
+-   **State Management**: Complex state management for modals, pickers, and async data flows.
 
 **key DB schema**
--   : A new collection was implicitly created to store admin-configurable settings like .
+-   **conversations**: Will require new boolean fields for  and  (per user).
+-   **users**: A  list will likely be needed on the user model.
+-   **reports**: A new collection will be needed to store user reports.
 
 **All files of reference**
--    (Primary focus for ongoing work)
--    (Needs completion)
--    (New currency endpoints)
--    (Exposes currency settings)
--   
--   
--   
--   
+-    (Chat menu implementation)
+-    (Backend for chat menu)
+-    (Backend for block/report)
+-    (Homepage listings issue)
+-    (Suspected cause of homepage issue)
+-    (Recurring notification settings issue)
+-   , ,  (Recurring close icon issue)
 
 **Critical Info for New Agent**
--   **Your immediate priority (P0) is to complete the four user-requested enhancements for the Create Post page.** The work is spread across  and  and is currently in an incomplete state.
--   **The ngrok development tunnel is extremely unstable.** Be prepared for  errors that will block UI testing. If this occurs, pivot to backend tasks (like debugging the  error) or component logic that can be written without a live preview.
--   A backend  serialization error was spotted in logs but not fixed. Monitor the backend logs for its recurrence, especially after implementing new features.
--   The user is providing requests in batches. After completing the current Create Post tasks, consolidate all changes, test them thoroughly, and then present a clear plan for the next steps before proceeding.
+-   **Homepage Crash (P0)**: Your top priority after the chat menu is to definitively fix the homepage. It's unusable. The user suspects the  component you refactored. Start your investigation there. Temporarily removing it is a good diagnostic step.
+-   **Chat Menu (P0)**: You must complete the implementation of the 3-dot chat menu. The backend routes are placeholders; they need full logic. The frontend needs to be connected to these APIs, with appropriate UI feedback (modals, toasts).
+-   **Recurring UI Bugs**: The user has reported that the Close X icons and duplicate notification settings are still broken after you marked them as fixed. You MUST verify these yourself with screenshots and fix them robustly. Do not assume your previous fixes worked.
+-   **Tunnel Instability**: The ngrok preview tunnel is extremely unreliable. If it's down, you cannot test frontend changes. Pivot to backend-only work, like implementing the chat option logic or investigating the  error.
 
 **documents and test reports created in this job**
--   
--   
--   
--   
+-    (Updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  : User reported the white flash on the listing page. **(COMPLETED)**
-2.  : User directed the agent to the Create Post page. **(IN PROGRESS)**
-3.  : User instructed the agent to work on non-UI tasks due to tunnel instability. **(ACKNOWLEDGED)**
-4.  : User provided the list of four requirements for the Create Post page. **(IN PROGRESS)**
-5.  : User requested the email verification feature. **(COMPLETED)**
-6.  : User requested Remember Me and Forgot Password features. **(COMPLETED)**
-7.  The remaining messages are older and relate to tasks that have since been completed.
+1.  : User requested a splash screen. **(COMPLETED)**
+2.  : User reported two recurring bugs are not fixed. **(IN PROGRESS)**
+3.  : User requested the implementation of the 3-dot menu actions. **(IN PROGRESS)**
+4.  : User reported the critical homepage bug. **(IN PROGRESS)**
+5.  : User reported that no listings are showing on the homepage. **(IN PROGRESS)**
+6.  : User provided a strong hint for debugging the homepage issue. **(ACKNOWLEDGED)**
+7.  : User requested the 3-dot menu in chat. **(COMPLETED - UI ONLY)**
+8.  : User requested UI cleanup on the messages screen. **(COMPLETED)**
+9.  : User clarified the timezone bug. **(COMPLETED)**
+10. : User reported the timestamp bug. **(COMPLETED)**
 
 **Project Health Check:**
--   **Broken**: The Create Post page is in a broken state due to half-finished refactoring.
--   **Mocked**: The frontend web preview is unreliable due to the unstable ngrok tunnel, making UI development difficult.
+-   **Broken**:
+    -   Homepage (): Critically broken. Often loads to a white screen and fails to display listings.
+    -   Chat Options Menu (): The UI exists, but it is not functional. Clicking any option does nothing.
+-   **Mocked**:
+    -   Frontend development is severely hampered by the unstable ngrok preview tunnel.
 
 **3rd Party Integrations**
--   **SendGrid**: For transactional emails (used for password reset and email verification).
--   **Firebase Cloud Messaging (FCM)**: For push notifications.
+-   **SendGrid**: Transactional emails.
+-   **Firebase Cloud Messaging (FCM)**: Push notifications.
+-   **Lottie ()**: Used for the new animated splash screen.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES, successfully used for Email Verification and Forgot Password features.
+-   **Testing agent used after significant changes**: NO
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None.
--   **Known regressions**: The Create Post page is likely non-functional due to the ongoing, incomplete changes.
+-   **Known regressions**:
+    -   Homepage functionality completely broke during this session.
+    -   Auth screen close icons and profile notification settings are recurring bugs that were not successfully fixed.
 
 **Credentials to test flow:**
 -   Test user: 
 -   Password: 
 
 **What agent forgot to execute**
--   The agent did not start implementing the **Done button for the image cropper** on the Create Post page, which was part of the user's request.
--   The agent left the  component and the  file in an incomplete, partially refactored state.
--   The investigation into the backend  serialization error was started but never completed.</analysis>
+-   The agent created backend routes for the chat options but did not implement the actual logic within them (e.g., database updates for muting, pinning, blocking).
+-   The agent did not connect the frontend chat menu buttons to the backend APIs.
+-   The agent failed to resolve the critical homepage performance/crash issue despite multiple attempts.
+-   The agent did not properly verify fixes for recurring UI bugs (close icons, notification settings), leading to user frustration.
+-   No automated or structured testing was performed for any of the numerous features and fixes implemented in this session.</analysis>

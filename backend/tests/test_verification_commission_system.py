@@ -8,7 +8,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://property-upload-hub.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://homepage-fix-8.preview.emergentagent.com').rstrip('/')
 
 # Test fixtures
 @pytest.fixture(scope="module")

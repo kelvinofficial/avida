@@ -148,7 +148,7 @@ def create_auth_router(db, get_current_user, get_session_token, check_rate_limit
         try:
             from utils.email_service import email_service
             
-            verify_link = f"https://property-upload-hub.preview.emergentagent.com/verify-email?token={verification_token}"
+            verify_link = f"https://homepage-fix-8.preview.emergentagent.com/verify-email?token={verification_token}"
             
             await email_service.send_email(
                 to_email=register_data.email.lower(),
@@ -439,7 +439,7 @@ def create_auth_router(db, get_current_user, get_session_token, check_rate_limit
         try:
             from utils.email_service import email_service
             
-            reset_link = f"https://property-upload-hub.preview.emergentagent.com/reset-password?token={reset_token}"
+            reset_link = f"https://homepage-fix-8.preview.emergentagent.com/reset-password?token={reset_token}"
             
             await email_service.send_email(
                 to_email=data.email.lower(),
@@ -594,7 +594,7 @@ def create_auth_router(db, get_current_user, get_session_token, check_rate_limit
         try:
             from utils.email_service import email_service
             
-            verify_link = f"https://property-upload-hub.preview.emergentagent.com/verify-email?token={verification_token}"
+            verify_link = f"https://homepage-fix-8.preview.emergentagent.com/verify-email?token={verification_token}"
             
             await email_service.send_email(
                 to_email=data.email.lower(),

@@ -51,8 +51,8 @@
   "test_credentials": {
     "admin_email": "admin@marketplace.com",
     "admin_password": "Admin@123456",
-    "api_base_url": "https://property-upload-hub.preview.emergentagent.com/api",
-    "admin_ui_url": "https://property-upload-hub.preview.emergentagent.com/api/admin-ui/dashboard/advanced-seo"
+    "api_base_url": "https://homepage-fix-8.preview.emergentagent.com/api",
+    "admin_ui_url": "https://homepage-fix-8.preview.emergentagent.com/api/admin-ui/dashboard/advanced-seo"
   },
   "seed_data_creation": "",
   "retest_needed": false,

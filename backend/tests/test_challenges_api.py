@@ -8,7 +8,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://property-upload-hub.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://homepage-fix-8.preview.emergentagent.com')
 
 # Test user credentials
 TEST_EMAIL = f"challenge_test_{uuid.uuid4().hex[:6]}@example.com"
