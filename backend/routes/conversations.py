@@ -471,4 +471,114 @@ def create_conversations_router(db, require_auth, check_rate_limit, sio, create_
         
         return response_message
     
+    # =============================================================================
+    # CONVERSATION MANAGEMENT ENDPOINTS
+    # =============================================================================
+    
+    @router.post("/{conversation_id}/mute")
+    async def mute_conversation(conversation_id: str, request: Request):
+        """Toggle mute status for a conversation"""
+        user = await require_auth(request)
+        
+        conversation = await db.conversations.find_one(
+            {"id": conversation_id, "participants": user.user_id},
+            {"_id": 0}
+        )
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        
+        # Get current muted_by list or initialize
+        muted_by = conversation.get("muted_by", [])
+        is_muted = user.user_id in muted_by
+        
+        if is_muted:
+            # Unmute
+            muted_by.remove(user.user_id)
+        else:
+            # Mute
+            muted_by.append(user.user_id)
+        
+        await db.conversations.update_one(
+            {"id": conversation_id},
+            {"$set": {"muted_by": muted_by, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        return {"success": True, "is_muted": not is_muted}
+    
+    @router.post("/{conversation_id}/pin")
+    async def pin_conversation(conversation_id: str, request: Request):
+        """Toggle pin status for a conversation"""
+        user = await require_auth(request)
+        
+        conversation = await db.conversations.find_one(
+            {"id": conversation_id, "participants": user.user_id},
+            {"_id": 0}
+        )
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        
+        # Get current pinned_by list or initialize
+        pinned_by = conversation.get("pinned_by", [])
+        is_pinned = user.user_id in pinned_by
+        
+        if is_pinned:
+            # Unpin
+            pinned_by.remove(user.user_id)
+        else:
+            # Pin
+            pinned_by.append(user.user_id)
+        
+        await db.conversations.update_one(
+            {"id": conversation_id},
+            {"$set": {"pinned_by": pinned_by, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        return {"success": True, "is_pinned": not is_pinned}
+    
+    @router.delete("/{conversation_id}")
+    async def delete_conversation(conversation_id: str, request: Request):
+        """Delete a conversation (soft delete for user)"""
+        user = await require_auth(request)
+        
+        conversation = await db.conversations.find_one(
+            {"id": conversation_id, "participants": user.user_id},
+            {"_id": 0}
+        )
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        
+        # Soft delete - add user to deleted_by list
+        deleted_by = conversation.get("deleted_by", [])
+        if user.user_id not in deleted_by:
+            deleted_by.append(user.user_id)
+        
+        await db.conversations.update_one(
+            {"id": conversation_id},
+            {"$set": {"deleted_by": deleted_by, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        # If both participants have deleted, actually remove
+        if len(deleted_by) >= 2:
+            await db.conversations.delete_one({"id": conversation_id})
+            await db.messages.delete_many({"conversation_id": conversation_id})
+        
+        return {"success": True, "message": "Conversation deleted"}
+    
+    @router.get("/{conversation_id}/status")
+    async def get_conversation_status(conversation_id: str, request: Request):
+        """Get mute/pin status for a conversation"""
+        user = await require_auth(request)
+        
+        conversation = await db.conversations.find_one(
+            {"id": conversation_id, "participants": user.user_id},
+            {"_id": 0, "muted_by": 1, "pinned_by": 1}
+        )
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        
+        return {
+            "is_muted": user.user_id in conversation.get("muted_by", []),
+            "is_pinned": user.user_id in conversation.get("pinned_by", [])
+        }
+    
     return router
