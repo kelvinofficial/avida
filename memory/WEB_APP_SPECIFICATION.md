@@ -111,7 +111,7 @@ Create a **public-facing web marketplace** for **avito.co.tz** that:
 
 ---
 
-## PAGES TO BUILD (Public Marketplace)
+## PAGES TO BUILD (Complete Web Marketplace)
 
 ### 🌐 Public Pages (No Auth Required)
 
@@ -149,12 +149,13 @@ Create a **public-facing web marketplace** for **avito.co.tz** that:
 - Filtered listings
 - Popular searches in category
 
-#### 5. Seller Profile (`/seller/[id]`)
+#### 5. Seller/Public Profile (`/seller/[id]`, `/profile/public/[id]`)
 - Seller info, rating, badges
 - Verification status
 - Seller's active listings
 - Reviews/ratings
 - Contact button
+- Badge showcase
 
 #### 6. Blog (`/blog`, `/blog/[slug]`)
 - Blog listing page
@@ -163,7 +164,12 @@ Create a **public-facing web marketplace** for **avito.co.tz** that:
 - Categories/tags
 - SEO optimized
 
-#### 7. Static Pages
+#### 7. Sellers Directory (`/sellers`)
+- Browse all sellers
+- Filter by category, location, rating
+- Featured/verified sellers
+
+#### 8. Static Pages
 - About Us (`/about`)
 - Contact (`/contact`)
 - FAQ (`/faq`)
@@ -171,69 +177,277 @@ Create a **public-facing web marketplace** for **avito.co.tz** that:
 - Terms of Service (`/terms`)
 - Privacy Policy (`/privacy`)
 - How It Works (`/how-it-works`)
+- Help Center (`/help`)
 
 ---
 
-### 👤 User Pages (Auth Required)
+### 🚗 Specialized Verticals
 
-#### 8. Authentication
+#### 9. Auto Motors (`/auto`)
+- Auto listings homepage
+- Auto listing detail (`/auto/[id]`)
+- Post auto listing (`/auto/post`)
+- Auto-specific filters (make, model, year, mileage)
+
+#### 10. Property/Real Estate (`/property`)
+- Property listings homepage
+- Property detail (`/property/[id]`)
+- Post property (`/property/post`)
+- Property-specific filters (bedrooms, bathrooms, size)
+
+---
+
+### 👤 User Authentication
+
+#### 11. Authentication Pages
 - Login (`/login`)
 - Register (`/register`)
 - Forgot Password (`/forgot-password`)
 - Reset Password (`/reset-password`)
 - Email Verification (`/verify-email`)
+- Sign Out (`/signout`)
 
-#### 9. User Dashboard (`/dashboard`)
-- Overview stats (views, messages, listings)
-- Recent activity
+---
+
+### 📊 User Dashboard
+
+#### 12. Dashboard Home (`/dashboard`)
+- Overview stats (views, messages, listings, earnings)
+- Recent activity feed
 - Quick actions
 - Notifications preview
+- Performance summary
 
-#### 10. My Listings (`/dashboard/listings`)
-- List of user's listings with status
+#### 13. My Listings (`/dashboard/listings`)
+- List of user's listings with status (active, pending, sold)
 - Create new listing button
-- Edit/delete/boost actions
+- Edit/delete/renew/boost actions
 - Analytics per listing
+- Bulk actions
 
-#### 11. Create/Edit Listing (`/dashboard/listings/new`, `/dashboard/listings/[id]/edit`)
-- Multi-step form with:
-  - Category selection
-  - Dynamic attributes (from form config)
+#### 14. Create Listing (`/dashboard/listings/new`)
+- Category selection (`/post/category`)
+- Multi-step form:
+  - Dynamic attributes (from form config API)
   - Image upload with optimization
-  - Location picker
-  - Price & condition
+  - Location picker (country → region → city)
+  - Price & currency
+  - Condition selection
   - Description with AI suggestions
 - Preview before publish
 
-#### 12. Messages (`/dashboard/messages`)
-- Conversation list
+#### 15. Edit Listing (`/dashboard/listings/[id]/edit`)
+- Same as create but pre-filled
+- Update images
+- Change status
+
+#### 16. Listing Performance (`/dashboard/listings/[id]/performance`)
+- Views over time chart
+- Engagement metrics
+- Comparison with similar listings
+- Optimization suggestions
+
+---
+
+### 💬 Communication
+
+#### 17. Messages (`/dashboard/messages`)
+- Conversation list with unread count
 - Real-time chat interface
 - Quick replies
-- Image sharing
+- Image/file sharing
+- Voice notes (if supported)
 - Block/report user
+- Emoji picker
 
-#### 13. Saved Items (`/dashboard/saved`)
-- Grid of saved listings
+#### 18. Chat (`/dashboard/messages/[id]`)
+- Full chat interface
+- Message history
+- Typing indicators
+- Read receipts
+
+#### 19. Notifications (`/dashboard/notifications`)
+- All notifications list
+- Filter by type
+- Mark as read/unread
+- Notification preferences link
+
+#### 20. Notification Preferences (`/dashboard/notification-preferences`)
+- Email notification toggles
+- Push notification toggles
+- SMS notification toggles
+- Frequency settings
+
+---
+
+### 💰 Commerce & Transactions
+
+#### 21. Offers (`/dashboard/offers`)
+- Offers received (as seller)
+- Offers sent (as buyer)
+- Accept/reject/counter offer
+- Offer history
+
+#### 22. Sales (`/dashboard/sales`)
+- Items sold
+- Revenue stats
+- Pending payments
+- Completed transactions
+
+#### 23. Purchases (`/dashboard/purchases`)
+- Items bought
+- Order status tracking
+- Payment history
+- Leave reviews
+
+#### 24. Orders (`/dashboard/orders`)
+- Combined view of sales + purchases
+- Order details
+- Shipping/delivery status
+
+#### 25. Invoices (`/dashboard/invoices`)
+- Download invoices
+- Transaction receipts
+- Tax documents
+
+#### 26. Checkout (`/checkout/[listing_id]`)
+- Payment method selection
+- Shipping/delivery options
+- Order summary
+- Escrow option
+
+#### 27. Checkout Status
+- Pending (`/checkout/pending`)
+- Success (`/checkout/success`)
+
+---
+
+### 💎 Premium & Monetization
+
+#### 28. Credits (`/dashboard/credits`)
+- Current credit balance
+- Buy credits packages
+- Credit usage history
+- Auto-refill settings
+
+#### 29. Boost Listing (`/boost/[listing_id]`)
+- Boost package selection
+- Duration options
+- Payment
+- Boost analytics
+
+#### 30. Premium/Subscription (`/premium`)
+- Premium plans comparison
+- Subscribe/upgrade
+- Premium benefits
+- Success page (`/premium/success`)
+
+---
+
+### 🏆 Gamification
+
+#### 31. Badges (`/dashboard/badges`, `/profile/badges`)
+- Earned badges showcase
+- Badge progress
+- How to earn badges
+- Share badges
+
+#### 32. Challenges (`/challenges`)
+- Active challenges
+- Challenge progress
+- Rewards
+- Leaderboard
+
+#### 33. Streaks (`/streaks`)
+- Current streak
+- Streak history
+- Streak rewards
+- Tips to maintain streak
+
+#### 34. Leaderboard (`/leaderboard`)
+- Top sellers
+- Most active users
+- Weekly/monthly rankings
+- Share ranking
+
+---
+
+### ❤️ Saved & History
+
+#### 35. Saved Items (`/dashboard/saved`)
+- Grid of saved/favorited listings
 - Remove from saved
+- Price drop alerts
+- Organize in collections
+
+#### 36. Recently Viewed (`/dashboard/recently-viewed`)
+- Browsing history
+- Clear history
+- Quick re-access
+
+#### 37. Smart Alerts (`/smart-alerts`)
+- Saved searches
 - Price alerts
+- New listing alerts
+- Manage alerts
 
-#### 14. My Offers (`/dashboard/offers`)
-- Offers sent
-- Offers received
-- Accept/reject/counter
+---
 
-#### 15. Profile Settings (`/dashboard/settings`)
-- Edit profile info
-- Change password
-- Notification preferences
-- Privacy settings
-- Delete account
+### 👤 Profile & Settings
 
-#### 16. Orders & Transactions (`/dashboard/orders`)
-- Purchase history
-- Sales history
-- Escrow transactions
-- Invoices
+#### 38. Edit Profile (`/dashboard/profile/edit`)
+- Profile photo
+- Name, bio
+- Contact info
+- Social links
+- Business profile upgrade
+
+#### 39. Public Profile Preview (`/profile/public/[id]`)
+- How others see your profile
+
+#### 40. Verification
+- Email verification (`/profile/verify-email`)
+- Phone verification (`/profile/verify-phone`)
+- ID verification (`/profile/verify-id`)
+
+#### 41. Settings (`/dashboard/settings`)
+- Account settings main page
+
+#### 42. Settings Sub-pages
+- Change Password (`/settings/change-password`)
+- Two-Factor Auth (`/settings/2fa`)
+- Appearance/Theme (`/settings/appearance`)
+- Language (`/settings/language`)
+- Currency (`/settings/currency`)
+- Blocked Users (`/settings/blocked-users`)
+- Active Sessions (`/settings/sessions`)
+- Storage/Data (`/settings/storage`)
+- App Lock (`/settings/app-lock`) - mobile only
+- Alerts (`/settings/alerts`)
+
+---
+
+### 🏢 Business Features
+
+#### 43. Business Profile (`/business/[slug]`)
+- Business page view
+- Business listings
+- Business info, hours, location
+- Reviews
+
+#### 44. Edit Business (`/business/edit`)
+- Business profile editor
+- Logo, banner
+- Description
+- Contact info
+- Verification
+
+---
+
+### 🔧 Utility Pages
+
+#### 45. Debug/API Test (`/debug-api`) - Dev only
+- API testing interface
 
 ---
 
