@@ -620,8 +620,12 @@ export default function LoginScreen() {
         end={{ x: 1, y: 1 }}
         style={styles.headerGradient}
       >
-        {/* Close Button */}
-        <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+        {/* Close Button - positioned below status bar */}
+        <TouchableOpacity 
+          style={[styles.closeButton, { top: insets.top + 8 }]} 
+          onPress={handleClose}
+          data-testid="login-close-btn"
+        >
           <Ionicons name="close" size={24} color="#FFFFFF" />
         </TouchableOpacity>
 
