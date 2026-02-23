@@ -148,8 +148,12 @@ export default function RegisterScreen() {
         end={{ x: 1, y: 1 }}
         style={styles.headerGradient}
       >
-        {/* Close Button - Fixed position */}
-        <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+        {/* Close Button - Fixed position with safe area offset */}
+        <TouchableOpacity 
+          style={[styles.closeButton, { top: insets.top + 8 }]} 
+          onPress={handleClose}
+          data-testid="register-close-btn"
+        >
           <Ionicons name="close" size={24} color="#FFFFFF" />
         </TouchableOpacity>
 
