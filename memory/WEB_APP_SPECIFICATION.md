@@ -1,375 +1,478 @@
-# Avito Web Marketplace - New Job Specification
+# Avito Web Platform - Complete Specification
+
+## 🎉 DISCOVERY: Existing Admin Dashboard Found!
+
+You already have a comprehensive **Next.js Admin Dashboard** at `/app/admin-dashboard/` with 64+ pages!
+
+### Existing Admin Features (Already Built):
+
+#### 📊 Analytics & Reporting
+- Analytics Dashboard
+- Cohort Analytics  
+- Search Analytics
+- SEO Analytics
+- Notification Analytics
+- Executive Summary
+- Reports
+
+#### 🔍 SEO & Growth Engine
+- SEO Tools
+- SEO A/B Testing
+- Advanced SEO
+- Multilang SEO
+- ASO Engine (App Store Optimization)
+- Authority Building
+- Backlink Monitoring
+- Content Engine
+- Content Calendar
+- Social Distribution
+- Growth Engine
+
+#### 🛍️ Marketplace Management
+- Listings Management
+- Listing Moderation
+- Categories
+- Attributes/Icons
+- Form Config (Dynamic Forms)
+- Photography Guides
+- Safety Tips
+
+#### 👥 User Management
+- Users
+- Verification
+- Business Profiles
+- Team Management
+- Badges
+- Challenges
+
+#### 💰 Commerce
+- Commission System
+- Escrow
+- Boosts
+- Vouchers
+- Invoices
+
+#### 🔔 Notifications
+- Notifications
+- Smart Notifications
+- SMS Notifications
+
+#### ⚙️ Settings & Config
+- Platform Config
+- Config Manager
+- Feature Settings
+- Image Settings
+- Integrations
+- Cookie Consent
+- reCAPTCHA
+
+#### 🛡️ Compliance & Security
+- Compliance
+- Audit Logs
+- Sandbox Mode
+- Moderation
+- Tickets
+
+#### 🧪 Testing & QA
+- A/B Testing
+- QA Reliability
+- Polls & Surveys
+- Segment Builder
+
+#### 📍 Locations
+- Locations Management
+
+#### 🎯 Marketing
+- Banners
+- Ads
+- URL Shortener
+
+#### 🤖 AI Features
+- AI Analyzer
+- AI Personalization
+
+---
 
 ## Project Overview
-Create a modern Next.js web marketplace application for **avito.co.tz** that connects to an existing FastAPI backend.
+
+Create a **public-facing web marketplace** for **avito.co.tz** that:
+1. Connects to the existing FastAPI backend
+2. Integrates with the existing Admin Dashboard (can be embedded or linked)
 
 ## Tech Stack
 - **Framework**: Next.js 14 (App Router)
 - **Styling**: Tailwind CSS + shadcn/ui components
 - **State Management**: Zustand
-- **API Client**: Axios or fetch
-- **Authentication**: JWT tokens (stored in httpOnly cookies)
-- **Charts**: Recharts
-- **Tables**: TanStack Table
-- **Forms**: React Hook Form + Zod validation
-
-## Design Requirements
-- **Theme**: Modern, clean design optimized for desktop/laptop
-- **Colors**: Professional marketplace aesthetic (not the green mobile app theme)
-- **Typography**: Clean sans-serif fonts
-- **Layout**: Full-width with max-width container, sidebar navigation for dashboard
+- **Authentication**: JWT tokens
 
 ## Backend API
 **Base URL**: `https://homepage-fix-8.preview.emergentagent.com/api`
-(Will be updated to production URL after deployment)
+**API Documentation**: `/docs` (Swagger UI)
 
-**API Documentation**: Available at `/docs` (Swagger UI)
+---
 
-### Key API Endpoints
-
-#### Authentication
-```
-POST /api/auth/register       - User registration
-POST /api/auth/login          - User login (returns JWT token)
-POST /api/auth/google         - Google OAuth
-POST /api/auth/forgot-password - Password reset request
-POST /api/auth/reset-password  - Password reset
-GET  /api/auth/me             - Get current user (requires token)
-```
-
-#### Listings
-```
-GET  /api/listings            - Get listings (with filters)
-GET  /api/listings/{id}       - Get single listing
-POST /api/listings            - Create listing (auth required)
-PUT  /api/listings/{id}       - Update listing (auth required)
-DELETE /api/listings/{id}     - Delete listing (auth required)
-GET  /api/feed/listings       - Get optimized feed (cached)
-```
-
-#### Categories
-```
-GET  /api/categories          - Get all categories
-GET  /api/categories/{id}     - Get category with subcategories
-```
-
-#### Search
-```
-GET  /api/listings?q={query}&category={cat}&location={loc}&min_price={min}&max_price={max}
-GET  /api/popular-searches    - Get trending searches
-```
-
-#### User Profile
-```
-GET  /api/profile/{user_id}   - Get public profile
-PUT  /api/profile             - Update own profile (auth required)
-GET  /api/profile/my-listings - Get user's listings
-```
-
-#### Messaging
-```
-GET  /api/conversations       - Get user's conversations
-GET  /api/conversations/{id}  - Get conversation messages
-POST /api/conversations/{id}/messages - Send message
-```
-
-#### Favorites
-```
-GET  /api/favorites           - Get saved listings
-POST /api/favorites/{listing_id} - Save listing
-DELETE /api/favorites/{listing_id} - Remove from saved
-```
-
-#### Notifications
-```
-GET  /api/notifications       - Get notifications
-PUT  /api/notifications/{id}/read - Mark as read
-GET  /api/notification-preferences - Get preferences
-PUT  /api/notification-preferences - Update preferences
-```
-
-#### Admin (requires admin role)
-```
-GET  /api/admin/stats         - Dashboard stats
-GET  /api/admin/users         - List users
-PUT  /api/admin/users/{id}    - Update user
-GET  /api/admin/analytics/*   - Analytics endpoints
-GET  /api/admin/vouchers      - Voucher management
-POST /api/admin/challenges    - Create challenges
-```
-
-#### Blog
-```
-GET  /api/blog/posts          - Get blog posts
-GET  /api/blog/posts/{slug}   - Get single post
-```
-
-#### Business Profiles
-```
-GET  /api/business/{slug}     - Get business profile
-```
-
-## Pages to Build
+## PAGES TO BUILD (Public Marketplace)
 
 ### 🌐 Public Pages (No Auth Required)
 
-1. **Homepage** (`/`)
-   - Hero section with search
-   - Featured categories
-   - Recent/trending listings grid
-   - Call-to-action for sellers
+#### 1. Homepage (`/`)
+- Hero section with search bar
+- Featured categories grid
+- Recent/trending listings
+- Call-to-action for sellers
+- SEO optimized with structured data
 
-2. **Search Results** (`/search`)
-   - Filters sidebar (category, price, location)
-   - Listings grid with pagination
-   - Sort options (newest, price, etc.)
+#### 2. Search Results (`/search`)
+- Filters sidebar:
+  - Categories (from `/api/categories`)
+  - Price range
+  - Location (from `/api/locations`)
+  - Condition
+  - Custom attributes per category
+- Listings grid with pagination
+- Sort options (newest, price low/high, popular)
+- Save search functionality
 
-3. **Listing Detail** (`/listing/[id]`)
-   - Image gallery
-   - Price, description, attributes
-   - Seller info card
-   - Contact seller button
-   - Related listings
+#### 3. Listing Detail (`/listing/[id]`)
+- Image gallery with lightbox
+- Price, description, attributes
+- Seller info card with badges
+- "Contact Seller" / "Make Offer" buttons
+- Related listings
+- Share buttons
+- Report listing option
+- SEO: JSON-LD structured data
 
-4. **Category Page** (`/category/[slug]`)
-   - Category header
-   - Subcategories
-   - Filtered listings
+#### 4. Category Page (`/category/[slug]`)
+- Category hero with description
+- Subcategories navigation
+- Filtered listings
+- Popular searches in category
 
-5. **Seller Profile** (`/seller/[id]`)
-   - Seller info, ratings, badges
-   - Seller's listings
-   - Contact button
+#### 5. Seller Profile (`/seller/[id]`)
+- Seller info, rating, badges
+- Verification status
+- Seller's active listings
+- Reviews/ratings
+- Contact button
 
-6. **Blog** (`/blog`, `/blog/[slug]`)
-   - Blog listing
-   - Individual blog post
+#### 6. Blog (`/blog`, `/blog/[slug]`)
+- Blog listing page
+- Individual blog post
+- Related posts
+- Categories/tags
+- SEO optimized
 
-7. **Static Pages**
-   - About (`/about`)
-   - Contact (`/contact`)
-   - FAQ (`/faq`)
-   - Safety Tips (`/safety`)
-   - Terms & Privacy
+#### 7. Static Pages
+- About Us (`/about`)
+- Contact (`/contact`)
+- FAQ (`/faq`)
+- Safety Tips (`/safety`)
+- Terms of Service (`/terms`)
+- Privacy Policy (`/privacy`)
+- How It Works (`/how-it-works`)
+
+---
 
 ### 👤 User Pages (Auth Required)
 
-8. **Authentication**
-   - Login (`/login`)
-   - Register (`/register`)
-   - Forgot Password (`/forgot-password`)
+#### 8. Authentication
+- Login (`/login`)
+- Register (`/register`)
+- Forgot Password (`/forgot-password`)
+- Reset Password (`/reset-password`)
+- Email Verification (`/verify-email`)
 
-9. **Dashboard** (`/dashboard`)
-   - Overview stats
-   - Recent activity
-   - Quick actions
+#### 9. User Dashboard (`/dashboard`)
+- Overview stats (views, messages, listings)
+- Recent activity
+- Quick actions
+- Notifications preview
 
-10. **My Listings** (`/dashboard/listings`)
-    - List of user's listings
-    - Edit/delete actions
-    - Status indicators
+#### 10. My Listings (`/dashboard/listings`)
+- List of user's listings with status
+- Create new listing button
+- Edit/delete/boost actions
+- Analytics per listing
 
-11. **Create/Edit Listing** (`/dashboard/listings/new`, `/dashboard/listings/[id]/edit`)
-    - Multi-step form
-    - Image upload
-    - Category selection
-    - Location picker
+#### 11. Create/Edit Listing (`/dashboard/listings/new`, `/dashboard/listings/[id]/edit`)
+- Multi-step form with:
+  - Category selection
+  - Dynamic attributes (from form config)
+  - Image upload with optimization
+  - Location picker
+  - Price & condition
+  - Description with AI suggestions
+- Preview before publish
 
-12. **Messages** (`/dashboard/messages`)
-    - Conversation list
-    - Chat interface
+#### 12. Messages (`/dashboard/messages`)
+- Conversation list
+- Real-time chat interface
+- Quick replies
+- Image sharing
+- Block/report user
 
-13. **Saved Items** (`/dashboard/saved`)
-    - Grid of saved listings
+#### 13. Saved Items (`/dashboard/saved`)
+- Grid of saved listings
+- Remove from saved
+- Price alerts
 
-14. **Profile Settings** (`/dashboard/settings`)
-    - Edit profile
-    - Change password
-    - Notification preferences
+#### 14. My Offers (`/dashboard/offers`)
+- Offers sent
+- Offers received
+- Accept/reject/counter
 
-15. **Orders/Purchases** (`/dashboard/orders`)
-    - Purchase history
-    - Order status
+#### 15. Profile Settings (`/dashboard/settings`)
+- Edit profile info
+- Change password
+- Notification preferences
+- Privacy settings
+- Delete account
 
-### 🔐 Admin Dashboard (Admin Role Required)
+#### 16. Orders & Transactions (`/dashboard/orders`)
+- Purchase history
+- Sales history
+- Escrow transactions
+- Invoices
 
-16. **Admin Home** (`/admin`)
-    - Key metrics cards
-    - Charts (users, listings, revenue)
-    - Recent activity
+---
 
-17. **User Management** (`/admin/users`)
-    - Users table with search/filter
-    - User detail modal
-    - Verify/ban actions
+### 🔐 Admin Access
 
-18. **Listings Management** (`/admin/listings`)
-    - Pending approvals
-    - Reported listings
-    - Bulk actions
+The existing admin dashboard at `/app/admin-dashboard/` should be:
+- **Option A**: Deployed separately and linked (recommended)
+- **Option B**: Embedded into the main web app under `/admin/*`
 
-19. **Analytics** (`/admin/analytics`)
-    - Traffic charts
-    - Conversion funnels
-    - Geographic data
+---
 
-20. **Vouchers** (`/admin/vouchers`)
-    - Create/edit vouchers
-    - Usage statistics
+## API ENDPOINTS
 
-21. **Challenges** (`/admin/challenges`)
-    - Badge challenges
-    - Participation stats
-
-22. **Business Profiles** (`/admin/business`)
-    - Pending verifications
-    - Profile management
-
-## Component Structure
-
+### Authentication
 ```
-/app
-├── (public)/
-│   ├── page.tsx              # Homepage
-│   ├── search/page.tsx
-│   ├── listing/[id]/page.tsx
-│   ├── category/[slug]/page.tsx
-│   ├── seller/[id]/page.tsx
-│   ├── blog/
-│   └── [...static pages]
-├── (auth)/
-│   ├── login/page.tsx
-│   ├── register/page.tsx
-│   └── forgot-password/page.tsx
-├── dashboard/
-│   ├── layout.tsx            # Dashboard layout with sidebar
-│   ├── page.tsx              # Dashboard home
-│   ├── listings/
-│   ├── messages/
-│   ├── saved/
-│   └── settings/
-├── admin/
-│   ├── layout.tsx            # Admin layout
-│   ├── page.tsx              # Admin home
-│   ├── users/
-│   ├── analytics/
-│   └── [...admin pages]
-└── layout.tsx                # Root layout
-
-/components
-├── ui/                       # shadcn components
-├── listings/
-│   ├── ListingCard.tsx
-│   ├── ListingGrid.tsx
-│   └── ListingFilters.tsx
-├── layout/
-│   ├── Header.tsx
-│   ├── Footer.tsx
-│   └── Sidebar.tsx
-└── shared/
-    ├── SearchBar.tsx
-    ├── CategoryNav.tsx
-    └── LoadingStates.tsx
-
-/lib
-├── api.ts                    # API client
-├── auth.ts                   # Auth utilities
-└── utils.ts                  # Helper functions
-
-/store
-├── authStore.ts              # Auth state
-├── cartStore.ts              # Cart/saved items
-└── uiStore.ts                # UI state
+POST /api/auth/register
+POST /api/auth/login  
+POST /api/auth/google
+POST /api/auth/forgot-password
+POST /api/auth/reset-password
+GET  /api/auth/me
+POST /api/auth/verify-email
 ```
 
-## Environment Variables
+### Listings
+```
+GET  /api/listings
+GET  /api/listings/{id}
+POST /api/listings
+PUT  /api/listings/{id}
+DELETE /api/listings/{id}
+GET  /api/feed/listings
+POST /api/listings/{id}/boost
+```
+
+### Categories & Attributes
+```
+GET  /api/categories
+GET  /api/categories/{id}
+GET  /api/categories/{id}/form-config
+GET  /api/attribute-icons
+```
+
+### Search
+```
+GET  /api/listings?q={query}&category={cat}&location={loc}&min_price={min}&max_price={max}
+GET  /api/popular-searches
+GET  /api/saved-filters
+POST /api/saved-filters
+```
+
+### Locations
+```
+GET  /api/locations/countries
+GET  /api/locations/regions?country_code={code}
+GET  /api/locations/cities/by-region?region_code={code}
+```
+
+### User Profile
+```
+GET  /api/profile/{user_id}
+PUT  /api/profile
+GET  /api/profile/my-listings
+GET  /api/profile/badges
+```
+
+### Messaging
+```
+GET  /api/conversations
+GET  /api/conversations/{id}
+POST /api/conversations/{id}/messages
+PUT  /api/conversations/{id}/read
+```
+
+### Offers
+```
+GET  /api/offers
+POST /api/offers
+PUT  /api/offers/{id}
+```
+
+### Favorites
+```
+GET  /api/favorites
+POST /api/favorites/{listing_id}
+DELETE /api/favorites/{listing_id}
+```
+
+### Notifications
+```
+GET  /api/notifications
+PUT  /api/notifications/{id}/read
+GET  /api/notification-preferences
+PUT  /api/notification-preferences
+```
+
+### Blog
+```
+GET  /api/blog/posts
+GET  /api/blog/posts/{slug}
+```
+
+### SEO (for SSR)
+```
+GET  /api/seo-settings
+GET  /api/seo-settings/page/{page_type}/{page_id}
+```
+
+---
+
+## SEO REQUIREMENTS
+
+### Server-Side Rendering
+- All public pages must be SSR for SEO
+- Dynamic meta tags per page
+- Proper heading hierarchy (H1, H2, H3)
+
+### Meta Tags
+```html
+<title>{dynamic title}</title>
+<meta name="description" content="{dynamic description}">
+<meta name="keywords" content="{from API}">
+<link rel="canonical" href="{canonical URL}">
+```
+
+### Open Graph
+```html
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{description}">
+<meta property="og:image" content="{listing image or default}">
+<meta property="og:url" content="{page URL}">
+<meta property="og:type" content="website|product">
+```
+
+### Structured Data (JSON-LD)
+- Product schema for listings
+- Organization schema for homepage
+- BreadcrumbList for navigation
+- FAQ schema for FAQ page
+- Article schema for blog posts
+
+### Technical SEO
+- Sitemap generation (`/sitemap.xml`)
+- robots.txt (`/robots.txt`)
+- Proper URL structure
+- Image alt texts
+- Loading performance (Core Web Vitals)
+
+---
+
+## DESIGN REQUIREMENTS
+
+### Theme
+- Modern, clean, professional
+- Light theme by default with dark mode option
+- NOT the green mobile app theme - fresh design
+
+### Typography
+- Clean sans-serif fonts (Inter, Plus Jakarta Sans)
+- Clear hierarchy
+
+### Layout
+- Responsive: Mobile, Tablet, Desktop
+- Max-width container (1280px)
+- Sidebar navigation for dashboard
+
+### Components
+- shadcn/ui as base
+- Custom listing cards
+- Image galleries
+- Chat interface
+- Form components with validation
+
+---
+
+## ENVIRONMENT VARIABLES
 
 ```env
 NEXT_PUBLIC_API_URL=https://[backend-url]/api
 NEXT_PUBLIC_SITE_URL=https://avito.co.tz
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=[if using Google OAuth]
+NEXT_PUBLIC_SITE_NAME=Avito Tanzania
+NEXT_PUBLIC_DEFAULT_CURRENCY=TZS
+NEXT_PUBLIC_DEFAULT_COUNTRY=TZ
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=[optional]
 ```
 
-## SEO Requirements
+---
 
-- Server-side rendering for public pages
-- Dynamic meta tags per page
-- Open Graph tags for social sharing
-- Structured data (JSON-LD) for listings
-- Sitemap generation
-- robots.txt
+## IMPLEMENTATION PHASES
 
-## Authentication Flow
+### Phase 1: Core Public Pages
+- [ ] Homepage
+- [ ] Listing detail
+- [ ] Search/browse
+- [ ] Categories
+- [ ] Static pages
 
-1. User logs in → receives JWT token
-2. Token stored in httpOnly cookie
-3. Token sent with each API request in Authorization header
-4. Token refresh handled automatically
-5. Middleware protects dashboard/admin routes
+### Phase 2: Authentication & User Dashboard
+- [ ] Login/Register
+- [ ] User dashboard
+- [ ] My listings
+- [ ] Create/edit listing
 
-## Key Features to Implement
-
-### Phase 1: Core Marketplace
-- [ ] Homepage with search
-- [ ] Listing browsing & detail pages
-- [ ] User authentication
-- [ ] Basic dashboard
-- [ ] Create/edit listings
-
-### Phase 2: User Features
-- [ ] Messaging system
-- [ ] Favorites/saved items
-- [ ] User profiles
+### Phase 3: Communication
+- [ ] Messages/Chat
+- [ ] Offers
 - [ ] Notifications
 
-### Phase 3: Admin Dashboard
-- [ ] Admin authentication
-- [ ] User management
-- [ ] Analytics dashboard
-- [ ] Content moderation
+### Phase 4: SEO & Polish
+- [ ] Full SEO implementation
+- [ ] Performance optimization
+- [ ] Analytics integration
 
-### Phase 4: Enhancements
-- [ ] Blog integration
-- [ ] Business profiles
-- [ ] Advanced search
-- [ ] SEO optimization
+---
 
-## Design Inspiration
-
-Modern marketplace examples:
-- Craigslist redesign concepts
-- Facebook Marketplace web
-- OLX web interface
-- Carousell web
-
-Dashboard inspiration:
-- Vercel dashboard
-- Linear app
-- Notion admin
-
-## Notes for Development
-
-1. **API is ready** - All endpoints documented above are already built and working
-2. **Auth tokens** - Use Bearer token in Authorization header
-3. **Image handling** - Images are base64 encoded in the current system
-4. **Pagination** - Most list endpoints support `?limit=X&offset=Y`
-5. **Error handling** - API returns standard error format: `{"detail": "error message"}`
-
-## Custom Domain Setup
+## CUSTOM DOMAIN SETUP
 
 After deployment:
 1. Go to Emergent deployment settings
 2. Add custom domain: `avito.co.tz`
-3. Configure DNS:
-   - Add CNAME record pointing to Emergent
-   - Or A record if provided
-4. SSL will be auto-provisioned
+3. Configure DNS (CNAME or A record)
+4. SSL auto-provisioned
 
 ---
 
-## How to Start New Job
+## NOTES
 
-1. Create new job in Emergent
-2. Paste this specification as the initial prompt
-3. The agent will build the Next.js web app
-4. Deploy and configure custom domain
+1. **Admin Dashboard**: Already exists at `/app/admin-dashboard/` - can be deployed separately or integrated
+2. **API Ready**: All endpoints documented above are built and working
+3. **Auth**: Use Bearer token in Authorization header
+4. **Images**: Currently base64 encoded (consider CDN migration later)
+5. **WebSocket**: Available for real-time chat at `/ws`
+
+---
+
+## HOW TO START
+
+1. Create new Emergent job
+2. Paste this specification
+3. Agent builds Next.js marketplace
+4. Deploy and configure custom domain: `avito.co.tz`
+5. Link to or embed admin dashboard
