@@ -49,6 +49,20 @@ import { useCacheFirst } from '../../src/hooks/useCacheFirst';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
 
+// Helper function to format location (handles both string and object)
+const formatLocation = (location: string | { country?: string; region?: string; city?: string } | undefined): string => {
+  if (!location) return '';
+  if (typeof location === 'string') return location;
+  if (typeof location === 'object') {
+    const parts = [];
+    if (location.city) parts.push(location.city);
+    if (location.region) parts.push(location.region);
+    if (location.country) parts.push(location.country);
+    return parts.join(', ');
+  }
+  return '';
+};
+
 const COLORS = {
   primary: '#2E7D32',
   primaryLight: '#E8F5E9',
