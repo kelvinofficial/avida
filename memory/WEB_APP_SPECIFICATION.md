@@ -87,7 +87,7 @@ Avida Tanzania is a full-featured online marketplace platform for buying and sel
 
 ### 3.1 Base URL
 ```
-Production: https://[your-deployed-backend]/api
+Production: https://layout-render-fix.emergent.host/api
 MongoDB: mongodb+srv://avida_admin:AvidaTZ@avidatz.dipxnt9.mongodb.net/classifieds_db
 ```
 
@@ -1065,7 +1065,7 @@ font-family: 'Inter', sans-serif;
 ### 10.1 Required Variables
 ```env
 # API
-NEXT_PUBLIC_API_URL=https://[backend-url]/api
+NEXT_PUBLIC_API_URL=https://layout-render-fix.emergent.host/api
 
 # Site
 NEXT_PUBLIC_SITE_URL=https://avida.co.tz
