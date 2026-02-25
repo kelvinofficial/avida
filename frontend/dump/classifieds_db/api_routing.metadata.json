@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"cf4314898514424e84d5e77c56743edc","collectionName":"api_routing","type":"collection"}

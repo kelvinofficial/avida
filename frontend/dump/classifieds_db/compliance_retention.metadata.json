@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"cb1e72d6a7194c5dbed7f2958c47c4fb","collectionName":"compliance_retention","type":"collection"}

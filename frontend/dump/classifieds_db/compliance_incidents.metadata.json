@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"5189573bcb5840b7939cee3e642c620f","collectionName":"compliance_incidents","type":"collection"}

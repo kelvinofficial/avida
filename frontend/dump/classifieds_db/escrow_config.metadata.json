@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"5529931679ad49faaa5e777de0fa43db","collectionName":"escrow_config","type":"collection"}

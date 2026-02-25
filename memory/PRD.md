@@ -13,7 +13,7 @@ User requested separation of web marketplace from mobile app:
 ## Current Status: February 2026
 
 ### Active Blocker: ngrok Tunnel Instability (P0)
-The development preview tunnel (`https://homepage-fix-8.preview.emergentagent.com`) is experiencing repeated "ngrok tunnel took too long to connect" errors, preventing frontend testing. Backend APIs are confirmed working via curl.
+The development preview tunnel (`https://avida-marketplace-1.preview.emergentagent.com`) is experiencing repeated "ngrok tunnel took too long to connect" errors, preventing frontend testing. Backend APIs are confirmed working via curl.
 
 ### Fixes Applied This Session (Pending Verification)
 

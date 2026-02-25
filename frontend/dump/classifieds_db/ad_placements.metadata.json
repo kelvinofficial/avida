@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"c4c890f0476c42a088a3436a9d58b327","collectionName":"ad_placements","type":"collection"}

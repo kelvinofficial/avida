@@ -6,7 +6,7 @@ import Constants from 'expo-constants';
 // Production API URL - HARDCODED for APK builds where env vars don't work
 // This is the ULTIMATE fallback and MUST always be correct
 // Change this to https://avida.co.tz when you have custom domain working
-export const PRODUCTION_API_URL = 'https://homepage-fix-8.preview.emergentagent.com';
+export const PRODUCTION_API_URL = 'https://avida-marketplace-1.preview.emergentagent.com';
 
 // Get API URL - try multiple sources for maximum compatibility
 export const getApiUrl = (): string => {
