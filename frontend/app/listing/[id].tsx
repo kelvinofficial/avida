@@ -1648,7 +1648,7 @@ export default function ListingDetailScreen() {
           <Text style={styles.title}>{listing.title}</Text>
           <View style={styles.locationRow}>
             <Ionicons name="location-outline" size={16} color={COLORS.textSecondary} />
-            <Text style={styles.location}>{listing.location}</Text>
+            <Text style={styles.location}>{formatLocation(listing.location)}</Text>
           </View>
           <View style={styles.statsRow}>
             <View style={styles.stat}>
