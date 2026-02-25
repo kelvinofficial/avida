@@ -234,7 +234,7 @@ export const ListingSEO: React.FC<{
   image?: string;
   listingId: string;
   category?: string;
-  location?: string;
+  location?: string | { country?: string; region?: string; city?: string };
   locationData?: {
     city_name?: string;
     district_name?: string;
@@ -244,7 +244,17 @@ export const ListingSEO: React.FC<{
 }> = ({ title, description, price, currency = 'EUR', image, listingId, category, location, locationData }) => {
   const keywords = [title.toLowerCase()];
   if (category) keywords.push(category.toLowerCase());
-  if (location) keywords.push(location.toLowerCase());
+  // Handle location being either a string or an object
+  if (location) {
+    if (typeof location === 'string') {
+      keywords.push(location.toLowerCase());
+    } else if (typeof location === 'object') {
+      // Extract location parts from object
+      if (location.city) keywords.push(location.city.toLowerCase());
+      if (location.region) keywords.push(location.region.toLowerCase());
+      if (location.country) keywords.push(location.country.toLowerCase());
+    }
+  }
   
   // Build enhanced location string with full hierarchy
   let locationStr = location || '';
