@@ -991,7 +991,7 @@ export function middleware(request: NextRequest) {
 ```css
 :root {
   /* Primary */
-  --primary: #2E7D32;        /* Green */ */
+  --primary: #2E7D32;        /* Green */
   --primary-dark: #1B5E20;
   --primary-light: #4CAF50;
   
