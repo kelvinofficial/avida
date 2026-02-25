@@ -1261,7 +1261,7 @@ export default function ListingDetailScreen() {
                 <Text style={desktopStyles.sectionTitle}>Location</Text>
                 <View style={desktopStyles.mapPlaceholder}>
                   <Ionicons name="map" size={40} color={COLORS.primary} />
-                  <Text style={desktopStyles.mapText}>{listing.location}</Text>
+                  <Text style={desktopStyles.mapText}>{formatLocation(listing.location)}</Text>
                 </View>
               </View>
             </View>
@@ -1282,7 +1282,7 @@ export default function ListingDetailScreen() {
                 
                 <View style={desktopStyles.locationRow}>
                   <Ionicons name="location-outline" size={18} color={COLORS.textSecondary} />
-                  <Text style={desktopStyles.locationText}>{listing.location}</Text>
+                  <Text style={desktopStyles.locationText}>{formatLocation(listing.location)}</Text>
                 </View>
 
                 <View style={desktopStyles.statsRow}>
