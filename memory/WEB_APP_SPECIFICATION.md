@@ -6,6 +6,78 @@
 
 ---
 
+## 🏗️ MASTER ARCHITECTURE - SINGLE BACKEND FOR ALL PLATFORMS
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        SINGLE MASTER BACKEND                                │
+│                                                                             │
+│   API URL: https://layout-render-fix.emergent.host/api                      │
+│   Database: MongoDB Atlas (avidatz.dipxnt9.mongodb.net/classifieds_db)      │
+│                                                                             │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │                     201 SHARED COLLECTIONS                          │   │
+│   │   users, listings, conversations, messages, notifications,          │   │
+│   │   badges, challenges, orders, invoices, categories, etc.            │   │
+│   └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      │ HTTPS API Calls
+                                      │
+            ┌─────────────────────────┼─────────────────────────┐
+            │                         │                         │
+            ▼                         ▼                         ▼
+┌───────────────────────┐ ┌───────────────────────┐ ┌───────────────────────┐
+│   📱 MOBILE APP       │ │   🌐 WEB APP          │ │   🔧 ADMIN DASHBOARD  │
+│   (React Native/Expo) │ │   (Next.js 14)        │ │   (Next.js 14)        │
+│                       │ │                       │ │                       │
+│   Platform: iOS/Android│ │   Domain: avida.co.tz │ │   Domain: admin.avida │
+│   App Store/Play Store│ │   Public marketplace  │ │   Internal admin panel│
+│                       │ │                       │ │                       │
+│   SAME API ─────────────► SAME API ─────────────► SAME API               │
+│   SAME DATA ────────────► SAME DATA ────────────► SAME DATA              │
+│   SAME USERS ───────────► SAME USERS ───────────► SAME USERS             │
+└───────────────────────┘ └───────────────────────┘ └───────────────────────┘
+
+✅ Post from Mobile App → Appears on Web App & Admin Dashboard instantly
+✅ Post from Web App → Appears on Mobile App & Admin Dashboard instantly
+✅ Edit in Admin Dashboard → Reflects on Mobile App & Web App instantly
+✅ Single user account works across all platforms
+✅ Messages sync in real-time across all platforms
+```
+
+---
+
+## 🔗 SHARED RESOURCES (USE THESE EVERYWHERE)
+
+### Master Backend API
+```
+https://layout-render-fix.emergent.host/api
+```
+
+### Master Database
+```
+mongodb+srv://avida_admin:AvidaTZ@avidatz.dipxnt9.mongodb.net/classifieds_db
+```
+
+### Environment Variables (Same for All Platforms)
+```env
+# API (Same for Mobile, Web, Admin)
+API_URL=https://layout-render-fix.emergent.host/api
+
+# Database (Same for all)
+MONGODB_URI=mongodb+srv://avida_admin:AvidaTZ@avidatz.dipxnt9.mongodb.net/classifieds_db
+DB_NAME=classifieds_db
+
+# Platform-specific URLs
+MOBILE_APP_SCHEME=avida://
+WEB_APP_URL=https://avida.co.tz
+ADMIN_URL=https://admin.avida.co.tz
+```
+
+---
+
 ## Table of Contents
 
 1. [Project Overview](#1-project-overview)
