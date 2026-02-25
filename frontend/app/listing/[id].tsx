@@ -576,7 +576,7 @@ const LocationSection = memo(({ listing }: { listing: Listing }) => (
     <View style={locationStyles.mapPlaceholder}>
       <View style={locationStyles.mapContent}>
         <Ionicons name="map" size={40} color={COLORS.primary} />
-        <Text style={locationStyles.mapText}>{listing.location}</Text>
+        <Text style={locationStyles.mapText}>{formatLocation(listing.location)}</Text>
       </View>
       
       {/* Map Pin Overlay */}
