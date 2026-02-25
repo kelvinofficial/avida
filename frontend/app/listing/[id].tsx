@@ -601,7 +601,7 @@ const LocationSection = memo(({ listing }: { listing: Listing }) => (
     <View style={locationStyles.addressBox}>
       <Ionicons name="location-outline" size={20} color={COLORS.primary} />
       <View style={locationStyles.addressText}>
-        <Text style={locationStyles.addressMain}>{listing.location}</Text>
+        <Text style={locationStyles.addressMain}>{formatLocation(listing.location)}</Text>
       </View>
     </View>
     
