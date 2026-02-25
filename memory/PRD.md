@@ -4,8 +4,8 @@
 Full-stack React Native/Expo mobile app with critical failures, including a non-functional homepage.
 
 ## Architecture
-- **Frontend**: React Native/Expo (mobile + web)
-- **Backend**: FastAPI + MongoDB Atlas
+- **Frontend**: React Native/Expo (mobile + web) at `https://avida-marketplace-1.preview.emergentagent.com`
+- **Backend**: FastAPI at `https://layout-render-fix.emergent.host/api` (separate deployment)
 - **Database**: MongoDB Atlas (`mongodb+srv://avida_admin:AvidaTZ@avidatz.dipxnt9.mongodb.net/classifieds_db`)
 - **Admin Dashboard**: Next.js (separate deployment)
 
