@@ -755,36 +755,33 @@ Settings sections:
 │   │   ├── login/page.tsx
 │   │   ├── register/page.tsx
 │   │   └── forgot-password/page.tsx
-│   # Protected routes (no /dashboard prefix)
-│   │   ├── layout.tsx            # Dashboard layout
-│   │   ├── page.tsx              # Dashboard home
-│   │   ├── listings/
-│   │   │   ├── page.tsx
-│   │   │   ├── new/page.tsx
-│   │   │   └── [id]/
-│   │   │       ├── edit/page.tsx
-│   │   │       └── performance/page.tsx
-│   │   ├── messages/
-│   │   │   ├── page.tsx
-│   │   │   └── [id]/page.tsx
-│   │   ├── offers/page.tsx
-│   │   ├── sales/page.tsx
-│   │   ├── purchases/page.tsx
-│   │   ├── orders/page.tsx
-│   │   ├── invoices/page.tsx
-│   │   ├── credits/page.tsx
-│   │   ├── saved/page.tsx
-│   │   ├── recently-viewed/page.tsx
-│   │   ├── alerts/page.tsx
-│   │   ├── badges/page.tsx
-│   │   ├── challenges/page.tsx
-│   │   ├── streaks/page.tsx
-│   │   ├── notifications/page.tsx
-│   │   └── settings/
-│   │       ├── page.tsx
-│   │       ├── profile/page.tsx
-│   │       ├── password/page.tsx
-│   │       └── [...setting]/page.tsx
+│   ├── listings/                 # My Listings (Protected)
+│   │   ├── page.tsx
+│   │   ├── new/page.tsx
+│   │   └── [id]/
+│   │       ├── edit/page.tsx
+│   │       └── performance/page.tsx
+│   ├── messages/                 # Messages (Protected)
+│   │   ├── page.tsx
+│   │   └── [id]/page.tsx
+│   ├── offers/page.tsx           # Offers (Protected)
+│   ├── sales/page.tsx            # Sales (Protected)
+│   ├── purchases/page.tsx        # Purchases (Protected)
+│   ├── orders/page.tsx           # Orders (Protected)
+│   ├── invoices/page.tsx         # Invoices (Protected)
+│   ├── credits/page.tsx          # Credits (Protected)
+│   ├── saved/page.tsx            # Saved Items (Protected)
+│   ├── recently-viewed/page.tsx  # Recently Viewed (Protected)
+│   ├── alerts/page.tsx           # Smart Alerts (Protected)
+│   ├── badges/page.tsx           # Badges (Protected)
+│   ├── challenges/page.tsx       # Challenges (Protected)
+│   ├── streaks/page.tsx          # Streaks (Protected)
+│   ├── notifications/page.tsx    # Notifications (Protected)
+│   ├── settings/                 # Settings (Protected)
+│   │   ├── page.tsx
+│   │   ├── profile/page.tsx
+│   │   ├── password/page.tsx
+│   │   └── [...setting]/page.tsx
 │   ├── auto/                     # Auto vertical
 │   ├── property/                 # Property vertical
 │   ├── layout.tsx                # Root layout
