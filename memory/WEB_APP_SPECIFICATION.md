@@ -755,7 +755,7 @@ Settings sections:
 │   │   ├── login/page.tsx
 │   │   ├── register/page.tsx
 │   │   └── forgot-password/page.tsx
-│   ├── dashboard/                # Protected routes
+│   # Protected routes (no /dashboard prefix)
 │   │   ├── layout.tsx            # Dashboard layout
 │   │   ├── page.tsx              # Dashboard home
 │   │   ├── listings/
