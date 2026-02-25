@@ -257,7 +257,17 @@ export const ListingSEO: React.FC<{
   }
   
   // Build enhanced location string with full hierarchy
-  let locationStr = location || '';
+  let locationStr = '';
+  // Handle location being either a string or an object
+  if (typeof location === 'string') {
+    locationStr = location;
+  } else if (location && typeof location === 'object') {
+    const locParts = [];
+    if (location.city) locParts.push(location.city);
+    if (location.region) locParts.push(location.region);
+    if (location.country) locParts.push(location.country);
+    locationStr = locParts.join(', ');
+  }
   if (locationData) {
     const parts = [];
     if (locationData.city_name) parts.push(locationData.city_name);
