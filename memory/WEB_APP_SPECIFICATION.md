@@ -1,7 +1,7 @@
-# Avito Tanzania - Web Marketplace Platform Specification
+# Avida Tanzania - Web Marketplace Platform Specification
 
 > **Version**: 1.0  
-> **Domain**: avito.co.tz  
+> **Domain**: avida.co.tz  
 > **Last Updated**: February 2026
 
 ---
@@ -27,7 +27,7 @@
 ## 1. Project Overview
 
 ### 1.1 Description
-Avito Tanzania is a full-featured online marketplace platform for buying and selling goods and services. The web application provides a modern, SEO-optimized interface for users to browse listings, communicate with sellers, and manage their accounts.
+Avida Tanzania is a full-featured online marketplace platform for buying and selling goods and services. The web application provides a modern, SEO-optimized interface for users to browse listings, communicate with sellers, and manage their accounts.
 
 ### 1.2 Key Features
 - **Marketplace**: Browse, search, and filter listings across multiple categories
@@ -915,7 +915,7 @@ export function middleware(request: NextRequest) {
 ### 8.1 Meta Tags
 ```html
 <!-- Dynamic per page -->
-<title>{Page Title} | Avito Tanzania</title>
+<title>{Page Title} | Avida Tanzania</title>
 <meta name="description" content="{Page description}">
 <meta name="keywords" content="{keywords}">
 <link rel="canonical" href="{canonical URL}">
@@ -926,7 +926,7 @@ export function middleware(request: NextRequest) {
 <meta property="og:image" content="{image URL}">
 <meta property="og:url" content="{page URL}">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Avito Tanzania">
+<meta property="og:site_name" content="Avida Tanzania">
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
@@ -963,9 +963,9 @@ export function middleware(request: NextRequest) {
 {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "name": "Avito Tanzania",
-  "url": "https://avito.co.tz",
-  "logo": "https://avito.co.tz/logo.png",
+  "name": "Avida Tanzania",
+  "url": "https://avida.co.tz",
+  "logo": "https://avida.co.tz/logo.png",
   "contactPoint": {
     "@type": "ContactPoint",
     "telephone": "+255-xxx-xxx",
@@ -1068,8 +1068,8 @@ font-family: 'Inter', sans-serif;
 NEXT_PUBLIC_API_URL=https://[backend-url]/api
 
 # Site
-NEXT_PUBLIC_SITE_URL=https://avito.co.tz
-NEXT_PUBLIC_SITE_NAME=Avito Tanzania
+NEXT_PUBLIC_SITE_URL=https://avida.co.tz
+NEXT_PUBLIC_SITE_NAME=Avida Tanzania
 
 # Database (for SSR if needed)
 MONGODB_URI=mongodb+srv://avida_admin:AvidaTZ@avidatz.dipxnt9.mongodb.net/classifieds_db
@@ -1169,7 +1169,7 @@ All API keys are stored in `/app/backend/.env`:
 
 ### 13.2 Custom Domain Setup
 1. Go to Emergent deployment settings
-2. Add custom domain: `avito.co.tz`
+2. Add custom domain: `avida.co.tz`
 3. Configure DNS records:
    ```
    Type: CNAME
@@ -1259,4 +1259,4 @@ This can be deployed separately or integrated into the main web app.
 
 **End of Specification**
 
-*This document serves as the complete blueprint for building the Avito Tanzania web marketplace. Use it when creating a new Emergent job to build the frontend application.*
+*This document serves as the complete blueprint for building the Avida Tanzania web marketplace. Use it when creating a new Emergent job to build the frontend application.*
