@@ -483,7 +483,7 @@ The database contains **201 collections**. Key collections:
 
 ### 5.3 User Dashboard (Authentication Required)
 
-#### Dashboard Home (`/dashboard`)
+#### Dashboard Home (`/`)
 - Welcome message
 - Quick stats cards:
   - Active listings
@@ -494,7 +494,7 @@ The database contains **201 collections**. Key collections:
 - Quick actions
 - Notifications preview
 
-#### My Listings (`/dashboard/listings`)
+#### My Listings (`listings`)
 - Listings table/grid
 - Status filters: All, Active, Pending, Sold, Expired
 - Search within listings
@@ -507,7 +507,7 @@ The database contains **201 collections**. Key collections:
   - Mark as Sold
   - Delete
 
-#### Create Listing (`/dashboard/listings/new`)
+#### Create Listing (`listings/new`)
 Multi-step form:
 1. **Category Selection**
    - Category grid
@@ -533,25 +533,25 @@ Multi-step form:
    - Terms acceptance
    - Publish button
 
-#### Edit Listing (`/dashboard/listings/[id]/edit`)
+#### Edit Listing (`listings/[id]/edit`)
 - Same as create but pre-filled
 - Update images
 - Change status option
 
-#### Listing Performance (`/dashboard/listings/[id]/performance`)
+#### Listing Performance (`listings/[id]/performance`)
 - Views over time chart
 - Favorites count
 - Messages received
 - Comparison with similar listings
 - Optimization tips
 
-#### Messages (`/dashboard/messages`)
+#### Messages (`messages`)
 - Conversations list
 - Unread indicator
 - Search conversations
 - Filter by listing
 
-#### Chat (`/dashboard/messages/[id]`)
+#### Chat (`messages/[id]`)
 - Message history
 - Real-time updates
 - Send text messages
@@ -560,13 +560,13 @@ Multi-step form:
 - Listing reference card
 - Block/report user
 
-#### Notifications (`/dashboard/notifications`)
+#### Notifications (`notifications`)
 - Notifications list
 - Filter by type
 - Mark as read
 - Clear all
 
-#### Notification Preferences (`/dashboard/notification-preferences`)
+#### Notification Preferences (`notification-preferences`)
 Toggle settings for:
 - Email notifications
 - Push notifications
@@ -578,7 +578,7 @@ Categories:
 - Promotions
 - Security alerts
 
-#### Offers (`/dashboard/offers`)
+#### Offers (`offers`)
 Two tabs:
 - **Received**: Offers on your listings
 - **Sent**: Your offers to others
@@ -587,30 +587,30 @@ Per offer:
 - Offer history
 - Chat link
 
-#### Sales (`/dashboard/sales`)
+#### Sales (`sales`)
 - Sold items list
 - Revenue stats
 - Pending payments
 - Transaction details
 
-#### Purchases (`/dashboard/purchases`)
+#### Purchases (`purchases`)
 - Bought items list
 - Order status
 - Leave review option
 - Re-order option
 
-#### Orders (`/dashboard/orders`)
+#### Orders (`orders`)
 - Combined sales + purchases
 - Order details modal
 - Status timeline
 - Invoice download
 
-#### Invoices (`/dashboard/invoices`)
+#### Invoices (`invoices`)
 - Invoice list
 - Download PDF
 - Filter by date
 
-#### Credits (`/dashboard/credits`)
+#### Credits (`credits`)
 - Current balance display
 - Purchase credits button
 - Credit packages
@@ -624,55 +624,55 @@ Per offer:
 - Preview placement
 - Confirm & pay
 
-#### Saved Items (`/dashboard/saved`)
+#### Saved Items (`saved`)
 - Saved listings grid
 - Remove from saved
 - Price change alerts
 - Share collection
 
-#### Recently Viewed (`/dashboard/recently-viewed`)
+#### Recently Viewed (`recently-viewed`)
 - Browsing history
 - Clear history option
 - Quick re-access
 
-#### Smart Alerts (`/dashboard/alerts`)
+#### Smart Alerts (`alerts`)
 - Saved searches
 - Price drop alerts
 - New listing alerts
 - Manage alerts
 
-#### Badges (`/dashboard/badges`)
+#### Badges (`badges`)
 - Earned badges showcase
 - Badge progress
 - How to earn
 - Share badges
 
-#### Challenges (`/dashboard/challenges`)
+#### Challenges (`challenges`)
 - Active challenges
 - Progress bars
 - Rewards preview
 - Join challenge
 
-#### Streaks (`/dashboard/streaks`)
+#### Streaks (`streaks`)
 - Current streak count
 - Streak calendar
 - Streak rewards
 - Tips to maintain
 
-#### Leaderboard (`/dashboard/leaderboard`)
+#### Leaderboard (`leaderboard`)
 - Top sellers ranking
 - Top buyers ranking
 - Weekly/monthly tabs
 - Your position highlight
 
-#### Profile Edit (`/dashboard/settings/profile`)
+#### Profile Edit (`settings/profile`)
 - Avatar upload
 - Name, bio
 - Phone number
 - Location
 - Social links
 
-#### Settings (`/dashboard/settings`)
+#### Settings (`settings`)
 Settings sections:
 - Account
 - Security
@@ -681,13 +681,13 @@ Settings sections:
 - Appearance
 
 #### Settings Sub-pages
-- Change Password (`/dashboard/settings/password`)
-- Two-Factor Auth (`/dashboard/settings/2fa`)
-- Blocked Users (`/dashboard/settings/blocked`)
-- Sessions (`/dashboard/settings/sessions`)
-- Language (`/dashboard/settings/language`)
-- Currency (`/dashboard/settings/currency`)
-- Delete Account (`/dashboard/settings/delete`)
+- Change Password (`settings/password`)
+- Two-Factor Auth (`settings/2fa`)
+- Blocked Users (`settings/blocked`)
+- Sessions (`settings/sessions`)
+- Language (`settings/language`)
+- Currency (`settings/currency`)
+- Delete Account (`settings/delete`)
 
 ### 5.4 Business Features
 
@@ -701,7 +701,7 @@ Settings sections:
 - Listings grid
 - Reviews
 
-#### Business Dashboard (`/dashboard/business`)
+#### Business Dashboard (`business`)
 - Business analytics
 - Edit business profile
 - Verification status
