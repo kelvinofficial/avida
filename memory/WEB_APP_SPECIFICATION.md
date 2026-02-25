@@ -1180,7 +1180,105 @@ All API keys are stored in `/app/backend/.env`:
 
 ---
 
-## 12. Implementation Phases
+## 12. Platform-Specific Configuration
+
+### 12.1 Mobile App (React Native/Expo)
+
+**Location**: Existing job (current)
+**Tech**: React Native, Expo, TypeScript
+
+```env
+# /app/frontend/.env
+EXPO_PUBLIC_API_URL=https://layout-render-fix.emergent.host/api
+EXPO_PUBLIC_SITE_NAME=Avida Tanzania
+```
+
+**Key Files**:
+- `/app/frontend/src/utils/api.ts` - API client
+- `/app/frontend/src/store/authStore.ts` - Auth state
+
+### 12.2 Web App (Next.js)
+
+**Location**: New Emergent job
+**Tech**: Next.js 14, TypeScript, Tailwind, shadcn/ui
+**Domain**: avida.co.tz
+
+```env
+# .env.local
+NEXT_PUBLIC_API_URL=https://layout-render-fix.emergent.host/api
+NEXT_PUBLIC_SITE_URL=https://avida.co.tz
+NEXT_PUBLIC_SITE_NAME=Avida Tanzania
+NEXT_PUBLIC_DEFAULT_CURRENCY=TZS
+```
+
+### 12.3 Admin Dashboard (Next.js)
+
+**Location**: Existing at `/app/admin-dashboard/` OR new job
+**Tech**: Next.js 14, TypeScript, Material UI
+**Domain**: admin.avida.co.tz (optional)
+
+```env
+# .env.local
+NEXT_PUBLIC_API_URL=https://layout-render-fix.emergent.host/api
+NEXT_PUBLIC_ADMIN_API_URL=https://layout-render-fix.emergent.host/api/admin
+NEXT_PUBLIC_APP_NAME=Avida Admin
+```
+
+### 12.4 Shared Backend (FastAPI)
+
+**Location**: Existing job (deployed)
+**Tech**: FastAPI, Python 3.11, MongoDB
+**URL**: https://layout-render-fix.emergent.host/api
+
+```env
+# /app/backend/.env
+MONGO_URL=mongodb+srv://avida_admin:AvidaTZ@avidatz.dipxnt9.mongodb.net/classifieds_db
+DB_NAME=classifieds_db
+JWT_SECRET_KEY=your-secret-key
+```
+
+### 12.5 Cross-Platform Data Flow
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│                          DATA FLOW EXAMPLES                              │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  📱 Mobile User Posts Listing                                            │
+│  ────────────────────────────                                            │
+│  1. Mobile App → POST /api/listings → Backend                            │
+│  2. Backend → Insert into MongoDB (listings collection)                  │
+│  3. Web App → GET /api/listings → Shows new listing                      │
+│  4. Admin → GET /api/admin/listings → Can moderate                       │
+│                                                                          │
+│  🌐 Web User Sends Message                                               │
+│  ──────────────────────────                                              │
+│  1. Web App → POST /api/conversations/{id}/messages → Backend            │
+│  2. Backend → Insert into MongoDB (messages collection)                  │
+│  3. Mobile App → GET /api/conversations → Shows new message              │
+│  4. Push notification sent to recipient                                  │
+│                                                                          │
+│  🔧 Admin Approves Listing                                               │
+│  ────────────────────────                                                │
+│  1. Admin → PUT /api/admin/listings/{id}/approve → Backend               │
+│  2. Backend → Update MongoDB (listings.status = 'active')                │
+│  3. Mobile App → Shows approved listing                                  │
+│  4. Web App → Shows approved listing                                     │
+│  5. Email notification sent to seller                                    │
+│                                                                          │
+│  👤 User Logs In (Any Platform)                                          │
+│  ─────────────────────────────                                           │
+│  1. Any Platform → POST /api/auth/login → Backend                        │
+│  2. Backend → Validates credentials from MongoDB (users collection)      │
+│  3. Returns JWT token                                                    │
+│  4. Same user can login on Mobile, Web, or Admin with same credentials   │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 13. Implementation Phases
 
 ### Phase 1: Core Foundation (Week 1-2)
 - [ ] Project setup (Next.js, Tailwind, shadcn)
