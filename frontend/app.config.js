@@ -8,7 +8,7 @@
  */
 
 // Hardcoded production API URL - this MUST be set for APK builds
-const PRODUCTION_API_URL = 'https://avida-marketplace-1.preview.emergentagent.com';
+const PRODUCTION_API_URL = 'https://layout-render-fix.emergent.host';
 
 module.exports = ({ config }) => {
   return {
