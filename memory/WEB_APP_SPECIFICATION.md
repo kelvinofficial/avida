@@ -900,7 +900,7 @@ interface ChatWindowProps {
 // middleware.ts
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('token');
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard');
+  const isProtectedRoute = request.nextUrl.pathname.startsWith('/listings') || pathname.startsWith('/messages') || pathname.startsWith('/settings');
   
   if (isProtectedRoute && !token) {
     return NextResponse.redirect(new URL('/login', request.url));
