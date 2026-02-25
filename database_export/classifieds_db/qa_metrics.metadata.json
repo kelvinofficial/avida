@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"97e84c51e3714d25bdedfd9311575c48","collectionName":"qa_metrics","type":"collection"}

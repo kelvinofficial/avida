@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"f696ed872f914ea5aafd6339de44dd7b","collectionName":"sandbox_transport","type":"collection"}

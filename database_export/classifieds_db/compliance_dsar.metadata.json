@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"6f7215fad2224c7fb5204c5ae0e527d2","collectionName":"compliance_dsar","type":"collection"}

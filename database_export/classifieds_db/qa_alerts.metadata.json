@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"created_at":{"$numberInt":"-1"}},"name":"created_at_-1"},{"v":{"$numberInt":"2"},"key":{"acknowledged":{"$numberInt":"1"}},"name":"acknowledged_1"}],"uuid":"1a120a86c3d64b82986fe2dfec588887","collectionName":"qa_alerts","type":"collection"}
