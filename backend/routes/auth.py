@@ -58,20 +58,33 @@ class UserResponse(BaseModel):
 # =============================================================================
 # PASSWORD UTILITIES
 # =============================================================================
+# PASSWORD HASHING (BCRYPT)
+# =============================================================================
+
+from passlib.context import CryptContext
+
+# Bcrypt password context
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str) -> str:
-    """Hash password using SHA-256 with salt"""
-    salt = secrets.token_hex(16)
-    password_hash = hashlib.sha256((password + salt).encode()).hexdigest()
-    return f"{salt}:{password_hash}"
+    """Hash password using bcrypt"""
+    return pwd_context.hash(password)
 
 
 def verify_password(password: str, stored_hash: str) -> bool:
-    """Verify password against stored hash"""
+    """Verify password against stored hash (supports both bcrypt and legacy SHA-256)"""
     try:
-        salt, password_hash = stored_hash.split(':')
-        return hashlib.sha256((password + salt).encode()).hexdigest() == password_hash
-    except:
+        # Try bcrypt first
+        if stored_hash.startswith('$2'):
+            return pwd_context.verify(password, stored_hash)
+        
+        # Fallback to legacy SHA-256 format (salt:hash)
+        if ':' in stored_hash:
+            salt, password_hash = stored_hash.split(':')
+            return hashlib.sha256((password + salt).encode()).hexdigest() == password_hash
+        
+        return False
+    except Exception:
         return False
 
 
