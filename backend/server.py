@@ -2867,8 +2867,13 @@ try:
     
     @app.on_event("startup")
     async def init_cache_on_startup():
-        await cache.connect()
-        logger.info("Cache system initialized")
+        try:
+            await asyncio.wait_for(cache.connect(), timeout=5.0)
+            logger.info("Cache system initialized")
+        except asyncio.TimeoutError:
+            logger.warning("Cache connection timed out, using memory cache")
+        except Exception as e:
+            logger.warning(f"Cache initialization failed: {e}")
 except ImportError:
     logger.info("Cache module not available, skipping cache initialization")
 
