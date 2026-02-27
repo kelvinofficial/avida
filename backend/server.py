@@ -3357,9 +3357,9 @@ if ADMIN_TOOLS_AVAILABLE:
         feed_router = create_feed_router(db)
         app.include_router(feed_router, prefix="/api")
         print("Instant Feed routes loaded successfully")
-        # Create indexes in background
-        import asyncio
-        asyncio.create_task(ensure_feed_indexes(db))
+        # Create indexes in background - will be done in startup event
+        # import asyncio
+        # asyncio.create_task(ensure_feed_indexes(db))
     except Exception as e:
         print(f"Failed to load Feed routes: {e}")
     
