@@ -3029,8 +3029,8 @@ if COHORT_ANALYTICS_AVAILABLE:
     cohort_analytics_router, cohort_analytics_service = create_cohort_analytics_router(db)
     api_router.include_router(cohort_analytics_router)
     app.include_router(api_router)  # Re-include to pick up cohort analytics routes
-    # Initialize default cohort definitions
-    asyncio.create_task(cohort_analytics_service.initialize_default_cohorts())
+    # Initialize default cohort definitions - moved to startup event
+    # asyncio.create_task(cohort_analytics_service.initialize_default_cohorts())
     logger.info("Cohort & Retention Analytics loaded successfully")
     
     # Global event tracking helper
