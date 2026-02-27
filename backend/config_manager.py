@@ -2429,8 +2429,8 @@ def create_config_manager_router(db):
     router = APIRouter(prefix="/config-manager", tags=["Config & Environment Manager"])
     service = ConfigManagerService(db)
     
-    # Start the background scheduler
-    start_deployment_scheduler(service, interval_seconds=60)
+    # Note: Scheduler should be started via app startup event, not here
+    # start_deployment_scheduler(service, interval_seconds=60)
     
     # -------------------------------------------------------------------------
     # GLOBAL SETTINGS
