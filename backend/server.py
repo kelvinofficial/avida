@@ -3063,9 +3063,9 @@ if COHORT_ANALYTICS_AVAILABLE:
             # Wait 15 minutes before next check
             await asyncio.sleep(15 * 60)
     
-    # Start the background task
-    asyncio.create_task(scheduled_alert_checker())
-    logger.info("Started scheduled alert checker background task")
+    # Start the background task - moved to startup event
+    # asyncio.create_task(scheduled_alert_checker())
+    logger.info("Cohort analytics background tasks will start on app startup")
     
 else:
     async def track_cohort_event(user_id: str, event_type: str, properties: dict = None, session_id: str = None):
