@@ -3103,7 +3103,7 @@ if SANDBOX_AVAILABLE:
     sandbox_router, sandbox_service = create_sandbox_router(db)
     api_router.include_router(sandbox_router)
     app.include_router(api_router)  # Re-include to pick up sandbox routes
-    asyncio.create_task(sandbox_service.initialize())
+    # asyncio.create_task(sandbox_service.initialize()) - moved to startup event
     logger.info("Admin Sandbox System loaded successfully")
 
 # CSV Import System for Users
