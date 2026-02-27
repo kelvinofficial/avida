@@ -3093,42 +3093,10 @@ if QA_RELIABILITY_AVAILABLE:
                 logger.error(f"Periodic health check failed: {e}")
             await asyncio.sleep(5 * 60)  # Check every 5 minutes
     
-    asyncio.create_task(periodic_health_checker())
-    logger.info("Started periodic health checker background task")
-    
-    # Background task for daily data integrity checks (runs at 3 AM)
-    async def daily_data_integrity_checker():
-        """Background task that runs data integrity checks once a day"""
-        await asyncio.sleep(60)  # Initial delay
-        while True:
-            try:
-                # Check if it's around 3 AM UTC
-                now = datetime.now(timezone.utc)
-                if now.hour == 3 and now.minute < 10:
-                    logger.info("Running daily data integrity check...")
-                    await qa_service.run_data_integrity_checks()
-                    logger.info("Daily data integrity check completed")
-            except Exception as e:
-                logger.error(f"Daily data integrity check failed: {e}")
-            await asyncio.sleep(10 * 60)  # Check every 10 minutes if it's time
-    
-    asyncio.create_task(daily_data_integrity_checker())
-    logger.info("Started daily data integrity checker background task")
-    
-    # Background task for monitoring metrics storage (every 5 minutes)
-    async def metrics_storage_task():
-        """Background task that stores metrics for historical tracking"""
-        await asyncio.sleep(60)  # Initial delay
-        while True:
-            try:
-                await qa_service.store_current_metrics()
-                await qa_service.check_monitoring_thresholds()
-            except Exception as e:
-                logger.error(f"Metrics storage task failed: {e}")
-            await asyncio.sleep(5 * 60)  # Store every 5 minutes
-    
-    asyncio.create_task(metrics_storage_task())
-    logger.info("Started metrics storage background task")
+    # asyncio.create_task(periodic_health_checker())
+    # asyncio.create_task(daily_data_integrity_checker())
+    # asyncio.create_task(metrics_storage_task())
+    logger.info("QA background tasks will start on app startup")
 
 # Admin Sandbox System
 if SANDBOX_AVAILABLE:
