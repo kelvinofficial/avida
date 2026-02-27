@@ -3077,8 +3077,8 @@ if QA_RELIABILITY_AVAILABLE:
     qa_router, qa_service = create_qa_reliability_router(db)
     api_router.include_router(qa_router)
     app.include_router(api_router)  # Re-include to pick up QA routes
-    # Initialize QA system
-    asyncio.create_task(qa_service.initialize())
+    # Initialize QA system - moved to startup event
+    # asyncio.create_task(qa_service.initialize())
     logger.info("QA & Reliability System loaded successfully")
     
     # Background task for periodic health checks
