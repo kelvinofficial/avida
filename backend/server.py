@@ -1281,7 +1281,7 @@ async def create_notification(
         # Send email notification for messages if enabled
         if not in_quiet_hours and notifications_prefs.get("email", True):
             # Check if email is enabled for this notification type
-            email_prefs = settings.get("email_notifications", {})
+            email_prefs = settings.get("email_notifications", {}) if settings else {}
             should_send_email = True
             
             # Map notification types to preferences
