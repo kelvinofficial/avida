@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Similar Listings Component</title>
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <style>
+    /* ============================================
+       CSS VARIABLES
+       ============================================ */
+    :root {
+      --primary: #2E7D32;
+      --primary-light: #E8F5E9;
+      --primary-dark: #1B5E20;
+      --secondary: #1565C0;
+      --secondary-light: #E3F2FD;
+      --background: #F5F5F5;
+      --surface: #FFFFFF;
+      --text: #1A1A1A;
+      --text-secondary: #666666;
+      --border: #E0E0E0;
+      --border-light: #F0F0F0;
+      --error: #D32F2F;
+      --warning: #FF9800;
+      --warning-light: #FFF3E0;
+      --certified: #9C27B0;
+      --max-width: 1200px;
+    }
+
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px;
+    }
+
+    /* ============================================
+       SIMILAR LISTINGS SECTION
+       ============================================ */
+    .similar-listings-section {
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+
+    .similar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .similar-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .similar-title ion-icon {
+      color: var(--primary);
+    }
+
+    .similar-count {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-secondary);
+    }
+
+    .view-all-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--primary);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .view-all-link:hover {
+      background-color: var(--primary-light);
+    }
+
+    /* Loading State */
+    .similar-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      background: var(--surface);
+      border-radius: 12px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      margin-top: 16px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Similar Listings Grid */
+    .similar-listings-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    /* ============================================
+       SIMILAR LISTING CARD - HORIZONTAL STYLE
+       ============================================ */
+    .similar-card {
+      display: flex;
+      background-color: var(--surface);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-light);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .similar-card:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      transform: translateY(-4px);
+      border-color: var(--border);
+    }
+
+    .similar-card.featured {
+      border: 2px solid var(--primary);
+      background: linear-gradient(135deg, var(--primary-light) 0%, var(--surface) 100%);
+    }
+
+    .similar-card.sponsored {
+      border: 2px solid var(--warning);
+      background: linear-gradient(135deg, var(--warning-light) 0%, var(--surface) 100%);
+    }
+
+    /* ============================================
+       CARD IMAGE SECTION
+       ============================================ */
+    .similar-card-image {
+      width: 200px;
+      height: 200px;
+      flex-shrink: 0;
+      background-color: var(--background);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .similar-card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .similar-card:hover .similar-card-image img {
+      transform: scale(1.05);
+    }
+
+    .image-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--border);
+      font-size: 48px;
+      background: linear-gradient(135deg, var(--background) 0%, var(--border-light) 100%);
+    }
+
+    /* Image Badges */
+    .card-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .card-badge.featured {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    }
+
+    .card-badge.sponsored {
+      background: linear-gradient(135deg, var(--warning) 0%, #E65100 100%);
+    }
+
+    .image-count-badge {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 4px 10px;
+      border-radius: 6px;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      backdrop-filter: blur(4px);
+    }
+
+    .similarity-badge {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    /* ============================================
+       CARD CONTENT SECTION
+       ============================================ */
+    .similar-card-content {
+      flex: 1;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      min-width: 0; /* For text truncation */
+    }
+
+    /* Heart Button */
+    .heart-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 18px;
+      background: var(--background);
+      border: none;
+      font-size: 20px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      z-index: 10;
+    }
+
+    .heart-btn:hover {
+      background: var(--error);
+      color: white;
+      transform: scale(1.1);
+    }
+
+    .heart-btn.active {
+      background: var(--error);
+      color: white;
+    }
+
+    /* Price Row */
+    .similar-price-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding-right: 44px; /* Space for heart button */
+    }
+
+    .similar-price {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .price-badge {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .vb-badge {
+      background-color: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .offers-badge {
+      background-color: var(--secondary-light);
+      color: var(--secondary);
+    }
+
+    /* Title */
+    .similar-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Description */
+    .similar-card-description {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 10px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Specs Row */
+    .specs-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .spec-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: var(--background);
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .spec-item ion-icon {
+      font-size: 14px;
+      color: var(--primary);
+    }
+
+    .spec-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background-color: var(--border);
+    }
+
+    /* Location Row */
+    .similar-location-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .similar-location-row ion-icon {
+      color: var(--primary);
+      font-size: 16px;
+    }
+
+    .distance-badge {
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* Bottom Row */
+    .similar-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    /* Seller Badges */
+    .seller-badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .verified-badge {
+      width: 26px;
+      height: 26px;
+      border-radius: 13px;
+      background-color: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 14px;
+    }
+
+    .dealer-badge {
+      background-color: var(--secondary-light);
+      color: var(--secondary);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .certified-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: linear-gradient(135deg, var(--certified) 0%, #7B1FA2 100%);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .seller-name {
+      font-size: 12px;
+      color: var(--text-secondary);
+      max-width: 100px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Stickers Row */
+    .stickers-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .sticker-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background-color: var(--primary-light);
+      color: var(--primary);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .sticker-badge:hover {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    /* Action Buttons (shown on hover) */
+    .card-actions {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      display: flex;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+    }
+
+    .similar-card:hover .card-actions {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .action-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .action-btn.chat {
+      background: var(--primary);
+      color: white;
+    }
+
+    .action-btn.call {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .action-btn.whatsapp {
+      background: #25D366;
+      color: white;
+    }
+
+    .action-btn:hover {
+      transform: scale(1.1);
+    }
+
+    /* ============================================
+       EMPTY STATE
+       ============================================ */
+    .similar-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px;
+      background: var(--surface);
+      border-radius: 12px;
+    }
+
+    .similar-empty ion-icon {
+      font-size: 64px;
+      color: var(--border);
+      margin-bottom: 16px;
+    }
+
+    .similar-empty h3 {
+      font-size: 18px;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .similar-empty p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    /* ============================================
+       ERROR STATE
+       ============================================ */
+    .similar-error {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px;
+      background: #FFEBEE;
+      border-radius: 12px;
+      border: 1px solid #FFCDD2;
+    }
+
+    .similar-error ion-icon {
+      font-size: 64px;
+      color: var(--error);
+      margin-bottom: 16px;
+    }
+
+    .retry-btn {
+      margin-top: 16px;
+      padding: 12px 24px;
+      background: var(--error);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .retry-btn:hover {
+      background: #B71C1C;
+    }
+
+    /* ============================================
+       TOAST NOTIFICATION
+       ============================================ */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--text);
+      color: white;
+      padding: 14px 24px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 2000;
+      opacity: 0;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    }
+
+    .toast.error {
+      background: linear-gradient(135deg, var(--error) 0%, #B71C1C 100%);
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 1024px) {
+      .similar-listings-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 16px;
+      }
+
+      .similar-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .similar-card-image {
+        width: 130px;
+        height: 130px;
+      }
+
+      .similar-card-content {
+        padding: 12px;
+      }
+
+      .similar-price {
+        font-size: 18px;
+      }
+
+      .similar-card-title {
+        font-size: 14px;
+      }
+
+      .similar-card-description {
+        display: none;
+      }
+
+      .specs-row {
+        display: none;
+      }
+
+      .stickers-row .sticker-badge:not(:first-child) {
+        display: none;
+      }
+
+      .card-actions {
+        display: none;
+      }
+
+      .heart-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Similar Listings Section -->
+  <section class="similar-listings-section">
+    <div class="similar-header">
+      <h2 class="similar-title">
+        <ion-icon name="layers-outline"></ion-icon>
+        Similar Listings
+        <span class="similar-count" id="similarCount"></span>
+      </h2>
+      <a href="#" class="view-all-link" id="viewAllLink">
+        View All
+        <ion-icon name="arrow-forward"></ion-icon>
+      </a>
+    </div>
+    
+    <div class="similar-listings-grid" id="similarListingsGrid">
+      <!-- Loading State -->
+      <div class="similar-loading" id="similarLoading">
+        <div class="spinner"></div>
+        <p class="loading-text">Finding similar listings...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <ion-icon name="checkmark-circle" id="toastIcon"></ion-icon>
+    <span id="toastMessage"></span>
+  </div>
+
+  <script>
+    // ============================================
+    // CONFIGURATION
+    // ============================================
+    const API_URL = 'https://avida-marketplace-1.preview.emergentagent.com/api';
+    
+    // Get listing ID from URL or use demo ID
+    const urlParams = new URLSearchParams(window.location.search);
+    const LISTING_ID = urlParams.get('id') || '738e0749-a4c0-4f3e-91e2-c06e6c84bf66';
+    
+    // Auth token from localStorage
+    const AUTH_TOKEN = localStorage.getItem('authToken');
+
+    // ============================================
+    // STATE
+    // ============================================
+    let similarListings = [];
+    let favorites = new Set();
+    let isLoading = true;
+
+    // ============================================
+    // API HELPERS
+    // ============================================
+    async function apiRequest(endpoint, options = {}) {
+      const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers
+      };
+      
+      if (AUTH_TOKEN) {
+        headers['Authorization'] = `Bearer ${AUTH_TOKEN}`;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}${endpoint}`, {
+          ...options,
+          headers
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error(`API Error (${endpoint}):`, error);
+        throw error;
+      }
+    }
+
+    // ============================================
+    // FETCH SIMILAR LISTINGS
+    // ============================================
+    async function fetchSimilarListings() {
+      const grid = document.getElementById('similarListingsGrid');
+      const loading = document.getElementById('similarLoading');
+      const countEl = document.getElementById('similarCount');
+      const viewAllLink = document.getElementById('viewAllLink');
+      
+      try {
+        // Fetch similar listings from API
+        const response = await apiRequest(`/listings/similar/${LISTING_ID}`);
+        
+        // Handle different response formats
+        similarListings = Array.isArray(response) ? response : (response.listings || []);
+        
+        // Hide loading
+        loading.style.display = 'none';
+        isLoading = false;
+        
+        // Update count
+        countEl.textContent = `(${similarListings.length} found)`;
+        
+        // Update view all link
+        viewAllLink.href = `/search?similar_to=${LISTING_ID}`;
+        
+        if (similarListings.length === 0) {
+          renderEmptyState();
+          return;
+        }
+        
+        // Render listings
+        renderSimilarListings();
+        
+        // Track impressions for analytics
+        trackImpressions();
+        
+      } catch (error) {
+        console.error('Failed to fetch similar listings:', error);
+        loading.style.display = 'none';
+        isLoading = false;
+        renderErrorState();
+      }
+    }
+
+    // ============================================
+    // FETCH USER FAVORITES
+    // ============================================
+    async function fetchFavorites() {
+      if (!AUTH_TOKEN) return;
+      
+      try {
+        const response = await apiRequest('/favorites');
+        const favList = Array.isArray(response) ? response : (response.favorites || []);
+        favorites = new Set(favList.map(f => f.listing_id || f.id));
+      } catch (error) {
+        console.error('Failed to fetch favorites:', error);
+      }
+    }
+
+    // ============================================
+    // RENDER SIMILAR LISTINGS
+    // ============================================
+    function renderSimilarListings() {
+      const grid = document.getElementById('similarListingsGrid');
+      
+      grid.innerHTML = similarListings.map((listing, index) => 
+        renderSimilarCard(listing, index)
+      ).join('');
+    }
+
+    // ============================================
+    // RENDER SINGLE CARD
+    // ============================================
+    function renderSimilarCard(listing, index) {
+      const {
+        id,
+        title,
+        description,
+        price,
+        images,
+        location,
+        featured,
+        boosted,
+        isSponsored,
+        similarityScore,
+        priceNegotiable,
+        negotiable,
+        acceptsOffers,
+        exchangePossible,
+        seller,
+        verification,
+        bedrooms,
+        bathrooms,
+        size,
+        year,
+        mileage,
+        fuelType,
+        transmission,
+        condition,
+        category,
+        city,
+        distance
+      } = listing;
+
+      // Derived values
+      const imageUrl = images?.[0] || '';
+      const imageCount = images?.length || 0;
+      const isNegotiable = priceNegotiable || negotiable;
+      const isFeatured = featured || boosted;
+      const isVerified = seller?.isVerified || seller?.verified;
+      const isCertified = seller?.sellerType === 'certified' || verification?.isVerified;
+      const isDealer = seller?.sellerType === 'dealer';
+      const isFavorited = favorites.has(id);
+      const locationText = location?.city || location?.area || city || 'Location not specified';
+      
+      // Get specs based on listing type
+      const specs = getListingSpecs(listing);
+      
+      // Card classes
+      const cardClasses = ['similar-card'];
+      if (isFeatured) cardClasses.push('featured');
+      if (isSponsored) cardClasses.push('sponsored');
+      
+      return `
+        <article class="${cardClasses.join(' ')}" data-listing-id="${id}" data-index="${index}">
+          <!-- Image Section -->
+          <div class="similar-card-image" onclick="handleCardClick('${id}', ${index}, ${isSponsored || false})">
+            ${imageUrl 
+              ? `<img src="${imageUrl}" alt="${escapeHtml(title)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'image-placeholder\\'><ion-icon name=\\'image-outline\\'></ion-icon></div>'">`
+              : `<div class="image-placeholder"><ion-icon name="image-outline"></ion-icon></div>`
+            }
+            
+            ${isFeatured ? `
+              <div class="card-badge featured" title="Featured Listing">
+                <ion-icon name="star"></ion-icon>
+              </div>
+            ` : ''}
+            
+            ${isSponsored && !isFeatured ? `
+              <div class="card-badge sponsored" title="Sponsored">
+                <ion-icon name="megaphone"></ion-icon>
+              </div>
+            ` : ''}
+            
+            ${imageCount > 1 ? `
+              <div class="image-count-badge">
+                <ion-icon name="camera"></ion-icon>
+                <span>${imageCount}</span>
+              </div>
+            ` : ''}
+            
+            ${similarityScore ? `
+              <div class="similarity-badge">
+                ${Math.round(similarityScore * 100)}% match
+              </div>
+            ` : ''}
+          </div>
+          
+          <!-- Content Section -->
+          <div class="similar-card-content">
+            <!-- Heart/Favorite Button -->
+            <button 
+              class="heart-btn ${isFavorited ? 'active' : ''}" 
+              onclick="toggleFavorite(event, '${id}')"
+              title="${isFavorited ? 'Remove from favorites' : 'Add to favorites'}"
+              data-listing-id="${id}"
+            >
+              <ion-icon name="${isFavorited ? 'heart' : 'heart-outline'}"></ion-icon>
+            </button>
+            
+            <!-- Price Row -->
+            <div class="similar-price-row">
+              <span class="similar-price">${formatPrice(price || 0)}</span>
+              ${isNegotiable ? '<span class="price-badge vb-badge">VB</span>' : ''}
+              ${acceptsOffers && !isNegotiable ? '<span class="price-badge offers-badge">Offers</span>' : ''}
+            </div>
+            
+            <!-- Title -->
+            <h3 class="similar-card-title" onclick="handleCardClick('${id}', ${index}, ${isSponsored || false})">
+              ${escapeHtml(title)}
+            </h3>
+            
+            <!-- Description (Desktop) -->
+            ${description ? `
+              <p class="similar-card-description">${escapeHtml(description)}</p>
+            ` : ''}
+            
+            <!-- Specs Row -->
+            ${specs.length > 0 ? `
+              <div class="specs-row">
+                ${specs.map(spec => `
+                  <span class="spec-item">
+                    <ion-icon name="${spec.icon}"></ion-icon>
+                    ${spec.value}
+                  </span>
+                `).join('')}
+              </div>
+            ` : ''}
+            
+            <!-- Location Row -->
+            <div class="similar-location-row">
+              <ion-icon name="location"></ion-icon>
+              <span>${escapeHtml(locationText)}</span>
+              ${distance ? `<span class="distance-badge">${distance} km away</span>` : ''}
+            </div>
+            
+            <!-- Bottom Row -->
+            <div class="similar-bottom-row">
+              <!-- Seller Badges -->
+              <div class="seller-badges">
+                ${isVerified ? `
+                  <div class="verified-badge" title="Verified Seller">
+                    <ion-icon name="shield-checkmark"></ion-icon>
+                  </div>
+                ` : ''}
+                
+                ${isDealer ? '<span class="dealer-badge">Dealer</span>' : ''}
+                
+                ${isCertified && !isVerified ? `
+                  <span class="certified-badge">
+                    <ion-icon name="ribbon"></ion-icon>
+                    Certified
+                  </span>
+                ` : ''}
+                
+                ${seller?.name ? `<span class="seller-name">${escapeHtml(seller.name)}</span>` : ''}
+              </div>
+              
+              <!-- Stickers -->
+              <div class="stickers-row">
+                ${isNegotiable ? `
+                  <span class="sticker-badge">
+                    <ion-icon name="pricetag-outline"></ion-icon>
+                    Negotiable
+                  </span>
+                ` : ''}
+                
+                ${acceptsOffers ? `
+                  <span class="sticker-badge">
+                    <ion-icon name="hand-left-outline"></ion-icon>
+                    Offers
+                  </span>
+                ` : ''}
+                
+                ${exchangePossible ? `
+                  <span class="sticker-badge">
+                    <ion-icon name="swap-horizontal-outline"></ion-icon>
+                    Exchange
+                  </span>
+                ` : ''}
+              </div>
+            </div>
+            
+            <!-- Quick Action Buttons (Desktop Hover) -->
+            <div class="card-actions">
+              <button class="action-btn chat" onclick="startChat(event, '${id}')" title="Chat with seller">
+                <ion-icon name="chatbubble"></ion-icon>
+              </button>
+              ${seller?.phone ? `
+                <button class="action-btn call" onclick="makeCall(event, '${seller.phone}')" title="Call seller">
+                  <ion-icon name="call"></ion-icon>
+                </button>
+              ` : ''}
+              ${seller?.whatsapp ? `
+                <button class="action-btn whatsapp" onclick="openWhatsApp(event, '${seller.whatsapp}', '${escapeHtml(title)}')" title="WhatsApp">
+                  <ion-icon name="logo-whatsapp"></ion-icon>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    // ============================================
+    // GET LISTING SPECS
+    // ============================================
+    function getListingSpecs(listing) {
+      const specs = [];
+      
+      // Property specs
+      if (listing.bedrooms) {
+        specs.push({ icon: 'bed-outline', value: `${listing.bedrooms} Beds` });
+      }
+      if (listing.bathrooms) {
+        specs.push({ icon: 'water-outline', value: `${listing.bathrooms} Baths` });
+      }
+      if (listing.size) {
+        specs.push({ icon: 'resize-outline', value: `${listing.size} m²` });
+      }
+      
+      // Auto specs
+      if (listing.year) {
+        specs.push({ icon: 'calendar-outline', value: `${listing.year}` });
+      }
+      if (listing.mileage) {
+        specs.push({ icon: 'speedometer-outline', value: formatMileage(listing.mileage) });
+      }
+      if (listing.fuelType) {
+        specs.push({ icon: 'flash-outline', value: listing.fuelType });
+      }
+      if (listing.transmission) {
+        specs.push({ icon: 'settings-outline', value: listing.transmission });
+      }
+      
+      // General specs
+      if (listing.condition && specs.length === 0) {
+        specs.push({ 
+          icon: listing.condition === 'new' ? 'sparkles-outline' : 'refresh-outline', 
+          value: listing.condition === 'new' ? 'New' : 'Used' 
+        });
+      }
+      
+      return specs.slice(0, 4); // Max 4 specs
+    }
+
+    // ============================================
+    // RENDER EMPTY STATE
+    // ============================================
+    function renderEmptyState() {
+      const grid = document.getElementById('similarListingsGrid');
+      grid.innerHTML = `
+        <div class="similar-empty">
+          <ion-icon name="search-outline"></ion-icon>
+          <h3>No similar listings found</h3>
+          <p>We couldn't find any listings similar to this one. Try browsing other categories.</p>
+        </div>
+      `;
+    }
+
+    // ============================================
+    // RENDER ERROR STATE
+    // ============================================
+    function renderErrorState() {
+      const grid = document.getElementById('similarListingsGrid');
+      grid.innerHTML = `
+        <div class="similar-error">
+          <ion-icon name="cloud-offline-outline"></ion-icon>
+          <h3>Failed to load similar listings</h3>
+          <p>Something went wrong. Please try again.</p>
+          <button class="retry-btn" onclick="retryFetch()">
+            <ion-icon name="refresh-outline"></ion-icon>
+            Try Again
+          </button>
+        </div>
+      `;
+    }
+
+    // ============================================
+    // HANDLE CARD CLICK
+    // ============================================
+    function handleCardClick(listingId, index, isSponsored) {
+      // Track click event
+      trackEvent('click', listingId, isSponsored, index);
+      
+      // Navigate to listing
+      window.location.href = `/listing/${listingId}`;
+    }
+
+    // ============================================
+    // TOGGLE FAVORITE
+    // ============================================
+    async function toggleFavorite(event, listingId) {
+      event.stopPropagation();
+      event.preventDefault();
+      
+      if (!AUTH_TOKEN) {
+        showToast('Please sign in to save items', 'error');
+        return;
+      }
+      
+      const btn = event.currentTarget;
+      const icon = btn.querySelector('ion-icon');
+      const isFavorited = favorites.has(listingId);
+      
+      // Optimistic UI update
+      btn.classList.toggle('active');
+      icon.setAttribute('name', isFavorited ? 'heart-outline' : 'heart');
+      
+      try {
+        if (isFavorited) {
+          // Remove from favorites
+          await apiRequest(`/favorites/${listingId}`, { method: 'DELETE' });
+          favorites.delete(listingId);
+          showToast('Removed from favorites', 'success');
+        } else {
+          // Add to favorites
+          await apiRequest(`/favorites/${listingId}`, { method: 'POST' });
+          favorites.add(listingId);
+          showToast('Added to favorites', 'success');
+        }
+      } catch (error) {
+        // Revert UI on error
+        btn.classList.toggle('active');
+        icon.setAttribute('name', isFavorited ? 'heart' : 'heart-outline');
+        showToast('Failed to update favorites', 'error');
+      }
+    }
+
+    // ============================================
+    // START CHAT
+    // ============================================
+    async function startChat(event, listingId) {
+      event.stopPropagation();
+      event.preventDefault();
+      
+      if (!AUTH_TOKEN) {
+        showToast('Please sign in to chat', 'error');
+        return;
+      }
+      
+      try {
+        showToast('Starting chat...', 'success');
+        
+        // Create or get conversation
+        const conversation = await apiRequest('/conversations', {
+          method: 'POST',
+          body: JSON.stringify({ listing_id: listingId })
+        });
+        
+        // Navigate to chat
+        window.location.href = `/chat/${conversation.id}`;
+        
+      } catch (error) {
+        showToast('Failed to start chat', 'error');
+      }
+    }
+
+    // ============================================
+    // MAKE CALL
+    // ============================================
+    function makeCall(event, phone) {
+      event.stopPropagation();
+      event.preventDefault();
+      
+      window.location.href = `tel:${phone}`;
+    }
+
+    // ============================================
+    // OPEN WHATSAPP
+    // ============================================
+    function openWhatsApp(event, phone, title) {
+      event.stopPropagation();
+      event.preventDefault();
+      
+      const message = encodeURIComponent(`Hi! I'm interested in: ${title}`);
+      const cleanPhone = phone.replace(/[^0-9]/g, '');
+      window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
+    }
+
+    // ============================================
+    // RETRY FETCH
+    // ============================================
+    function retryFetch() {
+      const grid = document.getElementById('similarListingsGrid');
+      grid.innerHTML = `
+        <div class="similar-loading" id="similarLoading">
+          <div class="spinner"></div>
+          <p class="loading-text">Finding similar listings...</p>
+        </div>
+      `;
+      fetchSimilarListings();
+    }
+
+    // ============================================
+    // TRACK EVENTS (Analytics)
+    // ============================================
+    function trackEvent(eventType, targetId, isSponsored, position) {
+      try {
+        fetch(`${API_URL}/property/similar/track`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventType,
+            sourceListingId: LISTING_ID,
+            targetListingId: targetId,
+            isSponsored: isSponsored || false,
+            position,
+            sessionId: getSessionId(),
+            timestamp: new Date().toISOString()
+          })
+        }).catch(() => {}); // Silent fail for analytics
+      } catch (e) {
+        // Silent fail
+      }
+    }
+
+    function trackImpressions() {
+      similarListings.forEach((listing, index) => {
+        trackEvent('impression', listing.id, listing.isSponsored, index);
+      });
+    }
+
+    function getSessionId() {
+      let sessionId = sessionStorage.getItem('similar_session_id');
+      if (!sessionId) {
+        sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        sessionStorage.setItem('similar_session_id', sessionId);
+      }
+      return sessionId;
+    }
+
+    // ============================================
+    // UTILITY FUNCTIONS
+    // ============================================
+    function formatPrice(amount) {
+      return new Intl.NumberFormat('de-DE', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(amount);
+    }
+
+    function formatMileage(mileage) {
+      if (mileage >= 1000) {
+        return `${Math.round(mileage / 1000)}k km`;
+      }
+      return `${mileage} km`;
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toastIcon');
+      const text = document.getElementById('toastMessage');
+
+      toast.className = `toast ${type}`;
+      icon.setAttribute('name', type === 'success' ? 'checkmark-circle' : 'alert-circle');
+      text.textContent = message;
+
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ============================================
+    // INTERSECTION OBSERVER (Lazy Load)
+    // ============================================
+    function setupLazyLoading() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            if (img.dataset.src) {
+              img.src = img.dataset.src;
+              img.removeAttribute('data-src');
+            }
+            observer.unobserve(img);
+          }
+        });
+      }, { rootMargin: '100px' });
+
+      document.querySelectorAll('img[data-src]').forEach(img => {
+        observer.observe(img);
+      });
+    }
+
+    // ============================================
+    // INITIALIZE
+    // ============================================
+    async function init() {
+      console.log('Initializing Similar Listings...');
+      console.log('Listing ID:', LISTING_ID);
+      console.log('Auth Token:', AUTH_TOKEN ? 'Present' : 'Not present');
+      
+      // Fetch favorites first (if authenticated)
+      await fetchFavorites();
+      
+      // Fetch similar listings
+      await fetchSimilarListings();
+      
+      // Setup lazy loading
+      setupLazyLoading();
+    }
+
+    // Run on DOM ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
