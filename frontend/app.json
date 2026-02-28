@@ -136,8 +136,8 @@
       "eas": {
         "projectId": "cc272e5f-6f33-48db-9774-cd9a80fdae0e"
       },
-      "apiUrl": "https://listing-core.preview.emergentagent.com",
-      "previewUrl": "https://listing-core.preview.emergentagent.com"
+      "apiUrl": "https://auth-ui-template.preview.emergentagent.com",
+      "previewUrl": "https://auth-ui-template.preview.emergentagent.com"
     },
     "owner": "kcmkcm"
   }

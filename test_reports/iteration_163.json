@@ -38,7 +38,7 @@
   "test_credentials": {
     "admin_email": "admin@marketplace.com",
     "admin_password": "Admin@123456",
-    "api_base_url": "https://listing-core.preview.emergentagent.com/api"
+    "api_base_url": "https://auth-ui-template.preview.emergentagent.com/api"
   },
   "seed_data_creation": "2 blog posts exist and are published: 'Used Cars in Dar es Salaam: Buy Smart in Tanzania' (vehicles, 1278 words) and 'Buying Used Phones in Dar es Salaam: Smart Tips' (electronics, 649 words)",
   "retest_needed": false,

@@ -8,7 +8,7 @@ import os
 import uuid
 import time
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://listing-core.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://auth-ui-template.preview.emergentagent.com')
 
 class TestForgotPasswordAPI:
     """Test forgot password endpoint"""
