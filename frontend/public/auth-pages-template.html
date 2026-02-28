@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avida - Sign In / Sign Up</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Ionicons -->
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+  <style>
+    /* ============================================
+       AVIDA AUTH PAGES - COMPLETE STYLING
+       Clone of login.tsx and register.tsx
+    ============================================ */
+    
+    :root {
+      /* Color Palette - Green Theme (Sign In) */
+      --primary: #2E7D32;
+      --primary-dark: #1B5E20;
+      --primary-light: #81C784;
+      --accent: #4CAF50;
+      
+      /* Color Palette - Blue Theme (Sign Up) */
+      --blue-gradient-start: #1565C0;
+      --blue-gradient-end: #42A5F5;
+      
+      /* Neutral Colors */
+      --surface: #FFFFFF;
+      --background: #F8FAF8;
+      --text: #1A1A1A;
+      --text-secondary: #666666;
+      --text-light: #999999;
+      --border: #E8E8E8;
+      --error: #D32F2F;
+      --google: #4285F4;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: var(--background);
+      min-height: 100vh;
+      color: var(--text);
+    }
+    
+    /* ============================================
+       TAB NAVIGATION (Demo Switcher)
+    ============================================ */
+    .tab-nav {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    
+    .tab-btn {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--background);
+      color: var(--text-secondary);
+    }
+    
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .tab-btn:hover:not(.active) {
+      background: var(--border);
+    }
+    
+    /* ============================================
+       PAGE CONTAINERS
+    ============================================ */
+    .page {
+      display: none;
+    }
+    
+    .page.active {
+      display: block;
+    }
+    
+    /* ============================================
+       SIGN IN PAGE - DESKTOP LAYOUT (Split View)
+    ============================================ */
+    .signin-desktop {
+      display: none;
+      min-height: calc(100vh - 70px);
+    }
+    
+    @media (min-width: 769px) {
+      .signin-desktop {
+        display: flex;
+      }
+      .signin-mobile {
+        display: none !important;
+      }
+    }
+    
+    .signin-left-panel {
+      width: 45%;
+      min-height: 100%;
+      background: linear-gradient(135deg, var(--primary) 0%, #66BB6A 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .signin-right-panel {
+      flex: 1;
+      background: var(--surface);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      padding: 40px;
+    }
+    
+    /* Decorative Circles */
+    .decor-circle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .circle-1 {
+      width: 200px;
+      height: 200px;
+      top: -50px;
+      right: -50px;
+    }
+    
+    .circle-2 {
+      width: 100px;
+      height: 100px;
+      bottom: 20px;
+      left: -30px;
+    }
+    
+    .circle-3 {
+      width: 150px;
+      height: 150px;
+      bottom: 100px;
+      right: -40px;
+    }
+    
+    /* Brand Content (Left Panel) */
+    .brand-content {
+      text-align: center;
+      z-index: 1;
+    }
+    
+    .logo-large {
+      width: 100px;
+      height: 100px;
+      border-radius: 30px;
+      background: rgba(255,255,255,0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 20px;
+    }
+    
+    .logo-large ion-icon {
+      font-size: 48px;
+      color: white;
+    }
+    
+    .brand-title {
+      font-size: 42px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 8px;
+    }
+    
+    .brand-subtitle {
+      font-size: 18px;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 40px;
+    }
+    
+    .features-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .feature-icon ion-icon {
+      font-size: 20px;
+      color: white;
+    }
+    
+    .feature-text {
+      font-size: 16px;
+      color: white;
+      font-weight: 500;
+    }
+    
+    /* Close Button */
+    .close-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      width: 44px;
+      height: 44px;
+      border-radius: 22px;
+      background: var(--background);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      transition: background 0.2s;
+    }
+    
+    .close-btn:hover {
+      background: var(--border);
+    }
+    
+    .close-btn ion-icon {
+      font-size: 24px;
+      color: var(--text-secondary);
+    }
+    
+    /* Form Container */
+    .form-container {
+      width: 100%;
+      max-width: 420px;
+    }
+    
+    .form-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    
+    .form-subtitle {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+    
+    /* Input Groups */
+    .input-group {
+      margin-bottom: 20px;
+    }
+    
+    .input-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      background: var(--background);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 0 14px;
+      gap: 12px;
+      transition: border-color 0.2s;
+    }
+    
+    .input-wrapper:focus-within {
+      border-color: var(--primary);
+    }
+    
+    .input-wrapper ion-icon {
+      font-size: 20px;
+      color: var(--text-secondary);
+    }
+    
+    .input-wrapper input {
+      flex: 1;
+      height: 52px;
+      border: none;
+      background: transparent;
+      font-size: 16px;
+      color: var(--text);
+      outline: none;
+      font-family: inherit;
+    }
+    
+    .input-wrapper input::placeholder {
+      color: var(--text-light);
+    }
+    
+    .toggle-password {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .toggle-password ion-icon {
+      font-size: 20px;
+      color: var(--text-secondary);
+    }
+    
+    /* Login Options Row */
+    .login-options-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .remember-me {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    
+    .checkbox {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 2px solid var(--border);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s;
+    }
+    
+    .checkbox.checked {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+    
+    .checkbox ion-icon {
+      font-size: 14px;
+      color: white;
+      display: none;
+    }
+    
+    .checkbox.checked ion-icon {
+      display: block;
+    }
+    
+    .remember-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .forgot-password {
+      font-size: 14px;
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    
+    .forgot-password:hover {
+      text-decoration: underline;
+    }
+    
+    /* Primary Button */
+    .primary-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--primary);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .primary-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+    }
+    
+    .primary-btn:active {
+      transform: translateY(0);
+    }
+    
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 24px 0;
+      gap: 12px;
+    }
+    
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    
+    .divider-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    
+    /* Google Button */
+    .google-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .google-btn:hover {
+      background: var(--background);
+    }
+    
+    .google-btn img {
+      width: 20px;
+      height: 20px;
+    }
+    
+    .google-btn span {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    
+    /* Guest Button */
+    .guest-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px;
+      background: var(--primary-light);
+      border: none;
+      border-radius: 12px;
+      margin-top: 12px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    
+    .guest-btn:hover {
+      opacity: 0.9;
+    }
+    
+    .guest-btn ion-icon {
+      font-size: 20px;
+      color: var(--primary);
+    }
+    
+    .guest-btn span {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    /* Toggle Row */
+    .toggle-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      margin-top: 24px;
+    }
+    
+    .toggle-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .toggle-link {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    
+    .toggle-link:hover {
+      text-decoration: underline;
+    }
+    
+    /* Terms */
+    .terms {
+      font-size: 12px;
+      color: var(--text-light);
+      text-align: center;
+      margin-top: 24px;
+      line-height: 18px;
+    }
+    
+    .terms-link {
+      color: var(--primary);
+      font-weight: 500;
+      text-decoration: none;
+    }
+    
+    .terms-link:hover {
+      text-decoration: underline;
+    }
+    
+    /* Error Container */
+    .error-container {
+      display: flex;
+      align-items: center;
+      background: #FFEBEE;
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      gap: 10px;
+    }
+    
+    .error-container ion-icon {
+      font-size: 20px;
+      color: var(--error);
+    }
+    
+    .error-text {
+      flex: 1;
+      color: var(--error);
+      font-size: 14px;
+    }
+    
+    /* ============================================
+       SIGN IN PAGE - MOBILE LAYOUT
+    ============================================ */
+    .signin-mobile {
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100vh - 70px);
+    }
+    
+    @media (min-width: 769px) {
+      .signin-mobile {
+        display: none !important;
+      }
+    }
+    
+    .mobile-header {
+      min-height: 200px;
+      padding: 60px 24px 40px;
+      background: linear-gradient(135deg, var(--primary) 0%, #66BB6A 100%);
+      border-radius: 0 0 40px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .mobile-close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.3);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    .mobile-close-btn ion-icon {
+      font-size: 24px;
+      color: white;
+    }
+    
+    .mobile-header-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding-top: 20px;
+    }
+    
+    .mobile-logo {
+      width: 60px;
+      height: 60px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .mobile-logo ion-icon {
+      font-size: 32px;
+      color: white;
+    }
+    
+    .mobile-header-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 4px;
+    }
+    
+    .mobile-header-subtitle {
+      font-size: 14px;
+      color: rgba(255,255,255,0.9);
+    }
+    
+    .mobile-content-card {
+      flex: 1;
+      background: var(--surface);
+      margin-top: -30px;
+      border-radius: 30px 30px 0 0;
+      padding: 30px 24px 40px;
+    }
+    
+    /* Mobile Primary Button with icon */
+    .mobile-primary-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 16px;
+      background: var(--primary);
+      border: none;
+      border-radius: 16px;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+      transition: transform 0.2s;
+    }
+    
+    .mobile-primary-btn:hover {
+      transform: translateY(-1px);
+    }
+    
+    .mobile-primary-btn ion-icon {
+      font-size: 20px;
+    }
+    
+    /* ============================================
+       SIGN UP PAGE STYLES
+    ============================================ */
+    .signup-page {
+      min-height: calc(100vh - 70px);
+    }
+    
+    .signup-header {
+      height: 38vh;
+      min-height: 280px;
+      background: linear-gradient(135deg, var(--blue-gradient-start) 0%, var(--blue-gradient-end) 100%);
+      border-radius: 0 0 40px 40px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Illustration Container */
+    .illustration-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-top: 50px;
+    }
+    
+    .illustration {
+      position: relative;
+      width: 200px;
+    }
+    
+    .person-card {
+      display: flex;
+      align-items: center;
+      background: white;
+      border-radius: 16px;
+      padding: 12px;
+      width: 160px;
+      gap: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      margin-bottom: 12px;
+    }
+    
+    .person-card-2 {
+      margin-left: 40px;
+    }
+    
+    .avatar-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 22px;
+      background: #E8F5E9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .avatar-circle ion-icon {
+      font-size: 24px;
+      color: var(--primary);
+    }
+    
+    .avatar-circle.blue {
+      background: #E3F2FD;
+    }
+    
+    .avatar-circle.blue ion-icon {
+      color: var(--blue-gradient-start);
+    }
+    
+    .person-lines {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .person-line {
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      width: 80%;
+    }
+    
+    .person-line.short {
+      width: 60%;
+    }
+    
+    /* Floating Icons */
+    .floating-icon {
+      position: absolute;
+      width: 36px;
+      height: 36px;
+      border-radius: 18px;
+      background: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .floating-icon-1 {
+      top: 10px;
+      right: -10px;
+    }
+    
+    .floating-icon-2 {
+      top: 50px;
+      left: -15px;
+    }
+    
+    .floating-icon-3 {
+      bottom: 10px;
+      right: 10px;
+    }
+    
+    .floating-icon ion-icon.check {
+      font-size: 18px;
+      color: var(--accent);
+    }
+    
+    .floating-icon ion-icon.star {
+      font-size: 16px;
+      color: #FFB800;
+    }
+    
+    .floating-icon ion-icon.gift {
+      font-size: 16px;
+      color: #E91E63;
+    }
+    
+    /* Signup Content Card */
+    .signup-content-card {
+      background: var(--surface);
+      margin-top: -30px;
+      border-radius: 30px 30px 0 0;
+      padding: 28px 24px 40px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .welcome-section {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    
+    .welcome-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    
+    .welcome-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 20px;
+    }
+    
+    /* Benefits Container */
+    .benefits-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .benefit-item {
+      display: flex;
+      align-items: center;
+      background: var(--background);
+      padding: 14px;
+      border-radius: 14px;
+      gap: 14px;
+    }
+    
+    .benefit-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .benefit-icon.green {
+      background: #E8F5E9;
+    }
+    
+    .benefit-icon.blue {
+      background: #E3F2FD;
+    }
+    
+    .benefit-icon.orange {
+      background: #FFF3E0;
+    }
+    
+    .benefit-icon ion-icon {
+      font-size: 20px;
+    }
+    
+    .benefit-icon.green ion-icon {
+      color: var(--primary);
+    }
+    
+    .benefit-icon.blue ion-icon {
+      color: var(--blue-gradient-start);
+    }
+    
+    .benefit-icon.orange ion-icon {
+      color: #F57C00;
+    }
+    
+    .benefit-text {
+      flex: 1;
+    }
+    
+    .benefit-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    
+    .benefit-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    /* Signup Google Button (Blue variant) */
+    .signup-google-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px;
+      background: var(--blue-gradient-start);
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(21, 101, 192, 0.3);
+      transition: transform 0.2s;
+    }
+    
+    .signup-google-btn:hover {
+      transform: translateY(-1px);
+    }
+    
+    .signup-google-btn .google-icon-wrap {
+      width: 28px;
+      height: 28px;
+      border-radius: 14px;
+      background: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .signup-google-btn .google-icon-wrap img {
+      width: 18px;
+      height: 18px;
+    }
+    
+    .signup-google-btn span {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    /* Login Prompt */
+    .login-prompt {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      margin-top: 20px;
+    }
+    
+    .login-prompt-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .login-link {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    
+    .login-link:hover {
+      text-decoration: underline;
+    }
+    
+    /* Loading Spinner */
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Hidden class */
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Tab Navigation for Demo -->
+  <nav class="tab-nav">
+    <button class="tab-btn active" onclick="showPage('signin')">Sign In</button>
+    <button class="tab-btn" onclick="showPage('signup')">Sign Up</button>
+  </nav>
+
+  <!-- ============================================
+       SIGN IN PAGE
+  ============================================ -->
+  <div id="signin-page" class="page active">
+    <!-- Desktop Layout -->
+    <div class="signin-desktop">
+      <!-- Left Panel - Branding -->
+      <div class="signin-left-panel">
+        <div class="decor-circle circle-1"></div>
+        <div class="decor-circle circle-2"></div>
+        <div class="decor-circle circle-3"></div>
+        
+        <div class="brand-content">
+          <div class="logo-large">
+            <ion-icon name="storefront"></ion-icon>
+          </div>
+          <h1 class="brand-title">avida</h1>
+          <p class="brand-subtitle">Your local marketplace</p>
+          
+          <div class="features-list">
+            <div class="feature-item">
+              <div class="feature-icon">
+                <ion-icon name="shield-checkmark"></ion-icon>
+              </div>
+              <span class="feature-text">Secure transactions</span>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <ion-icon name="location"></ion-icon>
+              </div>
+              <span class="feature-text">Local listings nearby</span>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <ion-icon name="chatbubbles"></ion-icon>
+              </div>
+              <span class="feature-text">Direct messaging</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right Panel - Form -->
+      <div class="signin-right-panel">
+        <button class="close-btn" data-testid="login-close-btn" onclick="handleClose()">
+          <ion-icon name="close"></ion-icon>
+        </button>
+        
+        <div class="form-container">
+          <h2 class="form-title" id="desktop-form-title">Welcome Back</h2>
+          <p class="form-subtitle" id="desktop-form-subtitle">Sign in to continue to your account</p>
+          
+          <!-- Error Container (hidden by default) -->
+          <div class="error-container hidden" id="desktop-error">
+            <ion-icon name="alert-circle"></ion-icon>
+            <span class="error-text" id="desktop-error-text"></span>
+          </div>
+          
+          <!-- Name Input (hidden for login, shown for register) -->
+          <div class="input-group hidden" id="desktop-name-group">
+            <label class="input-label">Full Name</label>
+            <div class="input-wrapper">
+              <ion-icon name="person-outline"></ion-icon>
+              <input type="text" id="desktop-name" placeholder="Enter your name" autocomplete="name">
+            </div>
+          </div>
+          
+          <!-- Email Input -->
+          <div class="input-group">
+            <label class="input-label">Email Address</label>
+            <div class="input-wrapper">
+              <ion-icon name="mail-outline"></ion-icon>
+              <input type="email" id="desktop-email" placeholder="Enter your email" autocomplete="email" data-testid="login-email-input">
+            </div>
+          </div>
+          
+          <!-- Password Input -->
+          <div class="input-group">
+            <label class="input-label">Password</label>
+            <div class="input-wrapper">
+              <ion-icon name="lock-closed-outline"></ion-icon>
+              <input type="password" id="desktop-password" placeholder="Enter your password" data-testid="login-password-input">
+              <button class="toggle-password" onclick="toggleDesktopPassword()" data-testid="login-toggle-password">
+                <ion-icon name="eye-outline" id="desktop-eye-icon"></ion-icon>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Remember Me & Forgot Password (login only) -->
+          <div class="login-options-row" id="desktop-login-options">
+            <div class="remember-me" onclick="toggleRememberMe('desktop')" data-testid="remember-me-checkbox">
+              <div class="checkbox" id="desktop-checkbox">
+                <ion-icon name="checkmark"></ion-icon>
+              </div>
+              <span class="remember-text">Remember me</span>
+            </div>
+            <a href="#" class="forgot-password" data-testid="forgot-password-link">Forgot password?</a>
+          </div>
+          
+          <!-- Primary Button -->
+          <button class="primary-btn" id="desktop-submit-btn" onclick="handleEmailAuth('desktop')" data-testid="login-submit-button">
+            Sign In
+          </button>
+          
+          <!-- Divider -->
+          <div class="divider">
+            <div class="divider-line"></div>
+            <span class="divider-text">or continue with</span>
+            <div class="divider-line"></div>
+          </div>
+          
+          <!-- Google Button -->
+          <button class="google-btn" onclick="handleGoogleLogin()">
+            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
+            <span>Continue with Google</span>
+          </button>
+          
+          <!-- Guest Button -->
+          <button class="guest-btn" onclick="handleClose()">
+            <ion-icon name="compass-outline"></ion-icon>
+            <span>Browse as Guest</span>
+          </button>
+          
+          <!-- Toggle Login/Register -->
+          <div class="toggle-row">
+            <span class="toggle-text" id="desktop-toggle-text">Don't have an account?</span>
+            <span class="toggle-link" id="desktop-toggle-link" onclick="toggleDesktopMode()">Sign Up</span>
+          </div>
+          
+          <!-- Terms -->
+          <p class="terms">
+            By continuing, you agree to our 
+            <a href="https://www.emergentagent.com/terms" class="terms-link" target="_blank">Terms of Service</a> and 
+            <a href="https://www.emergentagent.com/privacy" class="terms-link" target="_blank">Privacy Policy</a>
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Mobile Layout -->
+    <div class="signin-mobile">
+      <div class="mobile-header">
+        <div class="decor-circle circle-1"></div>
+        <div class="decor-circle circle-2"></div>
+        
+        <button class="mobile-close-btn" onclick="handleClose()" data-testid="login-close-btn">
+          <ion-icon name="close"></ion-icon>
+        </button>
+        
+        <div class="mobile-header-content">
+          <div class="mobile-logo">
+            <ion-icon name="storefront"></ion-icon>
+          </div>
+          <h1 class="mobile-header-title" id="mobile-header-title">Welcome Back</h1>
+          <p class="mobile-header-subtitle" id="mobile-header-subtitle">Sign in to continue to avida</p>
+        </div>
+      </div>
+      
+      <div class="mobile-content-card">
+        <!-- Error Container (hidden by default) -->
+        <div class="error-container hidden" id="mobile-error">
+          <ion-icon name="alert-circle"></ion-icon>
+          <span class="error-text" id="mobile-error-text"></span>
+        </div>
+        
+        <!-- Name Input (hidden for login) -->
+        <div class="input-group hidden" id="mobile-name-group">
+          <label class="input-label">Full Name</label>
+          <div class="input-wrapper">
+            <ion-icon name="person-outline"></ion-icon>
+            <input type="text" id="mobile-name" placeholder="Enter your name" autocomplete="name">
+          </div>
+        </div>
+        
+        <!-- Email Input -->
+        <div class="input-group">
+          <label class="input-label">Email Address</label>
+          <div class="input-wrapper">
+            <ion-icon name="mail-outline"></ion-icon>
+            <input type="email" id="mobile-email" placeholder="Enter your email" autocomplete="email" data-testid="mobile-login-email-input">
+          </div>
+        </div>
+        
+        <!-- Password Input -->
+        <div class="input-group">
+          <label class="input-label">Password</label>
+          <div class="input-wrapper">
+            <ion-icon name="lock-closed-outline"></ion-icon>
+            <input type="password" id="mobile-password" placeholder="Enter your password" data-testid="mobile-login-password-input">
+            <button class="toggle-password" onclick="toggleMobilePassword()" data-testid="mobile-login-toggle-password">
+              <ion-icon name="eye-outline" id="mobile-eye-icon"></ion-icon>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Remember Me & Forgot Password (login only) -->
+        <div class="login-options-row" id="mobile-login-options">
+          <div class="remember-me" onclick="toggleRememberMe('mobile')">
+            <div class="checkbox" id="mobile-checkbox">
+              <ion-icon name="checkmark"></ion-icon>
+            </div>
+            <span class="remember-text">Remember me</span>
+          </div>
+          <a href="#" class="forgot-password">Forgot password?</a>
+        </div>
+        
+        <!-- Primary Button -->
+        <button class="mobile-primary-btn" id="mobile-submit-btn" onclick="handleEmailAuth('mobile')" data-testid="mobile-login-submit-button">
+          <ion-icon name="log-in-outline" id="mobile-submit-icon"></ion-icon>
+          <span id="mobile-submit-text">Sign In</span>
+        </button>
+        
+        <!-- Divider -->
+        <div class="divider">
+          <div class="divider-line"></div>
+          <span class="divider-text">or continue with</span>
+          <div class="divider-line"></div>
+        </div>
+        
+        <!-- Google Button -->
+        <button class="google-btn" onclick="handleGoogleLogin()">
+          <img src="https://www.google.com/favicon.ico" alt="Google" style="width: 20px; height: 20px;">
+          <span>Google</span>
+        </button>
+        
+        <!-- Guest Button -->
+        <button class="guest-btn" onclick="handleClose()">
+          <ion-icon name="compass-outline"></ion-icon>
+          <span>Browse as Guest</span>
+        </button>
+        
+        <!-- Toggle Login/Register -->
+        <div class="toggle-row" style="margin-top: 20px;">
+          <span class="toggle-text" id="mobile-toggle-text">Don't have an account?</span>
+          <span class="toggle-link" id="mobile-toggle-link" onclick="toggleMobileMode()">Sign Up</span>
+        </div>
+        
+        <!-- Terms -->
+        <p class="terms">
+          By continuing, you agree to our<br>
+          <a href="https://www.emergentagent.com/terms" class="terms-link" target="_blank">Terms of Service</a> and 
+          <a href="https://www.emergentagent.com/privacy" class="terms-link" target="_blank">Privacy Policy</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       SIGN UP PAGE
+  ============================================ -->
+  <div id="signup-page" class="page">
+    <div class="signup-page">
+      <!-- Header with Illustration -->
+      <div class="signup-header">
+        <div class="decor-circle circle-1"></div>
+        <div class="decor-circle circle-2"></div>
+        <div class="decor-circle circle-3"></div>
+        
+        <button class="mobile-close-btn" onclick="handleClose()" data-testid="register-close-btn">
+          <ion-icon name="close"></ion-icon>
+        </button>
+        
+        <div class="illustration-container">
+          <div class="illustration">
+            <!-- Person Cards -->
+            <div class="person-card">
+              <div class="avatar-circle">
+                <ion-icon name="person"></ion-icon>
+              </div>
+              <div class="person-lines">
+                <div class="person-line"></div>
+                <div class="person-line short"></div>
+              </div>
+            </div>
+            
+            <div class="person-card person-card-2">
+              <div class="avatar-circle blue">
+                <ion-icon name="person"></ion-icon>
+              </div>
+              <div class="person-lines">
+                <div class="person-line"></div>
+                <div class="person-line short"></div>
+              </div>
+            </div>
+            
+            <!-- Floating Icons -->
+            <div class="floating-icon floating-icon-1">
+              <ion-icon name="checkmark-circle" class="check"></ion-icon>
+            </div>
+            <div class="floating-icon floating-icon-2">
+              <ion-icon name="star" class="star"></ion-icon>
+            </div>
+            <div class="floating-icon floating-icon-3">
+              <ion-icon name="gift" class="gift"></ion-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Content Card -->
+      <div class="signup-content-card">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+          <h1 class="welcome-title">Create Your Account</h1>
+          <p class="welcome-subtitle">Join thousands of buyers and sellers in your area</p>
+        </div>
+        
+        <!-- Benefits -->
+        <div class="benefits-container">
+          <div class="benefit-item">
+            <div class="benefit-icon green">
+              <ion-icon name="storefront-outline"></ion-icon>
+            </div>
+            <div class="benefit-text">
+              <div class="benefit-title">Post Free Listings</div>
+              <div class="benefit-desc">Sell items without any fees</div>
+            </div>
+          </div>
+          
+          <div class="benefit-item">
+            <div class="benefit-icon blue">
+              <ion-icon name="chatbubbles-outline"></ion-icon>
+            </div>
+            <div class="benefit-text">
+              <div class="benefit-title">Direct Messaging</div>
+              <div class="benefit-desc">Chat safely with buyers</div>
+            </div>
+          </div>
+          
+          <div class="benefit-item">
+            <div class="benefit-icon orange">
+              <ion-icon name="heart-outline"></ion-icon>
+            </div>
+            <div class="benefit-text">
+              <div class="benefit-title">Save Favorites</div>
+              <div class="benefit-desc">Never miss a great deal</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Error Container (hidden by default) -->
+        <div class="error-container hidden" id="signup-error">
+          <ion-icon name="alert-circle"></ion-icon>
+          <span class="error-text" id="signup-error-text"></span>
+        </div>
+        
+        <!-- Google Sign Up Button -->
+        <button class="signup-google-btn" onclick="handleGoogleSignUp()">
+          <div class="google-icon-wrap">
+            <img src="https://www.google.com/favicon.ico" alt="Google">
+          </div>
+          <span>Sign up with Google</span>
+        </button>
+        
+        <!-- Login Prompt -->
+        <div class="login-prompt">
+          <span class="login-prompt-text">Already have an account?</span>
+          <span class="login-link" onclick="showPage('signin')">Sign In</span>
+        </div>
+        
+        <!-- Terms -->
+        <p class="terms">
+          By signing up, you agree to our<br>
+          <a href="https://www.emergentagent.com/terms" class="terms-link" target="_blank">Terms of Service</a> and 
+          <a href="https://www.emergentagent.com/privacy" class="terms-link" target="_blank">Privacy Policy</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================
+    // JAVASCRIPT LOGIC
+    // ============================================
+    
+    // State
+    let desktopLoginMode = true;
+    let mobileLoginMode = true;
+    let desktopRememberMe = false;
+    let mobileRememberMe = false;
+    let desktopPasswordVisible = false;
+    let mobilePasswordVisible = false;
+    
+    // API Configuration - Replace with your actual backend URL
+    const API_URL = 'YOUR_BACKEND_URL'; // e.g., 'https://your-app.preview.emergentagent.com'
+    
+    // Page Switching
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      
+      document.getElementById(pageId + '-page').classList.add('active');
+      event.target.classList.add('active');
+    }
+    
+    // Close Handler
+    function handleClose() {
+      window.location.href = '/'; // Navigate to home
+    }
+    
+    // Toggle Password Visibility
+    function toggleDesktopPassword() {
+      desktopPasswordVisible = !desktopPasswordVisible;
+      const input = document.getElementById('desktop-password');
+      const icon = document.getElementById('desktop-eye-icon');
+      input.type = desktopPasswordVisible ? 'text' : 'password';
+      icon.name = desktopPasswordVisible ? 'eye-off-outline' : 'eye-outline';
+    }
+    
+    function toggleMobilePassword() {
+      mobilePasswordVisible = !mobilePasswordVisible;
+      const input = document.getElementById('mobile-password');
+      const icon = document.getElementById('mobile-eye-icon');
+      input.type = mobilePasswordVisible ? 'text' : 'password';
+      icon.name = mobilePasswordVisible ? 'eye-off-outline' : 'eye-outline';
+    }
+    
+    // Toggle Remember Me
+    function toggleRememberMe(type) {
+      if (type === 'desktop') {
+        desktopRememberMe = !desktopRememberMe;
+        document.getElementById('desktop-checkbox').classList.toggle('checked', desktopRememberMe);
+      } else {
+        mobileRememberMe = !mobileRememberMe;
+        document.getElementById('mobile-checkbox').classList.toggle('checked', mobileRememberMe);
+      }
+    }
+    
+    // Toggle Login/Register Mode (Desktop)
+    function toggleDesktopMode() {
+      desktopLoginMode = !desktopLoginMode;
+      updateDesktopUI();
+    }
+    
+    // Toggle Login/Register Mode (Mobile)
+    function toggleMobileMode() {
+      mobileLoginMode = !mobileLoginMode;
+      updateMobileUI();
+    }
+    
+    // Update Desktop UI based on mode
+    function updateDesktopUI() {
+      const title = document.getElementById('desktop-form-title');
+      const subtitle = document.getElementById('desktop-form-subtitle');
+      const nameGroup = document.getElementById('desktop-name-group');
+      const loginOptions = document.getElementById('desktop-login-options');
+      const submitBtn = document.getElementById('desktop-submit-btn');
+      const toggleText = document.getElementById('desktop-toggle-text');
+      const toggleLink = document.getElementById('desktop-toggle-link');
+      
+      if (desktopLoginMode) {
+        title.textContent = 'Welcome Back';
+        subtitle.textContent = 'Sign in to continue to your account';
+        nameGroup.classList.add('hidden');
+        loginOptions.classList.remove('hidden');
+        submitBtn.textContent = 'Sign In';
+        toggleText.textContent = "Don't have an account?";
+        toggleLink.textContent = 'Sign Up';
+      } else {
+        title.textContent = 'Create Account';
+        subtitle.textContent = 'Join avida marketplace today';
+        nameGroup.classList.remove('hidden');
+        loginOptions.classList.add('hidden');
+        submitBtn.textContent = 'Create Account';
+        toggleText.textContent = 'Already have an account?';
+        toggleLink.textContent = 'Sign In';
+      }
+      
+      // Clear error
+      document.getElementById('desktop-error').classList.add('hidden');
+    }
+    
+    // Update Mobile UI based on mode
+    function updateMobileUI() {
+      const title = document.getElementById('mobile-header-title');
+      const subtitle = document.getElementById('mobile-header-subtitle');
+      const nameGroup = document.getElementById('mobile-name-group');
+      const loginOptions = document.getElementById('mobile-login-options');
+      const submitIcon = document.getElementById('mobile-submit-icon');
+      const submitText = document.getElementById('mobile-submit-text');
+      const toggleText = document.getElementById('mobile-toggle-text');
+      const toggleLink = document.getElementById('mobile-toggle-link');
+      
+      if (mobileLoginMode) {
+        title.textContent = 'Welcome Back';
+        subtitle.textContent = 'Sign in to continue to avida';
+        nameGroup.classList.add('hidden');
+        loginOptions.classList.remove('hidden');
+        submitIcon.name = 'log-in-outline';
+        submitText.textContent = 'Sign In';
+        toggleText.textContent = "Don't have an account?";
+        toggleLink.textContent = 'Sign Up';
+      } else {
+        title.textContent = 'Create Account';
+        subtitle.textContent = 'Join avida marketplace today';
+        nameGroup.classList.remove('hidden');
+        loginOptions.classList.add('hidden');
+        submitIcon.name = 'person-add-outline';
+        submitText.textContent = 'Create Account';
+        toggleText.textContent = 'Already have an account?';
+        toggleLink.textContent = 'Sign In';
+      }
+      
+      // Clear error
+      document.getElementById('mobile-error').classList.add('hidden');
+    }
+    
+    // Show Error
+    function showError(type, message) {
+      const errorContainer = document.getElementById(type + '-error');
+      const errorText = document.getElementById(type + '-error-text');
+      errorText.textContent = message;
+      errorContainer.classList.remove('hidden');
+    }
+    
+    // Handle Email Auth (Login/Register)
+    async function handleEmailAuth(type) {
+      const isLoginMode = type === 'desktop' ? desktopLoginMode : mobileLoginMode;
+      const email = document.getElementById(type + '-email').value.trim();
+      const password = document.getElementById(type + '-password').value;
+      const name = isLoginMode ? '' : document.getElementById(type + '-name').value.trim();
+      
+      // Validation
+      if (!isLoginMode && !name) {
+        showError(type, 'Please enter your name');
+        return;
+      }
+      if (!email) {
+        showError(type, 'Please enter your email');
+        return;
+      }
+      if (!email.includes('@')) {
+        showError(type, 'Please enter a valid email address');
+        return;
+      }
+      if (!password) {
+        showError(type, 'Please enter your password');
+        return;
+      }
+      if (!isLoginMode && password.length < 6) {
+        showError(type, 'Password must be at least 6 characters');
+        return;
+      }
+      
+      // Clear previous error
+      document.getElementById(type + '-error').classList.add('hidden');
+      
+      try {
+        const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
+        const body = isLoginMode 
+          ? { email, password }
+          : { email, password, name };
+        
+        const response = await fetch(API_URL + endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.detail || 'Authentication failed');
+        }
+        
+        // Success - store token and redirect
+        if (data.session_token) {
+          localStorage.setItem('auth_token', data.session_token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          window.location.href = '/';
+        }
+      } catch (err) {
+        showError(type, err.message || 'Authentication failed. Please try again.');
+      }
+    }
+    
+    // Handle Google Login
+    function handleGoogleLogin() {
+      const redirectUrl = window.location.origin + '/';
+      const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+      window.location.href = authUrl;
+    }
+    
+    // Handle Google Sign Up (same as login for Google OAuth)
+    function handleGoogleSignUp() {
+      handleGoogleLogin();
+    }
+  </script>
+</body>
+</html>
