@@ -9,7 +9,7 @@ import requests
 import uuid
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://avida-marketplace-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://listing-core.preview.emergentagent.com')
 
 
 class TestEmailVerificationRegistration:

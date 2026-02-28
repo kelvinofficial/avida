@@ -5,7 +5,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://avida-marketplace-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://listing-core.preview.emergentagent.com')
 
 class TestFeatureSettingsAPI:
     """Test the /api/feature-settings endpoint"""

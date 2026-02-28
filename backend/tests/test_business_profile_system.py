@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime, timezone
 
 # Base URL from environment - use the public URL
-BASE_URL = "https://avida-marketplace-1.preview.emergentagent.com"
+BASE_URL = "https://listing-core.preview.emergentagent.com"
 
 
 class TestBusinessProfilePublicEndpoints:
