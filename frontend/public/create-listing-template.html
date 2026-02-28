@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Listing - Avida Marketplace</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* ============ CSS VARIABLES ============ */
+    :root {
+      --primary: #2E7D32;
+      --primary-light: #E8F5E9;
+      --primary-dark: #1B5E20;
+      --background: #F5F5F5;
+      --surface: #FFFFFF;
+      --text: #1A1A1A;
+      --text-secondary: #666666;
+      --border: #E0E0E0;
+      --border-light: #F0F0F0;
+      --error: #D32F2F;
+      --error-light: #FFEBEE;
+      --success: #2E7D32;
+      --warning: #F57C00;
+      --warning-light: #FFF3E0;
+      --whatsapp: #25D366;
+      --blue: #1976D2;
+      --blue-light: #E3F2FD;
+      --gold: #FFB800;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+      --transition: all 0.2s ease;
+    }
+
+    /* ============ RESET & BASE ============ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--background);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ============ LAYOUT ============ */
+    .page-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ============ HEADER ============ */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-back {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 20px;
+      border-radius: 50%;
+      transition: var(--transition);
+    }
+
+    .header-back:hover {
+      background: var(--background);
+    }
+
+    .header-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .header-cancel {
+      background: none;
+      border: none;
+      color: var(--error);
+      font-weight: 500;
+      font-size: 15px;
+      cursor: pointer;
+      padding: 8px 12px;
+    }
+
+    /* ============ STEP INDICATOR ============ */
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px 20px;
+      background: var(--surface);
+      gap: 4px;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+    }
+
+    .step-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: var(--transition);
+    }
+
+    .step-dot.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .step-dot.complete {
+      background: var(--primary);
+      color: white;
+    }
+
+    .step-line {
+      width: 24px;
+      height: 2px;
+      background: var(--border);
+      margin: 0 4px;
+    }
+
+    .step-line.complete {
+      background: var(--primary);
+    }
+
+    /* ============ MAIN CONTENT ============ */
+    .main-content {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .step-content {
+      display: none;
+    }
+
+    .step-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .step-subtitle {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+
+    /* ============ SECTION TITLES ============ */
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .required {
+      color: var(--error);
+    }
+
+    /* ============ CATEGORY GRID ============ */
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .category-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 12px;
+      background: var(--surface);
+      border: 2px solid transparent;
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .category-card:hover {
+      border-color: var(--primary-light);
+      transform: translateY(-2px);
+    }
+
+    .category-card.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .category-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      font-size: 24px;
+      color: var(--primary);
+      transition: var(--transition);
+    }
+
+    .category-card.selected .category-icon {
+      background: var(--primary);
+      color: white;
+    }
+
+    .category-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    .category-card.selected .category-name {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* ============ SUBCATEGORY LIST ============ */
+    .subcategory-section {
+      margin-top: 24px;
+      display: none;
+    }
+
+    .subcategory-section.visible {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .subcategory-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .subcategory-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .subcategory-item:hover {
+      border-color: var(--primary-light);
+    }
+
+    .subcategory-item.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .subcategory-text {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .subcategory-item.selected .subcategory-text {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .subcategory-check {
+      color: var(--primary);
+      font-size: 18px;
+      display: none;
+    }
+
+    .subcategory-item.selected .subcategory-check {
+      display: block;
+    }
+
+    /* ============ IMAGE UPLOAD ============ */
+    .images-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .add-image-btn {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      border: 2px dashed var(--primary);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: var(--transition);
+      gap: 8px;
+    }
+
+    .add-image-btn:hover {
+      background: var(--primary-light);
+    }
+
+    .add-image-btn i {
+      font-size: 32px;
+      color: var(--primary);
+    }
+
+    .add-image-btn span {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--primary);
+    }
+
+    .add-image-btn .count {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .image-wrapper {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .image-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .image-wrapper .cover-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: var(--primary);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .image-wrapper .remove-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: white;
+      font-size: 12px;
+    }
+
+    /* ============ PHOTO TIPS ============ */
+    .photo-tips {
+      background: var(--warning-light);
+      padding: 16px;
+      border-radius: var(--radius-lg);
+    }
+
+    .tips-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .tips-header i {
+      color: var(--warning);
+      font-size: 18px;
+    }
+
+    .tips-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .tip-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .tip-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .tip-icon {
+      width: 32px;
+      height: 32px;
+      background: white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .tip-icon i {
+      color: var(--primary);
+      font-size: 14px;
+    }
+
+    .tip-content h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .tip-content p {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    /* ============ FORM FIELDS ============ */
+    .field-container {
+      margin-bottom: 20px;
+    }
+
+    .field-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      color: var(--text);
+      transition: var(--transition);
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .textarea {
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    .char-count-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+    }
+
+    .min-chars {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .min-chars.valid {
+      color: var(--success);
+    }
+
+    .char-count {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* ============ CHIP SELECTOR ============ */
+    .chip-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 10px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chip:hover {
+      border-color: var(--primary);
+    }
+
+    .chip.selected {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    /* ============ PRICE SECTION ============ */
+    .price-input-container {
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .currency-symbol {
+      padding: 14px 16px;
+      background: var(--background);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      border-right: 1px solid var(--border);
+    }
+
+    .price-input {
+      flex: 1;
+      padding: 14px 16px;
+      border: none;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .price-input:focus {
+      outline: none;
+    }
+
+    /* ============ PREFERENCE CARDS ============ */
+    .preference-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .preference-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .preference-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .preference-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .preference-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .preference-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* ============ TOGGLE SWITCH ============ */
+    .toggle-switch {
+      position: relative;
+      width: 52px;
+      height: 28px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--border);
+      transition: 0.3s;
+      border-radius: 28px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: var(--primary);
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(24px);
+    }
+
+    /* ============ SECTION DIVIDER ============ */
+    .section-divider {
+      padding: 16px 0 12px;
+    }
+
+    .section-divider-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ============ LOCATION PICKER ============ */
+    .location-picker {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .location-picker:hover {
+      border-color: var(--primary);
+    }
+
+    .location-picker i {
+      color: var(--primary);
+      font-size: 20px;
+    }
+
+    .location-picker span {
+      flex: 1;
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    .location-picker .arrow {
+      color: var(--text-secondary);
+    }
+
+    /* ============ PREVIEW CARD ============ */
+    .preview-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    .preview-images {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+    }
+
+    .preview-images img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      flex-shrink: 0;
+      scroll-snap-align: start;
+    }
+
+    .preview-content {
+      padding: 16px;
+    }
+
+    .preview-price {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .preview-vb {
+      font-size: 14px;
+      color: var(--warning);
+    }
+
+    .preview-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .preview-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .preview-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .preview-badge {
+      padding: 6px 12px;
+      background: var(--primary-light);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .preview-section {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .preview-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .preview-description {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .attributes-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .attribute-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+    }
+
+    .attribute-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-transform: capitalize;
+    }
+
+    .attribute-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .preview-contact-methods {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .preview-contact-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      background: var(--background);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    /* ============ FOOTER ============ */
+    .footer {
+      padding: 16px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      position: sticky;
+      bottom: 0;
+    }
+
+    .next-btn,
+    .publish-btn {
+      width: 100%;
+      padding: 16px 24px;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+
+    .next-btn {
+      background: var(--primary);
+      color: white;
+    }
+
+    .next-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .publish-btn {
+      background: var(--primary);
+      color: white;
+    }
+
+    .publish-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .publish-btn:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+    }
+
+    /* ============ ERROR BANNER ============ */
+    .error-banner {
+      background: var(--error);
+      margin: 8px 16px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: none;
+    }
+
+    .error-banner.visible {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .error-header {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      gap: 12px;
+    }
+
+    .error-icon-wrapper {
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .error-icon-wrapper i {
+      color: white;
+      font-size: 18px;
+    }
+
+    .error-title-wrapper {
+      flex: 1;
+    }
+
+    .error-title {
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .error-subtitle {
+      color: rgba(255,255,255,0.85);
+      font-size: 13px;
+    }
+
+    .error-close {
+      width: 32px;
+      height: 32px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .error-list {
+      background: rgba(0,0,0,0.1);
+      padding: 10px 16px;
+    }
+
+    .error-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .error-bullet {
+      width: 6px;
+      height: 6px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 50%;
+    }
+
+    .error-text {
+      color: rgba(255,255,255,0.9);
+      font-size: 13px;
+    }
+
+    /* ============ SUCCESS MODAL ============ */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      text-align: center;
+      max-width: 360px;
+      width: 100%;
+      animation: scaleIn 0.3s ease;
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--primary-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .modal-icon i {
+      font-size: 40px;
+      color: var(--primary);
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .modal-message {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .modal-btn {
+      width: 100%;
+      padding: 14px 24px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .modal-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    /* ============ RESPONSIVE ============ */
+    @media (min-width: 768px) {
+      .category-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .images-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .main-content {
+        max-width: 640px;
+        margin: 0 auto;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .page-container {
+        flex-direction: row;
+      }
+
+      .sidebar {
+        width: 280px;
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        padding: 24px;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+      }
+
+      .sidebar-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 24px;
+      }
+
+      .sidebar-step {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: var(--radius-md);
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+
+      .sidebar-step:hover {
+        background: var(--background);
+      }
+
+      .sidebar-step.active {
+        background: var(--primary-light);
+      }
+
+      .sidebar-step-dot {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary);
+      }
+
+      .sidebar-step.active .sidebar-step-dot {
+        background: var(--primary);
+        color: white;
+      }
+
+      .sidebar-step.complete .sidebar-step-dot {
+        background: var(--primary);
+        color: white;
+      }
+
+      .sidebar-step-label {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+
+      .sidebar-step.active .sidebar-step-label {
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .main-content {
+        flex: 1;
+        max-width: none;
+        padding: 32px;
+      }
+
+      .category-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <!-- Header -->
+    <header class="header">
+      <button class="header-back" onclick="prevStep()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h1 class="header-title" id="headerTitle">New Listing</h1>
+      <button class="header-cancel" onclick="window.history.back()">Cancel</button>
+    </header>
+
+    <!-- Error Banner -->
+    <div class="error-banner" id="errorBanner">
+      <div class="error-header">
+        <div class="error-icon-wrapper">
+          <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <div class="error-title-wrapper">
+          <div class="error-title" id="errorCount">Please fix 1 error</div>
+          <div class="error-subtitle">Complete the required fields to continue</div>
+        </div>
+        <button class="error-close" onclick="hideError()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="error-list" id="errorList"></div>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="step-indicator" id="stepIndicator">
+      <!-- Generated by JS -->
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Step 1: Category Selection -->
+      <div class="step-content active" id="step1">
+        <h2 class="step-title">What are you selling?</h2>
+        <p class="step-subtitle">Choose the category and subcategory for your item</p>
+
+        <h3 class="section-title">Category <span class="required">*</span></h3>
+        <div class="category-grid" id="categoryGrid">
+          <!-- Generated by JS -->
+        </div>
+
+        <div class="subcategory-section" id="subcategorySection">
+          <h3 class="section-title">Subcategory <span class="required">*</span></h3>
+          <div class="subcategory-list" id="subcategoryList">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Photos -->
+      <div class="step-content" id="step2">
+        <h2 class="step-title">Add Photos</h2>
+        <p class="step-subtitle">Upload up to 10 photos. First photo will be the cover image.</p>
+
+        <div class="images-grid" id="imagesGrid">
+          <div class="add-image-btn" onclick="addImage()">
+            <i class="fas fa-camera"></i>
+            <span>Add Photo</span>
+            <span class="count" id="imageCount">0/10</span>
+          </div>
+        </div>
+
+        <div class="photo-tips">
+          <div class="tips-header">
+            <i class="fas fa-lightbulb"></i>
+            <span class="tips-title">Tips for Great Photos</span>
+          </div>
+          <div class="tip-item">
+            <div class="tip-icon"><i class="fas fa-sun"></i></div>
+            <div class="tip-content">
+              <h4>Good Lighting</h4>
+              <p>Use natural light or bright indoor lighting for clear photos</p>
+            </div>
+          </div>
+          <div class="tip-item">
+            <div class="tip-icon"><i class="fas fa-cube"></i></div>
+            <div class="tip-content">
+              <h4>Multiple Angles</h4>
+              <p>Show the item from different perspectives</p>
+            </div>
+          </div>
+          <div class="tip-item">
+            <div class="tip-icon"><i class="fas fa-search"></i></div>
+            <div class="tip-content">
+              <h4>Show Details</h4>
+              <p>Include any defects, labels, or unique features</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Details -->
+      <div class="step-content" id="step3">
+        <h2 class="step-title">Listing Details</h2>
+        <p class="step-subtitle">Describe what you're selling</p>
+
+        <div class="field-container">
+          <label class="field-label">Title <span class="required">*</span></label>
+          <input type="text" class="input" id="titleInput" placeholder="e.g., iPhone 14 Pro Max 256GB Space Black" maxlength="100">
+          <div class="char-count-row">
+            <span class="min-chars" id="titleMinChars">Min: 10 chars</span>
+            <span class="char-count" id="titleCharCount">0/100</span>
+          </div>
+        </div>
+
+        <div class="field-container">
+          <label class="field-label">Description <span class="required">*</span></label>
+          <textarea class="input textarea" id="descriptionInput" placeholder="Describe your item in detail. Include features, condition, reason for selling, etc." maxlength="2000"></textarea>
+          <div class="char-count-row">
+            <span class="min-chars" id="descMinChars">Min: 20 chars</span>
+            <span class="char-count" id="descCharCount">0/2000</span>
+          </div>
+        </div>
+
+        <div class="field-container">
+          <label class="field-label">Condition</label>
+          <div class="chip-container" id="conditionChips">
+            <div class="chip" data-value="New" onclick="selectCondition(this)">New</div>
+            <div class="chip" data-value="Like New" onclick="selectCondition(this)">Like New</div>
+            <div class="chip" data-value="Good" onclick="selectCondition(this)">Good</div>
+            <div class="chip" data-value="Fair" onclick="selectCondition(this)">Fair</div>
+            <div class="chip" data-value="For Parts" onclick="selectCondition(this)">For Parts</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Attributes -->
+      <div class="step-content" id="step4">
+        <h2 class="step-title">Item Details</h2>
+        <p class="step-subtitle">Fill in the specific details for your item</p>
+
+        <div id="attributeFields">
+          <!-- Generated dynamically based on category -->
+        </div>
+      </div>
+
+      <!-- Step 5: Price & Contact -->
+      <div class="step-content" id="step5">
+        <h2 class="step-title">Price & Contact</h2>
+        <p class="step-subtitle">Set your price and how buyers can reach you</p>
+
+        <div class="field-container">
+          <label class="field-label">Price <span class="required">*</span></label>
+          <div class="price-input-container">
+            <span class="currency-symbol">TSh</span>
+            <input type="number" class="price-input" id="priceInput" placeholder="0">
+          </div>
+        </div>
+
+        <!-- Seller Preferences -->
+        <div class="preference-card">
+          <div class="preference-row">
+            <div class="preference-info">
+              <div class="preference-icon" style="background: var(--primary-light);">
+                <i class="fas fa-tag" style="color: var(--primary);"></i>
+              </div>
+              <div>
+                <div class="preference-title">Accept Offers</div>
+                <div class="preference-desc">Allow buyers to make offers</div>
+              </div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="acceptsOffers" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="preference-card" id="negotiableCard">
+          <div class="preference-row">
+            <div class="preference-info">
+              <div class="preference-icon" style="background: var(--warning-light);">
+                <i class="fas fa-exchange-alt" style="color: var(--warning);"></i>
+              </div>
+              <div>
+                <div class="preference-title">Negotiable Price (VB)</div>
+                <div class="preference-desc">Show "VB" badge on listing</div>
+              </div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="negotiable" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="preference-card">
+          <div class="preference-row">
+            <div class="preference-info">
+              <div class="preference-icon" style="background: var(--blue-light);">
+                <i class="fas fa-sync-alt" style="color: var(--blue);"></i>
+              </div>
+              <div>
+                <div class="preference-title">Accept Exchanges</div>
+                <div class="preference-desc">Open to trading items</div>
+              </div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="acceptsExchanges">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Contact Methods -->
+        <div class="section-divider">
+          <span class="section-divider-text">Contact Methods</span>
+        </div>
+
+        <div class="preference-card">
+          <div class="preference-row">
+            <div class="preference-info">
+              <div class="preference-icon" style="background: var(--primary-light);">
+                <i class="fas fa-comment" style="color: var(--primary);"></i>
+              </div>
+              <div>
+                <div class="preference-title">In-App Chat</div>
+                <div class="preference-desc">Message through the app</div>
+              </div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="inAppChat" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="preference-card">
+          <div class="preference-row">
+            <div class="preference-info">
+              <div class="preference-icon" style="background: #E8F5E9;">
+                <i class="fab fa-whatsapp" style="color: #25D366;"></i>
+              </div>
+              <div>
+                <div class="preference-title">WhatsApp</div>
+                <div class="preference-desc">Chat via WhatsApp</div>
+              </div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="whatsapp">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="preference-card">
+          <div class="preference-row">
+            <div class="preference-info">
+              <div class="preference-icon" style="background: var(--blue-light);">
+                <i class="fas fa-phone" style="color: var(--blue);"></i>
+              </div>
+              <div>
+                <div class="preference-title">Phone Call</div>
+                <div class="preference-desc">Receive phone calls</div>
+              </div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="phoneCall">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Location -->
+        <div class="section-divider">
+          <span class="section-divider-text">Location</span>
+        </div>
+
+        <div class="location-picker" onclick="selectLocation()">
+          <i class="fas fa-map-marker-alt"></i>
+          <span id="locationText">Select Location</span>
+          <i class="fas fa-chevron-right arrow"></i>
+        </div>
+      </div>
+
+      <!-- Step 6: Review -->
+      <div class="step-content" id="step6">
+        <h2 class="step-title">Review Your Listing</h2>
+        <p class="step-subtitle">Make sure everything looks good before publishing</p>
+
+        <div class="preview-card">
+          <div class="preview-images" id="previewImages">
+            <!-- Generated by JS -->
+          </div>
+          <div class="preview-content">
+            <div class="preview-price" id="previewPrice">TSh 0</div>
+            <h3 class="preview-title" id="previewTitle">Your Listing Title</h3>
+            <div class="preview-meta">
+              <i class="fas fa-map-marker-alt"></i>
+              <span id="previewLocation">Location</span>
+            </div>
+            <div class="preview-badges" id="previewBadges">
+              <!-- Generated by JS -->
+            </div>
+          </div>
+          <div class="preview-section">
+            <h4 class="preview-section-title">Description</h4>
+            <p class="preview-description" id="previewDescription">Your listing description will appear here...</p>
+          </div>
+          <div class="preview-section" id="previewAttributesSection" style="display: none;">
+            <h4 class="preview-section-title">Details</h4>
+            <div class="attributes-list" id="previewAttributes"></div>
+          </div>
+          <div class="preview-section">
+            <h4 class="preview-section-title">Contact Methods</h4>
+            <div class="preview-contact-methods" id="previewContactMethods">
+              <!-- Generated by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <button class="next-btn" id="nextBtn" onclick="nextStep()">
+        Continue <i class="fas fa-arrow-right"></i>
+      </button>
+      <button class="publish-btn" id="publishBtn" style="display: none;" onclick="publishListing()">
+        <i class="fas fa-check-circle"></i> Publish Listing
+      </button>
+    </footer>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="successModal">
+      <div class="modal-content">
+        <div class="modal-icon">
+          <i class="fas fa-check"></i>
+        </div>
+        <h2 class="modal-title">Published!</h2>
+        <p class="modal-message">Your listing is now live and visible to buyers in your area.</p>
+        <button class="modal-btn" onclick="window.location.href='/'">View Listings</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============ STATE ============
+    let currentStep = 1;
+    const totalSteps = 6;
+    const stepLabels = ['Category', 'Photos', 'Details', 'Attributes', 'Price', 'Review'];
+    
+    let formData = {
+      category: null,
+      subcategory: null,
+      images: [],
+      title: '',
+      description: '',
+      condition: '',
+      attributes: {},
+      price: '',
+      negotiable: true,
+      acceptsOffers: true,
+      acceptsExchanges: false,
+      contactMethods: {
+        inAppChat: true,
+        whatsapp: false,
+        phoneCall: false
+      },
+      location: ''
+    };
+
+    // ============ CATEGORIES DATA ============
+    const categories = [
+      { id: 'electronics', name: 'Electronics', icon: 'fa-laptop' },
+      { id: 'vehicles', name: 'Vehicles', icon: 'fa-car' },
+      { id: 'property', name: 'Property', icon: 'fa-home' },
+      { id: 'fashion', name: 'Fashion', icon: 'fa-tshirt' },
+      { id: 'home_garden', name: 'Home & Garden', icon: 'fa-couch' },
+      { id: 'jobs_services', name: 'Jobs & Services', icon: 'fa-briefcase' },
+      { id: 'sports', name: 'Sports', icon: 'fa-futbol' },
+      { id: 'babies_kids', name: 'Babies & Kids', icon: 'fa-baby' },
+      { id: 'health_beauty', name: 'Health & Beauty', icon: 'fa-spa' },
+      { id: 'agriculture', name: 'Agriculture', icon: 'fa-seedling' },
+      { id: 'pets', name: 'Pets', icon: 'fa-paw' },
+      { id: 'other', name: 'Other', icon: 'fa-ellipsis-h' },
+    ];
+
+    const subcategories = {
+      electronics: ['Smartphones', 'Laptops', 'Tablets', 'TVs', 'Cameras', 'Audio', 'Gaming', 'Accessories'],
+      vehicles: ['Cars', 'Motorcycles', 'Trucks', 'Buses', 'Boats', 'Parts & Accessories'],
+      property: ['Apartments', 'Houses', 'Land', 'Commercial', 'Rooms'],
+      fashion: ['Men\'s Clothing', 'Women\'s Clothing', 'Shoes', 'Bags', 'Jewelry', 'Watches'],
+      home_garden: ['Furniture', 'Appliances', 'Kitchen', 'Garden', 'Decor'],
+      jobs_services: ['Full-time', 'Part-time', 'Freelance', 'Services'],
+      sports: ['Fitness', 'Outdoor', 'Team Sports', 'Water Sports'],
+      babies_kids: ['Clothing', 'Toys', 'Strollers', 'Furniture'],
+      health_beauty: ['Skincare', 'Makeup', 'Hair Care', 'Perfumes'],
+      agriculture: ['Farm Equipment', 'Livestock', 'Seeds', 'Produce'],
+      pets: ['Dogs', 'Cats', 'Birds', 'Fish', 'Pet Supplies'],
+      other: ['Collectibles', 'Books', 'Musical Instruments', 'Art', 'Other']
+    };
+
+    // ============ INITIALIZATION ============
+    document.addEventListener('DOMContentLoaded', () => {
+      renderStepIndicator();
+      renderCategories();
+      setupInputListeners();
+    });
+
+    // ============ STEP INDICATOR ============
+    function renderStepIndicator() {
+      const container = document.getElementById('stepIndicator');
+      container.innerHTML = stepLabels.map((label, i) => {
+        const step = i + 1;
+        const isActive = step === currentStep;
+        const isComplete = step < currentStep;
+        
+        let html = `
+          <div class="step-item">
+            <div class="step-dot ${isActive ? 'active' : ''} ${isComplete ? 'complete' : ''}">
+              ${isComplete ? '<i class="fas fa-check"></i>' : step}
+            </div>
+        `;
+        
+        if (step < totalSteps) {
+          html += `<div class="step-line ${isComplete ? 'complete' : ''}"></div>`;
+        }
+        
+        html += '</div>';
+        return html;
+      }).join('');
+    }
+
+    // ============ CATEGORY GRID ============
+    function renderCategories() {
+      const grid = document.getElementById('categoryGrid');
+      grid.innerHTML = categories.map(cat => `
+        <div class="category-card ${formData.category === cat.id ? 'selected' : ''}" 
+             onclick="selectCategory('${cat.id}')">
+          <div class="category-icon">
+            <i class="fas ${cat.icon}"></i>
+          </div>
+          <span class="category-name">${cat.name}</span>
+        </div>
+      `).join('');
+    }
+
+    function selectCategory(categoryId) {
+      formData.category = categoryId;
+      formData.subcategory = null;
+      renderCategories();
+      renderSubcategories(categoryId);
+    }
+
+    function renderSubcategories(categoryId) {
+      const section = document.getElementById('subcategorySection');
+      const list = document.getElementById('subcategoryList');
+      const subs = subcategories[categoryId] || [];
+      
+      if (subs.length > 0) {
+        section.classList.add('visible');
+        list.innerHTML = subs.map(sub => `
+          <div class="subcategory-item ${formData.subcategory === sub ? 'selected' : ''}"
+               onclick="selectSubcategory('${sub}')">
+            <span class="subcategory-text">${sub}</span>
+            <i class="fas fa-check-circle subcategory-check"></i>
+          </div>
+        `).join('');
+      } else {
+        section.classList.remove('visible');
+      }
+    }
+
+    function selectSubcategory(subcategory) {
+      formData.subcategory = subcategory;
+      renderSubcategories(formData.category);
+    }
+
+    // ============ IMAGE HANDLING ============
+    function addImage() {
+      // In a real app, this would trigger file picker
+      // For demo, we'll add a placeholder
+      if (formData.images.length >= 10) {
+        alert('Maximum 10 images allowed');
+        return;
+      }
+      
+      // Simulate image selection
+      const demoImages = [
+        'https://via.placeholder.com/300x300/E8F5E9/2E7D32?text=Photo+1',
+        'https://via.placeholder.com/300x300/E3F2FD/1976D2?text=Photo+2',
+        'https://via.placeholder.com/300x300/FFF3E0/F57C00?text=Photo+3',
+      ];
+      
+      const nextImage = demoImages[formData.images.length % demoImages.length];
+      formData.images.push(nextImage);
+      renderImages();
+    }
+
+    function removeImage(index) {
+      formData.images.splice(index, 1);
+      renderImages();
+    }
+
+    function renderImages() {
+      const grid = document.getElementById('imagesGrid');
+      const count = document.getElementById('imageCount');
+      
+      count.textContent = `${formData.images.length}/10`;
+      
+      let html = `
+        <div class="add-image-btn" onclick="addImage()">
+          <i class="fas fa-camera"></i>
+          <span>Add Photo</span>
+          <span class="count">${formData.images.length}/10</span>
+        </div>
+      `;
+      
+      formData.images.forEach((img, i) => {
+        html += `
+          <div class="image-wrapper">
+            <img src="${img}" alt="Photo ${i + 1}">
+            ${i === 0 ? '<span class="cover-badge">Cover</span>' : ''}
+            <button class="remove-btn" onclick="removeImage(${i})">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        `;
+      });
+      
+      grid.innerHTML = html;
+    }
+
+    // ============ INPUT LISTENERS ============
+    function setupInputListeners() {
+      // Title input
+      const titleInput = document.getElementById('titleInput');
+      titleInput.addEventListener('input', (e) => {
+        formData.title = e.target.value;
+        updateCharCount('title', e.target.value.length, 100, 10);
+      });
+
+      // Description input
+      const descInput = document.getElementById('descriptionInput');
+      descInput.addEventListener('input', (e) => {
+        formData.description = e.target.value;
+        updateCharCount('desc', e.target.value.length, 2000, 20);
+      });
+
+      // Price input
+      const priceInput = document.getElementById('priceInput');
+      priceInput.addEventListener('input', (e) => {
+        formData.price = e.target.value;
+      });
+
+      // Toggle switches
+      document.getElementById('acceptsOffers').addEventListener('change', (e) => {
+        formData.acceptsOffers = e.target.checked;
+        document.getElementById('negotiableCard').style.display = e.target.checked ? 'block' : 'none';
+      });
+
+      document.getElementById('negotiable').addEventListener('change', (e) => {
+        formData.negotiable = e.target.checked;
+      });
+
+      document.getElementById('acceptsExchanges').addEventListener('change', (e) => {
+        formData.acceptsExchanges = e.target.checked;
+      });
+
+      document.getElementById('inAppChat').addEventListener('change', (e) => {
+        formData.contactMethods.inAppChat = e.target.checked;
+      });
+
+      document.getElementById('whatsapp').addEventListener('change', (e) => {
+        formData.contactMethods.whatsapp = e.target.checked;
+      });
+
+      document.getElementById('phoneCall').addEventListener('change', (e) => {
+        formData.contactMethods.phoneCall = e.target.checked;
+      });
+    }
+
+    function updateCharCount(field, current, max, min) {
+      const countEl = document.getElementById(`${field}CharCount`);
+      const minEl = document.getElementById(`${field}MinChars`);
+      
+      countEl.textContent = `${current}/${max}`;
+      
+      if (current >= min) {
+        minEl.classList.add('valid');
+        minEl.innerHTML = `Min: ${min} chars ✓`;
+      } else {
+        minEl.classList.remove('valid');
+        minEl.innerHTML = `Min: ${min} chars`;
+      }
+    }
+
+    // ============ CONDITION SELECTION ============
+    function selectCondition(element) {
+      const chips = document.querySelectorAll('#conditionChips .chip');
+      chips.forEach(chip => chip.classList.remove('selected'));
+      
+      if (formData.condition === element.dataset.value) {
+        formData.condition = '';
+      } else {
+        element.classList.add('selected');
+        formData.condition = element.dataset.value;
+      }
+    }
+
+    // ============ LOCATION ============
+    function selectLocation() {
+      // In a real app, this would open a location picker modal
+      formData.location = 'Dar es Salaam, Tanzania';
+      document.getElementById('locationText').textContent = formData.location;
+    }
+
+    // ============ VALIDATION ============
+    function validateStep() {
+      const errors = [];
+
+      switch (currentStep) {
+        case 1:
+          if (!formData.category) errors.push({ field: 'category', message: 'Please select a category' });
+          if (!formData.subcategory) errors.push({ field: 'subcategory', message: 'Please select a subcategory' });
+          break;
+        case 2:
+          if (formData.images.length === 0) errors.push({ field: 'images', message: 'Please add at least one photo' });
+          break;
+        case 3:
+          if (!formData.title || formData.title.length < 10) {
+            errors.push({ field: 'title', message: 'Title must be at least 10 characters' });
+          }
+          if (!formData.description || formData.description.length < 20) {
+            errors.push({ field: 'description', message: 'Description must be at least 20 characters' });
+          }
+          break;
+        case 5:
+          if (!formData.price || parseFloat(formData.price) <= 0) {
+            errors.push({ field: 'price', message: 'Please enter a valid price' });
+          }
+          if (!formData.location) {
+            errors.push({ field: 'location', message: 'Please select a location' });
+          }
+          break;
+      }
+
+      if (errors.length > 0) {
+        showErrors(errors);
+        return false;
+      }
+
+      hideError();
+      return true;
+    }
+
+    function showErrors(errors) {
+      const banner = document.getElementById('errorBanner');
+      const countEl = document.getElementById('errorCount');
+      const listEl = document.getElementById('errorList');
+
+      countEl.textContent = `Please fix ${errors.length} error${errors.length > 1 ? 's' : ''}`;
+      listEl.innerHTML = errors.map(err => `
+        <div class="error-item">
+          <div class="error-bullet"></div>
+          <span class="error-text">${err.message}</span>
+        </div>
+      `).join('');
+
+      banner.classList.add('visible');
+    }
+
+    function hideError() {
+      document.getElementById('errorBanner').classList.remove('visible');
+    }
+
+    // ============ NAVIGATION ============
+    function nextStep() {
+      if (!validateStep()) return;
+
+      if (currentStep < totalSteps) {
+        document.getElementById(`step${currentStep}`).classList.remove('active');
+        currentStep++;
+        document.getElementById(`step${currentStep}`).classList.add('active');
+        
+        renderStepIndicator();
+        updateHeader();
+        updateFooter();
+
+        if (currentStep === 6) {
+          updatePreview();
+        }
+
+        window.scrollTo(0, 0);
+      }
+    }
+
+    function prevStep() {
+      if (currentStep > 1) {
+        document.getElementById(`step${currentStep}`).classList.remove('active');
+        currentStep--;
+        document.getElementById(`step${currentStep}`).classList.add('active');
+        
+        renderStepIndicator();
+        updateHeader();
+        updateFooter();
+
+        window.scrollTo(0, 0);
+      } else {
+        window.history.back();
+      }
+    }
+
+    function updateHeader() {
+      const title = document.getElementById('headerTitle');
+      title.textContent = currentStep === 1 ? 'New Listing' : stepLabels[currentStep - 1];
+    }
+
+    function updateFooter() {
+      const nextBtn = document.getElementById('nextBtn');
+      const publishBtn = document.getElementById('publishBtn');
+
+      if (currentStep === totalSteps) {
+        nextBtn.style.display = 'none';
+        publishBtn.style.display = 'flex';
+      } else {
+        nextBtn.style.display = 'flex';
+        publishBtn.style.display = 'none';
+      }
+    }
+
+    // ============ PREVIEW ============
+    function updatePreview() {
+      // Images
+      const imagesContainer = document.getElementById('previewImages');
+      if (formData.images.length > 0) {
+        imagesContainer.innerHTML = formData.images.map(img => 
+          `<img src="${img}" alt="Preview">`
+        ).join('');
+      } else {
+        imagesContainer.innerHTML = '<div style="height:200px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;"><i class="fas fa-image" style="font-size:48px;color:#ccc;"></i></div>';
+      }
+
+      // Price
+      const price = parseFloat(formData.price) || 0;
+      document.getElementById('previewPrice').innerHTML = `TSh ${price.toLocaleString()}${formData.negotiable ? ' <span class="preview-vb">VB</span>' : ''}`;
+
+      // Title
+      document.getElementById('previewTitle').textContent = formData.title || 'Your Listing Title';
+
+      // Location
+      document.getElementById('previewLocation').textContent = formData.location || 'Location';
+
+      // Badges
+      const badges = [];
+      if (formData.condition) badges.push(formData.condition);
+      if (formData.acceptsOffers) badges.push('Accepts Offers');
+      if (formData.acceptsExchanges) badges.push('Open to Exchanges');
+      
+      document.getElementById('previewBadges').innerHTML = badges.map(b => 
+        `<span class="preview-badge">${b}</span>`
+      ).join('');
+
+      // Description
+      document.getElementById('previewDescription').textContent = formData.description || 'Your listing description will appear here...';
+
+      // Contact Methods
+      const contacts = [];
+      if (formData.contactMethods.inAppChat) contacts.push({ icon: 'fa-comment', text: 'Chat' });
+      if (formData.contactMethods.whatsapp) contacts.push({ icon: 'fa-whatsapp', text: 'WhatsApp' });
+      if (formData.contactMethods.phoneCall) contacts.push({ icon: 'fa-phone', text: 'Call' });
+
+      document.getElementById('previewContactMethods').innerHTML = contacts.map(c => `
+        <div class="preview-contact-badge">
+          <i class="fas ${c.icon}"></i>
+          <span>${c.text}</span>
+        </div>
+      `).join('');
+    }
+
+    // ============ PUBLISH ============
+    function publishListing() {
+      const publishBtn = document.getElementById('publishBtn');
+      publishBtn.disabled = true;
+      publishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...';
+
+      // Simulate API call
+      setTimeout(() => {
+        document.getElementById('successModal').classList.add('visible');
+        publishBtn.disabled = false;
+        publishBtn.innerHTML = '<i class="fas fa-check-circle"></i> Publish Listing';
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
