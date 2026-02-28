@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avida - Profile Page</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+<body>
+  <!-- Tab Navigation for Demo -->
+  <nav class="tab-nav">
+    <button class="tab-btn active" onclick="showView('authenticated')">Authenticated</button>
+    <button class="tab-btn" onclick="showView('unauthenticated')">Unauthenticated</button>
+  </nav>
+
+  <!-- ============================================
+       AUTHENTICATED PROFILE VIEW
+  ============================================ -->
+  <div id="authenticated-view" class="view active">
+    <div class="profile-container">
+      <!-- Profile Header -->
+      <section class="profile-header">
+        <div class="avatar-section">
+          <div class="avatar-placeholder">
+            <span class="avatar-initials">JD</span>
+          </div>
+          <button class="edit-avatar-btn">
+            <ion-icon name="camera"></ion-icon>
+          </button>
+        </div>
+        
+        <div class="info-section">
+          <div class="name-row">
+            <h1 class="profile-name">John Doe</h1>
+            <ion-icon name="checkmark-circle" class="verified-icon"></ion-icon>
+          </div>
+          
+          <div class="info-row">
+            <ion-icon name="mail-outline"></ion-icon>
+            <span>john.doe@example.com</span>
+            <span class="verified-badge-small">
+              <ion-icon name="checkmark"></ion-icon>
+            </span>
+          </div>
+          
+          <div class="info-row">
+            <ion-icon name="call-outline"></ion-icon>
+            <span>+255 712 345 678</span>
+            <span class="verified-badge-small">
+              <ion-icon name="checkmark"></ion-icon>
+            </span>
+          </div>
+          
+          <div class="info-row">
+            <ion-icon name="location-outline"></ion-icon>
+            <span>Dar es Salaam, Tanzania</span>
+          </div>
+        </div>
+        
+        <button class="edit-profile-btn">
+          <ion-icon name="pencil"></ion-icon>
+          <span>Edit Profile</span>
+        </button>
+      </section>
+
+      <!-- Stats Row -->
+      <section class="stats-row">
+        <div class="stat-item">
+          <div class="stat-icon">
+            <ion-icon name="list"></ion-icon>
+          </div>
+          <span class="stat-value">12</span>
+          <span class="stat-label">Listings</span>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">
+            <ion-icon name="checkmark-circle"></ion-icon>
+          </div>
+          <span class="stat-value">8</span>
+          <span class="stat-label">Sold</span>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">
+            <ion-icon name="heart"></ion-icon>
+          </div>
+          <span class="stat-value">24</span>
+          <span class="stat-label">Favorites</span>
+        </div>
+      </section>
+
+      <!-- My Badges Section -->
+      <section class="section-card">
+        <div class="section-header">
+          <ion-icon name="ribbon-outline"></ion-icon>
+          <h2 class="section-title">My Badges</h2>
+          <span class="count-badge">3</span>
+        </div>
+        
+        <div class="badges-list">
+          <div class="badge-item">
+            <div class="badge-icon gold">
+              <ion-icon name="star"></ion-icon>
+            </div>
+            <div class="badge-info">
+              <span class="badge-name">Top Seller</span>
+              <span class="badge-desc">Completed 50+ sales</span>
+            </div>
+          </div>
+          <div class="badge-item">
+            <div class="badge-icon blue">
+              <ion-icon name="shield-checkmark"></ion-icon>
+            </div>
+            <div class="badge-info">
+              <span class="badge-name">Verified Seller</span>
+              <span class="badge-desc">Identity verified</span>
+            </div>
+          </div>
+          <div class="badge-item">
+            <div class="badge-icon green">
+              <ion-icon name="flash"></ion-icon>
+            </div>
+            <div class="badge-info">
+              <span class="badge-name">Fast Responder</span>
+              <span class="badge-desc">Replies within 1 hour</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- My Activity Section -->
+      <section class="section-card">
+        <div class="section-header">
+          <ion-icon name="analytics-outline"></ion-icon>
+          <h2 class="section-title">My Activity</h2>
+        </div>
+        
+        <div class="activity-list">
+          <a href="#" class="activity-item">
+            <div class="activity-icon">
+              <ion-icon name="list-outline"></ion-icon>
+            </div>
+            <span class="activity-label">My Listings</span>
+            <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+          </a>
+          <a href="#" class="activity-item">
+            <div class="activity-icon">
+              <ion-icon name="storefront-outline"></ion-icon>
+            </div>
+            <span class="activity-label">Business Profile</span>
+            <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+          </a>
+          <a href="#" class="activity-item">
+            <div class="activity-icon">
+              <ion-icon name="ribbon-outline"></ion-icon>
+            </div>
+            <span class="activity-label">My Badges</span>
+            <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+          </a>
+          <a href="#" class="activity-item">
+            <div class="activity-icon">
+              <ion-icon name="wallet-outline"></ion-icon>
+            </div>
+            <span class="activity-label">Credits & Boosts</span>
+            <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+          </a>
+          <a href="#" class="activity-item">
+            <div class="activity-icon">
+              <ion-icon name="receipt-outline"></ion-icon>
+            </div>
+            <span class="activity-label">Invoices & Receipts</span>
+            <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+          </a>
+          <a href="#" class="activity-item">
+            <div class="activity-icon">
+              <ion-icon name="bag-outline"></ion-icon>
+            </div>
+            <span class="activity-label">Purchases</span>
+            <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+          </a>
+          <a href="#" class="activity-item">
+            <div class="activity-icon">
+              <ion-icon name="cash-outline"></ion-icon>
+            </div>
+            <span class="activity-label">Sales</span>
+            <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+          </a>
+          <a href="#" class="activity-item">
+            <div class="activity-icon">
+              <ion-icon name="heart-outline"></ion-icon>
+            </div>
+            <span class="activity-label">Saved Items</span>
+            <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+          </a>
+          <a href="#" class="activity-item">
+            <div class="activity-icon">
+              <ion-icon name="eye-outline"></ion-icon>
+            </div>
+            <span class="activity-label">Recently Viewed</span>
+            <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+          </a>
+        </div>
+      </section>
+
+      <!-- Trust & Identity Section -->
+      <section class="section-card">
+        <div class="section-header">
+          <ion-icon name="shield-checkmark-outline"></ion-icon>
+          <h2 class="section-title">Trust & Identity</h2>
+        </div>
+        
+        <div class="trust-list">
+          <div class="trust-item verified">
+            <div class="trust-icon verified">
+              <ion-icon name="mail"></ion-icon>
+            </div>
+            <div class="trust-content">
+              <span class="trust-label">Email Verified</span>
+              <span class="trust-status verified">Verified</span>
+            </div>
+            <ion-icon name="checkmark-circle" class="trust-check"></ion-icon>
+          </div>
+          
+          <div class="trust-item verified">
+            <div class="trust-icon verified">
+              <ion-icon name="call"></ion-icon>
+            </div>
+            <div class="trust-content">
+              <span class="trust-label">Phone Verified</span>
+              <span class="trust-status verified">Verified</span>
+            </div>
+            <ion-icon name="checkmark-circle" class="trust-check"></ion-icon>
+          </div>
+          
+          <div class="trust-item">
+            <div class="trust-icon">
+              <ion-icon name="shield-checkmark"></ion-icon>
+            </div>
+            <div class="trust-content">
+              <span class="trust-label">ID Verified</span>
+              <span class="trust-status">Not Verified</span>
+            </div>
+            <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+          </div>
+        </div>
+        
+        <button class="public-profile-btn">
+          <ion-icon name="person-outline"></ion-icon>
+          <span>View Public Profile</span>
+        </button>
+      </section>
+
+      <!-- Quick Actions -->
+      <section class="section-card quick-actions">
+        <a href="#" class="quick-action-item">
+          <div class="quick-action-icon">
+            <ion-icon name="settings-outline"></ion-icon>
+          </div>
+          <span class="quick-action-label">Settings</span>
+          <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+        </a>
+        
+        <a href="#" class="quick-action-item">
+          <div class="quick-action-icon">
+            <ion-icon name="help-circle-outline"></ion-icon>
+          </div>
+          <span class="quick-action-label">Help & Support</span>
+          <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+        </a>
+        
+        <button class="quick-action-item logout" onclick="handleLogout()">
+          <div class="quick-action-icon logout">
+            <ion-icon name="log-out-outline"></ion-icon>
+          </div>
+          <span class="quick-action-label logout">Sign Out</span>
+          <ion-icon name="chevron-forward" class="chevron logout"></ion-icon>
+        </button>
+      </section>
+
+      <p class="version-text">avida v1.0.0</p>
+    </div>
+  </div>
+
+  <!-- ============================================
+       UNAUTHENTICATED PROFILE VIEW
+  ============================================ -->
+  <div id="unauthenticated-view" class="view">
+    <div class="unauth-container">
+      <!-- Header -->
+      <div class="unauth-header">
+        <div class="logo-container">
+          <ion-icon name="storefront"></ion-icon>
+        </div>
+        <span class="brand-name">avida</span>
+      </div>
+
+      <!-- Welcome Card -->
+      <div class="welcome-card">
+        <div class="welcome-icon">
+          <ion-icon name="person-circle-outline"></ion-icon>
+        </div>
+        <h1 class="welcome-title">Welcome!</h1>
+        <p class="welcome-subtitle">Sign in to unlock all features</p>
+      </div>
+
+      <!-- Feature Cards -->
+      <div class="feature-cards">
+        <div class="feature-card" onclick="goToLogin()">
+          <div class="feature-icon red">
+            <ion-icon name="heart"></ion-icon>
+          </div>
+          <div class="feature-content">
+            <span class="feature-title">Save Favorites</span>
+            <span class="feature-desc">Keep track of items you love</span>
+          </div>
+          <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+        </div>
+
+        <div class="feature-card" onclick="goToLogin()">
+          <div class="feature-icon blue">
+            <ion-icon name="chatbubbles"></ion-icon>
+          </div>
+          <div class="feature-content">
+            <span class="feature-title">View Messages</span>
+            <span class="feature-desc">Chat with buyers and sellers</span>
+          </div>
+          <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+        </div>
+
+        <div class="feature-card" onclick="goToLogin()">
+          <div class="feature-icon green">
+            <ion-icon name="pricetags"></ion-icon>
+          </div>
+          <div class="feature-content">
+            <span class="feature-title">Manage Listings</span>
+            <span class="feature-desc">Post and edit your items</span>
+          </div>
+          <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+        </div>
+
+        <div class="feature-card" onclick="goToLogin()">
+          <div class="feature-icon orange">
+            <ion-icon name="notifications"></ion-icon>
+          </div>
+          <div class="feature-content">
+            <span class="feature-title">Get Notifications</span>
+            <span class="feature-desc">Stay updated on your activity</span>
+          </div>
+          <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="auth-buttons">
+        <button class="sign-in-btn" onclick="goToLogin()">
+          <ion-icon name="log-in-outline"></ion-icon>
+          <span>Sign In</span>
+        </button>
+        
+        <button class="create-account-btn" onclick="goToRegister()">
+          <ion-icon name="person-add-outline"></ion-icon>
+          <span>Create Account</span>
+        </button>
+      </div>
+
+      <button class="browse-guest-btn" onclick="goToHome()">
+        Continue browsing as guest
+      </button>
+    </div>
+  </div>
+
+  <style>
+    /* ============================================
+       CSS VARIABLES
+    ============================================ */
+    :root {
+      --primary: #2E7D32;
+      --primary-light: #E8F5E9;
+      --primary-dark: #1B5E20;
+      --secondary: #FF6F00;
+      --background: #F5F5F5;
+      --surface: #FFFFFF;
+      --text: #212121;
+      --text-secondary: #757575;
+      --border: #E0E0E0;
+      --error: #D32F2F;
+      --success: #388E3C;
+      --warning: #F57C00;
+      --info: #1976D2;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--background);
+      min-height: 100vh;
+      color: var(--text);
+    }
+
+    /* ============================================
+       TAB NAVIGATION
+    ============================================ */
+    .tab-nav {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .tab-btn {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--background);
+      color: var(--text-secondary);
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* ============================================
+       VIEW CONTAINERS
+    ============================================ */
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    /* ============================================
+       AUTHENTICATED PROFILE STYLES
+    ============================================ */
+    .profile-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding-bottom: 40px;
+    }
+
+    /* Profile Header */
+    .profile-header {
+      background: var(--surface);
+      padding: 24px 16px 20px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .avatar-section {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .avatar-placeholder {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 3px solid var(--primary);
+    }
+
+    .avatar-initials {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .edit-avatar-btn {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 16px;
+      background: var(--primary);
+      border: 2px solid var(--surface);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .edit-avatar-btn ion-icon {
+      font-size: 16px;
+      color: white;
+    }
+
+    .info-section {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .name-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .profile-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .verified-icon {
+      font-size: 18px;
+      color: var(--primary);
+    }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .info-row ion-icon {
+      font-size: 14px;
+    }
+
+    .verified-badge-small {
+      width: 16px;
+      height: 16px;
+      border-radius: 8px;
+      background: var(--success);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .verified-badge-small ion-icon {
+      font-size: 10px;
+      color: white;
+    }
+
+    .edit-profile-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 16px;
+      padding: 10px 20px;
+      border-radius: 20px;
+      background: var(--primary-light);
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .edit-profile-btn ion-icon {
+      font-size: 16px;
+    }
+
+    /* Stats Row */
+    .stats-row {
+      display: flex;
+      background: var(--surface);
+      margin: 0 16px 8px;
+      border-radius: 16px;
+      padding: 16px;
+      justify-content: space-around;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 22px;
+      background: var(--primary-light);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .stat-icon ion-icon {
+      font-size: 20px;
+      color: var(--primary);
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* Section Card */
+    .section-card {
+      background: var(--surface);
+      margin: 0 16px 8px;
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .section-header ion-icon {
+      font-size: 20px;
+      color: var(--text);
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .count-badge {
+      background: var(--primary-light);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    /* Badges List */
+    .badges-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .badge-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 22px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .badge-icon.gold {
+      background: #FFF8E1;
+    }
+
+    .badge-icon.gold ion-icon {
+      color: #F9A825;
+      font-size: 22px;
+    }
+
+    .badge-icon.blue {
+      background: #E3F2FD;
+    }
+
+    .badge-icon.blue ion-icon {
+      color: #1976D2;
+      font-size: 22px;
+    }
+
+    .badge-icon.green {
+      background: var(--primary-light);
+    }
+
+    .badge-icon.green ion-icon {
+      color: var(--primary);
+      font-size: 22px;
+    }
+
+    .badge-info {
+      flex: 1;
+    }
+
+    .badge-name {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .badge-desc {
+      display: block;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Activity List */
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .activity-icon ion-icon {
+      font-size: 20px;
+      color: var(--primary);
+    }
+
+    .activity-label {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .chevron {
+      font-size: 20px;
+      color: var(--text-secondary);
+    }
+
+    /* Trust List */
+    .trust-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .trust-item:last-child {
+      border-bottom: none;
+    }
+
+    .trust-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      background: var(--background);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .trust-icon ion-icon {
+      font-size: 18px;
+      color: var(--text-secondary);
+    }
+
+    .trust-icon.verified {
+      background: var(--primary-light);
+    }
+
+    .trust-icon.verified ion-icon {
+      color: var(--success);
+    }
+
+    .trust-content {
+      flex: 1;
+    }
+
+    .trust-label {
+      display: block;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .trust-status {
+      display: block;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .trust-status.verified {
+      color: var(--success);
+    }
+
+    .trust-check {
+      font-size: 20px;
+      color: var(--success);
+    }
+
+    .public-profile-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+      padding: 8px;
+    }
+
+    .quick-action-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 8px;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      background: none;
+      border: none;
+      width: 100%;
+      font-family: inherit;
+    }
+
+    .quick-action-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--background);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .quick-action-icon ion-icon {
+      font-size: 22px;
+      color: var(--text);
+    }
+
+    .quick-action-label {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      text-align: left;
+    }
+
+    .quick-action-item.logout {
+      border-top: 1px solid var(--border);
+      margin-top: 4px;
+    }
+
+    .quick-action-icon.logout {
+      background: #FFEBEE;
+    }
+
+    .quick-action-icon.logout ion-icon,
+    .quick-action-label.logout,
+    .chevron.logout {
+      color: var(--error);
+    }
+
+    .version-text {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 24px;
+      padding-bottom: 32px;
+    }
+
+    /* ============================================
+       UNAUTHENTICATED VIEW STYLES
+    ============================================ */
+    .unauth-container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 16px;
+      padding-bottom: 120px;
+    }
+
+    .unauth-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 16px 0;
+    }
+
+    .logo-container {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .logo-container ion-icon {
+      font-size: 24px;
+      color: var(--primary);
+    }
+
+    .brand-name {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .welcome-card {
+      background: var(--surface);
+      border-radius: 24px;
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .welcome-icon {
+      margin-bottom: 12px;
+    }
+
+    .welcome-icon ion-icon {
+      font-size: 64px;
+      color: var(--primary);
+    }
+
+    .welcome-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .welcome-subtitle {
+      font-size: 15px;
+      color: var(--text-secondary);
+    }
+
+    /* Feature Cards */
+    .feature-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .feature-card {
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 16px;
+      gap: 14px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .feature-icon ion-icon {
+      font-size: 24px;
+    }
+
+    .feature-icon.red {
+      background: #FFEBEE;
+    }
+
+    .feature-icon.red ion-icon {
+      color: #E53935;
+    }
+
+    .feature-icon.blue {
+      background: #E3F2FD;
+    }
+
+    .feature-icon.blue ion-icon {
+      color: #1976D2;
+    }
+
+    .feature-icon.green {
+      background: var(--primary-light);
+    }
+
+    .feature-icon.green ion-icon {
+      color: var(--primary);
+    }
+
+    .feature-icon.orange {
+      background: #FFF3E0;
+    }
+
+    .feature-icon.orange ion-icon {
+      color: #F57C00;
+    }
+
+    .feature-content {
+      flex: 1;
+    }
+
+    .feature-title {
+      display: block;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .feature-desc {
+      display: block;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* Auth Buttons */
+    .auth-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .sign-in-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      background: var(--primary);
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .sign-in-btn ion-icon {
+      font-size: 20px;
+    }
+
+    .create-account-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      background: var(--surface);
+      border: 1.5px solid var(--primary);
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .create-account-btn ion-icon {
+      font-size: 20px;
+    }
+
+    .browse-guest-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-decoration: underline;
+      text-align: center;
+    }
+
+    /* ============================================
+       RESPONSIVE STYLES
+    ============================================ */
+    @media (min-width: 768px) {
+      .profile-container,
+      .unauth-container {
+        max-width: 700px;
+      }
+      
+      .stats-row {
+        padding: 24px;
+      }
+      
+      .stat-icon {
+        width: 56px;
+        height: 56px;
+      }
+      
+      .stat-value {
+        font-size: 28px;
+      }
+    }
+  </style>
+
+  <script>
+    // View Switching
+    function showView(viewId) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      
+      document.getElementById(viewId + '-view').classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // Navigation handlers
+    function goToLogin() {
+      window.location.href = '/login';
+    }
+
+    function goToRegister() {
+      window.location.href = '/register';
+    }
+
+    function goToHome() {
+      window.location.href = '/';
+    }
+
+    function handleLogout() {
+      if (confirm('Are you sure you want to sign out?')) {
+        // Clear auth data
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+        window.location.href = '/login?signedOut=true';
+      }
+    }
+
+    // Handle activity item clicks
+    document.querySelectorAll('.activity-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Navigate to the activity route
+        console.log('Navigate to:', item.href);
+      });
+    });
+  </script>
+</body>
+</html>
