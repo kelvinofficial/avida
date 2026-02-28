@@ -1,0 +1,1919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Listing Detail | Avida</title>
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <style>
+    /* ============================================
+       CSS VARIABLES
+       ============================================ */
+    :root {
+      --primary: #2E7D32;
+      --primary-light: #E8F5E9;
+      --primary-dark: #1B5E20;
+      --background: #F5F5F5;
+      --surface: #FFFFFF;
+      --text: #1A1A1A;
+      --text-secondary: #666666;
+      --border: #E0E0E0;
+      --error: #D32F2F;
+      --error-light: #FFEBEE;
+      --success: #2E7D32;
+      --warning: #F57C00;
+      --max-width: 1200px;
+    }
+
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    /* ============================================
+       LOADING STATE
+       ============================================ */
+    .loading-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ============================================
+       HEADER
+       ============================================ */
+    .header {
+      background-color: var(--surface);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background-color: var(--primary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+    }
+
+    .logo-text {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-text {
+      color: var(--text);
+      font-weight: 500;
+      padding: 8px 16px;
+      background: none;
+      border: none;
+    }
+
+    .btn-text:hover {
+      color: var(--primary);
+    }
+
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--primary);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+
+    /* Breadcrumb */
+    .breadcrumb-wrapper {
+      background-color: var(--background);
+      border-top: 1px solid var(--border);
+    }
+
+    .breadcrumb {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .breadcrumb a {
+      color: var(--text-secondary);
+    }
+
+    .breadcrumb a:hover {
+      color: var(--primary);
+    }
+
+    .breadcrumb .current {
+      color: var(--text);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 300px;
+    }
+
+    .breadcrumb ion-icon {
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
+    /* ============================================
+       MAIN CONTENT
+       ============================================ */
+    .main-content {
+      padding: 24px 0 40px;
+    }
+
+    .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 60% 1fr;
+      gap: 24px;
+    }
+
+    /* ============================================
+       LEFT COLUMN
+       ============================================ */
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Image Gallery */
+    .image-gallery {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .main-image {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: var(--border);
+    }
+
+    .main-image img {
+      width: 100%;
+      height: 494px;
+      object-fit: cover;
+    }
+
+    .image-placeholder {
+      width: 100%;
+      height: 494px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--border);
+    }
+
+    .image-placeholder ion-icon {
+      font-size: 64px;
+      color: var(--text-secondary);
+    }
+
+    .featured-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background-color: #FFB800;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .image-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.9);
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .image-nav.prev { left: 12px; }
+    .image-nav.next { right: 12px; }
+
+    .image-counter {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+    }
+
+    .thumbnails {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+    }
+
+    .thumbnail {
+      width: 95px;
+      height: 72px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .thumbnail.active {
+      border-color: var(--primary);
+    }
+
+    .thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ============================================
+       CARDS
+       ============================================ */
+    .card {
+      background-color: var(--surface);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+
+    /* Highlights */
+    .highlights-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .highlight-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background-color: var(--primary-light);
+      color: var(--primary);
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* Details Grid */
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .detail-icon {
+      width: 36px;
+      height: 36px;
+      background-color: var(--primary-light);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+    }
+
+    .detail-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .detail-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* Description */
+    .description-text {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    /* Map Placeholder */
+    .map-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 40px;
+      background-color: var(--background);
+      border-radius: 8px;
+      color: var(--primary);
+    }
+
+    .map-placeholder ion-icon {
+      font-size: 40px;
+    }
+
+    /* ============================================
+       RIGHT COLUMN
+       ============================================ */
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Price Row */
+    .price-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .price {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .negotiable-badge {
+      background-color: var(--primary-light);
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .listing-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 12px;
+    }
+
+    .location-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    /* Stats */
+    .stats-row {
+      display: flex;
+      gap: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-primary-action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background-color: var(--primary);
+      color: white;
+      padding: 16px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .btn-primary-action:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .btn-primary-action:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .secondary-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-secondary {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid var(--primary);
+      background: transparent;
+      color: var(--primary);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--primary-light);
+    }
+
+    .btn-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      border: 1px solid var(--primary);
+      background: transparent;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .btn-icon:hover {
+      background-color: var(--primary-light);
+    }
+
+    .btn-icon.active {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    /* Seller Card */
+    .seller-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      margin: -12px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .seller-info:hover {
+      background-color: var(--background);
+    }
+
+    .seller-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 18px;
+      overflow: hidden;
+    }
+
+    .seller-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .seller-details {
+      flex: 1;
+    }
+
+    .seller-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .seller-rating {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .seller-rating ion-icon {
+      color: #FFB800;
+    }
+
+    /* Safety Card */
+    .safety-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .safety-icon {
+      color: var(--primary);
+      font-size: 20px;
+    }
+
+    .safety-header .section-title {
+      margin-bottom: 0;
+    }
+
+    .safety-tips {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .safety-tips li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .safety-tips ion-icon {
+      color: var(--primary);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Footer */
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .listing-id {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-family: monospace;
+    }
+
+    .btn-report {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border: 1px solid var(--error);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--error);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .btn-report:hover {
+      background-color: var(--error-light);
+    }
+
+    /* ============================================
+       MODALS
+       ============================================ */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--surface);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: scale(0.9);
+      transition: transform 0.3s;
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: var(--background);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: var(--text-secondary);
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 12px;
+      padding: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .modal-footer button {
+      flex: 1;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .btn-cancel {
+      background: var(--background);
+      border: none;
+      color: var(--text);
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      border: none;
+      color: white;
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .price-input-wrapper {
+      display: flex;
+      align-items: center;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .price-input-wrapper:focus-within {
+      border-color: var(--primary);
+    }
+
+    .price-input-wrapper.error {
+      border-color: var(--error);
+    }
+
+    .price-input-wrapper.valid {
+      border-color: var(--success);
+    }
+
+    .currency-symbol {
+      padding: 14px 16px;
+      background: var(--background);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .price-input {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      font-size: 18px;
+      font-weight: 600;
+      outline: none;
+    }
+
+    .validation-message {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    .validation-message.error {
+      color: var(--error);
+    }
+
+    .validation-message.warning {
+      color: var(--warning);
+    }
+
+    .validation-message.success {
+      color: var(--success);
+    }
+
+    .hint-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+    }
+
+    .message-input {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 100px;
+      outline: none;
+    }
+
+    .message-input:focus {
+      border-color: var(--primary);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--text);
+      color: white;
+      padding: 14px 24px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 2000;
+      opacity: 0;
+      transition: all 0.3s;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success {
+      background: var(--success);
+    }
+
+    .toast.error {
+      background: var(--error);
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+
+      .main-image img,
+      .image-placeholder {
+        height: 300px;
+      }
+
+      .price {
+        font-size: 24px;
+      }
+
+      .listing-title {
+        font-size: 18px;
+      }
+
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-row {
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading State -->
+  <div id="loading" class="loading-container">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Main App -->
+  <div id="app" style="display: none;">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-inner">
+        <a href="/" class="logo">
+          <div class="logo-icon">
+            <ion-icon name="storefront"></ion-icon>
+          </div>
+          <span class="logo-text">avida</span>
+        </a>
+        
+        <nav class="header-actions" id="headerActions">
+          <!-- Will be populated by JS based on auth state -->
+        </nav>
+      </div>
+      
+      <div class="breadcrumb-wrapper">
+        <div class="breadcrumb" id="breadcrumb">
+          <!-- Will be populated by JS -->
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="container">
+        <!-- Left Column -->
+        <div class="left-column">
+          <!-- Image Gallery -->
+          <div class="image-gallery">
+            <div class="main-image" id="mainImageContainer">
+              <!-- Will be populated by JS -->
+            </div>
+            <div class="thumbnails" id="thumbnails">
+              <!-- Will be populated by JS -->
+            </div>
+          </div>
+
+          <!-- Highlights -->
+          <div class="card" id="highlightsCard" style="display: none;">
+            <h3 class="section-title">Highlights</h3>
+            <div class="highlights-grid" id="highlightsGrid">
+              <!-- Will be populated by JS -->
+            </div>
+          </div>
+
+          <!-- Details -->
+          <div class="card" id="detailsCard" style="display: none;">
+            <h3 class="section-title">Details</h3>
+            <div class="details-grid" id="detailsGrid">
+              <!-- Will be populated by JS -->
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="card">
+            <h3 class="section-title">Description</h3>
+            <p class="description-text" id="description"></p>
+          </div>
+
+          <!-- Location -->
+          <div class="card">
+            <h3 class="section-title">Location</h3>
+            <div class="map-placeholder">
+              <ion-icon name="map"></ion-icon>
+              <span id="locationText"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="right-column">
+          <!-- Price Card -->
+          <div class="card">
+            <div class="price-row">
+              <span class="price" id="price"></span>
+              <span class="negotiable-badge" id="negotiableBadge" style="display: none;">Negotiable</span>
+            </div>
+            <h1 class="listing-title" id="listingTitle"></h1>
+            <div class="location-row">
+              <ion-icon name="location-outline"></ion-icon>
+              <span id="locationShort"></span>
+            </div>
+            <div class="stats-row">
+              <span class="stat">
+                <ion-icon name="eye-outline"></ion-icon>
+                <span id="viewsCount">0</span> views
+              </span>
+              <span class="stat">
+                <ion-icon name="heart-outline"></ion-icon>
+                <span id="savesCount">0</span> saves
+              </span>
+              <span class="stat">
+                <ion-icon name="time-outline"></ion-icon>
+                <span id="timeAgo"></span>
+              </span>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+              <button class="btn-primary-action" id="makeOfferBtn" onclick="openOfferModal()">
+                <ion-icon name="pricetag"></ion-icon>
+                Make an Offer
+              </button>
+              <div class="secondary-actions">
+                <button class="btn-secondary" id="chatBtn" onclick="startChat()">
+                  <ion-icon name="chatbubble-outline"></ion-icon>
+                  Chat
+                </button>
+                <button class="btn-icon" id="favoriteBtn" onclick="toggleFavorite()">
+                  <ion-icon name="heart-outline" id="favoriteIcon"></ion-icon>
+                </button>
+                <button class="btn-icon" onclick="shareListing()">
+                  <ion-icon name="share-outline"></ion-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seller Card -->
+          <div class="card">
+            <h3 class="section-title">Listed by</h3>
+            <a href="#" class="seller-info" id="sellerLink">
+              <div class="seller-avatar" id="sellerAvatar"></div>
+              <div class="seller-details">
+                <span class="seller-name" id="sellerName"></span>
+                <div class="seller-rating">
+                  <ion-icon name="star"></ion-icon>
+                  <span id="sellerRating">0</span>
+                </div>
+              </div>
+              <ion-icon name="chevron-forward"></ion-icon>
+            </a>
+          </div>
+
+          <!-- Safety Tips -->
+          <div class="card">
+            <div class="safety-header">
+              <ion-icon name="shield-checkmark" class="safety-icon"></ion-icon>
+              <h3 class="section-title">Safety Tips</h3>
+            </div>
+            <ul class="safety-tips">
+              <li>
+                <ion-icon name="checkmark-circle"></ion-icon>
+                Test the item thoroughly before paying
+              </li>
+              <li>
+                <ion-icon name="checkmark-circle"></ion-icon>
+                Check for warranty validity and receipts
+              </li>
+              <li>
+                <ion-icon name="checkmark-circle"></ion-icon>
+                Meet in a public place for the transaction
+              </li>
+            </ul>
+          </div>
+
+          <!-- Footer -->
+          <div class="card-footer">
+            <span class="listing-id">ID: <span id="listingId"></span></span>
+            <button class="btn-report" onclick="reportListing()">
+              <ion-icon name="flag-outline"></ion-icon>
+              Report this listing
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Make Offer Modal -->
+  <div class="modal-overlay" id="offerModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Make an Offer</h2>
+        <button class="modal-close" onclick="closeOfferModal()">
+          <ion-icon name="close"></ion-icon>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Your Offer</label>
+          <div class="price-input-wrapper" id="priceInputWrapper">
+            <span class="currency-symbol" id="currencySymbol">€</span>
+            <input 
+              type="number" 
+              class="price-input" 
+              id="offerPriceInput" 
+              placeholder="Enter amount"
+              oninput="validateOfferPrice()"
+            >
+          </div>
+          <div id="priceValidation"></div>
+          <p class="hint-text">Listed price: <span id="listedPriceHint"></span></p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message (optional)</label>
+          <textarea 
+            class="message-input" 
+            id="offerMessage" 
+            placeholder="Add a message to the seller..."
+          ></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeOfferModal()">Cancel</button>
+        <button class="btn-submit" id="submitOfferBtn" onclick="submitOffer()" disabled>
+          Submit Offer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report Modal -->
+  <div class="modal-overlay" id="reportModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Report Listing</h2>
+        <button class="modal-close" onclick="closeReportModal()">
+          <ion-icon name="close"></ion-icon>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Reason for reporting</label>
+          <select class="message-input" id="reportReason" style="min-height: auto;">
+            <option value="">Select a reason</option>
+            <option value="spam">Spam or misleading</option>
+            <option value="prohibited">Prohibited item</option>
+            <option value="fraud">Suspected fraud</option>
+            <option value="duplicate">Duplicate listing</option>
+            <option value="wrong_category">Wrong category</option>
+            <option value="offensive">Offensive content</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Additional details</label>
+          <textarea 
+            class="message-input" 
+            id="reportDetails" 
+            placeholder="Please provide more details..."
+          ></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeReportModal()">Cancel</button>
+        <button class="btn-submit" onclick="submitReport()">Submit Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <ion-icon name="checkmark-circle" id="toastIcon"></ion-icon>
+    <span id="toastMessage"></span>
+  </div>
+
+  <script>
+    // ============================================
+    // CONFIGURATION
+    // ============================================
+    const API_URL = 'https://avida-marketplace-1.preview.emergentagent.com/api';
+    
+    // Get listing ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const listingId = urlParams.get('id') || window.location.pathname.split('/').pop();
+
+    // ============================================
+    // STATE
+    // ============================================
+    let listing = null;
+    let currentUser = null;
+    let authToken = localStorage.getItem('authToken');
+    let isFavorited = false;
+    let currentImageIndex = 0;
+
+    // ============================================
+    // API HELPERS
+    // ============================================
+    async function apiRequest(endpoint, options = {}) {
+      const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers
+      };
+      
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        ...options,
+        headers
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: 'Request failed' }));
+        throw new Error(error.detail || 'Request failed');
+      }
+
+      return response.json();
+    }
+
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    async function init() {
+      try {
+        // Load listing data
+        listing = await apiRequest(`/listings/${listingId}`);
+        
+        // Track view
+        apiRequest(`/profile/activity/recently-viewed/${listingId}`, { method: 'POST' }).catch(() => {});
+        
+        // Check auth state
+        if (authToken) {
+          try {
+            currentUser = await apiRequest('/profile');
+            // Check if favorited
+            const favorites = await apiRequest('/favorites');
+            isFavorited = favorites.some(f => f.listing_id === listingId || f.id === listingId);
+          } catch (e) {
+            authToken = null;
+            localStorage.removeItem('authToken');
+          }
+        }
+
+        // Render page
+        renderPage();
+        
+        // Show app, hide loading
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        
+      } catch (error) {
+        console.error('Failed to load listing:', error);
+        document.getElementById('loading').innerHTML = `
+          <div style="text-align: center;">
+            <ion-icon name="alert-circle-outline" style="font-size: 48px; color: var(--error);"></ion-icon>
+            <p style="margin-top: 16px; color: var(--text-secondary);">Listing not found</p>
+            <a href="/" style="display: inline-block; margin-top: 16px; color: var(--primary);">Go back home</a>
+          </div>
+        `;
+      }
+    }
+
+    // ============================================
+    // RENDER FUNCTIONS
+    // ============================================
+    function renderPage() {
+      // Header actions
+      renderHeaderActions();
+      
+      // Breadcrumb
+      renderBreadcrumb();
+      
+      // Images
+      renderImages();
+      
+      // Highlights
+      renderHighlights();
+      
+      // Details
+      renderDetails();
+      
+      // Main info
+      document.getElementById('price').textContent = formatPrice(listing.price, listing.currency);
+      document.getElementById('listingTitle').textContent = listing.title;
+      document.getElementById('description').textContent = listing.description || 'No description provided.';
+      
+      // Location
+      const locationStr = formatLocation(listing.location);
+      document.getElementById('locationText').textContent = locationStr;
+      document.getElementById('locationShort').textContent = locationStr;
+      
+      // Negotiable badge
+      if (listing.negotiable) {
+        document.getElementById('negotiableBadge').style.display = 'inline-block';
+      }
+      
+      // Stats
+      document.getElementById('viewsCount').textContent = listing.views || 0;
+      document.getElementById('savesCount').textContent = listing.saves || listing.favorites_count || 0;
+      document.getElementById('timeAgo').textContent = timeAgo(listing.created_at);
+      
+      // Listing ID
+      document.getElementById('listingId').textContent = listingId.substring(0, 8);
+      
+      // Seller
+      renderSeller();
+      
+      // Favorite button state
+      updateFavoriteButton();
+      
+      // Offer modal hint
+      document.getElementById('listedPriceHint').textContent = formatPrice(listing.price, listing.currency);
+      document.getElementById('currencySymbol').textContent = getCurrencySymbol(listing.currency);
+    }
+
+    function renderHeaderActions() {
+      const container = document.getElementById('headerActions');
+      
+      if (currentUser) {
+        container.innerHTML = `
+          <button class="btn-text" onclick="location.href='/notifications'">
+            <ion-icon name="notifications-outline" style="font-size: 20px;"></ion-icon>
+          </button>
+          <button class="btn-text" onclick="location.href='/profile'">${currentUser.name || 'Profile'}</button>
+          <a href="/post" class="btn-primary">
+            <ion-icon name="add"></ion-icon>
+            Post Listing
+          </a>
+        `;
+      } else {
+        container.innerHTML = `
+          <a href="/login" class="btn-text">Sign In</a>
+          <a href="/register" class="btn-text">Sign Up</a>
+          <a href="/post" class="btn-primary">
+            <ion-icon name="add"></ion-icon>
+            Post Listing
+          </a>
+        `;
+      }
+    }
+
+    function renderBreadcrumb() {
+      const categoryName = listing.category_name || getCategoryName(listing.category_id);
+      document.getElementById('breadcrumb').innerHTML = `
+        <a href="/">Home</a>
+        <ion-icon name="chevron-forward"></ion-icon>
+        <a href="/category/${listing.category_id}">${categoryName}</a>
+        <ion-icon name="chevron-forward"></ion-icon>
+        <span class="current">${listing.title}</span>
+      `;
+    }
+
+    function renderImages() {
+      const images = listing.images || [];
+      const container = document.getElementById('mainImageContainer');
+      const thumbnailsContainer = document.getElementById('thumbnails');
+      
+      if (images.length === 0) {
+        container.innerHTML = `
+          <div class="image-placeholder">
+            <ion-icon name="image-outline"></ion-icon>
+          </div>
+        `;
+        return;
+      }
+
+      // Main image
+      container.innerHTML = `
+        <img src="${images[currentImageIndex]}" alt="${listing.title}" id="mainImage">
+        ${listing.featured ? '<span class="featured-badge"><ion-icon name="star"></ion-icon> Featured</span>' : ''}
+        ${images.length > 1 ? `
+          <button class="image-nav prev" onclick="prevImage()"><ion-icon name="chevron-back"></ion-icon></button>
+          <button class="image-nav next" onclick="nextImage()"><ion-icon name="chevron-forward"></ion-icon></button>
+          <span class="image-counter">${currentImageIndex + 1} / ${images.length}</span>
+        ` : ''}
+      `;
+
+      // Thumbnails
+      if (images.length > 1) {
+        thumbnailsContainer.innerHTML = images.map((img, index) => `
+          <div class="thumbnail ${index === currentImageIndex ? 'active' : ''}" onclick="setImage(${index})">
+            <img src="${img}" alt="Thumbnail ${index + 1}">
+          </div>
+        `).join('');
+      }
+    }
+
+    function renderHighlights() {
+      const highlights = [];
+      
+      // Category
+      if (listing.category_id) {
+        highlights.push({
+          icon: getCategoryIcon(listing.category_id),
+          label: listing.category_name || getCategoryName(listing.category_id)
+        });
+      }
+      
+      // Condition
+      if (listing.condition) {
+        highlights.push({
+          icon: listing.condition === 'new' ? 'sparkles-outline' : 'refresh-outline',
+          label: listing.condition === 'new' ? 'Brand New' : 'Used'
+        });
+      }
+      
+      // Negotiable
+      if (listing.negotiable) {
+        highlights.push({
+          icon: 'pricetag-outline',
+          label: 'Negotiable'
+        });
+      }
+
+      if (highlights.length === 0) {
+        return;
+      }
+
+      document.getElementById('highlightsCard').style.display = 'block';
+      document.getElementById('highlightsGrid').innerHTML = highlights.map(h => `
+        <span class="highlight-badge">
+          <ion-icon name="${h.icon}"></ion-icon>
+          ${h.label}
+        </span>
+      `).join('');
+    }
+
+    function renderDetails() {
+      const attributes = listing.attributes || {};
+      const details = [];
+
+      // Add category
+      details.push({
+        icon: getCategoryIcon(listing.category_id),
+        label: 'Category',
+        value: listing.category_name || getCategoryName(listing.category_id)
+      });
+
+      // Add condition
+      if (listing.condition) {
+        details.push({
+          icon: listing.condition === 'new' ? 'sparkles-outline' : 'refresh-outline',
+          label: 'Condition',
+          value: listing.condition === 'new' ? 'Brand New' : 'Used'
+        });
+      }
+
+      // Add attributes
+      const attributeIcons = {
+        make: 'ribbon-outline',
+        model: 'car-sport-outline',
+        year: 'calendar-outline',
+        mileage: 'speedometer-outline',
+        fuel_type: 'water-outline',
+        transmission: 'settings-outline',
+        color: 'color-palette-outline',
+        brand: 'ribbon-outline',
+        size: 'resize-outline',
+        storage: 'hardware-chip-outline',
+        ram: 'hardware-chip-outline'
+      };
+
+      Object.entries(attributes).forEach(([key, value]) => {
+        if (value) {
+          details.push({
+            icon: attributeIcons[key] || 'information-circle-outline',
+            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            value: value
+          });
+        }
+      });
+
+      if (details.length === 0) {
+        return;
+      }
+
+      document.getElementById('detailsCard').style.display = 'block';
+      document.getElementById('detailsGrid').innerHTML = details.map(d => `
+        <div class="detail-item">
+          <div class="detail-icon">
+            <ion-icon name="${d.icon}"></ion-icon>
+          </div>
+          <div>
+            <div class="detail-label">${d.label}</div>
+            <div class="detail-value">${d.value}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderSeller() {
+      const seller = listing.seller || {};
+      const sellerName = seller.name || listing.user_name || 'Seller';
+      const sellerInitial = sellerName.charAt(0).toUpperCase();
+      
+      document.getElementById('sellerLink').href = `/profile/public/${listing.user_id}`;
+      document.getElementById('sellerName').textContent = sellerName;
+      document.getElementById('sellerRating').textContent = seller.rating || 0;
+      
+      if (seller.picture) {
+        document.getElementById('sellerAvatar').innerHTML = `<img src="${seller.picture}" alt="${sellerName}">`;
+      } else {
+        document.getElementById('sellerAvatar').textContent = sellerInitial;
+      }
+    }
+
+    // ============================================
+    // IMAGE GALLERY
+    // ============================================
+    function setImage(index) {
+      currentImageIndex = index;
+      renderImages();
+    }
+
+    function nextImage() {
+      const images = listing.images || [];
+      if (images.length > 0) {
+        currentImageIndex = (currentImageIndex + 1) % images.length;
+        renderImages();
+      }
+    }
+
+    function prevImage() {
+      const images = listing.images || [];
+      if (images.length > 0) {
+        currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+        renderImages();
+      }
+    }
+
+    // ============================================
+    // MAKE OFFER
+    // ============================================
+    function openOfferModal() {
+      if (!authToken) {
+        showToast('Please sign in to make an offer', 'error');
+        return;
+      }
+      document.getElementById('offerModal').classList.add('active');
+      document.getElementById('offerPriceInput').value = '';
+      document.getElementById('offerMessage').value = '';
+      document.getElementById('priceValidation').innerHTML = '';
+      document.getElementById('priceInputWrapper').className = 'price-input-wrapper';
+      document.getElementById('submitOfferBtn').disabled = true;
+    }
+
+    function closeOfferModal() {
+      document.getElementById('offerModal').classList.remove('active');
+    }
+
+    function validateOfferPrice() {
+      const input = document.getElementById('offerPriceInput');
+      const wrapper = document.getElementById('priceInputWrapper');
+      const validation = document.getElementById('priceValidation');
+      const submitBtn = document.getElementById('submitOfferBtn');
+      const offerAmount = parseFloat(input.value) || 0;
+      const listedPrice = listing.price;
+      const minOffer = listedPrice * 0.1;
+
+      if (!offerAmount) {
+        wrapper.className = 'price-input-wrapper';
+        validation.innerHTML = '';
+        submitBtn.disabled = true;
+        return;
+      }
+
+      if (offerAmount >= listedPrice) {
+        wrapper.className = 'price-input-wrapper error';
+        validation.innerHTML = `
+          <div class="validation-message error">
+            <ion-icon name="alert-circle"></ion-icon>
+            Offer must be below the listed price of ${formatPrice(listedPrice, listing.currency)}
+          </div>
+        `;
+        submitBtn.disabled = true;
+      } else if (offerAmount < minOffer) {
+        wrapper.className = 'price-input-wrapper error';
+        validation.innerHTML = `
+          <div class="validation-message warning">
+            <ion-icon name="warning"></ion-icon>
+            Offer seems too low. Minimum: ${formatPrice(minOffer, listing.currency)}
+          </div>
+        `;
+        submitBtn.disabled = true;
+      } else {
+        const discount = Math.round((1 - offerAmount / listedPrice) * 100);
+        wrapper.className = 'price-input-wrapper valid';
+        validation.innerHTML = `
+          <div class="validation-message success">
+            <ion-icon name="checkmark-circle"></ion-icon>
+            ${discount}% off listed price
+          </div>
+        `;
+        submitBtn.disabled = false;
+      }
+    }
+
+    async function submitOffer() {
+      const offerAmount = parseFloat(document.getElementById('offerPriceInput').value);
+      const message = document.getElementById('offerMessage').value;
+      const submitBtn = document.getElementById('submitOfferBtn');
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<ion-icon name="hourglass-outline"></ion-icon> Submitting...';
+
+      try {
+        // Create offer
+        await apiRequest('/offers', {
+          method: 'POST',
+          body: JSON.stringify({
+            listing_id: listingId,
+            offered_price: offerAmount,
+            message: message || 'I would like to make an offer on this item.'
+          })
+        });
+
+        // Create conversation and send offer message
+        const conversation = await apiRequest('/conversations', {
+          method: 'POST',
+          body: JSON.stringify({ listing_id: listingId })
+        });
+
+        const discount = Math.round((1 - offerAmount / listing.price) * 100);
+        const offerText = `💰 OFFER SUBMITTED\n\nAmount: ${formatPrice(offerAmount, listing.currency)} (${discount}% off)\nListed Price: ${formatPrice(listing.price, listing.currency)}\n\n${message || 'I would like to make an offer on this item.'}`;
+        
+        await apiRequest(`/conversations/${conversation.id}/messages`, {
+          method: 'POST',
+          body: JSON.stringify({ content: offerText, message_type: 'text' })
+        });
+
+        closeOfferModal();
+        showToast('Offer submitted successfully!', 'success');
+
+      } catch (error) {
+        showToast(error.message || 'Failed to submit offer', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Submit Offer';
+      }
+    }
+
+    // ============================================
+    // CHAT
+    // ============================================
+    async function startChat() {
+      if (!authToken) {
+        showToast('Please sign in to chat', 'error');
+        return;
+      }
+
+      try {
+        const conversation = await apiRequest('/conversations', {
+          method: 'POST',
+          body: JSON.stringify({ listing_id: listingId })
+        });
+        
+        window.location.href = `/chat/${conversation.id}`;
+      } catch (error) {
+        showToast(error.message || 'Failed to start chat', 'error');
+      }
+    }
+
+    // ============================================
+    // FAVORITES
+    // ============================================
+    async function toggleFavorite() {
+      if (!authToken) {
+        showToast('Please sign in to save items', 'error');
+        return;
+      }
+
+      try {
+        if (isFavorited) {
+          await apiRequest(`/favorites/${listingId}`, { method: 'DELETE' });
+          isFavorited = false;
+          showToast('Removed from favorites', 'success');
+        } else {
+          await apiRequest(`/favorites/${listingId}`, { method: 'POST' });
+          isFavorited = true;
+          showToast('Added to favorites', 'success');
+        }
+        updateFavoriteButton();
+      } catch (error) {
+        showToast(error.message || 'Failed to update favorites', 'error');
+      }
+    }
+
+    function updateFavoriteButton() {
+      const btn = document.getElementById('favoriteBtn');
+      const icon = document.getElementById('favoriteIcon');
+      
+      if (isFavorited) {
+        btn.classList.add('active');
+        icon.setAttribute('name', 'heart');
+      } else {
+        btn.classList.remove('active');
+        icon.setAttribute('name', 'heart-outline');
+      }
+    }
+
+    // ============================================
+    // SHARE
+    // ============================================
+    async function shareListing() {
+      const shareData = {
+        title: listing.title,
+        text: `Check out this listing: ${listing.title} - ${formatPrice(listing.price, listing.currency)}`,
+        url: window.location.href
+      };
+
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+        } else {
+          // Fallback: copy to clipboard
+          await navigator.clipboard.writeText(window.location.href);
+          showToast('Link copied to clipboard!', 'success');
+        }
+      } catch (error) {
+        // User cancelled or error
+        if (error.name !== 'AbortError') {
+          await navigator.clipboard.writeText(window.location.href);
+          showToast('Link copied to clipboard!', 'success');
+        }
+      }
+    }
+
+    // ============================================
+    // REPORT
+    // ============================================
+    function reportListing() {
+      document.getElementById('reportModal').classList.add('active');
+    }
+
+    function closeReportModal() {
+      document.getElementById('reportModal').classList.remove('active');
+    }
+
+    async function submitReport() {
+      const reason = document.getElementById('reportReason').value;
+      const details = document.getElementById('reportDetails').value;
+
+      if (!reason) {
+        showToast('Please select a reason', 'error');
+        return;
+      }
+
+      try {
+        await apiRequest('/report', {
+          method: 'POST',
+          body: JSON.stringify({
+            listing_id: listingId,
+            reason: reason,
+            details: details,
+            reported_user_id: listing.user_id
+          })
+        });
+
+        closeReportModal();
+        showToast('Report submitted. Thank you!', 'success');
+      } catch (error) {
+        showToast(error.message || 'Failed to submit report', 'error');
+      }
+    }
+
+    // ============================================
+    // UTILITY FUNCTIONS
+    // ============================================
+    function formatPrice(amount, currency = 'EUR') {
+      const symbols = { EUR: '€', USD: '$', TZS: 'TZS ', GBP: '£' };
+      const symbol = symbols[currency] || currency + ' ';
+      return symbol + new Intl.NumberFormat().format(amount);
+    }
+
+    function getCurrencySymbol(currency = 'EUR') {
+      const symbols = { EUR: '€', USD: '$', TZS: 'TZS', GBP: '£' };
+      return symbols[currency] || currency;
+    }
+
+    function formatLocation(location) {
+      if (!location) return 'Location not specified';
+      if (typeof location === 'string') return location;
+      const parts = [];
+      if (location.city) parts.push(location.city);
+      if (location.region) parts.push(location.region);
+      if (location.country) parts.push(location.country);
+      return parts.join(', ') || 'Location not specified';
+    }
+
+    function timeAgo(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const seconds = Math.floor((now - date) / 1000);
+
+      const intervals = {
+        year: 31536000,
+        month: 2592000,
+        week: 604800,
+        day: 86400,
+        hour: 3600,
+        minute: 60
+      };
+
+      for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+        const interval = Math.floor(seconds / secondsInUnit);
+        if (interval >= 1) {
+          return interval === 1 ? `1 ${unit} ago` : `${interval} ${unit}s ago`;
+        }
+      }
+      return 'Just now';
+    }
+
+    function getCategoryName(categoryId) {
+      const categories = {
+        auto_vehicles: 'Auto & Vehicles',
+        properties: 'Properties',
+        electronics: 'Electronics',
+        phones_tablets: 'Phones & Tablets',
+        home_furniture: 'Home & Furniture',
+        fashion_beauty: 'Fashion & Beauty',
+        jobs_services: 'Jobs & Services',
+        kids_baby: 'Kids & Baby',
+        sports_hobbies: 'Sports & Hobbies',
+        pets: 'Pets',
+        agriculture_food: 'Agriculture & Food',
+        commercial_equipment: 'Commercial Equipment',
+        repair_construction: 'Repair & Construction',
+        friendship_dating: 'Friendship & Dating'
+      };
+      return categories[categoryId] || categoryId;
+    }
+
+    function getCategoryIcon(categoryId) {
+      const icons = {
+        auto_vehicles: 'car-outline',
+        properties: 'home-outline',
+        electronics: 'laptop-outline',
+        phones_tablets: 'phone-portrait-outline',
+        home_furniture: 'bed-outline',
+        fashion_beauty: 'shirt-outline',
+        jobs_services: 'briefcase-outline',
+        kids_baby: 'happy-outline',
+        sports_hobbies: 'football-outline',
+        pets: 'paw-outline',
+        agriculture_food: 'leaf-outline',
+        commercial_equipment: 'construct-outline',
+        repair_construction: 'hammer-outline',
+        friendship_dating: 'heart-outline'
+      };
+      return icons[categoryId] || 'grid-outline';
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toastIcon');
+      const text = document.getElementById('toastMessage');
+
+      toast.className = `toast ${type}`;
+      icon.setAttribute('name', type === 'success' ? 'checkmark-circle' : 'alert-circle');
+      text.textContent = message;
+
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ============================================
+    // KEYBOARD SHORTCUTS
+    // ============================================
+    document.addEventListener('keydown', (e) => {
+      // ESC to close modals
+      if (e.key === 'Escape') {
+        closeOfferModal();
+        closeReportModal();
+      }
+      // Arrow keys for image gallery
+      if (e.key === 'ArrowLeft') prevImage();
+      if (e.key === 'ArrowRight') nextImage();
+    });
+
+    // ============================================
+    // INITIALIZE
+    // ============================================
+    init();
+  </script>
+</body>
+</html>
