@@ -11,42 +11,78 @@ Full-stack React Native/Expo mobile app with critical failures, including a non-
 
 ## What's Been Implemented (Session - Mar 1, 2026)
 
-### Total API Endpoints: 180+
+### Total API Endpoints: 200+
 
-### Batch 3 - Admin Utility Routes (Latest)
+### Latest Implementation - Management Routes (Mar 1, 2026)
 
-#### 1. Reports
+#### 1. Listing Moderation (/api/listing-moderation/*)
 | Endpoint | Method | Status |
 |----------|--------|--------|
-| `/api/reports` | GET/POST | ✅ |
-| `/api/reports/{id}` | GET/PUT | ✅ |
-| `/api/reports/stats` | GET | ✅ |
-| `/api/reports/by-type` | GET | ✅ |
-| `/api/reports/pending` | GET | ✅ |
-| `/api/reports/{id}/resolve` | POST | ✅ |
+| `/api/listing-moderation` | GET | ✅ |
+| `/api/listing-moderation/queue` | GET | ✅ |
+| `/api/listing-moderation/queue/count` | GET | ✅ |
+| `/api/listing-moderation/{id}/approve` | POST | ✅ |
+| `/api/listing-moderation/{id}/reject` | POST | ✅ |
+| `/api/listing-moderation/{id}/request-edit` | POST | ✅ |
+| `/api/listing-moderation/history` | GET | ✅ |
+| `/api/listing-moderation/stats` | GET | ✅ |
+| `/api/listing-moderation/rules` | GET/PUT | ✅ |
+| `/api/listing-moderation/flagged` | GET | ✅ |
 
-#### 2. Support Tickets
+#### 2. Voucher Management (/api/vouchers/*)
 | Endpoint | Method | Status |
 |----------|--------|--------|
-| `/api/tickets` | GET/POST | ✅ |
-| `/api/tickets/{id}` | GET/PUT | ✅ |
-| `/api/tickets/stats` | GET | ✅ |
-| `/api/tickets/by-status` | GET | ✅ |
-| `/api/tickets/by-priority` | GET | ✅ |
-| `/api/tickets/{id}/reply` | POST | ✅ |
-| `/api/tickets/{id}/assign` | POST | ✅ |
-| `/api/tickets/{id}/close` | POST | ✅ |
+| `/api/vouchers` | GET/POST | ✅ |
+| `/api/vouchers/{id}` | GET/PUT/DELETE | ✅ |
+| `/api/vouchers/active` | GET | ✅ |
+| `/api/vouchers/expired` | GET | ✅ |
+| `/api/vouchers/stats` | GET | ✅ |
+| `/api/vouchers/{id}/redemptions` | GET | ✅ |
+| `/api/vouchers/{id}/activate` | POST | ✅ |
+| `/api/vouchers/{id}/deactivate` | POST | ✅ |
+| `/api/vouchers/validate` | POST | ✅ |
 
-#### 3. Banners
+#### 3. Commission Management (/api/commission/*)
 | Endpoint | Method | Status |
 |----------|--------|--------|
-| `/api/banners` | GET/POST | ✅ |
-| `/api/banners/{id}` | GET/PUT/DELETE | ✅ |
-| `/api/banners/active` | GET | ✅ |
-| `/api/banners/stats` | GET | ✅ |
-| `/api/banners/analytics` | GET | ✅ |
-| `/api/banners/{id}/activate` | POST | ✅ |
-| `/api/banners/{id}/deactivate` | POST | ✅ |
+| `/api/commission` | GET | ✅ |
+| `/api/commission/rules` | GET/POST | ✅ |
+| `/api/commission/rules/{id}` | PUT/DELETE | ✅ |
+| `/api/commission/rates` | GET/PUT | ✅ |
+| `/api/commission/earnings` | GET | ✅ |
+| `/api/commission/history` | GET | ✅ |
+| `/api/commission/stats` | GET | ✅ |
+| `/api/commission/by-seller` | GET | ✅ |
+| `/api/commission/by-category` | GET | ✅ |
+
+#### 4. Invoices (/api/invoices/*)
+| Endpoint | Method | Status |
+|----------|--------|--------|
+| `/api/invoices` | GET/POST | ✅ |
+| `/api/invoices/{id}` | GET/PUT | ✅ |
+| `/api/invoices/{id}/download` | GET | ✅ |
+| `/api/invoices/stats` | GET | ✅ |
+| `/api/invoices/by-status` | GET | ✅ |
+| `/api/invoices/by-user/{id}` | GET | ✅ |
+| `/api/invoices/{id}/send` | POST | ✅ |
+| `/api/invoices/{id}/mark-paid` | POST | ✅ |
+| `/api/invoices/overdue` | GET | ✅ |
+
+#### 5. Badge Management (/api/badges/*)
+| Endpoint | Method | Status |
+|----------|--------|--------|
+| `/api/badges` | GET/POST | ✅ |
+| `/api/badges/{id}` | GET/PUT/DELETE | ✅ |
+| `/api/badges/active` | GET | ✅ |
+| `/api/badges/categories` | GET | ✅ |
+| `/api/badges/stats` | GET | ✅ |
+| `/api/badges/{id}/holders` | GET | ✅ |
+| `/api/badges/{id}/award` | POST | ✅ |
+| `/api/badges/{id}/revoke` | POST | ✅ |
+| `/api/badges/user/{id}` | GET | ✅ |
+| `/api/badges/leaderboard` | GET | ✅ |
+
+### Previous Batches (Admin Utility Routes)
 
 #### 4. Moderation
 | Endpoint | Method | Status |
