@@ -5,7 +5,7 @@
 Run this single command to deploy the full backend:
 
 ```bash
-curl -sSL "https://auth-ui-template.preview.emergentagent.com/deploy-package/deploy.sh" | bash
+curl -sSL "https://prod-upgrade.preview.emergentagent.com/deploy-package/deploy.sh" | bash
 ```
 
 ## Manual Deployment Steps
@@ -15,7 +15,7 @@ If you prefer step-by-step:
 ### Step 1: Download Backend Package
 ```bash
 cd /tmp
-curl -L -o backend-full.zip "https://auth-ui-template.preview.emergentagent.com/deploy-package/backend-full.zip"
+curl -L -o backend-full.zip "https://prod-upgrade.preview.emergentagent.com/deploy-package/backend-full.zip"
 ```
 
 ### Step 2: Backup Existing Backend

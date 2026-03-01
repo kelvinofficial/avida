@@ -266,7 +266,7 @@ ai_seo.py
 
 3. **Set environment variables**:
    ```env
-   REACT_APP_API_URL=https://auth-ui-template.preview.emergentagent.com/api
+   REACT_APP_API_URL=https://prod-upgrade.preview.emergentagent.com/api
    # Or your production backend URL
    ```
 

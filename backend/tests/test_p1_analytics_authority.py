@@ -9,7 +9,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://auth-ui-template.preview.emergentagent.com/api')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://prod-upgrade.preview.emergentagent.com/api')
 
 
 class TestAnalyticsSettingsAPIs:

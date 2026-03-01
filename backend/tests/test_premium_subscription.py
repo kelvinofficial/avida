@@ -9,7 +9,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://auth-ui-template.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://prod-upgrade.preview.emergentagent.com')
 
 # Test user credentials
 TEST_USER_EMAIL = f"premium_test_{uuid.uuid4().hex[:8]}@example.com"
