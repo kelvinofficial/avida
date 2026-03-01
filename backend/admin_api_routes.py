@@ -629,7 +629,7 @@ def create_admin_api_routes(db: AsyncIOMotorDatabase, require_auth):
     # =============================================================================
     ai_analyzer_admin_router = APIRouter(prefix="/ai-analyzer-admin", tags=["AI Analyzer Admin"])
     
-    @ai_analyzer_router.get("/config")
+    @ai_analyzer_admin_router.get("/config")
     async def get_ai_analyzer_config():
         """Get analyzer configuration"""
         config = await db.ai_analyzer_config.find_one({"id": "global"})
@@ -647,7 +647,7 @@ def create_admin_api_routes(db: AsyncIOMotorDatabase, require_auth):
         config.pop("_id", None)
         return config
     
-    @ai_analyzer_router.put("/config")
+    @ai_analyzer_admin_router.put("/config")
     async def update_ai_analyzer_config(config: AIAnalyzerConfigUpdate, admin = Depends(require_auth)):
         """Update config"""
         update_data = config.dict()
@@ -660,7 +660,7 @@ def create_admin_api_routes(db: AsyncIOMotorDatabase, require_auth):
         )
         return {"status": "updated"}
     
-    @ai_analyzer_router.get("/analytics")
+    @ai_analyzer_admin_router.get("/analytics")
     async def get_ai_analyzer_analytics():
         """Get usage analytics"""
         # Aggregate usage stats
@@ -689,7 +689,7 @@ def create_admin_api_routes(db: AsyncIOMotorDatabase, require_auth):
         
         return {"total_analyses": 0, "successful": 0, "failed": 0, "success_rate": 0, "today_usage": 0}
     
-    @ai_analyzer_router.get("/queue")
+    @ai_analyzer_admin_router.get("/queue")
     async def get_ai_analyzer_queue():
         """Get analysis queue status"""
         pending = await db.ai_analysis_queue.count_documents({"status": "pending"})
@@ -701,7 +701,7 @@ def create_admin_api_routes(db: AsyncIOMotorDatabase, require_auth):
             "queue_length": pending + processing
         }
     
-    @ai_analyzer_router.post("/analyze")
+    @ai_analyzer_admin_router.post("/analyze")
     async def analyze_listing(request: AnalyzeListingRequest, user = Depends(require_auth)):
         """Analyze a listing"""
         analysis_id = f"analysis_{uuid.uuid4().hex[:12]}"
