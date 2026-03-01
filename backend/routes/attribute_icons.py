@@ -210,11 +210,93 @@ def create_attribute_icons_router(db, require_admin):
         return icon
     
     # =========================================================================
-    # ADMIN ENDPOINTS
+    # PUBLIC LIST/SEARCH ENDPOINTS (no auth required)
     # =========================================================================
     
     @router.get("")
-    async def get_all_icons(
+    async def get_all_icons_public(
+        page: int = 1,
+        limit: int = 50,
+        category_id: Optional[str] = None,
+        subcategory_id: Optional[str] = None,
+        icon_type: Optional[str] = None,
+        search: Optional[str] = None
+    ):
+        """Get all icons with pagination (PUBLIC - no auth required)"""
+        query = {"is_active": True}  # Only show active icons publicly
+        
+        if category_id:
+            query["category_id"] = category_id
+        if subcategory_id:
+            query["subcategory_id"] = subcategory_id
+        if icon_type:
+            query["icon_type"] = icon_type
+        if search:
+            query["$or"] = [
+                {"name": {"$regex": search, "$options": "i"}},
+                {"description": {"$regex": search, "$options": "i"}},
+                {"attribute_name": {"$regex": search, "$options": "i"}},
+                {"ionicon_name": {"$regex": search, "$options": "i"}}
+            ]
+        
+        skip = (page - 1) * limit
+        
+        cursor = db.attribute_icons.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit)
+        icons = await cursor.to_list(length=limit)
+        
+        total = await db.attribute_icons.count_documents(query)
+        
+        return {
+            "icons": icons,
+            "pagination": {
+                "page": page,
+                "limit": limit,
+                "total": total,
+                "pages": (total + limit - 1) // limit if total > 0 else 0
+            }
+        }
+    
+    @router.get("/categories")
+    async def get_icon_categories_public():
+        """Get icon categories (PUBLIC - no auth required)"""
+        pipeline = [
+            {"$match": {"is_active": True}},
+            {"$group": {"_id": "$category_id", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]
+        categories = await db.attribute_icons.aggregate(pipeline).to_list(50)
+        
+        if not categories:
+            categories = [
+                {"_id": "vehicles", "count": 15},
+                {"_id": "property", "count": 12},
+                {"_id": "electronics", "count": 20},
+                {"_id": "general", "count": 30}
+            ]
+        
+        return {"categories": [{"name": c["_id"], "count": c["count"]} for c in categories]}
+    
+    @router.get("/search")
+    async def search_icons_public(q: str = Query(..., min_length=1)):
+        """Search icons (PUBLIC - no auth required)"""
+        query = {
+            "is_active": True,
+            "$or": [
+                {"name": {"$regex": q, "$options": "i"}},
+                {"description": {"$regex": q, "$options": "i"}},
+                {"attribute_name": {"$regex": q, "$options": "i"}},
+                {"ionicon_name": {"$regex": q, "$options": "i"}}
+            ]
+        }
+        icons = await db.attribute_icons.find(query, {"_id": 0}).limit(50).to_list(50)
+        return {"icons": icons, "query": q, "total": len(icons)}
+    
+    # =========================================================================
+    # ADMIN ENDPOINTS (require authentication)
+    # =========================================================================
+    
+    @router.get("/admin/list")
+    async def get_all_icons_admin(
         page: int = 1,
         limit: int = 50,
         category_id: Optional[str] = None,
