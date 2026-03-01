@@ -1131,4 +1131,37 @@ def create_ai_analyzer_router(db, get_current_user):
         analyzer._cache.clear()
         return {"success": True, "deleted": result.deleted_count}
     
+    # =========================================================================
+    # ROOT-LEVEL ALIASES (for compatibility)
+    # =========================================================================
+    
+    @router.get("/config")
+    async def get_ai_config():
+        """Get AI analyzer configuration"""
+        return await analyzer.get_settings()
+    
+    @router.put("/config")
+    async def update_ai_config(
+        updates: Dict = Body(...),
+        admin_id: str = Body("admin")
+    ):
+        """Update AI analyzer configuration"""
+        return await analyzer.update_settings(updates, admin_id)
+    
+    @router.get("/analytics")
+    async def get_ai_analytics_root(days: int = Query(30)):
+        """Get AI usage analytics"""
+        return await analyzer.get_usage_analytics(days)
+    
+    @router.get("/queue")
+    async def get_ai_queue():
+        """Get analysis queue status"""
+        pending = await db.ai_analysis_queue.count_documents({"status": "pending"}) if hasattr(db, 'ai_analysis_queue') else 0
+        processing = await db.ai_analysis_queue.count_documents({"status": "processing"}) if hasattr(db, 'ai_analysis_queue') else 0
+        return {
+            "pending": pending,
+            "processing": processing,
+            "queue_length": pending + processing
+        }
+    
     return router, analyzer
