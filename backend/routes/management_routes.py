@@ -292,6 +292,7 @@ def create_management_routes(db, get_current_user):
 
     # ========================================================================
     # VOUCHER MANAGEMENT ENDPOINTS
+    # IMPORTANT: Static routes MUST come before dynamic {voucher_id} routes
     # ========================================================================
     
     @router.get("/vouchers")
@@ -342,34 +343,7 @@ def create_management_routes(db, get_current_user):
         await db.vouchers.insert_one(voucher)
         return {"message": "Voucher created", "id": voucher["id"], "code": voucher["code"]}
     
-    @router.get("/vouchers/{voucher_id}")
-    async def get_voucher(voucher_id: str, admin = Depends(require_admin)):
-        """Get voucher details"""
-        voucher = await db.vouchers.find_one({"id": voucher_id}, {"_id": 0})
-        if not voucher:
-            raise HTTPException(status_code=404, detail="Voucher not found")
-        return voucher
-    
-    @router.put("/vouchers/{voucher_id}")
-    async def update_voucher(voucher_id: str, request: Request, admin = Depends(require_admin)):
-        """Update voucher"""
-        data = await request.json()
-        result = await db.vouchers.update_one(
-            {"id": voucher_id},
-            {"$set": {**data, "updated_at": datetime.now(timezone.utc)}}
-        )
-        if result.matched_count == 0:
-            raise HTTPException(status_code=404, detail="Voucher not found")
-        return {"message": "Voucher updated"}
-    
-    @router.delete("/vouchers/{voucher_id}")
-    async def delete_voucher(voucher_id: str, admin = Depends(require_admin)):
-        """Delete voucher"""
-        result = await db.vouchers.delete_one({"id": voucher_id})
-        if result.deleted_count == 0:
-            raise HTTPException(status_code=404, detail="Voucher not found")
-        return {"message": "Voucher deleted"}
-    
+    # STATIC VOUCHER ROUTES - Must be before {voucher_id}
     @router.get("/vouchers/active")
     async def get_active_vouchers(admin = Depends(require_admin)):
         """Get active vouchers"""
@@ -407,6 +381,59 @@ def create_management_routes(db, get_current_user):
             "total_discount_given": total_discount
         }
     
+    @router.post("/vouchers/validate")
+    async def validate_voucher(request: Request, user = Depends(require_auth)):
+        """Validate voucher code"""
+        data = await request.json()
+        code = data.get("code", "").upper()
+        
+        voucher = await db.vouchers.find_one({"code": code, "is_active": True})
+        if not voucher:
+            return {"is_valid": False, "message": "Invalid voucher code"}
+        
+        now = datetime.now(timezone.utc)
+        if voucher.get("valid_until") and voucher["valid_until"] < now.isoformat():
+            return {"is_valid": False, "message": "Voucher expired"}
+        
+        if voucher.get("max_uses") and voucher.get("total_uses", 0) >= voucher["max_uses"]:
+            return {"is_valid": False, "message": "Voucher usage limit reached"}
+        
+        return {
+            "is_valid": True,
+            "message": "Voucher is valid",
+            "voucher_type": voucher["voucher_type"],
+            "value": voucher["value"]
+        }
+    
+    # DYNAMIC VOUCHER ROUTES - Must be after static routes
+    @router.get("/vouchers/{voucher_id}")
+    async def get_voucher(voucher_id: str, admin = Depends(require_admin)):
+        """Get voucher details"""
+        voucher = await db.vouchers.find_one({"id": voucher_id}, {"_id": 0})
+        if not voucher:
+            raise HTTPException(status_code=404, detail="Voucher not found")
+        return voucher
+    
+    @router.put("/vouchers/{voucher_id}")
+    async def update_voucher(voucher_id: str, request: Request, admin = Depends(require_admin)):
+        """Update voucher"""
+        data = await request.json()
+        result = await db.vouchers.update_one(
+            {"id": voucher_id},
+            {"$set": {**data, "updated_at": datetime.now(timezone.utc)}}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Voucher not found")
+        return {"message": "Voucher updated"}
+    
+    @router.delete("/vouchers/{voucher_id}")
+    async def delete_voucher(voucher_id: str, admin = Depends(require_admin)):
+        """Delete voucher"""
+        result = await db.vouchers.delete_one({"id": voucher_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Voucher not found")
+        return {"message": "Voucher deleted"}
+    
     @router.get("/vouchers/{voucher_id}/redemptions")
     async def get_voucher_redemptions(voucher_id: str, admin = Depends(require_admin)):
         """Voucher redemption history"""
@@ -436,30 +463,6 @@ def create_management_routes(db, get_current_user):
         if result.matched_count == 0:
             raise HTTPException(status_code=404, detail="Voucher not found")
         return {"message": "Voucher deactivated"}
-    
-    @router.post("/vouchers/validate")
-    async def validate_voucher(request: Request, user = Depends(require_auth)):
-        """Validate voucher code"""
-        data = await request.json()
-        code = data.get("code", "").upper()
-        
-        voucher = await db.vouchers.find_one({"code": code, "is_active": True})
-        if not voucher:
-            return {"is_valid": False, "message": "Invalid voucher code"}
-        
-        now = datetime.now(timezone.utc)
-        if voucher.get("valid_until") and voucher["valid_until"] < now.isoformat():
-            return {"is_valid": False, "message": "Voucher expired"}
-        
-        if voucher.get("max_uses") and voucher.get("total_uses", 0) >= voucher["max_uses"]:
-            return {"is_valid": False, "message": "Voucher usage limit reached"}
-        
-        return {
-            "is_valid": True,
-            "message": "Voucher is valid",
-            "voucher_type": voucher["voucher_type"],
-            "value": voucher["value"]
-        }
 
     # ========================================================================
     # COMMISSION MANAGEMENT ENDPOINTS
