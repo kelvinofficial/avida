@@ -3064,6 +3064,38 @@ except ImportError as e:
 except Exception as e:
     logger.error(f"Failed to load Growth Engine & SEO Routes: {e}")
 
+# =============================================================================
+# ADMIN UTILITY ROUTES
+# =============================================================================
+try:
+    from admin_utility_routes import create_admin_utility_routes
+    
+    async def require_auth_for_admin_utility(request: Request):
+        """Authentication for admin utility routes"""
+        user = await get_current_user(request)
+        if not user:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        return {
+            "user_id": user.user_id,
+            "email": user.email,
+            "name": user.name,
+            "is_admin": True
+        }
+    
+    admin_utility_routers = create_admin_utility_routes(db, require_auth_for_admin_utility)
+    
+    # Register all admin utility routers
+    for router_name, router in admin_utility_routers.items():
+        api_router.include_router(router)
+        logger.info(f"Admin Utility Router loaded: {router_name}")
+    
+    app.include_router(api_router)  # Re-include to pick up admin utility routes
+    logger.info("Admin Utility Routes loaded successfully")
+except ImportError as e:
+    logger.warning(f"Admin Utility Routes not available: {e}")
+except Exception as e:
+    logger.error(f"Failed to load Admin Utility Routes: {e}")
+
 # Data Privacy & Compliance Center
 if COMPLIANCE_CENTER_AVAILABLE:
     async def require_admin_for_compliance(request: Request) -> dict:
