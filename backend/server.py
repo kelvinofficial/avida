@@ -3395,6 +3395,50 @@ except Exception as e:
     traceback.print_exc()
 
 # =============================================================================
+# ANALYTICS ROUTES (Cohort Analytics, Search Analytics)
+# =============================================================================
+try:
+    from routes.analytics_routes import create_analytics_routes
+    analytics_router = create_analytics_routes(db, get_current_user)
+    app.include_router(analytics_router, prefix="/api")
+    logger.info("Analytics Routes loaded successfully")
+except Exception as e:
+    logger.warning(f"Failed to load Analytics Routes: {e}")
+
+# =============================================================================
+# ATTRIBUTES ROUTES (Attributes, Attribute Icons)
+# =============================================================================
+try:
+    from routes.attributes_routes import create_attributes_routes
+    attributes_router = create_attributes_routes(db, get_current_user)
+    app.include_router(attributes_router, prefix="/api")
+    logger.info("Attributes Routes loaded successfully")
+except Exception as e:
+    logger.warning(f"Failed to load Attributes Routes: {e}")
+
+# =============================================================================
+# GUIDES & FORMS ROUTES (Photography Guides, Form Configuration)
+# =============================================================================
+try:
+    from routes.guides_forms_routes import create_guides_forms_routes
+    guides_forms_router = create_guides_forms_routes(db, get_current_user)
+    app.include_router(guides_forms_router, prefix="/api")
+    logger.info("Guides & Forms Routes loaded successfully")
+except Exception as e:
+    logger.warning(f"Failed to load Guides & Forms Routes: {e}")
+
+# =============================================================================
+# VERIFICATION & BUSINESS ROUTES
+# =============================================================================
+try:
+    from routes.verification_business_routes import create_verification_business_routes
+    verification_business_router = create_verification_business_routes(db, get_current_user)
+    app.include_router(verification_business_router, prefix="/api")
+    logger.info("Verification & Business Routes loaded successfully")
+except Exception as e:
+    logger.warning(f"Failed to load Verification & Business Routes: {e}")
+
+# =============================================================================
 # ADMIN TOOLS (SEO, URL Masking, Polls, Cookies, reCAPTCHA, WebP, Invoice PDF)
 # =============================================================================
 if ADMIN_TOOLS_AVAILABLE:
