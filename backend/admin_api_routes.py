@@ -1004,7 +1004,7 @@ def create_admin_api_routes(db: AsyncIOMotorDatabase, require_auth):
         "ai_personalization": ai_personal_router,
         "sms": sms_router,
         "whatsapp": whatsapp_router,
-        "ai_analyzer": ai_analyzer_router,
+        "ai_analyzer_admin": ai_analyzer_admin_router,
         "ab_testing": ab_testing_router,
         "integrations": integrations_router,
         "webhooks": webhooks_router,
