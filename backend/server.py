@@ -3163,6 +3163,14 @@ if VOUCHER_SYSTEM_AVAILABLE:
     logger.info("Voucher System loaded successfully")
 
 # =============================================================================
+# COMMISSION SYSTEM
+# =============================================================================
+if COMMISSION_SYSTEM_AVAILABLE:
+    commission_router, commission_service = create_commission_router(db, require_admin)
+    app.include_router(commission_router, prefix="/api")
+    logger.info("Commission System loaded successfully")
+
+# =============================================================================
 # LISTING MODERATION SYSTEM
 # =============================================================================
 if LISTING_MODERATION_AVAILABLE:
