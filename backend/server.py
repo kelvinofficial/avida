@@ -3032,6 +3032,38 @@ except ImportError as e:
 except Exception as e:
     logger.error(f"Failed to load Admin API Routes: {e}")
 
+# =============================================================================
+# GROWTH ENGINE & SEO ROUTES
+# =============================================================================
+try:
+    from growth_seo_routes import create_growth_seo_routes
+    
+    async def require_auth_for_growth_seo(request: Request):
+        """Authentication for growth/SEO routes"""
+        user = await get_current_user(request)
+        if not user:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        return {
+            "user_id": user.user_id,
+            "email": user.email,
+            "name": user.name,
+            "is_admin": True
+        }
+    
+    growth_seo_routers = create_growth_seo_routes(db, require_auth_for_growth_seo)
+    
+    # Register all growth/SEO routers
+    for router_name, router in growth_seo_routers.items():
+        api_router.include_router(router)
+        logger.info(f"Growth/SEO Router loaded: {router_name}")
+    
+    app.include_router(api_router)  # Re-include to pick up growth/SEO routes
+    logger.info("Growth Engine & SEO Routes loaded successfully")
+except ImportError as e:
+    logger.warning(f"Growth Engine & SEO Routes not available: {e}")
+except Exception as e:
+    logger.error(f"Failed to load Growth Engine & SEO Routes: {e}")
+
 # Data Privacy & Compliance Center
 if COMPLIANCE_CENTER_AVAILABLE:
     async def require_admin_for_compliance(request: Request) -> dict:
