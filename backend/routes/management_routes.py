@@ -781,6 +781,7 @@ def create_management_routes(db, get_current_user):
 
     # ========================================================================
     # BADGE MANAGEMENT ENDPOINTS
+    # Note: Static routes MUST come before dynamic {badge_id} routes
     # ========================================================================
     
     @router.get("/badges")
@@ -804,6 +805,63 @@ def create_management_routes(db, get_current_user):
         }
         await db.badge_definitions.insert_one(badge)
         return {"message": "Badge created", "id": badge["id"]}
+    
+    # Static badge routes - MUST be before /{badge_id}
+    @router.get("/badges/active")
+    async def get_active_badges(admin = Depends(require_admin)):
+        """Get active badges"""
+        badges = await db.badge_definitions.find({"is_active": True}, {"_id": 0}).to_list(100)
+        return {"badges": badges}
+    
+    @router.get("/badges/categories")
+    async def get_badge_categories(admin = Depends(require_admin)):
+        """Get badge categories"""
+        pipeline = [{"$group": {"_id": "$category", "count": {"$sum": 1}}}]
+        categories = await db.badge_definitions.aggregate(pipeline).to_list(50)
+        return {"categories": [{"name": c["_id"], "count": c["count"]} for c in categories]}
+    
+    @router.get("/badges/stats")
+    async def get_badge_stats(admin = Depends(require_admin)):
+        """Badge statistics"""
+        total_badges = await db.badge_definitions.count_documents({})
+        active_badges = await db.badge_definitions.count_documents({"is_active": True})
+        total_awarded = await db.user_badges.count_documents({})
+        
+        return {
+            "total_badges": total_badges,
+            "active_badges": active_badges,
+            "total_awarded": total_awarded
+        }
+    
+    @router.get("/badges/leaderboard")
+    async def get_badge_leaderboard(admin = Depends(require_admin)):
+        """Badge leaderboard"""
+        pipeline = [
+            {"$group": {"_id": "$user_id", "badge_count": {"$sum": 1}}},
+            {"$sort": {"badge_count": -1}},
+            {"$limit": 50}
+        ]
+        leaderboard = await db.user_badges.aggregate(pipeline).to_list(50)
+        
+        # Get user info
+        for entry in leaderboard:
+            user = await db.users.find_one({"user_id": entry["_id"]}, {"_id": 0, "name": 1})
+            entry["user_name"] = user.get("name") if user else "Unknown"
+        
+        return {"leaderboard": leaderboard}
+    
+    # Dynamic badge routes - MUST be after static routes
+    @router.get("/badges/user/{user_id}")
+    async def get_user_badges(user_id: str, admin = Depends(require_admin)):
+        """Badges for specific user"""
+        user_badges = await db.user_badges.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+        
+        # Get badge details
+        for ub in user_badges:
+            badge = await db.badge_definitions.find_one({"id": ub["badge_id"]}, {"_id": 0})
+            ub["badge"] = badge
+        
+        return {"badges": user_badges}
     
     @router.get("/badges/{badge_id}")
     async def get_badge(badge_id: str, admin = Depends(require_admin)):
@@ -833,32 +891,6 @@ def create_management_routes(db, get_current_user):
             raise HTTPException(status_code=404, detail="Badge not found")
         return {"message": "Badge deleted"}
     
-    @router.get("/badges/active")
-    async def get_active_badges(admin = Depends(require_admin)):
-        """Get active badges"""
-        badges = await db.badge_definitions.find({"is_active": True}, {"_id": 0}).to_list(100)
-        return {"badges": badges}
-    
-    @router.get("/badges/categories")
-    async def get_badge_categories(admin = Depends(require_admin)):
-        """Get badge categories"""
-        pipeline = [{"$group": {"_id": "$category", "count": {"$sum": 1}}}]
-        categories = await db.badge_definitions.aggregate(pipeline).to_list(50)
-        return {"categories": [{"name": c["_id"], "count": c["count"]} for c in categories]}
-    
-    @router.get("/badges/stats")
-    async def get_badge_stats(admin = Depends(require_admin)):
-        """Badge statistics"""
-        total_badges = await db.badge_definitions.count_documents({})
-        active_badges = await db.badge_definitions.count_documents({"is_active": True})
-        total_awarded = await db.user_badges.count_documents({})
-        
-        return {
-            "total_badges": total_badges,
-            "active_badges": active_badges,
-            "total_awarded": total_awarded
-        }
-    
     @router.get("/badges/{badge_id}/holders")
     async def get_badge_holders(badge_id: str, admin = Depends(require_admin)):
         """Users who have this badge"""
@@ -868,6 +900,49 @@ def create_management_routes(db, get_current_user):
         for holder in holders:
             user = await db.users.find_one({"user_id": holder["user_id"]}, {"_id": 0, "name": 1, "email": 1})
             holder["user"] = user
+        
+        return {"holders": holders}
+    
+    @router.post("/badges/{badge_id}/award")
+    async def award_badge(badge_id: str, request: Request, admin = Depends(require_admin)):
+        """Award badge to user"""
+        data = await request.json()
+        user_id = data.get("user_id")
+        
+        if not user_id:
+            raise HTTPException(status_code=400, detail="user_id required")
+        
+        # Check if already awarded
+        existing = await db.user_badges.find_one({"badge_id": badge_id, "user_id": user_id})
+        if existing:
+            raise HTTPException(status_code=400, detail="User already has this badge")
+        
+        await db.user_badges.insert_one({
+            "id": str(uuid.uuid4()),
+            "badge_id": badge_id,
+            "user_id": user_id,
+            "awarded_by": admin.user_id,
+            "awarded_at": datetime.now(timezone.utc)
+        })
+        
+        return {"message": "Badge awarded"}
+    
+    @router.post("/badges/{badge_id}/revoke")
+    async def revoke_badge(badge_id: str, request: Request, admin = Depends(require_admin)):
+        """Revoke badge from user"""
+        data = await request.json()
+        user_id = data.get("user_id")
+        
+        if not user_id:
+            raise HTTPException(status_code=400, detail="user_id required")
+        
+        result = await db.user_badges.delete_one({"badge_id": badge_id, "user_id": user_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Badge not found for user")
+        
+        return {"message": "Badge revoked"}
+
+    return router
         
         return {"holders": holders}
     
