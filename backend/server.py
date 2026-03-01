@@ -3316,6 +3316,20 @@ if LISTING_MODERATION_AVAILABLE:
     logger.info("Listing Moderation System loaded successfully")
 
 # =============================================================================
+# MANAGEMENT API ROUTES (User-requested paths)
+# Listing Moderation, Vouchers, Commission, Invoices, Badges
+# =============================================================================
+try:
+    from routes.management_routes import create_management_routes
+    management_router = create_management_routes(db, get_current_user)
+    app.include_router(management_router, prefix="/api")
+    logger.info("Management API Routes loaded successfully")
+except Exception as e:
+    logger.warning(f"Failed to load Management API Routes: {e}")
+    import traceback
+    traceback.print_exc()
+
+# =============================================================================
 # ADMIN TOOLS (SEO, URL Masking, Polls, Cookies, reCAPTCHA, WebP, Invoice PDF)
 # =============================================================================
 if ADMIN_TOOLS_AVAILABLE:
