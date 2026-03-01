@@ -625,9 +625,9 @@ def create_admin_api_routes(db: AsyncIOMotorDatabase, require_auth):
         return {"templates": templates, "total": len(templates)}
     
     # =============================================================================
-    # AI ANALYZER ROUTER
+    # AI ANALYZER ADMIN ROUTER (renamed to avoid conflict with existing ai-analyzer)
     # =============================================================================
-    ai_analyzer_router = APIRouter(prefix="/ai-analyzer", tags=["AI Analyzer"])
+    ai_analyzer_admin_router = APIRouter(prefix="/ai-analyzer-admin", tags=["AI Analyzer Admin"])
     
     @ai_analyzer_router.get("/config")
     async def get_ai_analyzer_config():
