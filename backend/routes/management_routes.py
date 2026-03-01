@@ -630,6 +630,7 @@ def create_management_routes(db, get_current_user):
 
     # ========================================================================
     # INVOICES ENDPOINTS
+    # Note: Static routes MUST come before dynamic {invoice_id} routes
     # ========================================================================
     
     @router.get("/invoices")
@@ -666,6 +667,50 @@ def create_management_routes(db, get_current_user):
         await db.invoices.insert_one(invoice)
         return {"message": "Invoice created", "id": invoice["id"], "invoice_number": invoice["invoice_number"]}
     
+    # Static invoice routes - MUST be before /{invoice_id}
+    @router.get("/invoices/stats")
+    async def get_invoice_stats(admin = Depends(require_admin)):
+        """Invoice statistics"""
+        total = await db.invoices.count_documents({})
+        paid = await db.invoices.count_documents({"status": "paid"})
+        pending = await db.invoices.count_documents({"status": "pending"})
+        overdue = await db.invoices.count_documents({"status": "overdue"})
+        
+        total_amount = await db.invoices.aggregate([
+            {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+        ]).to_list(1)
+        
+        return {
+            "total_invoices": total,
+            "paid": paid,
+            "pending": pending,
+            "overdue": overdue,
+            "total_amount": total_amount[0]["total"] if total_amount else 0
+        }
+    
+    @router.get("/invoices/by-status")
+    async def get_invoices_by_status(status: str = Query(...), admin = Depends(require_admin)):
+        """Invoices by status"""
+        invoices = await db.invoices.find({"status": status}, {"_id": 0}).to_list(100)
+        return {"invoices": invoices}
+    
+    @router.get("/invoices/overdue")
+    async def get_overdue_invoices(admin = Depends(require_admin)):
+        """Get overdue invoices"""
+        now = datetime.now(timezone.utc)
+        invoices = await db.invoices.find({
+            "status": {"$in": ["pending", "sent"]},
+            "due_date": {"$lt": now.isoformat()}
+        }, {"_id": 0}).to_list(100)
+        return {"invoices": invoices}
+    
+    # Dynamic invoice routes - MUST be after static routes
+    @router.get("/invoices/by-user/{user_id}")
+    async def get_invoices_by_user(user_id: str, admin = Depends(require_admin)):
+        """Invoices for specific user"""
+        invoices = await db.invoices.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+        return {"invoices": invoices}
+    
     @router.get("/invoices/{invoice_id}")
     async def get_invoice(invoice_id: str, admin = Depends(require_admin)):
         """Get invoice details"""
@@ -697,38 +742,6 @@ def create_management_routes(db, get_current_user):
         invoice["user"] = user
         
         return {"invoice": invoice, "download_ready": True}
-    
-    @router.get("/invoices/stats")
-    async def get_invoice_stats(admin = Depends(require_admin)):
-        """Invoice statistics"""
-        total = await db.invoices.count_documents({})
-        paid = await db.invoices.count_documents({"status": "paid"})
-        pending = await db.invoices.count_documents({"status": "pending"})
-        overdue = await db.invoices.count_documents({"status": "overdue"})
-        
-        total_amount = await db.invoices.aggregate([
-            {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
-        ]).to_list(1)
-        
-        return {
-            "total_invoices": total,
-            "paid": paid,
-            "pending": pending,
-            "overdue": overdue,
-            "total_amount": total_amount[0]["total"] if total_amount else 0
-        }
-    
-    @router.get("/invoices/by-status")
-    async def get_invoices_by_status(status: str, admin = Depends(require_admin)):
-        """Invoices by status"""
-        invoices = await db.invoices.find({"status": status}, {"_id": 0}).to_list(100)
-        return {"invoices": invoices}
-    
-    @router.get("/invoices/by-user/{user_id}")
-    async def get_invoices_by_user(user_id: str, admin = Depends(require_admin)):
-        """Invoices for specific user"""
-        invoices = await db.invoices.find({"user_id": user_id}, {"_id": 0}).to_list(100)
-        return {"invoices": invoices}
     
     @router.post("/invoices/{invoice_id}/send")
     async def send_invoice(invoice_id: str, admin = Depends(require_admin)):
@@ -765,16 +778,6 @@ def create_management_routes(db, get_current_user):
         if result.matched_count == 0:
             raise HTTPException(status_code=404, detail="Invoice not found")
         return {"message": "Invoice marked as paid"}
-    
-    @router.get("/invoices/overdue")
-    async def get_overdue_invoices(admin = Depends(require_admin)):
-        """Get overdue invoices"""
-        now = datetime.now(timezone.utc)
-        invoices = await db.invoices.find({
-            "status": {"$in": ["pending", "sent"]},
-            "due_date": {"$lt": now.isoformat()}
-        }, {"_id": 0}).to_list(100)
-        return {"invoices": invoices}
 
     # ========================================================================
     # BADGE MANAGEMENT ENDPOINTS
