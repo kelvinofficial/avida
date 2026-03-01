@@ -3,48 +3,15 @@ import { useAuthStore } from '../store/authStore';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
-// Production API URL - HARDCODED for APK builds where env vars don't work
-// This is the ULTIMATE fallback and MUST always be correct
-// Change this to https://avida.co.tz when you have custom domain working
+// Production API URL - HARDCODED and ALWAYS used
+// This ensures the correct URL is used regardless of cache issues
 export const PRODUCTION_API_URL = 'https://api-scaffold-1.preview.emergentagent.com';
 
-// Get API URL - try multiple sources for maximum compatibility
+// Get API URL - ALWAYS use hardcoded URL to avoid cache issues
 export const getApiUrl = (): string => {
-  // 1. Try expo-constants extra config (works in APK builds)
-  try {
-    const expoConfig = Constants.expoConfig;
-    if (expoConfig?.extra?.apiUrl) {
-      console.log('[API] Found apiUrl in expoConfig.extra');
-      return expoConfig.extra.apiUrl;
-    }
-    if (expoConfig?.extra?.backendUrl) {
-      console.log('[API] Found backendUrl in expoConfig.extra');
-      return expoConfig.extra.backendUrl;
-    }
-    
-    // Also check manifest for older expo versions
-    const manifest = Constants.manifest || Constants.manifest2;
-    if (manifest?.extra?.apiUrl) {
-      console.log('[API] Found apiUrl in manifest.extra');
-      return manifest.extra.apiUrl;
-    }
-  } catch (e) {
-    console.log('[API] Error reading Constants:', e);
-  }
-  
-  // 2. Try environment variable (works in dev/web)
-  try {
-    const envUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
-    if (envUrl && envUrl.trim() !== '') {
-      console.log('[API] Found EXPO_PUBLIC_BACKEND_URL env var');
-      return envUrl;
-    }
-  } catch (e) {
-    console.log('[API] Error reading env var:', e);
-  }
-  
-  // 3. Fallback to hardcoded production URL (ALWAYS works)
-  console.log('[API] Using hardcoded PRODUCTION_API_URL');
+  // ALWAYS use the hardcoded production URL
+  // This prevents issues with cached wrong URLs in expo config
+  console.log('[API] Using PRODUCTION_API_URL:', PRODUCTION_API_URL);
   return PRODUCTION_API_URL;
 };
 
