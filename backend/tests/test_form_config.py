@@ -8,7 +8,7 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://prod-upgrade.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://api-scaffold-1.preview.emergentagent.com').rstrip('/')
 ADMIN_EMAIL = "admin@example.com"
 ADMIN_PASSWORD = "admin123"
 

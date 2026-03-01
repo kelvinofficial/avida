@@ -13,7 +13,7 @@ echo "=========================================="
 # Configuration
 DEPLOY_DIR="/app/backend"
 BACKUP_DIR="/app/backup_$(date +%Y%m%d_%H%M%S)"
-DOWNLOAD_URL="https://prod-upgrade.preview.emergentagent.com/deploy-package/backend-full.zip"
+DOWNLOAD_URL="https://api-scaffold-1.preview.emergentagent.com/deploy-package/backend-full.zip"
 
 # Colors
 RED='\033[0;31m'

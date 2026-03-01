@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime, timezone
 
 # Base URL from environment - use the public URL
-BASE_URL = "https://prod-upgrade.preview.emergentagent.com"
+BASE_URL = "https://api-scaffold-1.preview.emergentagent.com"
 
 
 class TestBusinessProfilePublicEndpoints:

@@ -8,7 +8,7 @@ import os
 import json
 
 # Base URLs
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://auth-ui-template.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://api-scaffold-1.preview.emergentagent.com').rstrip('/')
 ADMIN_BASE_URL = f"{BASE_URL}/api/admin"
 
 # Admin credentials

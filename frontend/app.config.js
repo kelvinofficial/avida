@@ -8,7 +8,7 @@
  */
 
 // Hardcoded production API URL - this MUST be set for APK builds
-const PRODUCTION_API_URL = 'https://prod-upgrade.preview.emergentagent.com';
+const PRODUCTION_API_URL = 'https://api-scaffold-1.preview.emergentagent.com';
 
 module.exports = ({ config }) => {
   return {
