@@ -323,6 +323,14 @@ except ImportError as e:
     VOUCHER_SYSTEM_AVAILABLE = False
     logging.warning(f"Voucher system not available: {e}")
 
+# Commission System
+try:
+    from commission_system import create_commission_router
+    COMMISSION_SYSTEM_AVAILABLE = True
+except ImportError as e:
+    COMMISSION_SYSTEM_AVAILABLE = False
+    logging.warning(f"Commission system not available: {e}")
+
 # Listing Moderation System
 try:
     from listing_moderation_system import create_moderation_router as create_listing_moderation_router, check_user_can_post, should_auto_approve
