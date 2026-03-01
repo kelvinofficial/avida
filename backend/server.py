@@ -1597,6 +1597,71 @@ if SUBSCRIPTION_SERVICES_AVAILABLE:
     # INVOICE API ENDPOINTS
     # =========================================================================
     
+    # Admin static routes MUST come first (before {invoice_id})
+    @app.get("/api/invoices/stats")
+    async def get_invoice_stats_admin(request: Request):
+        """Invoice statistics (admin)"""
+        user = await require_auth(request)
+        admin_emails = ["admin@marketplace.com", "admin@example.com"]
+        if user.email not in admin_emails:
+            raise HTTPException(status_code=403, detail="Admin access required")
+        
+        total = await db.invoices.count_documents({})
+        paid = await db.invoices.count_documents({"status": "paid"})
+        pending = await db.invoices.count_documents({"status": "pending"})
+        overdue = await db.invoices.count_documents({"status": "overdue"})
+        
+        total_amount = await db.invoices.aggregate([
+            {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+        ]).to_list(1)
+        
+        return {
+            "total_invoices": total,
+            "paid": paid,
+            "pending": pending,
+            "overdue": overdue,
+            "total_amount": total_amount[0]["total"] if total_amount else 0
+        }
+    
+    @app.get("/api/invoices/by-status")
+    async def get_invoices_by_status_admin(request: Request, status: str = Query(...)):
+        """Invoices by status (admin)"""
+        user = await require_auth(request)
+        admin_emails = ["admin@marketplace.com", "admin@example.com"]
+        if user.email not in admin_emails:
+            raise HTTPException(status_code=403, detail="Admin access required")
+        
+        invoices = await db.invoices.find({"status": status}, {"_id": 0}).to_list(100)
+        return {"invoices": invoices}
+    
+    @app.get("/api/invoices/overdue")
+    async def get_overdue_invoices_admin(request: Request):
+        """Get overdue invoices (admin)"""
+        user = await require_auth(request)
+        admin_emails = ["admin@marketplace.com", "admin@example.com"]
+        if user.email not in admin_emails:
+            raise HTTPException(status_code=403, detail="Admin access required")
+        
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+        invoices = await db.invoices.find({
+            "status": {"$in": ["pending", "sent"]},
+            "due_date": {"$lt": now.isoformat()}
+        }, {"_id": 0}).to_list(100)
+        return {"invoices": invoices}
+    
+    @app.get("/api/invoices/by-user/{target_user_id}")
+    async def get_invoices_by_user_admin(target_user_id: str, request: Request):
+        """Invoices for specific user (admin)"""
+        user = await require_auth(request)
+        admin_emails = ["admin@marketplace.com", "admin@example.com"]
+        if user.email not in admin_emails:
+            raise HTTPException(status_code=403, detail="Admin access required")
+        
+        invoices = await db.invoices.find({"user_id": target_user_id}, {"_id": 0}).to_list(100)
+        return {"invoices": invoices}
+    
+    # Regular user routes
     @app.get("/api/invoices")
     async def get_user_invoices(request: Request, limit: int = 20):
         """Get all invoices for the current user"""
