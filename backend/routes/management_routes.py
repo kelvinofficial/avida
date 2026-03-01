@@ -944,30 +944,6 @@ def create_management_routes(db, get_current_user):
 
     return router
         
-        return {"holders": holders}
-    
-    @router.post("/badges/{badge_id}/award")
-    async def award_badge(badge_id: str, request: Request, admin = Depends(require_admin)):
-        """Award badge to user"""
-        data = await request.json()
-        user_id = data.get("user_id")
-        
-        if not user_id:
-            raise HTTPException(status_code=400, detail="user_id required")
-        
-        # Check if already awarded
-        existing = await db.user_badges.find_one({"badge_id": badge_id, "user_id": user_id})
-        if existing:
-            raise HTTPException(status_code=400, detail="User already has this badge")
-        
-        await db.user_badges.insert_one({
-            "id": str(uuid.uuid4()),
-            "badge_id": badge_id,
-            "user_id": user_id,
-            "awarded_by": admin.user_id,
-            "awarded_at": datetime.now(timezone.utc)
-        })
-        
         return {"message": "Badge awarded"}
     
     @router.post("/badges/{badge_id}/revoke")
