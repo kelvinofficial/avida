@@ -172,14 +172,13 @@ def create_attributes_routes(db, get_current_user):
 
     # ========================================================================
     # ATTRIBUTE ICONS ENDPOINTS
+    # GET endpoints are PUBLIC (no auth required)
+    # POST/PUT/DELETE require admin auth
     # ========================================================================
     
     @router.get("/attribute-icons")
-    async def list_icons(
-        category: Optional[str] = None,
-        admin = Depends(require_admin)
-    ):
-        """List all attribute icons"""
+    async def list_icons(category: Optional[str] = None):
+        """List all attribute icons (PUBLIC - no auth required)"""
         query = {}
         if category:
             query["category"] = category
@@ -196,22 +195,9 @@ def create_attributes_routes(db, get_current_user):
         
         return {"icons": icons}
     
-    @router.post("/attribute-icons")
-    async def upload_icon(data: AttributeIconCreate, admin = Depends(require_admin)):
-        """Upload new icon"""
-        icon = {
-            "id": str(uuid.uuid4()),
-            "name": data.name,
-            "icon_url": data.icon_url,
-            "category": data.category,
-            "created_at": datetime.now(timezone.utc)
-        }
-        await db.attribute_icons.insert_one(icon)
-        return {"message": "Icon uploaded", "id": icon["id"]}
-    
     @router.get("/attribute-icons/categories")
-    async def get_icon_categories(admin = Depends(require_admin)):
-        """Icons by category"""
+    async def get_icon_categories():
+        """Icons by category (PUBLIC - no auth required)"""
         pipeline = [
             {"$group": {"_id": "$category", "count": {"$sum": 1}}}
         ]
@@ -228,11 +214,8 @@ def create_attributes_routes(db, get_current_user):
         return {"categories": [{"name": c["_id"], "count": c["count"]} for c in categories]}
     
     @router.get("/attribute-icons/search")
-    async def search_icons(
-        q: str = Query(...),
-        admin = Depends(require_admin)
-    ):
-        """Search icons"""
+    async def search_icons(q: str = Query(...)):
+        """Search icons (PUBLIC - no auth required)"""
         icons = await db.attribute_icons.find(
             {"name": {"$regex": q, "$options": "i"}},
             {"_id": 0}
@@ -240,14 +223,15 @@ def create_attributes_routes(db, get_current_user):
         return {"icons": icons, "query": q}
     
     @router.get("/attribute-icons/{icon_id}")
-    async def get_icon(icon_id: str, admin = Depends(require_admin)):
-        """Get icon details"""
+    async def get_icon(icon_id: str):
+        """Get icon details (PUBLIC - no auth required)"""
         icon = await db.attribute_icons.find_one({"id": icon_id}, {"_id": 0})
         if not icon:
             raise HTTPException(status_code=404, detail="Icon not found")
         return icon
     
-    @router.put("/attribute-icons/{icon_id}")
+    @router.post("/attribute-icons")
+    async def upload_icon(data: AttributeIconCreate, admin = Depends(require_admin)):
     async def update_icon(icon_id: str, request: Request, admin = Depends(require_admin)):
         """Update icon"""
         data = await request.json()
