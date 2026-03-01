@@ -960,34 +960,5 @@ def create_management_routes(db, get_current_user):
             raise HTTPException(status_code=404, detail="Badge not found for user")
         
         return {"message": "Badge revoked"}
-    
-    @router.get("/badges/user/{user_id}")
-    async def get_user_badges(user_id: str, admin = Depends(require_admin)):
-        """Badges for specific user"""
-        user_badges = await db.user_badges.find({"user_id": user_id}, {"_id": 0}).to_list(100)
-        
-        # Get badge details
-        for ub in user_badges:
-            badge = await db.badge_definitions.find_one({"id": ub["badge_id"]}, {"_id": 0})
-            ub["badge"] = badge
-        
-        return {"badges": user_badges}
-    
-    @router.get("/badges/leaderboard")
-    async def get_badge_leaderboard(admin = Depends(require_admin)):
-        """Badge leaderboard"""
-        pipeline = [
-            {"$group": {"_id": "$user_id", "badge_count": {"$sum": 1}}},
-            {"$sort": {"badge_count": -1}},
-            {"$limit": 50}
-        ]
-        leaderboard = await db.user_badges.aggregate(pipeline).to_list(50)
-        
-        # Get user info
-        for entry in leaderboard:
-            user = await db.users.find_one({"user_id": entry["_id"]}, {"_id": 0, "name": 1})
-            entry["user_name"] = user.get("name") if user else "Unknown"
-        
-        return {"leaderboard": leaderboard}
 
     return router
