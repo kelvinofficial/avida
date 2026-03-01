@@ -3000,6 +3000,38 @@ if API_INTEGRATIONS_AVAILABLE:
     app.include_router(api_router)  # Re-include to pick up integrations routes
     logger.info("API Integrations Manager loaded successfully")
 
+# =============================================================================
+# ADMIN API ROUTES (Public-facing endpoints)
+# =============================================================================
+try:
+    from admin_api_routes import create_admin_api_routes
+    
+    async def require_auth_for_admin_api(request: Request):
+        """Authentication for admin API routes"""
+        user = await get_current_user(request)
+        if not user:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        return {
+            "user_id": user.user_id,
+            "email": user.email,
+            "name": user.name,
+            "is_admin": True
+        }
+    
+    admin_api_routers = create_admin_api_routes(db, require_auth_for_admin_api)
+    
+    # Register all admin API routers
+    for router_name, router in admin_api_routers.items():
+        api_router.include_router(router)
+        logger.info(f"Admin API Router loaded: {router_name}")
+    
+    app.include_router(api_router)  # Re-include to pick up admin API routes
+    logger.info("Admin API Routes loaded successfully")
+except ImportError as e:
+    logger.warning(f"Admin API Routes not available: {e}")
+except Exception as e:
+    logger.error(f"Failed to load Admin API Routes: {e}")
+
 # Data Privacy & Compliance Center
 if COMPLIANCE_CENTER_AVAILABLE:
     async def require_admin_for_compliance(request: Request) -> dict:
