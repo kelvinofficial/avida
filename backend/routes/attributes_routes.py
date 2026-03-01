@@ -232,6 +232,18 @@ def create_attributes_routes(db, get_current_user):
     
     @router.post("/attribute-icons")
     async def upload_icon(data: AttributeIconCreate, admin = Depends(require_admin)):
+        """Upload new icon (admin only)"""
+        icon = {
+            "id": str(uuid.uuid4()),
+            "name": data.name,
+            "icon_url": data.icon_url,
+            "category": data.category,
+            "created_at": datetime.now(timezone.utc)
+        }
+        await db.attribute_icons.insert_one(icon)
+        return {"message": "Icon uploaded", "id": icon["id"]}
+    
+    @router.put("/attribute-icons/{icon_id}")
     async def update_icon(icon_id: str, request: Request, admin = Depends(require_admin)):
         """Update icon"""
         data = await request.json()
