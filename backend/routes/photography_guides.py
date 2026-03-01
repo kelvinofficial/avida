@@ -172,6 +172,20 @@ def create_photography_guides_router(db, require_auth):
             "by_category": {r["_id"]: r["count"] for r in by_category}
         }
     
+    @router.get("/tips")
+    async def get_photography_tips(user = Depends(require_auth)):
+        """Photography tips for listing photos"""
+        tips = [
+            {"category": "lighting", "tip": "Use natural daylight when possible", "priority": 1},
+            {"category": "background", "tip": "Use a clean, uncluttered background", "priority": 2},
+            {"category": "angles", "tip": "Take photos from multiple angles", "priority": 3},
+            {"category": "focus", "tip": "Ensure the main subject is in sharp focus", "priority": 4},
+            {"category": "resolution", "tip": "Use high resolution (at least 1080p)", "priority": 5},
+            {"category": "composition", "tip": "Center the main subject in the frame", "priority": 6},
+            {"category": "equipment", "tip": "A smartphone camera is usually sufficient", "priority": 7}
+        ]
+        return {"tips": tips}
+    
     @router.get("/{guide_id}")
     async def get_guide(guide_id: str, user = Depends(require_auth)):
         """Get a specific photography guide with full details"""
