@@ -3166,7 +3166,48 @@ if VOUCHER_SYSTEM_AVAILABLE:
 # COMMISSION SYSTEM
 # =============================================================================
 if COMMISSION_SYSTEM_AVAILABLE:
-    commission_router, commission_service = create_commission_router(db, require_admin)
+    async def require_admin_for_commission(request: Request) -> dict:
+        """Admin authentication wrapper for commission - supports both user tokens and admin JWT"""
+        # First try regular user auth
+        user = await get_current_user(request)
+        if user:
+            return {
+                "admin_id": user.user_id,
+                "email": user.email,
+                "name": user.name,
+                "is_admin": True
+            }
+        
+        # Try admin JWT token (from admin dashboard)
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+            try:
+                # Try to decode as admin JWT
+                import jwt as pyjwt
+                payload = pyjwt.decode(token, ADMIN_JWT_SECRET, algorithms=[ADMIN_JWT_ALGORITHM])
+                admin_id = payload.get("sub")
+                email = payload.get("email")
+                role = payload.get("role")
+                
+                if admin_id and role in ["super_admin", "admin", "moderator"]:
+                    # Verify admin exists in admin collection
+                    admin_doc = await db.admin_users.find_one({"id": admin_id})
+                    if admin_doc and admin_doc.get("is_active", True):
+                        return {
+                            "admin_id": admin_id,
+                            "email": email,
+                            "name": admin_doc.get("name", "Admin"),
+                            "role": role,
+                            "is_admin": True
+                        }
+            except Exception as jwt_error:
+                logger.debug(f"Commission JWT decode failed: {jwt_error}")
+                pass
+        
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    commission_router, commission_service = create_commission_router(db, require_admin_for_commission)
     app.include_router(commission_router, prefix="/api")
     logger.info("Commission System loaded successfully")
 
