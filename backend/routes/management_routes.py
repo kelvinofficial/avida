@@ -943,22 +943,3 @@ def create_management_routes(db, get_current_user):
         return {"message": "Badge revoked"}
 
     return router
-        
-        return {"message": "Badge awarded"}
-    
-    @router.post("/badges/{badge_id}/revoke")
-    async def revoke_badge(badge_id: str, request: Request, admin = Depends(require_admin)):
-        """Revoke badge from user"""
-        data = await request.json()
-        user_id = data.get("user_id")
-        
-        if not user_id:
-            raise HTTPException(status_code=400, detail="user_id required")
-        
-        result = await db.user_badges.delete_one({"badge_id": badge_id, "user_id": user_id})
-        if result.deleted_count == 0:
-            raise HTTPException(status_code=404, detail="Badge not found for user")
-        
-        return {"message": "Badge revoked"}
-
-    return router
