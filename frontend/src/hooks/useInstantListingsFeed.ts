@@ -81,24 +81,35 @@ const fetchFeed = async (
   if (cursor) queryParams.append('cursor', cursor);
   queryParams.append('limit', String(params.limit || 20));
   
-  const response = await fetch(`${API_URL}/api/feed/listings?${queryParams.toString()}`, {
-    headers: {
-      'Accept': 'application/json',
-    },
-  });
+  const url = `${API_URL}/api/feed/listings?${queryParams.toString()}`;
+  console.log('[Feed] Fetching:', url);
   
-  if (!response.ok) {
-    throw new Error(`Feed fetch failed: ${response.status}`);
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+    
+    console.log('[Feed] Response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`Feed fetch failed: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('[Feed] Got items:', data.items?.length || 0, 'total:', data.totalApprox);
+    
+    return {
+      items: data.items || [],
+      nextCursor: data.nextCursor || null,
+      totalApprox: data.totalApprox || 0,
+      hasMore: data.hasMore || false,
+    };
+  } catch (err: any) {
+    console.error('[Feed] Fetch error:', err.message);
+    throw err;
   }
-  
-  const data = await response.json();
-  
-  return {
-    items: data.items || [],
-    nextCursor: data.nextCursor || null,
-    totalApprox: data.totalApprox || 0,
-    hasMore: data.hasMore || false,
-  };
 };
 
 /**
