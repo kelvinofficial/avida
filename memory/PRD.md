@@ -6,170 +6,158 @@ Full-stack React Native/Expo mobile app with critical failures, including a non-
 ## Architecture
 - **Frontend**: React Native/Expo (mobile + web) at `https://prod-upgrade.preview.emergentagent.com`
 - **Backend**: FastAPI on port 8001 (same server)
-- **Database**: MongoDB Atlas (`mongodb+srv://avida_admin:AvidaTZ@avidatz.dipxnt9.mongodb.net/classifieds_db`)
+- **Database**: MongoDB Atlas
 - **Admin Dashboard**: Next.js (separate deployment)
 
-## What's Been Implemented (Latest Session - Mar 1, 2026)
+## What's Been Implemented (Session - Mar 1, 2026)
 
-### New API Endpoints - Batch 2 (120+ Total Endpoints Now Available)
+### Total API Endpoints: 180+
 
-#### 1. Growth Engine
+### Batch 3 - Admin Utility Routes (Latest)
+
+#### 1. Reports
 | Endpoint | Method | Status |
 |----------|--------|--------|
-| `/api/growth-engine` | GET | ✅ |
-| `/api/growth-engine/metrics` | GET | ✅ |
-| `/api/growth-engine/trends` | GET | ✅ |
-| `/api/growth-engine/forecasts` | GET | ✅ |
-| `/api/growth-engine/opportunities` | GET | ✅ |
-| `/api/growth-engine/campaigns` | GET/POST | ✅ |
+| `/api/reports` | GET/POST | ✅ |
+| `/api/reports/{id}` | GET/PUT | ✅ |
+| `/api/reports/stats` | GET | ✅ |
+| `/api/reports/by-type` | GET | ✅ |
+| `/api/reports/pending` | GET | ✅ |
+| `/api/reports/{id}/resolve` | POST | ✅ |
 
-#### 2. AI Content Engine
+#### 2. Support Tickets
 | Endpoint | Method | Status |
 |----------|--------|--------|
-| `/api/content-engine` | GET | ✅ |
-| `/api/content-engine/suggestions` | GET | ✅ |
-| `/api/content-engine/generate` | POST | ✅ |
-| `/api/content-engine/templates` | GET/POST | ✅ |
-| `/api/content-engine/analytics` | GET | ✅ |
+| `/api/tickets` | GET/POST | ✅ |
+| `/api/tickets/{id}` | GET/PUT | ✅ |
+| `/api/tickets/stats` | GET | ✅ |
+| `/api/tickets/by-status` | GET | ✅ |
+| `/api/tickets/by-priority` | GET | ✅ |
+| `/api/tickets/{id}/reply` | POST | ✅ |
+| `/api/tickets/{id}/assign` | POST | ✅ |
+| `/api/tickets/{id}/close` | POST | ✅ |
 
-#### 3. ASO Engine
+#### 3. Banners
 | Endpoint | Method | Status |
 |----------|--------|--------|
-| `/api/aso-engine` | GET | ✅ |
-| `/api/aso-engine/keywords` | GET | ✅ |
-| `/api/aso-engine/competitors` | GET | ✅ |
-| `/api/aso-engine/ratings` | GET | ✅ |
-| `/api/aso-engine/suggestions` | GET | ✅ |
-| `/api/aso-engine/metadata` | PUT | ✅ |
+| `/api/banners` | GET/POST | ✅ |
+| `/api/banners/{id}` | GET/PUT/DELETE | ✅ |
+| `/api/banners/active` | GET | ✅ |
+| `/api/banners/stats` | GET | ✅ |
+| `/api/banners/analytics` | GET | ✅ |
+| `/api/banners/{id}/activate` | POST | ✅ |
+| `/api/banners/{id}/deactivate` | POST | ✅ |
 
-#### 4. Content Calendar
+#### 4. Moderation
 | Endpoint | Method | Status |
 |----------|--------|--------|
-| `/api/content-calendar` | GET | ✅ |
-| `/api/content-calendar/events` | GET/POST | ✅ |
-| `/api/content-calendar/events/{id}` | PUT/DELETE | ✅ |
-| `/api/content-calendar/templates` | GET | ✅ |
+| `/api/moderation` | GET | ✅ |
+| `/api/moderation/queue` | GET | ✅ |
+| `/api/moderation/history` | GET | ✅ |
+| `/api/moderation/rules` | GET/PUT | ✅ |
+| `/api/moderation/listings/{id}/approve` | POST | ✅ |
+| `/api/moderation/listings/{id}/reject` | POST | ✅ |
+| `/api/moderation/listings/{id}/flag` | POST | ✅ |
 
-#### 5. Advanced SEO
+#### 5. Data Privacy
 | Endpoint | Method | Status |
 |----------|--------|--------|
-| `/api/advanced-seo` | GET | ✅ |
-| `/api/advanced-seo/audit` | GET | ✅ |
-| `/api/advanced-seo/pages` | GET | ✅ |
-| `/api/advanced-seo/keywords` | GET | ✅ |
-| `/api/advanced-seo/meta-tags` | GET | ✅ |
-| `/api/advanced-seo/settings` | PUT | ✅ |
-| `/api/advanced-seo/schema` | GET | ✅ |
+| `/api/data-privacy` | GET | ✅ |
+| `/api/data-privacy/requests` | GET | ✅ |
+| `/api/data-privacy/requests/{id}/approve` | POST | ✅ |
+| `/api/data-privacy/requests/{id}/reject` | POST | ✅ |
+| `/api/data-privacy/settings` | GET/PUT | ✅ |
+| `/api/data-privacy/consent-logs` | GET | ✅ |
+| `/api/data-privacy/exports` | GET | ✅ |
+| `/api/data-privacy/users/{id}/export` | POST | ✅ |
+| `/api/data-privacy/users/{id}/delete` | POST | ✅ |
 
-#### 6. SEO Analytics
+#### 6. Config Manager
 | Endpoint | Method | Status |
 |----------|--------|--------|
-| `/api/seo-analytics` | GET | ✅ |
-| `/api/seo-analytics/rankings` | GET | ✅ |
-| `/api/seo-analytics/traffic` | GET | ✅ |
-| `/api/seo-analytics/clicks` | GET | ✅ |
-| `/api/seo-analytics/impressions` | GET | ✅ |
-| `/api/seo-analytics/trends` | GET | ✅ |
+| `/api/config` | GET/PUT | ✅ |
+| `/api/config/categories` | GET | ✅ |
+| `/api/config/{category}` | GET/PUT | ✅ |
+| `/api/config/history` | GET | ✅ |
+| `/api/config/reset` | POST | ✅ |
 
-#### 7. Multilang SEO
+#### 7. SEO Tools
 | Endpoint | Method | Status |
 |----------|--------|--------|
-| `/api/multilang-seo` | GET | ✅ |
-| `/api/multilang-seo/languages` | GET | ✅ |
-| `/api/multilang-seo/hreflang` | GET | ✅ |
-| `/api/multilang-seo/translations` | GET | ✅ |
-| `/api/multilang-seo/config` | PUT | ✅ |
-| `/api/multilang-seo/performance` | GET | ✅ |
+| `/api/seo-tools` | GET | ✅ |
+| `/api/seo-tools/meta-tags` | GET/PUT | ✅ |
+| `/api/seo-tools/sitemap` | GET | ✅ |
+| `/api/seo-tools/sitemap/generate` | POST | ✅ |
+| `/api/seo-tools/robots` | GET/PUT | ✅ |
+| `/api/seo-tools/redirects` | GET/POST | ✅ |
+| `/api/seo-tools/redirects/{id}` | DELETE | ✅ |
 
-#### 8. Backlink Monitoring
+#### 8. Polls & Surveys
 | Endpoint | Method | Status |
 |----------|--------|--------|
-| `/api/backlinks` | GET | ✅ |
-| `/api/backlinks/list` | GET | ✅ |
-| `/api/backlinks/new` | GET | ✅ |
-| `/api/backlinks/lost` | GET | ✅ |
-| `/api/backlinks/toxic` | GET | ✅ |
-| `/api/backlinks/competitors` | GET | ✅ |
-| `/api/backlinks/opportunities` | GET | ✅ |
+| `/api/polls` | GET/POST | ✅ |
+| `/api/polls/{id}` | GET/PUT/DELETE | ✅ |
+| `/api/polls/{id}/results` | GET | ✅ |
+| `/api/polls/active` | GET | ✅ |
+| `/api/polls/{id}/activate` | POST | ✅ |
+| `/api/polls/{id}/close` | POST | ✅ |
 
-#### 9. Authority Building
+#### 9. Cookie Consent
 | Endpoint | Method | Status |
 |----------|--------|--------|
-| `/api/authority-building` | GET | ✅ |
-| `/api/authority-building/score` | GET | ✅ |
-| `/api/authority-building/metrics` | GET | ✅ |
-| `/api/authority-building/suggestions` | GET | ✅ |
-| `/api/authority-building/competitors` | GET | ✅ |
-| `/api/authority-building/mentions` | GET | ✅ |
+| `/api/cookie-consent` | GET/PUT | ✅ |
+| `/api/cookie-consent/categories` | GET/PUT | ✅ |
+| `/api/cookie-consent/banner` | GET/PUT | ✅ |
+| `/api/cookie-consent/logs` | GET | ✅ |
+| `/api/cookie-consent/stats` | GET | ✅ |
 
-#### 10. Social Distribution
+#### 10. URL Shortener
 | Endpoint | Method | Status |
 |----------|--------|--------|
-| `/api/social-distribution` | GET | ✅ |
-| `/api/social-distribution/channels` | GET/POST | ✅ |
-| `/api/social-distribution/posts` | GET/POST | ✅ |
-| `/api/social-distribution/analytics` | GET | ✅ |
-| `/api/social-distribution/engagement` | GET | ✅ |
+| `/api/short-urls` | GET/POST | ✅ |
+| `/api/short-urls/{id}` | GET/PUT/DELETE | ✅ |
+| `/api/short-urls/{id}/stats` | GET | ✅ |
+| `/api/short-urls/analytics` | GET | ✅ |
 
-#### 11. Audit Logs
+#### 11. reCAPTCHA
 | Endpoint | Method | Status |
 |----------|--------|--------|
-| `/api/audit-logs` | GET | ✅ |
-| `/api/audit-logs/filters` | GET | ✅ |
-| `/api/audit-logs/export` | GET | ✅ |
-| `/api/audit-logs/stats` | GET | ✅ |
-| `/api/audit-logs/users/{id}` | GET | ✅ |
-| `/api/audit-logs/actions` | GET | ✅ |
+| `/api/recaptcha` | GET/PUT | ✅ |
+| `/api/recaptcha/stats` | GET | ✅ |
+| `/api/recaptcha/logs` | GET | ✅ |
+| `/api/recaptcha/thresholds` | PUT | ✅ |
 
-#### 12. Analytics Settings
+#### 12. Image Settings
 | Endpoint | Method | Status |
 |----------|--------|--------|
-| `/api/analytics-settings` | GET/PUT | ✅ |
-| `/api/analytics-settings/tracking` | GET/PUT | ✅ |
-| `/api/analytics-settings/integrations` | GET | ✅ |
-| `/api/analytics-settings/privacy` | GET | ✅ |
+| `/api/image-settings` | GET/PUT | ✅ |
+| `/api/image-settings/compression` | GET/PUT | ✅ |
+| `/api/image-settings/watermark` | GET/PUT | ✅ |
+| `/api/image-settings/limits` | GET/PUT | ✅ |
 
-### Previous Batch - Already Implemented
-- Segment Builder (`/api/segments/*`)
-- Smart Notifications (`/api/smart-notifications/*`)
-- Notification Analytics (`/api/notification-analytics/*`)
-- AI Personalization (`/api/ai-personalization/*`)
-- SMS & WhatsApp (`/api/sms/*`, `/api/whatsapp/*`)
-- AI Listing Analyzer (`/api/ai-analyzer/*`)
-- A/B Testing (`/api/ab-testing/*`)
-- API Integrations (`/api/integrations/*`, `/api/webhooks/*`, `/api/api-keys/*`)
+### Previously Implemented Batches
 
-### Files Created/Modified This Session
-- `/app/backend/growth_seo_routes.py` - **NEW** - Growth Engine & SEO API endpoints (1400+ lines)
-- `/app/backend/server.py` - Added growth/SEO routes registration
-- `/app/backend/admin_api_routes.py` - Created earlier for admin APIs
+**Batch 2 - Growth & SEO (60+ endpoints)**
+- Growth Engine, AI Content Engine, ASO Engine
+- Content Calendar, Advanced SEO, SEO Analytics
+- Multilang SEO, Backlinks, Authority Building
+- Social Distribution, Audit Logs, Analytics Settings
+
+**Batch 1 - Admin API Routes (50+ endpoints)**
+- Segments, Smart Notifications, Notification Analytics
+- AI Personalization, SMS & WhatsApp
+- AI Listing Analyzer, A/B Testing
+- API Integrations, Webhooks, API Keys
+
+### Files Created This Session
+- `/app/backend/admin_utility_routes.py` - Reports, Tickets, Banners, Moderation, Privacy, Config, SEO Tools, Polls, Cookie Consent, URL Shortener, reCAPTCHA, Image Settings
+- `/app/backend/growth_seo_routes.py` - Growth Engine, SEO Analytics, Backlinks, Authority Building, Social Distribution
+- `/app/backend/admin_api_routes.py` - Segments, Notifications, AI Personalization, A/B Testing
 
 ## Current App Status
-- **Homepage**: WORKING - Displays categories, search, and listings
-- **Backend API**: WORKING - 120+ API endpoints now functional
-- **Authentication**: Working via session_token
-
-## Pending Issues (P1-P2)
-
-### Issue 2: Chat Options Functionality (P1)
-- Features needed: Mute, Delete, Block, etc.
-
-### Issue 3-5: UI bugs (P2)
-- Close (X) icons on auth screens
-- Duplicate notification settings
-- ObjectId serialization errors
-
-## Future Tasks (Backlog)
-- Image Optimization Pipeline (CDN/WebP)
-- Multi-Language Content Generation (German, Swahili)
-- Web App Development
+- **Backend API**: WORKING - 180+ API endpoints now functional
+- **All endpoints tested and returning 200 OK**
 
 ## Test Credentials
 - Test user: `apitest_1772376154@test.com` / `Test123456`
 - Admin user: `admin@marketplace.com` / `Admin@123456`
-
-## Technical Notes
-- Backend uses `server:app` entry point
-- All API endpoints require `/api` prefix
-- Growth metrics pull real data from MongoDB (users/listings count)
-- Audit logs contain real system activity data
