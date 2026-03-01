@@ -3534,6 +3534,8 @@ async def expire_boosts_task():
 @app.on_event("startup")
 async def startup_event():
     """Start background tasks on server startup"""
+    print("STARTUP: Starting main startup_event...")
+    logger.info("STARTUP: Starting main startup_event...")
     # Initialize push notification service with database
     if UTILS_AVAILABLE:
         init_push_service(db)
