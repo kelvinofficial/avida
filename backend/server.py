@@ -1888,7 +1888,7 @@ async def get_sitemap():
     """Generate comprehensive XML sitemap including categories, listings, and business profiles"""
     from fastapi.responses import Response
     
-    base_url = os.environ.get("SITE_URL", "https://api-scaffold-1.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://api-integration-81.preview.emergentagent.com")
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     # Build XML sitemap
@@ -2008,7 +2008,7 @@ async def get_robots():
     """Generate robots.txt with sitemap reference"""
     from fastapi.responses import PlainTextResponse
     
-    base_url = os.environ.get("SITE_URL", "https://api-scaffold-1.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://api-integration-81.preview.emergentagent.com")
     
     robots_content = f"""User-agent: *
 Allow: /
@@ -2050,7 +2050,7 @@ async def get_business_profile_og_meta(slug: str):
     """Get OG meta tags for a business profile for social media sharing"""
     from fastapi.responses import HTMLResponse
     
-    base_url = os.environ.get("SITE_URL", "https://api-scaffold-1.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://api-integration-81.preview.emergentagent.com")
     
     # Find profile by slug or identifier
     profile = await db.business_profiles.find_one(
@@ -2401,6 +2401,7 @@ ADMIN_LOCAL_PATHS = [
     "settings/seller-analytics",
     "settings/engagement-notifications",
     "locations",  # Handled by modular router (routes/admin_locations.py)
+    "branding",  # Handled by routes/admin_branding_routes.py
     # Note: challenges is handled by admin-dashboard backend
 ]
 
@@ -2420,6 +2421,15 @@ if MODULAR_ROUTES_AVAILABLE:
         logger.info("Admin locations router (early) loaded successfully")
     except Exception as e:
         logger.warning(f"Failed to load admin locations router (early): {e}")
+
+# Register admin branding router BEFORE the proxy catch-all
+try:
+    from routes.admin_branding_routes import create_admin_branding_routes
+    admin_branding_router_early = create_admin_branding_routes(db, get_current_user)
+    app.include_router(admin_branding_router_early, prefix="/api")
+    logger.info("Admin branding router (early) loaded successfully")
+except Exception as e:
+    logger.warning(f"Failed to load admin branding router (early): {e}")
 
 @app.api_route("/api/admin/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 async def admin_proxy(request: Request, path: str):
@@ -2904,6 +2914,9 @@ if SMS_SERVICE_AVAILABLE:
     api_router.include_router(sms_router)
     app.include_router(api_router)  # Re-include to pick up SMS routes
     logger.info("SMS Notification service loaded successfully")
+
+# Admin Branding Routes - already registered early (before proxy catch-all)
+# See line ~2427 for early registration
 
 # Multi-Channel Notification Service Routes
 if NOTIFICATION_SERVICE_AVAILABLE:
@@ -3810,7 +3823,6 @@ async def expire_boosts_task():
 @app.on_event("startup")
 async def startup_event():
     """Start background tasks on server startup"""
-    print("STARTUP: Starting main startup_event...")
     logger.info("STARTUP: Starting main startup_event...")
     # Initialize push notification service with database
     if UTILS_AVAILABLE:
@@ -3840,6 +3852,7 @@ async def startup_event():
         logger.warning(f"Index module not available: {e}")
     except Exception as e:
         logger.warning(f"Failed to initialize indexes (non-fatal): {e}")
+    logger.info("STARTUP: Main startup_event completed!")
 
 
 async def periodic_badge_check_task():

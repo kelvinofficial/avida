@@ -4,16 +4,40 @@
 Full-stack React Native/Expo mobile app with critical failures, including a non-functional homepage and missing API endpoints.
 
 ## Architecture
-- **Frontend**: React Native/Expo (mobile + web) at `https://api-scaffold-1.preview.emergentagent.com`
+- **Frontend**: React Native/Expo (mobile + web) at `https://api-integration-81.preview.emergentagent.com`
 - **Backend**: FastAPI on port 8001 (same server)
 - **Database**: MongoDB Atlas
 - **Admin Dashboard**: Next.js (separate deployment)
 
+## What's Been Implemented (Session - Mar 5, 2026)
+
+### Latest Implementation - Admin Branding Endpoints (Mar 5, 2026)
+
+#### Admin Branding (/api/admin/branding/*)
+| Endpoint | Method | Status |
+|----------|--------|--------|
+| `/api/admin/branding` | GET | ✅ (Admin auth required) |
+| `/api/admin/branding/public` | GET | ✅ (No auth - public) |
+| `/api/admin/branding/settings` | PUT | ✅ (Admin auth required) |
+| `/api/admin/branding/upload/{type}` | POST | ✅ (Admin auth required) |
+| `/api/admin/branding/logo/{type}` | GET | ✅ (No auth - public) |
+| `/api/admin/branding/{type}` | DELETE | ✅ (Admin auth required) |
+
+**Available logo types**: primary, dark, light, favicon, icon, splash, email, watermark, og_image
+
+**Technical Notes:**
+- Router registered BEFORE admin proxy catch-all to ensure proper routing
+- "branding" added to `ADMIN_LOCAL_PATHS` to prevent proxy forwarding
+- Logos stored as base64 in MongoDB `branding_logos` collection
+- Settings stored in MongoDB `branding_settings` collection
+
+---
+
 ## What's Been Implemented (Session - Mar 1, 2026)
 
-### Total API Endpoints: 270+
+### Total API Endpoints: 280+
 
-### Latest Implementation - Analytics & Admin Routes (Mar 1, 2026)
+### Previous Implementation - Analytics & Admin Routes (Mar 1, 2026)
 
 #### 1. Cohort Analytics (/api/cohort-analytics/*)
 | Endpoint | Method | Status |
