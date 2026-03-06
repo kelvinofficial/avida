@@ -2402,6 +2402,7 @@ ADMIN_LOCAL_PATHS = [
     "settings/engagement-notifications",
     "locations",  # Handled by modular router (routes/admin_locations.py)
     "branding",  # Handled by routes/admin_branding_routes.py
+    "banners",  # Handled by routes/banner_management_routes.py
     # Note: challenges is handled by admin-dashboard backend
 ]
 
@@ -2430,6 +2431,15 @@ try:
     logger.info("Admin branding router (early) loaded successfully")
 except Exception as e:
     logger.warning(f"Failed to load admin branding router (early): {e}")
+
+# Register banner management routes BEFORE the proxy catch-all
+try:
+    from routes.banner_management_routes import create_banner_management_routes
+    banner_management_router = create_banner_management_routes(db, get_current_user)
+    app.include_router(banner_management_router, prefix="/api")
+    logger.info("Banner management router loaded successfully")
+except Exception as e:
+    logger.warning(f"Failed to load banner management router: {e}")
 
 @app.api_route("/api/admin/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 async def admin_proxy(request: Request, path: str):

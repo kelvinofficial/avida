@@ -9,9 +9,56 @@ Full-stack React Native/Expo mobile app with critical failures, including a non-
 - **Database**: MongoDB Atlas
 - **Admin Dashboard**: Next.js (separate deployment)
 
+## What's Been Implemented (Session - Mar 6, 2026)
+
+### Latest Implementation - Dynamic Banner Management System (Mar 6, 2026)
+
+#### Public Banner Endpoints (/api/banners/*)
+| Endpoint | Method | Status |
+|----------|--------|--------|
+| `/api/banners/slots` | GET | ✅ (Public) |
+| `/api/banners/sizes` | GET | ✅ (Public) |
+| `/api/banners/display/{placement}` | GET | ✅ (Public - with targeting) |
+| `/api/banners/track/impression/{id}` | POST | ✅ (Public) |
+| `/api/banners/track/click/{id}` | POST | ✅ (Public) |
+
+#### Admin Banner Endpoints (/api/admin/banners/*)
+| Endpoint | Method | Status |
+|----------|--------|--------|
+| `/api/admin/banners/slots` | GET | ✅ (Admin auth) |
+| `/api/admin/banners/slots/{id}` | PUT | ✅ (Admin auth) |
+| `/api/admin/banners` | GET | ✅ (Admin auth - paginated) |
+| `/api/admin/banners/{id}` | GET | ✅ (Admin auth) |
+| `/api/admin/banners` | POST | ✅ (Admin auth - create) |
+| `/api/admin/banners/{id}` | PUT | ✅ (Admin auth - update) |
+| `/api/admin/banners/{id}` | DELETE | ✅ (Admin auth) |
+| `/api/admin/banners/{id}/status` | PATCH | ✅ (Admin auth - toggle) |
+| `/api/admin/banners/{id}/duplicate` | POST | ✅ (Admin auth) |
+| `/api/admin/banners/analytics/summary` | GET | ✅ (Admin auth) |
+| `/api/admin/banners/analytics/by-placement` | GET | ✅ (Admin auth) |
+| `/api/admin/banners/analytics/export` | GET | ✅ (Admin auth - CSV) |
+
+**Features:**
+- 14 predefined banner placement slots (global, listing_feeds, listing_detail, other_pages)
+- Banner types: image, html, script (AdSense/AdMob support)
+- Targeting: devices, countries, cities, categories
+- Rotation: random, weighted, fixed (by priority)
+- Frequency capping per user
+- Scheduling: start_date, end_date
+- Full analytics: impressions, clicks, CTR, unique users
+- CSV export for reporting
+
+**Technical Notes:**
+- Router registered BEFORE admin proxy catch-all
+- "banners" added to `ADMIN_LOCAL_PATHS`
+- Collections: `banner_slots`, `banners`, `banner_impressions`
+- Auto-seeding of predefined slots on first access
+
+---
+
 ## What's Been Implemented (Session - Mar 5, 2026)
 
-### Latest Implementation - Admin Branding Endpoints (Mar 5, 2026)
+### Admin Branding Endpoints (Mar 5, 2026)
 
 #### Admin Branding (/api/admin/branding/*)
 | Endpoint | Method | Status |
@@ -35,7 +82,7 @@ Full-stack React Native/Expo mobile app with critical failures, including a non-
 
 ## What's Been Implemented (Session - Mar 1, 2026)
 
-### Total API Endpoints: 280+
+### Total API Endpoints: 295+
 
 ### Previous Implementation - Analytics & Admin Routes (Mar 1, 2026)
 
