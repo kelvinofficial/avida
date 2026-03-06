@@ -1473,6 +1473,52 @@ async def root():
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
+@api_router.get("/branding")
+async def get_public_branding():
+    """
+    Get public branding settings (no auth required).
+    Returns app name, colors, tagline, and logo URLs for frontend theming.
+    """
+    # Get branding settings
+    settings = await db.branding_settings.find_one({"id": "global"}, {"_id": 0})
+    
+    if not settings:
+        settings = {
+            "app_name": "Marketplace",
+            "tagline": "Buy & Sell Anything",
+            "primary_color": "#007bff",
+            "secondary_color": "#6c757d",
+            "accent_color": "#28a745"
+        }
+    
+    # Get available logos
+    logos_cursor = db.branding_logos.find({}, {"_id": 0, "type": 1, "content_type": 1})
+    logos_list = await logos_cursor.to_list(20)
+    
+    available_logos = {}
+    for logo in logos_list:
+        logo_type = logo.get("type")
+        if logo_type:
+            available_logos[logo_type] = {
+                "url": f"/api/admin/branding/logo/{logo_type}",
+                "content_type": logo.get("content_type", "image/png")
+            }
+    
+    return {
+        "settings": {
+            "app_name": settings.get("app_name", "Marketplace"),
+            "tagline": settings.get("tagline", "Buy & Sell Anything"),
+            "primary_color": settings.get("primary_color", "#007bff"),
+            "secondary_color": settings.get("secondary_color", "#6c757d"),
+            "accent_color": settings.get("accent_color", "#28a745"),
+            "font_family": settings.get("font_family"),
+            "border_radius": settings.get("border_radius"),
+            "meta_title": settings.get("meta_title"),
+            "meta_description": settings.get("meta_description")
+        },
+        "logos": available_logos
+    }
+
 @api_router.get("/ping")
 async def ping():
     """
