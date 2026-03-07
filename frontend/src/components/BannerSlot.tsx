@@ -253,13 +253,9 @@ export const FeedBanner: React.FC<Omit<BannerSlotProps, 'placement'> & { positio
   category,
   ...props
 }) => {
-  // Determine placement based on position
-  let placement = 'feed_after_5';
-  if (position >= 15) {
-    placement = 'feed_after_15';
-  } else if (position >= 10) {
-    placement = 'feed_after_10';
-  }
+  // All feed positions use feed_after_5 placement for consistent ad experience
+  // This ensures native ads appear regardless of position in the feed
+  const placement = 'feed_after_5';
 
   const [banner, setBanner] = useState<Banner | null>(null);
   const [loading, setLoading] = useState(true);
