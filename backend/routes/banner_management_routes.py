@@ -300,8 +300,8 @@ def create_banner_management_routes(db, get_current_user):
             "banner": {
                 "id": selected["id"],
                 "name": selected.get("name"),
-                "type": selected["type"],
-                "content": selected["content"],
+                "type": selected.get("type", selected.get("content", {}).get("type", "image")),
+                "content": selected.get("content", {}),
                 "is_sponsored": selected.get("is_sponsored", False),
                 "placement": placement
             },

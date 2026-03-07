@@ -304,23 +304,63 @@ export default function HomeScreen() {
     listings,
   };
 
-  // ============ RENDER LISTING ITEM FOR FLATLIST ============
-  
-  const renderListingItem = useCallback(({ item, index }: { item: any; index: number }) => {
+  // ============ PREPARE FEED DATA WITH BANNERS ============
+  const BANNER_AFTER_ROWS = 3; // Show banner after every 3 rows of listings
+  const feedData = useMemo(() => {
+    if (!listings || listings.length === 0) return [];
+    
+    const result: any[] = [];
+    const itemsPerRow = columns;
+    let rowCount = 0;
+    const bannerPlacements = ['feed_after_5', 'feed_after_10', 'feed_after_15', 'feed_end'];
+    let bannerIdx = 0;
+    
+    for (let i = 0; i < listings.length; i += itemsPerRow) {
+      const rowItems = listings.slice(i, i + itemsPerRow);
+      result.push({ type: 'row', items: rowItems, key: `row-${i}` });
+      rowCount++;
+      
+      // Inject banner after every BANNER_AFTER_ROWS rows
+      if (rowCount % BANNER_AFTER_ROWS === 0 && i + itemsPerRow < listings.length) {
+        const placement = bannerPlacements[bannerIdx % bannerPlacements.length];
+        result.push({ type: 'banner', placement, key: `banner-${rowCount}` });
+        bannerIdx++;
+      }
+    }
+    return result;
+  }, [listings, columns]);
+
+  // ============ RENDER FEED ITEM (ROW OR BANNER) ============
+  const renderFeedItem = useCallback(({ item }: { item: any }) => {
+    if (item.type === 'banner') {
+      return (
+        <View style={{ marginBottom: gridGap, width: '100%' }}>
+          <BannerSlot 
+            placement={item.placement}
+            testId={`feed-banner-${item.placement}`}
+          />
+        </View>
+      );
+    }
+    
+    // Render a row of listings
     return (
-      <View 
-        style={{
-          width: dynamicCardWidth,
-          marginBottom: gridGap,
-        }}
-      >
-        <ListingCard
-          listing={item}
-          onPress={() => router.push(`/listing/${item.id}`)}
-          onFavorite={() => toggleFavorite(item.id)}
-          isFavorited={favorites.has(item.id)}
-          userLocation={selectedCity?.lat && selectedCity?.lng ? { lat: selectedCity.lat, lng: selectedCity.lng } : null}
-        />
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: gridGap }}>
+        {item.items.map((listing: any) => (
+          <View key={listing.id} style={{ width: dynamicCardWidth }}>
+            <ListingCard
+              listing={listing}
+              onPress={() => router.push(`/listing/${listing.id}`)}
+              onFavorite={() => toggleFavorite(listing.id)}
+              isFavorited={favorites.has(listing.id)}
+              userLocation={selectedCity?.lat && selectedCity?.lng ? { lat: selectedCity.lat, lng: selectedCity.lng } : null}
+            />
+          </View>
+        ))}
+        {/* Fill remaining space if row isn't full */}
+        {item.items.length < columns && Array.from({ length: columns - item.items.length }).map((_, i) => (
+          <View key={`spacer-${i}`} style={{ width: dynamicCardWidth }} />
+        ))}
       </View>
     );
   }, [columns, dynamicCardWidth, gridGap, router, toggleFavorite, favorites, selectedCity]);
@@ -375,19 +415,17 @@ export default function HomeScreen() {
   }, [isInitialLoad, expandedSearch]);
 
   // FlatList key extractor
-  const keyExtractor = useCallback((item: any) => item.id, []);
+  const keyExtractor = useCallback((item: any) => item.key, []);
 
   // FlatList optimizations
   const flatListProps = useMemo(() => ({
     ...getFeedFlatListProps(240),
-    numColumns: columns,
-    key: columns, // Force re-render when columns change
-  }), [columns]);
+  }), []);
 
   const mainContent = (
     <FlatList
-      data={listings}
-      renderItem={renderListingItem}
+      data={feedData}
+      renderItem={renderFeedItem}
       keyExtractor={keyExtractor}
       ListHeaderComponent={ListHeaderComponent}
       ListFooterComponent={ListFooterComponent}
@@ -407,7 +445,6 @@ export default function HomeScreen() {
         { paddingBottom: 100, paddingHorizontal: gridPadding },
         (isDesktop || isTablet) && { maxWidth: MAX_WIDTH, alignSelf: 'center', width: '100%' },
       ]}
-      columnWrapperStyle={columns > 1 ? { justifyContent: 'space-between' } : undefined}
       style={isDesktop || isTablet ? { flex: 1 } : undefined}
       {...flatListProps}
     />
