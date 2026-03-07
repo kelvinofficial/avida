@@ -2444,6 +2444,8 @@ ADMIN_LOCAL_PATHS = [
     "analytics/platform",
     "analytics/sellers", 
     "analytics/engagement",
+    "analytics/top-performers",
+    "seller-analytics",
     "settings/seller-analytics",
     "settings/engagement-notifications",
     "locations",  # Handled by modular router (routes/admin_locations.py)
@@ -2486,6 +2488,15 @@ try:
     logger.info("Banner management router loaded successfully")
 except Exception as e:
     logger.warning(f"Failed to load banner management router: {e}")
+
+# Register seller analytics routes BEFORE the proxy catch-all
+try:
+    from routes.seller_analytics_routes import create_seller_analytics_routes
+    seller_analytics_router = create_seller_analytics_routes(db, get_current_user)
+    app.include_router(seller_analytics_router, prefix="/api")
+    logger.info("Seller analytics router loaded successfully")
+except Exception as e:
+    logger.warning(f"Failed to load seller analytics router: {e}")
 
 @app.api_route("/api/admin/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 async def admin_proxy(request: Request, path: str):
