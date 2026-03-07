@@ -144,6 +144,7 @@ const menuItems = [
   { text: 'API Integrations', icon: <Settings />, path: '/dashboard/integrations' },
   { text: 'AI Analyzer', icon: <AutoAwesome />, path: '/dashboard/ai-analyzer' },
   { text: 'Growth Engine', icon: <RocketLaunch />, path: '/dashboard/growth-engine' },
+  { text: 'Seller Analytics', icon: <TrendingUp />, path: '/dashboard/seller-analytics' },
   { text: 'Content Engine', icon: <AutoAwesome />, path: '/dashboard/content-engine' },
   { text: 'ASO Engine', icon: <TrendingUp />, path: '/dashboard/aso-engine' },
   { text: 'Advanced SEO', icon: <LinkIcon />, path: '/dashboard/advanced-seo' },
