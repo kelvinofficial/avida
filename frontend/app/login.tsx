@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Pressable,
   ActivityIndicator,
   Platform,
   Image,
@@ -552,15 +553,13 @@ export default function LoginScreen() {
             )}
 
             {/* Sign In Button - with web accessibility */}
-            <TouchableOpacity
+            <Pressable
               style={desktopStyles.primaryBtn}
               onPress={isLoginMode ? handleEmailLogin : handleEmailRegister}
               disabled={loading}
               testID="login-submit-button"
               accessibilityRole="button"
               accessibilityLabel={isLoginMode ? 'Sign In' : 'Create Account'}
-              // @ts-ignore - web-specific prop for better click handling
-              onClick={Platform.OS === 'web' ? (isLoginMode ? handleEmailLogin : handleEmailRegister) : undefined}
             >
               {loading ? (
                 <ActivityIndicator size="small" color="#fff" testID="login-loading-indicator" />
@@ -569,7 +568,7 @@ export default function LoginScreen() {
                   {isLoginMode ? 'Sign In' : 'Create Account'}
                 </Text>
               )}
-            </TouchableOpacity>
+            </Pressable>
 
             <View style={desktopStyles.divider}>
               <View style={desktopStyles.dividerLine} />
@@ -754,16 +753,13 @@ export default function LoginScreen() {
           )}
 
           {/* Login/Register Button */}
-          <TouchableOpacity
+          <Pressable
             style={styles.primaryButton}
             onPress={isLoginMode ? handleEmailLogin : handleEmailRegister}
             disabled={loading}
             testID="mobile-login-submit-button"
-            activeOpacity={0.9}
             accessibilityRole="button"
             accessibilityLabel={isLoginMode ? 'Sign In' : 'Create Account'}
-            // @ts-ignore - web-specific prop for better click handling
-            onClick={Platform.OS === 'web' ? (isLoginMode ? handleEmailLogin : handleEmailRegister) : undefined}
           >
             {loading ? (
               <ActivityIndicator color="#fff" />
@@ -779,7 +775,7 @@ export default function LoginScreen() {
                 </Text>
               </>
             )}
-          </TouchableOpacity>
+          </Pressable>
 
           {/* Divider */}
           <View style={styles.divider}>

@@ -26,18 +26,17 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
 ### Completed Features
 1. **Dynamic Banner System** - Fully functional with homepage, feed, listing detail, and search page placements
 2. **Seller Performance Analytics** - Backend tracking, admin config, and frontend display
-3. **Seller Badges System** (NEW - March 7, 2026)
+3. **Seller Badges System** (March 7, 2026)
    - Backend: `/api/analytics/badges/my-badges`, `/api/analytics/badges/mark-viewed`, `/api/analytics/badges/evaluate`
    - Frontend: Badges section on performance page, tab switcher on badges page (Activity/Performance), badges on public profiles
-4. **Seller Notifications System** (NEW - March 7, 2026)
+4. **Seller Notifications System** (March 7, 2026)
    - Backend: `/api/notifications/seller` (GET/PUT), `/api/notifications/register-push` (POST/DELETE)
    - Frontend: Notifications section on performance page, push notification channels
-5. **Banner Integration in Search** (NEW - March 7, 2026)
-   - Search results now include header, feed-injected, and footer banners
-6. **BannerSlot URL Resolution** (NEW - March 7, 2026)
-   - `resolveImageUrl` helper for relative image URLs
-7. **API Endpoints**: /reviews, /seller/verification, /business-profile
-8. **Mobile Login Fix**: Web-compatible onClick handler
+5. **Banner Integration in Search** (March 7, 2026)
+   - Search results include header, feed-injected, and footer banners
+6. **BannerSlot URL Resolution** (March 7, 2026) - `resolveImageUrl` for relative image URLs
+7. **Login Button Fix** (March 7, 2026) - Replaced TouchableOpacity with Pressable for reliable web click handling
+8. **API Endpoints**: /reviews, /seller/verification, /business-profile
 9. **Analytics Tracking**: Client-side view/save/chat/offer event tracking
 
 ### Test Accounts
@@ -54,9 +53,6 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
 - `/api/analytics/badges/evaluate` - Evaluate/award badges
 - `/api/notifications/seller` - Get/mark seller notifications
 - `/api/notifications/register-push` - Register/unregister FCM tokens
-- `/api/reviews` - Reviews
-- `/api/seller/verification` - Seller verification
-- `/api/business-profile` - Business profiles
 
 ## Prioritized Backlog
 
@@ -77,11 +73,9 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
 - Multi-Language Content (German & Swahili)
 
 ## 3rd Party Integrations
-- MongoDB Atlas
-- SendGrid (email)
-- Firebase Cloud Messaging (push notifications)
-- PayPal, Flutterwave, Stripe (payments)
-- Africa's Talking, Twilio (SMS)
+- MongoDB Atlas, SendGrid, Firebase Cloud Messaging
+- PayPal, Flutterwave, Stripe
+- Africa's Talking, Twilio
 - apscheduler (background cron jobs)
 
 ## Known Issues
