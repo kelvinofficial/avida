@@ -402,6 +402,88 @@ def create_banner_management_routes(db, get_current_user):
         
         return {"slots": slots, "total": len(slots)}
 
+    @router.get("/admin/banners/sizes")
+    async def admin_get_banner_sizes(admin = Depends(require_admin)):
+        """Get available banner sizes (admin view)"""
+        sizes = {
+            "728x90": {"width": 728, "height": 90, "name": "Leaderboard", "placements": ["header", "footer", "between_content"]},
+            "300x250": {"width": 300, "height": 250, "name": "Medium Rectangle", "placements": ["sidebar", "in_feed", "detail_page"]},
+            "320x50": {"width": 320, "height": 50, "name": "Mobile Banner", "placements": ["mobile_header", "mobile_footer"]},
+            "160x600": {"width": 160, "height": 600, "name": "Wide Skyscraper", "placements": ["sidebar"]},
+            "300x600": {"width": 300, "height": 600, "name": "Half Page", "placements": ["sidebar", "detail_page"]},
+            "970x250": {"width": 970, "height": 250, "name": "Billboard", "placements": ["header", "between_content"]},
+            "320x100": {"width": 320, "height": 100, "name": "Large Mobile Banner", "placements": ["mobile_header", "mobile_footer"]},
+            "468x60": {"width": 468, "height": 60, "name": "Full Banner", "placements": ["header", "footer"]},
+        }
+        return {"sizes": sizes}
+
+    @router.get("/admin/banners/seller-banners/pending")
+    async def admin_get_pending_seller_banners(admin = Depends(require_admin)):
+        """Get pending seller banner submissions"""
+        banners = await db.banners.find(
+            {"is_seller_banner": True, "approval_status": "pending"},
+            {"_id": 0}
+        ).to_list(length=100)
+        return banners
+
+    @router.post("/admin/banners/seller-banners/{banner_id}/approve")
+    async def admin_approve_seller_banner(
+        banner_id: str,
+        request: Request,
+        admin = Depends(require_admin)
+    ):
+        """Approve or reject a seller banner"""
+        body = await request.json()
+        approved = body.get("approved", False)
+        status = "approved" if approved else "rejected"
+        
+        result = await db.banners.update_one(
+            {"id": banner_id, "is_seller_banner": True},
+            {"$set": {
+                "approval_status": status,
+                "is_active": approved,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "reviewed_by": admin.user_id,
+            }}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Banner not found")
+        return {"success": True, "status": status}
+
+    @router.get("/admin/banners/pricing")
+    async def admin_get_banner_pricing(admin = Depends(require_admin)):
+        """Get banner pricing tiers"""
+        pricing = await db.banner_pricing.find({}, {"_id": 0}).to_list(length=100)
+        if not pricing:
+            # Seed default pricing
+            default_pricing = [
+                {"id": "pricing_homepage_top", "placement": "homepage_top", "price_per_day": 50.0, "currency": "TZS", "is_active": True},
+                {"id": "pricing_feed", "placement": "feed_after_5", "price_per_day": 30.0, "currency": "TZS", "is_active": True},
+                {"id": "pricing_detail", "placement": "detail_below_gallery", "price_per_day": 25.0, "currency": "TZS", "is_active": True},
+                {"id": "pricing_search", "placement": "search_results", "price_per_day": 35.0, "currency": "TZS", "is_active": True},
+                {"id": "pricing_sidebar", "placement": "sidebar", "price_per_day": 20.0, "currency": "TZS", "is_active": True},
+            ]
+            await db.banner_pricing.insert_many(default_pricing)
+            pricing = default_pricing
+        return {"pricing": pricing}
+
+    @router.put("/admin/banners/pricing/{pricing_id}")
+    async def admin_update_banner_pricing(
+        pricing_id: str,
+        request: Request,
+        admin = Depends(require_admin)
+    ):
+        """Update banner pricing"""
+        body = await request.json()
+        result = await db.banner_pricing.update_one(
+            {"id": pricing_id},
+            {"$set": body}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Pricing not found")
+        updated = await db.banner_pricing.find_one({"id": pricing_id}, {"_id": 0})
+        return {"success": True, "pricing": updated}
+
     @router.put("/admin/banners/slots/{slot_id}")
     async def update_slot(
         slot_id: str,
@@ -810,5 +892,252 @@ def create_banner_management_routes(db, get_current_user):
         new_banner.pop("_id", None)
         
         return {"success": True, "banner": new_banner}
+
+    # ============================================================
+    # Compatibility routes for admin dashboard frontend
+    # The admin dashboard uses /banners/admin/... pattern
+    # ============================================================
+
+    @router.get("/banners/admin/list")
+    async def admin_list_banners_compat(
+        page: int = 1,
+        limit: int = 20,
+        placement: str = None,
+        is_active: bool = None,
+        admin = Depends(require_admin)
+    ):
+        """Compatibility route: list banners for admin dashboard"""
+        query = {}
+        if placement:
+            query["placement"] = placement
+        if is_active is not None:
+            query["is_active"] = is_active
+
+        total = await db.banners.count_documents(query)
+        skip = (page - 1) * limit
+        banners = await db.banners.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
+
+        # Enrich with analytics
+        for banner in banners:
+            analytics = banner.get("analytics", {})
+            banner["impressions"] = analytics.get("impressions", 0)
+            banner["clicks"] = analytics.get("clicks", 0)
+            banner["ctr"] = analytics.get("ctr", 0.0)
+
+        return {"banners": banners, "total": total, "page": page, "limit": limit}
+
+    @router.post("/banners/admin/create")
+    async def admin_create_banner_compat(
+        request: Request,
+        admin = Depends(require_admin)
+    ):
+        """Compatibility route: create banner"""
+        body = await request.json()
+        now = datetime.now(timezone.utc)
+        banner = {
+            "id": f"banner_{uuid.uuid4().hex[:12]}",
+            "name": body.get("name", ""),
+            "placement": body.get("placement", ""),
+            "size": body.get("size", "728x90"),
+            "content": body.get("content", {"type": "image"}),
+            "targeting": body.get("targeting", {"devices": ["all"], "countries": [], "cities": [], "categories": []}),
+            "schedule": body.get("schedule", {}),
+            "priority": body.get("priority", 5),
+            "rotation_rule": body.get("rotation_rule", "random"),
+            "is_active": body.get("is_active", True),
+            "is_sponsored": body.get("is_sponsored", True),
+            "is_seller_banner": False,
+            "analytics": {"impressions": 0, "clicks": 0, "ctr": 0.0},
+            "created_at": now.isoformat(),
+            "updated_at": now.isoformat(),
+            "created_by": admin.user_id,
+        }
+        await db.banners.insert_one(banner)
+        banner.pop("_id", None)
+        return {"success": True, "banner": banner}
+
+    @router.get("/banners/admin/analytics/overview")
+    async def admin_analytics_overview_compat(
+        banner_id: str = None,
+        start_date: str = None,
+        end_date: str = None,
+        group_by: str = "day",
+        admin = Depends(require_admin)
+    ):
+        """Compatibility route: banner analytics overview"""
+        match_query = {}
+        if banner_id:
+            match_query["banner_id"] = banner_id
+        if start_date or end_date:
+            date_filter = {}
+            if start_date:
+                date_filter["$gte"] = start_date
+            if end_date:
+                date_filter["$lte"] = end_date
+            match_query["timestamp"] = date_filter
+
+        pipeline = [
+            {"$match": match_query} if match_query else {"$match": {}},
+            {"$group": {
+                "_id": None,
+                "impressions": {"$sum": 1},
+                "clicks": {"$sum": {"$cond": [{"$eq": ["$clicked", True]}, 1, 0]}},
+                "unique_users": {"$addToSet": "$user_id"},
+            }}
+        ]
+        result = await db.banner_impressions.aggregate(pipeline).to_list(length=1)
+        
+        totals = {"impressions": 0, "clicks": 0, "ctr": 0}
+        if result:
+            r = result[0]
+            totals["impressions"] = r.get("impressions", 0)
+            totals["clicks"] = r.get("clicks", 0)
+            totals["ctr"] = round((totals["clicks"] / totals["impressions"] * 100), 2) if totals["impressions"] > 0 else 0
+
+        # Breakdown by day
+        breakdown_pipeline = [
+            {"$match": match_query} if match_query else {"$match": {}},
+            {"$group": {
+                "_id": {"$substr": ["$timestamp", 0, 10]},
+                "impressions": {"$sum": 1},
+                "clicks": {"$sum": {"$cond": [{"$eq": ["$clicked", True]}, 1, 0]}},
+            }},
+            {"$sort": {"_id": 1}},
+            {"$project": {"_id": 0, "key": "$_id", "impressions": 1, "clicks": 1}}
+        ]
+        breakdown = await db.banner_impressions.aggregate(breakdown_pipeline).to_list(length=100)
+
+        return {"totals": totals, "breakdown": breakdown}
+
+    @router.get("/banners/admin/analytics/export")
+    async def admin_analytics_export_compat(
+        banner_id: str = None,
+        start_date: str = None,
+        end_date: str = None,
+        admin = Depends(require_admin)
+    ):
+        """Compatibility route: export analytics as CSV"""
+        from fastapi.responses import StreamingResponse
+        import io, csv
+
+        match_query = {}
+        if banner_id:
+            match_query["banner_id"] = banner_id
+
+        impressions = await db.banner_impressions.find(match_query, {"_id": 0}).sort("timestamp", -1).to_list(length=10000)
+
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["banner_id", "user_id", "session_id", "device", "clicked", "timestamp"])
+        for imp in impressions:
+            writer.writerow([
+                imp.get("banner_id", ""),
+                imp.get("user_id", ""),
+                imp.get("session_id", ""),
+                imp.get("device", ""),
+                imp.get("clicked", False),
+                imp.get("timestamp", ""),
+            ])
+        output.seek(0)
+        return StreamingResponse(
+            io.BytesIO(output.getvalue().encode()),
+            media_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=banner_analytics.csv"}
+        )
+
+    @router.get("/banners/admin/{banner_id}")
+    async def admin_get_banner_compat(
+        banner_id: str,
+        admin = Depends(require_admin)
+    ):
+        """Compatibility route: get single banner"""
+        banner = await db.banners.find_one({"id": banner_id}, {"_id": 0})
+        if not banner:
+            raise HTTPException(status_code=404, detail="Banner not found")
+        analytics = banner.get("analytics", {})
+        banner["impressions"] = analytics.get("impressions", 0)
+        banner["clicks"] = analytics.get("clicks", 0)
+        banner["ctr"] = analytics.get("ctr", 0.0)
+        return banner
+
+    @router.put("/banners/admin/{banner_id}")
+    async def admin_update_banner_compat(
+        banner_id: str,
+        request: Request,
+        admin = Depends(require_admin)
+    ):
+        """Compatibility route: update banner"""
+        body = await request.json()
+        existing = await db.banners.find_one({"id": banner_id})
+        if not existing:
+            raise HTTPException(status_code=404, detail="Banner not found")
+        
+        body["updated_at"] = datetime.now(timezone.utc).isoformat()
+        await db.banners.update_one({"id": banner_id}, {"$set": body})
+        updated = await db.banners.find_one({"id": banner_id}, {"_id": 0})
+        return {"success": True, "banner": updated}
+
+    @router.delete("/banners/admin/{banner_id}")
+    async def admin_delete_banner_compat(
+        banner_id: str,
+        admin = Depends(require_admin)
+    ):
+        """Compatibility route: delete banner"""
+        result = await db.banners.delete_one({"id": banner_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Banner not found")
+        return {"success": True, "message": "Banner deleted"}
+
+    @router.post("/banners/admin/{banner_id}/toggle")
+    async def admin_toggle_banner_compat(
+        banner_id: str,
+        request: Request,
+        admin = Depends(require_admin)
+    ):
+        """Compatibility route: toggle banner active status"""
+        body = await request.json()
+        is_active = body.get("is_active", True)
+        result = await db.banners.update_one(
+            {"id": banner_id},
+            {"$set": {"is_active": is_active, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Banner not found")
+        return {"success": True, "is_active": is_active}
+
+    @router.get("/banners/admin/seller-banners/pending")
+    async def admin_get_pending_seller_banners(
+        admin = Depends(require_admin)
+    ):
+        """Get pending seller banner submissions"""
+        banners = await db.banners.find(
+            {"is_seller_banner": True, "approval_status": "pending"},
+            {"_id": 0}
+        ).to_list(length=100)
+        return banners
+
+    @router.post("/banners/admin/seller-banners/{banner_id}/approve")
+    async def admin_approve_seller_banner(
+        banner_id: str,
+        request: Request,
+        admin = Depends(require_admin)
+    ):
+        """Approve or reject a seller banner"""
+        body = await request.json()
+        approved = body.get("approved", False)
+        status = "approved" if approved else "rejected"
+        
+        result = await db.banners.update_one(
+            {"id": banner_id, "is_seller_banner": True},
+            {"$set": {
+                "approval_status": status,
+                "is_active": approved,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "reviewed_by": admin.user_id,
+            }}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Banner not found")
+        return {"success": True, "status": status}
 
     return router
