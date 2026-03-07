@@ -2497,6 +2497,7 @@ async def get_seller_badge_settings(request: Request):
             {"_id": 0}
         )
         
+        # Default badges matching admin panel UI structure
         default_settings = {
             "enabled": True,
             "auto_award": True,
@@ -2506,47 +2507,92 @@ async def get_seller_badge_settings(request: Request):
                 {
                     "id": "top_seller",
                     "name": "Top Seller",
-                    "description": "Awarded to sellers with high sales volume",
+                    "description": "Achieved outstanding sales performance",
+                    "tier": "GOLD",
                     "icon": "star",
                     "color": "#FFD700",
                     "enabled": True,
-                    "criteria": {"min_sales": 50, "min_rating": 4.5}
+                    "criteria": {
+                        "min_listings_sold": 10,
+                        "min_total_views": 500
+                    }
+                },
+                {
+                    "id": "rising_star",
+                    "name": "Rising Star",
+                    "description": "Rapidly growing engagement on listings",
+                    "tier": "SILVER",
+                    "icon": "rocket",
+                    "color": "#C0C0C0",
+                    "enabled": True,
+                    "criteria": {
+                        "min_view_growth": 50,
+                        "min_listings": 3
+                    }
                 },
                 {
                     "id": "quick_responder",
                     "name": "Quick Responder",
-                    "description": "Responds to messages within 1 hour",
+                    "description": "Responds to inquiries within 1 hour on average",
+                    "tier": "BRONZE",
                     "icon": "bolt",
-                    "color": "#2196F3",
+                    "color": "#CD7F32",
                     "enabled": True,
-                    "criteria": {"avg_response_time_hours": 1}
+                    "criteria": {
+                        "avg_response_time_minutes": 60
+                    }
                 },
                 {
                     "id": "trusted_seller",
                     "name": "Trusted Seller",
-                    "description": "Verified identity and excellent track record",
+                    "description": "Consistently positive buyer interactions",
+                    "tier": "GOLD",
                     "icon": "verified",
                     "color": "#4CAF50",
                     "enabled": True,
-                    "criteria": {"verified": True, "min_rating": 4.0, "min_transactions": 10}
+                    "criteria": {
+                        "min_positive_ratings": 10,
+                        "min_rating": 4
+                    }
                 },
                 {
-                    "id": "power_seller",
-                    "name": "Power Seller",
-                    "description": "High volume seller with consistent performance",
-                    "icon": "rocket",
+                    "id": "power_lister",
+                    "name": "Power Lister",
+                    "description": "Maintains many active quality listings",
+                    "tier": "SILVER",
+                    "icon": "layers",
                     "color": "#9C27B0",
                     "enabled": True,
-                    "criteria": {"min_listings": 20, "min_views": 1000}
+                    "criteria": {
+                        "min_active_listings": 10,
+                        "min_avg_photos": 3
+                    }
                 },
                 {
-                    "id": "new_seller",
-                    "name": "New Seller",
-                    "description": "Recently joined the marketplace",
-                    "icon": "sparkles",
+                    "id": "community_champion",
+                    "name": "Community Champion",
+                    "description": "Active community member with high engagement",
+                    "tier": "GOLD",
+                    "icon": "people",
+                    "color": "#2196F3",
+                    "enabled": True,
+                    "criteria": {
+                        "min_days_active": 30,
+                        "min_total_interactions": 50
+                    }
+                },
+                {
+                    "id": "photo_pro",
+                    "name": "Photo Pro",
+                    "description": "Consistently uploads high-quality listing photos",
+                    "tier": "BRONZE",
+                    "icon": "camera",
                     "color": "#FF9800",
                     "enabled": True,
-                    "criteria": {"account_age_days_max": 30}
+                    "criteria": {
+                        "min_avg_photos": 5,
+                        "min_listings": 5
+                    }
                 }
             ]
         }
