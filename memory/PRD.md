@@ -4,7 +4,7 @@
 Full-stack React Native/Expo mobile app with critical failures, including a non-functional homepage and missing API endpoints. The app has since been expanded with 300+ API endpoints, admin branding, dynamic banners, seller analytics, and background cron jobs.
 
 ## Architecture
-- **Frontend**: React Native/Expo (mobile + web) at `https://banner-integration.preview.emergentagent.com`
+- **Frontend**: React Native/Expo (mobile + web) at `https://seller-perf-ui.preview.emergentagent.com`
 - **Backend**: FastAPI on port 8001 (same server)
 - **Database**: MongoDB Atlas
 - **Admin Dashboard**: Next.js (separate deployment)

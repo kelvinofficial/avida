@@ -1,0 +1,1145 @@
+diff --git a/frontend/app/(tabs)/index.tsx b/frontend/app/(tabs)/index.tsx
+index 6a974f6..68b50df 100644
+--- a/frontend/app/(tabs)/index.tsx
++++ b/frontend/app/(tabs)/index.tsx
+@@ -25,6 +25,7 @@ import {
+ } from '../../src/components/home';
+ import { ListingCard } from '../../src/components/shared/ListingCard';
+ import { EmptyState } from '../../src/components/EmptyState';
++import { HeaderBanner, BannerSlot } from '../../src/components/BannerSlot';
+ import { 
+   styles, 
+   HORIZONTAL_PADDING, 
+@@ -332,6 +333,8 @@ export default function HomeScreen() {
+         {isDesktop || isTablet ? (
+           <HomeDesktopHeader {...homeDesktopHeaderProps} />
+         ) : <MobileHeader {...mobileHeaderProps} />}
++        {/* Header Banner - shown below the main header */}
++        <HeaderBanner placement="header_below" />
+       </View>
+     );
+   }, [isDesktop, isTablet, homeDesktopHeaderProps, mobileHeaderProps]);
+@@ -339,6 +342,8 @@ export default function HomeScreen() {
+   // ============ FLATLIST FOOTER COMPONENT ============
+   const ListFooterComponent = useMemo(() => (
+     <View>
++      {/* Footer Banner */}
++      <BannerSlot placement="footer_banner" style={{ marginHorizontal: 8, marginVertical: 8 }} />
+       {isLoadingMore && (
+         <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+           <ActivityIndicator size="small" color="#2E7D32" />
+diff --git a/frontend/app/listing/[id].tsx b/frontend/app/listing/[id].tsx
+index 8e1849c..5010c22 100644
+--- a/frontend/app/listing/[id].tsx
++++ b/frontend/app/listing/[id].tsx
+@@ -1639,6 +1639,13 @@ export default function ListingDetailScreen() {
+           featured={listing.featured}
+         />
+ 
++        {/* Banner Below Gallery */}
++        <BannerSlot 
++          placement="detail_below_gallery" 
++          category={listing?.category_id}
++          style={{ marginHorizontal: 12, marginTop: 8 }}
++        />
++
+         {/* Price & Title */}
+         <View style={styles.mainInfo}>
+           <View style={styles.priceRow}>
+@@ -1696,9 +1703,23 @@ export default function ListingDetailScreen() {
+         {/* Location */}
+         <LocationSection listing={listing} />
+ 
++        {/* Banner Below Listing Info */}
++        <BannerSlot 
++          placement="detail_below_info" 
++          category={listing?.category_id}
++          style={{ marginHorizontal: 12, marginVertical: 8 }}
++        />
++
+         {/* Safety */}
+         <SafetySection onReport={() => setShowReportModal(true)} listingId={listing?.id || ''} tips={safetyTips} />
+ 
++        {/* Banner Before Similar Listings */}
++        <BannerSlot 
++          placement="detail_before_similar" 
++          category={listing?.category_id}
++          style={{ marginHorizontal: 12, marginVertical: 8 }}
++        />
++
+         {/* Similar Listings - Two column layout for general listings */}
+         <SimilarListings propertyId={id!} category="other" />
+ 
+diff --git a/frontend/app/performance/[listing_id].tsx b/frontend/app/performance/[listing_id].tsx
+index a9d0d42..f733480 100644
+--- a/frontend/app/performance/[listing_id].tsx
++++ b/frontend/app/performance/[listing_id].tsx
+@@ -7,13 +7,21 @@ import {
+   TouchableOpacity,
+   Dimensions,
+   RefreshControl,
+-  Platform
++  Platform,
++  ActivityIndicator,
+ } from 'react-native';
+ import { useLocalSearchParams, useRouter } from 'expo-router';
+ import { Ionicons } from '@expo/vector-icons';
+ import { useAuthStore } from '../../src/store/authStore';
+ import api from '../../src/utils/api';
+ import { useCacheFirst } from '../../src/hooks/useCacheFirst';
++import { 
++  sellerBadgesApi, 
++  sellerNotificationsApi,
++  SellerBadge,
++  SellerNotification,
++  BadgesResponse,
++} from '../../src/utils/sellerAnalyticsApi';
+ 
+ // CACHE-FIRST: No page-level loading spinners - render instantly with cached data
+ 
+@@ -23,6 +31,7 @@ type TimePeriod = '24h' | '7d' | '30d';
+ 
+ interface ListingMetrics {
+   listing_id: string;
++  seller_id?: string;
+   period: string;
+   total_views: number;
+   unique_views: number;
+@@ -139,6 +148,15 @@ export default function ListingPerformanceScreen() {
+   const [hasAccess, setHasAccess] = useState(true);
+   const [accessMessage, setAccessMessage] = useState<string>('');
+   
++  // Badges state
++  const [badges, setBadges] = useState<BadgesResponse | null>(null);
++  const [badgesLoading, setBadgesLoading] = useState(true);
++  
++  // Notifications state
++  const [notifications, setNotifications] = useState<SellerNotification[]>([]);
++  const [notifLoading, setNotifLoading] = useState(true);
++  const [unreadCount, setUnreadCount] = useState(0);
++  
+   // Default empty data structures for cache-first pattern
+   const defaultMetrics: ListingMetrics = {
+     listing_id: '',
+@@ -211,11 +229,58 @@ export default function ListingPerformanceScreen() {
+     deps: [listing_id, hasAccess],
+   });
+ 
++  // Fetch badges for this seller
++  const fetchBadges = useCallback(async () => {
++    const sellerId = metrics?.seller_id || user?.user_id;
++    if (!sellerId) return;
++    
++    setBadgesLoading(true);
++    try {
++      const data = await sellerBadgesApi.getMyBadges(sellerId);
++      setBadges(data);
++      if (data.unviewed_count > 0) {
++        sellerBadgesApi.markBadgesViewed(sellerId).catch(() => {});
++      }
++    } catch (e) {
++      console.log('Badge fetch error:', e);
++    }
++    setBadgesLoading(false);
++  }, [metrics?.seller_id, user?.user_id]);
++
++  // Fetch notifications
++  const fetchNotifications = useCallback(async () => {
++    const sellerId = metrics?.seller_id || user?.user_id;
++    if (!sellerId) return;
++    
++    setNotifLoading(true);
++    try {
++      const data = await sellerNotificationsApi.getNotifications(sellerId, 'all', 1, 10);
++      setNotifications(data.notifications);
++      setUnreadCount(data.unread_count);
++    } catch (e) {
++      console.log('Notification fetch error:', e);
++    }
++    setNotifLoading(false);
++  }, [metrics?.seller_id, user?.user_id]);
++
++  useEffect(() => {
++    if (metrics?.seller_id || user?.user_id) {
++      fetchBadges();
++      fetchNotifications();
++    }
++  }, [metrics?.seller_id, user?.user_id, fetchBadges, fetchNotifications]);
++
+   const onRefresh = useCallback(async () => {
+     setRefreshing(true);
+-    await Promise.all([refreshMetrics(), refreshInsights(), refreshComparison()]);
++    await Promise.all([
++      refreshMetrics(), 
++      refreshInsights(), 
++      refreshComparison(),
++      fetchBadges(),
++      fetchNotifications(),
++    ]);
+     setRefreshing(false);
+-  }, [refreshMetrics, refreshInsights, refreshComparison]);
++  }, [refreshMetrics, refreshInsights, refreshComparison, fetchBadges, fetchNotifications]);
+ 
+   const getInsightIcon = (type: string) => {
+     switch (type) {
+@@ -363,6 +428,127 @@ export default function ListingPerformanceScreen() {
+           </View>
+         </View>
+ 
++        {/* ============ SELLER BADGES SECTION ============ */}
++        <View style={styles.section} data-testid="seller-badges-section">
++          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
++            <Ionicons name="ribbon" size={18} color="#FFB300" />
++            <Text style={[styles.sectionTitle, { marginLeft: 6, marginBottom: 0 }]}>Seller Badges</Text>
++            {badges && (
++              <Text style={{ fontSize: 12, color: '#999', marginLeft: 6 }}>
++                {badges.earned_count}/{badges.total_available}
++              </Text>
++            )}
++            {(badges?.unviewed_count || 0) > 0 && (
++              <View style={{ marginLeft: 8, backgroundColor: '#F44336', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 }}>
++                <Text style={{ fontSize: 10, color: '#fff', fontWeight: '700' }}>{badges?.unviewed_count} New!</Text>
++              </View>
++            )}
++          </View>
++          
++          {badgesLoading ? (
++            <ActivityIndicator size="small" color="#FFB300" style={{ marginVertical: 20 }} />
++          ) : badges?.badges && badges.badges.length > 0 ? (
++            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
++              {badges.badges.map((badge) => {
++                const tierColors = {
++                  gold: { bg: '#FFF8E1', border: '#FFD54F', text: '#F57F17' },
++                  silver: { bg: '#F5F5F5', border: '#BDBDBD', text: '#616161' },
++                  bronze: { bg: '#FFF3E0', border: '#FFB74D', text: '#E65100' },
++                };
++                const tc = tierColors[badge.tier] || tierColors.bronze;
++                return (
++                  <View key={badge.id} style={{
++                    width: 95, alignItems: 'center', padding: 10, borderRadius: 12, marginRight: 10,
++                    backgroundColor: badge.earned ? tc.bg : '#F9F9F9',
++                    borderWidth: badge.earned ? 1.5 : 1,
++                    borderColor: badge.earned ? tc.border : '#E0E0E0',
++                    opacity: badge.earned ? 1 : 0.5,
++                  }}>
++                    {badge.earned && !badge.viewed && (
++                      <View style={{ position: 'absolute', top: 4, right: 4, width: 8, height: 8, borderRadius: 4, backgroundColor: '#F44336' }} />
++                    )}
++                    <Text style={{ fontSize: 28, marginBottom: 4 }}>{badge.icon}</Text>
++                    <Text style={{ fontSize: 11, fontWeight: '600', color: badge.earned ? '#333' : '#999', textAlign: 'center' }} numberOfLines={1}>{badge.name}</Text>
++                    <View style={{ paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4, backgroundColor: tc.border + '30', marginTop: 3 }}>
++                      <Text style={{ fontSize: 8, fontWeight: '700', color: tc.text }}>{badge.tier.toUpperCase()}</Text>
++                    </View>
++                    {badge.earned ? (
++                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3, gap: 2 }}>
++                        <Ionicons name="checkmark-circle" size={12} color="#4CAF50" />
++                        <Text style={{ fontSize: 9, color: '#4CAF50', fontWeight: '600' }}>Earned</Text>
++                      </View>
++                    ) : (
++                      <Text style={{ fontSize: 8, color: '#AAA', textAlign: 'center', marginTop: 3 }}>{badge.criteria_text || 'Locked'}</Text>
++                    )}
++                  </View>
++                );
++              })}
++            </ScrollView>
++          ) : (
++            <View style={{ alignItems: 'center', paddingVertical: 20, backgroundColor: '#fff', borderRadius: 12 }}>
++              <Ionicons name="ribbon-outline" size={32} color="#DDD" />
++              <Text style={{ fontSize: 13, color: '#AAA', marginTop: 8 }}>Keep listing to earn badges!</Text>
++            </View>
++          )}
++        </View>
++
++        {/* ============ ENGAGEMENT NOTIFICATIONS ============ */}
++        <View style={styles.section} data-testid="notifications-section">
++          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
++            <Ionicons name="notifications" size={18} color="#2196F3" />
++            <Text style={[styles.sectionTitle, { marginLeft: 6, marginBottom: 0 }]}>Recent Notifications</Text>
++            {unreadCount > 0 && (
++              <View style={{ marginLeft: 8, backgroundColor: '#2196F3', width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center' }}>
++                <Text style={{ fontSize: 10, color: '#fff', fontWeight: '700' }}>{unreadCount}</Text>
++              </View>
++            )}
++          </View>
++          
++          <View style={{ backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden' }}>
++            {notifLoading ? (
++              <ActivityIndicator size="small" color="#2196F3" style={{ marginVertical: 20 }} />
++            ) : notifications.length > 0 ? (
++              notifications.slice(0, 5).map((notif) => {
++                const isSpike = notif.type === 'engagement_spike';
++                const isBadge = notif.type === 'badge_unlock';
++                return (
++                  <View key={notif.id} style={{
++                    flexDirection: 'row', padding: 12, borderBottomWidth: 1, borderBottomColor: '#F0F0F0',
++                    backgroundColor: !notif.is_read ? '#F0F8FF' : 'transparent',
++                  }}>
++                    <View style={{
++                      width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 10,
++                      backgroundColor: isSpike ? '#FFF3E0' : isBadge ? '#FFF8E1' : '#E3F2FD',
++                    }}>
++                      <Ionicons
++                        name={(isSpike ? 'flame' : isBadge ? 'trophy' : 'notifications') as any}
++                        size={18}
++                        color={isSpike ? '#FF9800' : isBadge ? '#FFB300' : '#2196F3'}
++                      />
++                    </View>
++                    <View style={{ flex: 1 }}>
++                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
++                        <Text style={{ fontSize: 13, fontWeight: '600', color: '#333', flex: 1 }} numberOfLines={1}>{notif.title}</Text>
++                        {!notif.is_read && <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#2196F3' }} />}
++                      </View>
++                      <Text style={{ fontSize: 12, color: '#666', marginTop: 2 }} numberOfLines={2}>{notif.message}</Text>
++                      <Text style={{ fontSize: 10, color: '#AAA', marginTop: 4 }}>
++                        {new Date(notif.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
++                      </Text>
++                    </View>
++                  </View>
++                );
++              })
++            ) : (
++              <View style={{ alignItems: 'center', paddingVertical: 24 }}>
++                <Ionicons name="notifications-off-outline" size={32} color="#DDD" />
++                <Text style={{ fontSize: 14, color: '#AAA', marginTop: 8 }}>No notifications yet</Text>
++                <Text style={{ fontSize: 12, color: '#CCC', marginTop: 4, textAlign: 'center' }}>You'll be notified when your listings trend or you earn badges</Text>
++              </View>
++            )}
++          </View>
++        </View>
++
+         {/* Conversion Rates */}
+         <View style={styles.section}>
+           <Text style={styles.sectionTitle}>Conversion Rates</Text>
+@@ -517,6 +703,21 @@ export default function ListingPerformanceScreen() {
+           </TouchableOpacity>
+         </View>
+ 
++        {/* View All Badges CTA */}
++        <TouchableOpacity 
++          style={{
++            flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
++            marginHorizontal: 16, marginTop: 12, padding: 14,
++            backgroundColor: '#FFF8E1', borderRadius: 12, borderWidth: 1, borderColor: '#FFE082', gap: 8,
++          }}
++          onPress={() => router.push('/profile/badges' as any)}
++          data-testid="view-all-badges"
++        >
++          <Ionicons name="ribbon" size={20} color="#FFB300" />
++          <Text style={{ fontSize: 14, fontWeight: '600', color: '#F57F17' }}>View All My Badges</Text>
++          <Ionicons name="chevron-forward" size={18} color="#999" />
++        </TouchableOpacity>
++
+         <View style={{ height: 40 }} />
+       </ScrollView>
+     </View>
+diff --git a/frontend/app/profile/badges.tsx b/frontend/app/profile/badges.tsx
+index 2fae41f..60b0785 100644
+--- a/frontend/app/profile/badges.tsx
++++ b/frontend/app/profile/badges.tsx
+@@ -18,6 +18,7 @@ import { useResponsive } from '../../src/hooks/useResponsive';
+ import { DesktopPageLayout } from '../../src/components/layout';
+ import { useLoginRedirect } from '../../src/hooks/useLoginRedirect';
+ import { getCachedSync, setCacheSync, CACHE_KEYS } from '../../src/utils/cacheManager';
++import { sellerBadgesApi, SellerBadge, BadgesResponse } from '../../src/utils/sellerAnalyticsApi';
+ 
+ const COLORS = {
+   primary: '#2E7D32',
+@@ -171,6 +172,11 @@ export default function BadgesScreen() {
+   const [earnedBadges, setEarnedBadges] = useState<BadgeProgress[]>(cachedBadges?.earned || []);
+   const [availableBadges, setAvailableBadges] = useState<BadgeProgress[]>(cachedBadges?.available || []);
+   const [totalPoints, setTotalPoints] = useState(cachedBadges?.totalPoints || 0);
++  
++  // Seller Performance Badges state
++  const [sellerBadges, setSellerBadges] = useState<BadgesResponse | null>(null);
++  const [sellerBadgesLoading, setSellerBadgesLoading] = useState(true);
++  const [activeTab, setActiveTab] = useState<'activity' | 'performance'>('activity');
+ 
+   const fetchBadges = useCallback(async () => {
+     setIsFetchingInBackground(true);
+@@ -184,7 +190,6 @@ export default function BadgesScreen() {
+       setEarnedBadges(earned);
+       setAvailableBadges(available);
+       setTotalPoints(data.total_points || 0);
+-      // Update cache
+       setCacheSync(CACHE_KEYS.BADGES, { earned, available, totalPoints: data.total_points || 0 });
+     } catch (error) {
+       console.error('Error fetching badges:', error);
+@@ -194,15 +199,35 @@ export default function BadgesScreen() {
+     }
+   }, []);
+ 
++  const fetchSellerBadges = useCallback(async () => {
++    setSellerBadgesLoading(true);
++    try {
++      const { user } = useAuthStore.getState();
++      const sellerId = user?.user_id || user?.id;
++      if (sellerId) {
++        const data = await sellerBadgesApi.getMyBadges(sellerId);
++        setSellerBadges(data);
++        if (data.unviewed_count > 0) {
++          sellerBadgesApi.markBadgesViewed(sellerId).catch(() => {});
++        }
++      }
++    } catch (error) {
++      console.log('Seller badges fetch error:', error);
++    }
++    setSellerBadgesLoading(false);
++  }, []);
++
+   useEffect(() => {
+     if (isAuthenticated) {
+       fetchBadges();
++      fetchSellerBadges();
+     }
+-  }, [isAuthenticated, fetchBadges]);
++  }, [isAuthenticated, fetchBadges, fetchSellerBadges]);
+ 
+   const handleRefresh = () => {
+     setRefreshing(true);
+     fetchBadges();
++    fetchSellerBadges();
+   };
+ 
+   if (!isReady) {
+@@ -334,7 +359,11 @@ export default function BadgesScreen() {
+         <View style={styles.mobileStats}>
+           <View style={styles.mobileStatItem}>
+             <Text style={styles.mobileStatValue}>{earnedBadges.length}</Text>
+-            <Text style={styles.mobileStatLabel}>Earned</Text>
++            <Text style={styles.mobileStatLabel}>Activity</Text>
++          </View>
++          <View style={styles.mobileStatItem}>
++            <Text style={styles.mobileStatValue}>{sellerBadges?.earned_count || 0}</Text>
++            <Text style={styles.mobileStatLabel}>Performance</Text>
+           </View>
+           <View style={styles.mobileStatItem}>
+             <Text style={styles.mobileStatValue}>{totalPoints}</Text>
+@@ -342,7 +371,118 @@ export default function BadgesScreen() {
+           </View>
+         </View>
+ 
+-        {isFetchingInBackground && earnedBadges.length === 0 && availableBadges.length === 0 ? (
++        {/* Tab Switcher */}
++        <View style={styles.tabSwitcher}>
++          <TouchableOpacity
++            style={[styles.tab, activeTab === 'activity' && styles.tabActive]}
++            onPress={() => setActiveTab('activity')}
++          >
++            <Ionicons name="ribbon" size={16} color={activeTab === 'activity' ? '#fff' : COLORS.textSecondary} />
++            <Text style={[styles.tabText, activeTab === 'activity' && styles.tabTextActive]}>Activity Badges</Text>
++          </TouchableOpacity>
++          <TouchableOpacity
++            style={[styles.tab, activeTab === 'performance' && styles.tabActive]}
++            onPress={() => setActiveTab('performance')}
++          >
++            <Ionicons name="star" size={16} color={activeTab === 'performance' ? '#fff' : COLORS.textSecondary} />
++            <Text style={[styles.tabText, activeTab === 'performance' && styles.tabTextActive]}>
++              Performance Badges
++              {(sellerBadges?.unviewed_count || 0) > 0 && (
++                <Text style={{ color: '#F44336' }}> ({sellerBadges?.unviewed_count})</Text>
++              )}
++            </Text>
++          </TouchableOpacity>
++        </View>
++
++        {/* Performance Badges Tab */}
++        {activeTab === 'performance' && (
++          <>
++            {sellerBadgesLoading ? (
++              <ActivityIndicator size="large" color={COLORS.gold} style={{ marginTop: 40 }} />
++            ) : sellerBadges?.badges && sellerBadges.badges.length > 0 ? (
++              <>
++                {/* Earned Performance Badges */}
++                {sellerBadges.badges.filter(b => b.earned).length > 0 && (
++                  <View style={styles.mobileSection}>
++                    <Text style={styles.mobileSectionTitle}>
++                      Earned ({sellerBadges.badges.filter(b => b.earned).length})
++                    </Text>
++                    {sellerBadges.badges.filter(b => b.earned).map((badge) => (
++                      <View key={badge.id} style={[styles.sellerBadgeCard, { 
++                        borderLeftColor: badge.tier === 'gold' ? COLORS.gold : badge.tier === 'silver' ? COLORS.silver : COLORS.bronze 
++                      }]}>
++                        <View style={styles.sellerBadgeIconWrap}>
++                          <Text style={{ fontSize: 28 }}>{badge.icon}</Text>
++                          <View style={styles.sellerBadgeEarnedCheck}>
++                            <Ionicons name="checkmark" size={10} color="#fff" />
++                          </View>
++                        </View>
++                        <View style={styles.sellerBadgeInfo}>
++                          <Text style={styles.sellerBadgeName}>{badge.name}</Text>
++                          <Text style={styles.sellerBadgeDesc}>{badge.description}</Text>
++                          <View style={styles.sellerBadgeMeta}>
++                            <View style={[styles.sellerBadgeTier, { 
++                              backgroundColor: badge.tier === 'gold' ? '#FFF8E1' : badge.tier === 'silver' ? '#F5F5F5' : '#FFF3E0' 
++                            }]}>
++                              <Text style={[styles.sellerBadgeTierText, {
++                                color: badge.tier === 'gold' ? COLORS.gold : badge.tier === 'silver' ? COLORS.silver : COLORS.bronze
++                              }]}>
++                                {badge.tier.toUpperCase()}
++                              </Text>
++                            </View>
++                            {badge.earned_at && (
++                              <Text style={styles.sellerBadgeDate}>
++                                Earned {new Date(badge.earned_at).toLocaleDateString()}
++                              </Text>
++                            )}
++                          </View>
++                        </View>
++                      </View>
++                    ))}
++                  </View>
++                )}
++
++                {/* Locked Performance Badges */}
++                {sellerBadges.badges.filter(b => !b.earned).length > 0 && (
++                  <View style={styles.mobileSection}>
++                    <Text style={styles.mobileSectionTitle}>
++                      Locked ({sellerBadges.badges.filter(b => !b.earned).length})
++                    </Text>
++                    {sellerBadges.badges.filter(b => !b.earned).map((badge) => (
++                      <View key={badge.id} style={[styles.sellerBadgeCard, styles.sellerBadgeCardLocked]}>
++                        <View style={[styles.sellerBadgeIconWrap, { opacity: 0.4 }]}>
++                          <Text style={{ fontSize: 28 }}>{badge.icon}</Text>
++                        </View>
++                        <View style={styles.sellerBadgeInfo}>
++                          <Text style={[styles.sellerBadgeName, { color: COLORS.textLight }]}>{badge.name}</Text>
++                          <Text style={styles.sellerBadgeDesc}>{badge.description}</Text>
++                          {badge.criteria_text && (
++                            <Text style={styles.sellerBadgeCriteria}>
++                              <Ionicons name="lock-closed" size={10} color={COLORS.textLight} /> {badge.criteria_text}
++                            </Text>
++                          )}
++                        </View>
++                      </View>
++                    ))}
++                  </View>
++                )}
++              </>
++            ) : (
++              <View style={styles.mobileEmptyState}>
++                <Ionicons name="star-outline" size={64} color={COLORS.textLight} />
++                <Text style={styles.mobileEmptyTitle}>No performance badges yet</Text>
++                <Text style={styles.mobileEmptySubtitle}>
++                  Performance badges are earned by achieving milestones like Top Seller, Rising Star, and more
++                </Text>
++              </View>
++            )}
++          </>
++        )}
++
++        {/* Activity Badges Tab (existing) */}
++        {activeTab === 'activity' && (
++          <>
++            {isFetchingInBackground && earnedBadges.length === 0 && availableBadges.length === 0 ? (
+           <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
+         ) : earnedBadges.length === 0 && availableBadges.length === 0 ? (
+           <View style={styles.mobileEmptyState}>
+@@ -373,6 +513,8 @@ export default function BadgesScreen() {
+             )}
+           </>
+         )}
++        </>
++        )}
+       </ScrollView>
+     </SafeAreaView>
+   );
+@@ -678,6 +820,111 @@ const styles = StyleSheet.create({
+     fontSize: 16,
+     fontWeight: '600',
+   },
++  // Tab Switcher
++  tabSwitcher: {
++    flexDirection: 'row',
++    backgroundColor: COLORS.border,
++    borderRadius: 10,
++    padding: 3,
++    marginBottom: 16,
++  },
++  tab: {
++    flex: 1,
++    flexDirection: 'row',
++    alignItems: 'center',
++    justifyContent: 'center',
++    paddingVertical: 10,
++    borderRadius: 8,
++    gap: 6,
++  },
++  tabActive: {
++    backgroundColor: COLORS.primary,
++  },
++  tabText: {
++    fontSize: 13,
++    fontWeight: '600',
++    color: COLORS.textSecondary,
++  },
++  tabTextActive: {
++    color: '#fff',
++  },
++  // Seller Badge styles
++  sellerBadgeCard: {
++    flexDirection: 'row',
++    alignItems: 'center',
++    backgroundColor: COLORS.surface,
++    borderRadius: 12,
++    padding: 14,
++    marginBottom: 10,
++    borderLeftWidth: 4,
++    borderWidth: 1,
++    borderColor: COLORS.border,
++  },
++  sellerBadgeCardLocked: {
++    opacity: 0.7,
++    borderLeftColor: COLORS.border,
++  },
++  sellerBadgeIconWrap: {
++    width: 52,
++    height: 52,
++    borderRadius: 26,
++    backgroundColor: '#FFF8E1',
++    alignItems: 'center',
++    justifyContent: 'center',
++    position: 'relative',
++  },
++  sellerBadgeEarnedCheck: {
++    position: 'absolute',
++    bottom: -2,
++    right: -2,
++    width: 18,
++    height: 18,
++    borderRadius: 9,
++    backgroundColor: COLORS.success,
++    alignItems: 'center',
++    justifyContent: 'center',
++    borderWidth: 2,
++    borderColor: COLORS.surface,
++  },
++  sellerBadgeInfo: {
++    flex: 1,
++    marginLeft: 12,
++  },
++  sellerBadgeName: {
++    fontSize: 15,
++    fontWeight: '600',
++    color: COLORS.text,
++    marginBottom: 2,
++  },
++  sellerBadgeDesc: {
++    fontSize: 12,
++    color: COLORS.textSecondary,
++    lineHeight: 16,
++  },
++  sellerBadgeMeta: {
++    flexDirection: 'row',
++    alignItems: 'center',
++    marginTop: 6,
++    gap: 8,
++  },
++  sellerBadgeTier: {
++    paddingHorizontal: 8,
++    paddingVertical: 2,
++    borderRadius: 4,
++  },
++  sellerBadgeTierText: {
++    fontSize: 9,
++    fontWeight: '700',
++  },
++  sellerBadgeDate: {
++    fontSize: 11,
++    color: COLORS.success,
++  },
++  sellerBadgeCriteria: {
++    fontSize: 11,
++    color: COLORS.textLight,
++    marginTop: 4,
++  },
+   // Mobile Empty State
+   mobileEmptyState: {
+     alignItems: 'center',
+diff --git a/frontend/app/profile/public/[id].tsx b/frontend/app/profile/public/[id].tsx
+index d32aca7..8a98c2e 100644
+--- a/frontend/app/profile/public/[id].tsx
++++ b/frontend/app/profile/public/[id].tsx
+@@ -21,6 +21,7 @@ import api from '../../../src/utils/api';
+ import { useAuthStore } from '../../../src/store/authStore';
+ import { useResponsive } from '../../../src/hooks/useResponsive';
+ import { ImageWithSkeleton } from '../../../src/components/common';
++import { sellerBadgesApi, SellerBadge } from '../../../src/utils/sellerAnalyticsApi';
+ 
+ const COLORS = {
+   primary: '#2E7D32',
+@@ -186,6 +187,8 @@ export default function PublicProfileScreen() {
+   
+   // User achievement badges
+   const [achievementBadges, setAchievementBadges] = useState<any[]>([]);
++  // Seller performance badges
++  const [sellerPerformanceBadges, setSellerPerformanceBadges] = useState<SellerBadge[]>([]);
+ 
+   const handleGoBack = () => {
+     if (router.canGoBack()) {
+@@ -244,6 +247,14 @@ export default function PublicProfileScreen() {
+         console.warn('Failed to fetch badges:', badgesRes.reason);
+         setAchievementBadges([]);
+       }
++      
++      // Fetch seller performance badges
++      try {
++        const sellerBadgesData = await sellerBadgesApi.getMyBadges(id as string);
++        setSellerPerformanceBadges((sellerBadgesData.badges || []).filter(b => b.earned));
++      } catch (e) {
++        console.log('Seller performance badges fetch skipped');
++      }
+     } catch (err: any) {
+       console.error('Failed to load profile:', err);
+       setError(err.response?.data?.detail || 'Failed to load profile');
+@@ -962,6 +973,32 @@ export default function PublicProfileScreen() {
+             </View>
+           )}
+ 
++          {/* Seller Performance Badges */}
++          {sellerPerformanceBadges.length > 0 && (
++            <View style={styles.achievementBadgesContainer}>
++              <Text style={styles.achievementBadgesTitle}>Performance Badges</Text>
++              <View style={styles.achievementBadgesRow}>
++                {sellerPerformanceBadges.map((badge) => (
++                  <View 
++                    key={badge.id} 
++                    style={[styles.achievementBadge, { 
++                      backgroundColor: badge.tier === 'gold' ? '#FFF8E1' : badge.tier === 'silver' ? '#F5F5F5' : '#FFF3E0',
++                      borderWidth: 1,
++                      borderColor: badge.tier === 'gold' ? '#FFD54F' : badge.tier === 'silver' ? '#BDBDBD' : '#FFB74D',
++                    }]}
++                  >
++                    <Text style={{ fontSize: 14 }}>{badge.icon}</Text>
++                    <Text style={[styles.achievementBadgeName, { 
++                      color: badge.tier === 'gold' ? '#F57F17' : badge.tier === 'silver' ? '#616161' : '#E65100' 
++                    }]} numberOfLines={1}>
++                      {badge.name}
++                    </Text>
++                  </View>
++                ))}
++              </View>
++            </View>
++          )}
++
+           {profile?.location && (
+             <View style={styles.locationRow}>
+               <Ionicons name="location-outline" size={16} color={COLORS.textSecondary} />
+diff --git a/frontend/app/search.tsx b/frontend/app/search.tsx
+index 62a7e0c..59fef58 100644
+--- a/frontend/app/search.tsx
++++ b/frontend/app/search.tsx
+@@ -28,6 +28,7 @@ import { DesktopPageLayout } from '../src/components/layout/DesktopPageLayout';
+ import { Footer } from '../src/components/layout/Footer';
+ import { ImagePlaceholder } from '../src/components/common/ImagePlaceholder';
+ import { ImageWithSkeleton } from '../src/components/common/ImageWithSkeleton';
++import { HeaderBanner, BannerSlot, injectBannersIntoFeed, isBannerItem } from '../src/components/BannerSlot';
+ import Svg, { Path } from 'react-native-svg';
+ import { getCachedSync, setCacheSync } from '../src/utils/cacheManager';
+ 
+@@ -1083,14 +1084,22 @@ export default function SearchScreen() {
+           </View>
+         ) : hasSearched ? (
+           <FlatList
+-            data={listings}
+-            renderItem={renderListing}
+-            keyExtractor={(item) => item.id}
++            data={injectBannersIntoFeed(listings, [5, 12])}
++            renderItem={({ item, index }) => {
++              if (isBannerItem(item)) {
++                return <BannerSlot placement={item.placement} style={{ marginHorizontal: 12, marginVertical: 6 }} />;
++              }
++              return renderListing({ item, index });
++            }}
++            keyExtractor={(item) => isBannerItem(item) ? `banner_${item.placement}_${item.position}` : item.id}
+             contentContainerStyle={[styles.listContent, { paddingBottom: Math.max(insets.bottom, 24) }]}
+             ListHeaderComponent={() => (
+-              <Text style={styles.resultsText}>
+-                {listings.length} {listings.length === 1 ? 'result' : 'results'} for "{searchQuery}"
+-              </Text>
++              <View>
++                <Text style={styles.resultsText}>
++                  {listings.length} {listings.length === 1 ? 'result' : 'results'} for "{searchQuery}"
++                </Text>
++                <HeaderBanner placement="search_results_top" />
++              </View>
+             )}
+             ListEmptyComponent={() => (
+               <View style={styles.emptyState}>
+@@ -1099,6 +1108,9 @@ export default function SearchScreen() {
+                 <Text style={styles.emptySubtitle}>Try different keywords or browse categories</Text>
+               </View>
+             )}
++            ListFooterComponent={() => (
++              <BannerSlot placement="footer_banner" style={{ marginHorizontal: 12, marginVertical: 8 }} />
++            )}
+           />
+         ) : (
+           <View style={styles.browseContainer}>
+diff --git a/frontend/src/components/BannerSlot.tsx b/frontend/src/components/BannerSlot.tsx
+index 4e43d36..1371ad3 100644
+--- a/frontend/src/components/BannerSlot.tsx
++++ b/frontend/src/components/BannerSlot.tsx
+@@ -12,9 +12,18 @@ import {
+ } from 'react-native';
+ import { Ionicons } from '@expo/vector-icons';
+ import api from '../utils/api';
++import { PRODUCTION_API_URL } from '../utils/api';
+ 
+ const { width: SCREEN_WIDTH } = Dimensions.get('window');
+ 
++// Resolve relative URLs to absolute URLs
++const resolveImageUrl = (url: string | undefined): string | undefined => {
++  if (!url) return url;
++  if (url.startsWith('http://') || url.startsWith('https://')) return url;
++  if (url.startsWith('/')) return `${PRODUCTION_API_URL}${url}`;
++  return url;
++};
++
+ // Banner size configurations
+ const BANNER_SIZES: Record<string, { width: number; height: number }> = {
+   '728x90': { width: 728, height: 90 },
+@@ -216,7 +225,7 @@ export const BannerSlot: React.FC<BannerSlotProps> = memo(({
+             </View>
+           )}
+           <Image
+-            source={{ uri: banner.content.image_url }}
++            source={{ uri: resolveImageUrl(banner.content.image_url) }}
+             style={[styles.bannerImage, { width: size.width, height: size.height }]}
+             resizeMode="contain"
+             onLoad={() => setImageLoaded(true)}
+@@ -329,7 +338,7 @@ export const FeedBanner: React.FC<Omit<BannerSlotProps, 'placement'> & { positio
+         
+         {banner.content.type === 'image' && banner.content.image_url ? (
+           <Image
+-            source={{ uri: banner.content.image_url }}
++            source={{ uri: resolveImageUrl(banner.content.image_url) }}
+             style={feedStyles.image}
+             resizeMode="cover"
+           />
+diff --git a/frontend/src/hooks/usePushNotifications.ts b/frontend/src/hooks/usePushNotifications.ts
+index dc79626..189544a 100644
+--- a/frontend/src/hooks/usePushNotifications.ts
++++ b/frontend/src/hooks/usePushNotifications.ts
+@@ -6,6 +6,9 @@ import { useRouter } from 'expo-router';
+ import api from '../utils/api';
+ import { useAuthStore } from '../store/authStore';
+ 
++// Import Device separately to avoid issues
++import * as Device from 'expo-device';
++
+ // Configure how notifications are handled when app is in foreground
+ Notifications.setNotificationHandler({
+   handleNotification: async () => ({
+@@ -99,6 +102,21 @@ export function usePushNotifications() {
+           description: 'Notifications for listing updates',
+           importance: Notifications.AndroidImportance.DEFAULT,
+         });
++        
++        // Seller analytics notification channels
++        await Notifications.setNotificationChannelAsync('seller-badges', {
++          name: 'Badge Achievements',
++          description: 'Notifications when you earn new seller badges',
++          importance: Notifications.AndroidImportance.HIGH,
++          vibrationPattern: [0, 250, 250, 250],
++        });
++        
++        await Notifications.setNotificationChannelAsync('engagement-alerts', {
++          name: 'Engagement Alerts',
++          description: 'Notifications when your listings are trending',
++          importance: Notifications.AndroidImportance.HIGH,
++          vibrationPattern: [0, 250, 250, 250],
++        });
+       }
+ 
+       setState(prev => ({ ...prev, expoPushToken: token, isRegistered: true, error: null }));
+@@ -116,9 +134,28 @@ export function usePushNotifications() {
+     try {
+       await api.put('/settings/push-token', { push_token: token });
+     } catch (error) {
+-      console.error('Failed to send push token to backend:', error);
++      console.error('Failed to send push token to legacy backend:', error);
++    }
++    
++    // Also register with Firebase FCM endpoint for seller analytics notifications
++    try {
++      const userId = user?.user_id || user?.id;
++      if (userId) {
++        await api.post('/notifications/register-push', {
++          user_id: userId,
++          fcm_token: token,
++          device_info: {
++            platform: Platform.OS,
++            device: Device.modelName || 'unknown',
++            os_version: Platform.Version?.toString() || 'unknown',
++          },
++        });
++        console.log('[Push] FCM token registered for seller analytics');
++      }
++    } catch (error) {
++      console.log('FCM registration skipped (non-critical)');
+     }
+-  }, [isAuthenticated]);
++  }, [isAuthenticated, user?.user_id, user?.id]);
+ 
+   // Handle notification response (when user taps notification)
+   const handleNotificationResponse = useCallback((response: Notifications.NotificationResponse) => {
+@@ -127,13 +164,13 @@ export function usePushNotifications() {
+     if (!data) return;
+ 
+     // Navigate based on notification type
+-    if (data.type === 'badge_earned') {
+-      // Badge notification - go to profile to see badges
+-      router.push('/profile');
+-    } else if (data.type?.startsWith('engagement_')) {
+-      // Engagement notifications - go to performance screen
++    if (data.type === 'badge_earned' || data.type === 'badge_unlock') {
++      router.push('/profile/badges');
++    } else if (data.type === 'engagement_spike' || data.type?.startsWith('engagement_')) {
+       if (data.listing_id) {
+         router.push(`/performance/${data.listing_id}`);
++      } else {
++        router.push('/profile/my-listings');
+       }
+     } else if (data.listing_id) {
+       router.push(`/listing/${data.listing_id}`);
+diff --git a/frontend/src/utils/pushNotifications.ts b/frontend/src/utils/pushNotifications.ts
+index 22fc0d1..d81f620 100644
+--- a/frontend/src/utils/pushNotifications.ts
++++ b/frontend/src/utils/pushNotifications.ts
+@@ -7,6 +7,7 @@ import * as Notifications from 'expo-notifications';
+ import * as Device from 'expo-device';
+ import { Platform } from 'react-native';
+ import api from './api';
++import { sellerNotificationsApi } from './sellerAnalyticsApi';
+ 
+ // Configure notification handler
+ Notifications.setNotificationHandler({
+@@ -94,7 +95,7 @@ export async function getDevicePushToken(): Promise<string | null> {
+ /**
+  * Register the push token with the backend
+  */
+-export async function registerPushToken(): Promise<boolean> {
++export async function registerPushToken(userId?: string): Promise<boolean> {
+   try {
+     const hasPermission = await requestNotificationPermissions();
+     if (!hasPermission) {
+@@ -108,10 +109,29 @@ export async function registerPushToken(): Promise<boolean> {
+ 
+     const platform = Platform.OS;
+ 
+-    await api.post('/push/register-token', {
+-      token,
+-      platform,
+-    });
++    // Legacy push registration
++    try {
++      await api.post('/push/register-token', {
++        token,
++        platform,
++      });
++    } catch (e) {
++      console.log('Legacy push registration skipped');
++    }
++
++    // Register with Firebase FCM endpoint for seller analytics notifications
++    if (userId) {
++      try {
++        await sellerNotificationsApi.registerPushToken(userId, token, {
++          platform,
++          device: Device.modelName || 'unknown',
++          os_version: Platform.Version?.toString() || 'unknown',
++        });
++        console.log('[Push] FCM token registered for seller analytics');
++      } catch (e) {
++        console.log('FCM push registration skipped');
++      }
++    }
+ 
+     console.log('Push token registered successfully');
+     return true;
+diff --git a/frontend/src/utils/sellerAnalyticsApi.ts b/frontend/src/utils/sellerAnalyticsApi.ts
+new file mode 100644
+index 0000000..18a8c98
+--- /dev/null
++++ b/frontend/src/utils/sellerAnalyticsApi.ts
+@@ -0,0 +1,180 @@
++/**
++ * Seller Analytics API Service
++ * Handles seller performance metrics, badges, and notifications
++ */
++
++import api from './api';
++
++// ============ Performance Analytics ============
++
++export interface SellerMetrics {
++  listing_id: string;
++  title: string;
++  seller_id: string;
++  period: string;
++  metrics: {
++    views: { total: number; change_pct: number };
++    saves: { total: number; change_pct: number };
++    chats: { total: number; change_pct: number };
++    offers: { total: number; change_pct: number };
++    shares: { total: number; change_pct: number };
++  };
++  conversion_rates: {
++    view_to_chat: number;
++    view_to_save: number;
++    view_to_offer: number;
++  };
++  trends: Array<{ date: string; views: number; saves: number; chats: number }>;
++  location_data: {
++    regions: Array<{ name: string; views: number; percentage: number }>;
++  };
++  device_data: {
++    mobile: number;
++    desktop: number;
++    tablet: number;
++  };
++}
++
++export interface ComparisonData {
++  listing: { views: number; saves: number; chats: number; conversion_rate: number };
++  seller_average: { views: number; saves: number; chats: number; conversion_rate: number };
++  comparison: { views_vs_avg: number; saves_vs_avg: number; chats_vs_avg: number };
++}
++
++export interface AIInsight {
++  type: 'suggestion' | 'warning' | 'opportunity' | 'success';
++  title: string;
++  description: string;
++  priority: number;
++  action_label?: string;
++  action_route?: string;
++  is_ai?: boolean;
++}
++
++// ============ Badges ============
++
++export interface SellerBadge {
++  id: string;
++  name: string;
++  icon: string;
++  description: string;
++  tier: 'gold' | 'silver' | 'bronze';
++  criteria_text?: string;
++  earned: boolean;
++  earned_at: string | null;
++  viewed: boolean | null;
++}
++
++export interface BadgesResponse {
++  seller_id: string;
++  earned_count: number;
++  total_available: number;
++  unviewed_count: number;
++  badges: SellerBadge[];
++}
++
++// ============ Notifications ============
++
++export interface SellerNotification {
++  id: string;
++  user_id: string;
++  type: 'engagement_spike' | 'badge_unlock' | 'system' | string;
++  title: string;
++  message: string;
++  data?: Record<string, any>;
++  is_read: boolean;
++  created_at: string;
++}
++
++export interface NotificationsResponse {
++  notifications: SellerNotification[];
++  total: number;
++  page: number;
++  limit: number;
++  unread_count: number;
++  has_more: boolean;
++}
++
++// ============ API Functions ============
++
++export const sellerAnalyticsApi = {
++  getPerformance: async (listingId: string, period: string = '30d') => {
++    const response = await api.get(`/analytics/listing/${listingId}/performance`, { params: { period } });
++    return response.data as SellerMetrics;
++  },
++
++  getInsights: async (listingId: string) => {
++    const response = await api.get(`/analytics/listing/${listingId}/insights`);
++    return response.data as AIInsight[];
++  },
++
++  getComparison: async (listingId: string) => {
++    const response = await api.get(`/analytics/listing/${listingId}/comparison`);
++    return response.data as ComparisonData;
++  },
++
++  checkAccess: async () => {
++    const response = await api.get('/analytics/access');
++    return response.data;
++  },
++};
++
++export const sellerBadgesApi = {
++  getMyBadges: async (sellerId: string) => {
++    const response = await api.get('/analytics/badges/my-badges', { params: { seller_id: sellerId } });
++    return response.data as BadgesResponse;
++  },
++
++  getBadgeDefinitions: async () => {
++    const response = await api.get('/analytics/badges/evaluate');
++    return response.data;
++  },
++
++  markBadgesViewed: async (sellerId: string, badgeIds?: string[]) => {
++    const response = await api.post('/analytics/badges/mark-viewed', {
++      seller_id: sellerId,
++      badge_ids: badgeIds,
++    });
++    return response.data;
++  },
++
++  evaluateBadges: async (sellerId: string) => {
++    const response = await api.post('/analytics/badges/evaluate', { seller_id: sellerId });
++    return response.data;
++  },
++};
++
++export const sellerNotificationsApi = {
++  getNotifications: async (userId: string, type: string = 'all', page: number = 1, limit: number = 20) => {
++    const response = await api.get('/notifications/seller', {
++      params: { user_id: userId, type, page, limit },
++    });
++    return response.data as NotificationsResponse;
++  },
++
++  markAsRead: async (notificationId: string) => {
++    const response = await api.put('/notifications/seller', { notification_id: notificationId });
++    return response.data;
++  },
++
++  markAllAsRead: async (userId: string) => {
++    const response = await api.put('/notifications/seller', { user_id: userId, mark_all: true });
++    return response.data;
++  },
++
++  registerPushToken: async (userId: string, fcmToken: string, deviceInfo?: Record<string, any>) => {
++    const response = await api.post('/notifications/register-push', {
++      user_id: userId,
++      fcm_token: fcmToken,
++      device_info: deviceInfo,
++    });
++    return response.data;
++  },
++
++  unregisterPushToken: async (fcmToken: string) => {
++    const response = await api.delete('/notifications/register-push', {
++      data: { fcm_token: fcmToken },
++    });
++    return response.data;
++  },
++};
