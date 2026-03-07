@@ -7,13 +7,21 @@ import {
   TouchableOpacity,
   Dimensions,
   RefreshControl,
-  Platform
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
 import api from '../../src/utils/api';
 import { useCacheFirst } from '../../src/hooks/useCacheFirst';
+import { 
+  sellerBadgesApi, 
+  sellerNotificationsApi,
+  SellerBadge,
+  SellerNotification,
+  BadgesResponse,
+} from '../../src/utils/sellerAnalyticsApi';
 
 // CACHE-FIRST: No page-level loading spinners - render instantly with cached data
 
@@ -23,6 +31,7 @@ type TimePeriod = '24h' | '7d' | '30d';
 
 interface ListingMetrics {
   listing_id: string;
+  seller_id?: string;
   period: string;
   total_views: number;
   unique_views: number;
@@ -139,6 +148,15 @@ export default function ListingPerformanceScreen() {
   const [hasAccess, setHasAccess] = useState(true);
   const [accessMessage, setAccessMessage] = useState<string>('');
   
+  // Badges state
+  const [badges, setBadges] = useState<BadgesResponse | null>(null);
+  const [badgesLoading, setBadgesLoading] = useState(true);
+  
+  // Notifications state
+  const [notifications, setNotifications] = useState<SellerNotification[]>([]);
+  const [notifLoading, setNotifLoading] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
+  
   // Default empty data structures for cache-first pattern
   const defaultMetrics: ListingMetrics = {
     listing_id: '',
@@ -211,11 +229,58 @@ export default function ListingPerformanceScreen() {
     deps: [listing_id, hasAccess],
   });
 
+  // Fetch badges for this seller
+  const fetchBadges = useCallback(async () => {
+    const sellerId = metrics?.seller_id || user?.user_id;
+    if (!sellerId) return;
+    
+    setBadgesLoading(true);
+    try {
+      const data = await sellerBadgesApi.getMyBadges(sellerId);
+      setBadges(data);
+      if (data.unviewed_count > 0) {
+        sellerBadgesApi.markBadgesViewed(sellerId).catch(() => {});
+      }
+    } catch (e) {
+      console.log('Badge fetch error:', e);
+    }
+    setBadgesLoading(false);
+  }, [metrics?.seller_id, user?.user_id]);
+
+  // Fetch notifications
+  const fetchNotifications = useCallback(async () => {
+    const sellerId = metrics?.seller_id || user?.user_id;
+    if (!sellerId) return;
+    
+    setNotifLoading(true);
+    try {
+      const data = await sellerNotificationsApi.getNotifications(sellerId, 'all', 1, 10);
+      setNotifications(data.notifications);
+      setUnreadCount(data.unread_count);
+    } catch (e) {
+      console.log('Notification fetch error:', e);
+    }
+    setNotifLoading(false);
+  }, [metrics?.seller_id, user?.user_id]);
+
+  useEffect(() => {
+    if (metrics?.seller_id || user?.user_id) {
+      fetchBadges();
+      fetchNotifications();
+    }
+  }, [metrics?.seller_id, user?.user_id, fetchBadges, fetchNotifications]);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([refreshMetrics(), refreshInsights(), refreshComparison()]);
+    await Promise.all([
+      refreshMetrics(), 
+      refreshInsights(), 
+      refreshComparison(),
+      fetchBadges(),
+      fetchNotifications(),
+    ]);
     setRefreshing(false);
-  }, [refreshMetrics, refreshInsights, refreshComparison]);
+  }, [refreshMetrics, refreshInsights, refreshComparison, fetchBadges, fetchNotifications]);
 
   const getInsightIcon = (type: string) => {
     switch (type) {
@@ -360,6 +425,127 @@ export default function ListingPerformanceScreen() {
             <Ionicons name="pricetag" size={24} color="#FF9800" />
             <Text style={styles.metricValue} data-testid="offers">{metrics?.offers_received || 0}</Text>
             <Text style={styles.metricLabel}>Offers</Text>
+          </View>
+        </View>
+
+        {/* ============ SELLER BADGES SECTION ============ */}
+        <View style={styles.section} data-testid="seller-badges-section">
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+            <Ionicons name="ribbon" size={18} color="#FFB300" />
+            <Text style={[styles.sectionTitle, { marginLeft: 6, marginBottom: 0 }]}>Seller Badges</Text>
+            {badges && (
+              <Text style={{ fontSize: 12, color: '#999', marginLeft: 6 }}>
+                {badges.earned_count}/{badges.total_available}
+              </Text>
+            )}
+            {(badges?.unviewed_count || 0) > 0 && (
+              <View style={{ marginLeft: 8, backgroundColor: '#F44336', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 }}>
+                <Text style={{ fontSize: 10, color: '#fff', fontWeight: '700' }}>{badges?.unviewed_count} New!</Text>
+              </View>
+            )}
+          </View>
+          
+          {badgesLoading ? (
+            <ActivityIndicator size="small" color="#FFB300" style={{ marginVertical: 20 }} />
+          ) : badges?.badges && badges.badges.length > 0 ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {badges.badges.map((badge) => {
+                const tierColors: Record<string, { bg: string; border: string; text: string }> = {
+                  gold: { bg: '#FFF8E1', border: '#FFD54F', text: '#F57F17' },
+                  silver: { bg: '#F5F5F5', border: '#BDBDBD', text: '#616161' },
+                  bronze: { bg: '#FFF3E0', border: '#FFB74D', text: '#E65100' },
+                };
+                const tc = tierColors[badge.tier] || tierColors.bronze;
+                return (
+                  <View key={badge.id} style={{
+                    width: 95, alignItems: 'center', padding: 10, borderRadius: 12, marginRight: 10,
+                    backgroundColor: badge.earned ? tc.bg : '#F9F9F9',
+                    borderWidth: badge.earned ? 1.5 : 1,
+                    borderColor: badge.earned ? tc.border : '#E0E0E0',
+                    opacity: badge.earned ? 1 : 0.5,
+                  }}>
+                    {badge.earned && !badge.viewed && (
+                      <View style={{ position: 'absolute', top: 4, right: 4, width: 8, height: 8, borderRadius: 4, backgroundColor: '#F44336' }} />
+                    )}
+                    <Text style={{ fontSize: 28, marginBottom: 4 }}>{badge.icon}</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '600', color: badge.earned ? '#333' : '#999', textAlign: 'center' }} numberOfLines={1}>{badge.name}</Text>
+                    <View style={{ paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4, backgroundColor: tc.border + '30', marginTop: 3 }}>
+                      <Text style={{ fontSize: 8, fontWeight: '700', color: tc.text }}>{badge.tier.toUpperCase()}</Text>
+                    </View>
+                    {badge.earned ? (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3, gap: 2 }}>
+                        <Ionicons name="checkmark-circle" size={12} color="#4CAF50" />
+                        <Text style={{ fontSize: 9, color: '#4CAF50', fontWeight: '600' }}>Earned</Text>
+                      </View>
+                    ) : (
+                      <Text style={{ fontSize: 8, color: '#AAA', textAlign: 'center', marginTop: 3 }}>{badge.criteria_text || 'Locked'}</Text>
+                    )}
+                  </View>
+                );
+              })}
+            </ScrollView>
+          ) : (
+            <View style={{ alignItems: 'center', paddingVertical: 20, backgroundColor: '#fff', borderRadius: 12 }}>
+              <Ionicons name="ribbon-outline" size={32} color="#DDD" />
+              <Text style={{ fontSize: 13, color: '#AAA', marginTop: 8 }}>Keep listing to earn badges!</Text>
+            </View>
+          )}
+        </View>
+
+        {/* ============ ENGAGEMENT NOTIFICATIONS ============ */}
+        <View style={styles.section} data-testid="notifications-section">
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+            <Ionicons name="notifications" size={18} color="#2196F3" />
+            <Text style={[styles.sectionTitle, { marginLeft: 6, marginBottom: 0 }]}>Recent Notifications</Text>
+            {unreadCount > 0 && (
+              <View style={{ marginLeft: 8, backgroundColor: '#2196F3', width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 10, color: '#fff', fontWeight: '700' }}>{unreadCount}</Text>
+              </View>
+            )}
+          </View>
+          
+          <View style={{ backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden' }}>
+            {notifLoading ? (
+              <ActivityIndicator size="small" color="#2196F3" style={{ marginVertical: 20 }} />
+            ) : notifications.length > 0 ? (
+              notifications.slice(0, 5).map((notif) => {
+                const isSpike = notif.type === 'engagement_spike';
+                const isBadge = notif.type === 'badge_unlock';
+                return (
+                  <View key={notif.id} style={{
+                    flexDirection: 'row', padding: 12, borderBottomWidth: 1, borderBottomColor: '#F0F0F0',
+                    backgroundColor: !notif.is_read ? '#F0F8FF' : 'transparent',
+                  }}>
+                    <View style={{
+                      width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 10,
+                      backgroundColor: isSpike ? '#FFF3E0' : isBadge ? '#FFF8E1' : '#E3F2FD',
+                    }}>
+                      <Ionicons
+                        name={(isSpike ? 'flame' : isBadge ? 'trophy' : 'notifications') as any}
+                        size={18}
+                        color={isSpike ? '#FF9800' : isBadge ? '#FFB300' : '#2196F3'}
+                      />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={{ fontSize: 13, fontWeight: '600', color: '#333', flex: 1 }} numberOfLines={1}>{notif.title}</Text>
+                        {!notif.is_read && <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#2196F3' }} />}
+                      </View>
+                      <Text style={{ fontSize: 12, color: '#666', marginTop: 2 }} numberOfLines={2}>{notif.message}</Text>
+                      <Text style={{ fontSize: 10, color: '#AAA', marginTop: 4 }}>
+                        {new Date(notif.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })
+            ) : (
+              <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+                <Ionicons name="notifications-off-outline" size={32} color="#DDD" />
+                <Text style={{ fontSize: 14, color: '#AAA', marginTop: 8 }}>No notifications yet</Text>
+                <Text style={{ fontSize: 12, color: '#CCC', marginTop: 4, textAlign: 'center' }}>You'll be notified when your listings trend or you earn badges</Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -516,6 +702,21 @@ export default function ListingPerformanceScreen() {
             <Text style={styles.boostCTAButtonText}>Boost This Listing</Text>
           </TouchableOpacity>
         </View>
+
+        {/* View All Badges CTA */}
+        <TouchableOpacity 
+          style={{
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+            marginHorizontal: 16, marginTop: 12, padding: 14,
+            backgroundColor: '#FFF8E1', borderRadius: 12, borderWidth: 1, borderColor: '#FFE082', gap: 8,
+          }}
+          onPress={() => router.push('/profile/badges' as any)}
+          data-testid="view-all-badges"
+        >
+          <Ionicons name="ribbon" size={20} color="#FFB300" />
+          <Text style={{ fontSize: 14, fontWeight: '600', color: '#F57F17' }}>View All My Badges</Text>
+          <Ionicons name="chevron-forward" size={18} color="#999" />
+        </TouchableOpacity>
 
         <View style={{ height: 40 }} />
       </ScrollView>

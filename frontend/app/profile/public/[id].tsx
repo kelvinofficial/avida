@@ -21,6 +21,7 @@ import api from '../../../src/utils/api';
 import { useAuthStore } from '../../../src/store/authStore';
 import { useResponsive } from '../../../src/hooks/useResponsive';
 import { ImageWithSkeleton } from '../../../src/components/common';
+import { sellerBadgesApi, SellerBadge, BadgesResponse } from '../../../src/utils/sellerAnalyticsApi';
 
 const COLORS = {
   primary: '#2E7D32',
@@ -176,6 +177,7 @@ export default function PublicProfileScreen() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState(false);
+  const [sellerBadges, setSellerBadges] = useState<BadgesResponse | null>(null);
   
   // Review modal
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -256,6 +258,20 @@ export default function PublicProfileScreen() {
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
+
+  // Fetch seller badges for public profile
+  useEffect(() => {
+    const fetchSellerBadges = async () => {
+      if (!id) return;
+      try {
+        const data = await sellerBadgesApi.getMyBadges(id as string);
+        setSellerBadges(data);
+      } catch (e) {
+        console.log('Public profile badges fetch error:', e);
+      }
+    };
+    fetchSellerBadges();
+  }, [id]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -1008,6 +1024,18 @@ export default function PublicProfileScreen() {
             Member since {new Date(profile?.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
           </Text>
 
+          {/* Seller Performance Badges */}
+          {sellerBadges && sellerBadges.badges.filter(b => b.earned).length > 0 && (
+            <View style={styles.sellerBadgesRow}>
+              {sellerBadges.badges.filter(b => b.earned).slice(0, 5).map((badge) => (
+                <View key={badge.id} style={styles.publicBadgeChip}>
+                  <Text style={{ fontSize: 14 }}>{badge.icon}</Text>
+                  <Text style={styles.publicBadgeText}>{badge.name}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
           {/* Action Buttons */}
           {!isOwnProfile && (
             <View style={styles.actionButtons}>
@@ -1346,6 +1374,28 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textSecondary,
     marginTop: 16,
+  },
+  sellerBadgesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 12,
+  },
+  publicBadgeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    backgroundColor: '#FFF8E1',
+    borderWidth: 1,
+    borderColor: '#FFE082',
+    gap: 4,
+  },
+  publicBadgeText: {
+    fontSize: 11,
+    fontWeight: '600' as const,
+    color: '#F57F17',
   },
   actionButtons: {
     flexDirection: 'row',

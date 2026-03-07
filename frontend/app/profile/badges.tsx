@@ -18,6 +18,7 @@ import { useResponsive } from '../../src/hooks/useResponsive';
 import { DesktopPageLayout } from '../../src/components/layout';
 import { useLoginRedirect } from '../../src/hooks/useLoginRedirect';
 import { getCachedSync, setCacheSync, CACHE_KEYS } from '../../src/utils/cacheManager';
+import { sellerBadgesApi, SellerBadge, BadgesResponse } from '../../src/utils/sellerAnalyticsApi';
 
 const COLORS = {
   primary: '#2E7D32',
@@ -171,6 +172,11 @@ export default function BadgesScreen() {
   const [earnedBadges, setEarnedBadges] = useState<BadgeProgress[]>(cachedBadges?.earned || []);
   const [availableBadges, setAvailableBadges] = useState<BadgeProgress[]>(cachedBadges?.available || []);
   const [totalPoints, setTotalPoints] = useState(cachedBadges?.totalPoints || 0);
+  
+  // Seller Performance Badges state
+  const [sellerBadges, setSellerBadges] = useState<BadgesResponse | null>(null);
+  const [sellerBadgesLoading, setSellerBadgesLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'activity' | 'performance'>('activity');
 
   const fetchBadges = useCallback(async () => {
     setIsFetchingInBackground(true);
@@ -184,7 +190,6 @@ export default function BadgesScreen() {
       setEarnedBadges(earned);
       setAvailableBadges(available);
       setTotalPoints(data.total_points || 0);
-      // Update cache
       setCacheSync(CACHE_KEYS.BADGES, { earned, available, totalPoints: data.total_points || 0 });
     } catch (error) {
       console.error('Error fetching badges:', error);
@@ -194,15 +199,35 @@ export default function BadgesScreen() {
     }
   }, []);
 
+  const fetchSellerBadges = useCallback(async () => {
+    setSellerBadgesLoading(true);
+    try {
+      const { user } = useAuthStore.getState();
+      const sellerId = user?.user_id || user?.id;
+      if (sellerId) {
+        const data = await sellerBadgesApi.getMyBadges(sellerId);
+        setSellerBadges(data);
+        if (data.unviewed_count > 0) {
+          sellerBadgesApi.markBadgesViewed(sellerId).catch(() => {});
+        }
+      }
+    } catch (error) {
+      console.log('Seller badges fetch error:', error);
+    }
+    setSellerBadgesLoading(false);
+  }, []);
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchBadges();
+      fetchSellerBadges();
     }
-  }, [isAuthenticated, fetchBadges]);
+  }, [isAuthenticated, fetchBadges, fetchSellerBadges]);
 
   const handleRefresh = () => {
     setRefreshing(true);
     fetchBadges();
+    fetchSellerBadges();
   };
 
   if (!isReady) {
@@ -334,7 +359,11 @@ export default function BadgesScreen() {
         <View style={styles.mobileStats}>
           <View style={styles.mobileStatItem}>
             <Text style={styles.mobileStatValue}>{earnedBadges.length}</Text>
-            <Text style={styles.mobileStatLabel}>Earned</Text>
+            <Text style={styles.mobileStatLabel}>Activity</Text>
+          </View>
+          <View style={styles.mobileStatItem}>
+            <Text style={styles.mobileStatValue}>{sellerBadges?.earned_count || 0}</Text>
+            <Text style={styles.mobileStatLabel}>Performance</Text>
           </View>
           <View style={styles.mobileStatItem}>
             <Text style={styles.mobileStatValue}>{totalPoints}</Text>
@@ -342,6 +371,117 @@ export default function BadgesScreen() {
           </View>
         </View>
 
+        {/* Tab Switcher */}
+        <View style={styles.tabSwitcher}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'activity' && styles.tabActive]}
+            onPress={() => setActiveTab('activity')}
+          >
+            <Ionicons name="ribbon" size={16} color={activeTab === 'activity' ? '#fff' : COLORS.textSecondary} />
+            <Text style={[styles.tabText, activeTab === 'activity' && styles.tabTextActive]}>Activity Badges</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'performance' && styles.tabActive]}
+            onPress={() => setActiveTab('performance')}
+          >
+            <Ionicons name="star" size={16} color={activeTab === 'performance' ? '#fff' : COLORS.textSecondary} />
+            <Text style={[styles.tabText, activeTab === 'performance' && styles.tabTextActive]}>
+              Performance Badges
+              {(sellerBadges?.unviewed_count || 0) > 0 && (
+                ` (${sellerBadges?.unviewed_count})`
+              )}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Performance Badges Tab */}
+        {activeTab === 'performance' && (
+          <>
+            {sellerBadgesLoading ? (
+              <ActivityIndicator size="large" color={COLORS.gold} style={{ marginTop: 40 }} />
+            ) : sellerBadges?.badges && sellerBadges.badges.length > 0 ? (
+              <>
+                {/* Earned Performance Badges */}
+                {sellerBadges.badges.filter(b => b.earned).length > 0 && (
+                  <View style={styles.mobileSection}>
+                    <Text style={styles.mobileSectionTitle}>
+                      Earned ({sellerBadges.badges.filter(b => b.earned).length})
+                    </Text>
+                    {sellerBadges.badges.filter(b => b.earned).map((badge) => (
+                      <View key={badge.id} style={[styles.sellerBadgeCard, { 
+                        borderLeftColor: badge.tier === 'gold' ? COLORS.gold : badge.tier === 'silver' ? COLORS.silver : COLORS.bronze 
+                      }]}>
+                        <View style={styles.sellerBadgeIconWrap}>
+                          <Text style={{ fontSize: 28 }}>{badge.icon}</Text>
+                          <View style={styles.sellerBadgeEarnedCheck}>
+                            <Ionicons name="checkmark" size={10} color="#fff" />
+                          </View>
+                        </View>
+                        <View style={styles.sellerBadgeInfo}>
+                          <Text style={styles.sellerBadgeName}>{badge.name}</Text>
+                          <Text style={styles.sellerBadgeDesc}>{badge.description}</Text>
+                          <View style={styles.sellerBadgeMeta}>
+                            <View style={[styles.sellerBadgeTier, { 
+                              backgroundColor: badge.tier === 'gold' ? '#FFF8E1' : badge.tier === 'silver' ? '#F5F5F5' : '#FFF3E0' 
+                            }]}>
+                              <Text style={[styles.sellerBadgeTierText, {
+                                color: badge.tier === 'gold' ? COLORS.gold : badge.tier === 'silver' ? COLORS.silver : COLORS.bronze
+                              }]}>
+                                {badge.tier.toUpperCase()}
+                              </Text>
+                            </View>
+                            {badge.earned_at && (
+                              <Text style={styles.sellerBadgeDate}>
+                                Earned {new Date(badge.earned_at).toLocaleDateString()}
+                              </Text>
+                            )}
+                          </View>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {/* Locked Performance Badges */}
+                {sellerBadges.badges.filter(b => !b.earned).length > 0 && (
+                  <View style={styles.mobileSection}>
+                    <Text style={styles.mobileSectionTitle}>
+                      Locked ({sellerBadges.badges.filter(b => !b.earned).length})
+                    </Text>
+                    {sellerBadges.badges.filter(b => !b.earned).map((badge) => (
+                      <View key={badge.id} style={[styles.sellerBadgeCard, styles.sellerBadgeCardLocked]}>
+                        <View style={[styles.sellerBadgeIconWrap, { opacity: 0.4 }]}>
+                          <Text style={{ fontSize: 28 }}>{badge.icon}</Text>
+                        </View>
+                        <View style={styles.sellerBadgeInfo}>
+                          <Text style={[styles.sellerBadgeName, { color: COLORS.textLight }]}>{badge.name}</Text>
+                          <Text style={styles.sellerBadgeDesc}>{badge.description}</Text>
+                          {badge.criteria_text && (
+                            <Text style={styles.sellerBadgeCriteria}>
+                              {badge.criteria_text}
+                            </Text>
+                          )}
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </>
+            ) : (
+              <View style={styles.mobileEmptyState}>
+                <Ionicons name="star-outline" size={64} color={COLORS.textLight} />
+                <Text style={styles.mobileEmptyTitle}>No performance badges yet</Text>
+                <Text style={styles.mobileEmptySubtitle}>
+                  Performance badges are earned by achieving milestones like Top Seller, Rising Star, and more
+                </Text>
+              </View>
+            )}
+          </>
+        )}
+
+        {/* Activity Badges Tab (existing) */}
+        {activeTab === 'activity' && (
+          <>
         {isFetchingInBackground && earnedBadges.length === 0 && availableBadges.length === 0 ? (
           <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
         ) : earnedBadges.length === 0 && availableBadges.length === 0 ? (
@@ -372,6 +512,8 @@ export default function BadgesScreen() {
               </View>
             )}
           </>
+        )}
+        </>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -697,5 +839,116 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
+  },
+
+  // Tab Switcher
+  tabSwitcher: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 12,
+    padding: 3,
+    gap: 4,
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 10,
+    gap: 6,
+  },
+  tabActive: {
+    backgroundColor: COLORS.primary,
+  },
+  tabText: {
+    fontSize: 13,
+    fontWeight: '600' as const,
+    color: COLORS.textSecondary,
+  },
+  tabTextActive: {
+    color: '#fff',
+  },
+
+  // Seller Badge Card
+  sellerBadgeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 10,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.gold,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  sellerBadgeCardLocked: {
+    borderLeftColor: '#E0E0E0',
+    opacity: 0.65,
+  },
+  sellerBadgeIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: '#F9F9F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  sellerBadgeEarnedCheck: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#4CAF50',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  sellerBadgeInfo: {
+    flex: 1,
+  },
+  sellerBadgeName: {
+    fontSize: 15,
+    fontWeight: '600' as const,
+    color: '#333',
+    marginBottom: 2,
+  },
+  sellerBadgeDesc: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+  },
+  sellerBadgeMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sellerBadgeTier: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  sellerBadgeTierText: {
+    fontSize: 10,
+    fontWeight: '700' as const,
+  },
+  sellerBadgeDate: {
+    fontSize: 10,
+    color: COLORS.textLight,
+  },
+  sellerBadgeCriteria: {
+    fontSize: 11,
+    color: COLORS.textLight,
+    fontStyle: 'italic',
+    marginTop: 2,
   },
 });

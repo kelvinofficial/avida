@@ -12,8 +12,17 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../utils/api';
+import { PRODUCTION_API_URL } from '../utils/api';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// Resolve relative URLs to absolute URLs
+const resolveImageUrl = (url: string | undefined): string | undefined => {
+  if (!url) return url;
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('/')) return `${PRODUCTION_API_URL}${url}`;
+  return url;
+};
 
 // Banner size configurations
 const BANNER_SIZES: Record<string, { width: number; height: number }> = {
@@ -216,7 +225,7 @@ export const BannerSlot: React.FC<BannerSlotProps> = memo(({
             </View>
           )}
           <Image
-            source={{ uri: banner.content.image_url }}
+            source={{ uri: resolveImageUrl(banner.content.image_url) }}
             style={[styles.bannerImage, { width: size.width, height: size.height }]}
             resizeMode="contain"
             onLoad={() => setImageLoaded(true)}
@@ -322,7 +331,7 @@ export const FeedBanner: React.FC<Omit<BannerSlotProps, 'placement'> & { positio
       <View style={nativeAdStyles.imageContainer}>
         {banner.content.type === 'image' && banner.content.image_url ? (
           <Image
-            source={{ uri: banner.content.image_url }}
+            source={{ uri: resolveImageUrl(banner.content.image_url) }}
             style={nativeAdStyles.image}
             resizeMode="cover"
           />

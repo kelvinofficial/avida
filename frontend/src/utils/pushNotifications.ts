@@ -7,6 +7,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import api from './api';
+import { sellerNotificationsApi } from './sellerAnalyticsApi';
 
 // Configure notification handler
 Notifications.setNotificationHandler({
@@ -112,6 +113,17 @@ export async function registerPushToken(): Promise<boolean> {
       token,
       platform,
     });
+
+    // Also register FCM token for seller analytics notifications
+    try {
+      const { useAuthStore } = require('../store/authStore');
+      const userId = useAuthStore.getState()?.user?.user_id;
+      if (userId) {
+        await sellerNotificationsApi.registerPushToken(userId, token, { platform });
+      }
+    } catch (e) {
+      // Seller analytics registration is optional
+    }
 
     console.log('Push token registered successfully');
     return true;

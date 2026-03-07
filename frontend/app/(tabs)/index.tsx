@@ -30,7 +30,7 @@ import {
   HORIZONTAL_PADDING, 
 } from '../../src/components/home/homeStyles';
 import { HomeSEO, OrganizationSchema, WebsiteSearchSchema } from '../../src/components/seo';
-import { BannerSlot, FeedBanner } from '../../src/components/BannerSlot';
+import { BannerSlot, FeedBanner, HeaderBanner } from '../../src/components/BannerSlot';
 
 // ============ LAYOUT CONSTANTS ============
 const COLUMN_GAP = 12;
@@ -389,6 +389,8 @@ export default function HomeScreen() {
   // ============ FLATLIST FOOTER COMPONENT ============
   const ListFooterComponent = useMemo(() => (
     <View>
+      {/* Footer Banner */}
+      <BannerSlot placement="footer_banner" style={{ marginHorizontal: 8, marginVertical: 8 }} />
       {isLoadingMore && (
         <View style={{ paddingVertical: 20, alignItems: 'center' }}>
           <ActivityIndicator size="small" color="#2E7D32" />

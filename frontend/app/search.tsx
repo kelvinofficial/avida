@@ -28,6 +28,7 @@ import { DesktopPageLayout } from '../src/components/layout/DesktopPageLayout';
 import { Footer } from '../src/components/layout/Footer';
 import { ImagePlaceholder } from '../src/components/common/ImagePlaceholder';
 import { ImageWithSkeleton } from '../src/components/common/ImageWithSkeleton';
+import { HeaderBanner, BannerSlot, injectBannersIntoFeed, isBannerItem } from '../src/components/BannerSlot';
 import Svg, { Path } from 'react-native-svg';
 import { getCachedSync, setCacheSync } from '../src/utils/cacheManager';
 
@@ -1083,14 +1084,22 @@ export default function SearchScreen() {
           </View>
         ) : hasSearched ? (
           <FlatList
-            data={listings}
-            renderItem={renderListing}
-            keyExtractor={(item) => item.id}
+            data={injectBannersIntoFeed(listings, [5, 12])}
+            renderItem={({ item, index }) => {
+              if (isBannerItem(item)) {
+                return <BannerSlot placement={item.placement} style={{ marginHorizontal: 12, marginVertical: 6 }} />;
+              }
+              return renderListing({ item, index });
+            }}
+            keyExtractor={(item) => isBannerItem(item) ? `banner_${item.placement}_${item.position}` : item.id}
             contentContainerStyle={[styles.listContent, { paddingBottom: Math.max(insets.bottom, 24) }]}
             ListHeaderComponent={() => (
-              <Text style={styles.resultsText}>
-                {listings.length} {listings.length === 1 ? 'result' : 'results'} for "{searchQuery}"
-              </Text>
+              <View>
+                <Text style={styles.resultsText}>
+                  {listings.length} {listings.length === 1 ? 'result' : 'results'} for "{searchQuery}"
+                </Text>
+                <HeaderBanner placement="search_results_top" />
+              </View>
             )}
             ListEmptyComponent={() => (
               <View style={styles.emptyState}>
@@ -1098,6 +1107,9 @@ export default function SearchScreen() {
                 <Text style={styles.emptyTitle}>No results found</Text>
                 <Text style={styles.emptySubtitle}>Try different keywords or browse categories</Text>
               </View>
+            )}
+            ListFooterComponent={() => (
+              <BannerSlot placement="footer_banner" style={{ marginHorizontal: 12, marginVertical: 8 }} />
             )}
           />
         ) : (

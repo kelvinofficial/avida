@@ -1723,4 +1723,285 @@ def create_seller_analytics_routes(db, get_current_user):
             "limit": limit
         }
 
+    # =========================================================================
+    # SELLER BADGES (User-facing)
+    # =========================================================================
+
+    @router.get("/analytics/badges/my-badges")
+    async def get_my_badges(
+        seller_id: str = Query(...),
+        user = Depends(require_auth)
+    ):
+        """Get all badges for a seller, showing earned and available."""
+        # Get admin badge definitions
+        badge_settings = await db.admin_settings.find_one(
+            {"type": "seller_badges"},
+            {"_id": 0}
+        )
+        
+        badge_defs = badge_settings.get("badges", []) if badge_settings else []
+        
+        # Default badge definitions if none configured
+        if not badge_defs:
+            badge_defs = [
+                {"id": "top_seller", "name": "Top Seller", "description": "Achieved outstanding sales performance", "tier": "GOLD", "icon": "star", "enabled": True, "criteria": {"min_listings_sold": 10, "min_total_views": 500}},
+                {"id": "rising_star", "name": "Rising Star", "description": "Rapidly growing engagement", "tier": "SILVER", "icon": "rocket", "enabled": True, "criteria": {"min_view_growth": 50, "min_listings": 3}},
+                {"id": "quick_responder", "name": "Quick Responder", "description": "Responds within 1 hour", "tier": "BRONZE", "icon": "bolt", "enabled": True, "criteria": {"avg_response_time_minutes": 60}},
+                {"id": "trusted_seller", "name": "Trusted Seller", "description": "Consistently positive interactions", "tier": "GOLD", "icon": "verified", "enabled": True, "criteria": {"min_positive_ratings": 10, "min_rating": 4}},
+                {"id": "power_lister", "name": "Power Lister", "description": "Many active listings with photos", "tier": "SILVER", "icon": "list", "enabled": True, "criteria": {"min_active_listings": 10, "min_avg_photos": 3}},
+                {"id": "community_champion", "name": "Community Champion", "description": "Active community member", "tier": "GOLD", "icon": "people", "enabled": True, "criteria": {"min_days_active": 30, "min_total_interactions": 50}},
+                {"id": "photo_pro", "name": "Photo Pro", "description": "High-quality listing photos", "tier": "BRONZE", "icon": "camera", "enabled": True, "criteria": {"min_avg_photos": 5, "min_listings": 5}},
+            ]
+        
+        # Get user's earned badges
+        earned_badges = await db.user_badges.find(
+            {"user_id": seller_id},
+            {"_id": 0}
+        ).to_list(100)
+        
+        earned_map = {eb["badge_id"]: eb for eb in earned_badges}
+        
+        # Build response
+        badges = []
+        earned_count = 0
+        unviewed_count = 0
+        
+        icon_map = {
+            "star": "⭐", "rocket": "🚀", "bolt": "⚡",
+            "verified": "✅", "list": "📋", "people": "👥",
+            "camera": "📷", "shield": "🛡️", "trophy": "🏆",
+        }
+        
+        for bd in badge_defs:
+            if not bd.get("enabled", True):
+                continue
+            
+            badge_id = bd["id"]
+            earned_info = earned_map.get(badge_id)
+            is_earned = earned_info is not None
+            is_viewed = earned_info.get("viewed", False) if earned_info else None
+            
+            if is_earned:
+                earned_count += 1
+                if not is_viewed:
+                    unviewed_count += 1
+            
+            tier = bd.get("tier", "BRONZE").lower()
+            icon_key = bd.get("icon", "star")
+            icon = icon_map.get(icon_key, "\uD83C\uDFC5")
+            
+            criteria = bd.get("criteria", {})
+            criteria_text = ", ".join([f"{k.replace('_', ' ')}: {v}" for k, v in criteria.items()])
+            
+            badges.append({
+                "id": badge_id,
+                "name": bd.get("name", badge_id),
+                "icon": icon,
+                "description": bd.get("description", ""),
+                "tier": tier,
+                "criteria_text": criteria_text if not is_earned else None,
+                "earned": is_earned,
+                "earned_at": earned_info.get("awarded_at") if earned_info else None,
+                "viewed": is_viewed,
+            })
+        
+        return {
+            "seller_id": seller_id,
+            "earned_count": earned_count,
+            "total_available": len(badges),
+            "unviewed_count": unviewed_count,
+            "badges": badges,
+        }
+
+    @router.post("/analytics/badges/mark-viewed")
+    async def mark_badges_viewed(
+        request: Request,
+        user = Depends(require_auth)
+    ):
+        """Mark badges as viewed by the seller."""
+        body = await request.json()
+        seller_id = body.get("seller_id", user.user_id)
+        badge_ids = body.get("badge_ids")
+        
+        query = {"user_id": seller_id}
+        if badge_ids:
+            query["badge_id"] = {"$in": badge_ids}
+        
+        result = await db.user_badges.update_many(
+            query,
+            {"$set": {"viewed": True}}
+        )
+        
+        return {"success": True, "updated": result.modified_count}
+
+    @router.post("/analytics/badges/evaluate")
+    async def evaluate_user_badges(
+        request: Request,
+        user = Depends(require_auth)
+    ):
+        """Evaluate and award badges for the current user."""
+        body = await request.json()
+        seller_id = body.get("seller_id", user.user_id)
+        now = datetime.now(timezone.utc)
+        
+        listings = await db.listings.find(
+            {"user_id": seller_id},
+            {"id": 1}
+        ).to_list(1000)
+        
+        listing_ids = [l["id"] for l in listings]
+        thirty_days_ago = (now - timedelta(days=30)).isoformat()
+        
+        total_views = await db.analytics_events.count_documents({
+            "listing_id": {"$in": listing_ids},
+            "event_type": "view",
+            "timestamp": {"$gte": thirty_days_ago}
+        })
+        
+        total_sales = await db.analytics_events.count_documents({
+            "listing_id": {"$in": listing_ids},
+            "event_type": "purchase",
+            "timestamp": {"$gte": thirty_days_ago}
+        })
+        
+        badge_checks = [
+            ("first_listing", len(listings) >= 1, "First Steps"),
+            ("ten_listings", len(listings) >= 10, "Active Seller"),
+            ("hundred_views", total_views >= 100, "Getting Noticed"),
+            ("thousand_views", total_views >= 1000, "Popular Seller"),
+            ("first_sale", total_sales >= 1, "First Sale"),
+        ]
+        
+        badges_awarded = 0
+        for badge_id, condition, badge_name in badge_checks:
+            if condition:
+                existing = await db.user_badges.find_one({
+                    "user_id": seller_id,
+                    "badge_id": badge_id
+                })
+                if not existing:
+                    await db.user_badges.insert_one({
+                        "id": f"ub_{uuid.uuid4().hex[:12]}",
+                        "user_id": seller_id,
+                        "badge_id": badge_id,
+                        "badge_name": badge_name,
+                        "awarded_at": now.isoformat(),
+                        "viewed": False,
+                        "source": "user_evaluation"
+                    })
+                    badges_awarded += 1
+        
+        return {"success": True, "badges_awarded": badges_awarded}
+
+    # =========================================================================
+    # SELLER NOTIFICATIONS (User-facing)
+    # =========================================================================
+
+    @router.get("/notifications/seller")
+    async def get_seller_notifications(
+        user_id: str = Query(...),
+        type: str = Query("all"),
+        page: int = Query(1, ge=1),
+        limit: int = Query(20, ge=1, le=50),
+        user = Depends(require_auth)
+    ):
+        """Get seller-specific notifications (engagement spikes, badge unlocks, etc.)."""
+        query = {"user_id": user_id}
+        if type != "all":
+            query["type"] = type
+        
+        skip = (page - 1) * limit
+        
+        notifications = await db.seller_notifications.find(
+            query,
+            {"_id": 0}
+        ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+        
+        total = await db.seller_notifications.count_documents(query)
+        unread_count = await db.seller_notifications.count_documents({
+            "user_id": user_id,
+            "is_read": False
+        })
+        
+        return {
+            "notifications": notifications,
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "unread_count": unread_count,
+            "has_more": (page * limit) < total,
+        }
+
+    @router.put("/notifications/seller")
+    async def mark_seller_notifications_read(
+        request: Request,
+        user = Depends(require_auth)
+    ):
+        """Mark seller notifications as read."""
+        body = await request.json()
+        notification_id = body.get("notification_id")
+        mark_all = body.get("mark_all", False)
+        user_id = body.get("user_id", user.user_id)
+        
+        if mark_all:
+            result = await db.seller_notifications.update_many(
+                {"user_id": user_id, "is_read": False},
+                {"$set": {"is_read": True}}
+            )
+            return {"success": True, "updated": result.modified_count}
+        elif notification_id:
+            result = await db.seller_notifications.update_one(
+                {"id": notification_id},
+                {"$set": {"is_read": True}}
+            )
+            return {"success": True, "updated": result.modified_count}
+        
+        return {"success": False, "message": "Provide notification_id or mark_all=true"}
+
+    @router.post("/notifications/register-push")
+    async def register_push_token(
+        request: Request
+    ):
+        """Register a device push token for seller analytics notifications."""
+        body = await request.json()
+        user_id = body.get("user_id")
+        fcm_token = body.get("fcm_token")
+        device_info = body.get("device_info", {})
+        
+        if not user_id or not fcm_token:
+            raise HTTPException(status_code=400, detail="user_id and fcm_token required")
+        
+        now = datetime.now(timezone.utc)
+        
+        await db.push_tokens.update_one(
+            {"fcm_token": fcm_token},
+            {"$set": {
+                "user_id": user_id,
+                "fcm_token": fcm_token,
+                "device_info": device_info,
+                "updated_at": now.isoformat(),
+            }, "$setOnInsert": {
+                "id": f"pt_{uuid.uuid4().hex[:12]}",
+                "created_at": now.isoformat(),
+            }},
+            upsert=True
+        )
+        
+        return {"success": True, "message": "Push token registered"}
+
+    @router.delete("/notifications/register-push")
+    async def unregister_push_token(
+        request: Request
+    ):
+        """Unregister a device push token."""
+        body = await request.json()
+        fcm_token = body.get("fcm_token")
+        
+        if not fcm_token:
+            raise HTTPException(status_code=400, detail="fcm_token required")
+        
+        result = await db.push_tokens.delete_one({"fcm_token": fcm_token})
+        
+        return {"success": True, "deleted": result.deleted_count > 0}
+
     return router

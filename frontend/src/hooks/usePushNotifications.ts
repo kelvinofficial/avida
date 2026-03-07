@@ -99,6 +99,20 @@ export function usePushNotifications() {
           description: 'Notifications for listing updates',
           importance: Notifications.AndroidImportance.DEFAULT,
         });
+
+        // Seller Analytics notification channels
+        await Notifications.setNotificationChannelAsync('seller_analytics', {
+          name: 'Seller Analytics',
+          description: 'Performance insights, engagement spikes, and analytics alerts',
+          importance: Notifications.AndroidImportance.HIGH,
+          vibrationPattern: [0, 250, 250, 250],
+        });
+
+        await Notifications.setNotificationChannelAsync('badges', {
+          name: 'Badges & Achievements',
+          description: 'Badge unlocks, milestone achievements',
+          importance: Notifications.AndroidImportance.DEFAULT,
+        });
       }
 
       setState(prev => ({ ...prev, expoPushToken: token, isRegistered: true, error: null }));
@@ -115,10 +129,22 @@ export function usePushNotifications() {
 
     try {
       await api.put('/settings/push-token', { push_token: token });
+      
+      // Also register for seller analytics notifications
+      if (user?.user_id) {
+        await api.post('/notifications/register-push', {
+          user_id: user.user_id,
+          fcm_token: token,
+          device_info: {
+            platform: Platform.OS,
+            channels: ['seller_analytics', 'badges'],
+          },
+        }).catch(() => {});
+      }
     } catch (error) {
       console.error('Failed to send push token to backend:', error);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.user_id]);
 
   // Handle notification response (when user taps notification)
   const handleNotificationResponse = useCallback((response: Notifications.NotificationResponse) => {
