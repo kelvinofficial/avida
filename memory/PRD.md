@@ -11,6 +11,14 @@ Full-stack React Native/Expo mobile app with critical failures, including a non-
 
 ## Current Status (Mar 7, 2026)
 
+### Login Fix Applied (Mar 7, 2026)
+| Issue | Fix | Status |
+|-------|-----|--------|
+| TouchableOpacity onClick not working in web | Added `onClick` prop + `accessibilityRole` | ✅ Fixed |
+| Desktop login button not responding | Added web-specific click handler | ✅ Fixed |
+| Mobile login button not responding | Added web-specific click handler | ✅ Fixed |
+| Performance page not accessible | Login now works, page accessible | ✅ Fixed |
+
 ### Seller Analytics - Admin Panel Verified ✅
 | Tab | Features | Status |
 |-----|----------|--------|

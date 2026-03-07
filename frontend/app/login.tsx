@@ -551,11 +551,16 @@ export default function LoginScreen() {
               </View>
             )}
 
+            {/* Sign In Button - with web accessibility */}
             <TouchableOpacity
               style={desktopStyles.primaryBtn}
               onPress={isLoginMode ? handleEmailLogin : handleEmailRegister}
               disabled={loading}
               testID="login-submit-button"
+              accessibilityRole="button"
+              accessibilityLabel={isLoginMode ? 'Sign In' : 'Create Account'}
+              // @ts-ignore - web-specific prop for better click handling
+              onClick={Platform.OS === 'web' ? (isLoginMode ? handleEmailLogin : handleEmailRegister) : undefined}
             >
               {loading ? (
                 <ActivityIndicator size="small" color="#fff" testID="login-loading-indicator" />
@@ -755,6 +760,10 @@ export default function LoginScreen() {
             disabled={loading}
             testID="mobile-login-submit-button"
             activeOpacity={0.9}
+            accessibilityRole="button"
+            accessibilityLabel={isLoginMode ? 'Sign In' : 'Create Account'}
+            // @ts-ignore - web-specific prop for better click handling
+            onClick={Platform.OS === 'web' ? (isLoginMode ? handleEmailLogin : handleEmailRegister) : undefined}
           >
             {loading ? (
               <ActivityIndicator color="#fff" />
