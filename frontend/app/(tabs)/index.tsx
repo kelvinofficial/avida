@@ -30,7 +30,7 @@ import {
   HORIZONTAL_PADDING, 
 } from '../../src/components/home/homeStyles';
 import { HomeSEO, OrganizationSchema, WebsiteSearchSchema } from '../../src/components/seo';
-import { BannerSlot } from '../../src/components/BannerSlot';
+import { BannerSlot, FeedBanner } from '../../src/components/BannerSlot';
 
 // ============ LAYOUT CONSTANTS ============
 const COLUMN_GAP = 12;
@@ -312,19 +312,17 @@ export default function HomeScreen() {
     const result: any[] = [];
     const itemsPerRow = columns;
     let rowCount = 0;
-    const bannerPlacements = ['feed_after_5', 'feed_after_10', 'feed_after_15', 'feed_end'];
-    let bannerIdx = 0;
+    let listingCount = 0;
     
     for (let i = 0; i < listings.length; i += itemsPerRow) {
       const rowItems = listings.slice(i, i + itemsPerRow);
       result.push({ type: 'row', items: rowItems, key: `row-${i}` });
       rowCount++;
+      listingCount += rowItems.length;
       
-      // Inject banner after every BANNER_AFTER_ROWS rows
+      // Inject banner after every BANNER_AFTER_ROWS rows (behaves like native ad)
       if (rowCount % BANNER_AFTER_ROWS === 0 && i + itemsPerRow < listings.length) {
-        const placement = bannerPlacements[bannerIdx % bannerPlacements.length];
-        result.push({ type: 'banner', placement, key: `banner-${rowCount}` });
-        bannerIdx++;
+        result.push({ type: 'banner', position: listingCount, key: `banner-${rowCount}` });
       }
     }
     return result;
@@ -333,12 +331,19 @@ export default function HomeScreen() {
   // ============ RENDER FEED ITEM (ROW OR BANNER) ============
   const renderFeedItem = useCallback(({ item }: { item: any }) => {
     if (item.type === 'banner') {
+      // Use FeedBanner for native ad style - single item width like a listing
       return (
-        <View style={{ marginBottom: gridGap, width: '100%' }}>
-          <BannerSlot 
-            placement={item.placement}
-            testId={`feed-banner-${item.placement}`}
-          />
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-start', marginBottom: gridGap }}>
+          <View style={{ width: dynamicCardWidth }}>
+            <FeedBanner 
+              position={item.position}
+              category={selectedCategory || undefined}
+            />
+          </View>
+          {/* Fill remaining space */}
+          {columns > 1 && Array.from({ length: columns - 1 }).map((_, i) => (
+            <View key={`banner-spacer-${i}`} style={{ width: dynamicCardWidth, marginLeft: gridGap }} />
+          ))}
         </View>
       );
     }
@@ -363,7 +368,7 @@ export default function HomeScreen() {
         ))}
       </View>
     );
-  }, [columns, dynamicCardWidth, gridGap, router, toggleFavorite, favorites, selectedCity]);
+  }, [columns, dynamicCardWidth, gridGap, router, toggleFavorite, favorites, selectedCity, selectedCategory]);
 
   // ============ FLATLIST HEADER COMPONENT ============
   const ListHeaderComponent = useMemo(() => {

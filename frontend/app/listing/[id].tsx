@@ -1182,6 +1182,12 @@ export default function ListingDetailScreen() {
                 </View>
               )}
 
+              {/* Banner: Below Image Gallery (Desktop) */}
+              <BannerSlot 
+                placement="detail_below_gallery" 
+                category={listing?.category_id}
+              />
+
               {/* Key Details - Moved to Left */}
               {listing.attributes && Object.keys(listing.attributes).length > 0 && (
                 <View style={desktopStyles.detailCard}>
@@ -1243,6 +1249,12 @@ export default function ListingDetailScreen() {
                   <Text style={desktopStyles.descriptionText}>{listing.description}</Text>
                 </View>
               )}
+
+              {/* Banner: Below Listing Info (Desktop) */}
+              <BannerSlot 
+                placement="detail_below_info" 
+                category={listing?.category_id}
+              />
 
               {/* Social Share Buttons - Desktop */}
               <View style={desktopStyles.detailCard}>
@@ -1639,6 +1651,13 @@ export default function ListingDetailScreen() {
           featured={listing.featured}
         />
 
+        {/* Banner: Below Image Gallery */}
+        <BannerSlot 
+          placement="detail_below_gallery" 
+          category={listing?.category_id}
+          style={{ marginHorizontal: 16, marginTop: 12 }}
+        />
+
         {/* Price & Title */}
         <View style={styles.mainInfo}>
           <View style={styles.priceRow}>
@@ -1675,6 +1694,13 @@ export default function ListingDetailScreen() {
         {/* Description */}
         {listing.description && <DescriptionSection description={listing.description} />}
 
+        {/* Banner: Below Listing Info */}
+        <BannerSlot 
+          placement="detail_below_info" 
+          category={listing?.category_id}
+          style={{ marginHorizontal: 16, marginTop: 8, marginBottom: 8 }}
+        />
+
         {/* Social Share Buttons */}
         <View style={styles.section}>
           <SocialShareButtons
@@ -1698,6 +1724,13 @@ export default function ListingDetailScreen() {
 
         {/* Safety */}
         <SafetySection onReport={() => setShowReportModal(true)} listingId={listing?.id || ''} tips={safetyTips} />
+
+        {/* Banner: Before Similar Listings */}
+        <BannerSlot 
+          placement="detail_before_similar" 
+          category={listing?.category_id}
+          style={{ marginHorizontal: 16, marginTop: 8, marginBottom: 8 }}
+        />
 
         {/* Similar Listings - Two column layout for general listings */}
         <SimilarListings propertyId={id!} category="other" />

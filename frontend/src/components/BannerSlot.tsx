@@ -246,7 +246,7 @@ export const BannerSlot: React.FC<BannerSlotProps> = memo(({
   );
 });
 
-// Native feed banner - styled to match listing cards
+// Native feed banner - styled to match listing cards (Native Ad Style)
 export const FeedBanner: React.FC<Omit<BannerSlotProps, 'placement'> & { position: number }> = memo(({
   position,
   style,
@@ -311,41 +311,63 @@ export const FeedBanner: React.FC<Omit<BannerSlotProps, 'placement'> & { positio
     return null;
   }
 
+  // Extract title from banner name or use default
+  const adTitle = banner.name || 'Sponsored';
+  const adSubtitle = banner.content.image_alt || 'Check out this special offer';
+
   return (
     <TouchableOpacity
-      style={[feedStyles.container, style]}
+      style={[nativeAdStyles.card, style]}
       onPress={handleClick}
-      activeOpacity={0.9}
+      activeOpacity={0.95}
       data-testid={`feed-banner-${position}`}
     >
-      {/* Native card style */}
-      <View style={feedStyles.card}>
-        {banner.is_sponsored && (
-          <View style={feedStyles.sponsoredRow}>
-            <Ionicons name="megaphone-outline" size={14} color="#888" />
-            <Text style={feedStyles.sponsoredLabel}>Sponsored</Text>
-          </View>
-        )}
-        
+      {/* Image Container - matches ListingCard */}
+      <View style={nativeAdStyles.imageContainer}>
         {banner.content.type === 'image' && banner.content.image_url ? (
           <Image
             source={{ uri: banner.content.image_url }}
-            style={feedStyles.image}
+            style={nativeAdStyles.image}
             resizeMode="cover"
           />
         ) : (
-          <View style={feedStyles.placeholder}>
+          <View style={nativeAdStyles.imagePlaceholder}>
             <Ionicons name="megaphone" size={32} color="#4CAF50" />
-            <Text style={feedStyles.adTitle}>{banner.name}</Text>
           </View>
         )}
         
-        {banner.content.click_url && (
-          <View style={feedStyles.ctaRow}>
-            <Text style={feedStyles.ctaText}>Learn More</Text>
-            <Ionicons name="chevron-forward" size={16} color="#4CAF50" />
+        {/* Ad Badge - top left like listing badges */}
+        <View style={nativeAdStyles.adBadge}>
+          <Ionicons name="megaphone-outline" size={9} color="#fff" />
+          <Text style={nativeAdStyles.adBadgeText}>Ad</Text>
+        </View>
+        
+        {/* Sponsored badge - top right */}
+        {banner.is_sponsored && (
+          <View style={nativeAdStyles.sponsoredBadge}>
+            <Text style={nativeAdStyles.sponsoredText}>Sponsored</Text>
           </View>
         )}
+      </View>
+      
+      {/* Content - matches ListingCard layout */}
+      <View style={nativeAdStyles.content}>
+        {/* Location-like row with Ad indicator */}
+        <View style={nativeAdStyles.topRow}>
+          <Ionicons name="megaphone" size={11} color="#4CAF50" />
+          <Text style={nativeAdStyles.promotedText}>Promoted</Text>
+        </View>
+        
+        {/* Title - same style as listing title */}
+        <Text style={nativeAdStyles.title} numberOfLines={2}>
+          {adTitle}
+        </Text>
+        
+        {/* CTA row - looks like price row */}
+        <View style={nativeAdStyles.ctaRow}>
+          <Text style={nativeAdStyles.ctaText}>Learn More</Text>
+          <Ionicons name="arrow-forward" size={14} color="#4CAF50" />
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -534,6 +556,106 @@ const feedStyles = StyleSheet.create({
     fontSize: 13,
     color: '#4CAF50',
     fontWeight: '600',
+  },
+});
+
+// Native Ad styles - matches ListingCard exactly for seamless integration
+const nativeAdStyles = StyleSheet.create({
+  card: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+    // Subtle green border to distinguish as ad
+    borderWidth: 1,
+    borderColor: '#E8F5E9',
+  },
+  imageContainer: {
+    height: 140, // Same as ListingCard compact
+    position: 'relative',
+  },
+  image: {
+    width: '100%',
+    height: 140,
+    backgroundColor: '#E0E0E0',
+  },
+  imagePlaceholder: {
+    width: '100%',
+    height: 140,
+    backgroundColor: '#E8F5E9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  adBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  adBadgeText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '700',
+  },
+  sponsoredBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  sponsoredText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '600',
+  },
+  content: {
+    paddingTop: 10,
+    paddingHorizontal: 10,
+    paddingBottom: 10,
+  },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginBottom: 2,
+  },
+  promotedText: {
+    flex: 1,
+    fontSize: 11,
+    color: '#4CAF50',
+    fontWeight: '500',
+  },
+  title: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#1A1A1A',
+    marginBottom: 4,
+    lineHeight: 17,
+    minHeight: 34,
+  },
+  ctaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  ctaText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#4CAF50',
   },
 });
 

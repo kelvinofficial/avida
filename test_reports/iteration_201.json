@@ -1,0 +1,73 @@
+{
+  "summary": "Tested banner integration on homepage and listing detail page. Header banner working on homepage. All 3 banner placements (detail_below_gallery, detail_below_info, detail_before_similar) working correctly on listing detail page for both mobile and desktop. Native ad feed banners NOT appearing on homepage due to backend configuration issue.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "/api/banners/display/feed_after_10",
+        "issue": "Returns null - no banner configured for feed_after_10 placement. This causes FeedBanner to not render on homepage.",
+        "priority": "MEDIUM"
+      },
+      {
+        "endpoint": "/api/banners/display/feed_after_15",
+        "issue": "Returns null - no banner configured for feed_after_15 placement.",
+        "priority": "LOW"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Homepage native ad feed banners",
+        "issue": "FeedBanner components not rendering because backend returns null for feed_after_10 placement. The position calculation (position >= 10 uses feed_after_10) means feed_after_5 banner is never used.",
+        "affected_selectors": ["[data-testid^='feed-banner-']"],
+        "priority": "MEDIUM"
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/iteration_201.json"
+  ],
+  "action_items": [
+    "Configure banners for feed_after_10 and feed_after_15 placements in backend to enable native ad feed banners on homepage",
+    "Alternative: Adjust FeedBanner position thresholds to use feed_after_5 for positions up to 15 (change condition from position >= 10 to position >= 15)"
+  ],
+  "critical_code_review_comments": [
+    "BannerSlot component correctly implemented with Sponsored labels and click tracking",
+    "FeedBanner native ad component has proper styling (Ad badge, Promoted label, Learn More CTA) but returns null when API has no banner",
+    "Listing detail page correctly has all 3 banner placements for both mobile and desktop views",
+    "Position calculation in FeedBanner may need adjustment - position 12 uses feed_after_10 instead of feed_after_5"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "100% - Banner APIs working correctly",
+    "frontend": "85% - Header banner and detail page banners working, feed banners not appearing due to backend config"
+  },
+  "test_credentials": {
+    "test_user": "testuser2028@example.com / Test@123456",
+    "admin_user": "admin@marketplace.com / Admin@123456"
+  },
+  "seed_data_creation": "No new seed data created",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Banner integration mostly working. Issue: Native ad feed banners on homepage not appearing because feed_after_10 and feed_after_15 placements have no banners configured in backend. The feed_after_5 has a banner but position calculation means it's never used. Test listing ID: fb3227c3-63b9-4005-875c-d1efa6675170",
+  "test_verification_results": {
+    "homepage_header_banner": "PASS - Displays with Sponsored label",
+    "homepage_feed_banners": "FAIL - Not rendering because backend returns null for feed_after_10",
+    "listing_detail_desktop_below_gallery": "PASS - Banner visible with Sponsored label",
+    "listing_detail_desktop_below_info": "PASS - Banner visible with Sponsored label",
+    "listing_detail_desktop_before_similar": "PASS - Banner visible with Sponsored label",
+    "listing_detail_mobile_all_placements": "PASS - All 3 banners visible on mobile",
+    "sponsored_labels": "PASS - All banners have Sponsored labels",
+    "banner_api_header_below": "PASS - Returns banner data",
+    "banner_api_feed_after_5": "PASS - Returns banner data",
+    "banner_api_feed_after_10": "FAIL - Returns null (no banner configured)",
+    "banner_api_feed_after_15": "FAIL - Returns null (no banner configured)",
+    "banner_api_detail_below_gallery": "PASS - Returns banner data",
+    "banner_api_detail_below_info": "PASS - Returns banner data",
+    "banner_api_detail_before_similar": "PASS - Returns banner data"
+  },
+  "rca_of_issue": "The native ad feed banners are not appearing on the homepage because: 1) FeedBanner component calculates placement based on position (position >= 10 uses feed_after_10, position >= 15 uses feed_after_15), 2) With 4 columns and banner after 3 rows, position is 12, triggering feed_after_10, 3) Backend has no banner configured for feed_after_10 placement, returning null, 4) FeedBanner returns null when no banner data available. Solution: Either configure banners for feed_after_10/15 in backend, or adjust the FeedBanner position thresholds."
+}
