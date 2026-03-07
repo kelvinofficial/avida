@@ -11,7 +11,24 @@ Full-stack React Native/Expo mobile app with critical failures, including a non-
 
 ## Current Status (Mar 7, 2026)
 
-### Banner Integration Complete This Session
+### New API Endpoints Implemented This Session
+| Endpoint | Method | Status |
+|----------|--------|--------|
+| `/api/reviews` | GET | ✅ Public - List all reviews |
+| `/api/reviews/{id}` | GET | ✅ Public - Get single review |
+| `/api/reviews` | POST | ✅ Auth - Create review |
+| `/api/reviews/{id}` | PUT/DELETE | ✅ Auth - Update/Delete own review |
+| `/api/reviews/stats/summary` | GET | ✅ Public - Review statistics |
+| `/api/seller/verification` | GET | ✅ Auth - My verification status |
+| `/api/seller/verification/tiers` | GET | ✅ Public - All tiers & benefits |
+| `/api/seller/verification/requirements` | GET | ✅ Public - Requirements per tier |
+| `/api/seller/verification/request` | POST | ✅ Auth - Request verification |
+| `/api/seller/verification/user/{id}` | GET | ✅ Public - User verification status |
+| `/api/business-profile` | GET/POST/PUT/DELETE | ✅ Auth - My business profile CRUD |
+| `/api/business-profile/stats` | GET | ✅ Auth - Profile statistics |
+| `/api/escrow/disputes/{id}` | GET | ✅ Auth - Already existed |
+
+### Banner Integration (Previous Session)
 | Feature | File | Status |
 |---------|------|--------|
 | Native Ad Feed Banners | `BannerSlot.tsx` | ✅ Complete |
@@ -20,33 +37,21 @@ Full-stack React Native/Expo mobile app with critical failures, including a non-
 | Listing Detail - Below Info | `listing/[id].tsx` | ✅ Mobile + Desktop |
 | Listing Detail - Before Similar | `listing/[id].tsx` | ✅ Mobile + Desktop |
 
-### Testing: iteration_201 - Banner Features
-- Backend: 100% - All banner APIs working
-- Frontend: 100% - All banner placements verified (header, feed, detail page)
-
 ## What's Been Implemented
 
 ### Session - Mar 7, 2026 (Current Fork)
-- **Native Ad Feed Banners**: Feed banners styled like ListingCard with Ad badge, Sponsored label, and Learn More CTA
-- **All Listing Detail Page Banners**: `detail_below_gallery`, `detail_below_info`, `detail_before_similar` for both mobile and desktop
-- **Homepage Banner Integration**: Header banner + feed banners injected after every 3 rows
+- **Reviews API**: Full CRUD for reviews with ratings, comments, and statistics
+- **Seller Verification API**: Verification tiers, requirements, and request flow
+- **Business Profile API**: User's own business profile management (singular endpoint)
+- **Native Ad Feed Banners**: Feed banners styled like ListingCard
+- **All Listing Detail Page Banners**: All placements for mobile and desktop
 
-### Session - Mar 7, 2026 (Previous Fork)
+### Session - Mar 7, 2026 (Previous Forks)
 - Banner System Frontend Implementation (end-to-end)
 - Admin Dashboard API Compatibility Fix
 - Backend targeting bug fix in banner_service.py
-- Database banner image URL fixes
-
-### Session - Mar 7, 2026 (Earlier Fork)
-- Fixed subscription renewal datetime error
-- Fixed attribute_icons router Query import error
 - Seller Performance Analytics (13+ endpoints)
 - Background Cron Jobs
-
-### Session - Mar 6, 2026
-- Dynamic Banner Management System (12+ endpoints)
-- Admin Branding Management (6+ endpoints)
-- Public Branding API
 
 ### Earlier Sessions
 - 295+ API endpoints across admin, analytics, management, growth/SEO
@@ -75,13 +80,14 @@ Full-stack React Native/Expo mobile app with critical failures, including a non-
 - **Banner Placements**: `header_below`, `feed_after_5`, `detail_below_gallery`, `detail_below_info`, `detail_before_similar`
 
 ## Key API Endpoints
+- `/api/reviews/*`: Reviews system (list, create, update, delete, stats)
+- `/api/seller/verification/*`: Seller verification (tiers, requirements, requests)
+- `/api/business-profile`: User's business profile management
 - `/api/admin/branding/*`: Full CRUD for app branding
 - `/api/banners/display/{placement}`: Public banner display for mobile app
-- `/api/banners/track/*`: Banner impression and click tracking
 - `/api/admin/banners/*`: Full CRUD and analytics for banners
 - `/api/analytics/seller/*`: Seller performance data
-- `/api/admin/analytics/*`: Platform analytics + cron job management
-- `/api/branding`: Public branding info
+- `/api/escrow/*`: Escrow orders, disputes, payments
 
 ## 3rd Party Integrations
 - MongoDB Atlas, SendGrid, Firebase Cloud Messaging

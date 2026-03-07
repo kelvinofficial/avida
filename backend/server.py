@@ -310,6 +310,9 @@ try:
     from routes.photography_guides import create_photography_guides_router
     from routes.saved_filters import create_saved_filters_router
     from routes.email_test import create_email_test_router
+    from routes.reviews_routes import create_reviews_router
+    from routes.seller_verification_routes import create_seller_verification_router
+    from routes.business_profile_public_routes import create_business_profile_public_router
     MODULAR_ROUTES_AVAILABLE = True
 except ImportError as e:
     MODULAR_ROUTES_AVAILABLE = False
@@ -2867,6 +2870,30 @@ if MODULAR_ROUTES_AVAILABLE:
         logger.info("Email test router loaded successfully")
     except Exception as e:
         logger.warning(f"Failed to load email test router: {e}")
+    
+    # Create Reviews router
+    try:
+        reviews_router = create_reviews_router(db, get_current_user)
+        api_router.include_router(reviews_router)
+        logger.info("Reviews router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load reviews router: {e}")
+    
+    # Create Seller Verification router
+    try:
+        seller_verification_router = create_seller_verification_router(db, get_current_user)
+        api_router.include_router(seller_verification_router)
+        logger.info("Seller verification router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load seller verification router: {e}")
+    
+    # Create Business Profile Public router
+    try:
+        business_profile_public_router = create_business_profile_public_router(db, get_current_user)
+        api_router.include_router(business_profile_public_router)
+        logger.info("Business profile public router loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to load business profile public router: {e}")
     
     app.include_router(api_router)  # Re-include to pick up modular routes
     logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors, Property, Offers, Similar, Social, ProfileActivity, Notifications, Account, Support, UserSettings, Sessions, IDVerification) loaded successfully")
