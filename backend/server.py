@@ -2317,44 +2317,118 @@ async def get_engagement_analytics_direct(request: Request):
 
 @app.get("/api/admin/settings/seller-analytics")
 async def get_seller_analytics_settings_direct(request: Request):
-    """Get seller analytics settings - local handler"""
+    """Get seller analytics settings - comprehensive settings for admin panel"""
     user = await require_auth(request)
     try:
         settings = await db.admin_settings.find_one(
             {"type": "seller_analytics"},
             {"_id": 0}
         )
-        if not settings:
-            return {
-                "alert_threshold": 100,
-                "low_performance_threshold": 5
+        
+        # Return comprehensive default settings matching admin panel UI
+        default_settings = {
+            # Basic thresholds
+            "alert_threshold": 100,
+            "low_performance_threshold": 5,
+            
+            # Access control
+            "access_level": "all_sellers",  # all_sellers, verified_only, premium_only, manual
+            "require_subscription": False,
+            "require_credits": False,
+            "minimum_listing_age_days": 0,
+            "disabled_message": "Analytics are not available for your account. Please contact support for more information.",
+            
+            # Visible metrics
+            "visible_metrics": {
+                "views": True,
+                "saves": True,
+                "chats": True,
+                "offers": True,
+                "conversion_rates": True,
+                "boost_impact": True,
+                "location_data": True,
+                "ai_insights": True,
+                "comparison_data": True
+            },
+            
+            # Engagement notifications
+            "engagement_notifications": {
+                "spike_alerts": True,
+                "daily_summary": True,
+                "weekly_summary": True,
+                "badge_notifications": True,
+                "email_enabled": False,
+                "sms_enabled": False
+            },
+            
+            # Badge settings
+            "badge_settings": {
+                "enabled": True,
+                "auto_award": True,
+                "show_on_profile": True,
+                "show_on_listings": True
+            },
+            
+            # Top performers
+            "top_performers": {
+                "show_leaderboard": True,
+                "leaderboard_size": 10,
+                "update_frequency": "daily"
             }
-        return {
-            "alert_threshold": settings.get("alert_threshold", 100),
-            "low_performance_threshold": settings.get("low_performance_threshold", 5)
         }
+        
+        if not settings:
+            return default_settings
+        
+        # Merge stored settings with defaults
+        for key, value in default_settings.items():
+            if key not in settings:
+                settings[key] = value
+            elif isinstance(value, dict) and isinstance(settings.get(key), dict):
+                for sub_key, sub_value in value.items():
+                    if sub_key not in settings[key]:
+                        settings[key][sub_key] = sub_value
+        
+        # Remove MongoDB internal fields
+        settings.pop("type", None)
+        settings.pop("_id", None)
+        
+        return settings
     except Exception as e:
         logger.error(f"Error fetching seller analytics settings: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch settings")
 
 @app.post("/api/admin/settings/seller-analytics")
 async def save_seller_analytics_settings_direct(request: Request):
-    """Save seller analytics settings - local handler"""
+    """Save seller analytics settings - comprehensive settings for admin panel"""
     user = await require_auth(request)
     try:
         settings = await request.json()
+        
+        update_data = {
+            "type": "seller_analytics",
+            "updated_at": datetime.now(timezone.utc),
+            "updated_by": user.user_id
+        }
+        
+        # Handle all possible settings from admin panel
+        allowed_fields = [
+            "alert_threshold", "low_performance_threshold", "access_level",
+            "require_subscription", "require_credits", "minimum_listing_age_days",
+            "disabled_message", "visible_metrics", "engagement_notifications",
+            "badge_settings", "top_performers"
+        ]
+        
+        for field in allowed_fields:
+            if field in settings:
+                update_data[field] = settings[field]
+        
         await db.admin_settings.update_one(
             {"type": "seller_analytics"},
-            {"$set": {
-                "type": "seller_analytics",
-                "alert_threshold": settings.get("alert_threshold", 100),
-                "low_performance_threshold": settings.get("low_performance_threshold", 5),
-                "updated_at": datetime.now(timezone.utc),
-                "updated_by": user.user_id
-            }},
+            {"$set": update_data},
             upsert=True
         )
-        return {"success": True, "message": "Settings saved"}
+        return {"success": True, "message": "Settings saved successfully"}
     except Exception as e:
         logger.error(f"Error saving seller analytics settings: {e}")
         raise HTTPException(status_code=500, detail="Failed to save settings")
@@ -2411,6 +2485,198 @@ async def save_engagement_notification_settings_direct(request: Request):
         return {"success": True, "message": "Settings saved"}
     except Exception as e:
         logger.error(f"Error saving engagement notification settings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save settings")
+
+@app.get("/api/admin/settings/seller-badges")
+async def get_seller_badge_settings(request: Request):
+    """Get seller badge settings for admin panel"""
+    user = await require_auth(request)
+    try:
+        settings = await db.admin_settings.find_one(
+            {"type": "seller_badges"},
+            {"_id": 0}
+        )
+        
+        default_settings = {
+            "enabled": True,
+            "auto_award": True,
+            "show_on_profile": True,
+            "show_on_listings": True,
+            "badges": [
+                {
+                    "id": "top_seller",
+                    "name": "Top Seller",
+                    "description": "Awarded to sellers with high sales volume",
+                    "icon": "star",
+                    "color": "#FFD700",
+                    "enabled": True,
+                    "criteria": {"min_sales": 50, "min_rating": 4.5}
+                },
+                {
+                    "id": "quick_responder",
+                    "name": "Quick Responder",
+                    "description": "Responds to messages within 1 hour",
+                    "icon": "bolt",
+                    "color": "#2196F3",
+                    "enabled": True,
+                    "criteria": {"avg_response_time_hours": 1}
+                },
+                {
+                    "id": "trusted_seller",
+                    "name": "Trusted Seller",
+                    "description": "Verified identity and excellent track record",
+                    "icon": "verified",
+                    "color": "#4CAF50",
+                    "enabled": True,
+                    "criteria": {"verified": True, "min_rating": 4.0, "min_transactions": 10}
+                },
+                {
+                    "id": "power_seller",
+                    "name": "Power Seller",
+                    "description": "High volume seller with consistent performance",
+                    "icon": "rocket",
+                    "color": "#9C27B0",
+                    "enabled": True,
+                    "criteria": {"min_listings": 20, "min_views": 1000}
+                },
+                {
+                    "id": "new_seller",
+                    "name": "New Seller",
+                    "description": "Recently joined the marketplace",
+                    "icon": "sparkles",
+                    "color": "#FF9800",
+                    "enabled": True,
+                    "criteria": {"account_age_days_max": 30}
+                }
+            ]
+        }
+        
+        if not settings:
+            return default_settings
+        
+        # Merge with defaults
+        for key, value in default_settings.items():
+            if key not in settings:
+                settings[key] = value
+        
+        settings.pop("type", None)
+        return settings
+    except Exception as e:
+        logger.error(f"Error fetching seller badge settings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch settings")
+
+@app.post("/api/admin/settings/seller-badges")
+async def save_seller_badge_settings(request: Request):
+    """Save seller badge settings"""
+    user = await require_auth(request)
+    try:
+        settings = await request.json()
+        
+        update_data = {
+            "type": "seller_badges",
+            "updated_at": datetime.now(timezone.utc),
+            "updated_by": user.user_id
+        }
+        
+        allowed_fields = ["enabled", "auto_award", "show_on_profile", "show_on_listings", "badges"]
+        for field in allowed_fields:
+            if field in settings:
+                update_data[field] = settings[field]
+        
+        await db.admin_settings.update_one(
+            {"type": "seller_badges"},
+            {"$set": update_data},
+            upsert=True
+        )
+        return {"success": True, "message": "Badge settings saved successfully"}
+    except Exception as e:
+        logger.error(f"Error saving seller badge settings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save settings")
+
+@app.get("/api/admin/settings/top-performers")
+async def get_top_performers_settings(request: Request):
+    """Get top performers/leaderboard settings for admin panel"""
+    user = await require_auth(request)
+    try:
+        settings = await db.admin_settings.find_one(
+            {"type": "top_performers"},
+            {"_id": 0}
+        )
+        
+        default_settings = {
+            "show_leaderboard": True,
+            "leaderboard_public": True,
+            "leaderboard_size": 10,
+            "update_frequency": "daily",
+            "metrics": {
+                "views": True,
+                "sales": True,
+                "rating": True,
+                "response_time": True
+            },
+            "time_periods": {
+                "daily": True,
+                "weekly": True,
+                "monthly": True,
+                "all_time": True
+            },
+            "categories": {
+                "show_by_category": True,
+                "min_listings_per_category": 5
+            },
+            "rewards": {
+                "enabled": False,
+                "top_1_reward": "Featured listing for 7 days",
+                "top_3_reward": "Profile badge",
+                "top_10_reward": "Priority in search"
+            }
+        }
+        
+        if not settings:
+            return default_settings
+        
+        # Merge with defaults
+        for key, value in default_settings.items():
+            if key not in settings:
+                settings[key] = value
+            elif isinstance(value, dict) and isinstance(settings.get(key), dict):
+                for sub_key, sub_value in value.items():
+                    if sub_key not in settings[key]:
+                        settings[key][sub_key] = sub_value
+        
+        settings.pop("type", None)
+        return settings
+    except Exception as e:
+        logger.error(f"Error fetching top performers settings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch settings")
+
+@app.post("/api/admin/settings/top-performers")
+async def save_top_performers_settings(request: Request):
+    """Save top performers/leaderboard settings"""
+    user = await require_auth(request)
+    try:
+        settings = await request.json()
+        
+        update_data = {
+            "type": "top_performers",
+            "updated_at": datetime.now(timezone.utc),
+            "updated_by": user.user_id
+        }
+        
+        allowed_fields = ["show_leaderboard", "leaderboard_public", "leaderboard_size", 
+                        "update_frequency", "metrics", "time_periods", "categories", "rewards"]
+        for field in allowed_fields:
+            if field in settings:
+                update_data[field] = settings[field]
+        
+        await db.admin_settings.update_one(
+            {"type": "top_performers"},
+            {"$set": update_data},
+            upsert=True
+        )
+        return {"success": True, "message": "Top performers settings saved successfully"}
+    except Exception as e:
+        logger.error(f"Error saving top performers settings: {e}")
         raise HTTPException(status_code=500, detail="Failed to save settings")
 
 # =============================================================================
