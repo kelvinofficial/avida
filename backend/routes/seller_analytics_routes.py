@@ -1294,4 +1294,229 @@ def create_seller_analytics_routes(db, get_current_user):
             ]
         }
 
+    # =========================================================================
+    # CRON JOB STATUS & MANUAL TRIGGERS
+    # =========================================================================
+
+    @router.get("/admin/analytics/cron/status")
+    async def get_cron_status(admin = Depends(require_admin)):
+        """Get status of analytics cron jobs."""
+        now = datetime.now(timezone.utc)
+        
+        # Get last spike detection run
+        last_spike = await db.cron_history.find_one(
+            {"task": "spike_detection"},
+            {"_id": 0},
+            sort=[("run_at", -1)]
+        )
+        
+        # Get last badge evaluation run
+        last_badge = await db.cron_history.find_one(
+            {"task": "daily_badge_evaluation"},
+            {"_id": 0},
+            sort=[("run_at", -1)]
+        )
+        
+        # Get recent spikes detected
+        recent_spikes = await db.engagement_notifications.count_documents({
+            "type": "spike",
+            "detected_at": {"$gte": (now - timedelta(hours=24)).isoformat()}
+        })
+        
+        # Get badges awarded today
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+        badges_today = await db.user_badges.count_documents({
+            "awarded_at": {"$gte": today_start}
+        })
+        
+        return {
+            "spike_detection": {
+                "schedule": "Every 30 minutes",
+                "last_run": last_spike.get("run_at") if last_spike else None,
+                "spikes_last_24h": recent_spikes,
+                "status": "running"
+            },
+            "badge_evaluation": {
+                "schedule": "Daily at 2 AM UTC",
+                "last_run": last_badge.get("run_at") if last_badge else None,
+                "badges_today": badges_today,
+                "status": "running"
+            },
+            "server_time": now.isoformat()
+        }
+
+    @router.post("/admin/analytics/cron/run-spike-detection")
+    async def manual_spike_detection(admin = Depends(require_admin)):
+        """Manually trigger spike detection (for testing)."""
+        now = datetime.now(timezone.utc)
+        lookback_hours = 24
+        comparison_hours = 168
+        
+        lookback_start = (now - timedelta(hours=lookback_hours)).isoformat()
+        comparison_start = (now - timedelta(hours=comparison_hours)).isoformat()
+        comparison_end = lookback_start
+        
+        # Get active listings
+        active_listings = await db.listings.find(
+            {"status": "active"},
+            {"id": 1, "user_id": 1, "title": 1}
+        ).to_list(500)
+        
+        spikes_detected = 0
+        notifications_sent = 0
+        
+        for listing in active_listings:
+            listing_id = listing["id"]
+            
+            recent_views = await db.analytics_events.count_documents({
+                "listing_id": listing_id,
+                "event_type": "view",
+                "timestamp": {"$gte": lookback_start}
+            })
+            
+            if recent_views < 10:
+                continue
+            
+            comparison_views = await db.analytics_events.count_documents({
+                "listing_id": listing_id,
+                "event_type": "view",
+                "timestamp": {"$gte": comparison_start, "$lt": comparison_end}
+            })
+            
+            normalized_comparison = comparison_views * (lookback_hours / comparison_hours)
+            
+            if normalized_comparison > 0:
+                increase_percent = (recent_views - normalized_comparison) / normalized_comparison * 100
+                
+                if increase_percent >= 50:
+                    spikes_detected += 1
+                    
+                    # Check for existing notification
+                    existing = await db.engagement_notifications.find_one({
+                        "listing_id": listing_id,
+                        "type": "spike",
+                        "detected_at": {"$gte": (now - timedelta(hours=24)).isoformat()}
+                    })
+                    
+                    if not existing:
+                        notification = {
+                            "id": f"spike_{uuid.uuid4().hex[:12]}",
+                            "type": "spike",
+                            "listing_id": listing_id,
+                            "listing_title": listing.get("title", ""),
+                            "user_id": listing.get("user_id"),
+                            "recent_views": recent_views,
+                            "baseline_views": round(normalized_comparison, 1),
+                            "increase_percent": round(increase_percent, 1),
+                            "detected_at": now.isoformat(),
+                            "notification_sent": True,
+                            "source": "manual_trigger"
+                        }
+                        await db.engagement_notifications.insert_one(notification)
+                        notifications_sent += 1
+        
+        # Record run
+        await db.cron_history.insert_one({
+            "task": "spike_detection",
+            "run_at": now.isoformat(),
+            "listings_processed": len(active_listings),
+            "spikes_detected": spikes_detected,
+            "notifications_sent": notifications_sent,
+            "triggered_by": admin.user_id
+        })
+        
+        return {
+            "success": True,
+            "listings_checked": len(active_listings),
+            "spikes_detected": spikes_detected,
+            "notifications_sent": notifications_sent,
+            "run_at": now.isoformat()
+        }
+
+    @router.post("/admin/analytics/cron/run-badge-evaluation")
+    async def manual_badge_evaluation(admin = Depends(require_admin)):
+        """Manually trigger badge evaluation (for testing)."""
+        now = datetime.now(timezone.utc)
+        
+        # Get all sellers
+        sellers = await db.users.find(
+            {"role": {"$in": ["seller", "user"]}},
+            {"user_id": 1}
+        ).to_list(1000)
+        
+        badges_awarded = 0
+        
+        for seller in sellers:
+            user_id = seller["user_id"]
+            
+            try:
+                # Get listings
+                listings = await db.listings.find(
+                    {"user_id": user_id},
+                    {"id": 1}
+                ).to_list(1000)
+                
+                listing_ids = [l["id"] for l in listings]
+                
+                # Get metrics
+                thirty_days_ago = (now - timedelta(days=30)).isoformat()
+                
+                total_views = await db.analytics_events.count_documents({
+                    "listing_id": {"$in": listing_ids},
+                    "event_type": "view",
+                    "timestamp": {"$gte": thirty_days_ago}
+                })
+                
+                total_sales = await db.analytics_events.count_documents({
+                    "listing_id": {"$in": listing_ids},
+                    "event_type": "purchase",
+                    "timestamp": {"$gte": thirty_days_ago}
+                })
+                
+                # Check badges
+                badge_checks = [
+                    ("first_listing", len(listings) >= 1, "First Steps"),
+                    ("ten_listings", len(listings) >= 10, "Active Seller"),
+                    ("hundred_views", total_views >= 100, "Getting Noticed"),
+                    ("thousand_views", total_views >= 1000, "Popular Seller"),
+                    ("first_sale", total_sales >= 1, "First Sale"),
+                ]
+                
+                for badge_id, condition, badge_name in badge_checks:
+                    if condition:
+                        existing = await db.user_badges.find_one({
+                            "user_id": user_id,
+                            "badge_id": badge_id
+                        })
+                        if not existing:
+                            await db.user_badges.insert_one({
+                                "id": f"ub_{uuid.uuid4().hex[:12]}",
+                                "user_id": user_id,
+                                "badge_id": badge_id,
+                                "badge_name": badge_name,
+                                "awarded_at": now.isoformat(),
+                                "source": "manual_evaluation"
+                            })
+                            badges_awarded += 1
+                            
+            except Exception as e:
+                logger.warning(f"Error evaluating badges for {user_id}: {e}")
+                continue
+        
+        # Record run
+        await db.cron_history.insert_one({
+            "task": "daily_badge_evaluation",
+            "run_at": now.isoformat(),
+            "sellers_processed": len(sellers),
+            "badges_awarded": badges_awarded,
+            "triggered_by": admin.user_id
+        })
+        
+        return {
+            "success": True,
+            "sellers_processed": len(sellers),
+            "badges_awarded": badges_awarded,
+            "run_at": now.isoformat()
+        }
+
     return router

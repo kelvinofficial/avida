@@ -2445,6 +2445,7 @@ ADMIN_LOCAL_PATHS = [
     "analytics/sellers", 
     "analytics/engagement",
     "analytics/top-performers",
+    "analytics/cron",
     "seller-analytics",
     "settings/seller-analytics",
     "settings/engagement-notifications",
@@ -3992,6 +3993,328 @@ async def scheduled_reports_task():
         except Exception as e:
             logger.error(f"Error in scheduled reports task: {e}")
             await asyncio.sleep(60)  # Wait a minute on error
+
+
+# =============================================================================
+# SELLER ANALYTICS CRON JOBS
+# =============================================================================
+
+async def spike_detection_cron_task():
+    """
+    Background task to detect engagement spikes every 30 minutes.
+    Notifies sellers when their listings see unusual traffic increases.
+    """
+    logger.info("Spike detection cron job started")
+    
+    while True:
+        try:
+            # Wait 30 minutes between checks
+            await asyncio.sleep(30 * 60)
+            
+            logger.info("Running spike detection check...")
+            now = datetime.now(timezone.utc)
+            lookback_hours = 24
+            comparison_hours = 168  # Previous week
+            
+            lookback_start = (now - timedelta(hours=lookback_hours)).isoformat()
+            comparison_start = (now - timedelta(hours=comparison_hours)).isoformat()
+            comparison_end = lookback_start
+            
+            # Get all active listings
+            active_listings = await db.listings.find(
+                {"status": "active"},
+                {"id": 1, "user_id": 1, "title": 1}
+            ).to_list(10000)
+            
+            spikes_detected = 0
+            notifications_sent = 0
+            
+            for listing in active_listings[:500]:  # Process up to 500 per run
+                listing_id = listing["id"]
+                
+                # Recent period views
+                recent_views = await db.analytics_events.count_documents({
+                    "listing_id": listing_id,
+                    "event_type": "view",
+                    "timestamp": {"$gte": lookback_start}
+                })
+                
+                # Skip if too few views
+                if recent_views < 10:
+                    continue
+                
+                # Comparison period views
+                comparison_views = await db.analytics_events.count_documents({
+                    "listing_id": listing_id,
+                    "event_type": "view",
+                    "timestamp": {"$gte": comparison_start, "$lt": comparison_end}
+                })
+                
+                # Normalize to same duration
+                normalized_comparison = comparison_views * (lookback_hours / comparison_hours)
+                
+                # Check for spike (50% or more increase)
+                if normalized_comparison > 0:
+                    increase_percent = (recent_views - normalized_comparison) / normalized_comparison * 100
+                    
+                    if increase_percent >= 50:
+                        spikes_detected += 1
+                        
+                        # Check if we already notified about this spike recently
+                        recent_notification = await db.engagement_notifications.find_one({
+                            "listing_id": listing_id,
+                            "type": "spike",
+                            "detected_at": {"$gte": (now - timedelta(hours=24)).isoformat()}
+                        })
+                        
+                        if not recent_notification:
+                            # Create spike notification
+                            notification = {
+                                "id": f"spike_{uuid.uuid4().hex[:12]}",
+                                "type": "spike",
+                                "listing_id": listing_id,
+                                "listing_title": listing.get("title", ""),
+                                "user_id": listing.get("user_id"),
+                                "recent_views": recent_views,
+                                "baseline_views": round(normalized_comparison, 1),
+                                "increase_percent": round(increase_percent, 1),
+                                "detected_at": now.isoformat(),
+                                "notification_sent": True
+                            }
+                            
+                            await db.engagement_notifications.insert_one(notification)
+                            
+                            # Check user settings before sending push notification
+                            user_settings = await db.seller_analytics_settings.find_one({
+                                "user_id": listing.get("user_id")
+                            })
+                            
+                            if not user_settings or user_settings.get("badge_notifications_enabled", True):
+                                # Create user notification
+                                user_notif = {
+                                    "id": f"notif_{uuid.uuid4().hex[:12]}",
+                                    "type": "engagement_spike",
+                                    "user_id": listing.get("user_id"),
+                                    "title": "Traffic Spike Detected!",
+                                    "message": f"Your listing '{listing.get('title', '')[:30]}...' is getting {round(increase_percent)}% more views than usual!",
+                                    "data": {
+                                        "listing_id": listing_id,
+                                        "increase_percent": round(increase_percent, 1)
+                                    },
+                                    "created_at": now.isoformat(),
+                                    "read": False
+                                }
+                                await db.notifications.insert_one(user_notif)
+                                notifications_sent += 1
+            
+            if spikes_detected > 0:
+                logger.info(f"Spike detection: {spikes_detected} spikes found, {notifications_sent} notifications sent")
+            
+        except Exception as e:
+            logger.error(f"Error in spike detection cron: {e}")
+            await asyncio.sleep(60)  # Wait a minute on error
+
+
+async def daily_badge_evaluation_task():
+    """
+    Background task to evaluate and award badges daily.
+    Runs at 2 AM UTC to process seller achievements.
+    """
+    logger.info("Daily badge evaluation task started")
+    
+    while True:
+        try:
+            now = datetime.now(timezone.utc)
+            
+            # Calculate time until next 2 AM UTC
+            target_hour = 2
+            if now.hour >= target_hour:
+                # Schedule for tomorrow
+                next_run = now.replace(hour=target_hour, minute=0, second=0, microsecond=0) + timedelta(days=1)
+            else:
+                # Schedule for today
+                next_run = now.replace(hour=target_hour, minute=0, second=0, microsecond=0)
+            
+            sleep_seconds = (next_run - now).total_seconds()
+            logger.info(f"Next badge evaluation scheduled in {sleep_seconds/3600:.1f} hours")
+            await asyncio.sleep(sleep_seconds)
+            
+            logger.info("Running daily badge evaluation...")
+            
+            # Get all active sellers
+            sellers = await db.users.find(
+                {"role": {"$in": ["seller", "user"]}},
+                {"user_id": 1, "email": 1, "name": 1}
+            ).to_list(10000)
+            
+            badges_awarded = 0
+            
+            for seller in sellers:
+                user_id = seller["user_id"]
+                
+                try:
+                    # Get seller's listings
+                    listings = await db.listings.find(
+                        {"user_id": user_id},
+                        {"id": 1, "status": 1, "created_at": 1}
+                    ).to_list(1000)
+                    
+                    listing_ids = [l["id"] for l in listings]
+                    
+                    # Calculate metrics for the last 30 days
+                    thirty_days_ago = (now - timedelta(days=30)).isoformat()
+                    
+                    # Total views
+                    total_views = await db.analytics_events.count_documents({
+                        "listing_id": {"$in": listing_ids},
+                        "event_type": "view",
+                        "timestamp": {"$gte": thirty_days_ago}
+                    })
+                    
+                    # Total sales
+                    total_sales = await db.analytics_events.count_documents({
+                        "listing_id": {"$in": listing_ids},
+                        "event_type": "purchase",
+                        "timestamp": {"$gte": thirty_days_ago}
+                    })
+                    
+                    # Check for badge achievements
+                    badges_to_award = []
+                    
+                    # First listing badge
+                    if len(listings) >= 1:
+                        existing = await db.user_badges.find_one({
+                            "user_id": user_id,
+                            "badge_id": "first_listing"
+                        })
+                        if not existing:
+                            badges_to_award.append({
+                                "badge_id": "first_listing",
+                                "name": "First Steps",
+                                "description": "Created your first listing"
+                            })
+                    
+                    # 10 listings badge
+                    if len(listings) >= 10:
+                        existing = await db.user_badges.find_one({
+                            "user_id": user_id,
+                            "badge_id": "ten_listings"
+                        })
+                        if not existing:
+                            badges_to_award.append({
+                                "badge_id": "ten_listings",
+                                "name": "Active Seller",
+                                "description": "Created 10 listings"
+                            })
+                    
+                    # 100 views badge
+                    if total_views >= 100:
+                        existing = await db.user_badges.find_one({
+                            "user_id": user_id,
+                            "badge_id": "hundred_views"
+                        })
+                        if not existing:
+                            badges_to_award.append({
+                                "badge_id": "hundred_views",
+                                "name": "Getting Noticed",
+                                "description": "Received 100 listing views"
+                            })
+                    
+                    # 1000 views badge
+                    if total_views >= 1000:
+                        existing = await db.user_badges.find_one({
+                            "user_id": user_id,
+                            "badge_id": "thousand_views"
+                        })
+                        if not existing:
+                            badges_to_award.append({
+                                "badge_id": "thousand_views",
+                                "name": "Popular Seller",
+                                "description": "Received 1,000 listing views"
+                            })
+                    
+                    # First sale badge
+                    if total_sales >= 1:
+                        existing = await db.user_badges.find_one({
+                            "user_id": user_id,
+                            "badge_id": "first_sale"
+                        })
+                        if not existing:
+                            badges_to_award.append({
+                                "badge_id": "first_sale",
+                                "name": "First Sale",
+                                "description": "Completed your first sale"
+                            })
+                    
+                    # Award badges
+                    for badge in badges_to_award:
+                        badge_doc = {
+                            "id": f"ub_{uuid.uuid4().hex[:12]}",
+                            "user_id": user_id,
+                            "badge_id": badge["badge_id"],
+                            "badge_name": badge["name"],
+                            "awarded_at": now.isoformat(),
+                            "source": "daily_evaluation"
+                        }
+                        await db.user_badges.insert_one(badge_doc)
+                        badges_awarded += 1
+                        
+                        # Check user settings before sending notification
+                        user_settings = await db.seller_analytics_settings.find_one({
+                            "user_id": user_id
+                        })
+                        
+                        if not user_settings or user_settings.get("badge_notifications_enabled", True):
+                            # Send notification
+                            notif = {
+                                "id": f"notif_{uuid.uuid4().hex[:12]}",
+                                "type": "badge_unlock",
+                                "user_id": user_id,
+                                "title": "Badge Unlocked!",
+                                "message": f"You've earned the '{badge['name']}' badge! {badge['description']}",
+                                "data": {"badge_id": badge["badge_id"]},
+                                "created_at": now.isoformat(),
+                                "read": False
+                            }
+                            await db.notifications.insert_one(notif)
+                
+                except Exception as e:
+                    logger.warning(f"Error evaluating badges for user {user_id}: {e}")
+                    continue
+            
+            logger.info(f"Daily badge evaluation complete: {badges_awarded} badges awarded to {len(sellers)} sellers")
+            
+            # Record evaluation run
+            await db.cron_history.insert_one({
+                "task": "daily_badge_evaluation",
+                "run_at": now.isoformat(),
+                "sellers_processed": len(sellers),
+                "badges_awarded": badges_awarded
+            })
+            
+        except Exception as e:
+            logger.error(f"Error in daily badge evaluation: {e}")
+            await asyncio.sleep(60 * 60)  # Wait an hour on error
+
+
+@app.on_event("startup")
+async def start_analytics_cron_jobs():
+    """Start analytics background cron jobs"""
+    logger.info("Starting analytics cron jobs...")
+    
+    # Check if seller analytics is enabled
+    settings = await db.admin_settings.find_one({"id": "seller_analytics"})
+    if settings and not settings.get("seller_analytics_enabled", True):
+        logger.info("Seller analytics disabled, skipping cron jobs")
+        return
+    
+    # Start spike detection (every 30 minutes)
+    asyncio.create_task(spike_detection_cron_task())
+    logger.info("Spike detection cron job scheduled (every 30 min)")
+    
+    # Start daily badge evaluation (at 2 AM UTC)
+    asyncio.create_task(daily_badge_evaluation_task())
+    logger.info("Daily badge evaluation scheduled (2 AM UTC)")
 
 
 @app.on_event("shutdown")
