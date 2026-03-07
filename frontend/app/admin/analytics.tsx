@@ -181,7 +181,7 @@ export default function AdminAnalyticsScreen() {
   const openAdminDashboard = () => {
     const url = Platform.OS === 'web' 
       ? '/api/admin-ui/dashboard/analytics'
-      : 'https://api-integration-81.preview.emergentagent.com/api/admin-ui/dashboard/analytics';
+      : 'https://branding-hub-20.preview.emergentagent.com/api/admin-ui/dashboard/analytics';
     Linking.openURL(url);
   };
 

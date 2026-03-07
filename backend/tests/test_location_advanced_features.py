@@ -11,7 +11,7 @@ import os
 
 BASE_URL = os.environ.get('NEXT_PUBLIC_MAIN_API_URL') or os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
-    BASE_URL = "https://api-integration-81.preview.emergentagent.com/api"
+    BASE_URL = "https://branding-hub-20.preview.emergentagent.com/api"
 
 
 class TestLocationAdvancedFeatures:

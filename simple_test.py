@@ -7,7 +7,7 @@ import requests
 import json
 
 # Get backend URL
-BASE_URL = "https://api-integration-81.preview.emergentagent.com"
+BASE_URL = "https://branding-hub-20.preview.emergentagent.com"
 API_URL = f"{BASE_URL}/api"
 TEST_SESSION_TOKEN = "test_session_123"
 

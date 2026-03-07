@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime
 
 # Base URL from environment
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://api-integration-81.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://branding-hub-20.preview.emergentagent.com')
 
 # Test user credentials
 TEST_PASSWORD = "test123456"

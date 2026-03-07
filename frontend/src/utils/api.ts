@@ -5,7 +5,7 @@ import Constants from 'expo-constants';
 
 // Production API URL - HARDCODED and ALWAYS used
 // This ensures the correct URL is used regardless of cache issues
-export const PRODUCTION_API_URL = 'https://api-integration-81.preview.emergentagent.com';
+export const PRODUCTION_API_URL = 'https://branding-hub-20.preview.emergentagent.com';
 
 // Get API URL - ALWAYS use hardcoded URL to avoid cache issues
 export const getApiUrl = (): string => {

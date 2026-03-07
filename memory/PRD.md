@@ -4,7 +4,7 @@
 Full-stack React Native/Expo mobile app with critical failures, including a non-functional homepage and missing API endpoints.
 
 ## Architecture
-- **Frontend**: React Native/Expo (mobile + web) at `https://api-integration-81.preview.emergentagent.com`
+- **Frontend**: React Native/Expo (mobile + web) at `https://branding-hub-20.preview.emergentagent.com`
 - **Backend**: FastAPI on port 8001 (same server)
 - **Database**: MongoDB Atlas
 - **Admin Dashboard**: Next.js (separate deployment)
