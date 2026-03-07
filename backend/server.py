@@ -3006,7 +3006,7 @@ if NOTIFICATION_QUEUE_AVAILABLE and NOTIFICATION_SERVICE_AVAILABLE:
     # Start background queue processor
     @app.on_event("startup")
     async def start_notification_queue():
-        notification_queue.start(interval=15)  # Process every 15 seconds
+        notification_queue.start(interval=15)
         logger.info("Notification queue processor started")
     
     @app.on_event("shutdown")

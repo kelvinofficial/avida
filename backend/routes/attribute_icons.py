@@ -3,7 +3,7 @@ Attribute Icons Routes Module
 Handles Ionicon management for categories and attributes
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Optional, List
 from datetime import datetime, timezone
 from pydantic import BaseModel

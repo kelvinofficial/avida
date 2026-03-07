@@ -469,6 +469,8 @@ class AutoRenewalService:
             user = await self.db.users.find_one({"user_id": profile["user_id"]})
             if user and user.get("email"):
                 expires_at = profile["premium_expires_at"]
+                if expires_at and expires_at.tzinfo is None:
+                    expires_at = expires_at.replace(tzinfo=timezone.utc)
                 days_left = (expires_at - now).days
                 await self.email_service.send_renewal_reminder(
                     user["email"],
@@ -496,6 +498,8 @@ class AutoRenewalService:
             user = await self.db.users.find_one({"user_id": profile["user_id"]})
             if user and user.get("email"):
                 expires_at = profile["premium_expires_at"]
+                if expires_at and expires_at.tzinfo is None:
+                    expires_at = expires_at.replace(tzinfo=timezone.utc)
                 days_left = (expires_at - now).days
                 await self.email_service.send_renewal_reminder(
                     user["email"],
@@ -522,11 +526,14 @@ class AutoRenewalService:
         for profile in expiring_1d:
             user = await self.db.users.find_one({"user_id": profile["user_id"]})
             if user and user.get("email"):
+                expires_at_1d = profile["premium_expires_at"]
+                if expires_at_1d and expires_at_1d.tzinfo is None:
+                    expires_at_1d = expires_at_1d.replace(tzinfo=timezone.utc)
                 await self.email_service.send_renewal_reminder(
                     user["email"],
                     profile["business_name"],
                     1,
-                    profile["premium_expires_at"].strftime("%Y-%m-%d")
+                    expires_at_1d.strftime("%Y-%m-%d")
                 )
                 await self.db.business_profiles.update_one(
                     {"id": profile["id"]},
