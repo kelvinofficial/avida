@@ -2446,6 +2446,7 @@ ADMIN_LOCAL_PATHS = [
     "analytics/engagement",
     "analytics/top-performers",
     "analytics/cron",
+    "analytics/digest",
     "seller-analytics",
     "settings/seller-analytics",
     "settings/engagement-notifications",
@@ -4297,6 +4298,124 @@ async def daily_badge_evaluation_task():
             await asyncio.sleep(60 * 60)  # Wait an hour on error
 
 
+async def weekly_digest_cron_task():
+    """
+    Background task to send weekly digests to sellers.
+    Runs every Monday at 9 AM UTC.
+    """
+    logger.info("Weekly digest cron job started")
+    
+    while True:
+        try:
+            now = datetime.now(timezone.utc)
+            
+            # Calculate time until next Monday 9 AM UTC
+            days_until_monday = (7 - now.weekday()) % 7
+            if days_until_monday == 0 and now.hour >= 9:
+                days_until_monday = 7  # Already past Monday 9 AM, schedule for next week
+            
+            next_run = (now + timedelta(days=days_until_monday)).replace(
+                hour=9, minute=0, second=0, microsecond=0
+            )
+            
+            sleep_seconds = (next_run - now).total_seconds()
+            logger.info(f"Next weekly digest scheduled in {sleep_seconds/3600:.1f} hours ({next_run.strftime('%A %H:%M UTC')})")
+            await asyncio.sleep(sleep_seconds)
+            
+            logger.info("Running weekly digest distribution...")
+            
+            # Import notification service
+            try:
+                from services.analytics_notification_service import AnalyticsNotificationService
+                from utils.email_service import email_service
+                service = AnalyticsNotificationService(db, email_service=email_service)
+            except Exception as e:
+                logger.error(f"Failed to initialize notification service: {e}")
+                await asyncio.sleep(60 * 60)
+                continue
+            
+            # Get all sellers with weekly digest enabled
+            sellers = await db.users.find(
+                {"role": {"$in": ["seller", "user"]}},
+                {"user_id": 1, "email": 1}
+            ).to_list(10000)
+            
+            digests_sent = 0
+            digests_skipped = 0
+            
+            for seller in sellers:
+                try:
+                    result = await service.send_weekly_digest(seller["user_id"])
+                    if result.get("success"):
+                        digests_sent += 1
+                    else:
+                        digests_skipped += 1
+                except Exception as e:
+                    logger.warning(f"Error sending digest to {seller['user_id']}: {e}")
+                    digests_skipped += 1
+                
+                # Rate limit to avoid overwhelming email service
+                await asyncio.sleep(0.5)
+            
+            logger.info(f"Weekly digest complete: {digests_sent} sent, {digests_skipped} skipped")
+            
+            # Record run
+            await db.cron_history.insert_one({
+                "task": "weekly_digest",
+                "run_at": datetime.now(timezone.utc).isoformat(),
+                "sellers_processed": len(sellers),
+                "digests_sent": digests_sent,
+                "digests_skipped": digests_skipped
+            })
+            
+        except Exception as e:
+            logger.error(f"Error in weekly digest cron: {e}")
+            await asyncio.sleep(60 * 60)  # Wait an hour on error
+
+
+async def sms_spike_alerts_cron_task():
+    """
+    Background task to send SMS alerts for high-value spikes.
+    Runs every hour to check for new significant spikes.
+    """
+    logger.info("SMS spike alerts cron job started")
+    
+    while True:
+        try:
+            # Wait 1 hour between checks
+            await asyncio.sleep(60 * 60)
+            
+            logger.info("Checking for high-value spikes to send SMS alerts...")
+            
+            # Import notification service
+            try:
+                from services.analytics_notification_service import AnalyticsNotificationService
+                from sms_service import SMSService
+                sms_service = SMSService(db)
+                service = AnalyticsNotificationService(db, sms_service=sms_service)
+            except Exception as e:
+                logger.warning(f"SMS service not available: {e}")
+                continue
+            
+            result = await service.check_and_send_spike_alerts()
+            
+            if result.get("alerts_sent", 0) > 0:
+                logger.info(f"SMS alerts: {result['alerts_sent']} sent, {result['alerts_skipped']} skipped")
+                
+                # Record run
+                await db.cron_history.insert_one({
+                    "task": "sms_spike_alerts",
+                    "run_at": datetime.now(timezone.utc).isoformat(),
+                    "spikes_checked": result.get("spikes_checked", 0),
+                    "alerts_sent": result.get("alerts_sent", 0),
+                    "alerts_skipped": result.get("alerts_skipped", 0)
+                })
+            
+        except Exception as e:
+            logger.error(f"Error in SMS spike alerts cron: {e}")
+            await asyncio.sleep(60 * 10)  # Wait 10 minutes on error
+
+
 @app.on_event("startup")
 async def start_analytics_cron_jobs():
     """Start analytics background cron jobs"""
@@ -4315,6 +4434,14 @@ async def start_analytics_cron_jobs():
     # Start daily badge evaluation (at 2 AM UTC)
     asyncio.create_task(daily_badge_evaluation_task())
     logger.info("Daily badge evaluation scheduled (2 AM UTC)")
+    
+    # Start weekly digest (Monday 9 AM UTC)
+    asyncio.create_task(weekly_digest_cron_task())
+    logger.info("Weekly digest scheduled (Monday 9 AM UTC)")
+    
+    # Start SMS spike alerts (hourly)
+    asyncio.create_task(sms_spike_alerts_cron_task())
+    logger.info("SMS spike alerts scheduled (hourly)")
 
 
 @app.on_event("shutdown")

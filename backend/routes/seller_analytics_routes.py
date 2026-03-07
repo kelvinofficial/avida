@@ -31,6 +31,10 @@ class EngagementSettings(BaseModel):
     weekly_summary_enabled: bool = True
     badge_notifications_enabled: bool = True
     email_notifications_enabled: bool = False
+    # SMS settings
+    sms_spike_alerts_enabled: bool = False  # Disabled by default (cost)
+    min_views_for_sms_alert: int = 50  # Minimum views for SMS alert
+    min_increase_for_sms_alert: int = 100  # Minimum % increase for SMS
 
 
 class AdminAnalyticsControl(BaseModel):
@@ -1317,6 +1321,20 @@ def create_seller_analytics_routes(db, get_current_user):
             sort=[("run_at", -1)]
         )
         
+        # Get last weekly digest run
+        last_digest = await db.cron_history.find_one(
+            {"task": "weekly_digest"},
+            {"_id": 0},
+            sort=[("run_at", -1)]
+        )
+        
+        # Get last SMS alerts run
+        last_sms = await db.cron_history.find_one(
+            {"task": "sms_spike_alerts"},
+            {"_id": 0},
+            sort=[("run_at", -1)]
+        )
+        
         # Get recent spikes detected
         recent_spikes = await db.engagement_notifications.count_documents({
             "type": "spike",
@@ -1327,6 +1345,19 @@ def create_seller_analytics_routes(db, get_current_user):
         today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
         badges_today = await db.user_badges.count_documents({
             "awarded_at": {"$gte": today_start}
+        })
+        
+        # Get digests sent this week
+        week_start = (now - timedelta(days=7)).isoformat()
+        digests_this_week = await db.digest_history.count_documents({
+            "sent_at": {"$gte": week_start},
+            "status": "sent"
+        })
+        
+        # Get SMS alerts sent today
+        sms_today = await db.sms_spike_alerts.count_documents({
+            "sent_at": {"$gte": today_start},
+            "status": "sent"
         })
         
         return {
@@ -1340,6 +1371,18 @@ def create_seller_analytics_routes(db, get_current_user):
                 "schedule": "Daily at 2 AM UTC",
                 "last_run": last_badge.get("run_at") if last_badge else None,
                 "badges_today": badges_today,
+                "status": "running"
+            },
+            "weekly_digest": {
+                "schedule": "Monday 9 AM UTC",
+                "last_run": last_digest.get("run_at") if last_digest else None,
+                "digests_this_week": digests_this_week,
+                "status": "running"
+            },
+            "sms_alerts": {
+                "schedule": "Hourly",
+                "last_run": last_sms.get("run_at") if last_sms else None,
+                "alerts_today": sms_today,
                 "status": "running"
             },
             "server_time": now.isoformat()
@@ -1517,6 +1560,167 @@ def create_seller_analytics_routes(db, get_current_user):
             "sellers_processed": len(sellers),
             "badges_awarded": badges_awarded,
             "run_at": now.isoformat()
+        }
+
+    # =========================================================================
+    # WEEKLY DIGEST & SMS ALERTS
+    # =========================================================================
+
+    @router.get("/admin/analytics/digest/preview/{user_id}")
+    async def preview_digest(
+        user_id: str,
+        admin = Depends(require_admin)
+    ):
+        """Preview weekly digest for a user (admin only)"""
+        from services.analytics_notification_service import AnalyticsNotificationService
+        
+        service = AnalyticsNotificationService(db)
+        digest = await service.generate_seller_digest(user_id)
+        
+        if not digest:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return digest
+
+    @router.post("/admin/analytics/digest/send/{user_id}")
+    async def send_digest_to_user(
+        user_id: str,
+        admin = Depends(require_admin)
+    ):
+        """Send weekly digest to a specific user (admin only)"""
+        from services.analytics_notification_service import AnalyticsNotificationService
+        from utils.email_service import email_service
+        
+        service = AnalyticsNotificationService(db, email_service=email_service)
+        result = await service.send_weekly_digest(user_id)
+        
+        return result
+
+    @router.post("/admin/analytics/cron/run-weekly-digest")
+    async def manual_weekly_digest(admin = Depends(require_admin)):
+        """Manually trigger weekly digest for all eligible sellers"""
+        from services.analytics_notification_service import AnalyticsNotificationService
+        from utils.email_service import email_service
+        
+        service = AnalyticsNotificationService(db, email_service=email_service)
+        now = datetime.now(timezone.utc)
+        
+        # Get all sellers with weekly digest enabled
+        sellers = await db.users.find(
+            {"role": {"$in": ["seller", "user"]}},
+            {"user_id": 1}
+        ).to_list(1000)
+        
+        digests_sent = 0
+        digests_skipped = 0
+        errors = []
+        
+        for seller in sellers:
+            try:
+                result = await service.send_weekly_digest(seller["user_id"])
+                if result.get("success"):
+                    digests_sent += 1
+                else:
+                    digests_skipped += 1
+            except Exception as e:
+                errors.append(str(e))
+                digests_skipped += 1
+        
+        # Record run
+        await db.cron_history.insert_one({
+            "task": "weekly_digest",
+            "run_at": now.isoformat(),
+            "sellers_processed": len(sellers),
+            "digests_sent": digests_sent,
+            "digests_skipped": digests_skipped,
+            "triggered_by": admin.user_id
+        })
+        
+        return {
+            "success": True,
+            "sellers_processed": len(sellers),
+            "digests_sent": digests_sent,
+            "digests_skipped": digests_skipped,
+            "errors": errors[:5] if errors else [],
+            "run_at": now.isoformat()
+        }
+
+    @router.post("/admin/analytics/cron/run-sms-alerts")
+    async def manual_sms_alerts(admin = Depends(require_admin)):
+        """Manually trigger SMS alerts for high-value spikes"""
+        from services.analytics_notification_service import AnalyticsNotificationService
+        
+        # Try to get SMS service
+        try:
+            from sms_service import SMSService
+            sms_service = SMSService(db)
+        except:
+            sms_service = None
+        
+        service = AnalyticsNotificationService(db, sms_service=sms_service)
+        now = datetime.now(timezone.utc)
+        
+        result = await service.check_and_send_spike_alerts()
+        
+        # Record run
+        await db.cron_history.insert_one({
+            "task": "sms_spike_alerts",
+            "run_at": now.isoformat(),
+            "spikes_checked": result.get("spikes_checked", 0),
+            "alerts_sent": result.get("alerts_sent", 0),
+            "triggered_by": admin.user_id
+        })
+        
+        return {
+            "success": True,
+            **result,
+            "run_at": now.isoformat()
+        }
+
+    @router.get("/analytics/digest/history")
+    async def get_digest_history(
+        page: int = Query(1, ge=1),
+        limit: int = Query(10, ge=1, le=50),
+        user = Depends(require_auth)
+    ):
+        """Get digest history for current user"""
+        skip = (page - 1) * limit
+        
+        digests = await db.digest_history.find(
+            {"user_id": user.user_id},
+            {"_id": 0}
+        ).sort("sent_at", -1).skip(skip).limit(limit).to_list(limit)
+        
+        total = await db.digest_history.count_documents({"user_id": user.user_id})
+        
+        return {
+            "digests": digests,
+            "total": total,
+            "page": page,
+            "limit": limit
+        }
+
+    @router.get("/analytics/sms-alerts/history")
+    async def get_sms_alert_history(
+        page: int = Query(1, ge=1),
+        limit: int = Query(10, ge=1, le=50),
+        user = Depends(require_auth)
+    ):
+        """Get SMS alert history for current user"""
+        skip = (page - 1) * limit
+        
+        alerts = await db.sms_spike_alerts.find(
+            {"user_id": user.user_id},
+            {"_id": 0}
+        ).sort("sent_at", -1).skip(skip).limit(limit).to_list(limit)
+        
+        total = await db.sms_spike_alerts.count_documents({"user_id": user.user_id})
+        
+        return {
+            "alerts": alerts,
+            "total": total,
+            "page": page,
+            "limit": limit
         }
 
     return router
