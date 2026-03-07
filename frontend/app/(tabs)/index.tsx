@@ -30,6 +30,7 @@ import {
   HORIZONTAL_PADDING, 
 } from '../../src/components/home/homeStyles';
 import { HomeSEO, OrganizationSchema, WebsiteSearchSchema } from '../../src/components/seo';
+import { BannerSlot } from '../../src/components/BannerSlot';
 
 // ============ LAYOUT CONSTANTS ============
 const COLUMN_GAP = 12;
@@ -332,6 +333,10 @@ export default function HomeScreen() {
         {isDesktop || isTablet ? (
           <HomeDesktopHeader {...homeDesktopHeaderProps} />
         ) : <MobileHeader {...mobileHeaderProps} />}
+        <BannerSlot 
+          placement="header_below" 
+          testId="homepage-header-banner"
+        />
       </View>
     );
   }, [isDesktop, isTablet, homeDesktopHeaderProps, mobileHeaderProps]);

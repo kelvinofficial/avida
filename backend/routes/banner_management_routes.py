@@ -246,7 +246,7 @@ def create_banner_management_routes(db, get_current_user):
             
             # Check device targeting
             devices = targeting.get("devices", [])
-            if devices and device not in devices:
+            if devices and "all" not in devices and device not in devices:
                 continue
             
             # Check country targeting
