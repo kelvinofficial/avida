@@ -776,6 +776,32 @@ export default function ListingDetailScreen() {
     }
   }, [listing]);
 
+  // Track listing view for analytics
+  useEffect(() => {
+    const trackView = async () => {
+      if (!listing?.id) return;
+      
+      // Don't track if user is viewing their own listing
+      if (user?.user_id && listing.user_id === user.user_id) return;
+      
+      try {
+        await api.post('/analytics/track', {
+          event_type: 'view',
+          listing_id: listing.id,
+          user_id: user?.user_id || null,
+          session_id: `session_${Date.now()}`,
+          device: isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop',
+          referrer: typeof window !== 'undefined' ? document.referrer : 'direct'
+        });
+      } catch (err) {
+        // Silent fail - don't interrupt user experience
+        console.log('Analytics tracking failed:', err);
+      }
+    };
+    
+    trackView();
+  }, [listing?.id, user?.user_id, isMobile, isTablet]);
+
   // Check if seller can sell online
   useEffect(() => {
     const checkCanSellOnline = async () => {
@@ -825,7 +851,17 @@ export default function ListingDetailScreen() {
 
     try {
       if (wasFavorited) await favoritesApi.remove(id!);
-      else await favoritesApi.add(id!);
+      else {
+        await favoritesApi.add(id!);
+        // Track save event for analytics
+        api.post('/analytics/track', {
+          event_type: 'save',
+          listing_id: id,
+          user_id: user?.user_id || null,
+          session_id: `session_${Date.now()}`,
+          device: isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
+        }).catch(() => {});
+      }
     } catch (error) {
       setIsFavorited(wasFavorited);
     }
@@ -859,6 +895,16 @@ export default function ListingDetailScreen() {
 
     try {
       const conversation = await conversationsApi.create(id!);
+      
+      // Track chat initiation for analytics
+      api.post('/analytics/track', {
+        event_type: 'chat',
+        listing_id: id,
+        user_id: user?.user_id || null,
+        session_id: `session_${Date.now()}`,
+        device: isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
+      }).catch(() => {});
+      
       router.push(`/chat/${conversation.id}`);
     } catch (error) {
       Alert.alert('Error', 'Failed to start chat');
@@ -944,6 +990,16 @@ export default function ListingDetailScreen() {
         offered_price: offerAmount,
         message: offerMessage || 'I would like to make an offer on this item.'
       });
+
+      // Track offer event for analytics
+      api.post('/analytics/track', {
+        event_type: 'offer',
+        listing_id: id,
+        user_id: user?.user_id || null,
+        session_id: `session_${Date.now()}`,
+        device: isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop',
+        metadata: { offer_amount: offerAmount }
+      }).catch(() => {});
 
       // Start a conversation with the offer message
       const conversation = await conversationsApi.create(id!);

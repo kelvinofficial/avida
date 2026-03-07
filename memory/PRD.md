@@ -11,6 +11,20 @@ Full-stack React Native/Expo mobile app with critical failures, including a non-
 
 ## Current Status (Mar 7, 2026)
 
+### Analytics Tracking Fix (Mar 7, 2026)
+| Issue | Fix | Status |
+|-------|-----|--------|
+| Views not tracked | Added `/analytics/track` call on listing view | ✅ Fixed |
+| Saves not tracked | Added tracking on favorite/save action | ✅ Fixed |
+| Chats not tracked | Added tracking on chat initiation | ✅ Fixed |
+| Offers not tracked | Added tracking on offer submission | ✅ Fixed |
+
+**Files Modified**: `/app/frontend/app/listing/[id].tsx`
+- Added `useEffect` to track views when listing loads
+- Added tracking call in `toggleFavorite` function
+- Added tracking call in `handleChat` function
+- Added tracking call in `handleSubmitOffer` function
+
 ### Login Fix Applied (Mar 7, 2026)
 | Issue | Fix | Status |
 |-------|-----|--------|
