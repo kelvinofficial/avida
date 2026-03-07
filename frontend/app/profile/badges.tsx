@@ -257,18 +257,40 @@ export default function BadgesScreen() {
     }
 
     const headerContent = (
-      <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{earnedBadges.length}</Text>
-          <Text style={styles.statLabel}>Badges Earned</Text>
+      <View>
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{earnedBadges.length}</Text>
+            <Text style={styles.statLabel}>Activity Badges</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{sellerBadges?.earned_count || 0}</Text>
+            <Text style={styles.statLabel}>Performance Badges</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{totalPoints}</Text>
+            <Text style={styles.statLabel}>Total Points</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{availableBadges.length}</Text>
+            <Text style={styles.statLabel}>In Progress</Text>
+          </View>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{totalPoints}</Text>
-          <Text style={styles.statLabel}>Total Points</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{availableBadges.length}</Text>
-          <Text style={styles.statLabel}>In Progress</Text>
+        <View style={[styles.tabSwitcher, { marginTop: 16, marginHorizontal: 0 }]}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'activity' && styles.tabActive]}
+            onPress={() => setActiveTab('activity')}
+          >
+            <Text style={[styles.tabText, activeTab === 'activity' && styles.tabTextActive]}>Activity Badges</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'performance' && styles.tabActive]}
+            onPress={() => setActiveTab('performance')}
+          >
+            <Text style={[styles.tabText, activeTab === 'performance' && styles.tabTextActive]}>
+              Performance Badges {(sellerBadges?.unviewed_count || 0) > 0 ? `(${sellerBadges?.unviewed_count})` : ''}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -276,10 +298,88 @@ export default function BadgesScreen() {
     return (
       <DesktopPageLayout
         title="Badges"
-        subtitle={`${earnedBadges.length} earned · ${totalPoints} points`}
+        subtitle={`${earnedBadges.length + (sellerBadges?.earned_count || 0)} earned · ${totalPoints} points`}
         icon="ribbon-outline"
         headerContent={headerContent}
       >
+        {/* Performance Badges Tab (Desktop) */}
+        {activeTab === 'performance' && (
+          <>
+            {sellerBadgesLoading ? (
+              <ActivityIndicator size="large" color={COLORS.gold} style={{ marginTop: 40 }} />
+            ) : sellerBadges?.badges && sellerBadges.badges.length > 0 ? (
+              <>
+                {sellerBadges.badges.filter(b => b.earned).length > 0 && (
+                  <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Earned Performance Badges</Text>
+                    <View style={styles.badgesGrid}>
+                      {sellerBadges.badges.filter(b => b.earned).map((badge) => (
+                        <View key={badge.id} style={[styles.sellerBadgeCard, { 
+                          borderLeftColor: badge.tier === 'gold' ? COLORS.gold : badge.tier === 'silver' ? COLORS.silver : COLORS.bronze 
+                        }]}>
+                          <View style={styles.sellerBadgeIconWrap}>
+                            <Text style={{ fontSize: 28 }}>{badge.icon}</Text>
+                            <View style={styles.sellerBadgeEarnedCheck}>
+                              <Ionicons name="checkmark" size={10} color="#fff" />
+                            </View>
+                          </View>
+                          <View style={styles.sellerBadgeInfo}>
+                            <Text style={styles.sellerBadgeName}>{badge.name}</Text>
+                            <Text style={styles.sellerBadgeDesc}>{badge.description}</Text>
+                            <View style={styles.sellerBadgeMeta}>
+                              <View style={[styles.sellerBadgeTier, { 
+                                backgroundColor: badge.tier === 'gold' ? '#FFF8E1' : badge.tier === 'silver' ? '#F5F5F5' : '#FFF3E0' 
+                              }]}>
+                                <Text style={[styles.sellerBadgeTierText, {
+                                  color: badge.tier === 'gold' ? COLORS.gold : badge.tier === 'silver' ? COLORS.silver : COLORS.bronze
+                                }]}>
+                                  {badge.tier.toUpperCase()}
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+                {sellerBadges.badges.filter(b => !b.earned).length > 0 && (
+                  <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Locked Performance Badges</Text>
+                    <View style={styles.badgesGrid}>
+                      {sellerBadges.badges.filter(b => !b.earned).map((badge) => (
+                        <View key={badge.id} style={[styles.sellerBadgeCard, styles.sellerBadgeCardLocked]}>
+                          <View style={[styles.sellerBadgeIconWrap, { opacity: 0.4 }]}>
+                            <Text style={{ fontSize: 28 }}>{badge.icon}</Text>
+                          </View>
+                          <View style={styles.sellerBadgeInfo}>
+                            <Text style={[styles.sellerBadgeName, { color: COLORS.textLight }]}>{badge.name}</Text>
+                            <Text style={styles.sellerBadgeDesc}>{badge.description}</Text>
+                            {badge.criteria_text && (
+                              <Text style={styles.sellerBadgeCriteria}>{badge.criteria_text}</Text>
+                            )}
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+              </>
+            ) : (
+              <View style={styles.emptyContainer}>
+                <View style={styles.emptyIcon}>
+                  <Ionicons name="star-outline" size={64} color={COLORS.textSecondary} />
+                </View>
+                <Text style={styles.emptyTitle}>No performance badges yet</Text>
+                <Text style={styles.emptySubtitle}>Performance badges are earned by achieving seller milestones</Text>
+              </View>
+            )}
+          </>
+        )}
+
+        {/* Activity Badges Tab (Desktop) */}
+        {activeTab === 'activity' && (
+          <>
         {isFetchingInBackground && earnedBadges.length === 0 && availableBadges.length === 0 ? (
           <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
         ) : earnedBadges.length === 0 && availableBadges.length === 0 ? (
@@ -308,6 +408,8 @@ export default function BadgesScreen() {
               </View>
             )}
           </>
+        )}
+        </>
         )}
       </DesktopPageLayout>
     );
