@@ -266,7 +266,7 @@ ai_seo.py
 
 3. **Set environment variables**:
    ```env
-   REACT_APP_API_URL=https://seller-perf-ui.preview.emergentagent.com/api
+   REACT_APP_API_URL=https://order-tracking-dev-1.preview.emergentagent.com/api
    # Or your production backend URL
    ```
 

@@ -3,22 +3,14 @@ import { useAuthStore } from '../store/authStore';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
-// Production API URL - HARDCODED and ALWAYS used
-// This ensures the correct URL is used regardless of cache issues
-export const PRODUCTION_API_URL = 'https://seller-perf-ui.preview.emergentagent.com';
+// Production API URL - reads from environment variable
+export const PRODUCTION_API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
 
-// Get API URL - ALWAYS use hardcoded URL to avoid cache issues
 export const getApiUrl = (): string => {
-  // ALWAYS use the hardcoded production URL
-  // This prevents issues with cached wrong URLs in expo config
-  console.log('[API] Using PRODUCTION_API_URL:', PRODUCTION_API_URL);
   return PRODUCTION_API_URL;
 };
 
 export const API_URL = getApiUrl();
-
-// Log API URL for debugging
-console.log('[API] Final API URL:', API_URL);
 
 export const api = axios.create({
   baseURL: `${API_URL}/api`,

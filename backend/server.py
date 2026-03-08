@@ -1937,7 +1937,7 @@ async def get_sitemap():
     """Generate comprehensive XML sitemap including categories, listings, and business profiles"""
     from fastapi.responses import Response
     
-    base_url = os.environ.get("SITE_URL", "https://seller-perf-ui.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://order-tracking-dev-1.preview.emergentagent.com")
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     # Build XML sitemap
@@ -2057,7 +2057,7 @@ async def get_robots():
     """Generate robots.txt with sitemap reference"""
     from fastapi.responses import PlainTextResponse
     
-    base_url = os.environ.get("SITE_URL", "https://seller-perf-ui.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://order-tracking-dev-1.preview.emergentagent.com")
     
     robots_content = f"""User-agent: *
 Allow: /
@@ -2099,7 +2099,7 @@ async def get_business_profile_og_meta(slug: str):
     """Get OG meta tags for a business profile for social media sharing"""
     from fastapi.responses import HTMLResponse
     
-    base_url = os.environ.get("SITE_URL", "https://seller-perf-ui.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://order-tracking-dev-1.preview.emergentagent.com")
     
     # Find profile by slug or identifier
     profile = await db.business_profiles.find_one(
@@ -2925,8 +2925,7 @@ async def get_public_photography_guides(category_id: str):
         logger.error(f"Photography guides proxy error: {e}")
         return {"guides": [], "count": 0}
 
-# Include the router in the main app
-app.include_router(api_router)
+# NOTE: api_router will be included ONCE at the end after all sub-routers are added
 
 # Include Modular Routes (Auth, Users, Listings, Categories, Favorites, Conversations)
 # Create moderation manager first (needed by conversations router)
@@ -3207,7 +3206,6 @@ if MODULAR_ROUTES_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to load business profile public router: {e}")
     
-    app.include_router(api_router)  # Re-include to pick up modular routes
     logger.info("Modular routes (Auth, Users, Listings, Categories, Favorites, Conversations, Badges, Streaks, Challenges, Admin, NotificationPrefs, AdminLocations, AutoMotors, Property, Offers, Similar, Social, ProfileActivity, Notifications, Account, Support, UserSettings, Sessions, IDVerification) loaded successfully")
 
 # Include boost routes if available
@@ -3221,7 +3219,6 @@ if BOOST_ROUTES_AVAILABLE:
     
     boost_router = create_boost_routes(db, get_current_user_for_boost)
     api_router.include_router(boost_router)
-    app.include_router(api_router)  # Re-include to pick up boost routes
     logger.info("Boost routes loaded successfully")
 
 # Include Analytics Routes
@@ -3248,7 +3245,6 @@ if ANALYTICS_ROUTES_AVAILABLE:
         create_notification_func=create_notification
     )
     api_router.include_router(analytics_router)
-    app.include_router(api_router)  # Re-include to pick up analytics routes
     logger.info("Analytics routes loaded successfully")
     logger.info("Engagement notification background task started")
 
@@ -3270,7 +3266,6 @@ if BANNER_ROUTES_AVAILABLE:
         get_current_admin_for_banners
     )
     api_router.include_router(banner_router)
-    app.include_router(api_router)  # Re-include to pick up banner routes
     logger.info("Banner routes loaded successfully")
 
 # Escrow & Online Selling System Routes
@@ -3295,7 +3290,6 @@ if ESCROW_ROUTES_AVAILABLE:
         get_current_admin_for_escrow
     )
     api_router.include_router(escrow_router)
-    app.include_router(api_router)  # Re-include to pick up escrow routes
     logger.info("Escrow & Online Selling routes loaded successfully")
 
 # Payment Processing Routes
@@ -3312,7 +3306,6 @@ if PAYMENT_ROUTES_AVAILABLE:
         get_current_user_for_payments
     )
     api_router.include_router(payment_router)
-    app.include_router(api_router)  # Re-include to pick up payment routes
     logger.info("Payment Processing routes loaded successfully")
 
 # SMS Notification Service Routes
@@ -3320,7 +3313,6 @@ if SMS_SERVICE_AVAILABLE:
     sms_service = SMSService(db)
     sms_router = create_sms_router(db, sms_service)
     api_router.include_router(sms_router)
-    app.include_router(api_router)  # Re-include to pick up SMS routes
     logger.info("SMS Notification service loaded successfully")
 
 # Admin Branding Routes - already registered early (before proxy catch-all)
@@ -3330,7 +3322,6 @@ if SMS_SERVICE_AVAILABLE:
 if NOTIFICATION_SERVICE_AVAILABLE:
     notification_router, notification_service, transport_partner_service = create_notification_router(db, get_current_user, require_auth)
     api_router.include_router(notification_router)
-    app.include_router(api_router)  # Re-include to pick up notification routes
     logger.info("Multi-Channel Notification service loaded successfully")
 
 # Notification Queue and Escrow Integration
@@ -3375,7 +3366,6 @@ except ImportError:
 if AI_ANALYZER_AVAILABLE:
     ai_router, ai_analyzer = create_ai_analyzer_router(db, get_current_user)
     api_router.include_router(ai_router)
-    app.include_router(api_router)  # Re-include to pick up AI routes
     logger.info("AI Listing Analyzer loaded successfully")
 
 # Include Chat Moderation System
@@ -3399,7 +3389,6 @@ if CHAT_MODERATION_AVAILABLE:
     user_report_router = create_user_report_router(db, require_auth, moderation_manager)
     api_router.include_router(moderation_router)
     api_router.include_router(user_report_router)
-    app.include_router(api_router)  # Re-include to pick up moderation routes
     logger.info("Chat Moderation System loaded successfully")
 
 # Include Executive Summary System
@@ -3451,7 +3440,6 @@ if EXECUTIVE_SUMMARY_AVAILABLE:
     
     exec_summary_router = create_executive_summary_router(db, require_admin_for_exec_summary)
     api_router.include_router(exec_summary_router)
-    app.include_router(api_router)  # Re-include to pick up executive summary routes
     logger.info("Executive Summary System loaded successfully")
 
 # Smart Notification System
@@ -3461,7 +3449,6 @@ if SMART_NOTIFICATIONS_AVAILABLE:
         db, get_current_user, require_auth
     )
     api_router.include_router(smart_notification_router)
-    app.include_router(api_router)  # Re-include to pick up smart notification routes
     
     # Start background processor for smart notifications
     @app.on_event("startup")
@@ -3476,14 +3463,12 @@ if SMART_NOTIFICATIONS_AVAILABLE:
 if PLATFORM_CONFIG_AVAILABLE:
     platform_config_router, platform_config_service = create_platform_config_router(db)
     api_router.include_router(platform_config_router)
-    app.include_router(api_router)  # Re-include to pick up platform config routes
     logger.info("Platform Configuration & Brand Manager loaded successfully")
 
 # API Integrations Manager
 if API_INTEGRATIONS_AVAILABLE:
     integrations_router, integrations_service = create_integrations_router(db)
     api_router.include_router(integrations_router)
-    app.include_router(api_router)  # Re-include to pick up integrations routes
     logger.info("API Integrations Manager loaded successfully")
 
 # =============================================================================
@@ -3511,7 +3496,6 @@ try:
         api_router.include_router(router)
         logger.info(f"Admin API Router loaded: {router_name}")
     
-    app.include_router(api_router)  # Re-include to pick up admin API routes
     logger.info("Admin API Routes loaded successfully")
 except ImportError as e:
     logger.warning(f"Admin API Routes not available: {e}")
@@ -3543,7 +3527,6 @@ try:
         api_router.include_router(router)
         logger.info(f"Growth/SEO Router loaded: {router_name}")
     
-    app.include_router(api_router)  # Re-include to pick up growth/SEO routes
     logger.info("Growth Engine & SEO Routes loaded successfully")
 except ImportError as e:
     logger.warning(f"Growth Engine & SEO Routes not available: {e}")
@@ -3575,7 +3558,6 @@ try:
         api_router.include_router(router)
         logger.info(f"Admin Utility Router loaded: {router_name}")
     
-    app.include_router(api_router)  # Re-include to pick up admin utility routes
     logger.info("Admin Utility Routes loaded successfully")
 except ImportError as e:
     logger.warning(f"Admin Utility Routes not available: {e}")
@@ -3600,21 +3582,18 @@ if COMPLIANCE_CENTER_AVAILABLE:
     
     compliance_router, compliance_service = create_compliance_router(db, require_admin_for_compliance)
     api_router.include_router(compliance_router)
-    app.include_router(api_router)  # Re-include to pick up compliance routes
     logger.info("Data Privacy & Compliance Center loaded successfully")
 
 # Config & Environment Manager
 if CONFIG_MANAGER_AVAILABLE:
     config_manager_router, config_manager_service = create_config_manager_router(db)
     api_router.include_router(config_manager_router)
-    app.include_router(api_router)  # Re-include to pick up config manager routes
     logger.info("Config & Environment Manager loaded successfully")
 
 # Team & Workflow Management
 if TEAM_WORKFLOW_AVAILABLE:
     team_workflow_router, team_workflow_service = create_team_workflow_router(db)
     api_router.include_router(team_workflow_router)
-    app.include_router(api_router)  # Re-include to pick up team workflow routes
     # Initialize default roles and settings - moved to startup event
     # asyncio.create_task(team_workflow_service.initialize_system())
     logger.info("Team & Workflow Management loaded successfully")
@@ -3623,7 +3602,6 @@ if TEAM_WORKFLOW_AVAILABLE:
 if COHORT_ANALYTICS_AVAILABLE:
     cohort_analytics_router, cohort_analytics_service = create_cohort_analytics_router(db)
     api_router.include_router(cohort_analytics_router)
-    app.include_router(api_router)  # Re-include to pick up cohort analytics routes
     # Initialize default cohort definitions - moved to startup event
     # asyncio.create_task(cohort_analytics_service.initialize_default_cohorts())
     logger.info("Cohort & Retention Analytics loaded successfully")
@@ -3671,7 +3649,6 @@ else:
 if QA_RELIABILITY_AVAILABLE:
     qa_router, qa_service = create_qa_reliability_router(db)
     api_router.include_router(qa_router)
-    app.include_router(api_router)  # Re-include to pick up QA routes
     # Initialize QA system - moved to startup event
     # asyncio.create_task(qa_service.initialize())
     logger.info("QA & Reliability System loaded successfully")
@@ -3697,7 +3674,6 @@ if QA_RELIABILITY_AVAILABLE:
 if SANDBOX_AVAILABLE:
     sandbox_router, sandbox_service = create_sandbox_router(db)
     api_router.include_router(sandbox_router)
-    app.include_router(api_router)  # Re-include to pick up sandbox routes
     # asyncio.create_task(sandbox_service.initialize()) - moved to startup event
     logger.info("Admin Sandbox System loaded successfully")
 
@@ -3705,7 +3681,6 @@ if SANDBOX_AVAILABLE:
 if CSV_IMPORT_AVAILABLE:
     csv_import_router, csv_import_service = create_csv_import_router(db)
     api_router.include_router(csv_import_router)
-    app.include_router(api_router)  # Re-include to pick up CSV import routes
     logger.info("CSV Import System loaded successfully")
 
 # Location System
@@ -3726,7 +3701,6 @@ if LOCATION_SYSTEM_AVAILABLE:
     admin_location_router, _ = create_admin_location_router(db, require_admin_for_locations)
     api_router.include_router(location_router)
     api_router.include_router(admin_location_router, prefix="/admin")
-    app.include_router(api_router)  # Re-include to pick up location routes
     
     # Initialize location indexes on startup
     @app.on_event("startup")
@@ -3735,6 +3709,12 @@ if LOCATION_SYSTEM_AVAILABLE:
         logger.info("Location system indexes initialized")
     
     logger.info("Location System loaded successfully")
+
+# =============================================================================
+# INCLUDE API ROUTER ONCE (all sub-routers have been added above)
+# =============================================================================
+app.include_router(api_router)
+logger.info("API router included with all sub-routes")
 
 # =============================================================================
 # VOUCHER SYSTEM
