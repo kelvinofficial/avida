@@ -52,6 +52,8 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
     - Offer accepted/rejected status messages with visual indicators
     - Backend integration: POST /api/offers, PUT /api/offers/{id}/accept, PUT /api/offers/{id}/reject
     - offersApi client added to frontend api.ts
+14. **Notifications Read-All Endpoint** (March 8, 2026)
+    - POST /api/notifications/read-all — Bulk mark all unread notifications as read (replaces individual call workaround)
 
 ### Test Accounts
 - Admin: admin@marketplace.com / Admin@123456

@@ -105,6 +105,18 @@ def create_notifications_router(db, require_auth):
         
         return {"message": f"Marked {result.modified_count} notifications as read"}
 
+    @router.post("/read-all")
+    async def read_all_notifications(request: Request):
+        """Mark all notifications as read (POST alias)"""
+        user = await require_auth(request)
+        
+        result = await db.notifications.update_many(
+            {"user_id": user.user_id, "read": False},
+            {"$set": {"read": True}}
+        )
+        
+        return {"message": f"Marked {result.modified_count} notifications as read", "count": result.modified_count}
+
     @router.delete("/{notification_id}")
     async def delete_notification(notification_id: str, request: Request):
         """Delete a notification"""
