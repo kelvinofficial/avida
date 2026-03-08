@@ -6,7 +6,7 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
 ## Architecture
 - **Frontend**: React Native (Expo) - Web + Mobile
 - **Backend**: FastAPI (Python)
-- **Database**: MongoDB
+- **Database**: MongoDB Atlas (remote)
 - **Admin**: Separate admin dashboard
 - **Auth**: Session-based with cookies/bearer tokens
 
@@ -24,10 +24,17 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
    - Purchases page: Track Order button (mobile & desktop), confirm-delivery endpoint
    - New `escrowApi` export in api.ts
    - New `order-tracking.tsx` page with progress steps + timeline
-   - New `notification-preferences.tsx` page with delivery methods + channels
    - Push notification channels for orders & escrow
    - Deep link handling for order-tracking and escrow notifications
    - Currency format standardized to TZS across all pages
+7. **Backend Startup Optimization** (March 8, 2026)
+   - Root cause: `app.include_router(api_router)` called 26 times, duplicating all routes each time
+   - Fix: Single `app.include_router(api_router)` call after all sub-routers are added
+   - Result: Startup time reduced from 155s to ~22s (7x improvement)
+   - All 1604 routes verified functional post-fix
+8. **Duplicate Notification Settings Fix** (March 8, 2026)
+   - `/profile/notification-preferences` was a duplicate of `/profile/notifications`
+   - Replaced with redirect component pointing to `/profile/notifications`
 
 ### Test Accounts
 - Admin: admin@marketplace.com / Admin@123456
@@ -37,20 +44,23 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
 ## Prioritized Backlog
 
 ### P1 (High)
-- Backend startup performance optimization (60-90s startup)
-- Replace hardcoded frontend API URL with env variable
+- ~~Backend startup performance optimization~~ DONE
+- ~~Replace hardcoded frontend API URL with env variable~~ DONE
+- ~~Fix duplicate notification settings on Profile page~~ DONE
 
 ### P2 (Medium)
 - Implement real business logic for ~300 mock API endpoints
 - Chat Options (Mute, Delete, Block)
-- Fix duplicate notification settings on Profile page
 
 ### P3 (Low/Future)
 - Image Optimization Pipeline (WebP/CDN)
 - Multi-Language Content (German & Swahili)
+- Complete remaining mock API implementations
 
 ## 3rd Party Integrations
-- MongoDB Atlas, SendGrid, Firebase Cloud Messaging
+- MongoDB Atlas
+- SendGrid
+- Firebase Cloud Messaging (FCM)
 - PayPal, Flutterwave, Stripe
 - Africa's Talking, Twilio
 - apscheduler (background cron jobs)
