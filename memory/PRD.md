@@ -40,6 +40,10 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
 11. **Search Suggestions & Popular Endpoints** (March 8, 2026)
     - GET /api/search/suggestions?q={query} — Autocomplete from search history + listing titles
     - GET /api/search/popular — Trending searches with category filtering and configurable lookback
+12. **Offer Accept/Reject & Media Upload Endpoints** (March 8, 2026)
+    - PUT /api/offers/{id}/accept — Seller directly accepts an offer (with notifications)
+    - PUT /api/offers/{id}/reject — Seller directly rejects an offer (with optional reason)
+    - POST /api/media/upload — General-purpose image/voice/video upload (stored in DB, retrievable via GET /api/media/{id})
 
 ### Test Accounts
 - Admin: admin@marketplace.com / Admin@123456

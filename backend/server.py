@@ -836,6 +836,52 @@ async def upload_message_media(
         "size": len(content)
     }
 
+@api_router.post("/media/upload")
+async def upload_media(
+    request: Request,
+    file: UploadFile = File(...),
+    media_type: str = Query("image", description="audio, image, or video"),
+):
+    """General-purpose media upload for images, voice, and video files"""
+    user = await require_auth(request)
+
+    if media_type not in ["audio", "image", "video"]:
+        raise HTTPException(status_code=400, detail="Invalid media type. Must be audio, image, or video")
+
+    max_size = 50 * 1024 * 1024 if media_type == "video" else 10 * 1024 * 1024
+    content = await file.read()
+    if len(content) > max_size:
+        raise HTTPException(status_code=400, detail=f"File too large. Max: {max_size // (1024 * 1024)}MB")
+
+    file_extension = file.filename.split('.')[-1] if file.filename and '.' in file.filename else 'bin'
+    filename = f"{media_type}_{user.user_id}_{uuid.uuid4()}.{file_extension}"
+
+    media_data = base64.b64encode(content).decode('utf-8')
+
+    media_record = {
+        "id": str(uuid.uuid4()),
+        "user_id": user.user_id,
+        "media_type": media_type,
+        "filename": filename,
+        "content_type": file.content_type,
+        "size": len(content),
+        "data": media_data,
+        "created_at": datetime.now(timezone.utc),
+    }
+    await db.media.insert_one(media_record)
+
+    media_url = f"/api/media/{media_record['id']}"
+
+    return {
+        "id": media_record["id"],
+        "url": media_url,
+        "media_url": media_url,
+        "media_type": media_type,
+        "filename": filename,
+        "size": len(content),
+        "content_type": file.content_type,
+    }
+
 @api_router.get("/media/{media_id}")
 async def get_media(media_id: str):
     """Get media file by ID"""

@@ -1034,6 +1034,103 @@ def create_offers_router(db, require_auth, get_current_user, notify_stats_update
         
         return {"message": "Counter offer accepted", "final_price": offer.get("counter_price")}
 
+    @router.put("/{offer_id}/accept")
+    async def accept_offer(offer_id: str, request: Request):
+        """Seller accepts an offer directly"""
+        user = await require_auth(request)
+
+        offer = await db.offers.find_one({"id": offer_id})
+        if not offer:
+            raise HTTPException(status_code=404, detail="Offer not found")
+
+        if offer.get("seller_id") != user.user_id:
+            raise HTTPException(status_code=403, detail="Only the seller can accept this offer")
+
+        if offer.get("status") not in ["pending", "countered"]:
+            raise HTTPException(status_code=400, detail=f"Cannot accept an offer with status '{offer.get('status')}'")
+
+        await db.offers.update_one(
+            {"id": offer_id},
+            {"$set": {"status": "accepted", "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+
+        if notify_stats_update:
+            try:
+                import asyncio
+                asyncio.create_task(notify_stats_update(user.user_id))
+            except Exception:
+                pass
+
+        buyer_id = offer.get("buyer_id")
+        if notification_service and buyer_id:
+            try:
+                import asyncio
+                asyncio.create_task(notification_service.notify_offer_accepted(
+                    user_id=buyer_id,
+                    listing_title=offer.get("listing_title", "item"),
+                    listing_id=offer.get("listing_id"),
+                    accepted_price=offer.get("offered_price", 0),
+                    currency=offer.get("currency", "TZS"),
+                    listing_image=offer.get("listing_image"),
+                    seller_name=user.name
+                ))
+            except Exception:
+                pass
+
+        return {"message": "Offer accepted", "status": "accepted"}
+
+    @router.put("/{offer_id}/reject")
+    async def reject_offer(offer_id: str, request: Request):
+        """Seller rejects an offer directly"""
+        user = await require_auth(request)
+
+        offer = await db.offers.find_one({"id": offer_id})
+        if not offer:
+            raise HTTPException(status_code=404, detail="Offer not found")
+
+        if offer.get("seller_id") != user.user_id:
+            raise HTTPException(status_code=403, detail="Only the seller can reject this offer")
+
+        if offer.get("status") not in ["pending", "countered"]:
+            raise HTTPException(status_code=400, detail=f"Cannot reject an offer with status '{offer.get('status')}'")
+
+        body = {}
+        try:
+            body = await request.json()
+        except Exception:
+            pass
+        reason = body.get("reason", "")
+
+        await db.offers.update_one(
+            {"id": offer_id},
+            {"$set": {"status": "rejected", "reject_reason": reason, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+
+        if notify_stats_update:
+            try:
+                import asyncio
+                asyncio.create_task(notify_stats_update(user.user_id))
+            except Exception:
+                pass
+
+        buyer_id = offer.get("buyer_id")
+        if notification_service and buyer_id:
+            try:
+                import asyncio
+                asyncio.create_task(notification_service.notify_offer_rejected(
+                    user_id=buyer_id,
+                    listing_title=offer.get("listing_title", "item"),
+                    listing_id=offer.get("listing_id"),
+                    offered_price=offer.get("offered_price", 0),
+                    currency=offer.get("currency", "TZS"),
+                    listing_image=offer.get("listing_image"),
+                    seller_name=user.name
+                ))
+            except Exception:
+                pass
+
+        return {"message": "Offer rejected", "status": "rejected"}
+
     @router.delete("/{offer_id}")
     async def withdraw_offer(offer_id: str, request: Request):
         """Buyer withdraws their offer"""
