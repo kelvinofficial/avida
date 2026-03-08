@@ -44,6 +44,14 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
     - PUT /api/offers/{id}/accept — Seller directly accepts an offer (with notifications)
     - PUT /api/offers/{id}/reject — Seller directly rejects an offer (with optional reason)
     - POST /api/media/upload — General-purpose image/voice/video upload (stored in DB, retrievable via GET /api/media/{id})
+13. **Chat Offer Feature (Send Offer via Chat)** (March 8, 2026)
+    - Added "Make Offer" button (pricetag icon) in chat input bar for buyers
+    - Bottom sheet modal with listing preview, price input, message field, and submit button
+    - Rich offer card rendering in chat with listing image/title, offered price, original price strikethrough, discount badge
+    - Accept/Decline buttons for sellers on offer messages
+    - Offer accepted/rejected status messages with visual indicators
+    - Backend integration: POST /api/offers, PUT /api/offers/{id}/accept, PUT /api/offers/{id}/reject
+    - offersApi client added to frontend api.ts
 
 ### Test Accounts
 - Admin: admin@marketplace.com / Admin@123456

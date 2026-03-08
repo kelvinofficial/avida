@@ -25,7 +25,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { io, Socket } from 'socket.io-client';
 import { Audio } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
-import { conversationsApi, reportApi, API_URL } from '../../src/utils/api';
+import { conversationsApi, reportApi, offersApi, API_URL } from '../../src/utils/api';
 import { Conversation, Message } from '../../src/types';
 import { useAuthStore } from '../../src/store/authStore';
 import { format, isToday, isYesterday } from 'date-fns';
@@ -323,14 +323,33 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   const mediaDuration = (message as any).media_duration;
   
   // Check if this is an offer message
-  const isOfferMessage = message.content?.includes('💰 OFFER SUBMITTED') || message.content?.includes('💰 OFFER:');
-  
-  // Parse offer amount from new format: "Amount: €15,000 (25% off)" or old format: "💰 OFFER: €15,000"
+  const isOfferCard = message.content?.startsWith('OFFER_CARD|');
+  const isOfferMessage = isOfferCard || message.content?.includes('OFFER SUBMITTED') || message.content?.includes('OFFER:');
+  const isOfferAccepted = message.content?.startsWith('OFFER_ACCEPTED|');
+  const isOfferRejected = message.content?.startsWith('OFFER_REJECTED|');
+
+  // Parse OFFER_CARD format: OFFER_CARD|listingId|title|listedPrice|offeredPrice|image|message
+  let offerCardData: { listingId: string; title: string; listedPrice: number; offeredPrice: number; image: string; msg: string } | null = null;
+  if (isOfferCard) {
+    const parts = message.content.split('|');
+    offerCardData = {
+      listingId: parts[1] || '',
+      title: parts[2] || '',
+      listedPrice: parseFloat(parts[3]) || 0,
+      offeredPrice: parseFloat(parts[4]) || 0,
+      image: parts[5] || '',
+      msg: parts[6] || '',
+    };
+  }
+
+  // Parse offer amount from various formats
   let offerAmount = '';
-  if (message.content?.includes('Amount:')) {
-    offerAmount = message.content?.match(/Amount: (€[\d,]+)/)?.[1] || '';
-  } else {
-    offerAmount = message.content?.match(/💰 OFFER: (€[\d,]+)/)?.[1] || '';
+  if (offerCardData) {
+    offerAmount = `TSh ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 0 }).format(offerCardData.offeredPrice)}`;
+  } else if (message.content?.includes('Amount:')) {
+    offerAmount = message.content?.match(/Amount: ([^\n(]+)/)?.[1]?.trim() || '';
+  } else if (message.content?.includes('OFFER:')) {
+    offerAmount = message.content?.match(/OFFER: ([^\n]+)/)?.[1]?.trim() || '';
   }
   const offerStatus = (message as any).offer_status; // 'pending', 'accepted', 'rejected'
 
@@ -371,22 +390,114 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     };
   }, []);
 
-  // Render offer message
+  // Render offer message with rich listing card
   const renderOfferContent = () => {
+    if (offerCardData) {
+      const discount = offerCardData.listedPrice > 0
+        ? Math.round(((offerCardData.listedPrice - offerCardData.offeredPrice) / offerCardData.listedPrice) * 100)
+        : 0;
+      const formattedOffer = `TSh ${new Intl.NumberFormat('en-US').format(offerCardData.offeredPrice)}`;
+      const formattedOriginal = `TSh ${new Intl.NumberFormat('en-US').format(offerCardData.listedPrice)}`;
+
+      return (
+        <View style={bubbleStyles.offerContainer} data-testid="offer-card-message">
+          {/* Listing card header */}
+          <View style={bubbleStyles.offerListingCard}>
+            {offerCardData.image ? (
+              <Image source={{ uri: offerCardData.image }} style={bubbleStyles.offerListingImage} />
+            ) : (
+              <View style={[bubbleStyles.offerListingImage, { backgroundColor: '#E8E8E8', justifyContent: 'center', alignItems: 'center' }]}>
+                <Ionicons name="image-outline" size={24} color="#999" />
+              </View>
+            )}
+            <View style={bubbleStyles.offerListingInfo}>
+              <Text style={bubbleStyles.offerListingTitle} numberOfLines={1}>{offerCardData.title}</Text>
+              <Text style={bubbleStyles.offerListingPrice}>{formattedOffer}</Text>
+            </View>
+            <Pressable
+              style={bubbleStyles.offerViewButton}
+              onPress={() => {/* could navigate to listing */}}
+            >
+              <Text style={bubbleStyles.offerViewText}>View</Text>
+              <Ionicons name="chevron-forward" size={12} color={COLORS.primary} />
+            </Pressable>
+          </View>
+
+          {/* Price comparison */}
+          <View style={bubbleStyles.offerPriceRow}>
+            <Text style={bubbleStyles.offerOriginalPrice}>{formattedOriginal}</Text>
+            {discount > 0 && (
+              <View style={bubbleStyles.offerDiscountBadge}>
+                <Text style={bubbleStyles.offerDiscountText}>{discount}% off</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Offer message */}
+          {offerCardData.msg ? (
+            <Text style={bubbleStyles.offerMessage}>{offerCardData.msg}</Text>
+          ) : null}
+
+          {/* Accept/Reject for seller */}
+          {!isMine && isSeller && !offerStatus && (
+            <View style={bubbleStyles.offerActions}>
+              <Pressable
+                style={[bubbleStyles.offerButton, bubbleStyles.offerButtonReject]}
+                onPress={() => onRejectOffer?.(message.id)}
+                data-testid="offer-decline-btn"
+              >
+                <Ionicons name="close" size={18} color="#E53935" />
+                <Text style={bubbleStyles.offerButtonRejectText}>Decline</Text>
+              </Pressable>
+              <Pressable
+                style={[bubbleStyles.offerButton, bubbleStyles.offerButtonAccept]}
+                onPress={() => onAcceptOffer?.(message.id, formattedOffer)}
+                data-testid="offer-accept-btn"
+              >
+                <Ionicons name="checkmark" size={18} color="#fff" />
+                <Text style={bubbleStyles.offerButtonAcceptText}>Accept</Text>
+              </Pressable>
+            </View>
+          )}
+
+          {/* Status badge */}
+          {offerStatus && (
+            <View style={[
+              bubbleStyles.offerStatusRow,
+              offerStatus === 'accepted' && { backgroundColor: '#E8F5E9' },
+              offerStatus === 'rejected' && { backgroundColor: '#FFEBEE' },
+            ]}>
+              <Ionicons
+                name={offerStatus === 'accepted' ? 'checkmark-circle' : 'close-circle'}
+                size={16}
+                color={offerStatus === 'accepted' ? '#4CAF50' : '#E53935'}
+              />
+              <Text style={[
+                bubbleStyles.offerStatusRowText,
+                { color: offerStatus === 'accepted' ? '#4CAF50' : '#E53935' }
+              ]}>
+                Offer {offerStatus}
+              </Text>
+            </View>
+          )}
+        </View>
+      );
+    }
+
+    // Fallback for legacy offer messages
     const offerText = message.content?.split('\n\n')[1] || 'Offer submitted';
     
     return (
       <View style={bubbleStyles.offerContainer}>
-        {/* Offer Header */}
         <View style={[
           bubbleStyles.offerHeader,
           offerStatus === 'accepted' && bubbleStyles.offerHeaderAccepted,
           offerStatus === 'rejected' && bubbleStyles.offerHeaderRejected,
         ]}>
-          <Ionicons 
-            name={offerStatus === 'accepted' ? 'checkmark-circle' : offerStatus === 'rejected' ? 'close-circle' : 'pricetag'} 
-            size={20} 
-            color={offerStatus === 'accepted' ? '#4CAF50' : offerStatus === 'rejected' ? '#E53935' : COLORS.primary} 
+          <Ionicons
+            name={offerStatus === 'accepted' ? 'checkmark-circle' : offerStatus === 'rejected' ? 'close-circle' : 'pricetag'}
+            size={20}
+            color={offerStatus === 'accepted' ? '#4CAF50' : offerStatus === 'rejected' ? '#E53935' : COLORS.primary}
           />
           <Text style={bubbleStyles.offerLabel}>
             {isMine ? 'OFFER SENT' : 'OFFER RECEIVED'}
@@ -397,36 +508,28 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               offerStatus === 'accepted' && bubbleStyles.offerStatusAccepted,
               offerStatus === 'rejected' && bubbleStyles.offerStatusRejected,
             ]}>
-              <Text style={bubbleStyles.offerStatusText}>
-                {offerStatus.toUpperCase()}
-              </Text>
+              <Text style={bubbleStyles.offerStatusText}>{offerStatus.toUpperCase()}</Text>
             </View>
           )}
         </View>
-        
-        {/* Offer Amount */}
         <Text style={bubbleStyles.offerAmount}>{offerAmount}</Text>
-        
-        {/* Offer Message */}
         <Text style={bubbleStyles.offerMessage}>{offerText}</Text>
-        
-        {/* Accept/Reject Buttons for Seller */}
         {!isMine && isSeller && !offerStatus && (
           <View style={bubbleStyles.offerActions}>
-            <TouchableOpacity 
+            <Pressable
               style={[bubbleStyles.offerButton, bubbleStyles.offerButtonReject]}
               onPress={() => onRejectOffer?.(message.id)}
             >
               <Ionicons name="close" size={18} color="#E53935" />
               <Text style={bubbleStyles.offerButtonRejectText}>Decline</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
+            </Pressable>
+            <Pressable
               style={[bubbleStyles.offerButton, bubbleStyles.offerButtonAccept]}
               onPress={() => onAcceptOffer?.(message.id, offerAmount || '')}
             >
               <Ionicons name="checkmark" size={18} color="#fff" />
               <Text style={bubbleStyles.offerButtonAcceptText}>Accept</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         )}
       </View>
@@ -438,6 +541,32 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     // Check for offer message first
     if (isOfferMessage) {
       return renderOfferContent();
+    }
+
+    // Offer accepted/rejected system messages
+    if (isOfferAccepted) {
+      const amt = message.content.split('|')[1] || '';
+      return (
+        <View style={{ padding: 12, backgroundColor: '#E8F5E9', borderRadius: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+            <Text style={{ fontWeight: '600', color: '#2E7D32' }}>Offer Accepted</Text>
+          </View>
+          {amt ? <Text style={{ color: '#388E3C', marginTop: 4, fontSize: 13 }}>Agreed price: {amt}</Text> : null}
+        </View>
+      );
+    }
+    if (isOfferRejected) {
+      const reason = message.content.split('|')[1] || '';
+      return (
+        <View style={{ padding: 12, backgroundColor: '#FFEBEE', borderRadius: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Ionicons name="close-circle" size={20} color="#E53935" />
+            <Text style={{ fontWeight: '600', color: '#C62828' }}>Offer Declined</Text>
+          </View>
+          {reason ? <Text style={{ color: '#D32F2F', marginTop: 4, fontSize: 13 }}>{reason}</Text> : null}
+        </View>
+      );
     }
     
     if (isVoiceMessage) {
@@ -823,6 +952,83 @@ const bubbleStyles = StyleSheet.create({
     color: '#E53935',
     fontWeight: '600',
     fontSize: 14,
+  },
+  // Rich offer card styles
+  offerListingCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#F8F9FA',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8E8E8',
+  },
+  offerListingImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 6,
+  },
+  offerListingInfo: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  offerListingTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+  offerListingPrice: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#2E7D32',
+    marginTop: 2,
+  },
+  offerViewButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    gap: 2,
+  },
+  offerViewText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2E7D32',
+  },
+  offerPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    gap: 8,
+  },
+  offerOriginalPrice: {
+    fontSize: 13,
+    color: '#999',
+    textDecorationLine: 'line-through',
+  },
+  offerDiscountBadge: {
+    backgroundColor: '#2E7D32',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  offerDiscountText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  offerStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#E8E8E8',
+  },
+  offerStatusRowText: {
+    fontSize: 13,
+    fontWeight: '600',
+    textTransform: 'capitalize',
   },
 });
 
@@ -1354,6 +1560,22 @@ export default function ChatScreen() {
   const [showChatMenu, setShowChatMenu] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
+
+  // Offer modal state
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [offerAmount, setOfferAmount] = useState('');
+  const [offerMessage, setOfferMessage] = useState('');
+  const [submittingOffer, setSubmittingOffer] = useState(false);
+
+  // Auto-open offer modal via URL param for web testing
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && conversation?.listing) {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('openOffer') === '1') {
+        setShowOfferModal(true);
+      }
+    }
+  }, [conversation?.listing]);
 
   const flatListRef = useRef<FlatList>(null);
   const socketRef = useRef<Socket | null>(null);
@@ -1948,10 +2170,13 @@ export default function ChatScreen() {
     }
   };
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number, currency: string = 'TZS') => {
+    if (currency === 'TZS') {
+      return `TSh ${new Intl.NumberFormat('en-US', { minimumFractionDigits: 0 }).format(price)}`;
+    }
     return new Intl.NumberFormat('de-DE', {
       style: 'currency',
-      currency: 'EUR',
+      currency: currency || 'EUR',
       minimumFractionDigits: 0,
     }).format(price);
   };
@@ -1959,22 +2184,82 @@ export default function ChatScreen() {
   // Check if current user is the seller (owns the listing)
   const isSeller = conversation?.listing?.user_id === user?.user_id;
 
-  // Handle offer accept
+  // Submit offer via API + chat message
+  const handleSubmitOffer = async () => {
+    const amount = parseFloat(offerAmount.replace(/[^0-9.]/g, ''));
+    if (!amount || amount <= 0) {
+      Alert.alert('Invalid Amount', 'Please enter a valid offer amount.');
+      return;
+    }
+    if (!conversation?.listing) {
+      Alert.alert('Error', 'No listing associated with this conversation.');
+      return;
+    }
+
+    setSubmittingOffer(true);
+    try {
+      const listing = conversation.listing;
+      const discount = listing.price > 0 ? Math.round(((listing.price - amount) / listing.price) * 100) : 0;
+      const formattedOffer = formatPrice(amount);
+      const formattedOriginal = formatPrice(listing.price);
+
+      // Call real offers API
+      await offersApi.create({
+        listing_id: listing.id,
+        offered_price: amount,
+        message: offerMessage,
+      });
+
+      // Send offer as a structured chat message
+      const offerContent = `OFFER_CARD|${listing.id}|${listing.title}|${listing.price}|${amount}|${listing.images?.[0] || ''}|${offerMessage}`;
+      await conversationsApi.sendMessage(id!, offerContent, 'text');
+
+      // Add to local messages
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `temp_offer_${Date.now()}`,
+          conversation_id: id!,
+          sender_id: user?.user_id || '',
+          content: offerContent,
+          read: false,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+
+      setShowOfferModal(false);
+      setOfferAmount('');
+      setOfferMessage('');
+    } catch (error: any) {
+      const msg = error?.response?.data?.detail || 'Failed to submit offer';
+      Alert.alert('Error', msg);
+    } finally {
+      setSubmittingOffer(false);
+    }
+  };
+
+  // Handle offer accept - use real API
   const handleAcceptOffer = async (messageId: string, amount: string) => {
     try {
-      // Update message status locally
-      setMessages(prev => prev.map(msg => 
-        msg.id === messageId 
-          ? { ...msg, offer_status: 'accepted' } as any
-          : msg
+      const msg = messages.find(m => m.id === messageId) as any;
+      const offerId = msg?.offer_id;
+
+      // Update message status locally immediately
+      setMessages(prev => prev.map(m =>
+        m.id === messageId ? { ...m, offer_status: 'accepted' } as any : m
       ));
-      
-      // Send acceptance message
+
+      if (offerId) {
+        await offersApi.accept(offerId);
+      }
+
       await conversationsApi.sendMessage(
-        id!, 
-        `✅ OFFER ACCEPTED!\n\nI've accepted your offer of ${amount}. Let's arrange the details!`
+        id!,
+        `OFFER_ACCEPTED|${amount}`
       );
-      
+
       Alert.alert('Offer Accepted', `You've accepted the offer of ${amount}`);
     } catch (error) {
       console.error('Error accepting offer:', error);
@@ -1982,20 +2267,23 @@ export default function ChatScreen() {
     }
   };
 
-  // Handle offer reject
+  // Handle offer reject - use real API
   const handleRejectOffer = async (messageId: string) => {
     try {
-      // Update message status locally
-      setMessages(prev => prev.map(msg => 
-        msg.id === messageId 
-          ? { ...msg, offer_status: 'rejected' } as any
-          : msg
+      const msg = messages.find(m => m.id === messageId) as any;
+      const offerId = msg?.offer_id;
+
+      setMessages(prev => prev.map(m =>
+        m.id === messageId ? { ...m, offer_status: 'rejected' } as any : m
       ));
-      
-      // Send rejection message
+
+      if (offerId) {
+        await offersApi.reject(offerId);
+      }
+
       await conversationsApi.sendMessage(
-        id!, 
-        `❌ OFFER DECLINED\n\nThank you for your interest, but I cannot accept this offer. Feel free to make a higher offer!`
+        id!,
+        `OFFER_REJECTED|Thank you for your interest, but I cannot accept this offer.`
       );
     } catch (error) {
       console.error('Error rejecting offer:', error);
@@ -2205,6 +2493,19 @@ export default function ChatScreen() {
                   <Ionicons name="add-circle" size={26} color={COLORS.primary} />
                 </TouchableOpacity>
 
+                {/* Make Offer Button - Desktop */}
+                {conversation?.listing && !isSeller ? (
+                  <TouchableOpacity
+                    style={{ width: 40, height: 44, justifyContent: 'center', alignItems: 'center', backgroundColor: '#E8F5E9', borderRadius: 8 }}
+                    onPress={() => setShowOfferModal(true)}
+                    {...({ onClick: () => setShowOfferModal(true) } as any)}
+                    testID="desktop-make-offer-btn"
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="pricetag" size={22} color={COLORS.primary} />
+                  </TouchableOpacity>
+                ) : null}
+
                 <View style={desktopStyles.inputWrapper}>
                   <TextInput
                     style={desktopStyles.input}
@@ -2247,6 +2548,58 @@ export default function ChatScreen() {
             )}
           </View>
         </View>
+
+        {/* Make Offer Modal - Desktop */}
+        {showOfferModal && (
+          <View style={{ position: 'fixed' as any, top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999 }}>
+            <Pressable
+              style={offerModalStyles.overlay}
+              onPress={() => setShowOfferModal(false)}
+            >
+              <Pressable style={offerModalStyles.sheet} onPress={(e) => e.stopPropagation()}>
+                <View style={offerModalStyles.dragHandle} />
+                <View style={offerModalStyles.header}>
+                  <Text style={offerModalStyles.headerTitle}>Make an Offer</Text>
+                  <Pressable onPress={() => setShowOfferModal(false)}>
+                    <Ionicons name="close" size={24} color={COLORS.textSecondary} />
+                  </Pressable>
+                </View>
+                {conversation?.listing && (
+                  <View style={offerModalStyles.listingPreview}>
+                    {conversation.listing.images?.[0] ? (
+                      <Image source={{ uri: conversation.listing.images[0] }} style={offerModalStyles.listingImage} />
+                    ) : (
+                      <View style={[offerModalStyles.listingImage, { backgroundColor: '#E8E8E8', justifyContent: 'center', alignItems: 'center' }]}>
+                        <Ionicons name="image-outline" size={24} color="#999" />
+                      </View>
+                    )}
+                    <View style={offerModalStyles.listingDetails}>
+                      <Text style={offerModalStyles.listingTitle} numberOfLines={1}>{conversation.listing.title}</Text>
+                      <Text style={offerModalStyles.listingPrice}>Listed: {formatPrice(conversation.listing.price)}</Text>
+                    </View>
+                  </View>
+                )}
+                <View style={offerModalStyles.fieldGroup}>
+                  <Text style={offerModalStyles.fieldLabel}>Your Offer (TZS)</Text>
+                  <TextInput style={offerModalStyles.priceInput} placeholder="Enter amount" placeholderTextColor="#999" value={offerAmount} onChangeText={setOfferAmount} keyboardType="numeric" />
+                </View>
+                <View style={offerModalStyles.fieldGroup}>
+                  <Text style={offerModalStyles.fieldLabel}>Message (optional)</Text>
+                  <TextInput style={offerModalStyles.messageInput} placeholder="Add a message to the seller..." placeholderTextColor="#999" value={offerMessage} onChangeText={setOfferMessage} multiline numberOfLines={3} />
+                </View>
+                <Pressable
+                  style={[offerModalStyles.submitButton, submittingOffer && { opacity: 0.6 }]}
+                  onPress={handleSubmitOffer}
+                  disabled={submittingOffer}
+                  testID="submit-offer-btn"
+                >
+                  <Ionicons name="cash-outline" size={20} color="#fff" />
+                  <Text style={offerModalStyles.submitButtonText}>{submittingOffer ? 'Submitting...' : 'Submit Offer'}</Text>
+                </Pressable>
+              </Pressable>
+            </Pressable>
+          </View>
+        )}
       </SafeAreaView>
     );
   }
@@ -2385,6 +2738,19 @@ export default function ChatScreen() {
               <Ionicons name="add-circle" size={28} color={COLORS.primary} />
             </TouchableOpacity>
 
+            {/* Make Offer Button - only for buyers when listing exists */}
+            {conversation?.listing && !isSeller && (
+              <TouchableOpacity
+                style={styles.offerInputButton}
+                onPress={() => setShowOfferModal(true)}
+                {...({ onClick: () => setShowOfferModal(true) } as any)}
+                testID="make-offer-btn"
+                activeOpacity={0.7}
+              >
+                <Ionicons name="pricetag" size={20} color={COLORS.primary} />
+              </TouchableOpacity>
+            )}
+
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.input}
@@ -2426,6 +2792,92 @@ export default function ChatScreen() {
           </View>
         )}
       </KeyboardAvoidingView>
+
+      {/* Make Offer Modal - overlay approach for web compatibility */}
+      {showOfferModal && (
+        <View style={{ position: 'fixed' as any, top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999 }}>
+          <Pressable
+            style={offerModalStyles.overlay}
+            onPress={() => setShowOfferModal(false)}
+          >
+            <Pressable style={offerModalStyles.sheet} onPress={(e) => e.stopPropagation()}>
+              {/* Drag handle */}
+              <View style={offerModalStyles.dragHandle} />
+
+              {/* Header */}
+              <View style={offerModalStyles.header}>
+                <Text style={offerModalStyles.headerTitle} testID="offer-modal-title">Make an Offer</Text>
+                <Pressable onPress={() => setShowOfferModal(false)} testID="offer-modal-close">
+                  <Ionicons name="close" size={24} color={COLORS.textSecondary} />
+                </Pressable>
+              </View>
+
+              {/* Listing Preview */}
+              {conversation?.listing && (
+                <View style={offerModalStyles.listingPreview}>
+                  {conversation.listing.images?.[0] ? (
+                    <Image source={{ uri: conversation.listing.images[0] }} style={offerModalStyles.listingImage} />
+                  ) : (
+                    <View style={[offerModalStyles.listingImage, { backgroundColor: '#E8E8E8', justifyContent: 'center', alignItems: 'center' }]}>
+                      <Ionicons name="image-outline" size={24} color="#999" />
+                    </View>
+                  )}
+                  <View style={offerModalStyles.listingDetails}>
+                    <Text style={offerModalStyles.listingTitle} numberOfLines={1}>
+                      {conversation.listing.title}
+                    </Text>
+                    <Text style={offerModalStyles.listingPrice}>
+                      Listed: {formatPrice(conversation.listing.price)}
+                    </Text>
+                  </View>
+                </View>
+              )}
+
+              {/* Price Input */}
+              <View style={offerModalStyles.fieldGroup}>
+                <Text style={offerModalStyles.fieldLabel}>Your Offer (TZS)</Text>
+                <TextInput
+                  style={offerModalStyles.priceInput}
+                  placeholder="Enter amount"
+                  placeholderTextColor="#999"
+                  value={offerAmount}
+                  onChangeText={setOfferAmount}
+                  keyboardType="numeric"
+                  testID="offer-amount-input"
+                />
+              </View>
+
+              {/* Message Input */}
+              <View style={offerModalStyles.fieldGroup}>
+                <Text style={offerModalStyles.fieldLabel}>Message (optional)</Text>
+                <TextInput
+                  style={offerModalStyles.messageInput}
+                  placeholder="Add a message to the seller..."
+                  placeholderTextColor="#999"
+                  value={offerMessage}
+                  onChangeText={setOfferMessage}
+                  multiline
+                  numberOfLines={3}
+                  testID="offer-message-input"
+                />
+              </View>
+
+              {/* Submit Button */}
+              <Pressable
+                style={[offerModalStyles.submitButton, submittingOffer && { opacity: 0.6 }]}
+                onPress={handleSubmitOffer}
+                disabled={submittingOffer}
+                testID="submit-offer-btn"
+              >
+                <Ionicons name="cash-outline" size={20} color="#fff" />
+                <Text style={offerModalStyles.submitButtonText}>
+                  {submittingOffer ? 'Submitting...' : 'Submit Offer'}
+                </Text>
+              </Pressable>
+            </Pressable>
+          </Pressable>
+        </View>
+      )}
 
       {/* Report Modal */}
       <ReportModal
@@ -2689,6 +3141,13 @@ const styles = StyleSheet.create({
     height: 44,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  offerInputButton: {
+    width: 36,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: -4,
   },
   inputWrapper: {
     flex: 1,
@@ -3008,5 +3467,118 @@ const chatMenuStyles = StyleSheet.create({
     backgroundColor: COLORS.border,
     marginVertical: 8,
     marginHorizontal: 20,
+  },
+});
+
+
+const offerModalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 32,
+    maxHeight: '80%',
+    maxWidth: 500,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  dragHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#DDD',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginVertical: 12,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  listingPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  listingImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 8,
+  },
+  listingDetails: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  listingTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+  listingPrice: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 2,
+  },
+  fieldGroup: {
+    marginBottom: 16,
+  },
+  fieldLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#555',
+    marginBottom: 6,
+  },
+  priceInput: {
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    backgroundColor: '#FAFAFA',
+  },
+  messageInput: {
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#1A1A1A',
+    backgroundColor: '#FAFAFA',
+    textAlignVertical: 'top',
+    minHeight: 70,
+  },
+  submitButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2E7D32',
+    paddingVertical: 14,
+    borderRadius: 10,
+    gap: 8,
+    marginTop: 4,
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

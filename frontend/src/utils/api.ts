@@ -229,6 +229,26 @@ export const conversationsApi = {
   }
 };
 
+// Offers API
+export const offersApi = {
+  create: async (data: { listing_id: string; offered_price: number; message?: string }) => {
+    const response = await api.post('/offers', data);
+    return response.data;
+  },
+  accept: async (offerId: string) => {
+    const response = await api.put(`/offers/${offerId}/accept`);
+    return response.data;
+  },
+  reject: async (offerId: string, reason?: string) => {
+    const response = await api.put(`/offers/${offerId}/reject`, { reason });
+    return response.data;
+  },
+  getMyOffers: async (role: 'buyer' | 'seller' = 'buyer') => {
+    const response = await api.get(`/offers?role=${role}`);
+    return response.data;
+  },
+};
+
 // Report API - User reporting system
 export const reportApi = {
   getReasons: async () => {
