@@ -494,3 +494,21 @@ export const locationsApi = {
 
 // Default export for convenience
 export default api;
+
+// Escrow API helper
+export const escrowApi = {
+  getSellerOrders: (params?: Record<string, any>) =>
+    api.get('/escrow/seller/orders', { params }),
+  getBuyerOrders: (params?: Record<string, any>) =>
+    api.get('/escrow/orders', { params }),
+  getOrderDetails: (orderId: string) =>
+    api.get(`/escrow/orders/${orderId}`),
+  shipOrder: (orderId: string, data?: { tracking_number?: string }) =>
+    api.post(`/escrow/seller/orders/${orderId}/ship`, data),
+  confirmDelivery: (orderId: string) =>
+    api.post(`/escrow/orders/${orderId}/confirm-delivery`),
+  openDispute: (orderId: string, data: { reason: string; description?: string }) =>
+    api.post(`/escrow/orders/${orderId}/dispute`, data),
+  getOrderTracking: (orderId: string) =>
+    api.get(`/escrow/orders/${orderId}/tracking`),
+};

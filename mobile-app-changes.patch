@@ -1,0 +1,1430 @@
+diff --git a/frontend/app/checkout/[listing_id].tsx b/frontend/app/checkout/[listing_id].tsx
+index 04fe3d9fb..fd0f86cf8 100644
+--- a/frontend/app/checkout/[listing_id].tsx
++++ b/frontend/app/checkout/[listing_id].tsx
+@@ -85,7 +85,7 @@ export default function CheckoutScreen() {
+     city: '',
+     state: '',
+     postal_code: '',
+-    country: 'US',
++    country: 'TZ',
+   });
+   
+   // Payment
+@@ -269,7 +269,7 @@ export default function CheckoutScreen() {
+         });
+         
+         const order = orderResponse.data.order;
+-        const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://api-integration-81.preview.emergentagent.com';
++        const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://escrow-notif-mobile.preview.emergentagent.com';
+         
+         // Create payment
+         let paymentResponse;
+@@ -308,9 +308,9 @@ export default function CheckoutScreen() {
+     }
+   };
+   
+-  const formatPrice = (price: number, currency: string = 'EUR') => {
+-    const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', TZS: 'TSh' };
+-    return `${symbols[currency] || currency} ${price.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
++  const formatPrice = (price: number, currency: string = 'TZS') => {
++    const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', TZS: 'TZS' };
++    return `${symbols[currency] || currency} ${price.toLocaleString('en-US', { minimumFractionDigits: 0 })}`;
+   };
+   
+   const getImageUri = (img: string) => {
+@@ -383,7 +383,7 @@ export default function CheckoutScreen() {
+               )}
+               <View style={styles.itemDetails}>
+                 <Text style={styles.itemTitle}>{listing.title}</Text>
+-                <Text style={styles.itemPrice}>{formatPrice(listing.price)}</Text>
++                <Text style={styles.itemPrice}>{formatPrice(listing.price, listing.currency || 'TZS')}</Text>
+                 <View style={styles.itemMeta}>
+                   <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
+                   <Text style={styles.itemMetaText}>{listing.location}</Text>
+diff --git a/frontend/app/profile/orders.tsx b/frontend/app/profile/orders.tsx
+index b227410c7..1c05830f3 100644
+--- a/frontend/app/profile/orders.tsx
++++ b/frontend/app/profile/orders.tsx
+@@ -9,6 +9,8 @@ import {
+   RefreshControl,
+   Alert,
+   ActivityIndicator,
++  TextInput,
++  Modal,
+ } from 'react-native';
+ import { SafeAreaView } from 'react-native-safe-area-context';
+ import { Ionicons } from '@expo/vector-icons';
+@@ -67,6 +69,8 @@ export default function SellerOrdersScreen() {
+   const [refreshing, setRefreshing] = useState(false);
+   const [processingOrder, setProcessingOrder] = useState<string | null>(null);
+   const [isSandbox, setIsSandbox] = useState(false);
++  const [trackingInput, setTrackingInput] = useState('');
++  const [shipModalOrder, setShipModalOrder] = useState<string | null>(null);
+   const [stats, setStats] = useState({
+     pending: 0,
+     shipped: 0,
+@@ -166,8 +170,12 @@ export default function SellerOrdersScreen() {
+   const handleMarkShipped = async (orderId: string) => {
+     setProcessingOrder(orderId);
+     try {
+-      await api.post(`/escrow/orders/${orderId}/ship`);
++      await api.post(`/escrow/seller/orders/${orderId}/ship`, {
++        tracking_number: trackingInput || undefined,
++      });
+       Alert.alert('Success', 'Order marked as shipped. Buyer has been notified.');
++      setShipModalOrder(null);
++      setTrackingInput('');
+       fetchOrders();
+     } catch (error: any) {
+       Alert.alert('Error', error.response?.data?.detail || 'Failed to update order');
+@@ -176,9 +184,9 @@ export default function SellerOrdersScreen() {
+     }
+   };
+   
+-  const formatPrice = (price: number, currency: string = 'EUR') => {
+-    const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', TZS: 'TSh' };
+-    return `${symbols[currency] || currency} ${price.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
++  const formatPrice = (price: number, currency: string = 'TZS') => {
++    const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', TZS: 'TZS' };
++    return `${symbols[currency] || currency} ${(price || 0).toLocaleString('en-US', { minimumFractionDigits: 0 })}`;
+   };
+   
+   const getStatusColor = (status: string) => {
+@@ -312,19 +320,19 @@ export default function SellerOrdersScreen() {
+               </View>
+               
+               <View style={styles.orderBody}>
+-                {order.listing?.images?.[0] && (
++                {(order.listing?.images?.[0] || order.listing_image) && (
+                   <Image 
+-                    source={{ uri: getImageUri(order.listing.images[0]) }} 
++                    source={{ uri: getImageUri(order.listing?.images?.[0] || order.listing_image) }} 
+                     style={styles.orderImage} 
+                   />
+                 )}
+                 <View style={styles.orderDetails}>
+                   <Text style={styles.orderTitle} numberOfLines={2}>
+-                    {order.listing?.title || 'Item'}
++                    {order.listing?.title || order.listing_title || 'Item'}
+                   </Text>
+                   <Text style={styles.orderBuyer}>
+                     <Ionicons name="person-outline" size={12} color={COLORS.textSecondary} />
+-                    {' '}{order.buyer?.name || 'Buyer'}
++                    {' '}{order.buyer?.name || order.buyer_id || 'Buyer'}
+                   </Text>
+                   <View style={styles.orderDelivery}>
+                     <Ionicons 
+@@ -336,20 +344,62 @@ export default function SellerOrdersScreen() {
+                       {order.delivery_method === 'pickup' ? 'Pickup' : 'Door Delivery'}
+                     </Text>
+                   </View>
++                  {/* Escrow Badge */}
++                  {order.escrow_status && (
++                    <View style={[styles.escrowBadge, { 
++                      backgroundColor: order.escrow_status === 'funded' ? '#DBEAFE' : 
++                                       order.escrow_status === 'released' ? '#DCFCE7' : 
++                                       order.escrow_status === 'refunded' ? '#FEF3C7' : '#F3F4F6'
++                    }]}>
++                      <Ionicons name="shield-checkmark" size={12} color={
++                        order.escrow_status === 'funded' ? COLORS.info :
++                        order.escrow_status === 'released' ? COLORS.primary :
++                        order.escrow_status === 'refunded' ? COLORS.warning : COLORS.textSecondary
++                      } />
++                      <Text style={[styles.escrowBadgeText, { 
++                        color: order.escrow_status === 'funded' ? COLORS.info :
++                               order.escrow_status === 'released' ? COLORS.primary :
++                               order.escrow_status === 'refunded' ? COLORS.warning : COLORS.textSecondary
++                      }]}>
++                        {order.escrow_status === 'funded' ? 'Funds Held' :
++                         order.escrow_status === 'released' ? 'Released to You' :
++                         order.escrow_status === 'refunded' ? 'Refunded' :
++                         order.escrow_status === 'not_funded' ? 'Awaiting Payment' :
++                         order.escrow_status.replace(/_/g, ' ')}
++                      </Text>
++                    </View>
++                  )}
++                  {/* Tracking Number */}
++                  {order.tracking_number && (
++                    <View style={styles.trackingBadge}>
++                      <Ionicons name="locate-outline" size={12} color={COLORS.primary} />
++                      <Text style={styles.trackingBadgeText}>Track: {order.tracking_number}</Text>
++                    </View>
++                  )}
+                 </View>
+                 <View style={styles.orderPricing}>
+                   <Text style={styles.orderTotal}>{formatPrice(order.total_amount, order.currency)}</Text>
+                   <Text style={styles.orderNet}>
+-                    You get: {formatPrice(order.total_amount - order.commission_amount, order.currency)}
++                    You get: {formatPrice((order.total_amount || 0) - (order.commission_amount || 0), order.currency)}
+                   </Text>
+                 </View>
+               </View>
+               
++              {/* Track Order Button */}
++              <TouchableOpacity
++                style={styles.trackBtn}
++                onPress={() => router.push(`/profile/order-tracking?id=${order.id}`)}
++              >
++                <Ionicons name="navigate-outline" size={16} color={COLORS.primary} />
++                <Text style={styles.trackBtnText}>Track Order</Text>
++                <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
++              </TouchableOpacity>
++              
+               {/* Action Buttons */}
+               {order.status === 'paid' && (
+                 <TouchableOpacity
+                   style={styles.shipBtn}
+-                  onPress={() => handleMarkShipped(order.id)}
++                  onPress={() => { setShipModalOrder(order.id); setTrackingInput(''); }}
+                   disabled={processingOrder === order.id}
+                 >
+                   {processingOrder === order.id ? (
+@@ -393,6 +443,50 @@ export default function SellerOrdersScreen() {
+           </Text>
+         </View>
+       </ScrollView>
++      
++      {/* Ship Modal */}
++      <Modal
++        visible={!!shipModalOrder}
++        transparent
++        animationType="slide"
++        onRequestClose={() => setShipModalOrder(null)}
++      >
++        <View style={styles.modalOverlay}>
++          <View style={styles.modalContent}>
++            <Text style={styles.modalTitle}>Ship Order</Text>
++            <Text style={styles.modalSubtitle}>
++              Add a tracking number (optional) and confirm shipping.
++            </Text>
++            <TextInput
++              style={styles.trackingInput}
++              placeholder="Tracking number (optional)"
++              value={trackingInput}
++              onChangeText={setTrackingInput}
++              placeholderTextColor={COLORS.textSecondary}
++            />
++            <TouchableOpacity
++              style={styles.modalShipBtn}
++              onPress={() => shipModalOrder && handleMarkShipped(shipModalOrder)}
++              disabled={!!processingOrder}
++            >
++              {processingOrder ? (
++                <ActivityIndicator size="small" color="#fff" />
++              ) : (
++                <>
++                  <Ionicons name="airplane" size={18} color="#fff" />
++                  <Text style={styles.modalShipBtnText}>Confirm Shipment</Text>
++                </>
++              )}
++            </TouchableOpacity>
++            <TouchableOpacity
++              style={styles.modalCancelBtn}
++              onPress={() => setShipModalOrder(null)}
++            >
++              <Text style={styles.modalCancelText}>Cancel</Text>
++            </TouchableOpacity>
++          </View>
++        </View>
++      </Modal>
+     </SafeAreaView>
+   );
+ }
+@@ -534,4 +628,84 @@ const styles = StyleSheet.create({
+     marginBottom: 24,
+   },
+   infoText: { flex: 1, fontSize: 13, color: '#0369A1', marginLeft: 10, lineHeight: 18 },
++  
++  escrowBadge: {
++    flexDirection: 'row',
++    alignItems: 'center',
++    paddingHorizontal: 8,
++    paddingVertical: 3,
++    borderRadius: 6,
++    marginTop: 4,
++    alignSelf: 'flex-start',
++    gap: 4,
++  },
++  escrowBadgeText: { fontSize: 11, fontWeight: '600' },
++  
++  trackingBadge: {
++    flexDirection: 'row',
++    alignItems: 'center',
++    paddingHorizontal: 8,
++    paddingVertical: 3,
++    borderRadius: 6,
++    marginTop: 4,
++    backgroundColor: '#DCFCE7',
++    alignSelf: 'flex-start',
++    gap: 4,
++  },
++  trackingBadgeText: { fontSize: 11, fontWeight: '600', color: COLORS.primary },
++  
++  trackBtn: {
++    flexDirection: 'row',
++    alignItems: 'center',
++    justifyContent: 'center',
++    backgroundColor: '#F0FDF4',
++    borderWidth: 1,
++    borderColor: '#BBF7D0',
++    paddingVertical: 10,
++    borderRadius: 8,
++    marginTop: 10,
++    gap: 6,
++  },
++  trackBtnText: { fontSize: 13, fontWeight: '600', color: COLORS.primary },
++  
++  modalOverlay: {
++    flex: 1,
++    backgroundColor: 'rgba(0,0,0,0.5)',
++    justifyContent: 'flex-end',
++  },
++  modalContent: {
++    backgroundColor: COLORS.surface,
++    borderTopLeftRadius: 24,
++    borderTopRightRadius: 24,
++    padding: 24,
++    paddingBottom: 40,
++  },
++  modalTitle: { fontSize: 20, fontWeight: '700', color: COLORS.text, marginBottom: 4 },
++  modalSubtitle: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 20 },
++  trackingInput: {
++    borderWidth: 1,
++    borderColor: COLORS.border,
++    borderRadius: 12,
++    padding: 14,
++    fontSize: 15,
++    color: COLORS.text,
++    marginBottom: 16,
++    backgroundColor: COLORS.background,
++  },
++  modalShipBtn: {
++    flexDirection: 'row',
++    alignItems: 'center',
++    justifyContent: 'center',
++    backgroundColor: COLORS.info,
++    paddingVertical: 14,
++    borderRadius: 12,
++    gap: 8,
++    marginBottom: 12,
++  },
++  modalShipBtnText: { fontSize: 16, fontWeight: '600', color: '#fff' },
++  modalCancelBtn: {
++    alignItems: 'center',
++    paddingVertical: 12,
++  },
++  modalCancelText: { fontSize: 15, color: COLORS.textSecondary, fontWeight: '500' },
+ });
+diff --git a/frontend/app/profile/purchases.tsx b/frontend/app/profile/purchases.tsx
+index 8f557b111..2e09743ee 100644
+--- a/frontend/app/profile/purchases.tsx
++++ b/frontend/app/profile/purchases.tsx
+@@ -96,7 +96,7 @@ const getEscrowInfo = (status: string) => {
+   }
+ };
+ 
+-const formatPrice = (price: number, currency: string = 'EUR') => {
++const formatPrice = (price: number, currency: string = 'TZS') => {
+   const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', TZS: 'TSh' };
+   return `${symbols[currency] || currency} ${price?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || '0.00'}`;
+ };
+@@ -218,6 +218,16 @@ const OrderItem = ({
+           </Text>
+         </View>
+       )}
++      
++      {/* Track Order Button */}
++      <TouchableOpacity
++        style={styles.trackOrderBtn}
++        onPress={() => router.push(`/profile/order-tracking?id=${order.id}`)}
++      >
++        <Ionicons name="navigate-outline" size={16} color={COLORS.primary} />
++        <Text style={styles.trackOrderBtnText}>Track Order</Text>
++        <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
++      </TouchableOpacity>
+     </View>
+   );
+ };
+@@ -239,12 +249,14 @@ const DesktopOrderCard = ({
+   onPress,
+   onConfirmDelivery,
+   onOpenDispute,
++  onTrackOrder,
+   processing,
+ }: {
+   order: Order;
+   onPress: () => void;
+   onConfirmDelivery: (orderId: string) => void;
+   onOpenDispute: (orderId: string) => void;
++  onTrackOrder: (orderId: string) => void;
+   processing: string | null;
+ }) => {
+   const statusConfig = getStatusConfig(order.status);
+@@ -254,11 +266,11 @@ const DesktopOrderCard = ({
+     <View style={desktopStyles.card} data-testid={`order-card-${order.id}`}>
+       <TouchableOpacity style={desktopStyles.cardContent} onPress={onPress}>
+         <Image
+-          source={{ uri: getImageUri(order.item?.image_url) }}
++          source={{ uri: getImageUri(order.item?.image_url || order.listing_image) }}
+           style={desktopStyles.cardImage}
+         />
+         <View style={desktopStyles.cardDetails}>
+-          <Text style={desktopStyles.cardTitle} numberOfLines={2}>{order.item?.title || 'Item'}</Text>
++          <Text style={desktopStyles.cardTitle} numberOfLines={2}>{order.item?.title || order.listing_title || 'Item'}</Text>
+           <Text style={desktopStyles.cardPrice}>{formatPrice(order.total_amount, order.currency)}</Text>
+           
+           <View style={[desktopStyles.statusBadge, { backgroundColor: statusConfig.bg }]}>
+@@ -331,6 +343,16 @@ const DesktopOrderCard = ({
+           </Text>
+         </View>
+       )}
++      
++      {/* Track Order Button */}
++      <TouchableOpacity
++        style={desktopStyles.trackOrderBtn}
++        onPress={() => onTrackOrder(order.id)}
++      >
++        <Ionicons name="navigate-outline" size={16} color={COLORS.primary} />
++        <Text style={desktopStyles.trackOrderBtnText}>Track Order</Text>
++        <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
++      </TouchableOpacity>
+     </View>
+   );
+ };
+@@ -399,7 +421,7 @@ export default function PurchasesScreen() {
+           onPress: async () => {
+             setProcessing(orderId);
+             try {
+-              await api.post(`/escrow/orders/${orderId}/confirm`);
++              await api.post(`/escrow/orders/${orderId}/confirm-delivery`);
+               Alert.alert('Success', 'Delivery confirmed. Payment has been released to the seller.');
+               fetchOrders(true);
+             } catch (error: any) {
+@@ -556,6 +578,7 @@ export default function PurchasesScreen() {
+                 onPress={() => router.push(`/listing/${order.listing_id}`)}
+                 onConfirmDelivery={handleConfirmDelivery}
+                 onOpenDispute={handleOpenDispute}
++                onTrackOrder={(id) => router.push(`/profile/order-tracking?id=${id}`)}
+                 processing={processing}
+               />
+             ))}
+@@ -843,6 +866,26 @@ const styles = StyleSheet.create({
+     fontSize: 12,
+     color: '#92400E',
+   },
++  trackOrderBtn: {
++    flexDirection: 'row',
++    alignItems: 'center',
++    justifyContent: 'center',
++    backgroundColor: '#F0FDF4',
++    borderWidth: 1,
++    borderColor: '#BBF7D0',
++    paddingVertical: 10,
++    borderRadius: 8,
++    marginTop: 8,
++    marginHorizontal: 16,
++    marginBottom: 12,
++    gap: 6,
++  },
++  trackOrderBtnText: {
++    fontSize: 13,
++    fontWeight: '600',
++    color: COLORS.primary,
++    flex: 1,
++  },
+   emptyContainer: {
+     alignItems: 'center',
+     justifyContent: 'center',
+@@ -1088,6 +1131,26 @@ const desktopStyles = StyleSheet.create({
+     fontSize: 13,
+     color: '#92400E',
+   },
++  trackOrderBtn: {
++    flexDirection: 'row',
++    alignItems: 'center',
++    justifyContent: 'center',
++    backgroundColor: '#F0FDF4',
++    borderWidth: 1,
++    borderColor: '#BBF7D0',
++    paddingVertical: 12,
++    borderRadius: 10,
++    marginTop: 8,
++    marginHorizontal: 16,
++    marginBottom: 12,
++    gap: 8,
++  },
++  trackOrderBtnText: {
++    fontSize: 14,
++    fontWeight: '600',
++    color: COLORS.primary,
++    flex: 1,
++  },
+   emptyContainer: {
+     alignItems: 'center',
+     justifyContent: 'center',
+diff --git a/frontend/src/utils/api.ts b/frontend/src/utils/api.ts
+index 3906f1aee..97cc4856e 100644
+--- a/frontend/src/utils/api.ts
++++ b/frontend/src/utils/api.ts
+@@ -5,7 +5,7 @@ import Constants from 'expo-constants';
+ 
+ // Production API URL - HARDCODED and ALWAYS used
+ // This ensures the correct URL is used regardless of cache issues
+-export const PRODUCTION_API_URL = 'https://api-integration-81.preview.emergentagent.com';
++export const PRODUCTION_API_URL = 'https://escrow-notif-mobile.preview.emergentagent.com';
+ 
+ // Get API URL - ALWAYS use hardcoded URL to avoid cache issues
+ export const getApiUrl = (): string => {
+@@ -429,6 +429,72 @@ export const boostApi = {
+   }
+ };
+ 
++// Escrow API - Orders, Tracking, Payments
++export const escrowApi = {
++  // Buyer orders
++  getBuyerOrders: async (page: number = 1, limit: number = 20) => {
++    const response = await api.get('/escrow/buyer/orders', { params: { page, limit } });
++    return response.data;
++  },
++  
++  // Seller orders
++  getSellerOrders: async (page: number = 1, limit: number = 20) => {
++    const response = await api.get('/escrow/seller/orders', { params: { page, limit } });
++    return response.data;
++  },
++  
++  // Order detail
++  getOrder: async (orderId: string) => {
++    const response = await api.get(`/escrow/orders/${orderId}`);
++    return response.data;
++  },
++  
++  // Order tracking timeline
++  getOrderTracking: async (orderId: string) => {
++    const response = await api.get(`/escrow/orders/${orderId}/tracking`);
++    return response.data;
++  },
++  
++  // Confirm delivery (buyer)
++  confirmDelivery: async (orderId: string) => {
++    const response = await api.post(`/escrow/orders/${orderId}/confirm-delivery`);
++    return response.data;
++  },
++  
++  // Mark as shipped (seller)
++  markShipped: async (orderId: string, trackingNumber?: string) => {
++    const response = await api.post(`/escrow/seller/orders/${orderId}/ship`, {
++      tracking_number: trackingNumber,
++    });
++    return response.data;
++  },
++  
++  // Seller escrow status
++  getSellerEscrowStatus: async () => {
++    const response = await api.get('/escrow/seller/escrow-status');
++    return response.data;
++  },
++  
++  // Create escrow order (checkout)
++  createOrder: async (data: {
++    listing_id: string;
++    quantity: number;
++    delivery_method: string;
++    delivery_address?: any;
++    payment_method?: string;
++    payment_phone?: string;
++  }) => {
++    const response = await api.post('/escrow/orders', data);
++    return response.data;
++  },
++  
++  // File a dispute
++  createDispute: async (orderId: string, reason: string, description: string) => {
++    const response = await api.post(`/escrow/orders/${orderId}/dispute`, { reason, description });
++    return response.data;
++  },
++};
++
+ // Locations API - Hierarchical location data
+ export const locationsApi = {
+   // Get all countries
+diff --git a/frontend/src/utils/notifications.ts b/frontend/src/utils/notifications.ts
+index 9a60dddd7..f6929dc71 100644
+--- a/frontend/src/utils/notifications.ts
++++ b/frontend/src/utils/notifications.ts
+@@ -21,6 +21,13 @@ export interface NotificationData {
+   conversation_id?: string;
+   user_id?: string;
+   trigger_type?: string;
++  // Escrow event data
++  type?: string;
++  event?: string;
++  order_id?: string;
++  screen?: string;
++  tab?: string;
++  ticket_id?: string;
+ }
+ 
+ /**
+@@ -92,7 +99,13 @@ export function useNotificationDeepLinking() {
+   const handleDeepLink = (data: NotificationData) => {
+     if (!data) return;
+ 
+-    const { deep_link, listing_id, conversation_id, user_id, trigger_type, screen, tab, ticket_id } = data;
++    const { deep_link, listing_id, conversation_id, user_id, trigger_type, screen, tab, ticket_id, type, event, order_id } = data;
++
++    // Escrow event notifications → navigate to order tracking
++    if (type === 'escrow_event' && order_id) {
++      router.push({ pathname: '/profile/order-tracking', params: { id: order_id } });
++      return;
++    }
+ 
+     // Priority: explicit screen/tab for support tickets
+     if (screen === '/help' && tab === 'tickets') {
+@@ -117,6 +130,14 @@ export function useNotificationDeepLinking() {
+         router.push({ pathname: '/seller/[id]', params: { id } });
+       } else if (path === '/help' || path.startsWith('/help')) {
+         router.push({ pathname: '/help', params: { tab: 'tickets' } });
++      } else if (path.startsWith('/profile/order-tracking')) {
++        const urlParams = new URLSearchParams(path.split('?')[1] || '');
++        const trackId = urlParams.get('id');
++        if (trackId) {
++          router.push({ pathname: '/profile/order-tracking', params: { id: trackId } });
++        } else {
++          router.push('/profile/purchases');
++        }
+       } else {
+         // Try to navigate to the path directly
+         try {
+@@ -205,9 +226,23 @@ export async function registerForPushNotifications(userId: string): Promise<stri
+ 
+     console.log('Expo Push Token:', pushToken);
+ 
+-    // Send token to backend - try multiple endpoints for compatibility
++    // Register token with local push_tokens collection (for escrow push notifications)
++    try {
++      await api.post('/notifications/register-push', {
++        user_id: userId,
++        token: pushToken,
++        device_info: {
++          platform: Platform.OS,
++          device_id: undefined,
++        }
++      });
++      console.log('Push token registered with local push_tokens collection');
++    } catch (localError) {
++      console.log('Failed to register with local push_tokens:', localError);
++    }
++
++    // Also register with external settings API for backwards compatibility
+     try {
+-      // First try the settings endpoint (main settings update)
+       await api.put('/settings', {
+         push_token: pushToken,
+         notifications: {
+@@ -216,15 +251,7 @@ export async function registerForPushNotifications(userId: string): Promise<stri
+       });
+       console.log('Push token registered with backend via settings');
+     } catch (error) {
+-      // Fallback to dedicated push-token endpoint
+-      try {
+-        await api.put('/settings/push-token', {
+-          push_token: pushToken,
+-        });
+-        console.log('Push token registered with backend via push-token endpoint');
+-      } catch (fallbackError) {
+-        console.log('Failed to register push token with backend:', fallbackError);
+-      }
++      console.log('Settings push token registration skipped:', error);
+     }
+ 
+     // Set up notification channel for Android
+@@ -254,6 +281,14 @@ export async function registerForPushNotifications(userId: string): Promise<stri
+         name: 'Promotions',
+         importance: Notifications.AndroidImportance.LOW,
+       });
++
++      await Notifications.setNotificationChannelAsync('orders', {
++        name: 'Orders & Escrow',
++        importance: Notifications.AndroidImportance.HIGH,
++        vibrationPattern: [0, 250, 250, 250],
++        lightColor: '#16A34A',
++        sound: 'default',
++      });
+     }
+ 
+     return pushToken;
+diff --git a/frontend/app/profile/notification-preferences.tsx b/frontend/app/profile/notification-preferences.tsx
+new file mode 100644
+index 000000000..adc044c23
+--- /dev/null
++++ b/frontend/app/profile/notification-preferences.tsx
+@@ -0,0 +1,328 @@
++import React, { useState, useEffect, useCallback } from 'react';
++import {
++  View,
++  Text,
++  StyleSheet,
++  ScrollView,
++  Switch,
++  TouchableOpacity,
++  ActivityIndicator,
++  Alert,
++} from 'react-native';
++import { SafeAreaView } from 'react-native-safe-area-context';
++import { Ionicons } from '@expo/vector-icons';
++import { useRouter } from 'expo-router';
++import api from '../../src/utils/api';
++import { useAuthStore } from '../../src/store/authStore';
++
++const COLORS = {
++  primary: '#2E7D32',
++  primaryLight: '#E8F5E9',
++  surface: '#FFFFFF',
++  background: '#F5F5F5',
++  text: '#1A1A1A',
++  textSecondary: '#666666',
++  border: '#E0E0E0',
++  success: '#4CAF50',
++  warning: '#FF9800',
++  error: '#F44336',
++};
++
++interface PushPreferences {
++  payment_confirmed: boolean;
++  new_order: boolean;
++  order_shipped: boolean;
++  delivery_confirmed: boolean;
++  escrow_released: boolean;
++  dispute_updates: boolean;
++}
++
++const DEFAULT_PREFS: PushPreferences = {
++  payment_confirmed: true,
++  new_order: true,
++  order_shipped: true,
++  delivery_confirmed: true,
++  escrow_released: true,
++  dispute_updates: true,
++};
++
++const PREF_CONFIG = [
++  {
++    key: 'payment_confirmed' as keyof PushPreferences,
++    title: 'Payment Confirmed',
++    description: 'When your payment is confirmed and funds are held in escrow',
++    icon: 'card-outline',
++    role: 'buyer',
++  },
++  {
++    key: 'new_order' as keyof PushPreferences,
++    title: 'New Order Received',
++    description: 'When a buyer places and pays for a new order',
++    icon: 'bag-add-outline',
++    role: 'seller',
++  },
++  {
++    key: 'order_shipped' as keyof PushPreferences,
++    title: 'Order Shipped',
++    description: 'When the seller ships your order with tracking info',
++    icon: 'airplane-outline',
++    role: 'buyer',
++  },
++  {
++    key: 'delivery_confirmed' as keyof PushPreferences,
++    title: 'Delivery Confirmed',
++    description: 'When delivery is confirmed and escrow funds are released',
++    icon: 'checkmark-circle-outline',
++    role: 'both',
++  },
++  {
++    key: 'escrow_released' as keyof PushPreferences,
++    title: 'Escrow Released',
++    description: 'When escrow funds are released to the seller',
++    icon: 'wallet-outline',
++    role: 'seller',
++  },
++  {
++    key: 'dispute_updates' as keyof PushPreferences,
++    title: 'Dispute Updates',
++    description: 'Updates on dispute resolution and outcomes',
++    icon: 'alert-circle-outline',
++    role: 'both',
++  },
++];
++
++export default function NotificationPreferencesScreen() {
++  const router = useRouter();
++  const { isAuthenticated } = useAuthStore();
++  const [prefs, setPrefs] = useState<PushPreferences>(DEFAULT_PREFS);
++  const [loading, setLoading] = useState(true);
++  const [saving, setSaving] = useState(false);
++
++  const fetchPreferences = useCallback(async () => {
++    try {
++      setLoading(true);
++      const response = await api.get('/v1/notifications/push-preferences');
++      const data = response.data;
++      setPrefs({
++        payment_confirmed: data.payment_confirmed ?? true,
++        new_order: data.new_order ?? true,
++        order_shipped: data.order_shipped ?? true,
++        delivery_confirmed: data.delivery_confirmed ?? true,
++        escrow_released: data.escrow_released ?? true,
++        dispute_updates: data.dispute_updates ?? true,
++      });
++    } catch (error) {
++      console.log('Failed to fetch push preferences:', error);
++    } finally {
++      setLoading(false);
++    }
++  }, []);
++
++  useEffect(() => {
++    if (isAuthenticated) {
++      fetchPreferences();
++    }
++  }, [isAuthenticated]);
++
++  const togglePreference = async (key: keyof PushPreferences) => {
++    const updated = { ...prefs, [key]: !prefs[key] };
++    setPrefs(updated);
++    setSaving(true);
++    try {
++      await api.put('/v1/notifications/push-preferences', updated);
++    } catch (error) {
++      // Revert on failure
++      setPrefs(prefs);
++      Alert.alert('Error', 'Failed to save preference. Please try again.');
++    } finally {
++      setSaving(false);
++    }
++  };
++
++  const toggleAll = async (enabled: boolean) => {
++    const updated: PushPreferences = {
++      payment_confirmed: enabled,
++      new_order: enabled,
++      order_shipped: enabled,
++      delivery_confirmed: enabled,
++      escrow_released: enabled,
++      dispute_updates: enabled,
++    };
++    setPrefs(updated);
++    setSaving(true);
++    try {
++      await api.put('/v1/notifications/push-preferences', updated);
++    } catch (error) {
++      setPrefs(prefs);
++      Alert.alert('Error', 'Failed to save preferences.');
++    } finally {
++      setSaving(false);
++    }
++  };
++
++  const allEnabled = Object.values(prefs).every(v => v === true);
++  const allDisabled = Object.values(prefs).every(v => v === false);
++
++  if (loading) {
++    return (
++      <SafeAreaView style={styles.container}>
++        <View style={styles.header}>
++          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
++            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
++          </TouchableOpacity>
++          <Text style={styles.headerTitle}>Notification Preferences</Text>
++          <View style={{ width: 40 }} />
++        </View>
++        <View style={styles.loadingContainer}>
++          <ActivityIndicator size="large" color={COLORS.primary} />
++        </View>
++      </SafeAreaView>
++    );
++  }
++
++  return (
++    <SafeAreaView style={styles.container}>
++      <View style={styles.header}>
++        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
++          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
++        </TouchableOpacity>
++        <Text style={styles.headerTitle}>Notification Preferences</Text>
++        <View style={{ width: 40 }}>
++          {saving && <ActivityIndicator size="small" color={COLORS.primary} />}
++        </View>
++      </View>
++
++      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
++        <View style={styles.infoCard}>
++          <Ionicons name="notifications-outline" size={20} color={COLORS.primary} />
++          <Text style={styles.infoText}>
++            Control which escrow events send you push notifications on this device.
++          </Text>
++        </View>
++
++        <View style={styles.toggleAllRow}>
++          <Text style={styles.toggleAllText}>
++            {allEnabled ? 'All notifications enabled' : allDisabled ? 'All notifications disabled' : 'Some notifications enabled'}
++          </Text>
++          <TouchableOpacity
++            style={[styles.toggleAllButton, allEnabled ? styles.toggleAllButtonDisable : styles.toggleAllButtonEnable]}
++            onPress={() => toggleAll(!allEnabled)}
++          >
++            <Text style={styles.toggleAllButtonText}>
++              {allEnabled ? 'Disable All' : 'Enable All'}
++            </Text>
++          </TouchableOpacity>
++        </View>
++
++        <Text style={styles.sectionTitle}>As a Buyer</Text>
++        {PREF_CONFIG.filter(p => p.role === 'buyer' || p.role === 'both').map(item => (
++          <View key={item.key} style={styles.prefRow}>
++            <View style={styles.prefIcon}>
++              <Ionicons name={item.icon as any} size={22} color={COLORS.primary} />
++            </View>
++            <View style={styles.prefInfo}>
++              <Text style={styles.prefTitle}>{item.title}</Text>
++              <Text style={styles.prefDescription}>{item.description}</Text>
++            </View>
++            <Switch
++              value={prefs[item.key]}
++              onValueChange={() => togglePreference(item.key)}
++              trackColor={{ false: '#D1D5DB', true: '#86EFAC' }}
++              thumbColor={prefs[item.key] ? COLORS.primary : '#9CA3AF'}
++            />
++          </View>
++        ))}
++
++        <Text style={styles.sectionTitle}>As a Seller</Text>
++        {PREF_CONFIG.filter(p => p.role === 'seller').map(item => (
++          <View key={item.key} style={styles.prefRow}>
++            <View style={styles.prefIcon}>
++              <Ionicons name={item.icon as any} size={22} color={COLORS.primary} />
++            </View>
++            <View style={styles.prefInfo}>
++              <Text style={styles.prefTitle}>{item.title}</Text>
++              <Text style={styles.prefDescription}>{item.description}</Text>
++            </View>
++            <Switch
++              value={prefs[item.key]}
++              onValueChange={() => togglePreference(item.key)}
++              trackColor={{ false: '#D1D5DB', true: '#86EFAC' }}
++              thumbColor={prefs[item.key] ? COLORS.primary : '#9CA3AF'}
++            />
++          </View>
++        ))}
++      </ScrollView>
++    </SafeAreaView>
++  );
++}
++
++const styles = StyleSheet.create({
++  container: { flex: 1, backgroundColor: COLORS.background },
++  header: {
++    flexDirection: 'row',
++    alignItems: 'center',
++    justifyContent: 'space-between',
++    paddingHorizontal: 16,
++    paddingVertical: 12,
++    backgroundColor: COLORS.surface,
++    borderBottomWidth: 1,
++    borderBottomColor: COLORS.border,
++  },
++  backButton: { padding: 4 },
++  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
++  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
++  content: { flex: 1 },
++  contentContainer: { padding: 16 },
++  infoCard: {
++    flexDirection: 'row',
++    alignItems: 'center',
++    backgroundColor: COLORS.primaryLight,
++    padding: 14,
++    borderRadius: 10,
++    gap: 10,
++    marginBottom: 20,
++  },
++  infoText: { flex: 1, fontSize: 13, color: COLORS.text, lineHeight: 18 },
++  toggleAllRow: {
++    flexDirection: 'row',
++    justifyContent: 'space-between',
++    alignItems: 'center',
++    marginBottom: 20,
++  },
++  toggleAllText: { fontSize: 14, color: COLORS.textSecondary },
++  toggleAllButton: {
++    paddingHorizontal: 14,
++    paddingVertical: 7,
++    borderRadius: 6,
++  },
++  toggleAllButtonEnable: { backgroundColor: COLORS.primary },
++  toggleAllButtonDisable: { backgroundColor: COLORS.textSecondary },
++  toggleAllButtonText: { color: '#fff', fontSize: 13, fontWeight: '600' },
++  sectionTitle: {
++    fontSize: 15,
++    fontWeight: '700',
++    color: COLORS.text,
++    marginBottom: 10,
++    marginTop: 6,
++  },
++  prefRow: {
++    flexDirection: 'row',
++    alignItems: 'center',
++    backgroundColor: COLORS.surface,
++    padding: 14,
++    borderRadius: 10,
++    marginBottom: 8,
++    gap: 12,
++  },
++  prefIcon: {
++    width: 40,
++    height: 40,
++    borderRadius: 20,
++    backgroundColor: COLORS.primaryLight,
++    justifyContent: 'center',
++    alignItems: 'center',
++  },
++  prefInfo: { flex: 1 },
++  prefTitle: { fontSize: 15, fontWeight: '600', color: COLORS.text },
++  prefDescription: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
++});
+diff --git a/frontend/app/profile/order-tracking.tsx b/frontend/app/profile/order-tracking.tsx
+new file mode 100644
+index 000000000..5b77fb350
+--- /dev/null
++++ b/frontend/app/profile/order-tracking.tsx
+@@ -0,0 +1,433 @@
++import React, { useState, useEffect, useCallback } from 'react';
++import {
++  View,
++  Text,
++  StyleSheet,
++  ScrollView,
++  TouchableOpacity,
++  ActivityIndicator,
++  RefreshControl,
++} from 'react-native';
++import { SafeAreaView } from 'react-native-safe-area-context';
++import { useRouter, useLocalSearchParams } from 'expo-router';
++import { Ionicons } from '@expo/vector-icons';
++import api from '../../src/utils/api';
++
++const COLORS = {
++  primary: '#16A34A',
++  text: '#1A1A1A',
++  textSecondary: '#6B7280',
++  surface: '#FFFFFF',
++  background: '#F5F5F5',
++  border: '#E5E7EB',
++  info: '#2563EB',
++  warning: '#D97706',
++  error: '#DC2626',
++  success: '#16A34A',
++};
++
++const STATUS_META: Record<string, { color: string; bg: string; icon: string; label: string }> = {
++  pending_payment: { color: '#D97706', bg: '#FEF3C7', icon: 'time-outline', label: 'Awaiting Payment' },
++  paid: { color: '#16A34A', bg: '#DCFCE7', icon: 'card-outline', label: 'Payment Confirmed' },
++  preparing: { color: '#7C3AED', bg: '#EDE9FE', icon: 'cube-outline', label: 'Preparing' },
++  shipped: { color: '#2563EB', bg: '#DBEAFE', icon: 'airplane-outline', label: 'Shipped' },
++  in_transit: { color: '#2563EB', bg: '#DBEAFE', icon: 'car-outline', label: 'In Transit' },
++  delivered: { color: '#16A34A', bg: '#DCFCE7', icon: 'checkmark-circle', label: 'Delivered' },
++  confirmed: { color: '#16A34A', bg: '#DCFCE7', icon: 'checkmark-done', label: 'Confirmed' },
++  completed: { color: '#16A34A', bg: '#DCFCE7', icon: 'checkmark-done-circle', label: 'Completed' },
++  disputed: { color: '#DC2626', bg: '#FEE2E2', icon: 'alert-circle-outline', label: 'Disputed' },
++  cancelled: { color: '#6B7280', bg: '#F3F4F6', icon: 'close-circle-outline', label: 'Cancelled' },
++};
++
++function formatDateTime(dateString: string | null) {
++  if (!dateString) return null;
++  const d = new Date(dateString);
++  return {
++    date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
++    time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
++    relative: getRelativeTime(d),
++  };
++}
++
++function getRelativeTime(date: Date) {
++  const diffMs = Date.now() - date.getTime();
++  const diffMins = Math.floor(diffMs / 60000);
++  const diffHours = Math.floor(diffMs / 3600000);
++  const diffDays = Math.floor(diffMs / 86400000);
++  if (diffMins < 1) return 'Just now';
++  if (diffMins < 60) return `${diffMins}m ago`;
++  if (diffHours < 24) return `${diffHours}h ago`;
++  if (diffDays < 7) return `${diffDays}d ago`;
++  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
++}
++
++export default function OrderTrackingScreen() {
++  const router = useRouter();
++  const { id } = useLocalSearchParams<{ id: string }>();
++  
++  const [loading, setLoading] = useState(true);
++  const [refreshing, setRefreshing] = useState(false);
++  const [tracking, setTracking] = useState<any>(null);
++  const [error, setError] = useState<string | null>(null);
++
++  const fetchTracking = useCallback(async () => {
++    try {
++      setError(null);
++      const response = await api.get(`/escrow/orders/${id}/tracking`);
++      setTracking(response.data);
++    } catch (err: any) {
++      setError(err.response?.data?.detail || 'Failed to load tracking data');
++    }
++    setLoading(false);
++    setRefreshing(false);
++  }, [id]);
++
++  useEffect(() => {
++    if (id) fetchTracking();
++  }, [id, fetchTracking]);
++
++  const onRefresh = () => {
++    setRefreshing(true);
++    fetchTracking();
++  };
++
++  if (loading) {
++    return (
++      <SafeAreaView style={styles.container}>
++        <View style={styles.loadingContainer}>
++          <ActivityIndicator size="large" color={COLORS.primary} />
++          <Text style={styles.loadingText}>Loading tracking...</Text>
++        </View>
++      </SafeAreaView>
++    );
++  }
++
++  if (error || !tracking) {
++    return (
++      <SafeAreaView style={styles.container}>
++        <View style={styles.header}>
++          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
++            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
++          </TouchableOpacity>
++          <Text style={styles.headerTitle}>Order Tracking</Text>
++          <View style={{ width: 32 }} />
++        </View>
++        <View style={styles.errorContainer}>
++          <Ionicons name="alert-circle" size={48} color={COLORS.error} />
++          <Text style={styles.errorTitle}>Tracking Not Available</Text>
++          <Text style={styles.errorText}>{error || 'Could not load tracking information.'}</Text>
++          <TouchableOpacity style={styles.retryBtn} onPress={fetchTracking}>
++            <Text style={styles.retryBtnText}>Try Again</Text>
++          </TouchableOpacity>
++        </View>
++      </SafeAreaView>
++    );
++  }
++
++  const currentMeta = STATUS_META[tracking.status] || STATUS_META.pending_payment;
++
++  return (
++    <SafeAreaView style={styles.container}>
++      {/* Header */}
++      <View style={styles.header}>
++        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
++          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
++        </TouchableOpacity>
++        <Text style={styles.headerTitle}>Order Tracking</Text>
++        <TouchableOpacity onPress={onRefresh} style={styles.backBtn}>
++          <Ionicons name="refresh" size={22} color={COLORS.textSecondary} />
++        </TouchableOpacity>
++      </View>
++
++      <ScrollView
++        style={styles.content}
++        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
++        showsVerticalScrollIndicator={false}
++      >
++        {/* Status Card */}
++        <View style={styles.statusCard}>
++          <View style={styles.statusCardTop}>
++            <View style={styles.statusCardInfo}>
++              <Text style={styles.orderId}>#{tracking.order_id?.slice(-8)}</Text>
++              {tracking.listing_title && (
++                <Text style={styles.itemTitle} numberOfLines={1}>{tracking.listing_title}</Text>
++              )}
++            </View>
++            <View style={[styles.statusBadge, { backgroundColor: currentMeta.bg }]}>
++              <Ionicons name={currentMeta.icon as any} size={16} color={currentMeta.color} />
++              <Text style={[styles.statusBadgeText, { color: currentMeta.color }]}>
++                {currentMeta.label}
++              </Text>
++            </View>
++          </View>
++
++          {/* Meta tags */}
++          <View style={styles.metaRow}>
++            {tracking.delivery_method && (
++              <View style={styles.metaTag}>
++                <Ionicons 
++                  name={tracking.delivery_method === 'door_delivery' ? 'car-outline' : 'location-outline'} 
++                  size={14} color={COLORS.textSecondary} 
++                />
++                <Text style={styles.metaTagText}>
++                  {tracking.delivery_method === 'door_delivery' ? 'Door Delivery' : 'Pickup'}
++                </Text>
++              </View>
++            )}
++            {tracking.tracking_number && (
++              <View style={styles.metaTag}>
++                <Ionicons name="locate-outline" size={14} color={COLORS.textSecondary} />
++                <Text style={styles.metaTagText}>{tracking.tracking_number}</Text>
++              </View>
++            )}
++            {tracking.escrow_status && (
++              <View style={[styles.metaTag, { backgroundColor: '#DBEAFE' }]}>
++                <Ionicons name="shield-checkmark" size={14} color={COLORS.info} />
++                <Text style={[styles.metaTagText, { color: COLORS.info }]}>
++                  Escrow: {tracking.escrow_status.replace(/_/g, ' ')}
++                </Text>
++              </View>
++            )}
++          </View>
++        </View>
++
++        {/* Timeline */}
++        <View style={styles.timelineCard}>
++          <Text style={styles.timelineTitle}>Order Timeline</Text>
++          
++          {tracking.timeline?.map((step: any, idx: number) => {
++            const meta = STATUS_META[step.status] || STATUS_META.pending_payment;
++            const ts = formatDateTime(step.timestamp);
++            const isLast = idx === tracking.timeline.length - 1;
++            
++            return (
++              <View key={step.status} style={styles.timelineStep}>
++                {/* Connector line */}
++                {!isLast && (
++                  <View style={[
++                    styles.timelineConnector,
++                    step.completed ? styles.connectorCompleted : styles.connectorPending
++                  ]} />
++                )}
++                
++                {/* Icon */}
++                <View style={[
++                  styles.timelineIcon,
++                  { 
++                    backgroundColor: step.completed ? meta.color : '#E5E7EB',
++                  },
++                  step.is_current && { 
++                    shadowColor: meta.color, shadowOpacity: 0.4, shadowRadius: 8, elevation: 4 
++                  },
++                ]}>
++                  <Ionicons 
++                    name={meta.icon as any} 
++                    size={20} 
++                    color={step.completed ? '#fff' : '#9CA3AF'} 
++                  />
++                </View>
++                
++                {/* Content */}
++                <View style={styles.timelineContent}>
++                  <View style={styles.timelineContentHeader}>
++                    <Text style={[
++                      styles.timelineLabel,
++                      !step.completed && styles.timelineLabelPending
++                    ]}>
++                      {step.label}
++                    </Text>
++                    {ts && (
++                      <Text style={styles.timelineRelative}>{ts.relative}</Text>
++                    )}
++                  </View>
++                  
++                  {step.description && (
++                    <Text style={[
++                      styles.timelineDesc,
++                      !step.completed && styles.timelineDescPending
++                    ]}>
++                      {step.description}
++                    </Text>
++                  )}
++                  
++                  {ts && (
++                    <View style={styles.timelineTimestamp}>
++                      <Ionicons name="time-outline" size={12} color={COLORS.textSecondary} />
++                      <Text style={styles.timelineTimestampText}>
++                        {ts.date} at {ts.time}
++                      </Text>
++                    </View>
++                  )}
++                  
++                  {step.notification_sent && (
++                    <View style={styles.notifBadge}>
++                      <Ionicons name="notifications" size={12} color={COLORS.primary} />
++                      <Text style={styles.notifBadgeText}>
++                        Sent via {step.notification_channel || 'SMS'}
++                      </Text>
++                    </View>
++                  )}
++                </View>
++              </View>
++            );
++          })}
++        </View>
++
++        {/* Action Cards */}
++        <View style={styles.actionsSection}>
++          <TouchableOpacity
++            style={styles.actionCard}
++            onPress={() => router.push(`/listing/${tracking.order_id}`)}
++          >
++            <View style={[styles.actionIcon, { backgroundColor: '#DCFCE7' }]}>
++              <Ionicons name="cube-outline" size={22} color={COLORS.primary} />
++            </View>
++            <View style={styles.actionText}>
++              <Text style={styles.actionTitle}>Order Details</Text>
++              <Text style={styles.actionSubtitle}>View full order information</Text>
++            </View>
++            <Ionicons name="chevron-forward" size={20} color={COLORS.border} />
++          </TouchableOpacity>
++
++          <TouchableOpacity
++            style={styles.actionCard}
++            onPress={() => router.push('/messages')}
++          >
++            <View style={[styles.actionIcon, { backgroundColor: '#DBEAFE' }]}>
++              <Ionicons name="chatbubble-outline" size={22} color={COLORS.info} />
++            </View>
++            <View style={styles.actionText}>
++              <Text style={styles.actionTitle}>Contact Seller</Text>
++              <Text style={styles.actionSubtitle}>Send a message about this order</Text>
++            </View>
++            <Ionicons name="chevron-forward" size={20} color={COLORS.border} />
++          </TouchableOpacity>
++
++          <TouchableOpacity
++            style={styles.actionCard}
++            onPress={() => router.push('/help')}
++          >
++            <View style={[styles.actionIcon, { backgroundColor: '#FEF3C7' }]}>
++              <Ionicons name="help-circle-outline" size={22} color={COLORS.warning} />
++            </View>
++            <View style={styles.actionText}>
++              <Text style={styles.actionTitle}>Need Help?</Text>
++              <Text style={styles.actionSubtitle}>Visit our help center</Text>
++            </View>
++            <Ionicons name="chevron-forward" size={20} color={COLORS.border} />
++          </TouchableOpacity>
++        </View>
++
++        <View style={{ height: 40 }} />
++      </ScrollView>
++    </SafeAreaView>
++  );
++}
++
++const styles = StyleSheet.create({
++  container: { flex: 1, backgroundColor: COLORS.background },
++  
++  loadingContainer: {
++    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12,
++  },
++  loadingText: { fontSize: 14, color: COLORS.textSecondary },
++  
++  errorContainer: {
++    flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 8,
++  },
++  errorTitle: { fontSize: 20, fontWeight: '700', color: COLORS.text },
++  errorText: { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center' },
++  retryBtn: {
++    marginTop: 16, paddingHorizontal: 24, paddingVertical: 12,
++    backgroundColor: COLORS.primary, borderRadius: 12,
++  },
++  retryBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
++
++  // Header
++  header: {
++    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
++    paddingHorizontal: 16, paddingVertical: 12,
++    backgroundColor: COLORS.surface, borderBottomWidth: 1, borderBottomColor: COLORS.border,
++  },
++  backBtn: { padding: 4 },
++  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
++
++  content: { flex: 1, padding: 16 },
++
++  // Status Card
++  statusCard: {
++    backgroundColor: COLORS.surface, borderRadius: 16, padding: 20, marginBottom: 16,
++    shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
++  },
++  statusCardTop: {
++    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12,
++  },
++  statusCardInfo: { flex: 1, marginRight: 12 },
++  orderId: { fontSize: 14, fontFamily: 'monospace', color: COLORS.textSecondary, marginBottom: 4 },
++  itemTitle: { fontSize: 16, fontWeight: '600', color: COLORS.text },
++  statusBadge: {
++    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6,
++    borderRadius: 20, gap: 6,
++  },
++  statusBadgeText: { fontSize: 13, fontWeight: '600' },
++  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
++  metaTag: {
++    flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background,
++    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, gap: 5,
++  },
++  metaTagText: { fontSize: 12, color: COLORS.textSecondary, fontWeight: '500' },
++
++  // Timeline
++  timelineCard: {
++    backgroundColor: COLORS.surface, borderRadius: 16, padding: 20, marginBottom: 16,
++    shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
++  },
++  timelineTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text, marginBottom: 24 },
++  
++  timelineStep: { flexDirection: 'row', gap: 16, paddingBottom: 24, position: 'relative' },
++  
++  timelineConnector: {
++    position: 'absolute', left: 20, top: 44, width: 2, bottom: 0,
++  },
++  connectorCompleted: { backgroundColor: COLORS.primary },
++  connectorPending: { backgroundColor: '#E5E7EB' },
++  
++  timelineIcon: {
++    width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center',
++    zIndex: 1,
++  },
++  
++  timelineContent: { flex: 1, paddingTop: 2 },
++  timelineContentHeader: {
++    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4,
++  },
++  timelineLabel: { fontSize: 15, fontWeight: '600', color: COLORS.text },
++  timelineLabelPending: { color: '#9CA3AF' },
++  timelineRelative: { fontSize: 12, color: COLORS.textSecondary },
++  timelineDesc: { fontSize: 13, color: '#555', lineHeight: 18, marginBottom: 6 },
++  timelineDescPending: { color: '#C0C0C0' },
++  
++  timelineTimestamp: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 4 },
++  timelineTimestampText: { fontSize: 12, color: COLORS.textSecondary },
++  
++  notifBadge: {
++    flexDirection: 'row', alignItems: 'center', gap: 5,
++    backgroundColor: '#DCFCE7', paddingHorizontal: 10, paddingVertical: 4,
++    borderRadius: 6, alignSelf: 'flex-start', marginTop: 4,
++  },
++  notifBadgeText: { fontSize: 11, color: COLORS.primary, fontWeight: '600' },
++
++  // Action Cards
++  actionsSection: { gap: 10, marginBottom: 16 },
++  actionCard: {
++    flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.surface,
++    borderRadius: 14, padding: 16, gap: 14,
++    shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
++  },
++  actionIcon: {
++    width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center',
++  },
++  actionText: { flex: 1 },
++  actionTitle: { fontSize: 15, fontWeight: '600', color: COLORS.text },
++  actionSubtitle: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
++});

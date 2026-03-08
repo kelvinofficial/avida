@@ -92,12 +92,18 @@ export function useNotificationDeepLinking() {
   const handleDeepLink = (data: NotificationData) => {
     if (!data) return;
 
-    const { deep_link, listing_id, conversation_id, user_id, trigger_type, screen, tab, ticket_id } = data;
+    const { deep_link, listing_id, conversation_id, user_id, trigger_type, screen, tab, ticket_id, order_id, escrow_event } = data;
 
     // Priority: explicit screen/tab for support tickets
     if (screen === '/help' && tab === 'tickets') {
       // Navigate to help page with tickets tab
       router.push({ pathname: '/help', params: { tab: 'tickets' } });
+      return;
+    }
+
+    // Handle escrow/order notifications
+    if (order_id && (escrow_event || trigger_type === 'escrow')) {
+      router.push({ pathname: '/profile/order-tracking', params: { id: order_id } } as any);
       return;
     }
 
@@ -117,6 +123,13 @@ export function useNotificationDeepLinking() {
         router.push({ pathname: '/seller/[id]', params: { id } });
       } else if (path === '/help' || path.startsWith('/help')) {
         router.push({ pathname: '/help', params: { tab: 'tickets' } });
+      } else if (path.startsWith('/order-tracking/') || path.startsWith('/profile/order-tracking')) {
+        const orderId = path.replace(/^\/(profile\/)?order-tracking\/?/, '');
+        if (orderId) {
+          router.push({ pathname: '/profile/order-tracking', params: { id: orderId } } as any);
+        } else {
+          router.push('/profile/purchases' as any);
+        }
       } else {
         // Try to navigate to the path directly
         try {
@@ -253,6 +266,12 @@ export async function registerForPushNotifications(userId: string): Promise<stri
       await Notifications.setNotificationChannelAsync('promotions', {
         name: 'Promotions',
         importance: Notifications.AndroidImportance.LOW,
+      });
+      
+      await Notifications.setNotificationChannelAsync('orders', {
+        name: 'Orders & Escrow',
+        importance: Notifications.AndroidImportance.HIGH,
+        vibrationPattern: [0, 250, 250, 250],
       });
     }
 

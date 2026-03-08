@@ -9,6 +9,8 @@ import {
   RefreshControl,
   Alert,
   ActivityIndicator,
+  TextInput,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -67,6 +69,8 @@ export default function SellerOrdersScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [processingOrder, setProcessingOrder] = useState<string | null>(null);
   const [isSandbox, setIsSandbox] = useState(false);
+  const [trackingInput, setTrackingInput] = useState('');
+  const [shipModalOrder, setShipModalOrder] = useState<string | null>(null);
   const [stats, setStats] = useState({
     pending: 0,
     shipped: 0,
@@ -166,8 +170,12 @@ export default function SellerOrdersScreen() {
   const handleMarkShipped = async (orderId: string) => {
     setProcessingOrder(orderId);
     try {
-      await api.post(`/escrow/orders/${orderId}/ship`);
+      await api.post(`/escrow/seller/orders/${orderId}/ship`, {
+        tracking_number: trackingInput || undefined,
+      });
       Alert.alert('Success', 'Order marked as shipped. Buyer has been notified.');
+      setShipModalOrder(null);
+      setTrackingInput('');
       fetchOrders();
     } catch (error: any) {
       Alert.alert('Error', error.response?.data?.detail || 'Failed to update order');
@@ -176,9 +184,9 @@ export default function SellerOrdersScreen() {
     }
   };
   
-  const formatPrice = (price: number, currency: string = 'EUR') => {
-    const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', TZS: 'TSh' };
-    return `${symbols[currency] || currency} ${price.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+  const formatPrice = (price: number, currency: string = 'TZS') => {
+    const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', TZS: 'TZS' };
+    return `${symbols[currency] || currency} ${(price || 0).toLocaleString('en-US', { minimumFractionDigits: 0 })}`;
   };
   
   const getStatusColor = (status: string) => {
@@ -312,19 +320,19 @@ export default function SellerOrdersScreen() {
               </View>
               
               <View style={styles.orderBody}>
-                {order.listing?.images?.[0] && (
+                {(order.listing?.images?.[0] || order.listing_image) && (
                   <Image 
-                    source={{ uri: getImageUri(order.listing.images[0]) }} 
+                    source={{ uri: getImageUri(order.listing?.images?.[0] || order.listing_image) }} 
                     style={styles.orderImage} 
                   />
                 )}
                 <View style={styles.orderDetails}>
                   <Text style={styles.orderTitle} numberOfLines={2}>
-                    {order.listing?.title || 'Item'}
+                    {order.listing?.title || order.listing_title || 'Item'}
                   </Text>
                   <Text style={styles.orderBuyer}>
                     <Ionicons name="person-outline" size={12} color={COLORS.textSecondary} />
-                    {' '}{order.buyer?.name || 'Buyer'}
+                    {' '}{order.buyer?.name || order.buyer_id || 'Buyer'}
                   </Text>
                   <View style={styles.orderDelivery}>
                     <Ionicons 
@@ -336,20 +344,62 @@ export default function SellerOrdersScreen() {
                       {order.delivery_method === 'pickup' ? 'Pickup' : 'Door Delivery'}
                     </Text>
                   </View>
+                  {/* Escrow Badge */}
+                  {order.escrow_status && (
+                    <View style={[styles.escrowBadge, { 
+                      backgroundColor: order.escrow_status === 'funded' ? '#DBEAFE' : 
+                                       order.escrow_status === 'released' ? '#DCFCE7' : 
+                                       order.escrow_status === 'refunded' ? '#FEF3C7' : '#F3F4F6'
+                    }]}>
+                      <Ionicons name="shield-checkmark" size={12} color={
+                        order.escrow_status === 'funded' ? COLORS.info :
+                        order.escrow_status === 'released' ? COLORS.primary :
+                        order.escrow_status === 'refunded' ? COLORS.warning : COLORS.textSecondary
+                      } />
+                      <Text style={[styles.escrowBadgeText, { 
+                        color: order.escrow_status === 'funded' ? COLORS.info :
+                               order.escrow_status === 'released' ? COLORS.primary :
+                               order.escrow_status === 'refunded' ? COLORS.warning : COLORS.textSecondary
+                      }]}>
+                        {order.escrow_status === 'funded' ? 'Funds Held' :
+                         order.escrow_status === 'released' ? 'Released to You' :
+                         order.escrow_status === 'refunded' ? 'Refunded' :
+                         order.escrow_status === 'not_funded' ? 'Awaiting Payment' :
+                         order.escrow_status.replace(/_/g, ' ')}
+                      </Text>
+                    </View>
+                  )}
+                  {/* Tracking Number */}
+                  {order.tracking_number && (
+                    <View style={styles.trackingBadge}>
+                      <Ionicons name="locate-outline" size={12} color={COLORS.primary} />
+                      <Text style={styles.trackingBadgeText}>Track: {order.tracking_number}</Text>
+                    </View>
+                  )}
                 </View>
                 <View style={styles.orderPricing}>
                   <Text style={styles.orderTotal}>{formatPrice(order.total_amount, order.currency)}</Text>
                   <Text style={styles.orderNet}>
-                    You get: {formatPrice(order.total_amount - order.commission_amount, order.currency)}
+                    You get: {formatPrice((order.total_amount || 0) - (order.commission_amount || 0), order.currency)}
                   </Text>
                 </View>
               </View>
+              
+              {/* Track Order Button */}
+              <TouchableOpacity
+                style={styles.trackBtn}
+                onPress={() => router.push(`/profile/order-tracking?id=${order.id}`)}
+              >
+                <Ionicons name="navigate-outline" size={16} color={COLORS.primary} />
+                <Text style={styles.trackBtnText}>Track Order</Text>
+                <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
+              </TouchableOpacity>
               
               {/* Action Buttons */}
               {order.status === 'paid' && (
                 <TouchableOpacity
                   style={styles.shipBtn}
-                  onPress={() => handleMarkShipped(order.id)}
+                  onPress={() => { setShipModalOrder(order.id); setTrackingInput(''); }}
                   disabled={processingOrder === order.id}
                 >
                   {processingOrder === order.id ? (
@@ -393,6 +443,43 @@ export default function SellerOrdersScreen() {
           </Text>
         </View>
       </ScrollView>
+      {/* Ship Modal */}
+      <Modal
+        visible={!!shipModalOrder}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShipModalOrder(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Ship Order</Text>
+            <Text style={styles.modalDesc}>Add a tracking number (optional) to help the buyer track their delivery.</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Tracking number (optional)"
+              value={trackingInput}
+              onChangeText={setTrackingInput}
+              placeholderTextColor="#999"
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setShipModalOrder(null)}>
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalConfirmBtn}
+                onPress={() => shipModalOrder && handleMarkShipped(shipModalOrder)}
+                disabled={!!processingOrder}
+              >
+                {processingOrder === shipModalOrder ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.modalConfirmText}>Confirm Shipment</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -534,4 +621,47 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   infoText: { flex: 1, fontSize: 13, color: '#0369A1', marginLeft: 10, lineHeight: 18 },
+  
+  // Escrow & Tracking badges
+  escrowBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, alignSelf: 'flex-start', marginTop: 6,
+  },
+  escrowBadgeText: { fontSize: 11, fontWeight: '600' },
+  trackingBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: '#E8F5E9', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6,
+    alignSelf: 'flex-start', marginTop: 4,
+  },
+  trackingBadgeText: { fontSize: 11, fontWeight: '500', color: COLORS.primary },
+  
+  // Track button
+  trackBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#E8F5E9', paddingVertical: 10, borderRadius: 10, marginTop: 10, gap: 6,
+  },
+  trackBtnText: { fontSize: 13, fontWeight: '600', color: COLORS.primary },
+  
+  // Modal styles
+  modalOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24,
+  },
+  modalContent: {
+    backgroundColor: '#fff', borderRadius: 16, padding: 24, width: '100%', maxWidth: 400,
+  },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text, marginBottom: 8 },
+  modalDesc: { fontSize: 13, color: COLORS.textSecondary, marginBottom: 16, lineHeight: 18 },
+  modalInput: {
+    borderWidth: 1, borderColor: '#E0E0E0', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
+    fontSize: 14, color: COLORS.text, marginBottom: 20,
+  },
+  modalButtons: { flexDirection: 'row', gap: 10 },
+  modalCancelBtn: {
+    flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#F0F0F0', alignItems: 'center',
+  },
+  modalCancelText: { fontSize: 14, fontWeight: '600', color: COLORS.textSecondary },
+  modalConfirmBtn: {
+    flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: COLORS.primary, alignItems: 'center',
+  },
+  modalConfirmText: { fontSize: 14, fontWeight: '600', color: '#fff' },
 });

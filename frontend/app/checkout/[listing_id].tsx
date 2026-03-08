@@ -85,7 +85,7 @@ export default function CheckoutScreen() {
     city: '',
     state: '',
     postal_code: '',
-    country: 'US',
+    country: 'TZ',
   });
   
   // Payment
@@ -308,9 +308,9 @@ export default function CheckoutScreen() {
     }
   };
   
-  const formatPrice = (price: number, currency: string = 'EUR') => {
-    const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', TZS: 'TSh' };
-    return `${symbols[currency] || currency} ${price.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+  const formatPrice = (price: number, currency: string = 'TZS') => {
+    const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', TZS: 'TZS' };
+    return `${symbols[currency] || currency} ${price.toLocaleString('en-US', { minimumFractionDigits: 0 })}`;
   };
   
   const getImageUri = (img: string) => {
@@ -383,7 +383,7 @@ export default function CheckoutScreen() {
               )}
               <View style={styles.itemDetails}>
                 <Text style={styles.itemTitle}>{listing.title}</Text>
-                <Text style={styles.itemPrice}>{formatPrice(listing.price)}</Text>
+                <Text style={styles.itemPrice}>{formatPrice(listing.price, listing.currency || 'TZS')}</Text>
                 <View style={styles.itemMeta}>
                   <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
                   <Text style={styles.itemMetaText}>{listing.location}</Text>

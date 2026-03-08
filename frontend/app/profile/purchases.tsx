@@ -96,9 +96,9 @@ const getEscrowInfo = (status: string) => {
   }
 };
 
-const formatPrice = (price: number, currency: string = 'EUR') => {
-  const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', TZS: 'TSh' };
-  return `${symbols[currency] || currency} ${price?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || '0.00'}`;
+const formatPrice = (price: number, currency: string = 'TZS') => {
+  const symbols: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', TZS: 'TZS' };
+  return `${symbols[currency] || currency} ${(price || 0).toLocaleString('en-US', { minimumFractionDigits: 0 })}`;
 };
 
 const getImageUri = (img: string | undefined): string | null => {
@@ -125,12 +125,14 @@ const OrderItem = ({
   onPress, 
   onConfirmDelivery,
   onOpenDispute,
+  onTrackOrder,
   processing 
 }: { 
   order: Order; 
   onPress: () => void;
   onConfirmDelivery: (orderId: string) => void;
   onOpenDispute: (orderId: string) => void;
+  onTrackOrder: (orderId: string) => void;
   processing: string | null;
 }) => {
   const statusConfig = getStatusConfig(order.status);
@@ -218,6 +220,16 @@ const OrderItem = ({
           </Text>
         </View>
       )}
+      
+      {/* Track Order Button */}
+      <TouchableOpacity
+        style={styles.trackOrderBtn}
+        onPress={() => onTrackOrder(order.id)}
+      >
+        <Ionicons name="navigate-outline" size={16} color={COLORS.primary} />
+        <Text style={styles.trackOrderBtnText}>Track Order</Text>
+        <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -245,6 +257,7 @@ const DesktopOrderCard = ({
   onPress: () => void;
   onConfirmDelivery: (orderId: string) => void;
   onOpenDispute: (orderId: string) => void;
+  onTrackOrder: (orderId: string) => void;
   processing: string | null;
 }) => {
   const statusConfig = getStatusConfig(order.status);
@@ -254,11 +267,11 @@ const DesktopOrderCard = ({
     <View style={desktopStyles.card} data-testid={`order-card-${order.id}`}>
       <TouchableOpacity style={desktopStyles.cardContent} onPress={onPress}>
         <Image
-          source={{ uri: getImageUri(order.item?.image_url) }}
+          source={{ uri: getImageUri(order.item?.image_url || order.listing_image) }}
           style={desktopStyles.cardImage}
         />
         <View style={desktopStyles.cardDetails}>
-          <Text style={desktopStyles.cardTitle} numberOfLines={2}>{order.item?.title || 'Item'}</Text>
+          <Text style={desktopStyles.cardTitle} numberOfLines={2}>{order.item?.title || order.listing_title || 'Item'}</Text>
           <Text style={desktopStyles.cardPrice}>{formatPrice(order.total_amount, order.currency)}</Text>
           
           <View style={[desktopStyles.statusBadge, { backgroundColor: statusConfig.bg }]}>
@@ -331,6 +344,15 @@ const DesktopOrderCard = ({
           </Text>
         </View>
       )}
+      
+      {/* Track Order Button */}
+      <TouchableOpacity
+        style={desktopStyles.trackOrderBtn}
+        onPress={() => onTrackOrder(order.id)}
+      >
+        <Ionicons name="navigate-outline" size={16} color={COLORS.primary} />
+        <Text style={desktopStyles.trackOrderBtnText}>Track Order</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -399,7 +421,7 @@ export default function PurchasesScreen() {
           onPress: async () => {
             setProcessing(orderId);
             try {
-              await api.post(`/escrow/orders/${orderId}/confirm`);
+              await api.post(`/escrow/orders/${orderId}/confirm-delivery`);
               Alert.alert('Success', 'Delivery confirmed. Payment has been released to the seller.');
               fetchOrders(true);
             } catch (error: any) {
@@ -556,6 +578,7 @@ export default function PurchasesScreen() {
                 onPress={() => router.push(`/listing/${order.listing_id}`)}
                 onConfirmDelivery={handleConfirmDelivery}
                 onOpenDispute={handleOpenDispute}
+                onTrackOrder={(orderId: string) => router.push(`/profile/order-tracking?id=${orderId}`)}
                 processing={processing}
               />
             ))}
@@ -644,6 +667,7 @@ export default function PurchasesScreen() {
               onPress={() => router.push(`/listing/${item.listing_id}`)}
               onConfirmDelivery={handleConfirmDelivery}
               onOpenDispute={handleOpenDispute}
+              onTrackOrder={(orderId: string) => router.push(`/profile/order-tracking?id=${orderId}`)}
               processing={processing}
             />
           )}
@@ -921,6 +945,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: COLORS.background,
   },
+  trackOrderBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E8F5E9',
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 10,
+    gap: 6,
+  },
+  trackOrderBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
 });
 
 // Desktop Styles
@@ -1179,5 +1218,21 @@ const desktopStyles = StyleSheet.create({
     height: 16,
     backgroundColor: COLORS.background,
     borderRadius: 4,
+  },
+  trackOrderBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E8F5E9',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginTop: 8,
+    gap: 4,
+  },
+  trackOrderBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.primary,
   },
 });
