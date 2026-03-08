@@ -1285,6 +1285,175 @@ async def get_featured_listings(
 
     return {"listings": listings, "total": len(listings)}
 
+# ==================== SIMILAR LISTINGS ENDPOINT ====================
+
+@api_router.get("/listings/{listing_id}/similar")
+async def get_similar_listings(
+    listing_id: str,
+    limit: int = Query(8, ge=1, le=20),
+):
+    """Get similar listings based on category, price range, and location"""
+    source = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+    if not source:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    query_filter = {
+        "status": "active",
+        "id": {"$ne": listing_id},
+    }
+
+    # Match by category first, then same subcategory
+    if source.get("category_id"):
+        query_filter["category_id"] = source["category_id"]
+    if source.get("subcategory"):
+        query_filter["subcategory"] = source["subcategory"]
+
+    # Price range: within 50% of the source price
+    price = source.get("price", 0)
+    if price and price > 0:
+        query_filter["price"] = {"$gte": price * 0.5, "$lte": price * 1.5}
+
+    listings = await db.listings.find(query_filter, {"_id": 0}).sort(
+        [("featured", -1), ("views", -1), ("created_at", -1)]
+    ).limit(limit).to_list(length=limit)
+
+    # If not enough results, broaden to just category
+    if len(listings) < limit:
+        broad_filter = {
+            "status": "active",
+            "id": {"$ne": listing_id},
+            "category_id": source.get("category_id"),
+        }
+        existing_ids = {l["id"] for l in listings}
+        more = await db.listings.find(broad_filter, {"_id": 0}).sort(
+            [("views", -1), ("created_at", -1)]
+        ).limit(limit * 2).to_list(length=limit * 2)
+        for m in more:
+            if m["id"] not in existing_ids and len(listings) < limit:
+                listings.append(m)
+                existing_ids.add(m["id"])
+
+    return {"listings": listings, "total": len(listings), "source_id": listing_id}
+
+# ==================== RELATED LISTINGS ENDPOINT ====================
+
+@api_router.get("/listings/{listing_id}/related")
+async def get_related_listings(
+    listing_id: str,
+    limit: int = Query(8, ge=1, le=20),
+):
+    """Get related listings from same seller or same category/location"""
+    source = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+    if not source:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    listings = []
+    seen_ids = {listing_id}
+
+    # First: other listings from the same seller
+    if source.get("user_id"):
+        seller_listings = await db.listings.find(
+            {"status": "active", "user_id": source["user_id"], "id": {"$ne": listing_id}},
+            {"_id": 0}
+        ).sort([("created_at", -1)]).limit(limit // 2).to_list(length=limit // 2)
+        for sl in seller_listings:
+            if sl["id"] not in seen_ids:
+                listings.append(sl)
+                seen_ids.add(sl["id"])
+
+    # Then: same category in same location
+    remaining = limit - len(listings)
+    if remaining > 0:
+        loc_filter = {
+            "status": "active",
+            "id": {"$nin": list(seen_ids)},
+            "category_id": source.get("category_id"),
+        }
+        if source.get("location"):
+            loc_city = source["location"].split(",")[0].strip()
+            loc_filter["location"] = {"$regex": loc_city, "$options": "i"}
+
+        loc_listings = await db.listings.find(loc_filter, {"_id": 0}).sort(
+            [("views", -1), ("created_at", -1)]
+        ).limit(remaining).to_list(length=remaining)
+        for ll in loc_listings:
+            if ll["id"] not in seen_ids:
+                listings.append(ll)
+                seen_ids.add(ll["id"])
+
+    # Fill remaining with same category
+    remaining = limit - len(listings)
+    if remaining > 0:
+        cat_listings = await db.listings.find(
+            {"status": "active", "id": {"$nin": list(seen_ids)}, "category_id": source.get("category_id")},
+            {"_id": 0}
+        ).sort([("created_at", -1)]).limit(remaining).to_list(length=remaining)
+        for cl in cat_listings:
+            if cl["id"] not in seen_ids:
+                listings.append(cl)
+                seen_ids.add(cl["id"])
+
+    return {"listings": listings, "total": len(listings), "source_id": listing_id}
+
+# ==================== SELLER REVIEWS ENDPOINT ====================
+
+@api_router.get("/reviews/seller/{user_id}")
+async def get_seller_reviews(
+    user_id: str,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=50),
+):
+    """Get reviews for a specific seller"""
+    skip = (page - 1) * limit
+    query = {"seller_id": user_id}
+
+    total = await db.reviews.count_documents(query)
+    reviews = await db.reviews.find(query, {"_id": 0}).sort(
+        [("created_at", -1)]
+    ).skip(skip).limit(limit).to_list(length=limit)
+
+    # Calculate average rating
+    pipeline = [
+        {"$match": {"seller_id": user_id, "rating": {"$exists": True}}},
+        {"$group": {"_id": None, "avg_rating": {"$avg": "$rating"}, "count": {"$sum": 1}}},
+    ]
+    stats_result = await db.reviews.aggregate(pipeline).to_list(length=1)
+    stats = stats_result[0] if stats_result else {"avg_rating": 0, "count": 0}
+
+    return {
+        "reviews": reviews,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit if limit else 1,
+        "average_rating": round(stats.get("avg_rating", 0), 1),
+        "review_count": stats.get("count", 0),
+    }
+
+# ==================== PUBLIC SAFETY TIPS ENDPOINT ====================
+
+@api_router.get("/safety-tips")
+async def get_public_safety_tips_all():
+    """Get safety tips without authentication"""
+    try:
+        tips = await db.safety_tips.find({"active": True}, {"_id": 0}).sort(
+            [("order", 1), ("created_at", -1)]
+        ).to_list(length=100)
+    except Exception:
+        tips = []
+
+    if not tips:
+        # Return default tips
+        from routes.safety_tips import DEFAULT_SAFETY_TIPS
+        return {
+            "tips": [
+                {"category": cat, "tips": [{"tip_text": t, "is_default": True} for t in items]}
+                for cat, items in DEFAULT_SAFETY_TIPS.items()
+            ],
+            "is_default": True,
+        }
+
+    return {"tips": tips, "is_default": False}
+
 # ==================== AUTO/MOTORS ENDPOINTS ====================
 # Now handled by modular router (routes/auto_motors.py)
 # Includes: brands, models, listings, conversations, favorites, search
@@ -2031,7 +2200,7 @@ async def get_sitemap():
     """Generate comprehensive XML sitemap including categories, listings, and business profiles"""
     from fastapi.responses import Response
     
-    base_url = os.environ.get("SITE_URL", "https://order-tracking-dev-1.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://order-checkout-demo.preview.emergentagent.com")
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     # Build XML sitemap
@@ -2151,7 +2320,7 @@ async def get_robots():
     """Generate robots.txt with sitemap reference"""
     from fastapi.responses import PlainTextResponse
     
-    base_url = os.environ.get("SITE_URL", "https://order-tracking-dev-1.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://order-checkout-demo.preview.emergentagent.com")
     
     robots_content = f"""User-agent: *
 Allow: /
@@ -2193,7 +2362,7 @@ async def get_business_profile_og_meta(slug: str):
     """Get OG meta tags for a business profile for social media sharing"""
     from fastapi.responses import HTMLResponse
     
-    base_url = os.environ.get("SITE_URL", "https://order-tracking-dev-1.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://order-checkout-demo.preview.emergentagent.com")
     
     # Find profile by slug or identifier
     profile = await db.business_profiles.find_one(
