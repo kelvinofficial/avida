@@ -814,7 +814,7 @@ export default function ListingDetailScreen() {
       try {
         const sellerCheck = await api.get(`/escrow/seller/${listing.user_id}/can-sell-online`);
         setCanBuyOnline(sellerCheck.data.can_sell_online === true);
-      } catch {
+      } catch (err) {
         setCanBuyOnline(false);
       }
     };
@@ -1798,6 +1798,24 @@ export default function ListingDetailScreen() {
       {/* Bottom Actions - Dynamic based on seller preferences */}
       {listing.user_id !== user?.user_id && (
         <View style={[styles.bottomActions, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+          {/* Buy Now button - shown if seller can sell online */}
+          {canBuyOnline && (
+            <Pressable 
+              style={[styles.actionBtn, { backgroundColor: '#E65100', borderColor: '#E65100' }]} 
+              onPress={() => {
+                if (!isAuthenticated) {
+                  router.push(`/login?redirect=${encodeURIComponent(`/listing/${id}`)}`);
+                  return;
+                }
+                router.push(`/checkout/${id}`);
+              }}
+              data-testid="buy-now-btn-mobile"
+            >
+              <Ionicons name="cart" size={20} color="#fff" />
+              <Text style={[styles.actionText, { color: '#fff' }]}>Buy Now</Text>
+            </Pressable>
+          )}
+
           {/* Chat button - Always shown if seller allows chat */}
           {((listing as any).contact_methods || ['chat']).includes('chat') && (
             <Pressable style={styles.actionBtn} onPress={handleChat}>
