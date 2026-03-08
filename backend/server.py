@@ -1380,6 +1380,301 @@ async def get_search_popular(
     }
 
 
+# ==================== PURCHASES ENDPOINT ====================
+
+@api_router.get("/purchases")
+async def get_purchases(
+    request: Request,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=50),
+    status: str = Query(None, description="Filter: pending, completed, cancelled"),
+):
+    """Get user's purchase history"""
+    user = await require_auth(request)
+    query: dict = {"buyer_id": user.user_id}
+    if status:
+        query["status"] = status
+
+    total = await db.orders.count_documents(query)
+    skip = (page - 1) * limit
+    orders = await db.orders.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
+
+    return {"purchases": orders, "total": total, "page": page, "pages": (total + limit - 1) // limit if total else 0}
+
+
+# ==================== ORDERS ENDPOINT ====================
+
+@api_router.get("/orders")
+async def get_orders(
+    request: Request,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=50),
+    status: str = Query(None),
+    role: str = Query("all", description="buyer, seller, or all"),
+):
+    """Get user's orders (as buyer and/or seller)"""
+    user = await require_auth(request)
+
+    if role == "buyer":
+        query = {"buyer_id": user.user_id}
+    elif role == "seller":
+        query = {"seller_id": user.user_id}
+    else:
+        query = {"$or": [{"buyer_id": user.user_id}, {"seller_id": user.user_id}]}
+
+    if status:
+        query["status"] = status
+
+    total = await db.orders.count_documents(query)
+    skip = (page - 1) * limit
+    orders = await db.orders.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
+
+    return {"orders": orders, "total": total, "page": page, "pages": (total + limit - 1) // limit if total else 0}
+
+
+# ==================== SALES ENDPOINT ====================
+
+@api_router.get("/sales")
+async def get_sales(
+    request: Request,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=50),
+    status: str = Query(None),
+):
+    """Get user's sales history (items sold)"""
+    user = await require_auth(request)
+    query: dict = {"seller_id": user.user_id}
+    if status:
+        query["status"] = status
+
+    total = await db.orders.count_documents(query)
+    skip = (page - 1) * limit
+    orders = await db.orders.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
+
+    # Calculate totals
+    completed_query = {"seller_id": user.user_id, "status": "completed"}
+    completed_count = await db.orders.count_documents(completed_query)
+    pipeline = [
+        {"$match": completed_query},
+        {"$group": {"_id": None, "total_revenue": {"$sum": "$total_amount"}}},
+    ]
+    revenue_result = await db.orders.aggregate(pipeline).to_list(length=1)
+    total_revenue = revenue_result[0]["total_revenue"] if revenue_result else 0
+
+    return {
+        "sales": orders,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit if total else 0,
+        "stats": {"completed_sales": completed_count, "total_revenue": total_revenue},
+    }
+
+
+# ==================== CREDITS ENDPOINTS ====================
+
+@api_router.get("/credits")
+async def get_credits(
+    request: Request,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=50),
+):
+    """Get user's credit transaction history"""
+    user = await require_auth(request)
+
+    total = await db.credit_transactions.count_documents({"user_id": user.user_id})
+    skip = (page - 1) * limit
+    transactions = await db.credit_transactions.find(
+        {"user_id": user.user_id}, {"_id": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
+
+    # Get balance
+    balance_doc = await db.credit_balances.find_one({"user_id": user.user_id}, {"_id": 0})
+    balance = balance_doc.get("balance", 0) if balance_doc else 0
+
+    return {
+        "transactions": transactions,
+        "balance": balance,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit if total else 0,
+    }
+
+
+@api_router.get("/credits/balance")
+async def get_credits_balance(request: Request):
+    """Get user's current credit balance"""
+    user = await require_auth(request)
+
+    balance_doc = await db.credit_balances.find_one({"user_id": user.user_id}, {"_id": 0})
+    balance = balance_doc.get("balance", 0) if balance_doc else 0
+
+    return {"balance": balance, "currency": "TZS"}
+
+
+# ==================== BOOST ENDPOINT ====================
+
+@api_router.get("/boost")
+async def get_boost_info(request: Request):
+    """Get user's active boosts and boost history"""
+    user = await require_auth(request)
+
+    # Active boosts
+    now = datetime.now(timezone.utc)
+    active_boosts = await db.boosts.find(
+        {"user_id": user.user_id, "status": "active", "expires_at": {"$gt": now.isoformat()}},
+        {"_id": 0},
+    ).sort("created_at", -1).to_list(length=50)
+
+    # All boosts (history)
+    all_boosts = await db.boosts.find(
+        {"user_id": user.user_id}, {"_id": 0}
+    ).sort("created_at", -1).to_list(length=50)
+
+    # Boost packages/prices
+    packages = [
+        {"id": "basic_7d", "name": "Basic Boost", "duration_days": 7, "price": 5000, "currency": "TZS", "multiplier": 2},
+        {"id": "premium_14d", "name": "Premium Boost", "duration_days": 14, "price": 8000, "currency": "TZS", "multiplier": 5},
+        {"id": "ultra_30d", "name": "Ultra Boost", "duration_days": 30, "price": 15000, "currency": "TZS", "multiplier": 10},
+    ]
+
+    return {
+        "active_boosts": active_boosts,
+        "boost_history": all_boosts,
+        "packages": packages,
+        "active_count": len(active_boosts),
+    }
+
+
+# ==================== GAMIFICATION ENDPOINTS ====================
+
+@api_router.get("/gamification/challenges")
+async def get_gamification_challenges(request: Request):
+    """Get available and user's active challenges"""
+    user = await require_auth(request)
+
+    # All active challenges
+    now = datetime.now(timezone.utc)
+    challenges = await db.challenges.find(
+        {"status": "active"}, {"_id": 0}
+    ).sort("created_at", -1).to_list(length=50)
+
+    # User's challenge progress
+    user_progress = await db.challenge_progress.find(
+        {"user_id": user.user_id}, {"_id": 0}
+    ).to_list(length=100)
+
+    progress_map = {p.get("challenge_id"): p for p in user_progress}
+
+    enriched = []
+    for c in challenges:
+        cid = c.get("id", "")
+        prog = progress_map.get(cid, {})
+        enriched.append({
+            **c,
+            "user_progress": prog.get("progress", 0),
+            "user_status": prog.get("status", "not_joined"),
+            "joined": bool(prog),
+        })
+
+    return {"challenges": enriched, "total": len(enriched)}
+
+
+@api_router.get("/gamification/badges")
+async def get_gamification_badges(request: Request):
+    """Get all badges and user's earned badges"""
+    user = await require_auth(request)
+
+    # All available badges
+    all_badges = await db.badges.find({}, {"_id": 0}).to_list(length=200)
+
+    # User's earned badges
+    earned = await db.user_badges.find(
+        {"user_id": user.user_id}, {"_id": 0}
+    ).to_list(length=200)
+
+    earned_ids = {b.get("badge_id") for b in earned}
+    earned_map = {b.get("badge_id"): b for b in earned}
+
+    enriched = []
+    for badge in all_badges:
+        bid = badge.get("id", "")
+        enriched.append({
+            **badge,
+            "earned": bid in earned_ids,
+            "earned_at": earned_map.get(bid, {}).get("earned_at"),
+        })
+
+    return {
+        "badges": enriched,
+        "total": len(enriched),
+        "earned_count": len(earned_ids),
+    }
+
+
+# ==================== RECENTLY VIEWED ENDPOINT ====================
+
+@api_router.get("/recently-viewed")
+async def get_recently_viewed_listings(
+    request: Request,
+    limit: int = Query(20, ge=1, le=50),
+):
+    """Get user's recently viewed listings"""
+    user = await require_auth(request)
+
+    viewed_records = await db.recently_viewed.find(
+        {"user_id": user.user_id}, {"_id": 0}
+    ).sort("viewed_at", -1).limit(limit).to_list(length=limit)
+
+    # Enrich with listing details
+    listing_ids = [v.get("listing_id") for v in viewed_records if v.get("listing_id")]
+    listings = []
+    if listing_ids:
+        listings_data = await db.listings.find(
+            {"id": {"$in": listing_ids}}, {"_id": 0}
+        ).to_list(length=limit)
+        listings_map = {l["id"]: l for l in listings_data}
+
+        for v in viewed_records:
+            lid = v.get("listing_id")
+            listing = listings_map.get(lid)
+            if listing:
+                listings.append({
+                    **listing,
+                    "viewed_at": v.get("viewed_at"),
+                })
+
+    return {"listings": listings, "total": len(listings)}
+
+
+@api_router.post("/recently-viewed/{listing_id}")
+async def add_recently_viewed_listing(listing_id: str, request: Request):
+    """Track a listing as recently viewed"""
+    user = await require_auth(request)
+
+    await db.recently_viewed.update_one(
+        {"user_id": user.user_id, "listing_id": listing_id},
+        {"$set": {
+            "user_id": user.user_id,
+            "listing_id": listing_id,
+            "viewed_at": datetime.now(timezone.utc).isoformat(),
+        }},
+        upsert=True,
+    )
+
+    # Keep only last 50 items
+    count = await db.recently_viewed.count_documents({"user_id": user.user_id})
+    if count > 50:
+        oldest = await db.recently_viewed.find(
+            {"user_id": user.user_id}
+        ).sort("viewed_at", 1).limit(count - 50).to_list(length=count - 50)
+        if oldest:
+            ids_to_del = [o["_id"] for o in oldest]
+            await db.recently_viewed.delete_many({"_id": {"$in": ids_to_del}})
+
+    return {"message": "Added to recently viewed"}
+
+
+
 # ==================== LOCATIONS ENDPOINT ====================
 
 @api_router.get("/locations")

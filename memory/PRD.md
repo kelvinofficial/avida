@@ -54,6 +54,17 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
     - offersApi client added to frontend api.ts
 14. **Notifications Read-All Endpoint** (March 8, 2026)
     - POST /api/notifications/read-all — Bulk mark all unread notifications as read (replaces individual call workaround)
+15. **Missing Page Endpoints** (March 9, 2026)
+    - GET /api/purchases — User's purchase history with pagination and status filter
+    - GET /api/orders — User's orders (buyer/seller/all roles) with pagination
+    - GET /api/sales — User's sales with revenue stats
+    - GET /api/credits — Credit transaction history with balance
+    - GET /api/credits/balance — Current credit balance
+    - GET /api/boost — Active boosts, history, and available packages
+    - GET /api/gamification/challenges — Challenges with user progress
+    - GET /api/gamification/badges — All badges with earned status
+    - GET /api/recently-viewed — Recently viewed listings with details
+    - POST /api/recently-viewed/{listing_id} — Track listing view
 
 ### Test Accounts
 - Admin: admin@marketplace.com / Admin@123456
