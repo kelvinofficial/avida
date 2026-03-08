@@ -33,6 +33,10 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
    - Created test listing: Samsung Galaxy S24 Ultra at TZS 250,000 (under Stripe limit)
    - Verified sellers for online selling via admin API
    - Full E2E ordering flow tested on both mobile and desktop
+10. **Missing API Endpoints** (March 8, 2026)
+    - GET /api/search — Full-text search with filters (category, location, price range, condition, sort, pagination)
+    - GET /api/locations — Aggregated unique locations from active listings with counts
+    - GET /api/featured — Featured/promoted listings sorted by featured, boost, views
 
 ### Test Accounts
 - Admin: admin@marketplace.com / Admin@123456

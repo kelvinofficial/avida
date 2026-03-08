@@ -1191,6 +1191,100 @@ async def get_featured_verified_listings(limit: int = Query(12, ge=1, le=50)):
     
     return {"listings": listings, "source": "verified_sellers"}
 
+# ==================== SEARCH ENDPOINT ====================
+
+@api_router.get("/search")
+async def search_listings(
+    q: str = Query("", description="Search query"),
+    category: str = Query(None, description="Filter by category"),
+    location: str = Query(None, description="Filter by location"),
+    min_price: float = Query(None, ge=0),
+    max_price: float = Query(None, ge=0),
+    condition: str = Query(None),
+    sort: str = Query("relevance", description="Sort: relevance, newest, price_asc, price_desc"),
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=50),
+):
+    """Search listings by query, category, location, price range"""
+    query_filter = {"status": "active"}
+
+    if q:
+        query_filter["$or"] = [
+            {"title": {"$regex": q, "$options": "i"}},
+            {"description": {"$regex": q, "$options": "i"}},
+            {"category_id": {"$regex": q, "$options": "i"}},
+            {"subcategory": {"$regex": q, "$options": "i"}},
+        ]
+    if category:
+        query_filter["category_id"] = category
+    if location:
+        query_filter["location"] = {"$regex": location, "$options": "i"}
+    if min_price is not None:
+        query_filter.setdefault("price", {})["$gte"] = min_price
+    if max_price is not None:
+        query_filter.setdefault("price", {})["$lte"] = max_price
+    if condition:
+        query_filter["condition"] = condition
+
+    sort_spec = [("created_at", -1)]
+    if sort == "newest":
+        sort_spec = [("created_at", -1)]
+    elif sort == "price_asc":
+        sort_spec = [("price", 1)]
+    elif sort == "price_desc":
+        sort_spec = [("price", -1)]
+    elif sort == "relevance" and q:
+        sort_spec = [("featured", -1), ("boost_score", -1), ("created_at", -1)]
+
+    skip = (page - 1) * limit
+    total = await db.listings.count_documents(query_filter)
+    listings = await db.listings.find(query_filter, {"_id": 0}).sort(sort_spec).skip(skip).limit(limit).to_list(length=limit)
+
+    return {
+        "listings": listings,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit if limit else 1,
+        "query": q,
+    }
+
+# ==================== LOCATIONS ENDPOINT ====================
+
+@api_router.get("/locations")
+async def get_locations():
+    """Get all unique locations from active listings"""
+    pipeline = [
+        {"$match": {"status": "active", "location": {"$ne": None, "$ne": ""}}},
+        {"$group": {
+            "_id": "$location",
+            "count": {"$sum": 1},
+        }},
+        {"$sort": {"count": -1}},
+        {"$limit": 200},
+    ]
+    results = await db.listings.aggregate(pipeline).to_list(length=200)
+    locations = [{"name": r["_id"], "count": r["count"]} for r in results if r["_id"]]
+    return {"locations": locations, "total": len(locations)}
+
+# ==================== FEATURED LISTINGS ENDPOINT ====================
+
+@api_router.get("/featured")
+async def get_featured_listings(
+    limit: int = Query(12, ge=1, le=50),
+    category: str = Query(None),
+):
+    """Get featured/promoted listings"""
+    query_filter = {"status": "active"}
+    if category:
+        query_filter["category_id"] = category
+
+    # Prioritize: featured > boosted > newest
+    listings = await db.listings.find(query_filter, {"_id": 0}).sort(
+        [("featured", -1), ("boost_score", -1), ("views", -1), ("created_at", -1)]
+    ).limit(limit).to_list(length=limit)
+
+    return {"listings": listings, "total": len(listings)}
+
 # ==================== AUTO/MOTORS ENDPOINTS ====================
 # Now handled by modular router (routes/auto_motors.py)
 # Includes: brands, models, listings, conversations, favorites, search
