@@ -1248,6 +1248,92 @@ async def search_listings(
         "query": q,
     }
 
+
+# ==================== SEARCH SUGGESTIONS ENDPOINT ====================
+
+@api_router.get("/search/suggestions")
+async def get_search_suggestions(
+    q: str = Query(..., min_length=1, description="Partial search query"),
+    category_id: str = Query(None, description="Filter by category"),
+    limit: int = Query(5, ge=1, le=10, description="Max suggestions"),
+):
+    """Get search suggestions based on partial query and popular past searches"""
+    query = q.strip().lower()
+    suggestions = []
+
+    # 1. Match from tracked search history
+    match_conditions = {"query": {"$regex": f"^{query}", "$options": "i"}}
+    if category_id:
+        match_conditions["category_id"] = category_id
+
+    pipeline = [
+        {"$match": match_conditions},
+        {"$sort": {"count": -1, "last_searched": -1}},
+        {"$limit": limit},
+        {"$project": {"_id": 0, "query": 1, "count": 1}},
+    ]
+    tracked = await db.search_tracking.aggregate(pipeline).to_list(length=limit)
+    suggestions.extend(tracked)
+
+    # 2. Fill remaining slots from listing titles
+    if len(suggestions) < limit:
+        remaining = limit - len(suggestions)
+        seen = {s["query"] for s in suggestions}
+        title_filter = {
+            "status": "active",
+            "title": {"$regex": query, "$options": "i"},
+        }
+        if category_id:
+            title_filter["category_id"] = category_id
+        listings = await db.listings.find(title_filter, {"_id": 0, "title": 1}).limit(remaining * 2).to_list(length=remaining * 2)
+        for listing_item in listings:
+            t = listing_item["title"].strip()
+            if t.lower() not in seen:
+                suggestions.append({"query": t, "count": 0})
+                seen.add(t.lower())
+            if len(suggestions) >= limit:
+                break
+
+    return {"suggestions": suggestions}
+
+
+# ==================== SEARCH POPULAR ENDPOINT ====================
+
+@api_router.get("/search/popular")
+async def get_search_popular(
+    category_id: str = Query(None, description="Filter by category"),
+    limit: int = Query(10, ge=1, le=20, description="Max results"),
+    days: int = Query(7, ge=1, le=30, description="Look-back period in days"),
+):
+    """Get popular/trending search queries"""
+    from datetime import timedelta
+    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
+
+    global_pipeline = [
+        {"$match": {"last_searched": {"$gte": cutoff_date}}},
+        {"$group": {"_id": "$query", "total_count": {"$sum": "$count"}, "last_searched": {"$max": "$last_searched"}}},
+        {"$sort": {"total_count": -1, "last_searched": -1}},
+        {"$limit": limit},
+        {"$project": {"_id": 0, "query": "$_id", "count": "$total_count"}},
+    ]
+    global_searches = await db.search_tracking.aggregate(global_pipeline).to_list(length=limit)
+
+    category_searches = []
+    if category_id:
+        cat_pipeline = [
+            {"$match": {"category_id": category_id, "last_searched": {"$gte": cutoff_date}}},
+            {"$sort": {"count": -1, "last_searched": -1}},
+            {"$limit": limit},
+            {"$project": {"_id": 0, "query": 1, "count": 1, "category_id": 1}},
+        ]
+        category_searches = await db.search_tracking.aggregate(cat_pipeline).to_list(length=limit)
+
+    return {
+        "global_searches": global_searches,
+        "category_searches": category_searches,
+    }
+
+
 # ==================== LOCATIONS ENDPOINT ====================
 
 @api_router.get("/locations")

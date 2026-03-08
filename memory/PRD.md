@@ -37,6 +37,9 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
     - GET /api/search — Full-text search with filters (category, location, price range, condition, sort, pagination)
     - GET /api/locations — Aggregated unique locations from active listings with counts
     - GET /api/featured — Featured/promoted listings sorted by featured, boost, views
+11. **Search Suggestions & Popular Endpoints** (March 8, 2026)
+    - GET /api/search/suggestions?q={query} — Autocomplete from search history + listing titles
+    - GET /api/search/popular — Trending searches with category filtering and configurable lookback
 
 ### Test Accounts
 - Admin: admin@marketplace.com / Admin@123456
