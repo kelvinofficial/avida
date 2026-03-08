@@ -1474,7 +1474,62 @@ def create_escrow_router(db, get_current_user, get_current_admin):
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")
         return order
-    
+
+    @router.get("/orders/{order_id}/tracking")
+    async def get_order_tracking(
+        order_id: str,
+        user = Depends(get_current_user)
+    ):
+        """Get order tracking information"""
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        
+        user_id = getattr(user, 'user_id', None) or getattr(user, 'id', None)
+        
+        order = await service.get_order(order_id, user_id)
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
+        
+        # Build tracking events from order timeline
+        events = []
+        if order.get("created_at"):
+            events.append({
+                "status": "confirmed",
+                "description": "Order confirmed and payment received",
+                "timestamp": order["created_at"],
+            })
+        if order.get("shipped_at"):
+            desc = "Order shipped"
+            if order.get("tracking_number"):
+                desc += f" (Tracking: {order['tracking_number']})"
+            events.append({
+                "status": "shipped",
+                "description": desc,
+                "timestamp": order["shipped_at"],
+            })
+        if order.get("delivered_at"):
+            events.append({
+                "status": "delivered",
+                "description": "Order delivered successfully",
+                "timestamp": order["delivered_at"],
+            })
+        
+        events.reverse()
+        
+        return {
+            "order_id": order.get("id", order_id),
+            "status": order.get("status", "paid"),
+            "tracking_number": order.get("tracking_number"),
+            "carrier": order.get("carrier"),
+            "estimated_delivery": order.get("estimated_delivery"),
+            "shipped_at": order.get("shipped_at"),
+            "delivered_at": order.get("delivered_at"),
+            "listing_title": order.get("listing_title") or order.get("item", {}).get("title"),
+            "total_amount": order.get("total_amount"),
+            "currency": order.get("currency", "TZS"),
+            "events": events,
+        }
+
     @router.post("/orders/{order_id}/confirm-delivery")
     async def confirm_delivery(
         order_id: str,
