@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   Image,
   Dimensions,
   Alert,
@@ -106,7 +106,7 @@ const ImageCarousel = memo(({
           setCurrentIndex(index);
         }}
         renderItem={({ item, index }) => (
-          <TouchableOpacity activeOpacity={0.95} onPress={() => onImagePress(index)}>
+          <Pressable activeOpacity={0.95} onPress={() => onImagePress(index)}>
             {item === 'placeholder' ? (
               <View style={[carouselStyles.image, carouselStyles.placeholder]}>
                 <Ionicons name="image-outline" size={64} color={COLORS.textSecondary} />
@@ -123,7 +123,7 @@ const ImageCarousel = memo(({
                 testID={`carousel-image-${index}`}
               />
             )}
-          </TouchableOpacity>
+          </Pressable>
         )}
         keyExtractor={(_, index) => index.toString()}
       />
@@ -307,9 +307,9 @@ const DescriptionSection = memo(({ description }: { description: string }) => {
       <Text style={descStyles.title}>Description</Text>
       <Text style={descStyles.text} numberOfLines={expanded ? undefined : 4}>{description}</Text>
       {isLong && (
-        <TouchableOpacity onPress={() => setExpanded(!expanded)}>
+        <Pressable onPress={() => setExpanded(!expanded)}>
           <Text style={descStyles.readMore}>{expanded ? 'Show less' : 'Read more'}</Text>
-        </TouchableOpacity>
+        </Pressable>
       )}
     </View>
   );
@@ -351,7 +351,7 @@ const SellerSection = memo(({ listing, onPress }: { listing: Listing; onPress: (
   return (
     <View style={sellerStyles.container}>
       <Text style={sellerStyles.title}>Listed by</Text>
-      <TouchableOpacity style={sellerStyles.card} onPress={onPress} activeOpacity={0.7}>
+      <Pressable style={sellerStyles.card} onPress={onPress} activeOpacity={0.7}>
         {listing.seller.picture ? (
           <Image source={{ uri: listing.seller.picture }} style={sellerStyles.avatar} />
         ) : (
@@ -388,7 +388,7 @@ const SellerSection = memo(({ listing, onPress }: { listing: Listing; onPress: (
           )}
         </View>
         <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
-      </TouchableOpacity>
+      </Pressable>
 
       {/* Seller Preferences */}
       <View style={sellerStyles.preferencesSection}>
@@ -487,10 +487,10 @@ const SafetySection = memo(({ onReport, listingId, tips }: SafetySectionProps) =
     </View>
     <View style={safetyStyles.footerRow}>
       <Text style={safetyStyles.listingId}>ID: {listingId ? listingId.slice(0, 8).toUpperCase() : 'N/A'}</Text>
-      <TouchableOpacity style={safetyStyles.reportBtn} onPress={onReport}>
+      <Pressable style={safetyStyles.reportBtn} onPress={onReport}>
         <Ionicons name="flag-outline" size={16} color={COLORS.error} />
         <Text style={safetyStyles.reportText}>Report this listing</Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   </View>
 ));
@@ -669,23 +669,23 @@ const locationStyles = StyleSheet.create({
 // ============ REPORT MODAL ============
 const ReportModal = memo(({ visible, onClose, onReport }: { visible: boolean; onClose: () => void; onReport: (reason: string) => void }) => (
   <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
-    <TouchableOpacity style={reportStyles.overlay} activeOpacity={1} onPress={onClose}>
+    <Pressable style={reportStyles.overlay} activeOpacity={1} onPress={onClose}>
       <View style={reportStyles.modal}>
         <Text style={reportStyles.title}>Report Listing</Text>
         <Text style={reportStyles.subtitle}>Why are you reporting this listing?</Text>
         
         {['Spam or scam', 'Prohibited item', 'Wrong category', 'Misleading information', 'Offensive content', 'Other'].map((reason) => (
-          <TouchableOpacity key={reason} style={reportStyles.option} onPress={() => onReport(reason)}>
+          <Pressable key={reason} style={reportStyles.option} onPress={() => onReport(reason)}>
             <Text style={reportStyles.optionText}>{reason}</Text>
             <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
-          </TouchableOpacity>
+          </Pressable>
         ))}
         
-        <TouchableOpacity style={reportStyles.cancelBtn} onPress={onClose}>
+        <Pressable style={reportStyles.cancelBtn} onPress={onClose}>
           <Text style={reportStyles.cancelText}>Cancel</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   </Modal>
 ));
 
@@ -1035,9 +1035,9 @@ export default function ListingDetailScreen() {
         <View style={styles.loading}>
           <Ionicons name="alert-circle-outline" size={48} color={COLORS.textSecondary} />
           <Text style={styles.loadingText}>Listing not found</Text>
-          <TouchableOpacity style={styles.backButton} onPress={() => safeGoBack(router)}>
+          <Pressable style={styles.backButton} onPress={() => safeGoBack(router)}>
             <Text style={styles.backButtonText}>Go Back</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -1105,34 +1105,34 @@ export default function ListingDetailScreen() {
           {/* Desktop Header Row 1 */}
           <View style={desktopStyles.headerRow1}>
             <View style={desktopStyles.headerRow1Inner}>
-              <TouchableOpacity style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
+              <Pressable style={desktopStyles.logoContainer} onPress={() => router.push('/')}>
                 <View style={desktopStyles.logoIcon}>
                   <Ionicons name="storefront" size={22} color="#fff" />
                 </View>
                 <Text style={desktopStyles.logoText}>avida</Text>
-              </TouchableOpacity>
+              </Pressable>
               
               <View style={desktopStyles.headerActions}>
                 {isAuthenticated ? (
                   <>
-                    <TouchableOpacity style={desktopStyles.notifBtn} onPress={() => router.push('/notifications')}>
+                    <Pressable style={desktopStyles.notifBtn} onPress={() => router.push('/notifications')}>
                       <Ionicons name="notifications-outline" size={22} color="#333" />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={desktopStyles.profileBtn} onPress={() => router.push('/profile')}>
+                    </Pressable>
+                    <Pressable style={desktopStyles.profileBtn} onPress={() => router.push('/profile')}>
                       <Ionicons name="person-circle-outline" size={28} color="#333" />
-                    </TouchableOpacity>
+                    </Pressable>
                   </>
                 ) : (
                   <>
-                    <TouchableOpacity style={desktopStyles.signInBtn} onPress={() => router.push('/login')}>
+                    <Pressable style={desktopStyles.signInBtn} onPress={() => router.push('/login')}>
                       <Text style={desktopStyles.signInBtnText}>Sign In</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={desktopStyles.signUpBtn} onPress={() => router.push('/login')}>
+                    </Pressable>
+                    <Pressable style={desktopStyles.signUpBtn} onPress={() => router.push('/login')}>
                       <Text style={desktopStyles.signUpBtnText}>Sign Up</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   </>
                 )}
-                <TouchableOpacity style={desktopStyles.postListingBtn} onPress={() => {
+                <Pressable style={desktopStyles.postListingBtn} onPress={() => {
                   if (!isAuthenticated) {
                     router.push('/login?redirect=/post');
                   } else {
@@ -1141,7 +1141,7 @@ export default function ListingDetailScreen() {
                 }}>
                   <Ionicons name="add" size={18} color="#fff" />
                   <Text style={desktopStyles.postListingBtnText}>Post Listing</Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </View>
           </View>
@@ -1149,14 +1149,14 @@ export default function ListingDetailScreen() {
           {/* Breadcrumb */}
           <View style={desktopStyles.breadcrumbRow}>
             <View style={[desktopStyles.breadcrumbInner, { maxWidth: MAX_CONTENT_WIDTH }]}>
-              <TouchableOpacity onPress={() => router.push('/')} style={desktopStyles.breadcrumbLink}>
+              <Pressable onPress={() => router.push('/')} style={desktopStyles.breadcrumbLink}>
                 <Ionicons name="home-outline" size={16} color={COLORS.textSecondary} />
                 <Text style={desktopStyles.breadcrumbText}>Home</Text>
-              </TouchableOpacity>
+              </Pressable>
               <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
-              <TouchableOpacity onPress={() => router.push(`/category/${listing.category_id}`)} style={desktopStyles.breadcrumbLink}>
+              <Pressable onPress={() => router.push(`/category/${listing.category_id}`)} style={desktopStyles.breadcrumbLink}>
                 <Text style={desktopStyles.breadcrumbText}>{category?.name || getCategoryName(listing.category_id)}</Text>
-              </TouchableOpacity>
+              </Pressable>
               <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
               <Text style={desktopStyles.breadcrumbCurrent} numberOfLines={1}>{listing.title}</Text>
             </View>
@@ -1200,7 +1200,7 @@ export default function ListingDetailScreen() {
               {images.length > 1 && (
                 <View style={desktopStyles.thumbnailsRow}>
                   {images.slice(0, 6).map((img, index) => (
-                    <TouchableOpacity 
+                    <Pressable 
                       key={index} 
                       style={[
                         desktopStyles.thumbnail,
@@ -1213,7 +1213,7 @@ export default function ListingDetailScreen() {
                         style={desktopStyles.thumbnailImage}
                         resizeMode="cover"
                       />
-                    </TouchableOpacity>
+                    </Pressable>
                   ))}
                   {images.length > 6 && (
                     <View style={desktopStyles.moreImages}>
@@ -1372,7 +1372,7 @@ export default function ListingDetailScreen() {
                 {listing.user_id !== user?.user_id && (
                   <View style={desktopStyles.actionButtons}>
                     {canBuyOnline && (
-                      <TouchableOpacity 
+                      <Pressable 
                         style={desktopStyles.buyNowBtn} 
                         onPress={() => router.push(`/checkout/${id}`)}
                         data-testid="buy-now-btn"
@@ -1382,9 +1382,9 @@ export default function ListingDetailScreen() {
                         <View style={desktopStyles.escrowBadge}>
                           <Ionicons name="shield-checkmark" size={12} color="#fff" />
                         </View>
-                      </TouchableOpacity>
+                      </Pressable>
                     )}
-                    <TouchableOpacity 
+                    <Pressable 
                       style={desktopStyles.primaryActionBtn} 
                       onPress={() => {
                         if (!isAuthenticated) {
@@ -1396,22 +1396,22 @@ export default function ListingDetailScreen() {
                     >
                       <Ionicons name="pricetag" size={20} color="#fff" />
                       <Text style={desktopStyles.primaryActionText}>Make an Offer</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                     <View style={desktopStyles.secondaryActions}>
-                      <TouchableOpacity style={desktopStyles.secondaryActionBtn} onPress={handleChat}>
+                      <Pressable style={desktopStyles.secondaryActionBtn} onPress={handleChat}>
                         <Ionicons name="chatbubble-outline" size={20} color={COLORS.primary} />
                         <Text style={desktopStyles.secondaryActionText}>Chat</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={desktopStyles.iconBtn} onPress={handleToggleFavorite}>
+                      </Pressable>
+                      <Pressable style={desktopStyles.iconBtn} onPress={handleToggleFavorite}>
                         <Ionicons 
                           name={isFavorited ? 'heart' : 'heart-outline'} 
                           size={22} 
                           color={isFavorited ? COLORS.error : COLORS.primary} 
                         />
-                      </TouchableOpacity>
-                      <TouchableOpacity style={desktopStyles.iconBtn} onPress={handleShare}>
+                      </Pressable>
+                      <Pressable style={desktopStyles.iconBtn} onPress={handleShare}>
                         <Ionicons name="share-outline" size={22} color={COLORS.primary} />
-                      </TouchableOpacity>
+                      </Pressable>
                     </View>
                   </View>
                 )}
@@ -1421,7 +1421,7 @@ export default function ListingDetailScreen() {
               <View style={desktopStyles.sellerCard}>
                 <Text style={desktopStyles.sectionTitle}>Listed by</Text>
                 {listing.seller && (
-                  <TouchableOpacity 
+                  <Pressable 
                     style={desktopStyles.sellerInfo}
                     onPress={() => router.push(`/profile/public/${listing.user_id}`)}
                   >
@@ -1447,7 +1447,7 @@ export default function ListingDetailScreen() {
                       )}
                     </View>
                     <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
-                  </TouchableOpacity>
+                  </Pressable>
                 )}
               </View>
 
@@ -1467,10 +1467,10 @@ export default function ListingDetailScreen() {
                 </View>
                 <View style={desktopStyles.footerRow}>
                   <Text style={desktopStyles.listingId}>ID: {listing?.id ? listing.id.slice(0, 8).toUpperCase() : 'N/A'}</Text>
-                  <TouchableOpacity style={desktopStyles.reportBtn} onPress={() => setShowReportModal(true)}>
+                  <Pressable style={desktopStyles.reportBtn} onPress={() => setShowReportModal(true)}>
                     <Ionicons name="flag-outline" size={16} color={COLORS.error} />
                     <Text style={desktopStyles.reportBtnText}>Report this listing</Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               </View>
             </View>
@@ -1508,9 +1508,9 @@ export default function ListingDetailScreen() {
             <View style={desktopStyles.offerModalContent}>
               <View style={desktopStyles.offerModalHeader}>
                 <Text style={desktopStyles.offerModalTitle}>Make an Offer</Text>
-                <TouchableOpacity onPress={() => setShowOfferModal(false)}>
+                <Pressable onPress={() => setShowOfferModal(false)}>
                   <Ionicons name="close" size={24} color={COLORS.text} />
-                </TouchableOpacity>
+                </Pressable>
               </View>
               
               <View style={desktopStyles.offerModalBody}>
@@ -1569,13 +1569,13 @@ export default function ListingDetailScreen() {
               </View>
               
               <View style={desktopStyles.offerModalFooter}>
-                <TouchableOpacity 
+                <Pressable 
                   style={desktopStyles.offerCancelBtn} 
                   onPress={() => setShowOfferModal(false)}
                 >
                   <Text style={desktopStyles.offerCancelText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </Pressable>
+                <Pressable
                   style={[
                     desktopStyles.offerSubmitBtn, 
                     (!offerPrice || submittingOffer || (offerPrice && parseInt(offerPrice) >= listing.price)) && { opacity: 0.5 }
@@ -1588,7 +1588,7 @@ export default function ListingDetailScreen() {
                   ) : (
                     <Text style={desktopStyles.offerSubmitText}>Submit Offer</Text>
                   )}
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </View>
           </View>
@@ -1607,13 +1607,13 @@ export default function ListingDetailScreen() {
                 Your offer has been sent to the seller.
               </Text>
               <View style={offerSuccessStyles.buttons}>
-                <TouchableOpacity 
+                <Pressable 
                   style={offerSuccessStyles.secondaryButton}
                   onPress={() => setShowOfferSuccessModal(false)}
                 >
                   <Text style={offerSuccessStyles.secondaryButtonText}>Continue Browsing</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
+                </Pressable>
+                <Pressable 
                   style={offerSuccessStyles.primaryButton}
                   onPress={() => {
                     setShowOfferSuccessModal(false);
@@ -1624,7 +1624,7 @@ export default function ListingDetailScreen() {
                 >
                   <Ionicons name="chatbubble" size={18} color="#fff" />
                   <Text style={offerSuccessStyles.primaryButtonText}>View Chat</Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </View>
           </View>
@@ -1670,12 +1670,12 @@ export default function ListingDetailScreen() {
       
       {/* Header Actions (floating - outside ScrollView) */}
       <View style={styles.floatingHeader}>
-        <TouchableOpacity style={styles.headerBtn} onPress={() => safeGoBack(router)}>
+        <Pressable style={styles.headerBtn} onPress={() => safeGoBack(router)}>
           <Ionicons name="arrow-back" size={22} color={COLORS.text} />
-        </TouchableOpacity>
+        </Pressable>
         
         {/* Category Badge in Header */}
-        <TouchableOpacity 
+        <Pressable 
           style={styles.headerCategoryBadge}
           onPress={() => router.push(`/category/${listing.category_id}`)}
         >
@@ -1687,15 +1687,15 @@ export default function ListingDetailScreen() {
           <Text style={styles.headerCategoryText} numberOfLines={1}>
             {category?.name || (listing.category_id ? getCategoryName(listing.category_id) : 'Item')}
           </Text>
-        </TouchableOpacity>
+        </Pressable>
         
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.headerBtn} onPress={handleShare}>
+          <Pressable style={styles.headerBtn} onPress={handleShare}>
             <Ionicons name="share-outline" size={22} color={COLORS.text} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.headerBtn} onPress={handleToggleFavorite}>
+          </Pressable>
+          <Pressable style={styles.headerBtn} onPress={handleToggleFavorite}>
             <Ionicons name={isFavorited ? 'heart' : 'heart-outline'} size={22} color={isFavorited ? COLORS.error : COLORS.text} />
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
 
@@ -1800,15 +1800,15 @@ export default function ListingDetailScreen() {
         <View style={[styles.bottomActions, { paddingBottom: Math.max(insets.bottom, 24) }]}>
           {/* Chat button - Always shown if seller allows chat */}
           {((listing as any).contact_methods || ['chat']).includes('chat') && (
-            <TouchableOpacity style={styles.actionBtn} onPress={handleChat}>
+            <Pressable style={styles.actionBtn} onPress={handleChat}>
               <Ionicons name="chatbubble-outline" size={20} color={COLORS.primary} />
               <Text style={styles.actionText}>Chat</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
           
           {/* Make Offer button - Only if seller allows offers */}
           {(listing as any).accepts_offers !== false && (
-            <TouchableOpacity 
+            <Pressable 
               style={[styles.actionBtn, styles.primaryBtn]} 
               onPress={() => {
                 if (!isAuthenticated) {
@@ -1820,21 +1820,21 @@ export default function ListingDetailScreen() {
             >
               <Ionicons name="pricetag" size={20} color="#fff" />
               <Text style={[styles.actionText, { color: '#fff' }]}>Make Offer</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
           
           {/* WhatsApp button - if seller allows WhatsApp */}
           {((listing as any).contact_methods || []).includes('whatsapp') && (
-            <TouchableOpacity style={[styles.iconOnlyBtn, { backgroundColor: '#25D366', borderColor: '#25D366' }]} onPress={handleWhatsApp}>
+            <Pressable style={[styles.iconOnlyBtn, { backgroundColor: '#25D366', borderColor: '#25D366' }]} onPress={handleWhatsApp}>
               <Ionicons name="logo-whatsapp" size={22} color="#fff" />
-            </TouchableOpacity>
+            </Pressable>
           )}
           
           {/* Call button - if seller allows calls */}
           {((listing as any).contact_methods || []).includes('call') && (
-            <TouchableOpacity style={styles.iconOnlyBtn} onPress={handleCall}>
+            <Pressable style={styles.iconOnlyBtn} onPress={handleCall}>
               <Ionicons name="call" size={22} color={COLORS.primary} />
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
       )}
@@ -1854,9 +1854,9 @@ export default function ListingDetailScreen() {
             style={{ flex: 1 }}
           >
             <View style={styles.modalHeader}>
-              <TouchableOpacity onPress={() => setShowOfferModal(false)}>
+              <Pressable onPress={() => setShowOfferModal(false)}>
                 <Ionicons name="close" size={24} color={COLORS.text} />
-              </TouchableOpacity>
+              </Pressable>
               <Text style={styles.modalTitle}>Make an Offer</Text>
               <View style={{ width: 24 }} />
             </View>
@@ -1917,7 +1917,7 @@ export default function ListingDetailScreen() {
             </ScrollView>
 
             <View style={styles.modalFooter}>
-              <TouchableOpacity
+              <Pressable
                 style={[
                   styles.submitBtn, 
                   (!offerPrice || submittingOffer || (offerPrice && parseInt(offerPrice) >= listing.price)) && styles.submitBtnDisabled
@@ -1930,7 +1930,7 @@ export default function ListingDetailScreen() {
                 ) : (
                   <Text style={styles.submitBtnText}>Submit Offer</Text>
                 )}
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </KeyboardAvoidingView>
         </SafeAreaView>
@@ -1954,13 +1954,13 @@ export default function ListingDetailScreen() {
               Your offer has been sent to the seller. They will be notified and can accept or decline your offer.
             </Text>
             <View style={offerSuccessStyles.buttons}>
-              <TouchableOpacity 
+              <Pressable 
                 style={offerSuccessStyles.secondaryButton}
                 onPress={() => setShowOfferSuccessModal(false)}
               >
                 <Text style={offerSuccessStyles.secondaryButtonText}>Continue Browsing</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
+              </Pressable>
+              <Pressable 
                 style={offerSuccessStyles.primaryButton}
                 onPress={() => {
                   setShowOfferSuccessModal(false);
@@ -1971,7 +1971,7 @@ export default function ListingDetailScreen() {
               >
                 <Ionicons name="chatbubble" size={18} color="#fff" />
                 <Text style={offerSuccessStyles.primaryButtonText}>View Chat</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
         </View>

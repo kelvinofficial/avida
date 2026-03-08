@@ -573,7 +573,7 @@ class EscrowService:
             "commission_percentage": commission_percentage,
             "total_amount": total_amount,
             "seller_receives": seller_receives,
-            "currency": "EUR"
+            "currency": "TZS"
         }
     
     async def create_order(
@@ -636,7 +636,7 @@ class EscrowService:
             "payment_method": payment_method,
             "price_breakdown": price_breakdown,
             "total_amount": price_breakdown["total_amount"],
-            "currency": "EUR",
+            "currency": "TZS",
             "notes": notes,
             "tracking_number": None,
             "shipped_at": None,
@@ -657,7 +657,7 @@ class EscrowService:
             "amount": price_breakdown["total_amount"],
             "seller_amount": price_breakdown["seller_receives"],
             "platform_commission": price_breakdown["platform_commission"],
-            "currency": "EUR",
+            "currency": "TZS",
             "payment_method": payment_method,
             "payment_reference": None,
             "auto_release_at": None,  # Set after delivery confirmed

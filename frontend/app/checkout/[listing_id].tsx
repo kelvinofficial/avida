@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   Alert,
   Image,
   TextInput,
@@ -325,9 +325,9 @@ export default function CheckoutScreen() {
         <View style={styles.loading}>
           <Ionicons name="cart-outline" size={48} color={COLORS.textSecondary} />
           <Text style={styles.loadingText}>Listing not found</Text>
-          <TouchableOpacity onPress={() => router.back()}>
+          <Pressable onPress={() => router.back()}>
             <Text style={{ color: COLORS.primary, marginTop: 12, fontSize: 16 }}>Go Back</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -345,9 +345,9 @@ export default function CheckoutScreen() {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+        <Pressable onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-        </TouchableOpacity>
+        </Pressable>
         <Text style={styles.headerTitle}>{isSandbox ? '🧪 Sandbox Checkout' : 'Checkout'}</Text>
         <View style={{ width: 40 }} />
       </View>
@@ -425,10 +425,10 @@ export default function CheckoutScreen() {
               </View>
             </View>
             
-            <TouchableOpacity style={styles.continueBtn} onPress={() => setStep(2)}>
+            <Pressable style={styles.continueBtn} onPress={() => setStep(2)}>
               <Text style={styles.continueBtnText}>Continue to Delivery</Text>
               <Ionicons name="arrow-forward" size={20} color="#fff" />
-            </TouchableOpacity>
+            </Pressable>
           </View>
         )}
         
@@ -438,7 +438,7 @@ export default function CheckoutScreen() {
             <Text style={styles.sectionTitle}>Delivery Method</Text>
             
             {/* Pickup Option */}
-            <TouchableOpacity
+            <Pressable
               style={[styles.deliveryOption, deliveryMethod === 'pickup' && styles.deliveryOptionSelected]}
               onPress={() => setDeliveryMethod('pickup')}
             >
@@ -452,10 +452,10 @@ export default function CheckoutScreen() {
                 </View>
                 <Text style={styles.deliveryPrice}>Free</Text>
               </View>
-            </TouchableOpacity>
+            </Pressable>
             
             {/* Door Delivery Option */}
-            <TouchableOpacity
+            <Pressable
               style={[styles.deliveryOption, deliveryMethod === 'door_delivery' && styles.deliveryOptionSelected]}
               onPress={() => setDeliveryMethod('door_delivery')}
             >
@@ -473,7 +473,7 @@ export default function CheckoutScreen() {
                   </Text>
                 )}
               </View>
-            </TouchableOpacity>
+            </Pressable>
             
             {/* Delivery Address Form */}
             {deliveryMethod === 'door_delivery' && (
@@ -566,14 +566,14 @@ export default function CheckoutScreen() {
             )}
             
             <View style={styles.navigationBtns}>
-              <TouchableOpacity style={styles.backNavBtn} onPress={() => setStep(1)}>
+              <Pressable style={styles.backNavBtn} onPress={() => setStep(1)}>
                 <Ionicons name="arrow-back" size={20} color={COLORS.primary} />
                 <Text style={styles.backNavBtnText}>Back</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.continueBtn} onPress={() => setStep(3)}>
+              </Pressable>
+              <Pressable style={styles.continueBtn} onPress={() => setStep(3)}>
                 <Text style={styles.continueBtnText}>Continue to Payment</Text>
                 <Ionicons name="arrow-forward" size={20} color="#fff" />
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
         )}
@@ -584,7 +584,7 @@ export default function CheckoutScreen() {
             <Text style={styles.sectionTitle}>Payment Method</Text>
             
             {/* Card Payment (Stripe) */}
-            <TouchableOpacity
+            <Pressable
               style={[styles.paymentOption, paymentMethod === 'stripe' && styles.paymentOptionSelected]}
               onPress={() => setPaymentMethod('stripe')}
             >
@@ -598,10 +598,10 @@ export default function CheckoutScreen() {
                   <Text style={styles.paymentOptionDesc}>Visa, Mastercard, AMEX</Text>
                 </View>
               </View>
-            </TouchableOpacity>
+            </Pressable>
             
             {/* PayPal */}
-            <TouchableOpacity
+            <Pressable
               style={[styles.paymentOption, paymentMethod === 'paypal' && styles.paymentOptionSelected]}
               onPress={() => setPaymentMethod('paypal')}
             >
@@ -615,10 +615,10 @@ export default function CheckoutScreen() {
                   <Text style={styles.paymentOptionDesc}>Pay with your PayPal account</Text>
                 </View>
               </View>
-            </TouchableOpacity>
+            </Pressable>
             
             {/* Mobile Money */}
-            <TouchableOpacity
+            <Pressable
               style={[styles.paymentOption, paymentMethod === 'mobile_money' && styles.paymentOptionSelected]}
               onPress={() => setPaymentMethod('mobile_money')}
             >
@@ -632,7 +632,7 @@ export default function CheckoutScreen() {
                   <Text style={styles.paymentOptionDesc}>Vodacom M-Pesa (Tanzania)</Text>
                 </View>
               </View>
-            </TouchableOpacity>
+            </Pressable>
             
             {/* Mobile Phone Input */}
             {paymentMethod === 'mobile_money' && (
@@ -650,14 +650,14 @@ export default function CheckoutScreen() {
             )}
             
             <View style={styles.navigationBtns}>
-              <TouchableOpacity style={styles.backNavBtn} onPress={() => setStep(2)}>
+              <Pressable style={styles.backNavBtn} onPress={() => setStep(2)}>
                 <Ionicons name="arrow-back" size={20} color={COLORS.primary} />
                 <Text style={styles.backNavBtnText}>Back</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.continueBtn} onPress={() => setStep(4)}>
+              </Pressable>
+              <Pressable style={styles.continueBtn} onPress={() => setStep(4)}>
                 <Text style={styles.continueBtnText}>Review Order</Text>
                 <Ionicons name="arrow-forward" size={20} color="#fff" />
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
         )}
@@ -737,11 +737,11 @@ export default function CheckoutScreen() {
             </View>
             
             <View style={styles.navigationBtns}>
-              <TouchableOpacity style={styles.backNavBtn} onPress={() => setStep(3)}>
+              <Pressable style={styles.backNavBtn} onPress={() => setStep(3)}>
                 <Ionicons name="arrow-back" size={20} color={COLORS.primary} />
                 <Text style={styles.backNavBtnText}>Back</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
+              </Pressable>
+              <Pressable 
                 style={[styles.payBtn, processing && styles.payBtnDisabled]} 
                 onPress={handleCreateOrder}
                 disabled={processing}
@@ -756,7 +756,7 @@ export default function CheckoutScreen() {
                     </Text>
                   </>
                 )}
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
         )}

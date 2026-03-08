@@ -699,7 +699,7 @@ def create_payment_router(db, get_current_user):
         buyer_email = user_doc.get("email", "") if user_doc else ""
         
         amount = order["total_amount"]
-        currency = order.get("currency", "EUR")
+        currency = order.get("currency", "TZS")
         metadata = {
             "order_id": request.order_id,
             "buyer_id": user.user_id,
