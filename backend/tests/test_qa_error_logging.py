@@ -16,7 +16,7 @@ import os
 import time
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://order-checkout-demo.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://offer-hub-beta.preview.emergentagent.com')
 
 
 @pytest.fixture

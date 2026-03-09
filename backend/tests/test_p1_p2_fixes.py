@@ -7,7 +7,7 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://order-checkout-demo.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://offer-hub-beta.preview.emergentagent.com')
 
 class TestHealthAndCategories:
     """Test basic API endpoints to verify routes work after router fix"""

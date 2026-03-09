@@ -9,7 +9,7 @@ import requests
 import uuid
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://order-checkout-demo.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://offer-hub-beta.preview.emergentagent.com')
 
 
 class TestEmailVerificationRegistration:

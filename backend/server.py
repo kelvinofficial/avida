@@ -1611,6 +1611,260 @@ async def get_gamification_badges(request: Request):
     }
 
 
+
+# ==================== ADMIN BOOSTS ENDPOINT ====================
+
+@api_router.get("/admin/boosts")
+async def get_admin_boosts(
+    request: Request,
+    location: str = Query(None, description="Filter by location/region"),
+):
+    """Admin: Boost analytics per location — active counts, revenue by region"""
+    user = await require_auth(request)
+
+    match_filter: dict = {}
+    if location:
+        match_filter["location"] = {"$regex": location, "$options": "i"}
+
+    # Active boosts count by location
+    active_pipeline = [
+        {"$match": {**match_filter, "status": "active"}},
+        {"$group": {"_id": "$location", "active_count": {"$sum": 1}}},
+        {"$sort": {"active_count": -1}},
+    ]
+    active_by_location = await db.boosts.aggregate(active_pipeline).to_list(length=100)
+
+    # Revenue by region
+    revenue_pipeline = [
+        {"$match": match_filter},
+        {"$group": {
+            "_id": "$location",
+            "total_revenue": {"$sum": "$price"},
+            "boost_count": {"$sum": 1},
+        }},
+        {"$sort": {"total_revenue": -1}},
+    ]
+    revenue_by_region = await db.boosts.aggregate(revenue_pipeline).to_list(length=100)
+
+    total_active = await db.boosts.count_documents({**match_filter, "status": "active"})
+    total_boosts = await db.boosts.count_documents(match_filter)
+
+    return {
+        "active_by_location": active_by_location,
+        "revenue_by_region": revenue_by_region,
+        "total_active": total_active,
+        "total_boosts": total_boosts,
+    }
+
+
+# ==================== ADMIN SELLERS ENDPOINT ====================
+
+@api_router.get("/admin/sellers")
+async def get_admin_sellers(
+    request: Request,
+    location: str = Query(None),
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+):
+    """Admin: Seller data per location"""
+    user = await require_auth(request)
+
+    query: dict = {}
+    if location:
+        query["location"] = {"$regex": location, "$options": "i"}
+
+    # Get sellers (users who have listings)
+    seller_pipeline = [
+        {"$match": {"status": "active"}},
+        {"$group": {
+            "_id": "$user_id",
+            "listing_count": {"$sum": 1},
+            "location": {"$first": "$location"},
+        }},
+    ]
+    if location:
+        seller_pipeline.insert(1, {"$match": {"location": {"$regex": location, "$options": "i"}}})
+    seller_pipeline.extend([
+        {"$sort": {"listing_count": -1}},
+        {"$skip": (page - 1) * limit},
+        {"$limit": limit},
+    ])
+    sellers = await db.listings.aggregate(seller_pipeline).to_list(length=limit)
+
+    # Enrich with user data
+    seller_ids = [s["_id"] for s in sellers]
+    users = await db.users.find(
+        {"user_id": {"$in": seller_ids}},
+        {"_id": 0, "user_id": 1, "name": 1, "email": 1, "is_seller_verified": 1, "online_selling_verified": 1, "location": 1}
+    ).to_list(length=limit)
+    users_map = {u["user_id"]: u for u in users}
+
+    enriched = []
+    for s in sellers:
+        user_data = users_map.get(s["_id"], {})
+        enriched.append({
+            "user_id": s["_id"],
+            "name": user_data.get("name", "Unknown"),
+            "email": user_data.get("email", ""),
+            "location": s.get("location", user_data.get("location", "")),
+            "listing_count": s["listing_count"],
+            "is_verified": user_data.get("is_seller_verified", False),
+            "online_verified": user_data.get("online_selling_verified", False),
+        })
+
+    # Sellers by location summary
+    location_pipeline = [
+        {"$match": {"status": "active"}},
+        {"$group": {"_id": "$location", "seller_count": {"$addToSet": "$user_id"}}},
+        {"$project": {"_id": 0, "location": "$_id", "seller_count": {"$size": "$seller_count"}}},
+        {"$sort": {"seller_count": -1}},
+    ]
+    by_location = await db.listings.aggregate(location_pipeline).to_list(length=50)
+
+    return {
+        "sellers": enriched,
+        "by_location": by_location,
+        "total": len(enriched),
+        "page": page,
+    }
+
+
+# ==================== ADMIN SELLER PERFORMANCE ENDPOINT ====================
+
+@api_router.get("/admin/seller-performance")
+async def get_admin_seller_performance(
+    request: Request,
+    location: str = Query(None),
+    limit: int = Query(20, ge=1, le=100),
+):
+    """Admin: Seller performance metrics by location (sales, ratings)"""
+    user = await require_auth(request)
+
+    # Sales performance by seller
+    sales_pipeline = [
+        {"$match": {"status": "completed"}},
+        {"$group": {
+            "_id": "$seller_id",
+            "total_sales": {"$sum": 1},
+            "total_revenue": {"$sum": "$total_amount"},
+            "avg_order_value": {"$avg": "$total_amount"},
+        }},
+        {"$sort": {"total_revenue": -1}},
+        {"$limit": limit},
+    ]
+    sales_data = await db.orders.aggregate(sales_pipeline).to_list(length=limit)
+
+    # Ratings by seller
+    ratings_pipeline = [
+        {"$group": {
+            "_id": "$seller_id",
+            "avg_rating": {"$avg": "$rating"},
+            "review_count": {"$sum": 1},
+        }},
+        {"$sort": {"avg_rating": -1}},
+    ]
+    ratings_data = await db.reviews.aggregate(ratings_pipeline).to_list(length=200)
+    ratings_map = {r["_id"]: r for r in ratings_data}
+
+    # Enrich sellers
+    seller_ids = [s["_id"] for s in sales_data]
+    users = await db.users.find(
+        {"user_id": {"$in": seller_ids}},
+        {"_id": 0, "user_id": 1, "name": 1, "location": 1}
+    ).to_list(length=limit)
+    users_map = {u["user_id"]: u for u in users}
+
+    performance = []
+    for s in sales_data:
+        uid = s["_id"]
+        u = users_map.get(uid, {})
+        r = ratings_map.get(uid, {})
+        loc = u.get("location", "")
+        if location and location.lower() not in (loc or "").lower():
+            continue
+        performance.append({
+            "user_id": uid,
+            "name": u.get("name", "Unknown"),
+            "location": loc,
+            "total_sales": s["total_sales"],
+            "total_revenue": s["total_revenue"],
+            "avg_order_value": round(s.get("avg_order_value", 0), 2),
+            "avg_rating": round(r.get("avg_rating", 0), 1),
+            "review_count": r.get("review_count", 0),
+        })
+
+    return {"performance": performance, "total": len(performance)}
+
+
+# ==================== BOOST ANALYTICS ENDPOINT ====================
+
+@api_router.get("/boost/analytics")
+async def get_boost_analytics(
+    request: Request,
+    boost_id: str = Query(None, description="Specific boost ID"),
+):
+    """Boost performance data: impressions, clicks, conversions per boost"""
+    user = await require_auth(request)
+
+    query: dict = {"user_id": user.user_id}
+    if boost_id:
+        query["boost_id"] = boost_id
+
+    analytics = await db.boost_analytics.find(query, {"_id": 0}).sort("date", -1).to_list(length=100)
+
+    # If no per-boost analytics, aggregate from boosts collection
+    if not analytics:
+        boosts = await db.boosts.find(
+            {"user_id": user.user_id}, {"_id": 0}
+        ).sort("created_at", -1).to_list(length=50)
+
+        analytics = []
+        for b in boosts:
+            analytics.append({
+                "boost_id": b.get("id", ""),
+                "listing_id": b.get("listing_id", ""),
+                "status": b.get("status", ""),
+                "impressions": b.get("impressions", 0),
+                "clicks": b.get("clicks", 0),
+                "conversions": b.get("conversions", 0),
+                "ctr": round(b.get("clicks", 0) / max(b.get("impressions", 1), 1) * 100, 2),
+                "created_at": b.get("created_at", ""),
+                "expires_at": b.get("expires_at", ""),
+            })
+
+    return {"analytics": analytics, "total": len(analytics)}
+
+
+# ==================== BOOST PERFORMANCE ENDPOINT ====================
+
+@api_router.get("/boost/performance")
+async def get_boost_performance(request: Request):
+    """Aggregate boost performance metrics for the user"""
+    user = await require_auth(request)
+
+    boosts = await db.boosts.find(
+        {"user_id": user.user_id}, {"_id": 0}
+    ).to_list(length=200)
+
+    total_impressions = sum(b.get("impressions", 0) for b in boosts)
+    total_clicks = sum(b.get("clicks", 0) for b in boosts)
+    total_conversions = sum(b.get("conversions", 0) for b in boosts)
+    total_spent = sum(b.get("price", 0) for b in boosts)
+    active_count = sum(1 for b in boosts if b.get("status") == "active")
+
+    return {
+        "total_boosts": len(boosts),
+        "active_boosts": active_count,
+        "total_impressions": total_impressions,
+        "total_clicks": total_clicks,
+        "total_conversions": total_conversions,
+        "overall_ctr": round(total_clicks / max(total_impressions, 1) * 100, 2),
+        "conversion_rate": round(total_conversions / max(total_clicks, 1) * 100, 2),
+        "total_spent": total_spent,
+        "avg_cost_per_click": round(total_spent / max(total_clicks, 1), 2),
+    }
+
+
 # ==================== WALLET ENDPOINT ====================
 
 @api_router.get("/wallet")
@@ -2682,7 +2936,7 @@ async def get_sitemap():
     """Generate comprehensive XML sitemap including categories, listings, and business profiles"""
     from fastapi.responses import Response
     
-    base_url = os.environ.get("SITE_URL", "https://order-checkout-demo.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://offer-hub-beta.preview.emergentagent.com")
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
     # Build XML sitemap
@@ -2802,7 +3056,7 @@ async def get_robots():
     """Generate robots.txt with sitemap reference"""
     from fastapi.responses import PlainTextResponse
     
-    base_url = os.environ.get("SITE_URL", "https://order-checkout-demo.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://offer-hub-beta.preview.emergentagent.com")
     
     robots_content = f"""User-agent: *
 Allow: /
@@ -2844,7 +3098,7 @@ async def get_business_profile_og_meta(slug: str):
     """Get OG meta tags for a business profile for social media sharing"""
     from fastapi.responses import HTMLResponse
     
-    base_url = os.environ.get("SITE_URL", "https://order-checkout-demo.preview.emergentagent.com")
+    base_url = os.environ.get("SITE_URL", "https://offer-hub-beta.preview.emergentagent.com")
     
     # Find profile by slug or identifier
     profile = await db.business_profiles.find_one(
