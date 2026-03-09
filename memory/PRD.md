@@ -68,6 +68,12 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
 16. **Wallet & Seller Verification Endpoints** (March 9, 2026)
     - GET /api/wallet — Balance, escrow balance, recent transactions
     - GET /api/seller-verification/status — Verification tier, pending request status
+17. **Create Listing - Subcategory Step Separation** (March 9, 2026)
+    - Split Category+Subcategory into two separate steps in the create listing flow
+    - Step 1: Category selection only (15 categories in grid)
+    - Step 2: Subcategory selection (new dedicated screen with list items)
+    - Total steps increased from 6 to 7 (Category → Subcategory → Photos → Details → Attributes → Price → Review)
+    - Validation updated: Step 1 validates category, Step 2 validates subcategory
 
 ### Test Accounts
 - Admin: admin@marketplace.com / Admin@123456

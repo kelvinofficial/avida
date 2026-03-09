@@ -970,18 +970,20 @@ export default function PostListingScreen() {
           errors.category = 'Please select a category';
           isValid = false;
         }
+        break;
+      case 2:
         if (!selectedSubcategoryId) {
           errors.subcategory = 'Please select a subcategory';
           isValid = false;
         }
         break;
-      case 2:
+      case 3:
         if (images.length === 0) {
           errors.images = 'Please add at least one photo';
           isValid = false;
         }
         break;
-      case 3:
+      case 4:
         if (!title.trim()) {
           errors.title = 'Title is required';
           isValid = false;
@@ -997,7 +999,7 @@ export default function PostListingScreen() {
           isValid = false;
         }
         break;
-      case 4:
+      case 5:
         // Validate required attributes from subcategory config
         if (currentSubcategoryConfig) {
           for (const field of currentSubcategoryConfig.attributes) {
@@ -1020,7 +1022,7 @@ export default function PostListingScreen() {
           }
         }
         break;
-      case 5:
+      case 6:
         // Only validate price if the category requires it
         const hidePrice = shouldHidePrice(selectedCategoryId, selectedSubcategoryId);
         if (!hidePrice) {
@@ -1179,8 +1181,8 @@ export default function PostListingScreen() {
   };
 
   // ============ STEP INDICATOR ============
-  const TOTAL_STEPS = 6;
-  const stepLabels = ['Category', 'Photos', 'Details', 'Attributes', 'Price', 'Review'];
+  const TOTAL_STEPS = 7;
+  const stepLabels = ['Category', 'Subcategory', 'Photos', 'Details', 'Attributes', 'Price', 'Review'];
 
   const renderStepIndicator = () => (
     <View style={styles.stepIndicator}>
@@ -1219,7 +1221,7 @@ export default function PostListingScreen() {
       return (
         <ScrollView ref={scrollViewRef} style={styles.stepContent} showsVerticalScrollIndicator={false}>
           <Text style={styles.stepTitle}>What are you selling?</Text>
-          <Text style={styles.stepSubtitle}>Choose the category and subcategory for your item</Text>
+          <Text style={styles.stepSubtitle}>Choose the category for your item</Text>
           
           {/* Main Category Selection - Desktop 4-column grid */}
           <Text style={styles.sectionTitle}>Category <Text style={styles.required}>*</Text></Text>
@@ -1257,47 +1259,14 @@ export default function PostListingScreen() {
             <ValidationError message={fieldErrors.category} visible={true} />
           )}
 
-          {/* Subcategory Selection - MANDATORY */}
-          {selectedCategoryId && availableSubcategories.length > 0 && (
-            <View 
-              ref={subcategorySectionRef} 
-              style={styles.subcategorySection}
-              onLayout={(e) => setSubcategorySectionY(e.nativeEvent.layout.y)}
-            >
-              <Text style={styles.sectionTitle}>
-                Subcategory <Text style={styles.required}>*</Text>
+          {/* Selected category summary */}
+          {selectedCategoryId && selectedMainCategory && (
+            <View style={styles.selectionSummary}>
+              <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
+              <Text style={styles.selectionSummaryText}>
+                Selected: {selectedMainCategory.name}
               </Text>
-              <Text style={styles.sectionSubtitle}>
-                Select the specific type of {selectedMainCategory?.name.toLowerCase() || 'item'}
-              </Text>
-              
-              <View style={desktopStyles.subcategoryGrid}>
-                {availableSubcategories.map((sub) => (
-                  <TouchableOpacity
-                    key={sub.id}
-                    style={[
-                      desktopStyles.subcategoryItem,
-                      selectedSubcategoryId === sub.id && desktopStyles.subcategoryItemSelected,
-                      fieldErrors.subcategory && !selectedSubcategoryId && styles.subcategoryItemError,
-                    ]}
-                    onPress={() => setSelectedSubcategoryId(sub.id)}
-                  >
-                    <Text style={[
-                      styles.subcategoryText,
-                      selectedSubcategoryId === sub.id && styles.subcategoryTextSelected,
-                    ]}>
-                      {sub.name}
-                    </Text>
-                    {selectedSubcategoryId === sub.id && (
-                      <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </View>
             </View>
-          )}
-          {fieldErrors.subcategory && (
-            <ValidationError message={fieldErrors.subcategory} visible={true} />
           )}
         </ScrollView>
       );
@@ -1307,7 +1276,7 @@ export default function PostListingScreen() {
     return (
       <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
         <Text style={styles.stepTitle}>What are you selling?</Text>
-        <Text style={styles.stepSubtitle}>Choose the category and subcategory for your item</Text>
+        <Text style={styles.stepSubtitle}>Choose the category for your item</Text>
         
         {/* Main Category Selection */}
         <Text style={styles.sectionTitle}>Category <Text style={styles.required}>*</Text></Text>
@@ -1344,49 +1313,124 @@ export default function PostListingScreen() {
           <ValidationError message={fieldErrors.category} visible={true} />
         )}
 
-        {/* Subcategory Selection - MANDATORY */}
-        {selectedCategoryId && availableSubcategories.length > 0 && (
-          <View style={styles.subcategorySection}>
-            <Text style={styles.sectionTitle}>
-              Subcategory <Text style={styles.required}>*</Text>
+        {/* Selected category summary */}
+        {selectedCategoryId && selectedMainCategory && (
+          <View style={styles.selectionSummary}>
+            <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
+            <Text style={styles.selectionSummaryText}>
+              Selected: {selectedMainCategory.name}
             </Text>
-            <Text style={styles.sectionSubtitle}>
-              Select the specific type of {selectedMainCategory?.name.toLowerCase() || 'item'}
-            </Text>
-            
-            <View style={styles.subcategoryList}>
+          </View>
+        )}
+      </ScrollView>
+    );
+  };
+
+  // ============ STEP 2: SUBCATEGORY ============
+  const renderStep2 = () => {
+    const selectedMainCategory = getMainCategory(selectedCategoryId);
+
+    if (isLargeScreen) {
+      return (
+        <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
+          <Text style={styles.stepTitle}>Choose Subcategory</Text>
+          <Text style={styles.stepSubtitle}>
+            Select the specific type of {selectedMainCategory?.name.toLowerCase() || 'item'}
+          </Text>
+
+          <Text style={styles.sectionTitle}>Subcategory <Text style={styles.required}>*</Text></Text>
+          
+          {availableSubcategories.length > 0 ? (
+            <View style={desktopStyles.subcategoryGrid}>
               {availableSubcategories.map((sub) => (
                 <TouchableOpacity
                   key={sub.id}
                   style={[
-                    styles.subcategoryItem,
-                    selectedSubcategoryId === sub.id && styles.subcategoryItemSelected,
+                    desktopStyles.subcategoryItem,
+                    selectedSubcategoryId === sub.id && desktopStyles.subcategoryItemSelected,
                     fieldErrors.subcategory && !selectedSubcategoryId && styles.subcategoryItemError,
                   ]}
                   onPress={() => setSelectedSubcategoryId(sub.id)}
                 >
-                  <View style={styles.subcategoryContent}>
-                    <Text style={[
-                      styles.subcategoryText,
-                      selectedSubcategoryId === sub.id && styles.subcategoryTextSelected,
-                    ]}>
-                      {sub.name}
-                    </Text>
-                  </View>
+                  <Text style={[
+                    styles.subcategoryText,
+                    selectedSubcategoryId === sub.id && styles.subcategoryTextSelected,
+                  ]}>
+                    {sub.name}
+                  </Text>
                   {selectedSubcategoryId === sub.id && (
-                    <Ionicons name="checkmark-circle" size={22} color={COLORS.primary} />
+                    <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
                   )}
                 </TouchableOpacity>
               ))}
             </View>
-            {fieldErrors.subcategory && (
-              <ValidationError message={fieldErrors.subcategory} visible={true} />
-            )}
+          ) : (
+            <View style={{ padding: 20, alignItems: 'center' }}>
+              <Text style={{ color: '#999', fontSize: 14 }}>No subcategories available for this category</Text>
+            </View>
+          )}
+          {fieldErrors.subcategory && (
+            <ValidationError message={fieldErrors.subcategory} visible={true} />
+          )}
+
+          {selectedSubcategoryId && currentSubcategoryConfig && (
+            <View style={styles.selectionSummary}>
+              <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
+              <Text style={styles.selectionSummaryText}>
+                {selectedMainCategory?.name} → {currentSubcategoryConfig.name}
+              </Text>
+            </View>
+          )}
+        </ScrollView>
+      );
+    }
+
+    // Mobile layout
+    return (
+      <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
+        <Text style={styles.stepTitle}>Choose Subcategory</Text>
+        <Text style={styles.stepSubtitle}>
+          Select the specific type of {selectedMainCategory?.name.toLowerCase() || 'item'}
+        </Text>
+
+        <Text style={styles.sectionTitle}>Subcategory <Text style={styles.required}>*</Text></Text>
+        
+        {availableSubcategories.length > 0 ? (
+          <View style={styles.subcategoryList}>
+            {availableSubcategories.map((sub) => (
+              <TouchableOpacity
+                key={sub.id}
+                style={[
+                  styles.subcategoryItem,
+                  selectedSubcategoryId === sub.id && styles.subcategoryItemSelected,
+                  fieldErrors.subcategory && !selectedSubcategoryId && styles.subcategoryItemError,
+                ]}
+                onPress={() => setSelectedSubcategoryId(sub.id)}
+              >
+                <View style={styles.subcategoryContent}>
+                  <Text style={[
+                    styles.subcategoryText,
+                    selectedSubcategoryId === sub.id && styles.subcategoryTextSelected,
+                  ]}>
+                    {sub.name}
+                  </Text>
+                </View>
+                {selectedSubcategoryId === sub.id && (
+                  <Ionicons name="checkmark-circle" size={22} color={COLORS.primary} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        ) : (
+          <View style={{ padding: 20, alignItems: 'center' }}>
+            <Text style={{ color: '#999', fontSize: 14 }}>No subcategories available for this category</Text>
           </View>
         )}
-        
-        {/* Selected Summary */}
-        {selectedCategoryId && selectedSubcategoryId && currentSubcategoryConfig && (
+        {fieldErrors.subcategory && (
+          <ValidationError message={fieldErrors.subcategory} visible={true} />
+        )}
+
+        {selectedSubcategoryId && currentSubcategoryConfig && (
           <View style={styles.selectionSummary}>
             <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
             <Text style={styles.selectionSummaryText}>
@@ -1398,8 +1442,8 @@ export default function PostListingScreen() {
     );
   };
 
-  // ============ STEP 2: IMAGES ============
-  const renderStep2 = () => (
+  // ============ STEP 3: IMAGES ============
+  const renderStep3 = () => (
     <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
       <Text style={styles.stepTitle}>Add Photos</Text>
       <Text style={styles.stepSubtitle}>
@@ -1598,8 +1642,8 @@ export default function PostListingScreen() {
     </ScrollView>
   );
 
-  // ============ STEP 3: BASE DETAILS ============
-  const renderStep3 = () => {
+  // ============ STEP 4: BASE DETAILS ============
+  const renderStep4 = () => {
     // Get dynamic placeholders based on category/subcategory
     const placeholders = getPlaceholders(selectedCategoryId, selectedSubcategoryId);
     const hideCondition = shouldHideCondition(selectedCategoryId, selectedSubcategoryId);
@@ -1675,8 +1719,8 @@ export default function PostListingScreen() {
     );
   };
 
-  // ============ STEP 4: DYNAMIC ATTRIBUTES (Subcategory-specific) ============
-  const renderStep4 = () => {
+  // ============ STEP 5: DYNAMIC ATTRIBUTES (Subcategory-specific) ============
+  const renderStep5 = () => {
     const mainCategory = getMainCategory(selectedCategoryId);
     const subcategoryAttrs = currentSubcategoryConfig?.attributes || [];
     
@@ -1725,8 +1769,8 @@ export default function PostListingScreen() {
     );
   };
 
-  // ============ STEP 5: PRICE & CONTACT ============
-  const renderStep5 = () => {
+  // ============ STEP 6: PRICE & CONTACT ============
+  const renderStep6 = () => {
     // Get dynamic configuration based on category
     const hidePrice = shouldHidePrice(selectedCategoryId, selectedSubcategoryId);
     const showSalary = shouldShowSalaryRange(selectedSubcategoryId);
@@ -2161,8 +2205,8 @@ export default function PostListingScreen() {
   );
   };
 
-  // ============ STEP 6: REVIEW ============
-  const renderStep6 = () => {
+  // ============ STEP 7: REVIEW ============
+  const renderStep7 = () => {
     const hidePrice = shouldHidePrice(selectedCategoryId, selectedSubcategoryId);
     const showSalary = shouldShowSalaryRange(selectedSubcategoryId);
     const sellerTypeConfig = getSellerTypes(selectedCategoryId);
@@ -2413,6 +2457,7 @@ export default function PostListingScreen() {
                   {step === 4 && renderStep4()}
                   {step === 5 && renderStep5()}
                   {step === 6 && renderStep6()}
+                  {step === 7 && renderStep7()}
                 </View>
 
                 {/* Form Footer */}
@@ -2512,6 +2557,7 @@ export default function PostListingScreen() {
         {step === 4 && renderStep4()}
         {step === 5 && renderStep5()}
         {step === 6 && renderStep6()}
+        {step === 7 && renderStep7()}
       </KeyboardAvoidingView>
 
       {/* Footer */}
