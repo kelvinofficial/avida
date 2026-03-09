@@ -74,6 +74,12 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
     - Step 2: Subcategory selection (new dedicated screen with list items)
     - Total steps increased from 6 to 7 (Category → Subcategory → Photos → Details → Attributes → Price → Review)
     - Validation updated: Step 1 validates category, Step 2 validates subcategory
+18. **Push Notification & Settings Endpoints** (March 9, 2026)
+    - POST /api/notifications/push/register — Register FCM token (with platform, device_id)
+    - DELETE /api/notifications/push/unregister — Deactivate a push token
+    - GET /api/notifications/settings — Get notification preferences (push/email/sms, per-category, quiet hours)
+    - PUT /api/notifications/settings — Update notification preferences
+    - Boost expiry cron already running (checks every 60s, expires active boosts past expiry date)
 
 ### Test Accounts
 - Admin: admin@marketplace.com / Admin@123456

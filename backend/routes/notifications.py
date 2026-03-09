@@ -275,4 +275,112 @@ def create_notifications_router(db, require_auth):
         
         return {"message": f"Created {len(created)} sample notifications", "count": len(created)}
 
+    # ==================== PUSH NOTIFICATIONS ====================
+
+    @router.post("/push/register")
+    async def register_push_token(request: Request):
+        """Register FCM push notification token for the current device"""
+        user = await require_auth(request)
+        body = await request.json()
+        
+        token = body.get("token") or body.get("fcm_token")
+        if not token:
+            raise HTTPException(status_code=400, detail="FCM token is required")
+        
+        platform = body.get("platform", "web")
+        device_id = body.get("device_id", "")
+
+        await db.push_tokens.update_one(
+            {"user_id": user.user_id, "token": token},
+            {"$set": {
+                "user_id": user.user_id,
+                "token": token,
+                "platform": platform,
+                "device_id": device_id,
+                "active": True,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }},
+            upsert=True,
+        )
+
+        return {"message": "Push token registered", "token": token}
+
+    @router.delete("/push/unregister")
+    async def unregister_push_token(request: Request):
+        """Unregister a push notification token"""
+        user = await require_auth(request)
+        body = await request.json()
+        token = body.get("token") or body.get("fcm_token")
+        if not token:
+            raise HTTPException(status_code=400, detail="FCM token is required")
+
+        await db.push_tokens.update_one(
+            {"user_id": user.user_id, "token": token},
+            {"$set": {"active": False}}
+        )
+
+        return {"message": "Push token unregistered"}
+
+    # ==================== NOTIFICATION SETTINGS ====================
+
+    @router.get("/settings")
+    async def get_notification_settings(request: Request):
+        """Get user's notification preferences"""
+        user = await require_auth(request)
+        
+        settings = await db.notification_settings.find_one(
+            {"user_id": user.user_id}, {"_id": 0}
+        )
+        
+        if not settings:
+            settings = {
+                "user_id": user.user_id,
+                "push_enabled": True,
+                "email_enabled": True,
+                "sms_enabled": False,
+                "categories": {
+                    "messages": True,
+                    "offers": True,
+                    "price_drops": True,
+                    "promotions": True,
+                    "order_updates": True,
+                    "reviews": True,
+                    "follows": True,
+                    "system": True,
+                },
+                "quiet_hours": {
+                    "enabled": False,
+                    "start": "22:00",
+                    "end": "07:00",
+                },
+            }
+            await db.notification_settings.insert_one({**settings})
+            settings.pop("_id", None)
+
+        return settings
+
+    @router.put("/settings")
+    async def update_notification_settings(request: Request):
+        """Update user's notification preferences"""
+        user = await require_auth(request)
+        body = await request.json()
+
+        allowed_fields = {
+            "push_enabled", "email_enabled", "sms_enabled",
+            "categories", "quiet_hours",
+        }
+        update_data = {k: v for k, v in body.items() if k in allowed_fields}
+        update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+        await db.notification_settings.update_one(
+            {"user_id": user.user_id},
+            {"$set": update_data},
+            upsert=True,
+        )
+
+        updated = await db.notification_settings.find_one(
+            {"user_id": user.user_id}, {"_id": 0}
+        )
+        return updated
+
     return router
