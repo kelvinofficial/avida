@@ -80,6 +80,17 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
     - GET /api/notifications/settings — Get notification preferences (push/email/sms, per-category, quiet hours)
     - PUT /api/notifications/settings — Update notification preferences
     - Boost expiry cron already running (checks every 60s, expires active boosts past expiry date)
+19. **Admin & Boost Analytics Endpoints** (March 9, 2026)
+    - GET /api/admin/boosts — Boost analytics by location (active counts, revenue by region)
+    - GET /api/admin/sellers — Seller data per location with user enrichment
+    - GET /api/admin/seller-performance — Sales performance metrics (revenue, ratings, order stats)
+    - GET /api/boost/analytics — Per-user boost performance (impressions, clicks, conversions)
+    - GET /api/boost/performance — Aggregate boost metrics (CTR, conversion rate, spend)
+    - Fixed admin proxy catch-all route conflict and KeyError in sellers endpoint
+20. **Admin Config Endpoints** (March 9, 2026)
+    - GET /api/admin/safety-tips — All safety tips with category filtering (defaults from code when DB empty)
+    - GET /api/admin/form-config — Form configurations with type/category/active filtering and pagination
+    - GET /api/admin/category-config — Category hierarchy with subcategories, attributes, and listing counts
 
 ### Test Accounts
 - Admin: admin@marketplace.com / Admin@123456

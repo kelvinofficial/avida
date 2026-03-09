@@ -1796,6 +1796,165 @@ async def get_admin_seller_performance(
     return {"performance": performance, "total": len(performance)}
 
 
+# ==================== ADMIN SAFETY TIPS ENDPOINT ====================
+
+@api_router.get("/admin/safety-tips")
+async def get_admin_safety_tips(
+    request: Request,
+    category_id: str = Query(None, description="Filter by category ID"),
+):
+    """Admin: Get all safety tips with optional category filter"""
+    user = await require_auth(request)
+
+    query: dict = {}
+    if category_id:
+        query["category_id"] = category_id
+
+    tips = await db.safety_tips.find(query, {"_id": 0}).sort(
+        [("category_id", 1), ("order", 1)]
+    ).to_list(length=1000)
+
+    # Group by category
+    grouped: dict = {}
+    for tip in tips:
+        cat = tip.get("category_id", "default")
+        if cat not in grouped:
+            grouped[cat] = []
+        grouped[cat].append(tip)
+
+    # Stats
+    total = len(tips)
+    active = sum(1 for t in tips if t.get("is_active", True))
+
+    # If no tips in DB, provide defaults
+    if total == 0:
+        try:
+            from routes.safety_tips import DEFAULT_SAFETY_TIPS
+            source = DEFAULT_SAFETY_TIPS
+            if category_id:
+                source = {k: v for k, v in source.items() if k == category_id}
+            default_tips = []
+            for cat_id, cat_tips in source.items():
+                for i, tip_text in enumerate(cat_tips):
+                    default_tips.append({
+                        "category_id": cat_id,
+                        "tip_text": tip_text,
+                        "is_active": True,
+                        "is_default": True,
+                        "order": i,
+                    })
+            return {
+                "tips": default_tips,
+                "grouped": source,
+                "total": len(default_tips),
+                "active": len(default_tips),
+                "inactive": 0,
+                "is_default": True,
+            }
+        except ImportError:
+            pass
+
+    return {
+        "tips": tips,
+        "grouped": grouped,
+        "total": total,
+        "active": active,
+        "inactive": total - active,
+        "is_default": False,
+    }
+
+
+# ==================== ADMIN FORM CONFIG ENDPOINT ====================
+
+@api_router.get("/admin/form-config")
+async def get_admin_form_config(
+    request: Request,
+    category_id: str = Query(None, description="Filter by category ID"),
+    config_type: str = Query(None, description="Filter by config type"),
+    is_active: bool = Query(None, description="Filter by active status"),
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=200),
+):
+    """Admin: Get all form configurations with optional filtering"""
+    user = await require_auth(request)
+
+    query: dict = {}
+    if category_id:
+        query["category_id"] = category_id
+    if config_type:
+        query["config_type"] = config_type
+    if is_active is not None:
+        query["is_active"] = is_active
+
+    skip = (page - 1) * limit
+    total = await db.form_configs.count_documents(query)
+
+    cursor = db.form_configs.find(query).sort(
+        [("priority", -1), ("created_at", -1)]
+    ).skip(skip).limit(limit)
+
+    configs = []
+    async for config in cursor:
+        configs.append({
+            "id": str(config["_id"]),
+            "category_id": config.get("category_id"),
+            "subcategory_id": config.get("subcategory_id"),
+            "config_type": config.get("config_type"),
+            "config_data": config.get("config_data", {}),
+            "is_active": config.get("is_active", True),
+            "priority": config.get("priority", 0),
+            "created_at": config.get("created_at").isoformat() if config.get("created_at") else None,
+            "updated_at": config.get("updated_at").isoformat() if config.get("updated_at") else None,
+        })
+
+    return {
+        "configs": configs,
+        "total": total,
+        "page": page,
+        "limit": limit,
+    }
+
+
+# ==================== ADMIN CATEGORY CONFIG ENDPOINT ====================
+
+@api_router.get("/admin/category-config")
+async def get_admin_category_config(
+    request: Request,
+    category_id: str = Query(None, description="Filter by category ID"),
+):
+    """Admin: Get category configurations including subcategories and attributes"""
+    user = await require_auth(request)
+
+    try:
+        from routes.categories import DEFAULT_CATEGORIES
+    except ImportError:
+        return {"categories": [], "total": 0}
+
+    categories = DEFAULT_CATEGORIES
+
+    if category_id:
+        categories = [c for c in categories if c.get("id") == category_id]
+
+    # Build admin-friendly response with stats
+    result = []
+    for cat in categories:
+        subcategories = cat.get("subcategories", [])
+        # Count listings per category
+        listing_count = await db.listings.count_documents({"category_id": cat["id"], "status": "active"})
+
+        result.append({
+            "id": cat["id"],
+            "name": cat["name"],
+            "icon": cat.get("icon", ""),
+            "subcategory_count": len(subcategories),
+            "subcategories": subcategories,
+            "attributes": cat.get("attributes", {}),
+            "listing_count": listing_count,
+        })
+
+    return {"categories": result, "total": len(result)}
+
+
 # ==================== BOOST ANALYTICS ENDPOINT ====================
 
 @api_router.get("/boost/analytics")
@@ -3770,6 +3929,9 @@ ADMIN_LOCAL_PATHS = [
     "boosts",  # Handled locally in server.py
     "sellers",  # Handled locally in server.py
     "seller-performance",  # Handled locally in server.py
+    "safety-tips",  # Handled locally in server.py
+    "form-config",  # Handled locally in server.py
+    "category-config",  # Handled locally in server.py
     # Note: challenges is handled by admin-dashboard backend
 ]
 
@@ -3821,6 +3983,9 @@ except Exception as e:
 app.add_api_route("/api/admin/boosts", get_admin_boosts, methods=["GET"])
 app.add_api_route("/api/admin/sellers", get_admin_sellers, methods=["GET"])
 app.add_api_route("/api/admin/seller-performance", get_admin_seller_performance, methods=["GET"])
+app.add_api_route("/api/admin/safety-tips", get_admin_safety_tips, methods=["GET"])
+app.add_api_route("/api/admin/form-config", get_admin_form_config, methods=["GET"])
+app.add_api_route("/api/admin/category-config", get_admin_category_config, methods=["GET"])
 
 @app.api_route("/api/admin/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 async def admin_proxy(request: Request, path: str):
