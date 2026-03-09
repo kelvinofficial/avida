@@ -65,6 +65,9 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
     - GET /api/gamification/badges — All badges with earned status
     - GET /api/recently-viewed — Recently viewed listings with details
     - POST /api/recently-viewed/{listing_id} — Track listing view
+16. **Wallet & Seller Verification Endpoints** (March 9, 2026)
+    - GET /api/wallet — Balance, escrow balance, recent transactions
+    - GET /api/seller-verification/status — Verification tier, pending request status
 
 ### Test Accounts
 - Admin: admin@marketplace.com / Admin@123456

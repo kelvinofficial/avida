@@ -1611,6 +1611,61 @@ async def get_gamification_badges(request: Request):
     }
 
 
+# ==================== WALLET ENDPOINT ====================
+
+@api_router.get("/wallet")
+async def get_wallet(request: Request):
+    """Get user's wallet info including balance, recent transactions"""
+    user = await require_auth(request)
+
+    balance_doc = await db.credit_balances.find_one({"user_id": user.user_id}, {"_id": 0})
+    balance = balance_doc.get("balance", 0) if balance_doc else 0
+
+    transactions = await db.credit_transactions.find(
+        {"user_id": user.user_id}, {"_id": 0}
+    ).sort("created_at", -1).limit(20).to_list(length=20)
+
+    # Escrow balance
+    escrow_doc = await db.escrow.find_one({"user_id": user.user_id}, {"_id": 0})
+    escrow_balance = escrow_doc.get("balance", 0) if escrow_doc else 0
+
+    return {
+        "balance": balance,
+        "escrow_balance": escrow_balance,
+        "currency": "TZS",
+        "transactions": transactions,
+    }
+
+
+# ==================== SELLER VERIFICATION STATUS ENDPOINT ====================
+
+@api_router.get("/seller-verification/status")
+async def get_seller_verification_status(request: Request):
+    """Get current user's seller verification status"""
+    user = await require_auth(request)
+
+    # Check user doc for verification fields
+    user_doc = await db.users.find_one({"user_id": user.user_id}, {"_id": 0, "is_seller_verified": 1, "online_selling_verified": 1, "verification_tier": 1})
+
+    # Check for pending verification requests
+    pending_request = await db.verification_requests.find_one(
+        {"user_id": user.user_id, "status": {"$in": ["pending", "in_review"]}}, {"_id": 0}
+    )
+
+    is_verified = user_doc.get("is_seller_verified", False) if user_doc else False
+    online_verified = user_doc.get("online_selling_verified", False) if user_doc else False
+    tier = user_doc.get("verification_tier", "none") if user_doc else "none"
+
+    return {
+        "is_verified": is_verified,
+        "online_selling_verified": online_verified,
+        "verification_tier": tier,
+        "pending_request": pending_request,
+        "status": "verified" if is_verified else ("pending" if pending_request else "unverified"),
+    }
+
+
+
 # ==================== RECENTLY VIEWED ENDPOINT ====================
 
 @api_router.get("/recently-viewed")
