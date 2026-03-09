@@ -1692,12 +1692,12 @@ async def get_admin_sellers(
     sellers = await db.listings.aggregate(seller_pipeline).to_list(length=limit)
 
     # Enrich with user data
-    seller_ids = [s["_id"] for s in sellers]
+    seller_ids = [s["_id"] for s in sellers if s.get("_id")]
     users = await db.users.find(
         {"user_id": {"$in": seller_ids}},
         {"_id": 0, "user_id": 1, "name": 1, "email": 1, "is_seller_verified": 1, "online_selling_verified": 1, "location": 1}
     ).to_list(length=limit)
-    users_map = {u["user_id"]: u for u in users}
+    users_map = {u.get("user_id", ""): u for u in users if u.get("user_id")}
 
     enriched = []
     for s in sellers:
@@ -3767,6 +3767,9 @@ ADMIN_LOCAL_PATHS = [
     "locations",  # Handled by modular router (routes/admin_locations.py)
     "branding",  # Handled by routes/admin_branding_routes.py
     "banners",  # Handled by routes/banner_management_routes.py
+    "boosts",  # Handled locally in server.py
+    "sellers",  # Handled locally in server.py
+    "seller-performance",  # Handled locally in server.py
     # Note: challenges is handled by admin-dashboard backend
 ]
 
@@ -3813,6 +3816,11 @@ try:
     logger.info("Seller analytics router loaded successfully")
 except Exception as e:
     logger.warning(f"Failed to load seller analytics router: {e}")
+
+# Register admin analytics routes BEFORE the proxy catch-all so they take precedence
+app.add_api_route("/api/admin/boosts", get_admin_boosts, methods=["GET"])
+app.add_api_route("/api/admin/sellers", get_admin_sellers, methods=["GET"])
+app.add_api_route("/api/admin/seller-performance", get_admin_seller_performance, methods=["GET"])
 
 @app.api_route("/api/admin/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 async def admin_proxy(request: Request, path: str):
