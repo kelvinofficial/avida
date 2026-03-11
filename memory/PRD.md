@@ -91,6 +91,11 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
     - GET /api/admin/safety-tips — All safety tips with category filtering (defaults from code when DB empty)
     - GET /api/admin/form-config — Form configurations with type/category/active filtering and pagination
     - GET /api/admin/category-config — Category hierarchy with subcategories, attributes, and listing counts
+21. **Critical API Performance Fix — Base64 Image Timeout** (March 11, 2026)
+    - Root cause: Listings stored base64 images (~100KB+ each) inline in MongoDB documents. Queries fetching multiple listings loaded full image data, causing 30s+ timeouts.
+    - Fixed endpoints: /api/feed/listings, /api/listings, /api/listings/{id}/similar, /api/listings/{id}/related, /api/listings/featured-verified, /api/listings/by-location, /api/search
+    - Solution: Excluded `images` and `seo_data` from all multi-listing projections/aggregations. Added `feed_thumbnail` field with pre-computed WebP thumbnails (150x150). Background task runs on startup to generate thumbnails for new listings.
+    - Performance: Feed from 30s+ timeout → 0.3s, Listings from 10s+ timeout → 1.1s, Search from timeout → 0.5s
 
 ### Test Accounts
 - Admin: admin@marketplace.com / Admin@123456

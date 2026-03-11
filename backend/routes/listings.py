@@ -441,8 +441,14 @@ def create_listings_router(
         total = await db.listings.count_documents(query)
         
         # Aggregation for boosted listings first
+        # IMPORTANT: Exclude images and seo_data EARLY to avoid loading huge base64 data
         pipeline = [
             {"$match": query},
+            {"$project": {
+                "images": 0,
+                "seo_data": 0,
+                "description": 0,
+            }},
             {"$addFields": {
                 "is_boosted_val": {"$cond": [{"$eq": ["$is_boosted", True]}, 1, 0]},
                 "boost_priority_val": {"$ifNull": ["$boost_priority", 0]}
@@ -457,7 +463,7 @@ def create_listings_router(
             {"$project": {
                 "_id": 0,
                 "is_boosted_val": 0,
-                "boost_priority_val": 0
+                "boost_priority_val": 0,
             }}
         ]
         
@@ -516,9 +522,10 @@ def create_listings_router(
         if subcategory:
             base_query["subcategory"] = subcategory
         
-        # Step 1: Search in selected city
+        # Step 1: Search in selected city (exclude large fields)
+        LOCATION_PROJECTION = {"_id": 0, "images": 0, "seo_data": 0, "description": 0}
         city_query = {**base_query, "location_data.city_code": city_code.upper()}
-        city_listings = await db.listings.find(city_query, {"_id": 0}).to_list(limit)
+        city_listings = await db.listings.find(city_query, LOCATION_PROJECTION).to_list(limit)
         
         # Calculate distance for each listing (will be 0 or very small for same city)
         for listing in city_listings:
@@ -598,7 +605,7 @@ def create_listings_router(
             {"$sort": {"distance_km": 1}},
             {"$skip": (page - 1) * limit},
             {"$limit": limit},
-            {"$project": {"_id": 0}}
+            {"$project": {"_id": 0, "images": 0, "seo_data": 0, "description": 0}}
         ]
         
         nearby_listings = await db.listings.aggregate(nearby_pipeline).to_list(limit)
@@ -661,7 +668,7 @@ def create_listings_router(
         if status:
             query["status"] = status
         
-        listings = await db.listings.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+        listings = await db.listings.find(query, {"_id": 0, "images": 0, "seo_data": 0}).sort("created_at", -1).to_list(100)
         return listings
     
     @router.get("/similar/{listing_id}")
@@ -673,8 +680,9 @@ def create_listings_router(
         same_price_range: bool = False
     ):
         """Get similar listings using weighted similarity scoring"""
-        # Get source listing
-        source = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+        # Get source listing (exclude large fields)
+        LIGHT_PROJECTION = {"_id": 0, "images": 0, "seo_data": 0}
+        source = await db.listings.find_one({"id": listing_id}, LIGHT_PROJECTION)
         if not source:
             raise HTTPException(status_code=404, detail="Listing not found")
         
@@ -708,7 +716,7 @@ def create_listings_router(
             query["category_id"] = source.get('category_id')
         
         # Get candidates
-        candidates = await db.listings.find(query, {"_id": 0}).limit(50).to_list(50)
+        candidates = await db.listings.find(query, LIGHT_PROJECTION).limit(50).to_list(50)
         
         # If not enough, expand search
         if len(candidates) < 5:
@@ -717,7 +725,7 @@ def create_listings_router(
                 "id": {"$ne": listing_id},
                 "user_id": {"$ne": source.get('user_id')},
             }
-            candidates = await db.listings.find(expanded_query, {"_id": 0}).limit(50).to_list(50)
+            candidates = await db.listings.find(expanded_query, LIGHT_PROJECTION).limit(50).to_list(50)
         
         # Calculate similarity scores
         scored_listings = []
@@ -756,7 +764,7 @@ def create_listings_router(
                 ]
             }
             
-            sponsored = await db.listings.find(sponsored_query, {"_id": 0}).limit(3).to_list(3)
+            sponsored = await db.listings.find(sponsored_query, LIGHT_PROJECTION).limit(3).to_list(3)
             existing_ids = {l['id'] for l in scored_listings[:limit]}
             
             for i, listing in enumerate(sponsored):

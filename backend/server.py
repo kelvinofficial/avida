@@ -1030,8 +1030,8 @@ async def unsubscribe_stats(sid, data):
 async def get_user_quick_stats(user_id: str) -> dict:
     """Get quick stats for a user"""
     try:
-        # Get listings count and total views
-        listings = await db.listings.find({"seller_id": user_id}).to_list(length=1000)
+        # Get listings count and total views (exclude images for performance)
+        listings = await db.listings.find({"seller_id": user_id}, {"_id": 0, "status": 1, "views": 1}).to_list(length=1000)
         active_listings = len([l for l in listings if l.get("status") == "active"])
         total_views = sum(l.get("views", 0) for l in listings)
         
@@ -1284,7 +1284,7 @@ async def search_listings(
 
     skip = (page - 1) * limit
     total = await db.listings.count_documents(query_filter)
-    listings = await db.listings.find(query_filter, {"_id": 0}).sort(sort_spec).skip(skip).limit(limit).to_list(length=limit)
+    listings = await db.listings.find(query_filter, {"_id": 0, "images": 0, "seo_data": 0}).sort(sort_spec).skip(skip).limit(limit).to_list(length=limit)
 
     return {
         "listings": listings,
@@ -2174,7 +2174,7 @@ async def get_featured_listings(
         query_filter["category_id"] = category
 
     # Prioritize: featured > boosted > newest
-    listings = await db.listings.find(query_filter, {"_id": 0}).sort(
+    listings = await db.listings.find(query_filter, {"_id": 0, "images": 0, "seo_data": 0}).sort(
         [("featured", -1), ("boost_score", -1), ("views", -1), ("created_at", -1)]
     ).limit(limit).to_list(length=limit)
 
@@ -2188,9 +2188,11 @@ async def get_similar_listings(
     limit: int = Query(8, ge=1, le=20),
 ):
     """Get similar listings based on category, price range, and location"""
-    source = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+    source = await db.listings.find_one({"id": listing_id}, {"_id": 0, "images": 0, "seo_data": 0, "description": 0})
     if not source:
         raise HTTPException(status_code=404, detail="Listing not found")
+
+    SIMILAR_PROJECTION = {"_id": 0, "images": 0, "seo_data": 0, "description": 0}
 
     query_filter = {
         "status": "active",
@@ -2208,7 +2210,7 @@ async def get_similar_listings(
     if price and price > 0:
         query_filter["price"] = {"$gte": price * 0.5, "$lte": price * 1.5}
 
-    listings = await db.listings.find(query_filter, {"_id": 0}).sort(
+    listings = await db.listings.find(query_filter, SIMILAR_PROJECTION).sort(
         [("featured", -1), ("views", -1), ("created_at", -1)]
     ).limit(limit).to_list(length=limit)
 
@@ -2220,7 +2222,7 @@ async def get_similar_listings(
             "category_id": source.get("category_id"),
         }
         existing_ids = {l["id"] for l in listings}
-        more = await db.listings.find(broad_filter, {"_id": 0}).sort(
+        more = await db.listings.find(broad_filter, SIMILAR_PROJECTION).sort(
             [("views", -1), ("created_at", -1)]
         ).limit(limit * 2).to_list(length=limit * 2)
         for m in more:
@@ -2238,7 +2240,8 @@ async def get_related_listings(
     limit: int = Query(8, ge=1, le=20),
 ):
     """Get related listings from same seller or same category/location"""
-    source = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+    RELATED_PROJECTION = {"_id": 0, "images": 0, "seo_data": 0, "description": 0}
+    source = await db.listings.find_one({"id": listing_id}, RELATED_PROJECTION)
     if not source:
         raise HTTPException(status_code=404, detail="Listing not found")
 
@@ -2249,7 +2252,7 @@ async def get_related_listings(
     if source.get("user_id"):
         seller_listings = await db.listings.find(
             {"status": "active", "user_id": source["user_id"], "id": {"$ne": listing_id}},
-            {"_id": 0}
+            RELATED_PROJECTION
         ).sort([("created_at", -1)]).limit(limit // 2).to_list(length=limit // 2)
         for sl in seller_listings:
             if sl["id"] not in seen_ids:
@@ -2265,10 +2268,16 @@ async def get_related_listings(
             "category_id": source.get("category_id"),
         }
         if source.get("location"):
-            loc_city = source["location"].split(",")[0].strip()
-            loc_filter["location"] = {"$regex": loc_city, "$options": "i"}
+            loc = source["location"]
+            if isinstance(loc, str):
+                loc_city = loc.split(",")[0].strip()
+                loc_filter["location"] = {"$regex": loc_city, "$options": "i"}
+            elif isinstance(loc, dict):
+                loc_city = loc.get("city", "")
+                if loc_city:
+                    loc_filter["location.city"] = loc_city
 
-        loc_listings = await db.listings.find(loc_filter, {"_id": 0}).sort(
+        loc_listings = await db.listings.find(loc_filter, RELATED_PROJECTION).sort(
             [("views", -1), ("created_at", -1)]
         ).limit(remaining).to_list(length=remaining)
         for ll in loc_listings:
@@ -2281,7 +2290,7 @@ async def get_related_listings(
     if remaining > 0:
         cat_listings = await db.listings.find(
             {"status": "active", "id": {"$nin": list(seen_ids)}, "category_id": source.get("category_id")},
-            {"_id": 0}
+            RELATED_PROJECTION
         ).sort([("created_at", -1)]).limit(remaining).to_list(length=remaining)
         for cl in cat_listings:
             if cl["id"] not in seen_ids:
@@ -4887,6 +4896,79 @@ if LOCATION_SYSTEM_AVAILABLE:
 # =============================================================================
 app.include_router(api_router)
 logger.info("API router included with all sub-routes")
+
+# =============================================================================
+# BACKGROUND: Pre-compute feed thumbnails for listings with base64 images
+# =============================================================================
+@app.on_event("startup")
+async def precompute_feed_thumbnails():
+    """Pre-compute small thumbnails for all listings that don't have one yet."""
+    async def _compute_thumbnails():
+        try:
+            from utils.image_optimizer import create_thumbnail
+            
+            # Find listing IDs without a feed_thumbnail (lightweight query, no images)
+            ids_cursor = db.listings.find(
+                {"feed_thumbnail": {"$exists": False}, "status": "active"},
+                {"_id": 1, "id": 1}
+            ).limit(500)
+            listing_ids = await ids_cursor.to_list(500)
+            
+            if not listing_ids:
+                logger.info("All listings already have feed thumbnails")
+                return
+            
+            count = len(listing_ids)
+            logger.info(f"Pre-computing feed thumbnails for {count} listings...")
+            processed = 0
+            errors = 0
+            
+            for listing_ref in listing_ids:
+                try:
+                    # Use aggregation to efficiently get just the first image
+                    pipeline = [
+                        {"$match": {"_id": listing_ref["_id"]}},
+                        {"$project": {"first_image": {"$arrayElemAt": ["$images", 0]}}}
+                    ]
+                    result = await db.listings.aggregate(pipeline).to_list(1)
+                    
+                    thumb = None
+                    if result and result[0].get("first_image"):
+                        img_src = result[0]["first_image"]
+                        if isinstance(img_src, str):
+                            if img_src.startswith(("http://", "https://")):
+                                thumb = img_src
+                            else:
+                                thumb = create_thumbnail(img_src, size=(150, 150))
+                        elif isinstance(img_src, dict):
+                            url = img_src.get("url", img_src.get("uri", ""))
+                            if url.startswith(("http://", "https://")):
+                                thumb = url
+                    
+                    await db.listings.update_one(
+                        {"_id": listing_ref["_id"]},
+                        {"$set": {"feed_thumbnail": thumb or ""}}
+                    )
+                    processed += 1
+                except Exception as e:
+                    errors += 1
+                    await db.listings.update_one(
+                        {"_id": listing_ref["_id"]},
+                        {"$set": {"feed_thumbnail": ""}}
+                    )
+                
+                if processed % 50 == 0:
+                    logger.info(f"Thumbnails: {processed}/{count} processed, {errors} errors")
+                    await asyncio.sleep(0.1)  # Yield to event loop
+            
+            logger.info(f"Feed thumbnails complete: {processed} processed, {errors} errors")
+        except ImportError:
+            logger.warning("Image optimizer not available, skipping thumbnail pre-computation")
+        except Exception as e:
+            logger.error(f"Thumbnail pre-computation failed: {e}")
+    
+    # Run in background so it doesn't block startup
+    asyncio.create_task(_compute_thumbnails())
 
 # =============================================================================
 # VOUCHER SYSTEM

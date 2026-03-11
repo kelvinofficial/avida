@@ -75,6 +75,7 @@ def create_feed_router(db):
     """Create the feed router with database dependency."""
     
     # Minimal fields for feed cards - reduces payload size by ~80%
+    # NOTE: Do NOT include "images" here - base64 images are huge and cause query timeouts
     FEED_PROJECTION = {
         "_id": 0,
         "id": 1,
@@ -83,9 +84,9 @@ def create_feed_router(db):
         "currency": 1,
         "location": 1,
         "cityName": 1,  # Pre-computed for display
-        "category": 1,
+        "category_id": 1,
         "subcategory": 1,
-        "images": {"$slice": 1},  # Only first image for thumbnail
+        "feed_thumbnail": 1,  # Pre-computed small thumbnail
         "thumbnail": 1,  # Optimized thumbnail URL
         "created_at": 1,
         "is_boosted": 1,
@@ -187,7 +188,7 @@ def create_feed_router(db):
                 query["$and"] = location_conditions
             
         if category:
-            query["category"] = category
+            query["category_id"] = category
             
         if subcategory:
             query["subcategory"] = subcategory
@@ -269,14 +270,8 @@ def create_feed_router(db):
         # Transform items for feed
         feed_items = []
         for item in all_items:
-            # Get thumbnail URL - compress base64 images for smaller payload
-            thumb_url = None
-            if item.get("images") and len(item["images"]) > 0:
-                img = item["images"][0]
-                img_url = img if isinstance(img, str) else img.get("url", img.get("uri"))
-                if img_url and isinstance(img_url, str):
-                    # Compress base64 thumbnails for smaller payload
-                    thumb_url = get_compressed_thumbnail(img_url)
+            # Get thumbnail URL from pre-computed field
+            thumb_url = item.get("feed_thumbnail") or item.get("thumbnail") or None
             
             # Handle location - it could be a string or an object
             location = item.get("location", {})
@@ -299,7 +294,7 @@ def create_feed_router(db):
                 "currency": item.get("currency", "TZS"),
                 "cityName": city_name,
                 "countryCode": country_code,
-                "category": item.get("category"),
+                "category": item.get("category_id") or item.get("category"),
                 "subcategory": item.get("subcategory"),
                 "thumbUrl": thumb_url,
                 "createdAt": created_at,
