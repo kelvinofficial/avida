@@ -8,7 +8,7 @@
  */
 
 // Hardcoded production API URL - this MUST be set for APK builds
-const PRODUCTION_API_URL = 'https://offer-hub-beta.preview.emergentagent.com';
+const PRODUCTION_API_URL = 'https://r2-storage-hub.preview.emergentagent.com';
 
 module.exports = ({ config }) => {
   return {

@@ -266,7 +266,7 @@ ai_seo.py
 
 3. **Set environment variables**:
    ```env
-   REACT_APP_API_URL=https://offer-hub-beta.preview.emergentagent.com/api
+   REACT_APP_API_URL=https://r2-storage-hub.preview.emergentagent.com/api
    # Or your production backend URL
    ```
 

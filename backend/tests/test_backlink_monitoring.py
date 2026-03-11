@@ -10,7 +10,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://offer-hub-beta.preview.emergentagent.com/api')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://r2-storage-hub.preview.emergentagent.com/api')
 
 class TestBacklinkMonitoring:
     """Backlink Monitoring API tests"""

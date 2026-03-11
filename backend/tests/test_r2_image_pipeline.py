@@ -10,7 +10,7 @@ import base64
 
 BASE_URL = os.environ.get("EXPO_PUBLIC_BACKEND_URL", "").rstrip("/")
 if not BASE_URL:
-    BASE_URL = "https://offer-hub-beta.preview.emergentagent.com"
+    BASE_URL = "https://r2-storage-hub.preview.emergentagent.com"
 
 # Test credentials
 ADMIN_EMAIL = "admin@marketplace.com"

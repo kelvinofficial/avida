@@ -15,8 +15,8 @@ index 04fe3d9fb..fd0f86cf8 100644
          });
          
          const order = orderResponse.data.order;
--        const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://offer-hub-beta.preview.emergentagent.com';
-+        const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://offer-hub-beta.preview.emergentagent.com';
+-        const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://r2-storage-hub.preview.emergentagent.com';
++        const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://r2-storage-hub.preview.emergentagent.com';
          
          // Create payment
          let paymentResponse;
@@ -471,8 +471,8 @@ index 3906f1aee..97cc4856e 100644
  
  // Production API URL - HARDCODED and ALWAYS used
  // This ensures the correct URL is used regardless of cache issues
--export const PRODUCTION_API_URL = 'https://offer-hub-beta.preview.emergentagent.com';
-+export const PRODUCTION_API_URL = 'https://offer-hub-beta.preview.emergentagent.com';
+-export const PRODUCTION_API_URL = 'https://r2-storage-hub.preview.emergentagent.com';
++export const PRODUCTION_API_URL = 'https://r2-storage-hub.preview.emergentagent.com';
  
  // Get API URL - ALWAYS use hardcoded URL to avoid cache issues
  export const getApiUrl = (): string => {

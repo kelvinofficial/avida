@@ -126,4 +126,127 @@ def create_image_router(db, require_auth):
             },
         )
 
+    # ── v1 endpoints ──────────────────────────────────────────────────
+
+    @router.delete("/{key:path}")
+    async def delete_image(request: Request, key: str):
+        """Delete an image from R2 by its key (path)."""
+        from utils.r2_storage import is_configured, delete_object
+
+        if not is_configured():
+            raise HTTPException(status_code=503, detail="Image storage not configured")
+
+        user = await require_auth(request)
+
+        # Verify ownership: image must belong to the user or user is admin
+        record = await db.uploaded_images.find_one(
+            {"$or": [{"full_path": key}, {"thumb_path": key}]},
+            {"_id": 0, "user_id": 1, "full_path": 1, "thumb_path": 1},
+        )
+        is_admin = getattr(user, "role", None) == "admin" or getattr(user, "is_admin", False)
+
+        if record and record.get("user_id") != user.user_id and not is_admin:
+            raise HTTPException(status_code=403, detail="Not authorized to delete this image")
+
+        try:
+            await delete_object(key)
+        except Exception as e:
+            logger.error(f"R2 delete failed for {key}: {e}")
+            raise HTTPException(status_code=500, detail="Failed to delete image")
+
+        # Clean up DB record and associated thumbnail/full image
+        if record:
+            full_path = record.get("full_path", "")
+            thumb_path = record.get("thumb_path", "")
+            other_key = thumb_path if key == full_path else full_path
+            if other_key:
+                try:
+                    await delete_object(other_key)
+                except Exception:
+                    pass
+            await db.uploaded_images.delete_one(
+                {"$or": [{"full_path": key}, {"thumb_path": key}]}
+            )
+
+        # Also clean up references in listings
+        await db.listings.update_many(
+            {"r2_images.r2_full_path": key},
+            {"$pull": {"r2_images": {"r2_full_path": key}}},
+        )
+        await db.listings.update_many(
+            {"r2_images.r2_thumb_path": key},
+            {"$pull": {"r2_images": {"r2_thumb_path": key}}},
+        )
+
+        return {"deleted": True, "key": key}
+
+    @router.get("/stats")
+    async def image_stats(request: Request):
+        """Admin: get storage statistics for R2 images."""
+        from utils.r2_storage import is_configured
+
+        if not is_configured():
+            raise HTTPException(status_code=503, detail="Image storage not configured")
+
+        user = await require_auth(request)
+
+        # Total uploaded images in DB
+        total_uploads = await db.uploaded_images.count_documents({})
+
+        # Size aggregation from uploaded_images
+        size_pipeline = [
+            {"$group": {
+                "_id": None,
+                "total_full_size": {"$sum": "$full_size"},
+                "total_thumb_size": {"$sum": "$thumb_size"},
+                "count": {"$sum": 1},
+            }}
+        ]
+        size_result = await db.uploaded_images.aggregate(size_pipeline).to_list(1)
+        upload_stats = size_result[0] if size_result else {"total_full_size": 0, "total_thumb_size": 0, "count": 0}
+
+        # R2-migrated listing stats
+        total_listings = await db.listings.count_documents({"status": "active"})
+        migrated = await db.listings.count_documents({"r2_migrated": True})
+        not_migrated = await db.listings.count_documents({"r2_migrated": {"$exists": False}, "status": "active"})
+
+        # Listing image count
+        img_pipeline = [
+            {"$match": {"r2_migrated": True, "r2_images.0": {"$exists": True}}},
+            {"$project": {"img_count": {"$size": "$r2_images"}}},
+            {"$group": {"_id": None, "total_images": {"$sum": "$img_count"}}},
+        ]
+        img_result = await db.listings.aggregate(img_pipeline).to_list(1)
+        listing_images = img_result[0]["total_images"] if img_result else 0
+
+        # Per-user upload counts (top 10)
+        user_pipeline = [
+            {"$group": {"_id": "$user_id", "count": {"$sum": 1}, "size": {"$sum": "$full_size"}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 10},
+            {"$project": {"_id": 0, "user_id": "$_id", "count": 1, "size": 1}},
+        ]
+        top_uploaders = await db.uploaded_images.aggregate(user_pipeline).to_list(10)
+
+        return {
+            "uploads": {
+                "total": total_uploads,
+                "total_full_size_bytes": upload_stats.get("total_full_size", 0),
+                "total_thumb_size_bytes": upload_stats.get("total_thumb_size", 0),
+                "total_size_mb": round(
+                    (upload_stats.get("total_full_size", 0) + upload_stats.get("total_thumb_size", 0))
+                    / (1024 * 1024),
+                    2,
+                ),
+            },
+            "listings": {
+                "total_active": total_listings,
+                "migrated_to_r2": migrated,
+                "pending_migration": not_migrated,
+                "total_r2_images": listing_images,
+                "migration_percent": round(migrated / total_listings * 100, 1) if total_listings else 0,
+            },
+            "top_uploaders": top_uploaders,
+        }
+
     return router

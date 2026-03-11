@@ -170,6 +170,15 @@ async def upload_base64_image(
     }
 
 
+async def delete_object(path: str) -> bool:
+    """Delete an object from R2. Returns True on success."""
+    client = _get_client()
+    url = f"{R2_API_BASE}/{path}"
+    resp = await client.delete(url)
+    resp.raise_for_status()
+    return True
+
+
 async def close():
     """Close the HTTP client."""
     global _client
