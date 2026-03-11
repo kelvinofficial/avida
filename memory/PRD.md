@@ -96,6 +96,17 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
     - Fixed endpoints: /api/feed/listings, /api/listings, /api/listings/{id}/similar, /api/listings/{id}/related, /api/listings/featured-verified, /api/listings/by-location, /api/search
     - Solution: Excluded `images` and `seo_data` from all multi-listing projections/aggregations. Added `feed_thumbnail` field with pre-computed WebP thumbnails (150x150). Background task runs on startup to generate thumbnails for new listings.
     - Performance: Feed from 30s+ timeout → 0.3s, Listings from 10s+ timeout → 1.1s, Search from timeout → 0.5s
+22. **Cloudflare R2 Image CDN Pipeline** (March 11, 2026)
+    - Implemented full image upload pipeline using Cloudflare R2 via REST API
+    - New files: utils/r2_storage.py (upload/download/compress), routes/images.py (upload/serve endpoints)
+    - Endpoints: POST /api/images/upload (file upload), POST /api/images/upload-base64 (base64 upload), GET /api/images/serve/{path} (CDN proxy with 1-year cache headers)
+    - Images compressed to WebP (1200px max, 80% quality) + thumbnails (300px, 60% quality)
+    - Background migration task: converts all existing base64 images to R2 URLs on startup
+    - All 224 listings migrated from inline base64 to Cloudflare R2 CDN URLs
+    - New listings automatically upload to R2 on creation
+    - Listing detail API returns R2 URLs in images[] and thumbnails[] arrays
+    - Feed payload reduced from ~2MB (base64) to ~8KB (R2 URLs) per 20 items
+    - Config: CF_ACCOUNT_ID, CF_R2_TOKEN, CF_R2_BUCKET in backend/.env
 
 ### Test Accounts
 - Admin: admin@marketplace.com / Admin@123456
