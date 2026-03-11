@@ -4905,10 +4905,12 @@ if LOCATION_SYSTEM_AVAILABLE:
 
 # Image CDN Router (Cloudflare R2) — must be registered on api_router BEFORE app.include_router
 try:
-    from routes.images import create_image_router
+    from routes.images import create_image_router, create_v1_image_router
     images_router = create_image_router(db, require_auth)
     api_router.include_router(images_router)
-    print("Image CDN routes loaded successfully")
+    v1_images_router = create_v1_image_router(db, require_auth)
+    api_router.include_router(v1_images_router)
+    print("Image CDN routes loaded successfully (v0 + v1)")
 except Exception as e:
     print(f"Failed to load Image routes: {e}")
 

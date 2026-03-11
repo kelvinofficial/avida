@@ -126,62 +126,72 @@ def create_image_router(db, require_auth):
             },
         )
 
-    # ── v1 endpoints ──────────────────────────────────────────────────
+    return router
 
-    @router.delete("/{key:path}")
-    async def delete_image(request: Request, key: str):
-        """Delete an image from R2 by its key (path)."""
-        from utils.r2_storage import is_configured, delete_object
 
+def create_v1_image_router(db, require_auth):
+    """v1 image management endpoints: upload, stats, delete."""
+    v1_router = APIRouter(prefix="/v1/images", tags=["Images v1"])
+
+    @v1_router.post("/upload")
+    async def v1_upload_image(
+        request: Request,
+        file: UploadFile = File(...),
+    ):
+        """Upload an image to R2 CDN. Returns the image key and CDN URLs."""
+        from utils.r2_storage import (
+            is_configured, upload_bytes, compress_image, make_thumbnail,
+            get_public_url,
+        )
         if not is_configured():
             raise HTTPException(status_code=503, detail="Image storage not configured")
 
         user = await require_auth(request)
 
-        # Verify ownership: image must belong to the user or user is admin
-        record = await db.uploaded_images.find_one(
-            {"$or": [{"full_path": key}, {"thumb_path": key}]},
-            {"_id": 0, "user_id": 1, "full_path": 1, "thumb_path": 1},
-        )
-        is_admin = getattr(user, "role", None) == "admin" or getattr(user, "is_admin", False)
+        if file.content_type not in ALLOWED_TYPES:
+            raise HTTPException(status_code=400, detail=f"Unsupported file type: {file.content_type}")
 
-        if record and record.get("user_id") != user.user_id and not is_admin:
-            raise HTTPException(status_code=403, detail="Not authorized to delete this image")
+        raw = await file.read()
+        if len(raw) > MAX_FILE_SIZE:
+            raise HTTPException(status_code=400, detail="File too large (max 10MB)")
 
-        try:
-            await delete_object(key)
-        except Exception as e:
-            logger.error(f"R2 delete failed for {key}: {e}")
-            raise HTTPException(status_code=500, detail="Failed to delete image")
+        uid = uuid.uuid4().hex[:12]
 
-        # Clean up DB record and associated thumbnail/full image
-        if record:
-            full_path = record.get("full_path", "")
-            thumb_path = record.get("thumb_path", "")
-            other_key = thumb_path if key == full_path else full_path
-            if other_key:
-                try:
-                    await delete_object(other_key)
-                except Exception:
-                    pass
-            await db.uploaded_images.delete_one(
-                {"$or": [{"full_path": key}, {"thumb_path": key}]}
-            )
+        full_bytes, full_ct = compress_image(raw, max_width=1200, quality=80)
+        full_path = f"uploads/{user.user_id}/{uid}.webp"
+        full_result = await upload_bytes(full_bytes, full_path, full_ct)
 
-        # Also clean up references in listings
-        await db.listings.update_many(
-            {"r2_images.r2_full_path": key},
-            {"$pull": {"r2_images": {"r2_full_path": key}}},
-        )
-        await db.listings.update_many(
-            {"r2_images.r2_thumb_path": key},
-            {"$pull": {"r2_images": {"r2_thumb_path": key}}},
-        )
+        thumb_bytes, thumb_ct = make_thumbnail(raw, size=(300, 300), quality=60)
+        thumb_path = f"uploads/{user.user_id}/thumb_{uid}.webp"
+        thumb_result = await upload_bytes(thumb_bytes, thumb_path, thumb_ct)
 
-        return {"deleted": True, "key": key}
+        full_url = get_public_url(full_result["path"]) or f"/api/images/serve/{full_result['path']}"
+        thumb_url = get_public_url(thumb_result["path"]) or f"/api/images/serve/{thumb_result['path']}"
 
-    @router.get("/stats")
-    async def image_stats(request: Request):
+        record = {
+            "id": str(uuid.uuid4()),
+            "user_id": user.user_id,
+            "full_path": full_result["path"],
+            "thumb_path": thumb_result["path"],
+            "original_filename": file.filename,
+            "content_type": full_ct,
+            "full_size": full_result["size"],
+            "thumb_size": thumb_result["size"],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.uploaded_images.insert_one(record)
+
+        return {
+            "id": record["id"],
+            "key": full_result["path"],
+            "thumb_key": thumb_result["path"],
+            "url": full_url,
+            "thumb_url": thumb_url,
+            "size": full_result["size"],
+        }
+
+    @v1_router.get("/stats")
+    async def v1_image_stats(request: Request):
         """Admin: get storage statistics for R2 images."""
         from utils.r2_storage import is_configured
 
@@ -190,10 +200,8 @@ def create_image_router(db, require_auth):
 
         user = await require_auth(request)
 
-        # Total uploaded images in DB
         total_uploads = await db.uploaded_images.count_documents({})
 
-        # Size aggregation from uploaded_images
         size_pipeline = [
             {"$group": {
                 "_id": None,
@@ -205,12 +213,10 @@ def create_image_router(db, require_auth):
         size_result = await db.uploaded_images.aggregate(size_pipeline).to_list(1)
         upload_stats = size_result[0] if size_result else {"total_full_size": 0, "total_thumb_size": 0, "count": 0}
 
-        # R2-migrated listing stats
         total_listings = await db.listings.count_documents({"status": "active"})
         migrated = await db.listings.count_documents({"r2_migrated": True})
         not_migrated = await db.listings.count_documents({"r2_migrated": {"$exists": False}, "status": "active"})
 
-        # Listing image count
         img_pipeline = [
             {"$match": {"r2_migrated": True, "r2_images.0": {"$exists": True}}},
             {"$project": {"img_count": {"$size": "$r2_images"}}},
@@ -219,7 +225,6 @@ def create_image_router(db, require_auth):
         img_result = await db.listings.aggregate(img_pipeline).to_list(1)
         listing_images = img_result[0]["total_images"] if img_result else 0
 
-        # Per-user upload counts (top 10)
         user_pipeline = [
             {"$group": {"_id": "$user_id", "count": {"$sum": 1}, "size": {"$sum": "$full_size"}}},
             {"$sort": {"count": -1}},
@@ -249,4 +254,53 @@ def create_image_router(db, require_auth):
             "top_uploaders": top_uploaders,
         }
 
-    return router
+    @v1_router.delete("/{key:path}")
+    async def v1_delete_image(request: Request, key: str):
+        """Delete an image from R2 by its key (path)."""
+        from utils.r2_storage import is_configured, delete_object
+
+        if not is_configured():
+            raise HTTPException(status_code=503, detail="Image storage not configured")
+
+        user = await require_auth(request)
+
+        record = await db.uploaded_images.find_one(
+            {"$or": [{"full_path": key}, {"thumb_path": key}]},
+            {"_id": 0, "user_id": 1, "full_path": 1, "thumb_path": 1},
+        )
+        is_admin = getattr(user, "role", None) == "admin" or getattr(user, "is_admin", False)
+
+        if record and record.get("user_id") != user.user_id and not is_admin:
+            raise HTTPException(status_code=403, detail="Not authorized to delete this image")
+
+        try:
+            await delete_object(key)
+        except Exception as e:
+            logger.error(f"R2 delete failed for {key}: {e}")
+            raise HTTPException(status_code=500, detail="Failed to delete image")
+
+        if record:
+            full_path = record.get("full_path", "")
+            thumb_path = record.get("thumb_path", "")
+            other_key = thumb_path if key == full_path else full_path
+            if other_key:
+                try:
+                    await delete_object(other_key)
+                except Exception:
+                    pass
+            await db.uploaded_images.delete_one(
+                {"$or": [{"full_path": key}, {"thumb_path": key}]}
+            )
+
+        await db.listings.update_many(
+            {"r2_images.r2_full_path": key},
+            {"$pull": {"r2_images": {"r2_full_path": key}}},
+        )
+        await db.listings.update_many(
+            {"r2_images.r2_thumb_path": key},
+            {"$pull": {"r2_images": {"r2_thumb_path": key}}},
+        )
+
+        return {"deleted": True, "key": key}
+
+    return v1_router
