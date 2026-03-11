@@ -1895,6 +1895,14 @@ async def get_admin_form_config(
 
     configs = []
     async for config in cursor:
+        created_at = config.get("created_at")
+        updated_at = config.get("updated_at")
+        # Handle both datetime objects and strings
+        if created_at and hasattr(created_at, 'isoformat'):
+            created_at = created_at.isoformat()
+        if updated_at and hasattr(updated_at, 'isoformat'):
+            updated_at = updated_at.isoformat()
+        
         configs.append({
             "id": str(config["_id"]),
             "category_id": config.get("category_id"),
@@ -1903,8 +1911,8 @@ async def get_admin_form_config(
             "config_data": config.get("config_data", {}),
             "is_active": config.get("is_active", True),
             "priority": config.get("priority", 0),
-            "created_at": config.get("created_at").isoformat() if config.get("created_at") else None,
-            "updated_at": config.get("updated_at").isoformat() if config.get("updated_at") else None,
+            "created_at": created_at,
+            "updated_at": updated_at,
         })
 
     return {
@@ -4894,44 +4902,154 @@ if LOCATION_SYSTEM_AVAILABLE:
 # =============================================================================
 # INCLUDE API ROUTER ONCE (all sub-routers have been added above)
 # =============================================================================
+
+# Image CDN Router (Cloudflare R2) — must be registered on api_router BEFORE app.include_router
+try:
+    from routes.images import create_image_router
+    images_router = create_image_router(db, require_auth)
+    api_router.include_router(images_router)
+    print("Image CDN routes loaded successfully")
+except Exception as e:
+    print(f"Failed to load Image routes: {e}")
+
 app.include_router(api_router)
 logger.info("API router included with all sub-routes")
 
 # =============================================================================
-# BACKGROUND: Pre-compute feed thumbnails for listings with base64 images
+# BACKGROUND: Migrate base64 images to Cloudflare R2 CDN
 # =============================================================================
 @app.on_event("startup")
-async def precompute_feed_thumbnails():
-    """Pre-compute small thumbnails for all listings that don't have one yet."""
-    async def _compute_thumbnails():
+async def migrate_images_to_r2():
+    """Migrate base64 images from listings to R2 CDN in the background."""
+    async def _migrate():
+        try:
+            from utils.r2_storage import is_configured, upload_base64_image
+
+            if not is_configured():
+                logger.warning("R2 not configured, skipping image migration")
+                # Fall back to old thumbnail pre-computation
+                await _fallback_thumbnails()
+                return
+
+            # Find listings that haven't been migrated yet
+            ids_cursor = db.listings.find(
+                {"r2_migrated": {"$exists": False}, "status": "active"},
+                {"_id": 1, "id": 1}
+            ).limit(300)
+            listing_ids = await ids_cursor.to_list(300)
+
+            if not listing_ids:
+                logger.info("All listings already migrated to R2")
+                return
+
+            count = len(listing_ids)
+            logger.info(f"Migrating {count} listings to R2 CDN...")
+            processed = 0
+            errors = 0
+
+            for listing_ref in listing_ids:
+                try:
+                    # Get images for this listing via aggregation
+                    pipeline = [
+                        {"$match": {"_id": listing_ref["_id"]}},
+                        {"$project": {"id": 1, "images": 1}}
+                    ]
+                    result = await db.listings.aggregate(pipeline).to_list(1)
+                    if not result:
+                        continue
+
+                    listing = result[0]
+                    images = listing.get("images", [])
+                    listing_id = listing.get("id", str(listing_ref["_id"]))
+
+                    r2_images = []
+                    feed_thumb = ""
+
+                    for idx, img in enumerate(images):
+                        img_src = img if isinstance(img, str) else img.get("url", img.get("uri", ""))
+                        if not img_src or not isinstance(img_src, str):
+                            continue
+
+                        if img_src.startswith(("http://", "https://")):
+                            # Already a URL, keep it
+                            r2_images.append({"url": img_src, "thumb_url": img_src})
+                            if idx == 0:
+                                feed_thumb = img_src
+                        elif img_src.startswith("data:") or len(img_src) > 500:
+                            # Base64 image — upload to R2
+                            try:
+                                r2_result = await upload_base64_image(img_src, listing_id, idx)
+                                full_url = f"/api/images/serve/{r2_result['full_path']}"
+                                thumb_url = f"/api/images/serve/{r2_result['thumb_path']}"
+                                r2_images.append({
+                                    "url": full_url,
+                                    "thumb_url": thumb_url,
+                                    "r2_full_path": r2_result["full_path"],
+                                    "r2_thumb_path": r2_result["thumb_path"],
+                                })
+                                if idx == 0:
+                                    feed_thumb = thumb_url
+                            except Exception as img_err:
+                                logger.warning(f"Failed to upload image {idx} for {listing_id}: {img_err}")
+                                r2_images.append({"url": img_src, "thumb_url": ""})
+
+                    # Update listing with R2 URLs
+                    update = {
+                        "$set": {
+                            "r2_images": r2_images,
+                            "r2_migrated": True,
+                            "feed_thumbnail": feed_thumb or "",
+                        }
+                    }
+                    # Remove base64 images from the document to save space
+                    if r2_images and all(img.get("r2_full_path") for img in r2_images):
+                        update["$unset"] = {"images": 1}
+
+                    await db.listings.update_one(
+                        {"_id": listing_ref["_id"]},
+                        update
+                    )
+                    processed += 1
+                except Exception as e:
+                    errors += 1
+                    logger.warning(f"Migration error for listing {listing_ref.get('id', '?')}: {e}")
+                    await db.listings.update_one(
+                        {"_id": listing_ref["_id"]},
+                        {"$set": {"r2_migrated": False}}
+                    )
+
+                if processed % 10 == 0:
+                    logger.info(f"R2 migration: {processed}/{count} processed, {errors} errors")
+                    await asyncio.sleep(0.2)  # Yield to event loop
+
+            logger.info(f"R2 migration complete: {processed} processed, {errors} errors")
+        except ImportError as ie:
+            logger.warning(f"R2 storage not available: {ie}. Falling back to thumbnails.")
+            await _fallback_thumbnails()
+        except Exception as e:
+            logger.error(f"R2 migration failed: {e}")
+            await _fallback_thumbnails()
+
+    async def _fallback_thumbnails():
+        """Fallback: pre-compute thumbnails without R2."""
         try:
             from utils.image_optimizer import create_thumbnail
-            
-            # Find listing IDs without a feed_thumbnail (lightweight query, no images)
             ids_cursor = db.listings.find(
                 {"feed_thumbnail": {"$exists": False}, "status": "active"},
                 {"_id": 1, "id": 1}
             ).limit(500)
             listing_ids = await ids_cursor.to_list(500)
-            
             if not listing_ids:
-                logger.info("All listings already have feed thumbnails")
                 return
-            
-            count = len(listing_ids)
-            logger.info(f"Pre-computing feed thumbnails for {count} listings...")
-            processed = 0
-            errors = 0
-            
-            for listing_ref in listing_ids:
+
+            logger.info(f"Fallback: computing thumbnails for {len(listing_ids)} listings")
+            for ref in listing_ids:
                 try:
-                    # Use aggregation to efficiently get just the first image
                     pipeline = [
-                        {"$match": {"_id": listing_ref["_id"]}},
+                        {"$match": {"_id": ref["_id"]}},
                         {"$project": {"first_image": {"$arrayElemAt": ["$images", 0]}}}
                     ]
                     result = await db.listings.aggregate(pipeline).to_list(1)
-                    
                     thumb = None
                     if result and result[0].get("first_image"):
                         img_src = result[0]["first_image"]
@@ -4940,35 +5058,16 @@ async def precompute_feed_thumbnails():
                                 thumb = img_src
                             else:
                                 thumb = create_thumbnail(img_src, size=(150, 150))
-                        elif isinstance(img_src, dict):
-                            url = img_src.get("url", img_src.get("uri", ""))
-                            if url.startswith(("http://", "https://")):
-                                thumb = url
-                    
                     await db.listings.update_one(
-                        {"_id": listing_ref["_id"]},
+                        {"_id": ref["_id"]},
                         {"$set": {"feed_thumbnail": thumb or ""}}
                     )
-                    processed += 1
-                except Exception as e:
-                    errors += 1
-                    await db.listings.update_one(
-                        {"_id": listing_ref["_id"]},
-                        {"$set": {"feed_thumbnail": ""}}
-                    )
-                
-                if processed % 50 == 0:
-                    logger.info(f"Thumbnails: {processed}/{count} processed, {errors} errors")
-                    await asyncio.sleep(0.1)  # Yield to event loop
-            
-            logger.info(f"Feed thumbnails complete: {processed} processed, {errors} errors")
-        except ImportError:
-            logger.warning("Image optimizer not available, skipping thumbnail pre-computation")
+                except Exception:
+                    pass
         except Exception as e:
-            logger.error(f"Thumbnail pre-computation failed: {e}")
-    
-    # Run in background so it doesn't block startup
-    asyncio.create_task(_compute_thumbnails())
+            logger.error(f"Fallback thumbnails failed: {e}")
+
+    asyncio.create_task(_migrate())
 
 # =============================================================================
 # VOUCHER SYSTEM
@@ -5293,9 +5392,6 @@ if ADMIN_TOOLS_AVAILABLE:
         feed_router = create_feed_router(db)
         app.include_router(feed_router, prefix="/api")
         print("Instant Feed routes loaded successfully")
-        # Create indexes in background - will be done in startup event
-        # import asyncio
-        # asyncio.create_task(ensure_feed_indexes(db))
     except Exception as e:
         print(f"Failed to load Feed routes: {e}")
     

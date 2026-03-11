@@ -259,7 +259,44 @@ def create_listings_router(
             "created_at": datetime.now(timezone.utc),
             "updated_at": datetime.now(timezone.utc)
         }
-        
+
+        # Upload images to R2 CDN if configured
+        try:
+            from utils.r2_storage import is_configured as r2_configured, upload_base64_image
+            if r2_configured() and listing.images:
+                r2_images = []
+                feed_thumb = ""
+                for idx, img_src in enumerate(listing.images[:10]):
+                    if isinstance(img_src, str) and (img_src.startswith("data:") or len(img_src) > 500):
+                        try:
+                            r2_result = await upload_base64_image(img_src, listing_id, idx)
+                            full_url = f"/api/images/serve/{r2_result['full_path']}"
+                            thumb_url = f"/api/images/serve/{r2_result['thumb_path']}"
+                            r2_images.append({
+                                "url": full_url,
+                                "thumb_url": thumb_url,
+                                "r2_full_path": r2_result["full_path"],
+                                "r2_thumb_path": r2_result["thumb_path"],
+                            })
+                            if idx == 0:
+                                feed_thumb = thumb_url
+                        except Exception as img_err:
+                            logger.warning(f"R2 upload failed for image {idx}: {img_err}")
+                    elif isinstance(img_src, str) and img_src.startswith(("http://", "https://")):
+                        r2_images.append({"url": img_src, "thumb_url": img_src})
+                        if idx == 0:
+                            feed_thumb = img_src
+
+                if r2_images:
+                    new_listing["r2_images"] = r2_images
+                    new_listing["r2_migrated"] = True
+                    new_listing["feed_thumbnail"] = feed_thumb
+                    # Remove base64 images to save space
+                    if all(img.get("r2_full_path") for img in r2_images):
+                        new_listing.pop("images", None)
+        except ImportError:
+            pass
+
         await db.listings.insert_one(new_listing)
         created_listing = await db.listings.find_one({"id": listing_id}, {"_id": 0})
         
@@ -877,9 +914,16 @@ def create_listings_router(
         if user:
             favorite = await db.favorites.find_one({"user_id": user.user_id, "listing_id": listing_id})
             is_favorited = favorite is not None
-        
+
+        # Prefer R2 CDN images over base64
+        response_listing = {**listing}
+        r2_imgs = listing.get("r2_images")
+        if r2_imgs and isinstance(r2_imgs, list) and len(r2_imgs) > 0:
+            response_listing["images"] = [img.get("url", "") for img in r2_imgs]
+            response_listing["thumbnails"] = [img.get("thumb_url", "") for img in r2_imgs]
+
         return {
-            **listing,
+            **response_listing,
             "seller": seller_data,
             "is_favorited": is_favorited
         }

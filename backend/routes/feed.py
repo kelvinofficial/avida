@@ -88,6 +88,7 @@ def create_feed_router(db):
         "subcategory": 1,
         "feed_thumbnail": 1,  # Pre-computed small thumbnail
         "thumbnail": 1,  # Optimized thumbnail URL
+        "r2_images": 1,  # Cloudflare R2 CDN image URLs
         "created_at": 1,
         "is_boosted": 1,
         "boost_expires_at": 1,
@@ -270,8 +271,12 @@ def create_feed_router(db):
         # Transform items for feed
         feed_items = []
         for item in all_items:
-            # Get thumbnail URL from pre-computed field
-            thumb_url = item.get("feed_thumbnail") or item.get("thumbnail") or None
+            # Get thumbnail URL: prefer R2 CDN images > feed_thumbnail > thumbnail
+            r2_imgs = item.get("r2_images", [])
+            if r2_imgs and isinstance(r2_imgs, list) and len(r2_imgs) > 0:
+                thumb_url = r2_imgs[0].get("thumb_url") or r2_imgs[0].get("url")
+            else:
+                thumb_url = item.get("feed_thumbnail") or item.get("thumbnail") or None
             
             # Handle location - it could be a string or an object
             location = item.get("location", {})
