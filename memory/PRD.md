@@ -113,6 +113,13 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
     - Upload endpoint returns public CDN URLs; migration script converted all existing proxy URLs
     - Backend proxy `/api/images/serve/{path}` still available as fallback
     - Frontend verified: images render correctly from CDN on homepage
+24. **v1 Image Management API** (March 12, 2026)
+    - POST /api/v1/images/upload — Upload image to R2 with WebP compression + thumbnail generation, returns key/url/thumb_url
+    - DELETE /api/v1/images/{key} — Delete image from R2 + DB, with ownership verification (owner or admin)
+    - GET /api/v1/images/stats — Admin storage stats: upload totals/sizes, listing migration status, top uploaders
+    - Fixed route ordering bug: stats endpoint now registered before catch-all delete path
+    - Admin user (admin@marketplace.com) updated with role='admin' and is_admin=True in DB
+    - All 16 tests passing (100% pass rate via testing agent)
 
 ### Test Accounts
 - Admin: admin@marketplace.com / Admin@123456
