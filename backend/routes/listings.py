@@ -269,7 +269,7 @@ def create_listings_router(
                 for idx, img_src in enumerate(listing.images[:10]):
                     if isinstance(img_src, str) and (img_src.startswith("data:") or len(img_src) > 500):
                         try:
-                            r2_result = await upload_base64_image(img_src, listing_id, idx)
+                            r2_result = await upload_base64_image(img_src, listing_id, idx, user_id=user.user_id)
                             r2_images.append({
                                 "url": r2_result["full_url"],
                                 "thumb_url": r2_result["thumb_url"],

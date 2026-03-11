@@ -120,6 +120,12 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
     - Fixed route ordering bug: stats endpoint now registered before catch-all delete path
     - Admin user (admin@marketplace.com) updated with role='admin' and is_admin=True in DB
     - All 16 tests passing (100% pass rate via testing agent)
+25. **R2 Image Path Structure Update** (March 12, 2026)
+    - Changed R2 storage path from `uploads/{user_id}/` to `listings/{user_id}/{listing_id}/`
+    - Updated all upload endpoints: v0 POST /api/images/upload, v1 POST /api/v1/images/upload, POST /api/images/upload-base64
+    - `listing_id` accepted as query param on file uploads, body field on base64 uploads; defaults to "general" if not provided
+    - Updated `upload_base64_image()` in r2_storage.py to accept optional `user_id` param
+    - Updated all callers: routes/images.py, routes/listings.py, server.py migration script
 
 ### Test Accounts
 - Admin: admin@marketplace.com / Admin@123456

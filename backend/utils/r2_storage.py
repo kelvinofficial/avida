@@ -138,6 +138,7 @@ async def upload_base64_image(
     data_uri: str,
     listing_id: str,
     image_index: int = 0,
+    user_id: str = "",
 ) -> dict:
     """
     Decode a base64 image, compress it, upload to R2.
@@ -146,14 +147,17 @@ async def upload_base64_image(
     raw_bytes, original_ct = decode_base64_image(data_uri)
     uid = uuid.uuid4().hex[:12]
 
+    # Build path: listings/{user_id}/{listing_id}/ or listings/{listing_id}/
+    path_prefix = f"listings/{user_id}/{listing_id}" if user_id else f"listings/{listing_id}"
+
     # Compress full image
     full_bytes, full_ct = compress_image(raw_bytes, max_width=1200, quality=80)
-    full_path = f"listings/{listing_id}/{uid}_{image_index}.webp"
+    full_path = f"{path_prefix}/{uid}_{image_index}.webp"
     full_result = await upload_bytes(full_bytes, full_path, full_ct)
 
     # Create and upload thumbnail
     thumb_bytes, thumb_ct = make_thumbnail(raw_bytes, size=(300, 300), quality=60)
-    thumb_path = f"listings/{listing_id}/thumb_{uid}_{image_index}.webp"
+    thumb_path = f"{path_prefix}/thumb_{uid}_{image_index}.webp"
     thumb_result = await upload_bytes(thumb_bytes, thumb_path, thumb_ct)
 
     # Use public CDN URL if available, otherwise backend proxy path

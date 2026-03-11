@@ -21,6 +21,7 @@ def create_image_router(db, require_auth):
     async def upload_image(
         request: Request,
         file: UploadFile = File(...),
+        listing_id: str = Query(None),
     ):
         """Upload an image to R2 CDN. Returns the image paths for storage."""
         from utils.r2_storage import (
@@ -40,15 +41,16 @@ def create_image_router(db, require_auth):
             raise HTTPException(status_code=400, detail="File too large (max 10MB)")
 
         uid = uuid.uuid4().hex[:12]
+        lid = listing_id or "general"
 
         # Compress full image
         full_bytes, full_ct = compress_image(raw, max_width=1200, quality=80)
-        full_path = f"uploads/{user.user_id}/{uid}.webp"
+        full_path = f"listings/{user.user_id}/{lid}/{uid}.webp"
         full_result = await upload_bytes(full_bytes, full_path, full_ct)
 
         # Create thumbnail
         thumb_bytes, thumb_ct = make_thumbnail(raw, size=(300, 300), quality=60)
-        thumb_path = f"uploads/{user.user_id}/thumb_{uid}.webp"
+        thumb_path = f"listings/{user.user_id}/{lid}/thumb_{uid}.webp"
         thumb_result = await upload_bytes(thumb_bytes, thumb_path, thumb_ct)
 
         # Use public CDN URL if available
@@ -94,7 +96,7 @@ def create_image_router(db, require_auth):
         if not data_uri:
             raise HTTPException(status_code=400, detail="Missing 'image' field")
 
-        result = await upload_base64_image(data_uri, listing_id, image_index=0)
+        result = await upload_base64_image(data_uri, listing_id, image_index=0, user_id=user.user_id)
 
         return {
             "full_path": result["full_path"],
@@ -137,6 +139,7 @@ def create_v1_image_router(db, require_auth):
     async def v1_upload_image(
         request: Request,
         file: UploadFile = File(...),
+        listing_id: str = Query(None),
     ):
         """Upload an image to R2 CDN. Returns the image key and CDN URLs."""
         from utils.r2_storage import (
@@ -156,13 +159,14 @@ def create_v1_image_router(db, require_auth):
             raise HTTPException(status_code=400, detail="File too large (max 10MB)")
 
         uid = uuid.uuid4().hex[:12]
+        lid = listing_id or "general"
 
         full_bytes, full_ct = compress_image(raw, max_width=1200, quality=80)
-        full_path = f"uploads/{user.user_id}/{uid}.webp"
+        full_path = f"listings/{user.user_id}/{lid}/{uid}.webp"
         full_result = await upload_bytes(full_bytes, full_path, full_ct)
 
         thumb_bytes, thumb_ct = make_thumbnail(raw, size=(300, 300), quality=60)
-        thumb_path = f"uploads/{user.user_id}/thumb_{uid}.webp"
+        thumb_path = f"listings/{user.user_id}/{lid}/thumb_{uid}.webp"
         thumb_result = await upload_bytes(thumb_bytes, thumb_path, thumb_ct)
 
         full_url = get_public_url(full_result["path"]) or f"/api/images/serve/{full_result['path']}"

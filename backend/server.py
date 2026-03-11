@@ -4954,7 +4954,7 @@ async def migrate_images_to_r2():
                     # Get images for this listing via aggregation
                     pipeline = [
                         {"$match": {"_id": listing_ref["_id"]}},
-                        {"$project": {"id": 1, "images": 1}}
+                        {"$project": {"id": 1, "images": 1, "user_id": 1}}
                     ]
                     result = await db.listings.aggregate(pipeline).to_list(1)
                     if not result:
@@ -4963,6 +4963,7 @@ async def migrate_images_to_r2():
                     listing = result[0]
                     images = listing.get("images", [])
                     listing_id = listing.get("id", str(listing_ref["_id"]))
+                    owner_id = listing.get("user_id", "")
 
                     r2_images = []
                     feed_thumb = ""
@@ -4980,7 +4981,7 @@ async def migrate_images_to_r2():
                         elif img_src.startswith("data:") or len(img_src) > 500:
                             # Base64 image — upload to R2
                             try:
-                                r2_result = await upload_base64_image(img_src, listing_id, idx)
+                                r2_result = await upload_base64_image(img_src, listing_id, idx, user_id=owner_id)
                                 r2_images.append({
                                     "url": r2_result["full_url"],
                                     "thumb_url": r2_result["thumb_url"],
