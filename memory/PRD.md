@@ -106,7 +106,13 @@ Build a full-featured marketplace app with React Native (Expo) frontend, FastAPI
     - New listings automatically upload to R2 on creation
     - Listing detail API returns R2 URLs in images[] and thumbnails[] arrays
     - Feed payload reduced from ~2MB (base64) to ~8KB (R2 URLs) per 20 items
-    - Config: CF_ACCOUNT_ID, CF_R2_TOKEN, CF_R2_BUCKET in backend/.env
+    - Config: CF_ACCOUNT_ID, CF_R2_TOKEN, CF_R2_BUCKET, CF_R2_PUBLIC_URL in backend/.env
+23. **R2 Public CDN Access Enabled** (March 11, 2026)
+    - Enabled r2.dev public URL for direct CDN delivery: https://pub-0cc33d2206c84cf990de86c3d660eee5.r2.dev
+    - All image URLs now point directly to Cloudflare CDN (no backend proxy needed for reads)
+    - Upload endpoint returns public CDN URLs; migration script converted all existing proxy URLs
+    - Backend proxy `/api/images/serve/{path}` still available as fallback
+    - Frontend verified: images render correctly from CDN on homepage
 
 ### Test Accounts
 - Admin: admin@marketplace.com / Admin@123456

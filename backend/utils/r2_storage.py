@@ -19,6 +19,8 @@ CF_ACCOUNT_ID = os.environ.get("CF_ACCOUNT_ID", "")
 CF_R2_TOKEN = os.environ.get("CF_R2_TOKEN", "")
 CF_R2_BUCKET = os.environ.get("CF_R2_BUCKET", "")
 
+CF_R2_PUBLIC_URL = os.environ.get("CF_R2_PUBLIC_URL", "")
+
 R2_API_BASE = f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT_ID}/r2/buckets/{CF_R2_BUCKET}/objects"
 
 # Reusable async client
@@ -37,6 +39,14 @@ def _get_client() -> httpx.AsyncClient:
 
 def is_configured() -> bool:
     return bool(CF_ACCOUNT_ID and CF_R2_TOKEN and CF_R2_BUCKET)
+
+
+def get_public_url(path: str) -> str:
+    """Get the direct public CDN URL for an R2 object."""
+    public_url = os.environ.get("CF_R2_PUBLIC_URL", "")
+    if public_url:
+        return f"{public_url}/{path}"
+    return ""
 
 
 def get_serve_url(path: str, backend_url: str = "") -> str:
@@ -146,9 +156,15 @@ async def upload_base64_image(
     thumb_path = f"listings/{listing_id}/thumb_{uid}_{image_index}.webp"
     thumb_result = await upload_bytes(thumb_bytes, thumb_path, thumb_ct)
 
+    # Use public CDN URL if available, otherwise backend proxy path
+    full_url = get_public_url(full_result["path"]) or f"/api/images/serve/{full_result['path']}"
+    thumb_url = get_public_url(thumb_result["path"]) or f"/api/images/serve/{thumb_result['path']}"
+
     return {
         "full_path": full_result["path"],
         "thumb_path": thumb_result["path"],
+        "full_url": full_url,
+        "thumb_url": thumb_url,
         "full_size": full_result["size"],
         "thumb_size": thumb_result["size"],
     }

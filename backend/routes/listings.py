@@ -270,16 +270,14 @@ def create_listings_router(
                     if isinstance(img_src, str) and (img_src.startswith("data:") or len(img_src) > 500):
                         try:
                             r2_result = await upload_base64_image(img_src, listing_id, idx)
-                            full_url = f"/api/images/serve/{r2_result['full_path']}"
-                            thumb_url = f"/api/images/serve/{r2_result['thumb_path']}"
                             r2_images.append({
-                                "url": full_url,
-                                "thumb_url": thumb_url,
+                                "url": r2_result["full_url"],
+                                "thumb_url": r2_result["thumb_url"],
                                 "r2_full_path": r2_result["full_path"],
                                 "r2_thumb_path": r2_result["thumb_path"],
                             })
                             if idx == 0:
-                                feed_thumb = thumb_url
+                                feed_thumb = r2_result["thumb_url"]
                         except Exception as img_err:
                             logger.warning(f"R2 upload failed for image {idx}: {img_err}")
                     elif isinstance(img_src, str) and img_src.startswith(("http://", "https://")):

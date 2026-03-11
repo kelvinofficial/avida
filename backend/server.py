@@ -4979,16 +4979,14 @@ async def migrate_images_to_r2():
                             # Base64 image — upload to R2
                             try:
                                 r2_result = await upload_base64_image(img_src, listing_id, idx)
-                                full_url = f"/api/images/serve/{r2_result['full_path']}"
-                                thumb_url = f"/api/images/serve/{r2_result['thumb_path']}"
                                 r2_images.append({
-                                    "url": full_url,
-                                    "thumb_url": thumb_url,
+                                    "url": r2_result["full_url"],
+                                    "thumb_url": r2_result["thumb_url"],
                                     "r2_full_path": r2_result["full_path"],
                                     "r2_thumb_path": r2_result["thumb_path"],
                                 })
                                 if idx == 0:
-                                    feed_thumb = thumb_url
+                                    feed_thumb = r2_result["thumb_url"]
                             except Exception as img_err:
                                 logger.warning(f"Failed to upload image {idx} for {listing_id}: {img_err}")
                                 r2_images.append({"url": img_src, "thumb_url": ""})

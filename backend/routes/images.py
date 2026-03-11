@@ -24,7 +24,8 @@ def create_image_router(db, require_auth):
     ):
         """Upload an image to R2 CDN. Returns the image paths for storage."""
         from utils.r2_storage import (
-            is_configured, upload_bytes, compress_image, make_thumbnail
+            is_configured, upload_bytes, compress_image, make_thumbnail,
+            get_public_url,
         )
         if not is_configured():
             raise HTTPException(status_code=503, detail="Image storage not configured")
@@ -39,7 +40,6 @@ def create_image_router(db, require_auth):
             raise HTTPException(status_code=400, detail="File too large (max 10MB)")
 
         uid = uuid.uuid4().hex[:12]
-        ext = file.filename.rsplit(".", 1)[-1] if file.filename and "." in file.filename else "webp"
 
         # Compress full image
         full_bytes, full_ct = compress_image(raw, max_width=1200, quality=80)
@@ -50,6 +50,10 @@ def create_image_router(db, require_auth):
         thumb_bytes, thumb_ct = make_thumbnail(raw, size=(300, 300), quality=60)
         thumb_path = f"uploads/{user.user_id}/thumb_{uid}.webp"
         thumb_result = await upload_bytes(thumb_bytes, thumb_path, thumb_ct)
+
+        # Use public CDN URL if available
+        full_url = get_public_url(full_result["path"]) or f"/api/images/serve/{full_result['path']}"
+        thumb_url = get_public_url(thumb_result["path"]) or f"/api/images/serve/{thumb_result['path']}"
 
         # Store record in DB
         record = {
@@ -69,8 +73,8 @@ def create_image_router(db, require_auth):
             "id": record["id"],
             "full_path": full_result["path"],
             "thumb_path": thumb_result["path"],
-            "full_url": f"/api/images/serve/{full_result['path']}",
-            "thumb_url": f"/api/images/serve/{thumb_result['path']}",
+            "full_url": full_url,
+            "thumb_url": thumb_url,
             "size": full_result["size"],
         }
 
@@ -95,8 +99,8 @@ def create_image_router(db, require_auth):
         return {
             "full_path": result["full_path"],
             "thumb_path": result["thumb_path"],
-            "full_url": f"/api/images/serve/{result['full_path']}",
-            "thumb_url": f"/api/images/serve/{result['thumb_path']}",
+            "full_url": result["full_url"],
+            "thumb_url": result["thumb_url"],
         }
 
     @router.get("/serve/{path:path}")
