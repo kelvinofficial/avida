@@ -103,7 +103,6 @@ export default function HomeScreen() {
     city: selectedLocationFilter?.city_code,
     category: selectedCategory || undefined,
     sort: 'newest',
-    limit: 20,
   }), [selectedLocationFilter, selectedCategory]);
   
   const {
@@ -446,7 +445,7 @@ export default function HomeScreen() {
         />
       }
       onEndReached={loadMoreFeed}
-      onEndReachedThreshold={0.5}
+      onEndReachedThreshold={0.7}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={[
         { paddingBottom: 100, paddingHorizontal: gridPadding },

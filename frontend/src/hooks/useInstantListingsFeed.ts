@@ -1,12 +1,13 @@
 /**
- * useInstantListingsFeed Hook
+ * useInstantListingsFeed Hook — Invisible Prefetch System
  * 
- * High-performance feed hook with cache-first strategy.
- * - Shows cached data instantly (<150ms)
- * - Background refresh without blocking UI
- * - No skeleton loaders
- * - Smooth pagination
- * - Offline support
+ * Architecture inspired by TikTok / Instagram / Facebook Marketplace:
+ * 
+ * Tier 1 (Instant):     Load 7 listings — user sees these immediately (<200ms)
+ * Tier 2 (Prefetch):    Items 8–40 fetched silently right after first paint
+ * Tier 3 (Background):  Items 41–60 fetched as user scrolls into prefetched zone
+ * 
+ * Result: User perceives zero loading after the initial 7 items.
  */
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -22,6 +23,12 @@ import {
   preloadCache,
 } from '../utils/feedCache';
 import { API_URL } from '../utils/api';
+
+// ── Prefetch tier configuration ─────────────────────────────────────
+const TIER1_LIMIT = 7;   // Instant: first paint
+const TIER2_LIMIT = 33;  // Prefetch: items 8–40
+const TIER3_LIMIT = 20;  // Background: items 41–60
+const PREFETCH_DELAY_MS = 100; // Delay before Tier 2 starts (let Tier 1 render)
 
 // Types
 export interface FeedParams {
@@ -57,11 +64,12 @@ export interface FeedActions {
 export type UseInstantListingsFeedReturn = FeedState & FeedActions;
 
 /**
- * Fetch feed from API
+ * Fetch feed from API with configurable limit
  */
 const fetchFeed = async (
   params: FeedParams,
-  cursor?: string | null
+  cursor?: string | null,
+  limitOverride?: number,
 ): Promise<{
   items: FeedItem[];
   nextCursor: string | null;
@@ -79,37 +87,26 @@ const fetchFeed = async (
   if (params.sellerId) queryParams.append('seller_id', params.sellerId);
   if (params.search) queryParams.append('search', params.search);
   if (cursor) queryParams.append('cursor', cursor);
-  queryParams.append('limit', String(params.limit || 20));
+  queryParams.append('limit', String(limitOverride || params.limit || 20));
   
   const url = `${API_URL}/api/feed/listings?${queryParams.toString()}`;
-  console.log('[Feed] Fetching:', url);
   
-  try {
-    const response = await fetch(url, {
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-    
-    console.log('[Feed] Response status:', response.status);
-    
-    if (!response.ok) {
-      throw new Error(`Feed fetch failed: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    console.log('[Feed] Got items:', data.items?.length || 0, 'total:', data.totalApprox);
-    
-    return {
-      items: data.items || [],
-      nextCursor: data.nextCursor || null,
-      totalApprox: data.totalApprox || 0,
-      hasMore: data.hasMore || false,
-    };
-  } catch (err: any) {
-    console.error('[Feed] Fetch error:', err.message);
-    throw err;
+  const response = await fetch(url, {
+    headers: { 'Accept': 'application/json' },
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Feed fetch failed: ${response.status}`);
   }
+  
+  const data = await response.json();
+  
+  return {
+    items: data.items || [],
+    nextCursor: data.nextCursor || null,
+    totalApprox: data.totalApprox || 0,
+    hasMore: data.hasMore || false,
+  };
 };
 
 /**
@@ -126,7 +123,7 @@ const paramsToKey = (params: FeedParams): FeedCacheKey => ({
 });
 
 /**
- * Main hook for instant listings feed
+ * Main hook for instant listings feed with invisible prefetch
  */
 export const useInstantListingsFeed = (params: FeedParams): UseInstantListingsFeedReturn => {
   // State
@@ -145,6 +142,9 @@ export const useInstantListingsFeed = (params: FeedParams): UseInstantListingsFe
   const loadingMoreLock = useRef(false);
   const isMountedRef = useRef(true);
   const paramsRef = useRef(params);
+  const prefetchInFlightRef = useRef(false);
+  const tier2DoneRef = useRef(false);
+  const tier3DoneRef = useRef(false);
   
   // Update params ref
   paramsRef.current = params;
@@ -160,13 +160,85 @@ export const useInstantListingsFeed = (params: FeedParams): UseInstantListingsFe
     params.search,
   ]);
   
+  // ── Reset prefetch state when params change ──
+  useEffect(() => {
+    tier2DoneRef.current = false;
+    tier3DoneRef.current = false;
+    prefetchInFlightRef.current = false;
+  }, [cacheKey]);
+
   /**
-   * Load cached data immediately on mount
+   * Tier 2: Invisible prefetch — called right after Tier 1 renders
+   */
+  const runTier2Prefetch = useCallback(async (afterCursor: string | null) => {
+    if (tier2DoneRef.current || prefetchInFlightRef.current || !isMountedRef.current) return;
+    prefetchInFlightRef.current = true;
+    
+    try {
+      const result = await fetchFeed(paramsRef.current, afterCursor, TIER2_LIMIT);
+      
+      if (!isMountedRef.current) return;
+      
+      setItems(prev => {
+        const existingIds = new Set(prev.map(i => i.id));
+        const unique = result.items.filter(i => !existingIds.has(i.id));
+        return unique.length > 0 ? [...prev, ...unique] : prev;
+      });
+      
+      cursorRef.current = result.nextCursor;
+      setHasMore(result.hasMore);
+      tier2DoneRef.current = true;
+      
+      // Update cache with combined items
+      setItems(current => {
+        appendToCachedFeed(paramsToKey(paramsRef.current), result.items, result.nextCursor);
+        return current;
+      });
+    } catch (err: any) {
+      console.warn('[Prefetch T2] Error:', err.message);
+    } finally {
+      prefetchInFlightRef.current = false;
+    }
+  }, []);
+
+  /**
+   * Tier 3: Background fetch — called when user scrolls deep
+   */
+  const runTier3Background = useCallback(async () => {
+    if (tier3DoneRef.current || prefetchInFlightRef.current || !isMountedRef.current || !cursorRef.current) return;
+    prefetchInFlightRef.current = true;
+    
+    try {
+      const result = await fetchFeed(paramsRef.current, cursorRef.current, TIER3_LIMIT);
+      
+      if (!isMountedRef.current) return;
+      
+      setItems(prev => {
+        const existingIds = new Set(prev.map(i => i.id));
+        const unique = result.items.filter(i => !existingIds.has(i.id));
+        return unique.length > 0 ? [...prev, ...unique] : prev;
+      });
+      
+      cursorRef.current = result.nextCursor;
+      setHasMore(result.hasMore);
+      tier3DoneRef.current = true;
+      
+      appendToCachedFeed(paramsToKey(paramsRef.current), result.items, result.nextCursor);
+    } catch (err: any) {
+      console.warn('[Prefetch T3] Error:', err.message);
+    } finally {
+      prefetchInFlightRef.current = false;
+    }
+  }, []);
+  
+  /**
+   * Load cached data immediately, then run tiered fetches
    */
   useEffect(() => {
     let cancelled = false;
     
-    const loadCached = async () => {
+    const boot = async () => {
+      // 1. Try cache first for instant render
       const cached = await preloadCache(cacheKey);
       
       if (cancelled || !isMountedRef.current) return;
@@ -179,31 +251,65 @@ export const useInstantListingsFeed = (params: FeedParams): UseInstantListingsFe
         setHasMore(!!cached.nextCursor);
         setIsInitialLoad(false);
         
-        // Check if cache is stale and needs refresh
+        // If cache is stale, run a full refresh in background
         if (isCacheStale(cached)) {
-          refreshInBackground();
+          runTieredFetch();
         }
-      } else {
-        // No cache, fetch fresh
-        refreshInBackground();
+        return;
+      }
+      
+      // 2. No cache — run tiered fetch from scratch
+      await runTieredFetch();
+    };
+    
+    const runTieredFetch = async () => {
+      if (cancelled) return;
+      setError(null);
+      
+      try {
+        // ── Tier 1: Fetch 7 items for instant first paint ──
+        const t1 = await fetchFeed(paramsRef.current, null, TIER1_LIMIT);
+        
+        if (cancelled || !isMountedRef.current) return;
+        
+        setItems(t1.items);
+        setTotalApprox(t1.totalApprox);
+        setHasMore(t1.hasMore);
+        cursorRef.current = t1.nextCursor;
+        setIsInitialLoad(false);
+        setLastUpdated(new Date().toISOString());
+        
+        // Cache Tier 1 result
+        await setCachedFeed(paramsToKey(paramsRef.current), t1.items, t1.nextCursor, t1.totalApprox);
+        
+        // ── Tier 2: Prefetch 8–40 after a tiny delay (let Tier 1 render first) ──
+        if (t1.hasMore && t1.nextCursor) {
+          setTimeout(() => {
+            if (!cancelled && isMountedRef.current) {
+              runTier2Prefetch(t1.nextCursor);
+            }
+          }, PREFETCH_DELAY_MS);
+        }
+      } catch (err: any) {
+        if (cancelled || !isMountedRef.current) return;
+        setIsInitialLoad(false);
+        if (items.length === 0) {
+          setError(err.message || 'Failed to load listings');
+        }
+        console.warn('[Feed] Tier 1 error:', err.message);
       }
     };
     
-    loadCached();
+    boot();
     
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [cacheKey]);
   
   /**
-   * Monitor network status (only on native platforms)
+   * Monitor network status (native only)
    */
   useEffect(() => {
-    // Skip NetInfo on web - it causes abort errors
-    if (Platform.OS === 'web') {
-      return;
-    }
+    if (Platform.OS === 'web') return;
     
     let unsubscribe: (() => void) | null = null;
     
@@ -211,26 +317,13 @@ export const useInstantListingsFeed = (params: FeedParams): UseInstantListingsFe
       try {
         const NetInfo = require('@react-native-community/netinfo').default;
         unsubscribe = NetInfo.addEventListener((state: any) => {
-          if (isMountedRef.current) {
-            setIsOffline(!state.isConnected);
-          }
+          if (isMountedRef.current) setIsOffline(!state.isConnected);
         });
-      } catch (error) {
-        // NetInfo may throw on some platforms, ignore silently
-      }
+      } catch {}
     };
     
     setupNetInfo();
-    
-    return () => {
-      try {
-        if (unsubscribe) {
-          unsubscribe();
-        }
-      } catch (error) {
-        // Ignore abort errors during cleanup
-      }
-    };
+    return () => { try { unsubscribe?.(); } catch {} };
   }, []);
   
   /**
@@ -239,15 +332,12 @@ export const useInstantListingsFeed = (params: FeedParams): UseInstantListingsFe
   useEffect(() => {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
       if (nextAppState === 'active' && items.length > 0) {
-        refreshInBackground();
+        backgroundRefresh();
       }
     };
     
     const subscription = AppState.addEventListener('change', handleAppStateChange);
-    
-    return () => {
-      subscription.remove();
-    };
+    return () => { subscription.remove(); };
   }, [items.length]);
   
   /**
@@ -255,27 +345,27 @@ export const useInstantListingsFeed = (params: FeedParams): UseInstantListingsFe
    */
   useEffect(() => {
     isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
+    return () => { isMountedRef.current = false; };
   }, []);
   
   /**
-   * Background refresh (doesn't block UI)
+   * Background refresh — silently replaces data without blocking UI
    */
-  const refreshInBackground = useCallback(async () => {
+  const backgroundRefresh = useCallback(async () => {
     if (!isMountedRef.current) return;
-    
     setIsRefreshing(true);
     setError(null);
     
+    // Reset prefetch tiers for fresh data
+    tier2DoneRef.current = false;
+    tier3DoneRef.current = false;
+    
     try {
-      const result = await fetchFeed(paramsRef.current);
-      
+      // Fetch Tier 1 fresh
+      const result = await fetchFeed(paramsRef.current, null, TIER1_LIMIT);
       if (!isMountedRef.current) return;
       
-      // Merge with existing items if we have them
-      const mergedItems = items.length > 0 
+      const mergedItems = items.length > 0
         ? mergeFeedItems(items, result.items)
         : result.items;
       
@@ -284,87 +374,75 @@ export const useInstantListingsFeed = (params: FeedParams): UseInstantListingsFe
       setHasMore(result.hasMore);
       cursorRef.current = result.nextCursor;
       setLastUpdated(new Date().toISOString());
-      setIsInitialLoad(false);
       
-      // Update cache
-      await setCachedFeed(
-        paramsToKey(paramsRef.current),
-        mergedItems,
-        result.nextCursor,
-        result.totalApprox
-      );
+      await setCachedFeed(paramsToKey(paramsRef.current), mergedItems, result.nextCursor, result.totalApprox);
+      
+      // Kick off Tier 2 prefetch
+      if (result.hasMore && result.nextCursor) {
+        setTimeout(() => {
+          if (isMountedRef.current) runTier2Prefetch(result.nextCursor);
+        }, PREFETCH_DELAY_MS);
+      }
     } catch (err: any) {
       if (!isMountedRef.current) return;
-      
-      // Always mark initial load as complete, even on error
-      setIsInitialLoad(false);
-      
-      // Only show error if we have no cached data
-      if (items.length === 0) {
-        setError(err.message || 'Failed to load listings');
-      }
-      console.warn('[Feed] Refresh error:', err.message);
+      if (items.length === 0) setError(err.message || 'Failed to load listings');
     } finally {
-      if (isMountedRef.current) {
-        setIsRefreshing(false);
-      }
+      if (isMountedRef.current) setIsRefreshing(false);
     }
-  }, [items]);
+  }, [items, runTier2Prefetch]);
   
   /**
-   * Manual refresh (pull-to-refresh)
+   * Manual refresh (pull-to-refresh) — full reset + tiered refetch
    */
   const refresh = useCallback(async () => {
     cursorRef.current = null;
     setHasMore(true);
-    await refreshInBackground();
-  }, [refreshInBackground]);
+    tier2DoneRef.current = false;
+    tier3DoneRef.current = false;
+    await backgroundRefresh();
+  }, [backgroundRefresh]);
   
   /**
-   * Load more items (pagination)
+   * Load more items (pagination beyond Tier 3)
+   * Also triggers Tier 3 if not yet done.
    */
   const loadMore = useCallback(async () => {
-    // Prevent duplicate loads
-    if (loadingMoreLock.current || !hasMore || isLoadingMore || isRefreshing) {
+    // If Tier 3 hasn't run yet, run it now (invisible to user)
+    if (!tier3DoneRef.current && tier2DoneRef.current) {
+      await runTier3Background();
       return;
     }
+    
+    // Standard pagination beyond the 3 tiers
+    if (loadingMoreLock.current || !hasMore || isLoadingMore || isRefreshing) return;
     
     loadingMoreLock.current = true;
     setIsLoadingMore(true);
     
     try {
-      const result = await fetchFeed(paramsRef.current, cursorRef.current);
-      
+      const result = await fetchFeed(paramsRef.current, cursorRef.current, TIER3_LIMIT);
       if (!isMountedRef.current) return;
       
-      // Append new items, avoiding duplicates
       const existingIds = new Set(items.map(item => item.id));
       const uniqueNewItems = result.items.filter(item => !existingIds.has(item.id));
       
       if (uniqueNewItems.length > 0) {
         const newItems = [...items, ...uniqueNewItems];
         setItems(newItems);
-        
-        // Update cache with appended items
-        await appendToCachedFeed(
-          paramsToKey(paramsRef.current),
-          uniqueNewItems,
-          result.nextCursor
-        );
+        await appendToCachedFeed(paramsToKey(paramsRef.current), uniqueNewItems, result.nextCursor);
       }
       
       setHasMore(result.hasMore);
       cursorRef.current = result.nextCursor;
     } catch (err: any) {
       console.warn('[Feed] Load more error:', err.message);
-      // Don't show error for pagination failures
     } finally {
       if (isMountedRef.current) {
         setIsLoadingMore(false);
         loadingMoreLock.current = false;
       }
     }
-  }, [items, hasMore, isLoadingMore, isRefreshing]);
+  }, [items, hasMore, isLoadingMore, isRefreshing, runTier3Background]);
   
   /**
    * Clear cache and refresh
@@ -375,6 +453,8 @@ export const useInstantListingsFeed = (params: FeedParams): UseInstantListingsFe
     cursorRef.current = null;
     setItems([]);
     setHasMore(true);
+    tier2DoneRef.current = false;
+    tier3DoneRef.current = false;
     await refresh();
   }, [cacheKey, refresh]);
   
@@ -395,28 +475,25 @@ export const useInstantListingsFeed = (params: FeedParams): UseInstantListingsFe
 };
 
 /**
- * Optimized FlatList props for feed
- * Performance targets:
- * - First 6 items render instantly (<100ms)
- * - Smooth scrolling (60fps)
- * - Memory efficient
+ * Optimized FlatList props for the prefetch system
+ * 
+ * Key insight: Tier 1 renders 7 items. Tier 2 is already in memory by the time
+ * user scrolls. We set onEndReachedThreshold high (0.7) so Tier 3 triggers
+ * early — before the user reaches the end of prefetched content.
  */
 export const getFeedFlatListProps = (cardHeight: number = 200) => ({
-  initialNumToRender: 6,        // Show first 6 instantly
-  maxToRenderPerBatch: 6,       // Render in small batches
-  windowSize: 5,                // Only keep 5 screens in memory
-  removeClippedSubviews: true,  // Remove off-screen views
-  updateCellsBatchingPeriod: 30, // Faster batch updates
+  initialNumToRender: 4,          // Render 4 rows instantly (covers ~7 items in 2-col grid)
+  maxToRenderPerBatch: 8,         // Bigger batches since Tier 2 data is already in state
+  windowSize: 7,                  // Keep 7 screens in memory (covers prefetched items)
+  removeClippedSubviews: true,    // Remove off-screen views for memory
+  updateCellsBatchingPeriod: 30,  // Fast batch updates
   getItemLayout: (_: any, index: number) => ({
     length: cardHeight,
     offset: cardHeight * index,
     index,
   }),
-  // Reduce re-renders
   keyboardShouldPersistTaps: 'handled' as const,
-  // Optimize for scrolling
-  scrollEventThrottle: 16,      // 60fps
-  // Prevent unnecessary re-renders
+  scrollEventThrottle: 16,        // 60fps
   extraData: undefined,
 });
 
